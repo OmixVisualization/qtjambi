@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<typesystem>
+  <enum-type name="QSerialPort::BaudRate"/>
+  <enum-type name="QSerialPort::DataBits"/>
+  <enum-type name="QSerialPort::Direction" flags="QSerialPort::Directions"/>
+  <enum-type name="QSerialPort::FlowControl"/>
+  <enum-type name="QSerialPort::Parity"/>
+  <enum-type name="QSerialPort::PinoutSignal" flags="QSerialPort::PinoutSignals"/>
+  <enum-type name="QSerialPort::SerialPortError"/>
+  <enum-type name="QSerialPort::StopBits"/>
+  <object-type name="QSerialPort">
+	<modify-function signature="handle()const" remove="all" />
+	<modify-function signature="sendBreak(int)" remove="all" />
+  </object-type>
+  <value-type name="QSerialPortInfo">
+	<modify-function signature="operator=(const QSerialPortInfo&amp;)" remove="all"/>
+  </value-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'QSerialPort::DataErrorPolicy'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'QSerialPortInfoPrivate const&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Unable to decide type of property: 'DataErrorPolicy' in class 'QSerialPort'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QSerialPort::DataErrorPolicy' does not have a type entry or is not an enum"/>
+</typesystem>

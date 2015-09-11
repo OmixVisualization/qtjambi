@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/musicplayerexample.qdoc -->
+<head>
+  <title>Music Player Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Music Player Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Music Player Example shows how to use Phonon - the multimedia framework that comes with Qt - to create a simple music player. The player can play music files, and provides simple playback control, such as pausing, stopping, and resuming the music.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/musicplayer.png" /></p><p>The player has a button group with the play, pause, and stop buttons familiar from most music players. The top-most slider controls the position in the media stream, and the bottom slider allows adjusting the sound volume.</p>
+<p>The user can use a file dialog to add music files to a table, which displays meta information about the music - such as the title, album, and artist. Each row contains information about a single music file; to play it, the user selects that row and presses the play button. Also, when a row is selected, the files in the table are queued for playback.</p>
+<p>Phonon offers playback of sound using an available audio device, e.g&#x2e;, a sound card or an USB headset. For the implementation, we use two objects: a MediaObject, which controls the playback, and an AudioOutput, which can output the audio to a sound device. We will explain how they cooperate when we encounter them in the code. For a high-level introduction to Phonon, see its overview.</p>
+<p>The API of Phonon is implemented through an intermediate technology on each supported platform: DirectShow, QuickTime, and GStreamer. The sound formats supported may therefore vary from system to system. We do not in this example try to determine which formats are supported, but let Phonon report an error if the user tries to play an unsupported sound file.</p>
+<p>Our player consists of one class, <tt>MusicPlayer</tt>, which both constructs the GUI and handles the playback. We will now go through the parts of its implementation that concerns Phonon.</p>
+<a name="musicplayer-class"></a>
+<h2>MusicPlayer Class</h2>
+<p>The <tt>MusicPlayer</tt> class handles both the user interface and Phonon. We will now take a look at the code relevant for Phonon. The code required for setting up the GUI is explained elsewhere.</p>
+<p>Let's start by examining the variables of <tt>MusicPlayer</tt>:</p>
+<pre></pre>
+<p>We use the SeekSlider to move the current playback position in the media stream, and the VolumeSlider controls the sound volume. Both of these widgets come ready made with Phonon. We use another MediaObject, metaInformationProvider, to get the meta information from the music files. More on this later.</p>
+<pre></pre>
+<p>We start by instantiating our media and audio output objects. As mentioned, the media object knows how to playback multimedia (in our case sound files) while the audio output can send it to a sound device.</p>
+<p>For the playback to work, the media and audio output objects need to get in contact with each other, so that the media object can send the sound to the audio output. Phonon is a graph based framework, i.e&#x2e;, its objects are nodes that can be connected by paths. Objects are connected using the <tt>createPath()</tt> function in the Phonon class.</p>
+<pre></pre>
+<p>The MediaObject informs us of the state of the playback and properties of the media it is playing back through a series of signals. We connect the signals we need to slots in <tt>MusicPlayer</tt>.</p>
+<pre></pre>
+<p>Finally, we call private helper functions to set up the GUI. The <tt>setupUi()</tt> function contains code for setting up the seek, and volume slider. We move on to <tt>setupUi()</tt>:</p>
+<pre>        ...</pre>
+<p>After creating the widgets, they must be supplied with the MediaObject and AudioOutput objects they should control.</p>
+<p>In <tt>setupActions()</tt>, we connect the actions for the play, pause, and stop tool buttons, to slots of the media object.</p>
+<pre></pre>
+<p>We move on to the the slots of <tt>MusicPlayer</tt>, starting with <tt>addFiles()</tt>:</p>
+<pre></pre>
+<p>In the <tt>addFiles()</tt> slot, we add files selected by the user to the <tt>sources</tt> list. We then set the first source selected on the <tt>metaInformationProvider</tt> MediaObject, which will send a state changed signal when the meta information is resolved; we have this signal connected to the <tt>metaStateChanged()</tt> slot.</p>
+<p>The media object informs us of state changes by sending the <tt>stateChanged</tt> signal. The <tt>stateChanged()</tt> slot is connected to this signal.</p>
+<pre></pre>
+<p>The errorString() function gives a description of the error that is suitable for users of a Phonon application. The two values of the ErrorState enum helps us determine whether it is possible to try to play the same file again.</p>
+<pre></pre>
+<p>We update the GUI when the playback state changes, i.e&#x2e;, when it starts, pauses, stops, or resumes.</p>
+<p>The media object will report other state changes, as defined by the State enum.</p>
+<p>The <tt>tick()</tt> slot is connected to a MediaObject signal which is emitted when the playback position changes:</p>
+<pre></pre>
+<p>The <tt>time</tt> is given in milliseconds.</p>
+<p>When the table is clicked on with the mouse, <tt>tableClick()</tt> is invoked:</p>
+<pre></pre>
+<p>Since we stop the media object, we first check whether it is currently playing. <tt>row</tt> contains the row in the table that was clicked upon; the indices of <tt>sources</tt> follows the table, so we can simply use <tt>row</tt> to find the new source.</p>
+<pre></pre>
+<p>When the media source changes, we simply need to select the corresponding row in the table.</p>
+<pre></pre>
+<p>When <tt>metaStateChanged()</tt> is invoked, <tt>metaInformationProvider</tt> has resolved the meta data for its current source. A MediaObject will do this before leaving the LoadingState. Note that we could also have used the metaDataChanged() signal for this purpose.</p>
+<p>Some of the meta data is then chosen to be displayed in the music table. A file might not contain the meta data requested, in which case an empty string is returned.</p>
+<pre></pre>
+<p>If we have media sources in <tt>sources</tt> of which meta information is not resolved, we set a new source on the <tt>metaInformationProvider</tt>, which will invoke <tt>metaStateChanged()</tt> again.</p>
+<p>We move on to the <tt>aboutToFinish()</tt> slot:</p>
+<pre></pre>
+<p>When a file is finished playing, the Music Player will move on and play the next file in the table. This slot is connected to the MediaObject's aboutToFinish() signal, which is guaranteed to be emitted while there is still time to enqueue another file for playback.</p>
+<a name="the-main-function"></a>
+<h2>The main() function.</h2>
+<p>Phonon requires that the application has a name; it is set with setApplicationName(). This is because D-Bus, which is used by Phonon on Linux systems, demands this.</p>
+<pre></pre>
+</body>
+</html>

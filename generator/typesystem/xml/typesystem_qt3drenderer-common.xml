@@ -1,0 +1,503 @@
+<?xml version="1.0"?>
+<typesystem>
+	<enum-type name="Qt3D::QRenderAspect::RenderType" java-name="QRenderAspect$RenderType"/>
+	<object-type name="Qt3D::QRenderAspect" java-name="QRenderAspect">
+	</object-type>
+	<object-type name="Qt3D::QDiffuseMapMaterial" java-name="QDiffuseMapMaterial">
+		<modify-function signature="setDiffuse(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcDiffuse"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QDiffuseSpecularMapMaterial" java-name="QDiffuseSpecularMapMaterial">
+		<modify-function signature="setDiffuse(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcDiffuse"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setSpecular(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcSpecular"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QForwardRenderer" java-name="QForwardRenderer">
+		<modify-function signature="setCamera(Qt3D::QEntity*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QNormalDiffuseMapAlphaMaterial" java-name="QNormalDiffuseMapAlphaMaterial">
+	</object-type>
+	<object-type name="Qt3D::QNormalDiffuseMapMaterial" java-name="QNormalDiffuseMapMaterial">
+		<modify-function signature="setDiffuse(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcDiffuse"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setNormal(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcNormal"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QNormalDiffuseSpecularMapMaterial" java-name="QNormalDiffuseSpecularMapMaterial">
+		<modify-function signature="setDiffuse(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcDiffuse"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setSpecular(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcSpecular"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setNormal(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcNormal"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QPhongMaterial" java-name="QPhongMaterial">
+	</object-type>
+	<object-type name="Qt3D::QMaterial" java-name="QMaterial">
+		<modify-function signature="setEffect(Qt3D::QEffect*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QSkyboxEntity" java-name="QSkyboxEntity">
+	</object-type>
+	<interface-type name="Qt3D::QAbstractMeshFunctor" java-name="QAbstractMeshFunctor">
+		<modify-function signature="operator==(const Qt3D::QAbstractMeshFunctor &amp;) const" rename="equals" access="public">
+			<modify-argument index="1" invalidate-after-use="yes" />
+		</modify-function>
+		<modify-function signature="operator()()" rename="call"/>
+	</interface-type>
+	<object-type name="Qt3D::QAbstractMesh" java-name="QAbstractMesh">
+	</object-type>
+	<namespace-type name="Qt3D::Render" java-name="Qt3DRenderer" generate="no"/>
+	<enum-type name="Qt3D::Render::QAbstractSceneLoader::Status"/>
+	<object-type name="Qt3D::Render::QAbstractSceneLoader" java-name="QAbstractSceneLoader">
+	</object-type>
+	<interface-type name="Qt3D::QTextureDataFunctor" java-name="QTextureDataFunctor">
+		<modify-function signature="operator==(const Qt3D::QTextureDataFunctor &amp;) const" rename="equals" access="public">
+			<modify-argument index="1" invalidate-after-use="yes" />
+		</modify-function>
+		<modify-function signature="operator()()" rename="call"/>
+	</interface-type>
+	<object-type name="Qt3D::QAbstractTextureImage" java-name="QAbstractTextureImage">
+	</object-type>
+	<enum-type name="Qt3D::QAbstractTextureProvider::Status"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::Target"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::TextureFormat"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::Filter"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::CubeMapFace"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::ComparisonFunction"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::ComparisonMode"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::"/>
+	<enum-type name="Qt3D::QAbstractTextureProvider::"/>
+	<object-type name="Qt3D::QAbstractTextureProvider" java-name="QAbstractTextureProvider">
+		<modify-function signature="addTextureImage(Qt3D::QAbstractTextureImage*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeTextureImage(Qt3D::QAbstractTextureImage*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setWrapMode(Qt3D::QTextureWrapMode)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QAlphaCoverage" java-name="QAlphaCoverage">
+	</object-type>
+	<enum-type name="Qt3D::QAlphaTest::AlphaFunc"/>
+	<object-type name="Qt3D::QAlphaTest" java-name="QAlphaTest">
+	</object-type>
+	<object-type name="Qt3D::QAnnotation" java-name="QAnnotation">
+	</object-type>
+	<enum-type name="Qt3D::QBlendEquation::BlendMode"/>
+	<object-type name="Qt3D::QBlendEquation" java-name="QBlendEquation">
+	</object-type>
+	<enum-type name="Qt3D::QBlendState::Blending">
+		<reject-enum-value name="OneMinusSrcAlpha" />
+		<reject-enum-value name="DstAlpha" />
+	</enum-type>
+	<object-type name="Qt3D::QBlendState" java-name="QBlendState">
+	</object-type>
+	<object-type name="Qt3D::QColorMask" java-name="QColorMask">
+		<modify-function signature="copy(const Qt3D::QNode *)" access="declared-final"/><!--is declared to be final (Q_DECL_FINAL is unrecognized by generator)-->
+	</object-type>
+	<object-type name="Qt3D::QCuboidMesh" java-name="QCuboidMesh">
+	</object-type>
+	<enum-type name="Qt3D::QCullFace::CullingMode"/>
+	<object-type name="Qt3D::QCullFace" java-name="QCullFace">
+	</object-type>
+	<object-type name="Qt3D::QCylinderMesh" java-name="QCylinderMesh">
+	</object-type>
+	<object-type name="Qt3D::QDepthMask" java-name="QDepthMask">
+	</object-type>
+	<enum-type name="Qt3D::QDepthTest::DepthFunc"/>
+	<object-type name="Qt3D::QDepthTest" java-name="QDepthTest">
+	</object-type>
+	<object-type name="Qt3D::QDirectionalLight" java-name="QDirectionalLight">
+	</object-type>
+	<object-type name="Qt3D::QDithering" java-name="QDithering">
+	</object-type>
+	<object-type name="Qt3D::QEffect" java-name="QEffect">
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addTechnique(Qt3D::QTechnique*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeTechnique(Qt3D::QTechnique*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<enum-type name="Qt3D::QFrontFace::FaceDir"/>
+	<object-type name="Qt3D::QFrontFace" java-name="QFrontFace">
+	</object-type>
+	<object-type name="Qt3D::QItemModelBuffer" java-name="QItemModelBuffer">
+		<modify-function signature="setModel(QAbstractItemModel*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcModel"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QLayer" java-name="QLayer">
+	</object-type>
+	<object-type name="Qt3D::QMesh" java-name="QMesh">
+	</object-type>
+	<enum-type name="Qt3D::QOpenGLFilter::Api"/>
+	<enum-type name="Qt3D::QOpenGLFilter::Profile"/>
+	<object-type name="Qt3D::QOpenGLFilter" java-name="QOpenGLFilter">
+	</object-type>
+	<object-type name="Qt3D::QParameter" java-name="QParameter">
+	</object-type>
+	<enum-type name="Qt3D::QParameterMapping::Binding"/>
+	<object-type name="Qt3D::QParameterMapping" java-name="QParameterMapping">
+	</object-type>
+	<object-type name="Qt3D::QPlaneMesh" java-name="QPlaneMesh">
+	</object-type>
+	<object-type name="Qt3D::QPointLight" java-name="QPointLight">
+	</object-type>
+	<object-type name="Qt3D::QPolygonOffset" java-name="QPolygonOffset">
+	</object-type>
+	<enum-type name="Qt3D::QRenderAttachment::RenderAttachmentType"/>
+	<enum-type name="Qt3D::QRenderAttachment::CubeMapFace"/>
+	<object-type name="Qt3D::QRenderAttachment" java-name="QRenderAttachment">
+		<modify-function signature="setTexture(Qt3D::QAbstractTextureProvider*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QRenderPass" java-name="QRenderPass">
+		<modify-function signature="glslNameForParameter(QString) const" remove="all"/>
+		<modify-function signature="addAnnotation(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeAnnotation(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addBinding(Qt3D::QParameterMapping*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeBinding(Qt3D::QParameterMapping*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addRenderState(Qt3D::QRenderState*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeRenderState(Qt3D::QRenderState*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setShaderProgram(Qt3D::QShaderProgram*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<enum-type name="Qt3D::QRenderState::Type"/>
+	<object-type name="Qt3D::QRenderState" java-name="QRenderState">
+	</object-type>
+	<object-type name="Qt3D::QRenderTarget" java-name="QRenderTarget">
+		<modify-function signature="addAttachment(Qt3D::QRenderAttachment*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeAttachment(Qt3D::QRenderAttachment*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QSceneLoader" java-name="QSceneLoader">
+	</object-type>
+	<object-type name="Qt3D::QScissorTest" java-name="QScissorTest">
+	</object-type>
+	<enum-type name="Qt3D::QShaderData::TransformType"/>
+	<object-type name="Qt3D::QShaderData" java-name="QShaderData">
+	</object-type>
+	<object-type name="Qt3D::QAbstractLight" java-name="QAbstractLight">
+	</object-type>
+	<interface-type name="Qt3D::PropertyReaderInterface" java-name="PropertyReader">
+	</interface-type>
+	<enum-type name="Qt3D::QShaderProgram::ShaderType"/>
+	<object-type name="Qt3D::QShaderProgram" java-name="QShaderProgram">
+	</object-type>
+	<object-type name="Qt3D::QSphereMesh" java-name="QSphereMesh">
+	</object-type>
+	<object-type name="Qt3D::QSpotLight" java-name="QSpotLight">
+	</object-type>
+	<enum-type name="Qt3D::QStencilTest::StencilFaceMode"/>
+	<enum-type name="Qt3D::QStencilTest::StencilFunc"/>
+	<object-type name="Qt3D::QStencilTest" java-name="QStencilTest">
+	</object-type>
+	<object-type name="Qt3D::QTechnique" java-name="QTechnique">
+		<modify-function signature="addPass(Qt3D::QRenderPass*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removePass(Qt3D::QRenderPass*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addAnnotation(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeAnnotation(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QTextureImage" java-name="QTextureImage">
+	</object-type>
+	<object-type name="Qt3D::QTexture1D" java-name="QTexture1D">
+	</object-type>
+	<object-type name="Qt3D::QTexture1DArray" java-name="QTexture1DArray">
+	</object-type>
+	<object-type name="Qt3D::QTexture2D" java-name="QTexture2D">
+	</object-type>
+	<object-type name="Qt3D::QTexture2DArray" java-name="QTexture2DArray">
+	</object-type>
+	<object-type name="Qt3D::QTexture3D" java-name="QTexture3D">
+	</object-type>
+	<object-type name="Qt3D::QTextureCubeMap" java-name="QTextureCubeMap">
+	</object-type>
+	<object-type name="Qt3D::QTextureCubeMapArray" java-name="QTextureCubeMapArray">
+	</object-type>
+	<object-type name="Qt3D::QTexture2DMultisample" java-name="QTexture2DMultisample">
+	</object-type>
+	<object-type name="Qt3D::QTexture2DMultisampleArray" java-name="QTexture2DMultisampleArray">
+	</object-type>
+	<object-type name="Qt3D::QTextureRectangle" java-name="QTextureRectangle">
+	</object-type>
+	<object-type name="Qt3D::QTextureBuffer" java-name="QTextureBuffer">
+	</object-type>
+	<object-type name="Qt3D::QTorusMesh" java-name="QTorusMesh">
+	</object-type>
+	<enum-type name="Qt3D::QTextureWrapMode::WrapMode"/>
+	<object-type name="Qt3D::QTextureWrapMode" java-name="QTextureWrapMode">
+	</object-type>
+	
+	<!-- Qt3D::Sphere does not provide the QT3DRENDERERSHARED_EXPORT prefix!
+	<value-type name="Qt3D::Sphere" java-name="Sphere">
+		<modify-function signature="initializeFromPoints(const QVector&lt;QVector3D&gt; &amp;)" remove="all"/>
+		<modify-function signature="fromPoints(const QVector&lt;QVector3D&gt; &amp;)" remove="all"/>
+		<modify-function signature="expandToContain(const Qt3D::Sphere &amp;)" remove="all"/>
+		<modify-function signature="expandToContain(const QVector3D &amp;)" remove="all"/>
+		<modify-function signature="expandToContain(const QVector&lt;QVector3D&gt; &amp;)" remove="all"/>
+		<modify-function signature="transformed(const QMatrix4x4 &amp;)" remove="all"/>
+	</value-type>
+	-->
+	<rejection class="Qt3D::Sphere" />
+	
+	<object-type name="Qt3D::Attribute" java-name="Attribute">
+	</object-type>
+	<object-type name="Qt3D::Buffer" java-name="Buffer">
+	</object-type>
+	<enum-type name="Qt3D::QMeshData::PrimitiveType"/>
+	<object-type name="Qt3D::QMeshData" java-name="QMeshData">
+	</object-type>
+	<object-type name="Qt3D::TexImageData" java-name="TexImageData">
+		<modify-function signature="setCompressedData(QByteArray, QOpenGLTexture::PixelFormat)" remove="all"/>
+	</object-type>
+	<object-type name="Qt3D::QCameraSelector" java-name="QCameraSelector">
+		<modify-function signature="setCamera(Qt3D::QEntity*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<enum-type name="Qt3D::QClearBuffer::BufferType">
+	</enum-type>
+	<object-type name="Qt3D::QClearBuffer" java-name="QClearBuffer">
+	</object-type>
+	<object-type name="Qt3D::QFrameGraph" java-name="QFrameGraph">
+		<modify-function signature="setActiveFrameGraph(Qt3D::QFrameGraphNode*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QFrameGraphNode" java-name="QFrameGraphNode">
+	</object-type>
+	<interface-type name="Qt3D::QFrameGraphSelectorFunctor" java-name="QFrameGraphSelectorFunctor">
+		<modify-function signature="operator()()" rename="call"/>
+	</interface-type>
+	<object-type name="Qt3D::QFrameGraphSelector" java-name="QFrameGraphSelector">
+	</object-type>
+	<object-type name="Qt3D::QLayerFilter" java-name="QLayerFilter">
+	</object-type>
+	<object-type name="Qt3D::QNoDraw" java-name="QNoDraw">
+	</object-type>
+	<object-type name="Qt3D::QRenderPassFilter" java-name="QRenderPassFilter">
+		<modify-function signature="addInclude(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeInclude(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QRenderTargetSelector" java-name="QRenderTargetSelector">
+		<modify-function signature="setTarget(Qt3D::QRenderTarget*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<enum-type name="Qt3D::QSortCriterion::SortType"/>
+	<object-type name="Qt3D::QSortCriterion" java-name="QSortCriterion">
+	</object-type>
+	<object-type name="Qt3D::QSortMethod" java-name="QSortMethod">
+		<modify-function signature="addCriterion(Qt3D::QSortCriterion*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeCriterion(Qt3D::QSortCriterion*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QStateSet" java-name="QStateSet">
+		<modify-function signature="addRenderState(Qt3D::QRenderState*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeRenderState(Qt3D::QRenderState*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QTechniqueFilter" java-name="QTechniqueFilter">
+		<modify-function signature="addParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeParameter(Qt3D::QParameter*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="addRequirement(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeRequirement(Qt3D::QAnnotation*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QViewport" java-name="QViewport">
+	</object-type>
+</typesystem>

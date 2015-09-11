@@ -1,0 +1,46 @@
+
+
+$$QUiLoader.load(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QUiLoader.load(org.qtjambi.qt.core.QIODevice, org.qtjambi.qt.gui.QWidget)
+/**
+Loads a form from the given <tt>device</tt> and creates a new widget with the
+given <tt>parent</tt> widget to hold its contents.
+
+*/
+
+
+$$QUiLoader.main(java.lang.String[])
+/**
+Test method
+*/
+
+
+$$QUiLoaderException.QUiLoaderException(java.lang.String)
+/**
+Creates a new QUiLoaderException with the given <tt>message</tt>.
+
+*/
+
+
+$$Line.Line()
+/**
+@exclude
+*/
+
+
+$$Line.Line(org.qtjambi.qt.gui.QWidget)
+/**
+@exclude
+*/
+
+
+$$Line.setOrientation(org.qtjambi.qt.core.Qt.Orientation)
+/**
+@exclude
+*/

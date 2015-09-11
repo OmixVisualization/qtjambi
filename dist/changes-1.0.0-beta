@@ -1,0 +1,295 @@
+
+Qt Jambi 1.0.0-beta is the first beta of Qt for Java. It represents a
+milestone in the development in terms of feature stability.
+
+
+************************************************************************
+Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+
+ - The com.trolltech.qt.xml and com.trolltech.qt.network libraries are
+   implemented.
+
+ - A convenience class for hierarchical data models,
+   com.trolltech.qt.gui.QTreeModel class, is implemented.
+
+ - Automatic memory-management of all objects, including
+   QObjects is implemented. Qt Jambi now retains references to all
+   QObjects that have a parent().
+
+ - A light weight base class for objects that emit signals,
+   com.trolltech.qt.QSignalEmitter, is implemented.
+
+ - The com.trolltech.qt.QThread class, to be used with QObjects
+   in threads, is implemented.
+
+ - Thread affinity checking for access to QObjects to avoid miss-use,
+   is implemented.
+
+ - Improved error messaging when slots are not found, is implemented.
+
+ - It is now possible to connect signals to methods in any subclass
+   of java.lang.Object.
+
+____________________
+
+New Names:
+____________________
+
+
+ - QtObject is renamed to QtJambiObject
+
+ - QtObjectInterface is renamed to QtJambiObjectInterface
+
+____________________
+
+Fixes:
+____________________
+
+
+ - QObject.findChild() did not look recursivly.
+
+ - QModelIndex.hashCode() behaved differently from its C++
+   qHash equivalent.
+
+ - QNativePointer.createCharPointer() and
+   QNativePointer.createCharPointerPointer() would crash when null was
+   passed.
+
+ - Autoconnections between QObjects with different thread
+   affinity where not always made as queued.
+
+ - C++ objects with signals spent accumulated resources.
+
+ - C++ QThreads that were created by C++ and passed to Java would
+   crash.
+
+ - Garbage collector would often ignore expensive native objects
+   such as QImage.
+
+ - java.lang.Thread to Qt/C++ QThread would fail when 'null' was
+   passed.
+
+ - Cleanup of connections between deleted objects.
+
+ - Better exception message when 'null' is passed to connect().
+
+____________________
+
+Other Changes:
+____________________
+
+ - QNativePointer has been removed from the API and replaced with more
+   convenient overloads.
+
+ - Previously, signals were automatically instantiated if the code
+   didn't instantiate them explicitly. This functionality has been
+   removed.
+
+ - The concept of invalid QModelIndices is removed;'null' is used instead
+
+ - Qt Jambi beta is now based on the 01.01.2007 snapshot of the
+   upcoming Qt 4.3 version. Users of the Qt Jambi generator will not
+   be able to compile Qt Jambi generated code against Qt 4.2, but will
+   have to use a Qt 4.3 snapshot, more recent than 01.01.2007. Because
+   our binary compatibility rules only apply to actual release, not
+   snapshots, users may experience some problems when using a
+   different snapshot.
+
+
+
+************************************************************************
+Qt Designer
+************************************************************************
+
+____________________
+
+New Implementations:
+____________________
+
+
+ - Language and Custom widget plugins for Jambi:
+
+   Qt Jambi language plugin is implemented. It introduces Java syntax for
+   signals / slots, enums and resources as well as providing support
+   for custom widgets.
+
+ - The com.trolltech.qt.designer.QUiLoader is implemented, and can
+   load .jui files directly.
+
+____________________
+
+Other Changes:
+____________________
+
+
+ - The user interface format has been changed from .ui to .jui and is now
+   based on Java syntax rather than C++ syntax. The Qt Jambi generator
+   has an option for converting between the two formats, and Juic
+   has been updated to only accept .jui files.
+
+
+
+
+************************************************************************
+Juic
+************************************************************************
+
+____________________
+
+Fixes:
+____________________
+
+
+ - Juic now processes .jui files instead of .ui files.
+
+ - Juic would not update existing single files unless the
+   "force" option (-a) was used.
+
+ - Juic would fail when processing a single file without the
+   "-d [path]" option.
+
+ - Now the generated code uses proper unicode.
+
+
+
+************************************************************************
+Qt Jambi Generator
+************************************************************************
+
+____________________
+
+New Implementations:
+____________________
+
+ - A "remove-argument" tag for removing arguments from a
+   function call is implemented.
+
+ - A "--convert-to-jui=[juiFileName]" command line option is implemented.
+
+ - Support for C++ signatures containing jobject is implemented.
+
+ - Support for handling polymorphic types without meta
+   information, like QStyleOption and QEvent, using the type system is
+   implemented.
+
+ - Support for code templates in the type system for reuse
+   of injected code snippets, using the "template" tag is implemented.
+
+ - A "remove-default-expression" tag for the typesystem is implemented.
+
+ - A "modify-argument" tag for the typesystem is implemented.
+
+____________________
+
+Fixes:
+____________________
+
+ - C++ classes with multiple inner classes was not mapped properly.
+
+ - Memory leak in the generated code for value types with virtual
+   destructors
+
+ - Memory leak in the generated code for types without virtual
+   destructors
+
+ - Specifying global enums in the typesystem would crash.
+
+ - Arguments would some times loose their C++ name and be named
+   argX instead.
+
+ - Calling convetion of native functions according to JNI
+   specifications.
+
+ - Conversions of classes with multiple inheritance would sometimes
+   fail.
+
+____________________
+
+Other Changes:
+____________________
+
+ - Enums no longer support the "package" attribute in the
+   typesystem.
+
+ - All generated classes are now labelled with the
+   com.trolltech.qt.QtJambiGeneratedClass annotation.
+
+
+
+************************************************************************
+Qt Jambi Eclipse Integration
+************************************************************************
+
+____________________
+
+New Implementations:
+____________________
+
+ - All the new Qt Designer features are implemented.
+
+ - Wizards for Qt Jambi projects complete with code
+   templates and correct class path settings, are implemented.
+
+ - Qt Jambi perspective with all Qt Designer views is implemented.
+
+ - Global preferences for Qt Jambi which affect all
+   projects, are implemented.
+
+ - A menu option to preview forms in different styles
+   as they are being developed, is implemented.
+
+ - The signals and slots editor is implemented
+
+____________________
+
+Other Changes:
+____________________
+
+ - Error reporting when running juic on forms, is improved.
+
+
+
+************************************************************************
+Examples and Demos
+************************************************************************
+
+____________________
+
+New Examples:
+____________________
+
+ - Generator, illustrating how to use the Qt Jambi Generator.
+
+ - Dom Bookmarks, illustrating how to use Qt's DOM-based XML API.
+
+ - Fridge Magnets, illustrating how to supply more than one type of
+   MIME-encoded data with a drag and drop operation.
+
+ - Menus, illustrating how menus can be used in a main window
+   application.
+
+ - Screenshot, illustrating how to take a screenshot of the desktop
+   using QApplication and QDesktopWidget.
+
+ - Shaped Clock, illustrating how to apply a widget mask to a
+   top-level widget to produce a shaped window.
+
+ - Style Sheet, illustrating how to use style sheets.
+
+ - Tree Model, illustrating how to implement hierarchical data models.
+
+ - Chat, illustrating how to implement a peer-to-peer chat client.
+
+____________________
+
+New Demos:
+____________________
+
+ - Path Stroke shows Qt's built-in dash patterns and shows how custom
+   patterns can be used to extend the range of available patterns.

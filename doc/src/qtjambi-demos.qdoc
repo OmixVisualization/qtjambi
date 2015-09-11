@@ -1,0 +1,59 @@
+/*!
+    \page qtjambi-demos.html
+    \title Qt Jambi Demonstrations
+
+    This is the list of demonstrations in Qt Jambi's \c demos
+    directory.  These are larger and more complicated programs than
+    the \l{Qt Jambi Examples} and are used to highlight certain
+    features of Qt Jambi.
+
+    \section1 Painting
+
+    \list
+    \o \l {Vector Deformation} demonstrates effects that are made
+       possible with a vector-oriented paint engine.
+    \o \l {Path Stroking} shows Qt Jambi's built-in dash patterns
+       and shows how custom patterns can be used to extend the range of
+       available patterns.
+    \endlist
+
+    \section1 Item Views
+    \list
+    \o \l{Spreadsheet} demonstrates the use of a table view as a
+         spreadsheet, using custom delegates to render each item
+         according to the type of data it contains.
+    \endlist
+
+    \section1 Rich Text
+
+    \list
+    \o \l {Text Edit} shows Qt Jambi's rich text editing features and provides
+       an environment for experimenting with them.
+    \endlist
+
+    \section1 Main Window
+
+    \list
+    \o \l {Image Viewer} shows how Qt Jambi can be used to make an
+       application with standard GUI features such as menus, tool bars,
+       and dock windows.
+    \endlist
+
+    \section1 Graphics View
+    \list
+    \o \l {40000 Chips} shows how to visualize a huge scene with
+          40000 chip items using Graphics View.
+    \endlist
+
+    \section1 Network
+    \list
+    \o \l {Simple HTTP Server} shows how to create a http server by
+          inheriting QTcpServer.
+    \endlist
+
+    \section1 Phonon
+    \list
+    \o \l {Media Player} demonstrates how the Phonon Module can 
+          be used to implement a basic media player application.
+    \endlist
+*/

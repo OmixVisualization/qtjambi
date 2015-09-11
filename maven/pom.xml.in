@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>net.sf.qtjambi</groupId>
+    <artifactId>QtJambiMavenPluginParent</artifactId>
+    <packaging>pom</packaging>
+    <version>%QTJAMBI_VERSION%</version>
+    <name>QtJambiMavenPluginParent</name>
+    <url>http://maven.apache.org</url>
+
+    <modules>
+        <!-- maven plugin project -->
+        <module>plugin</module>
+
+        <!-- qt resources ( binaries and libraries for misc tools ) -->
+        <module>resources-win32</module>
+        <module>resources-win64</module>
+        <module>resources-linux32</module>
+        <module>resources-linux64</module>
+	<!-- missing that project pom !! <module>resources-mac32</module> -->
+
+        <!-- this project is the main library what applications should use.
+        It handles dependency on qtjambi jars for each platform -->
+        <module>qtjambi</module>
+
+        <!-- simple example qtjambi app using mavenized qtjambi -->
+        <module>simpleTestingApp</module>
+    </modules>
+
+
+
+</project>

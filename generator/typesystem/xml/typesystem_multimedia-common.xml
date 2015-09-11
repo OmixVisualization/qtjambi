@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<typesystem>
+    <rejection class="QAbstractAudioBuffer"/>
+    <namespace-type name="QAudio" target-type="class">
+        <include file-name="qaudio.h" location="global"/>
+    </namespace-type>
+    <namespace-type name="QMultimedia" target-type="class">
+    </namespace-type>
+    <namespace-type name="QMediaMetaData" target-type="class">
+    </namespace-type>
+
+    <enum-type name="QAudio::Error"/>
+    <enum-type name="QAudio::Mode"/>
+    <enum-type name="QAudio::State"/>
+    <enum-type name="QMultimedia::AvailabilityStatus"/>
+    <enum-type name="QMultimedia::EncodingMode"/>
+    <enum-type name="QMultimedia::EncodingQuality"/>
+    <enum-type name="QMultimedia::SupportEstimate"/>
+    <enum-type name="QVideoFrame::FieldType"/>
+    <enum-type name="QVideoFrame::PixelFormat"/>
+    <enum-type name="QAbstractVideoBuffer::HandleType"/>
+    <enum-type name="QAbstractVideoBuffer::MapMode"/>
+    <enum-type name="QAbstractVideoSurface::Error"/>
+    <enum-type name="QAudioFormat::Endian"/>
+    <enum-type name="QAudioFormat::SampleType"/>
+    <enum-type name="QVideoSurfaceFormat::Direction"/>
+    <enum-type name="QVideoSurfaceFormat::YCbCrColorSpace"/>
+    <enum-type name="QAudioDecoder::Error"/>
+    <enum-type name="QAudioDecoder::State"/>
+    <enum-type name="QCamera::CaptureMode" flags="QCamera::CaptureModes"/>
+    <enum-type name="QCamera::Error"/>
+    <enum-type name="QCamera::LockChangeReason"/>
+    <enum-type name="QCamera::LockStatus"/>
+    <enum-type name="QCamera::LockType" flags="QCamera::LockTypes"/>
+    <enum-type name="QCamera::State"/>
+    <enum-type name="QCamera::Status"/>
+    <enum-type name="QCamera::Position"/>
+    <enum-type name="QCameraExposure::ExposureMode"/>
+    <enum-type name="QCameraExposure::FlashMode" flags="QCameraExposure::FlashModes"/>
+    <enum-type name="QCameraExposure::MeteringMode"/>
+    <enum-type name="QCameraExposureControl::ExposureParameter"/>
+    <enum-type name="QCameraFeedbackControl::EventType"/>
+    <enum-type name="QCameraFocus::FocusMode" flags="QCameraFocus::FocusModes"/>
+    <enum-type name="QCameraFocus::FocusPointMode"/>
+    <enum-type name="QCameraFocusZone::FocusZoneStatus"/>
+    <enum-type name="QCameraImageCapture::CaptureDestination" flags="QCameraImageCapture::CaptureDestinations"/>
+    <enum-type name="QCameraImageCapture::DriveMode"/>
+    <enum-type name="QCameraImageCapture::Error"/>
+    <enum-type name="QCameraImageProcessing::WhiteBalanceMode"/>
+	<enum-type name="QCameraImageProcessing::ColorFilter"/>
+    <enum-type name="QCameraImageProcessingControl::ProcessingParameter"/>
+    <enum-type name="QCameraViewfinderSettingsControl::ViewfinderParameter"/>
+    <enum-type name="QMediaPlayer::Error"/>
+    <enum-type name="QMediaPlayer::Flag" flags="QMediaPlayer::Flags"/>
+    <enum-type name="QMediaPlayer::MediaStatus"/>
+    <enum-type name="QMediaPlayer::State"/>
+    <enum-type name="QMediaPlaylist::Error"/>
+    <enum-type name="QMediaPlaylist::PlaybackMode"/>
+    <enum-type name="QMediaRecorder::Error"/>
+    <enum-type name="QMediaRecorder::State"/>
+    <enum-type name="QMediaRecorder::Status"/>
+    <enum-type name="QMediaStreamsControl::StreamType"/>
+    <enum-type name="QRadioData::Error"/>
+    <enum-type name="QRadioData::ProgramType"/>
+    <enum-type name="QRadioTuner::Band"/>
+    <enum-type name="QRadioTuner::Error"/>
+    <enum-type name="QRadioTuner::SearchMode"/>
+    <enum-type name="QRadioTuner::State"/>
+    <enum-type name="QRadioTuner::StereoMode"/>
+    <enum-type name="QSound::Loop"/>
+    <enum-type name="QSoundEffect::Loop"/>
+    <enum-type name="QSoundEffect::Status"/>
+    <enum-type name="QCameraControl::PropertyChangeType"/>
+    <enum-type name="QMediaServiceProviderHint::Feature" flags="QMediaServiceProviderHint::Features"/>
+    <enum-type name="QMediaServiceProviderHint::Type"/>
+
+    <value-type name="QVideoFrame">
+	<modify-function signature="operator=(const QVideoFrame &amp;)" remove="all"/>
+	<!--modify-function signature="operator!=(const QVideoFrame &amp;)const" remove="all"/-->
+        <modify-function signature="bits()" remove="all" />
+		<modify-function signature="bits(int)" remove="all" />
+		<modify-function signature="bits(int)const" remove="all" />
+    </value-type>
+
+    <value-type name="QAudioBuffer">
+	<modify-function signature="operator=(const QAudioBuffer &amp;)" remove="all"/>
+	<!--modify-function signature="operator!=(const QAudioBuffer &amp;)const" remove="all"/-->
+	<modify-function signature="constData() const" remove="all"/>
+	<modify-function signature="data() const" remove="all"/>
+	<modify-function signature="data()" remove="all"/>
+    </value-type>
+    <!--value-type name="QAudioBuffer::QtJambiS8S" java-name="S8S"/>
+    <value-type name="QAudioBuffer::QtJambiS16S" java-name="S16S"/>
+    <value-type name="QAudioBuffer::QtJambiS32F" java-name="S32F"/>
+    <value-type name="QAudioBuffer::S8S" generate="no"/>
+    <value-type name="QAudioBuffer::S16S" generate="no"/>
+    <value-type name="QAudioBuffer::S32F" generate="no"/-->
+
+    <object-type name="QAbstractVideoBuffer">
+		<modify-function signature="operator=(const QAbstractVideoBuffer &amp;)" remove="all"/>
+		<modify-function signature="mapPlanes(QAbstractVideoBuffer::MapMode, int *, Array, Array)" remove="all"/>
+		<!--modify-function signature="operator!=(const QAbstractVideoBuffer &amp;)const" remove="all"/-->
+    </object-type>
+    <value-type name="QAudioDeviceInfo">
+	<modify-function signature="operator=(const QAudioDeviceInfo &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QAudioDeviceInfo &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QAudioFormat">
+	<modify-function signature="operator=(const QAudioFormat &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QAudioFormat &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QVideoSurfaceFormat">
+	<modify-function signature="operator=(const QVideoSurfaceFormat &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QVideoSurfaceFormat &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QAudioEncoderSettings">
+	<modify-function signature="operator=(const QAudioEncoderSettings &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QAudioEncoderSettings &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QCameraFocusZone">
+	<modify-function signature="operator=(const QCameraFocusZone &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QCameraFocusZone &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QImageEncoderSettings">
+	<modify-function signature="operator=(const QImageEncoderSettings &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QImageEncoderSettings &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QMediaContent">
+	<modify-function signature="operator=(const QMediaContent &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QMediaContent &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QMediaResource">
+	<modify-function signature="operator=(const QMediaResource &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QMediaResource &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QMediaTimeInterval">
+	<!--modify-function signature="operator=(const QMediaTimeInterval &amp;)" remove="all"/-->
+	<!--modify-function signature="operator!=(const QMediaTimeInterval &amp;)const" remove="all"/-->
+    </value-type>
+    <value-type name="QMediaTimeRange">
+		<modify-function signature="operator=(const QMediaTimeInterval&amp;)" remove="all"/>
+		<modify-function signature="operator=(const QMediaTimeRange &amp;)" remove="all"/>
+		<modify-function signature="operator+=(const QMediaTimeInterval&amp;)" remove="all"/>
+		<modify-function signature="operator+=(const QMediaTimeRange &amp;)" remove="all"/>
+		<modify-function signature="operator-=(const QMediaTimeInterval&amp;)" remove="all"/>
+		<modify-function signature="operator-=(const QMediaTimeRange &amp;)" remove="all"/>
+	<!--modify-function signature="operator!=(const QMediaTimeRange &amp;)const" remove="all"/-->
+    </value-type>
+    <value-type name="QVideoEncoderSettings">
+	<modify-function signature="operator=(const QVideoEncoderSettings &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QVideoEncoderSettings &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QMediaServiceProviderHint">
+	<modify-function signature="operator=(const QMediaServiceProviderHint &amp;)" remove="all"/>
+	<modify-function signature="operator!=(const QMediaServiceProviderHint &amp;)const" remove="all"/>
+    </value-type>
+    <value-type name="QCameraViewfinderSettings">
+    <modify-function signature="operator=(const QCameraViewfinderSettings &amp;)" remove="all"/>
+	</value-type>
+	<value-type name="QCamera::FrameRateRange">
+	</value-type>
+	
+    <object-type name="QAbstractVideoSurface"/>
+    <object-type name="QAudioOutput"/>
+    <object-type name="QAudioDecoder">
+		<modify-function signature="setSourceDevice(QIODevice*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+	</object-type>
+    <object-type name="QAudioDecoderControl"/>
+    <object-type name="QAudioEncoderSettingsControl"/>
+    <object-type name="QAudioInput"/>
+    <object-type name="QAudioInputSelectorControl"/>
+    <object-type name="QAudioOutputSelectorControl"/>
+    <object-type name="QAudioProbe">
+		<modify-function signature="setSource(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setSource(QMediaRecorder*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+	</object-type>
+    <object-type name="QAudioRecorder"/>
+    <object-type name="QCamera">
+		<modify-function signature="lockStatusChanged(QCamera::LockType, QCamera::LockStatus, QCamera::LockChangeReason)" rename="lockStatusChangedWithType"/>
+		<modify-function signature="setViewfinder(QAbstractVideoSurface*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setViewfinder(QGraphicsVideoItem*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setViewfinder(QVideoWidget*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <value-type name="QCameraInfo">
+		<modify-function signature="operator=(const QCameraInfo&amp;)" remove="all"/>
+    </value-type>
+    <object-type name="QCameraCaptureBufferFormatControl"/>
+    <object-type name="QCameraCaptureDestinationControl"/>
+    <object-type name="QCameraControl"/>
+    <object-type name="QCameraInfoControl"/>
+    <object-type name="QCameraExposureControl"/>
+    <object-type name="QCameraFeedbackControl"/>
+    <object-type name="QCameraFlashControl"/>
+    <object-type name="QCameraExposure"/>
+    <object-type name="QCameraFocus"/>
+    <object-type name="QCameraFocusControl"/>
+    <object-type name="QCameraImageCapture">
+		<modify-function signature="setMediaObject(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QCameraImageCaptureControl"/>
+    <object-type name="QCameraImageProcessing"/>
+    <object-type name="QCameraImageProcessingControl"/>
+    <object-type name="QCameraLocksControl"/>
+    <object-type name="QCameraViewfinderSettingsControl"/>
+    <object-type name="QCameraZoomControl"/>
+    <object-type name="QImageEncoderControl"/>
+    <object-type name="QMediaAudioProbeControl"/>
+    <object-type name="QMediaAvailabilityControl"/>
+    <object-type name="QMediaContainerControl"/>
+    <object-type name="QMediaControl"/>
+    <object-type name="QMediaGaplessPlaybackControl"/>
+    <object-type name="QMediaNetworkAccessControl"/>
+    <object-type name="QMediaObject">
+	<modify-function signature="availabilityChanged(QMultimedia::AvailabilityStatus)" rename="availabilityStatusChanged"/>
+	<modify-function signature="metaDataChanged(const QString &amp;, const QVariant &amp;)" rename="metaDataKeyValueChanged"/>
+    </object-type>
+    <object-type name="QMediaPlayer">
+		<modify-function signature="setVideoOutput(QGraphicsVideoItem*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setVideoOutput(QAbstractVideoSurface*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setVideoOutput(QVideoWidget*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setPlaylist(QMediaPlaylist*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setMedia(QMediaContent,QIODevice*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QMediaPlayerControl"/>
+    <object-type name="QMediaPlaylist">
+		<modify-function signature="setMediaObject(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QMediaRecorder">
+		<modify-function signature="availabilityChanged(QMultimedia::AvailabilityStatus)" rename="availabilityStatusChanged"/>
+		<modify-function signature="metaDataChanged(const QString &amp;, const QVariant &amp;)" rename="metaDataKeyValueChanged"/>
+		<modify-function signature="setMediaObject(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QMediaRecorderControl"/>
+    <object-type name="QMediaService"/>
+    <object-type name="QMediaStreamsControl"/>
+    <object-type name="QMediaVideoProbeControl"/>
+    <object-type name="QMetaDataReaderControl">
+	<modify-function signature="metaDataChanged(const QString &amp;, const QVariant &amp;)" rename="metaDataKeyValueChanged"/>
+    </object-type>
+    <object-type name="QMetaDataWriterControl">
+	<modify-function signature="metaDataChanged(const QString &amp;, const QVariant &amp;)" rename="metaDataKeyValueChanged"/>
+    </object-type>
+    <object-type name="QRadioData">
+		<modify-function signature="setMediaObject(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QRadioDataControl"/>
+    <object-type name="QRadioTuner"/>
+    <object-type name="QRadioTunerControl"/>
+    <object-type name="QSound"/>
+    <object-type name="QSoundEffect"/>
+    <object-type name="QVideoDeviceSelectorControl">
+	<modify-function signature="selectedDeviceChanged(int)" rename="selectedDeviceChangedByIndex"/>
+	<modify-function signature="selectedDeviceChanged(const QString &amp;)" rename="selectedDeviceChangedByName"/>
+    </object-type>
+    <object-type name="QVideoEncoderSettingsControl"/>
+    <object-type name="QVideoProbe">
+		<modify-function signature="setSource(QMediaObject*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setSource(QMediaRecorder*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+	</object-type>
+    <object-type name="QVideoRendererControl"/>
+    <object-type name="QVideoWindowControl"/>
+    <object-type name="QMediaServiceProviderPlugin"/>
+
+    <interface-type name="QMediaBindableInterface" java-name="QMediaBindable"/>
+    <interface-type name="QMediaServiceFeaturesInterface" java-name="QMediaServiceFeatures"/>
+    <interface-type name="QMediaServiceSupportedDevicesInterface" java-name="QMediaServiceSupportedDevices"/>
+    <interface-type name="QMediaServiceSupportedFormatsInterface" java-name="QMediaServiceSupportedFormats"/>
+    <interface-type name="QMediaServiceProviderFactoryInterface" java-name="QMediaServiceProviderFactory"/>
+    <interface-type name="QMediaServiceCameraInfoInterface" java-name="QMediaServiceCameraInfo"/>
+
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QCameraFocusZone' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaContent' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaServiceProviderHint' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QAudioDeviceInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVideoEncoderSettings' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVideoFrame' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaTimeInterval' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaResource' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMediaTimeRange' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QImageEncoderSettings' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QAudioEncoderSettings' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QCamera$FrameRateRange' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+</typesystem>

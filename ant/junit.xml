@@ -1,0 +1,90 @@
+<project default="junit" basedir="..">
+
+    <import file="../build.xml"/>
+
+    <property name="MailLogger.mailhost" value="smtp.trolltech.com" />
+    <property name="MailLogger.from" value="[ant-mail]" />
+    <property name="MailLogger.failure.notify" value="true" />
+    <property name="MailLogger.success.notify" value="true" />
+    <property name="MailLogger.failure.to" value="hfroilan@trolltech.com" />
+    <property name="MailLogger.success.to" value="hfroilan@trolltech.com" />
+
+    <property name="reportDir" value="${outputDir}/reports" />
+    <property name="htmlDir"   value="${outputDir}/www" />
+
+    <target name="clean.report"
+            description="Clean report directory.">
+         <delete dir="${reportDir}" />
+         <mkdir dir="${reportDir}" />
+         <delete dir="${htmlDir}" />
+    </target>
+
+    <target name="generator.autotests"
+            depends="qtjambi.init"
+            description="Run the generator on the autotests.">
+        <mkdir dir="${outputDir}/autotestlib"/>
+    <generator dir="${outputDir}/autotestlib"
+               debugTools="${qtjambi.debug-tools}"
+               header="${sourceDir}/autotestlib/global.h"
+               typesystem="${sourceDir}/autotestlib/build.txt"
+               outputDirectory="${outputDir}"/>
+    </target>
+
+    <target name="compile.autotests"
+            depends="qtjambi.init"
+            description="Compile Java and c++ files for autotests.">
+        <mkdir dir="${outputDir}/autotestlib"/>
+        <qmake dir="${outputDir}/autotestlib/"
+               recursive="true"
+               config="${qtjambi.configuration}"
+               pro="${sourceDir}/autotestlib/autotestlib.pro"/>
+    <make dir="${outputDir}/autotestlib" silent="true"/>
+
+        <!-- Compiling to the outputDir crashes the java compiler -->
+        <mkdir dir="${outputDir}/auto"/>
+        <javac destdir="${outputDir}/auto" debug="true" source="1.5" target="1.5">
+            <src path="${sourceDir}"/>
+            <src path="${outputDir}"/>
+            <include name="org/qtjambi/autotests/**.java" />
+        </javac>
+    </target>
+
+    <target name="autotests"
+            depends="generator.autotests, compile.autotests" />
+
+    <target name="test"
+            depends="clean.report"
+            description="JUnit test with web report">
+        <junit printsummary="yes"
+               haltonfailure="false"
+               timeout="160000"
+               tempdir="${outputDir}">
+
+            <jvmarg value="-Djava.library.path=${qtLib}:${jambiLib}"/>
+        <jvmarg value="-Dorg.qtjambi.qt.implicit-loading=false" />
+
+            <classpath>
+                <pathelement location="${outputDir}" />
+                <pathelement location="${outputDir}/auto" />
+                <pathelement location="${sourceDir}" />
+            </classpath>
+            <formatter type="xml"/>
+            <batchtest fork="true" todir="${reportDir}">
+                <fileset dir="${sourceDir}">
+                    <include name="**/autotests//Test*.java"/>
+                </fileset>
+            </batchtest>
+
+        </junit>
+
+        <junitreport todir="${reportDir}">
+            <fileset dir="${reportDir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${htmlDir}"/>
+        </junitreport>
+    </target>
+
+    <target name="junit"
+            depends="generator.autotests, compile.autotests, test" />
+</project>

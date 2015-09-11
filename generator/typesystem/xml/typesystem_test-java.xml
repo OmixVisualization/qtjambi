@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.test" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtTest");
+    </inject-code>
+</typesystem>

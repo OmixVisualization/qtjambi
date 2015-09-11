@@ -1,0 +1,213 @@
+<?xml version="1.0"?>
+<typesystem>
+  <rejection class="QJSEngine::FunctionWithArgSignature"/>
+  <rejection class="QJSEngine::FunctionSignature"/>
+    <rejection class="QJSEngine" function-name="fromScriptValue"/>
+    <rejection class="QJSEngine" function-name="toScriptValue"/>
+    <rejection class="QJSEngine" function-name="newQMetaObject"/>
+    <rejection class="QJSEngine" function-name="registerCustomType"/>
+    <rejection class="QJSEngine" function-name="scriptValueFromQMetaObject"/>
+    <rejection class="QJSEngine" function-name="newFunction"/>
+    <!-- objectById is marked as internal API and would expose memory pointer in QtJambi API -->
+    <rejection class="QJSEngine" function-name="objectById"/>
+    <rejection class="QJSValue" function-name="toQMetaObject"/>
+    <rejection class="QJSValueList"/>
+    <rejection class="QJSValue::QJSValueList"/>
+    <rejection class="QQmlInfo"/>
+    <rejection class="QQmlListProperty"/>
+    <rejection class="QtQml" function-name="qmlInfo"/>
+    <rejection class="QQmlV4Function"/>
+
+    <enum-type name="QQmlIncubator::IncubationMode"/>
+    <enum-type name="QQmlIncubator::Status"/>
+    <enum-type name="QQmlProperty::Type"/>
+    <enum-type name="QQmlProperty::PropertyTypeCategory"/>
+    <enum-type name="QJSValue::SpecialValue"/>
+    <enum-type name="QQmlComponent::CompilationMode"/>
+    <enum-type name="QQmlComponent::Status"/>
+    <enum-type name="QQmlEngine::ObjectOwnership"/>
+    <!--enum-type name="QQmlAbstractUrlInterceptor::DataType"/-->
+    <enum-type name="QQmlImageProviderBase::Flag" flags="QQmlImageProviderBase::Flags"/>
+    <enum-type name="QQmlImageProviderBase::ImageType"/>
+    <object-type name="QQmlContext">
+		<modify-function signature="nameForObject(QObject*) const">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setContextObject(QObject*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setContextProperty(QString,QObject*)">
+			<modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+    </object-type>
+  <value-type name="QQmlScriptString">
+	<modify-function signature="operator= ( const QQmlScriptString &amp; )" remove="all"/>
+  </value-type>
+    <value-type name="QJSValue">
+		<modify-function signature="QJSValue(uint)" remove="all"/>
+		<modify-function signature="QJSValue(const QLatin1String &amp;)" remove="all"/>
+		<modify-function signature="QJSValue(const char * )" remove="all"/>
+		<modify-function signature="operator= ( const QJSValue &amp; )" remove="all"/>
+		<modify-function signature="toUInt() const" remove="all"/>
+		<modify-function signature="toBool () const" rename="toBoolean"/>
+		<modify-function signature="isBool () const" rename="isBoolean"/>
+		<modify-function signature="isVariant () const" remove="all"/>
+		<modify-function signature="toNumber () const" rename="toDouble"/>
+		<modify-function signature="toVariant () const" rename="toObject"/>
+    </value-type>
+    <value-type name="QQmlError">
+		<modify-function signature="operator=(const QQmlError &amp;)" remove="all"/>
+		<modify-function signature="setObject(QObject*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+    </value-type>
+    <object-type name="QJSValueIterator">
+		<modify-function signature="operator= ( QJSValue &amp; )" remove="all"/>
+    </object-type>
+    <namespace-type name="QtQml">
+    </namespace-type>
+    <object-type name="QJSEngine">
+    </object-type>
+    <object-type name="QQmlEngine">
+		<modify-function signature="addImageProvider(QString,QQmlImageProviderBase*)">
+			<modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setIncubationController(QQmlIncubationController*)">
+			<modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIncubationController"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setNetworkAccessManagerFactory(QQmlNetworkAccessManagerFactory*)">
+			<modify-argument index="1">
+                <reference-count action="set" variable-name="__rcNetworkAccessManagerFactory"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setContextForObject(QObject*,QQmlContext*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setObjectOwnership(QObject*,QQmlEngine::ObjectOwnership)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<inject-code class="java" position="end">
+                <argument-map index="1" meta-name="%1"/>
+				<argument-map index="2" meta-name="%2"/>
+                if (%1 != null &amp;&amp; %2 != null){
+					switch(%2){
+					case CppOwnership: 
+						if(%1.parent()==null){
+							%1.setJavaOwnership();
+						}
+					default:
+						%1.disableGarbageCollection();
+					}
+				}
+            </inject-code>
+		</modify-function>
+    </object-type>
+    <object-type name="QQmlApplicationEngine">
+    </object-type>
+    <object-type name="QQmlExtensionPlugin">
+    </object-type>
+    <object-type name="QQmlComponent">
+    </object-type>
+    <object-type name="QQmlExpression">
+    </object-type>
+    <interface-type name="QQmlImageProviderBase">
+    </interface-type>
+    <object-type name="QQmlIncubationController">
+	<modify-function signature="operator=(const QQmlIncubationController &amp;)" remove="all"/>
+    </object-type>
+    <object-type name="QQmlIncubator">
+		<modify-function signature="operator=(const QQmlIncubator &amp;)" remove="all"/>
+		<modify-function signature="setInitialState(QObject*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+    </object-type>
+    <!--interface-type name="QQmlAbstractUrlInterceptor">
+    </interface-type-->
+    <value-type name="QQmlListReference">
+		<modify-function signature="operator=(const QQmlListReference &amp;)" remove="all"/>
+	</value-type>
+
+    <interface-type name="QQmlNetworkAccessManagerFactory">
+		<modify-function signature="create(QObject *)">
+			<modify-argument index="0">
+				<define-ownership class="shell" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</interface-type>
+
+    <interface-type name="QQmlParserStatus"/>
+
+    <interface-type name="QQmlTypesExtensionInterface"/>
+    <interface-type name="QQmlExtensionInterface"/>
+
+    <value-type name="QQmlProperty">
+		<modify-function signature="operator=(const QQmlProperty &amp;)" access="private"/>
+		<modify-function signature="connectNotifySignal(QObject *, int) const" remove="all"/>
+	</value-type>
+
+    <object-type name="QQmlPropertyMap">
+	<modify-function signature="operator[](const QString &amp;) const" remove="all"/>
+        <modify-function signature="operator[](const QString &amp;)" remove="all"/><!-- duplicate with non-const version -->
+    </object-type>
+
+    <object-type name="QQmlFileSelector">
+		<modify-function signature="setExtraSelectors(QStringList&lt;QString&gt; &amp;)" remove="all"/>
+		<modify-function signature="setSelector(QFileSelector*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcSelector" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+	
+	<!--<object-type name="QQmlAbstractUrlInterceptor">
+    </object-type>-->
+
+    <interface-type name="QQmlPropertyValueSource"/>
+
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QQmlContextInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScriptProgram' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QJSValueList' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QQmlScriptString' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: QSysInfo::BigEndian in QAudioFormat::Endian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unmatched enum QSysInfo::BigEndian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: QSysInfo::LittleEndian in QAudioFormat::Endian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unmatched enum QSysInfo::LittleEndian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QQmlPropertyMap::QQmlPropertyMap', unmatched parameter type 'DerivedType*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QMetaObject*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QMetaMethod*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QMetaProperty*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQmlComponentAttached*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQmlV8*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QV8*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQmlCompiledData*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQmlAbstractUrlInterceptor*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQmlContextData*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*bool volatile*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QJSValue::QJSValue', unmatched parameter type 'QScriptPassPointer&lt;QJSValuePrivate>'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQmlV4Function*'"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QV4::ExecutionEngine*'"/>
+</typesystem>

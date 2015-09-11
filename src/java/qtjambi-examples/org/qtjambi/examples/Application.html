@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/application.qdoc -->
+<head>
+  <title>Application Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Application Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Application example shows how to implement a standard GUI application with menus, toolbars, and a status bar. The example itself is a simple text editor program built around QTextEdit.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/application.png" alt="Screenshot of the Application example" /></p><p>Nearly all of the code for the Application example is in the <tt>MainWindow</tt> class, which inherits QMainWindow. QMainWindow provides the framework for windows that have menus, toolbars, dock windows, and a status bar. The application provides <b>File</b>, <b>Edit</b>, and <b>Help</b> entries in the menu bar, with the following popup menus:</p>
+<p align="center"><img src="classpath:org/qtjambi/images/application-menus.png" alt="The Application example's menu system" /></p><p>The status bar at the bottom of the main window shows a description of the menu item or toolbar button under the cursor.</p>
+<p>To keep the example simple, recently opened files aren't shown in the <b>File</b> menu, even though this feature is desired in 90% of applications. The Recent Files example shows how to implement this. Furthermore, this example can only load one file at a time. The SDI and MDI examples shows how to lift these restrictions.</p>
+<a name="importing-the-qt-classes"></a>
+<h2>Importing the Qt Classes</h2>
+<pre>    import org.qtjambi.qt.QVariant;
+    import org.qtjambi.qt.core.*;
+    import org.qtjambi.qt.gui.*;</pre>
+<p>We start by importing all the classes in the QtCore and QtGui modules. This saves us from the trouble of having to import every class we use individually.</p>
+<a name="application-class-implementation"></a>
+<h2>Application Class Implementation</h2>
+<p>The entire example is implemented in a single subclass of QMainWindow:</p>
+<pre>    public class Application extends QMainWindow {
+
+        private String curFile;
+        private QTextEdit textEdit;
+        private QMenu fileMenu;
+        private QMenu editMenu;
+        private QMenu helpMenu;
+
+        private QToolBar fileToolBar;
+        private QToolBar editToolBar;
+
+        private QAction newAct;
+        private QAction openAct;
+        private QAction saveAct;
+        private QAction saveAsAct;
+        private QAction exitAct;
+        private QAction cutAct;
+        private QAction copyAct;
+        private QAction pasteAct;
+        private QAction aboutAct;
+        private QAction aboutQtJambiAct;
+        private QAction aboutQtAct;
+
+        private String rsrcPath = &quot;classpath:org/qtjambi/images&quot;;</pre>
+<p>We declare various variables for widgets, menus, toolbars, and actions that will be explained later.</p>
+<p>In the constructor, we start by creating a menu bar and setting it as the menu bar for the main window:</p>
+<pre>        public Application()
+        {
+            QMenuBar menuBar = new QMenuBar();
+            setMenuBar(menuBar);</pre>
+<p>We also create a QTextEdit widget, and call setCentralWidget() to make it occupy the central area of the main window, between the toolbars and the status bar.</p>
+<p>Actions are usually reused in menus and toolbars to provide a consistent user interface. The actions used in the main window are set up before any of the standard menus, toolbars or other window elements.</p>
+<pre>            try {
+                createActions();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            createMenus();
+            createToolBars();
+            createStatusBar();</pre>
+<p>We call <tt>createActions()</tt>, <tt>createMenus()</tt>, <tt>createToolBars()</tt>, and <tt>createStatusBar()</tt>, four private methods that set up the user interface.</p>
+<pre>            textEdit.document().contentsChanged.connect(this, &quot;documentWasModified()&quot;);
+
+            setCurrentFile(&quot;&quot;);
+        }</pre>
+<p>We establish a signal-slot connection between the QTextEdit's document object and our <tt>documentWasModified()</tt> slot. Whenever the user modifies the text in the QTextEdit, we want to update the title bar to show that the file was modified.</p>
+<p>We reimplement QWidget::closeEvent() to detect when the user attempts to close the window, and warn the user about unsaved changes:</p>
+<a name="close-event-handler"></a><pre>        public void closeEvent(QCloseEvent event)
+        {
+            if (maybeSave()) {
+                writeSettings();
+                event.accept();
+            } else {
+                event.ignore();
+            }
+        }</pre>
+<p>When the user attempts to close the window, we call the private method <tt>maybeSave()</tt> to give the user the possibility to save pending changes. The method returns true if the user wants the application to close; otherwise, it returns false. In the first case, we save the user's preferences to disk and accept the close event; in the second case, we ignore the close event, meaning that the application will stay up and running as if nothing happened.</p>
+<pre>        public void newFile()
+        {
+            if (maybeSave()) {
+                textEdit.clear();
+                setCurrentFile(&quot;&quot;);
+            }
+        }</pre>
+<p>The <tt>newFile()</tt> slot is invoked when the user selects <b>File|New</b> from the menu. We call <tt>maybeSave()</tt> to save any pending changes and if the user accepts to go on, we clear the QTextEdit and call the private method <tt>setCurrentFile()</tt> to update the window title and clear the windowModified flag.</p>
+<pre>        public void open()
+        {
+            if (maybeSave()) {
+                String fileName = QFileDialog.getOpenFileName(this);
+                if (fileName.length() != 0)
+                    loadFile(fileName);
+            }
+        }</pre>
+<p>The <tt>open()</tt> slot is invoked when the user clicks <b>File|Open</b>. We pop up a QFileDialog asking the user to choose a file. If the user chooses a file (i.e&#x2e;, <tt>fileName</tt> is not an empty string), we call the private method <tt>loadFile()</tt> to actually load the file.</p>
+<pre>        public boolean save()
+        {
+            if (curFile.length() == 0) {
+                return saveAs();
+            } else {
+                return saveFile(curFile);
+            }
+        }</pre>
+<p>The <tt>save()</tt> slot is invoked when the user clicks <b>File|Save</b>. If the user hasn't provided a name for the file yet, we call <tt>saveAs()</tt>; otherwise, we call the private method <tt>saveFile()</tt> to actually save the file.</p>
+<pre>        public boolean saveAs()
+        {
+            String fileName = QFileDialog.getSaveFileName(this);
+            if (fileName.length() == 0)
+                return false;
+
+            return saveFile(fileName);
+        }</pre>
+<p>In <tt>saveAs()</tt>, we start by popping up a QFileDialog asking the user to provide a name. If the user clicks <b>Cancel</b>, the returned file name is empty, and we do nothing.</p>
+<pre>        public void about()
+        {
+            QMessageBox.about(this,
+                             tr(&quot;About Application&quot;),
+                             tr(&quot;The &lt;b&gt;Application&lt;/b&gt; example demonstrates how to &quot; +
+                                &quot;write modern GUI applications using Qt, with a menu bar, &quot; +
+                                &quot;toolbars, and a status bar.&quot;));
+        }</pre>
+<p>The application's About box is done using one statement, using the about() static method and relying on its support for an HTML subset.</p>
+<p>The tr() call around the literal string marks the string for translation. It is a good habit to call tr() on all user-visible strings, in case you later decide to translate your application to other languages. The Internationalization with Qt overview convers tr() in more detail.</p>
+<pre>        public void documentWasModified()
+        {
+            setWindowModified(textEdit.document().isModified());
+        }</pre>
+<p>The <tt>documentWasModified()</tt> slot is invoked each time the text in the QTextEdit changes because of user edits. We call QWidget.setWindowModified() to make the title bar show that the file was modified. How this is done varies on each platform.</p>
+<pre>        private void createActions()
+        {
+            newAct = new QAction(new QIcon(rsrcPath + &quot;/new.png&quot;), tr(&quot;&amp;New&quot;), this);
+            newAct.setShortcut(new QKeySequence(tr(&quot;Ctrl+N&quot;)));
+            newAct.setStatusTip(tr(&quot;Create a new file&quot;));
+            newAct.triggered.connect(this, &quot;newFile()&quot;);
+
+            openAct = new QAction(new QIcon(rsrcPath + &quot;/open.png&quot;), tr(&quot;&amp;Open...&quot;), this);
+            openAct.setShortcut(tr(&quot;Ctrl+O&quot;));
+            openAct.setStatusTip(tr(&quot;Open an existing file&quot;));
+            openAct.triggered.connect(this, &quot;open()&quot;);
+        ...
+            aboutQtAct = new QAction(tr(&quot;About Q&amp;t&quot;), this);
+            aboutQtAct.setStatusTip(tr(&quot;Show the Qt library's About box&quot;));
+            aboutQtAct.triggered.connect(QApplication.instance(), &quot;aboutQt()&quot;);</pre>
+<p>The <tt>createActions()</tt> private method, which is called from the <tt>MainWindow</tt> constructor, creates QActions. The code is very repetitive, so we show only the actions corresponding to <b>File|New</b>, <b>File|Open</b>, and <b>Help|About Qt</b>.</p>
+<p>A QAction is an object that represents one user action, such as saving a file or invoking a dialog. An action can be put in a QMenu or a QToolBar, or both, or in any other widget that reimplements QWidget::actionEvent().</p>
+<p>An action has a text that is shown in the menu, an icon, a shortcut key, a tooltip, a status tip (shown in the status bar), a &quot;What's This?&quot; text, and more. It emits a QAction.triggered() signal whenever the user invokes the action (e.g&#x2e;, by clicking the associated menu item or toolbar button). We connect this signal to a slot that performs the actual action.</p>
+<p>The code above contains one more idiom that must be explained. For some of the actions, we specify an icon as a QIcon to the QAction constructor. The QIcon constructor takes the file name of an image that it tries to load. Here, the file name starts with <tt>:</tt>. Such file names aren't ordinary file names, but rather path in the executable's stored resources. We'll come back to this when we review the <tt>application.qrc</tt> file that's part of the project.</p>
+<pre>            cutAct.setEnabled(false);
+            copyAct.setEnabled(false);
+            textEdit.copyAvailable.connect(cutAct, &quot;setEnabled(boolean)&quot;);
+            textEdit.copyAvailable.connect(copyAct, &quot;setEnabled(boolean)&quot;);
+        }</pre>
+<p>The <b>Edit|Cut</b> and <b>Edit|Copy</b> actions must be available only when the QTextEdit contains selected text. We disable them by default and connect the QTextEdit.copyAvailable() signal to the action's setEnabled() slot, ensuring that the actions are disabled when the text editor has no selection.</p>
+<pre>        private void createMenus()
+        {
+            fileMenu = menuBar().addMenu(tr(&quot;&amp;File&quot;));
+            fileMenu.addAction(newAct);
+            fileMenu.addAction(openAct);
+            fileMenu.addAction(saveAct);
+            fileMenu.addAction(saveAsAct);
+            fileMenu.addSeparator();
+            fileMenu.addAction(exitAct);
+
+            editMenu = menuBar().addMenu(tr(&quot;&amp;Edit&quot;));
+            editMenu.addAction(cutAct);
+            editMenu.addAction(copyAct);
+            editMenu.addAction(pasteAct);
+
+            menuBar().addSeparator();
+
+            helpMenu = menuBar().addMenu(tr(&quot;&amp;Help&quot;));
+            helpMenu.addAction(aboutAct);
+            helpMenu.addSeparator();
+            helpMenu.addAction(aboutQtJambiAct);
+            helpMenu.addAction(aboutQtAct);
+        }</pre>
+<p>Creating actions isn't sufficient to make them available to the user; we must also add them to the menu system. This is what <tt>createMenus()</tt> does. We create a <b>File</b>, an <b>Edit</b>, and a <b>Help</b> menu. QMainWindow.menuBar() lets us access the window's menu bar widget. We don't have to worry about creating the menu bar ourselves; the first time we call this method, the QMenuBar is created.</p>
+<p>Just before we create the <b>Help</b> menu, we call QMenuBar.addSeparator(). This has no effect for most widget styles (e.g&#x2e;, Windows and Mac OS X styles), but for Motif-based styles this makes sure that <b>Help</b> is pushed to the right side of the menu bar. Try running the application with various styles and see the results:</p>
+<pre>    application -style=windows
+    application -style=motif
+    application -style=cde</pre>
+<p>Let's now review the toolbars:</p>
+<pre>        private void createToolBars()
+        {
+            fileToolBar = addToolBar(tr(&quot;File&quot;));
+            fileToolBar.addAction(newAct);
+            fileToolBar.addAction(openAct);
+            fileToolBar.addAction(saveAct);
+
+            editToolBar = addToolBar(tr(&quot;Edit&quot;));
+            editToolBar.addAction(cutAct);
+            editToolBar.addAction(copyAct);
+            editToolBar.addAction(pasteAct);
+        }</pre>
+<p>Creating toolbars is very similar to creating menus. The same actions that we put in the menus can be reused in the toolbars.</p>
+<pre>        private void createStatusBar()
+        {
+            statusBar().showMessage(tr(&quot;Ready&quot;));
+        }</pre>
+<p>QMainWindow::statusBar() returns a pointer to the main window's QStatusBar widget. Like with QMainWindow::menuBar(), the widget is automatically created the first time the method is called.</p>
+<pre>        private boolean maybeSave()
+        {
+            if (textEdit.document().isModified()) {
+                QMessageBox.StandardButton ret = QMessageBox.warning(this, tr(&quot;Application&quot;),
+                                                                     tr(&quot;The document has been modified.\n&quot; +
+                                                                        &quot;Save your changes?&quot;),
+                                                                     new QMessageBox.StandardButtons(QMessageBox.StandardButton.Ok,
+                                                                                                     QMessageBox.StandardButton.Discard,
+                                                                                                     QMessageBox.StandardButton.Cancel));
+                if (ret == QMessageBox.StandardButton.Ok) {
+                    return save();
+                } else if (ret == QMessageBox.StandardButton.Cancel) {
+                    return false;
+                }
+            }
+            return true;
+        }</pre>
+<p>The <tt>maybeSave()</tt> method is called to save pending changes. If there are pending changes, it pops up a QMessageBox giving the user to save the document. The options are QMessageBox.Yes, QMessageBox.No, and QMessageBox.Cancel. The <b>Yes</b> button is made the default button (the button that is invoked when the user presses <b>Return</b>) using the QMessageBox.Default flag; the <b>Cancel</b> button is made the escape button (the button that is invoked when the user presses <b>Esc</b>) using the QMessageBox.Escape flag.</p>
+<p>The <tt>maybeSave()</tt> method returns <tt>true</tt> in all cases, except when the user clicks <b>Cancel</b>. The caller must check the return value and stop whatever it was doing if the return value is <tt>false</tt>.</p>
+<pre>        public void loadFile(String fileName)
+        {
+            QFile file = new QFile(fileName);
+            if (!file.open(new QFile.OpenMode(QFile.OpenModeFlag.ReadOnly, QFile.OpenModeFlag.Text))) {
+                QMessageBox.warning(this, tr(&quot;Application&quot;), String.format(tr(&quot;Cannot read file %1$s:\n%2$s.&quot;), fileName, file.errorString()));
+                return;
+            }
+            QTextStream in = new QTextStream(file);
+            QApplication.setOverrideCursor(new QCursor(Qt.CursorShape.WaitCursor));
+            textEdit.setPlainText(in.readAll());
+            QApplication.restoreOverrideCursor();
+
+            setCurrentFile(fileName);
+            statusBar().showMessage(tr(&quot;File loaded&quot;), 2000);
+        }</pre>
+<p>In <tt>loadFile()</tt>, we use QFile and QTextStream to read in the data. The QFile object provides access to the bytes stored in a file.</p>
+<p>We start by opening the file in read-only mode. The QFile::Text flag indicates that the file is a text file, not a binary file. On Unix and Mac OS X, this makes no difference, but on Windows, it ensures that the &quot;\r\n&quot; end-of-line sequence is converted to &quot;\n&quot; when reading.</p>
+<p>If we successfully opened the file, we use a QTextStream object to read in the data. QTextStream automatically converts the 8-bit data into a Unicode QString and supports various encodings. If no encoding is specified, QTextStream assumes the file is written using the system's default 8-bit encoding (for example, Latin-1; see QTextCodec.codecForLocale() for details).</p>
+<p>Since the call to QTextStream.readAll() might take some time, we set the cursor to be Qt.WaitCursor for the entire application while it goes on.</p>
+<p>At the end, we call the private <tt>setCurrentFile()</tt> method, which we'll cover in a moment, and we display the string &quot;File loaded&quot; in the status bar for 2 seconds (2000 milliseconds).</p>
+<pre>        public boolean saveFile(String fileName)
+        {
+            QFile file = new QFile(fileName);
+            if (!file.open(new QFile.OpenMode(QFile.OpenModeFlag.WriteOnly, QFile.OpenModeFlag.Text))) {
+                QMessageBox.warning(this, tr(&quot;Application&quot;), String.format(tr(&quot;Cannot write file %1$s:\n%2$s.&quot;), fileName, file.errorString()));
+                return false;
+            }
+
+            QTextStream out = new QTextStream(file);
+            QApplication.setOverrideCursor(new QCursor(Qt.CursorShape.WaitCursor));
+            out.writeString(textEdit.toPlainText());
+            QApplication.restoreOverrideCursor();
+
+            setCurrentFile(fileName);
+            statusBar().showMessage(tr(&quot;File saved&quot;), 2000);
+            file.close();
+            return true;
+        }</pre>
+<p>Saving a file is very similar to loading one. Here, the QFile.Text flag ensures that on Windows, &quot;\n&quot; is converted into &quot;\r\n&quot; to conform to the Windows convension.</p>
+<pre>        public void setCurrentFile(String fileName)
+        {
+            curFile = fileName;
+            textEdit.document().setModified(false);
+            setWindowModified(false);
+
+            String shownName;
+            if (curFile.length() == 0)
+                shownName = &quot;untitled.txt&quot;;
+            else
+                shownName = strippedName(curFile);
+
+            setWindowTitle(String.format(tr(&quot;%1$s[*] - %2$s&quot;), shownName, tr(&quot;Application&quot;)));
+        }</pre>
+<p>The <tt>setCurrentFile()</tt> method is called to reset the state of a few variables when a file is loaded or saved, or when the user starts editing a new file (in which case <tt>fileName</tt> is empty). We update the <tt>curFile</tt> variable, clear the QTextDocument.modified flag and the associated <tt>QWidget.windowModified</tt> flag, and update the window title to contain the new file name (or <tt>untitled.txt</tt>).</p>
+<p>The <tt>strippedName()</tt> method call around <tt>curFile</tt> in the setWindowTitle() call shortens the file name to exclude the path. Here's the method:</p>
+<pre>        private static String strippedName(String fullFileName)
+        {
+            return new QFileInfo(fullFileName).fileName();
+        }</pre>
+<a name="the-main-function"></a>
+<h2>The main() Function</h2>
+<p>The <tt>main()</tt> method for this application is typical of applications that contain one main window:</p>
+<pre>        public static void main(String[] args) {
+            QApplication.initialize(args);
+
+            Application application = new Application();
+            application.show();
+
+            QApplication.exec();
+        }</pre>
+</body>
+</html>

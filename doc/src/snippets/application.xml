@@ -1,0 +1,36 @@
+<project default="application.jar" basedir=".">
+    <import file="./build.xml"/>
+
+    <target name="application.jar">
+    <jar destfile="./application.jar">
+        <manifest>
+        <attribute name="Built-By" value="Trolltech ASA - ${TODAY}"/>
+        <attribute name="Main-Class" value="org.qtjambi.examples.Application"/>
+        </manifest>
+
+        <fileset dir="${qtLib}">
+        <include name="libQtCore.so.4"/>
+        <include name="libQtGui.so.4"/>
+        </fileset>
+
+        <fileset dir="${jambiLib}">
+        <include name="liborg_qtjambi_qt_core_debuglib.so"/>
+        <include name="liborg_qtjambi_qt_gui_debuglib.so"/>
+        <include name="libqtjambi_debuglib.so"/>
+        </fileset>
+
+        <fileset dir="${sourceDir}">
+        <include name="org/qtjambi/qt/*.class"/>
+        <include name="org/qtjambi/qt/gui/*.class"/>
+        <include name="org/qtjambi/qt/core/*class"/>
+        <include name="org/qtjambi/images/*png"/>
+        <include name="org/qtjambi/examples/Application.class"/>
+        <include name="qt_system_libs"/>
+        </fileset>
+
+        <fileset dir="/usr/lib">
+        <include name="libstdc++.so.6"/>
+        </fileset>
+    </jar>
+    </target>
+</project>

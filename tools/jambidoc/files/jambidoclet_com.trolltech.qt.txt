@@ -1,0 +1,1518 @@
+$$QVariant.canConvertToDouble(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a double; otherwise,
+returns false.
+
+*/
+
+
+$$QVariant.toDouble(java.lang.Object)
+/**
+Returns the double value of <tt>obj</tt>
+
+<tt>obj</tt>
+@return
+*/
+
+
+$$QVariant.toDouble(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the double value of <tt>obj</tt>. If the conversion fails, the
+first element in <tt>ok</tt> will be false; otherwise, it will be
+true.
+
+*/
+
+
+$$QVariant.canConvertToString(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a string; otherwise,
+returns false.
+
+<tt>obj</tt>
+@return
+*/
+
+
+$$QVariant.toString(java.lang.Object)
+/**
+Returns the String value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.canConvertToBoolean(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to boolean.
+
+*/
+
+
+$$QVariant.toBoolean(java.lang.Object)
+/**
+Returns the boolean value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToByteArray(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a byte array.
+@return
+*/
+
+
+$$QVariant.toByteArray(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QByteArray.
+
+*/
+
+
+$$QVariant.canConvertToBitArray(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a bit array.
+
+*/
+
+
+$$QVariant.toBitArray(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a QBitArray.
+
+*/
+
+
+$$QVariant.canConvertToChar(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a char.
+
+*/
+
+
+$$QVariant.toChar(java.lang.Object)
+/**
+Returns the char value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.canConvertToDate(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QDate.
+
+*/
+
+
+$$QVariant.toDate(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QDate.
+
+*/
+
+
+$$QVariant.canConvertToDateTime(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QDateTime.
+
+*/
+
+
+$$QVariant.toDateTime(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QDateTime.
+
+*/
+
+
+$$QVariant.canConvertToInt(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to an int.
+
+*/
+
+
+$$QVariant.toInt(java.lang.Object)
+/**
+Returns the int value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.toInt(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the int value of <tt>obj</tt>. The first element in
+<tt>ok</tt> will be false if the conversion failed.
+
+*/
+
+
+$$QVariant.canConvertToLine(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLine.
+
+*/
+
+
+$$QVariant.toLine(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a QLine.
+
+*/
+
+
+$$QVariant.canConvertToLineF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLineF.
+
+*/
+
+
+$$QVariant.toLineF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QLineF.
+
+*/
+
+
+$$QVariant.canConvertToLocale(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLocale.
+
+*/
+
+
+$$QVariant.toLocale(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QLocale.
+
+*/
+
+
+$$QVariant.canConvertToPoint(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QPoint.
+
+*/
+
+
+$$QVariant.toPoint(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPoint.
+
+*/
+
+
+$$QVariant.canConvertToPointF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QPointF.
+
+*/
+
+
+$$QVariant.toPointF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPointF.
+
+*/
+
+
+$$QVariant.canConvertToRect(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRect.
+
+*/
+
+
+$$QVariant.toRect(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QRect.
+
+*/
+
+
+$$QVariant.canConvertToRectF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRectF.
+
+*/
+
+
+$$QVariant.toRectF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPointF.
+
+*/
+
+
+$$QVariant.canConvertToRegExp(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRegExp.
+
+*/
+
+
+$$QVariant.toRegExp(java.lang.Object)
+/**
+Returns the QRegExp value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToSize(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QSize.
+
+*/
+
+
+$$QVariant.toSize(java.lang.Object)
+/**
+Returns the QSize value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToSizeF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QSizeF.
+
+*/
+
+
+$$QVariant.toSizeF(java.lang.Object)
+/**
+Returns the QSizeF value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToTime(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QTime.
+
+*/
+
+
+$$QVariant.toTime(java.lang.Object)
+/**
+Returns the QTime value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToLong(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a long.
+
+*/
+
+
+$$QVariant.toLong(java.lang.Object)
+/**
+Returns the long value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.toLong(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the long value of <tt>obj</tt>. The first element in
+<tt>ok</tt> is set to false if the conversion failed.
+
+*/
+
+
+$$QVariant.canConvertToList(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a list
+of type java.util.List<java.lang.Object>.
+
+*/
+
+
+$$QVariant.toList(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a list.
+
+*/
+
+
+$$QVariant.canConvertToMap(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a map
+(java.util.Map<java.lang.String,java.lang.Object>).
+
+*/
+
+
+$$QVariant.toMap(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a map.
+
+*/
+
+
+$$QPaintingOutsidePaintEventException.QPaintingOutsidePaintEventException(java.lang.String)
+/**
+Constructs a new QPaintingOutsidePaintEventException with the
+specified <tt>message</tt>.
+
+*/
+
+
+$$QtJambi_LibraryShutdown.QtJambi_LibraryShutdown()
+/**
+@exclude
+
+
+*/
+
+
+$$QtJambi_LibraryShutdown.run()
+/**
+@exclude
+
+*/
+
+
+$$QtJambiUtils.QtJambiUtils()
+/**
+@exclude
+
+*/
+
+
+$$QtJambiUtils.connect(org.qtjambi.qt.QSignalEmitter.AbstractSignal, java.lang.String, org.qtjambi.qt.core.QObject...)
+/**
+Connects all <tt>objects</tt> to <tt>signal</tt> using slot
+<tt>slotSignature</tt>.
+
+*/
+
+
+$$QtJambiUtils.addSearchPathForResourceEngine(java.lang.String)
+/**
+This sets the <tt>path</tt> in which to search for resource engines.
+
+*/
+
+
+$$QtJambiUtils.removeSearchPathForResourceEngine(java.lang.String)
+/**
+Removes <tt>path</tt> from the search path for resource engines.
+
+*/
+
+
+$$QtJambiUtils.findGeneratedSuperclass(java.lang.Object)
+/**
+Returns the class of the nearest ancestor of the <tt>obj</tt>'s class
+that is generated by Qt Jambi's generator. If no class is found, the
+class of <tt>obj</tt> is returned.
+
+*/
+
+
+$$QNoSuchSignalException.QNoSuchSignalException(java.lang.String)
+/**
+Creates a new QNoSuchSignalException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QSysInfo.QSysInfo()
+/**
+Creates a new QSysInfo.
+
+*/
+
+
+$$QSysInfo.windowsVersion()
+/**
+Returns the windows version.
+
+*/
+
+
+$$QSysInfo.macVersion()
+/**
+Returns the Mac version.
+
+*/
+
+
+$$QSysInfo.operatingSystem()
+/**
+Returns the operating system.
+
+@return
+*/
+
+
+$$QSysInfo.main(java.lang.String[])
+/**
+Test method.
+
+*/
+
+
+$$QNonVirtualOverridingException.QNonVirtualOverridingException(java.lang.String)
+/**
+Creates a new QNonVirtualOverridingException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QPropertyException.QPropertyException(java.lang.String)
+/**
+Creates a new QPropertyException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QtJambiInterface.disableGarbageCollection()
+/**
+Disables garbage collection for the object that implements the
+interface.
+
+*/
+
+
+$$QtJambiInterface.setJavaOwnership()
+/**
+Specifies that the object is owned by Java and not the native c++
+libraries.
+
+
+*/
+
+
+$$QtJambiInterface.reenableGarbageCollection()
+/**
+Enables garbage collection for the object.
+
+*/
+
+
+$$QtJambiInterface.nativePointer()
+/**
+Returns the native pointer (i.e., memory address) of the native c++
+object this Java object wrapper.
+
+*/
+
+
+$$QNoImplementationException.QNoImplementationException()
+/**
+Creates a new QNoImplementationException.
+
+*/
+
+
+$$QNoImplementationException.QNoImplementationException(java.lang.Throwable)
+/**
+Creates a new QNoImplementationException with the specified <tt>throwable</tt>.
+
+*/
+
+
+$$QtJambiObject.QtJambiObject()
+/**
+Creates a new QtJambiObject.
+
+
+*/
+
+
+$$QtJambiGuiInternal.QtJambiGuiInternal()
+/**
+@exclude
+
+
+*/
+
+
+$$QtJambiGuiInternal.beginPaint(org.qtjambi.qt.gui.QWidget, org.qtjambi.qt.gui.QPainter)
+/**
+@exclude
+
+*/
+
+
+$$QtInfo.QtInfo()
+/**
+@exclude
+
+*/
+
+
+$$QtInfo.main(java.lang.String[])
+/**
+Used to test the QtInfo class.
+
+*/
+
+
+==== THEIRS //depot/qtjambi/4.3/tools/jambidoc/files/jambidoclet_org.qtjambi.qt.txt#6
+$$QVariant.canConvertToDouble(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a double; otherwise,
+returns false.
+
+*/
+
+
+$$QVariant.toDouble(java.lang.Object)
+/**
+Returns the double value of <tt>obj</tt>
+
+<tt>obj</tt>
+@return
+*/
+
+
+$$QVariant.toDouble(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the double value of <tt>obj</tt>. If the conversion fails, the
+first element in <tt>ok</tt> will be false; otherwise, it will be
+true.
+
+*/
+
+
+$$QVariant.canConvertToString(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a string; otherwise,
+returns false.
+
+<tt>obj</tt>
+@return
+*/
+
+
+$$QVariant.toString(java.lang.Object)
+/**
+Returns the String value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.canConvertToBoolean(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to boolean.
+
+*/
+
+
+$$QVariant.toBoolean(java.lang.Object)
+/**
+Returns the boolean value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToByteArray(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a byte array.
+@return
+*/
+
+
+$$QVariant.toByteArray(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QByteArray.
+
+*/
+
+
+$$QVariant.canConvertToBitArray(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a bit array.
+
+*/
+
+
+$$QVariant.toBitArray(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a QBitArray.
+
+*/
+
+
+$$QVariant.canConvertToChar(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a char.
+
+*/
+
+
+$$QVariant.toChar(java.lang.Object)
+/**
+Returns the char value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.canConvertToDate(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QDate.
+
+*/
+
+
+$$QVariant.toDate(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QDate.
+
+*/
+
+
+$$QVariant.canConvertToDateTime(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QDateTime.
+
+*/
+
+
+$$QVariant.toDateTime(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QDateTime.
+
+*/
+
+
+$$QVariant.canConvertToInt(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to an int.
+
+*/
+
+
+$$QVariant.toInt(java.lang.Object)
+/**
+Returns the int value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.toInt(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the int value of <tt>obj</tt>. The first element in
+<tt>ok</tt> will be false if the conversion failed.
+
+*/
+
+
+$$QVariant.canConvertToLine(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLine.
+
+*/
+
+
+$$QVariant.toLine(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a QLine.
+
+*/
+
+
+$$QVariant.canConvertToLineF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLineF.
+
+*/
+
+
+$$QVariant.toLineF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QLineF.
+
+*/
+
+
+$$QVariant.canConvertToLocale(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QLocale.
+
+*/
+
+
+$$QVariant.toLocale(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QLocale.
+
+*/
+
+
+$$QVariant.canConvertToPoint(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QPoint.
+
+*/
+
+
+$$QVariant.toPoint(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPoint.
+
+*/
+
+
+$$QVariant.canConvertToPointF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QPointF.
+
+*/
+
+
+$$QVariant.toPointF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPointF.
+
+*/
+
+
+$$QVariant.canConvertToRect(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRect.
+
+*/
+
+
+$$QVariant.toRect(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QRect.
+
+*/
+
+
+$$QVariant.canConvertToRectF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRectF.
+
+*/
+
+
+$$QVariant.toRectF(java.lang.Object)
+/**
+Returns <tt>obj</tt> converted to a QPointF.
+
+*/
+
+
+$$QVariant.canConvertToRegExp(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QRegExp.
+
+*/
+
+
+$$QVariant.toRegExp(java.lang.Object)
+/**
+Returns the QRegExp value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToSize(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QSize.
+
+*/
+
+
+$$QVariant.toSize(java.lang.Object)
+/**
+Returns the QSize value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToSizeF(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QSizeF.
+
+*/
+
+
+$$QVariant.toSizeF(java.lang.Object)
+/**
+Returns the QSizeF value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToTime(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a QTime.
+
+*/
+
+
+$$QVariant.toTime(java.lang.Object)
+/**
+Returns the QTime value of <tt>obj</tt>.
+
+*/
+
+
+$$QVariant.canConvertToLong(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a long.
+
+*/
+
+
+$$QVariant.toLong(java.lang.Object)
+/**
+Returns the long value of <tt>obj</tt>
+
+*/
+
+
+$$QVariant.toLong(java.lang.Object, java.lang.Boolean[])
+/**
+Returns the long value of <tt>obj</tt>. The first element in
+<tt>ok</tt> is set to false if the conversion failed.
+
+*/
+
+
+$$QVariant.canConvertToList(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a list
+of type java.util.List<java.lang.Object>.
+
+*/
+
+
+$$QVariant.toList(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a list.
+
+*/
+
+
+$$QVariant.canConvertToMap(java.lang.Object)
+/**
+Returns true if <tt>obj</tt> can be converted to a map
+(java.util.Map<java.lang.String,java.lang.Object>).
+
+*/
+
+
+$$QVariant.toMap(java.lang.Object)
+/**
+Returns <tt>obj</tt> as a map.
+
+*/
+
+
+$$QPaintingOutsidePaintEventException.QPaintingOutsidePaintEventException(java.lang.String)
+/**
+Constructs a new QPaintingOutsidePaintEventException with the
+specified <tt>message</tt>.
+
+*/
+
+
+$$QtJambi_LibraryShutdown.QtJambi_LibraryShutdown()
+/**
+@exclude
+
+
+*/
+
+
+$$QtJambi_LibraryShutdown.run()
+/**
+@exclude
+
+*/
+
+
+$$QtJambiUtils.QtJambiUtils()
+/**
+@exclude
+
+*/
+
+
+$$QtJambiUtils.connect(org.qtjambi.qt.QSignalEmitter.AbstractSignal, java.lang.String, org.qtjambi.qt.core.QObject...)
+/**
+Connects all <tt>objects</tt> to <tt>signal</tt> using slot
+<tt>slotSignature</tt>.
+
+*/
+
+
+$$QtJambiUtils.addSearchPathForResourceEngine(java.lang.String)
+/**
+This sets the <tt>path</tt> in which to search for resource engines.
+
+*/
+
+
+$$QtJambiUtils.removeSearchPathForResourceEngine(java.lang.String)
+/**
+Removes <tt>path</tt> from the search path for resource engines.
+
+*/
+
+
+$$QtJambiUtils.findGeneratedSuperclass(java.lang.Object)
+/**
+Returns the class of the nearest ancestor of the <tt>obj</tt>'s class
+that is generated by Qt Jambi's generator. If no class is found, the
+class of <tt>obj</tt> is returned.
+
+*/
+
+
+$$QNoSuchSignalException.QNoSuchSignalException(java.lang.String)
+/**
+Creates a new QNoSuchSignalException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QSysInfo.QSysInfo()
+/**
+Creates a new QSysInfo.
+
+*/
+
+
+$$QSysInfo.windowsVersion()
+/**
+Returns the windows version.
+
+*/
+
+
+$$QSysInfo.macVersion()
+/**
+Returns the Mac version.
+
+*/
+
+
+$$QSysInfo.operatingSystem()
+/**
+Returns the operating system.
+
+@return
+*/
+
+
+$$QSysInfo.main(java.lang.String[])
+/**
+Test method.
+
+*/
+
+
+$$QNonVirtualOverridingException.QNonVirtualOverridingException(java.lang.String)
+/**
+Creates a new QNonVirtualOverridingException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QPropertyException.QPropertyException(java.lang.String)
+/**
+Creates a new QPropertyException with the specified <tt>extraMessage</tt>.
+
+*/
+
+
+$$QtJambiInterface.disableGarbageCollection()
+/**
+Disables garbage collection for the object that implements the
+interface.
+
+*/
+
+
+$$QtJambiInterface.setJavaOwnership()
+/**
+Specifies that the object is owned by Java and not the native c++
+libraries.
+
+
+*/
+
+
+$$QtJambiInterface.reenableGarbageCollection()
+/**
+Enables garbage collection for the object.
+
+*/
+
+
+$$QtJambiInterface.nativePointer()
+/**
+Returns the native pointer (i.e., memory address) of the native c++
+object this Java object wrapper.
+
+*/
+
+
+$$QNoImplementationException.QNoImplementationException()
+/**
+Creates a new QNoImplementationException.
+
+*/
+
+
+$$QNoImplementationException.QNoImplementationException(java.lang.Throwable)
+/**
+Creates a new QNoImplementationException with the specified <tt>throwable</tt>.
+
+*/
+
+
+$$QtJambiObject.QtJambiObject()
+/**
+Creates a new QtJambiObject.
+
+
+*/
+
+
+$$QtJambiGuiInternal.QtJambiGuiInternal()
+/**
+@exclude
+
+
+*/
+
+
+$$QtJambiGuiInternal.beginPaint(org.qtjambi.qt.gui.QWidget, org.qtjambi.qt.gui.QPainter)
+/**
+@exclude
+
+*/
+
+
+$$QtInfo.QtInfo()
+/**
+@exclude
+
+*/
+
+
+$$QtInfo.main(java.lang.String[])
+/**
+Used to test the QtInfo class.
+
+*/
+
+
+==== YOURS //gunnar-aeryn/qtjambi/tools/jambidoc/files/jambidoclet_org.qtjambi.qt.txt
+kjlkjlkj
+<<<<
+>>>> ORIGINAL //depot/qtjambi/4.3/tools/jambidoc/files/jambidoclet_org.qtjambi.qt.txt#4
+Creates a new QClassPathFileEngineHandler.
+
+*/
+
+
+$$QtJambi.QtJambi()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtJambi.
+
+*/
+
+
+$$QtJambiInternal.QtJambiInternal()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtJambiInternal.
+
+
+*/
+
+
+$$QtJambiInternal.swapQObjectSender(long, long, boolean)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.disconnect(org.qtjambi.qt.QSignalEmitter, java.lang.Object)
+/**
+@exclude
+
+*/
+
+
+$$QtJambiInternal.sender(org.qtjambi.qt.core.QObject)
+/**
+@exclude
+
+*/
+
+
+$$QtJambiInternal.findChildren(org.qtjambi.qt.core.QObject, java.lang.Class<?>, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.findChildren(org.qtjambi.qt.core.QObject, java.lang.Class<?>, org.qtjambi.qt.core.QRegExp)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.findChild(org.qtjambi.qt.core.QObject, java.lang.Class<?>, java.lang.String)
+/**
+@eclude
+*/
+
+
+$$QtJambiInternal.createExtendedEnum(int, int, java.lang.Class, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.countExpense(java.lang.Class, int, int)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.setField(java.lang.Object, java.lang.Class<?>, java.lang.String, java.lang.Object)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.setFieldNative(java.lang.Object, java.lang.reflect.Field, java.lang.Object)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.fetchField(java.lang.Object, java.lang.Class<?>, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.fetchFieldNative(java.lang.Object, java.lang.reflect.Field)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.threadCheck(org.qtjambi.qt.core.QObject)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.intArrayToNativePointer(int[])
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.byteArrayToNativePointer(byte[])
+/**
+@exclude
+*/
+
+
+$$QNoSuchEnumValueException.QNoSuchEnumValueException(int)
+/**
+Creates a new QNoSuchEnumValueException with the given <tt>value</tt>.
+
+*/
+
+
+$$QtPropertyManager.QtPropertyManager()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.
+
+
+*/
+
+
+$$QtPropertyManager.findPropertiesRecursive(java.lang.Class)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.findPropertiesRecursive.
+
+<tt>cl</tt>
+
+*/
+
+
+$$QtPropertyManager.findProperties(java.lang.Class)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.findProperties.
+
+<tt>cl</tt>
+
+*/
+
+
+$$QtPropertyManager.readProperty(java.lang.Object, java.lang.String)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.readProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+
+*/
+
+
+$$QtPropertyManager.writeProperty(java.lang.Object, java.lang.String, java.lang.Object)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.writeProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+<tt>value</tt>
+
+*/
+
+
+$$QtPropertyManager.resetProperty(java.lang.Object, java.lang.String)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.resetProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+
+*/
+
+
+$$QtPropertyManager.main(java.lang.String[])
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.main.
+
+<tt>args</tt>
+
+@throws java.lang.Exception
+*/
+
+
+$$Utilities.jambiTempDir()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.Utilities.jambiTempDir.
+
+
+*/
+
+
+$$Utilities.unpackPlugins()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.Utilities.unpackPlugins.
+
+
+*/
+==== THEIRS //depot/qtjambi/4.3/tools/jambidoc/files/jambidoclet_org.qtjambi.qt.txt#6
+@exclude
+
+*/
+
+
+$$QtJambi.QtJambi()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtJambi.
+
+*/
+
+
+$$QtJambiInternal.QtJambiInternal()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtJambiInternal.
+
+
+*/
+
+
+$$QtJambiInternal.swapQObjectSender(long, long, boolean)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.disconnect(org.qtjambi.qt.QSignalEmitter, java.lang.Object)
+/**
+@exclude
+
+*/
+
+
+$$QtJambiInternal.sender(org.qtjambi.qt.core.QObject)
+/**
+@exclude
+
+*/
+
+
+$$QtJambiInternal.findChildren(org.qtjambi.qt.core.QObject, java.lang.Class<?>, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.findChildren(org.qtjambi.qt.core.QObject, java.lang.Class<?>, org.qtjambi.qt.core.QRegExp)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.findChild(org.qtjambi.qt.core.QObject, java.lang.Class<?>, java.lang.String)
+/**
+@eclude
+*/
+
+
+$$QtJambiInternal.createExtendedEnum(int, int, java.lang.Class, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.countExpense(java.lang.Class, int, int)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.setField(java.lang.Object, java.lang.Class<?>, java.lang.String, java.lang.Object)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.setFieldNative(java.lang.Object, java.lang.reflect.Field, java.lang.Object)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.fetchField(java.lang.Object, java.lang.Class<?>, java.lang.String)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.fetchFieldNative(java.lang.Object, java.lang.reflect.Field)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.threadCheck(org.qtjambi.qt.core.QObject)
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.intArrayToNativePointer(int[])
+/**
+@exclude
+*/
+
+
+$$QtJambiInternal.byteArrayToNativePointer(byte[])
+/**
+@exclude
+*/
+
+
+$$QNoSuchEnumValueException.QNoSuchEnumValueException(int)
+/**
+Creates a new QNoSuchEnumValueException with the given <tt>value</tt>.
+
+*/
+
+
+$$QtPropertyManager.QtPropertyManager()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.
+
+
+*/
+
+
+$$QtPropertyManager.findPropertiesRecursive(java.lang.Class)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.findPropertiesRecursive.
+
+<tt>cl</tt>
+
+*/
+
+
+$$QtPropertyManager.findProperties(java.lang.Class)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.findProperties.
+
+<tt>cl</tt>
+
+*/
+
+
+$$QtPropertyManager.readProperty(java.lang.Object, java.lang.String)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.readProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+
+*/
+
+
+$$QtPropertyManager.writeProperty(java.lang.Object, java.lang.String, java.lang.Object)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.writeProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+<tt>value</tt>
+
+*/
+
+
+$$QtPropertyManager.resetProperty(java.lang.Object, java.lang.String)
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.resetProperty.
+
+<tt>object</tt>
+<tt>name</tt>
+
+*/
+
+
+$$QtPropertyManager.main(java.lang.String[])
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.QtPropertyManager.main.
+
+<tt>args</tt>
+
+@throws java.lang.Exception
+*/
+
+
+$$Utilities.jambiTempDir()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.Utilities.jambiTempDir.
+
+
+*/
+
+
+$$Utilities.unpackPlugins()
+/**
+This is a JambiDoclet generated javadoc comment for org.qtjambi.qt.Utilities.unpackPlugins.
+
+
+*/

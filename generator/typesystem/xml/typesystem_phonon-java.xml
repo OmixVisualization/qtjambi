@@ -1,0 +1,186 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.phonon" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtXml"))  // made optional as KDE phonon does not have this dependency
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+        //if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtOpenGL"))
+        //    org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGL");	// when was this needed ?
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtDBus"))
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtDBus");	// load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("phonon");
+    </inject-code>
+
+    <value-type name="Phonon::EffectDescription">
+        <modify-function signature="fromIndex(int)" remove="all" /> <!-- temporarily removed so we can compile this (not needed in current API) -->
+        <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+        <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.phonon.EffectDescription" />
+                <conversion-rule class="native">
+                    Phonon::EffectDescription %out = (Phonon::EffectDescription ) *(Phonon::EffectDescription *)%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="property(const char*)const" access="private" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="Phonon::AudioOutputDevice">
+        <modify-function signature="fromIndex(int)" remove="all" /> <!-- temporarily removed so we can compile this (not needed in current API) -->
+        <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.phonon.AudioOutputDevice" />
+                <conversion-rule class="native">
+                    Phonon::AudioOutputDevice %out = (Phonon::AudioOutputDevice) *(Phonon::AudioOutputDevice *)%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+        <modify-function signature="property(const char*)const" access="private" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="Phonon::AudioChannelDescription">
+        <modify-function signature="fromIndex(int)" remove="all" />
+        <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+        <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+            <modify-argument index="1">
+            <replace-type modified-type="org.qtjambi.qt.phonon.AudioChannelDescription" />
+            <conversion-rule class="native">
+                Phonon::AudioChannelDescription %out = (Phonon::AudioChannelDescription) *(Phonon::AudioChannelDescription *)%in;
+            </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="property(const char*)const" access="private" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="Phonon::SubtitleDescription">
+        <modify-function signature="fromIndex(int)" remove="all" /> 
+        <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.phonon.SubtitleDescription" />
+                <conversion-rule class="native">
+                    Phonon::SubtitleDescription %out = (Phonon::SubtitleDescription) *(Phonon::SubtitleDescription *)%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+        <modify-function signature="property(const char*)const" access="private" />
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="Phonon::AudioCaptureDevice">
+        <modify-function signature="fromIndex(int)" remove="all" /> 
+        <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.phonon.AudioCaptureDevice" />
+                <conversion-rule class="native">
+                    Phonon::AudioCaptureDevice %out = (Phonon::AudioCaptureDevice) *(Phonon::AudioCaptureDevice *)%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+        <modify-function signature="property(const char*)const" access="private" />
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+   <value-type name="Phonon::VideoCaptureDevice">
+       <modify-function signature="fromIndex(int)" remove="all" />
+       <modify-function signature="operator==(Phonon::ObjectDescription)const" access="private">
+           <modify-argument index="1">
+               <replace-type modified-type="org.qtjambi.qt.phonon.VideoCaptureDevice" />
+               <conversion-rule class="native">
+                   Phonon::VideoCaptureDevice %out = (Phonon::VideoCaptureDevice) *(Phonon::VideoCaptureDevice *)%in;
+               </conversion-rule>
+           </modify-argument>
+       </modify-function>
+       <modify-function signature="operator!=(Phonon::ObjectDescription)const" remove="all" />
+       <modify-function signature="property(const char*)const" access="private" />
+
+       <inject-code>
+           <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class ObjectDescriptionSubclass___" quote-before-line="}// class"/>
+       </inject-code>
+   </value-type>
+
+    <namespace-type name="Phonon">
+        <modify-function signature="createPlayer(Phonon::Category, Phonon::MediaSource)">
+            <modify-argument index="2">
+                <replace-default-expression with="null" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="phononVersion()" access="private" rename="phononVersion_private" associated-to="phononVersion()" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_phonon-java.java" quote-after-line="class Phonon___" quote-before-line="}// class"/>
+        </inject-code>
+    </namespace-type>
+
+    <interface-type name="Phonon::PlatformPlugin">
+        <modify-function signature="notification(const char *, const QString &amp;, const QStringList&lt;QString&gt; &amp;, QObject *, const char *)const">
+            <modify-argument index="3">
+                <replace-default-expression with="null" />
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_qstring(__jni_env, QString::fromUtf8(QByteArray(%in)));
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QByteArray b1 = qtjambi_to_qstring(__jni_env, (jstring) %in).toUtf8();
+                    const char* %out = b1.data();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="java.lang.String" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_qstring(__jni_env, QString::fromUtf8(QByteArray(%in)));
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QByteArray b2 = qtjambi_to_qstring(__jni_env, (jstring) %in).toUtf8();
+                    const char* %out = b1.data();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+
+    <interface-type name="Phonon::AddonInterface">
+        <modify-function signature="interfaceCall(Phonon::AddonInterface::Interface, int, const QList&lt;QVariant&gt; &amp;)">
+            <modify-argument index="3">
+                <replace-default-expression with="null" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+
+    <interface-type name="Phonon::BackendInterface">
+        <modify-function signature="createObject(Phonon::BackendInterface::Class, QObject *, const QList&lt;QVariant&gt; &amp;)">
+            <modify-argument index="3">
+                <replace-default-expression with="null" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+
+
+</typesystem>

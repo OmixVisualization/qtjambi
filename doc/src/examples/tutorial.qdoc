@@ -1,0 +1,731 @@
+/****************************************************************************
+**
+** Copyright (C) 1992-$THISYEAR$ $TROLLTECH$. All rights reserved.
+**
+** This file is part of the Qt GUI Toolkit.
+** EDITIONS: FREE, PROFESSIONAL, ENTERPRISE
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+/*!
+    \page qtjambi-tutorial.html
+
+    \startpage {qtjambi-index.html}{Qt Jambi Reference Documentation}
+    \nextpage {qtjambi-tutorial1.html}{Chapter 1}
+
+    \title Qt Jambi Tutorial
+
+    This tutorial gives an introduction to GUI programming using the
+    Qt Jambi toolkit. It doesn't cover everything; the emphasis is on
+    teaching the programming philosophy of GUI programming, and Qt
+    Jambi's features are introduced as needed. Some commonly used
+    features are never used in this tutorial.
+
+    Chapter one starts with a minimal "Hello world" program and the
+    following chapters introduce new concepts.
+
+    The tutorial's source code is located in Qt Jambis's \c
+    org/qtjambi/examples/tutorial directory.
+
+    Tutorial chapters:
+
+    \list 1
+    \o \l{qtjambi-tutorial1.html}{Hello World!}
+    \o \l{qtjambi-tutorial2.html}{Calling it Quits}
+    \o \l{qtjambi-tutorial3.html}{Family Values}
+    \o \l{qtjambi-tutorial4.html}{Let There Be Widgets}
+    \o \l{qtjambi-tutorial5.html}{Building Blocks}
+    \o \l{qtjambi-tutorial6.html}{Building Blocks Galore!}
+    \o \l{qtjambi-tutorial7.html}{One Thing Leads to Another}
+   \endlist
+*/
+
+/*! \page qtjambi-tutorial1.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage Qt Jambi Tutorial
+    \nextpage {qtjambi-tutorial2.html}{Chapter 2}
+
+    \title Qt Jambi Tutorial 1 - Hello World!
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Hello World}{HelloWorld.java}
+    \endlist
+
+    This first program is a simple "Hello world" example. It
+    contains only the bare minimum you need to get a Qt Jambi
+    application up and running.  The picture below is a screenshot of
+    this program.
+
+    \image tutorial1-example.png Screenshot of Chapter 1
+
+    Here's the complete source code for the application:
+
+    \snippet tutorial/HelloWorld.java 0
+
+    \section1 Line by Line Walkthrough
+
+
+    \snippet tutorial/HelloWorld.java 0
+
+    To use Qt Jambi classes, you need to import at least the \c gui
+    package, which includes the QApplication class.  QApplication
+    manages various application-wide resources and is needed to run a
+    Qt Jambi application. The \c gui package contain GUI related
+    classes, such as widgets, which is a user interface object that
+    can process user input and draw graphics.
+
+    \snippet tutorial/HelloWorld.java 2
+
+    The \c main() method is the entry point to the program. Almost
+    always when using Qt Jambi, \c main() only needs to perform some kind
+    of initialization before passing the control to the Qt Jambi library,
+    which then tells the program about the user's actions.
+
+    The \c args parameter is the command-line arguments. This is a
+    standard Java feature.
+
+    \snippet tutorial/HelloWorld.java 3
+
+    Each Qt Jambi application contains a unique QApplication
+    instance, which is a private QApplication class member. To create
+    the instance, you call the static \l{QApplication.}{initialize()}
+    method with \a args; note that \a args might be changed as Qt
+    Jambi removes command-line arguments it recognizes. See
+    QApplication.argv() documentation for details.
+
+    The QApplication object must be created before any GUI-related
+    features of Qt Jambi are used.
+
+    \snippet tutorial/HelloWorld.java 4
+
+    Here, after the QApplication, comes the first GUI-related code: A
+    push button is created.
+
+    QPushButton is a GUI push button that the user can press and
+    release. The programmer can change both the overall look and feel
+    and many minor properties of it (such as color), as well as the
+    widget's content. A QPushButton can show either a text or a QIcon.
+
+    The button is set up to display the text "Hello world!". Because
+    we don't specify a parent window (as second argument to the
+    QPushButton constructor), the button will be a window of its own,
+    with its own window frame and title bar.
+
+    \snippet tutorial/HelloWorld.java 5
+
+    The button is set up to be 120 pixels wide and 40 pixels high
+    (excluding the window frame, which is provided by the windowing
+    system). We could call QWidget.move() to assign a specific
+    screen position to the widget, but instead we let the windowing
+    system choose a position.
+
+    \snippet tutorial/HelloWorld.java 6
+
+    The title of the window in which the button is shown is set with
+    QWidget.setWindowTitle().
+
+    \snippet tutorial/HelloWorld.java 7
+
+    A widget is never visible when you create it. You must call
+    QWidget.show() to make it visible.
+
+    \snippet tutorial/HelloWorld.java 8
+    \snippet tutorial/HelloWorld.java 9
+
+    This is where \c main() passes control to Qt Jambi.
+    QCoreApplication.exec() will return when the application exits.
+    (QCoreApplication is QApplication's base class. It implements
+    QApplication's core, non-GUI functionality and can be used when
+    developing non-GUI applications.)
+
+    In QCoreApplication.exec(), Qt Jambi receives and processes user and system
+    events and passes these on to the appropriate widgets.
+
+    You should now try to compile and run this program.
+
+    The tutorial examples are located in Qt Jambi's \c examples/tutorial directory.
+    They are automatically built when you build Qt Jambi.
+
+    If you have typed in the source code manually, you compile and
+    run it as a regular Java program (provided that you have set
+    up Qt Jambi correctly, see the \l{Installing Qt Jambi}{install
+    instructions}).
+
+    \code
+        javac org/qtjambi/examples/tutorial/HelloWorld.java
+        java org.qtjambi.examples.tutorial.HelloWorld
+    \endcode
+
+    \section1 Running the Application
+
+    When you run the application, you will see a small window filled
+    with a single button, and on it you can read the famous words:
+    "Hello world!"
+
+    \section1 Exercises
+
+    Try to resize the window. Click the button. If you're running
+    X11, try running the program with the \c -geometry option (for
+    example, \c {-geometry 100x200+10+20}).
+*/
+
+/*! \page qtjambi-tutorial2.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial1.html}{Chapter 1}
+    \nextpage {qtjambi-tutorial3.html}{Chapter 3}
+
+    \title Qt Jambi Tutorial 2 - Calling it Quits
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Calling it Quits}{Quit.java}
+    \endlist
+
+    \image tutorial2-example.png Screenshot of Chapter 2
+
+    Having created a window in \l{qtjambi-tutorial1}{Chapter 1,} we will
+    now go on to make the application quit properly when the user tells it to.
+
+    We will also use a font that is more exciting than the default
+    one. We give the entire source code of the application:
+
+    \snippet tutorial/Quit.java 0
+
+    \section1 Line by Line Walkthrough
+
+    \snippet tutorial/Quit.java 1
+
+    This time, the button says \gui{Quit} and that's exactly what the
+    program will do when the user clicks the button.
+
+    \snippet tutorial/Quit.java 2
+
+    We've chosen another size for the button since the text is a bit
+    shorter than "Hello world!". We could also have used QFontMetrics
+    to set right size, or let QPushButton choose a reasonable
+    default.
+
+    \snippet tutorial/Quit.java 3
+
+    Here we choose a new font for the button, an 18-point bold font
+    from the Times family. It is also possible to change the default
+    font for the entire application, using QApplication::setFont().
+    We fetch the value from the Weight enum as the weight of the
+    font is given as an int in the constructor.
+
+    \snippet tutorial/Quit.java 4
+
+
+    We connect the clicked signal to the \c quit() slot in
+    QApplication (\l{QApplication.}instance() returns the
+    application's unique QApplication instance). \c clicked is an
+    instance of the Signal0 class and \c quit() is a regular method in
+    QApplication that quits the application. When \c connect() is
+    invoked a one-way connection between the two QtJambiObjects is
+    established. After the slot is connected to the signal the quit()
+    method is invoked when a method on the signal is invoked; this is
+    called emitting the signal. In this case, the application will
+    exit when the user clicks on the button with the mouse.
+
+    Every Qt Jambi object can have both \c signals (to send
+    messages) and \c slots (to receive messages). All widgets are Qt
+    Jambi objects, since they inherit QWidget, which indirectly
+    inherits QtJambiObject.
+
+    This signal and slot mechanism is perhaps the most central
+    feature of Qt Jambi.  The \l{Signals and Slots} documentation
+    describes this topic in detail.
+
+    \section1 Running the Application
+
+    When you run this program, you will see an even smaller window than in
+    Chapter 1, filled with an even smaller button.
+
+    See \l{tutorial/t1}{Chapter 1} for how to compile and run the application.
+
+    \section1 Exercises
+
+    Try to resize the window. Press the button to close the
+    application.
+
+    Are there any other signals in QPushButton you can connect to
+    quit? [Hint: The QPushButton inherits most of its functionality
+    from QAbstractButton.]
+*/
+
+/*! \page qtjambi-tutorial3.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial2.html}{Chapter 2}
+    \nextpage {qtjambi-tutorial4.html}{Chapter 4}
+
+    \title Qt Jambi Tutorial 3 - Family Values
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Family Values}{FamilyValues.java}
+    \endlist
+
+    \image tutorial3-example.png Screenshot of Chapter 3
+
+    This example shows how to create parent and child widgets.
+
+    We'll keep it simple and use just a single parent and a lone child.
+
+    \snippet tutorial/FamilyValues.java 0
+
+    \section1 Line by Line Walkthrough
+
+    \snippet tutorial/FamilyValues.java 1
+
+    Here we simply create a plain widget object. The QWidget class is the
+    base class of all user interface objects. The widget is the atom
+    of the user interface: It receives mouse, keyboard and other
+    events from the window system, and paints a representation of
+    itself on the screen. A widget is clipped by its parent and by the
+    widgets in front of it.
+
+    A widget that isn't embedded in a parent widget, like this
+    particular widget, is called a window. Usually, windows have their
+    own window frame and taskbar entry, provided by the window system.
+    A widget without a parent widget is always an independent window.
+    Its initial position on the screen is controlled by the window
+    system.
+
+    \snippet tutorial/FamilyValues.java 2
+
+    We set the window's width to 200 pixels and its height to 120
+    pixels.
+
+    \snippet tutorial/FamilyValues.java 3
+
+    A child is born. This QPushButton is created with a parent widget
+    \c (window). A child widget is always displayed within its
+    parent's area. When displayed, it is clipped by its parent's
+    bounds. By default, it is rooted at the top-left corner of its
+    parent, at position (0, 0).
+
+    \snippet tutorial/FamilyValues.java 4
+
+    The QWidget.setGeometry() method takes four arguments: The
+    first two arguments are the x and y coordinates of the button's
+    top-left corner. The coordinates are relative to the parent
+    widget. The last two arguments are the button's width and height.
+    The result is a button that extends from position (10, 40) to
+    position (190, 80).
+
+    \snippet tutorial/FamilyValues.java 5
+
+    When a parent widget is shown, it will call show for all its
+    children (except those that were explicitly hidden using
+    QWidget.hide()).
+
+    \section1 Running the Application
+
+    The button no longer fills the entire window. Instead, it
+    stays at position (10, 40) within the window and with a size
+    of (180, 40), because of the QWidget.setGeometry() call.
+
+    \section1 Exercises
+
+    Try resizing the window. How does the button change? What happens
+    to the button's height if you run the program with a bigger font?
+    What happens if you try to make the window really small?
+*/
+
+/*! \page qtjambi-tutorial4.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial3.html}{Chapter 3}
+    \nextpage {qtjambi-tutorial5.html}{Chapter 5}
+
+    \title Qt Jambi Tutorial 4 - Let There Be Widgets
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Let There Be Widgets}{Widgets.java}
+    \endlist
+
+    \image tutorial4-example.png Screenshot of Chapter 4
+
+    This example shows how to create your own widget, and describes
+    how to control the minimum and maximum sizes of a widget.
+
+    \snippet tutorial/Widgets.java 1
+
+    \section1 Line by Line Walkthrough
+
+    \snippet tutorial/Widgets.java 0
+
+    Here we create a new class. Because this class inherits from QWidget,
+    the new class is a widget and may be a top-level window or a child
+    widget (like the QPushButton in the previous chapter).
+
+    \snippet tutorial/Widgets.java 2
+
+    This class has only one member, a constructor (in addition to
+    the members it inherits from QWidget). This widget is created
+    without a parent. Parentless widgets are top-level windows in Qt
+    Jambi, i.e., they are shown in separate windows on the screen.
+    You can set a parent in the constructor of QWidget or with the
+    QWidget.setParent() method. A widget's parent is also set to the
+    widget to which it is added.
+
+    \snippet tutorial/Widgets.java 3
+
+    Because this widget doesn't know how to handle resizing, we fix
+    its size. In the next chapter, we will show how a widget can
+    respond to resize event from the user.
+
+    \snippet tutorial/Widgets.java 4
+
+    Here we create and set up a child widget of this widget (the new
+    widget's parent is \c this, i.e. the \c Widgets instance).
+
+    The \l{QtJambiObject.tr()}{tr()} method call around the string
+    literal "Quit" marks the string for translation, making it
+    possible to change it at run-time based on the contents of a
+    translation file. It is a good habit to use
+    \l{QtJambiObject.tr()}{tr()} around all user-visible strings, in case
+    you decide later to translate your application to other
+    languages.
+
+    The QWidget.setGeometry() call sets both the widget's screen
+    position and the size. It is equivalent to calling
+    QWidget.move() followed by QWidget.resize(). If we didn't set
+    the widgets geometry, the parent widget will position it using
+    the buttons \l{QWidget.}{sizeHint()} method - all widgets are
+    able to calculate their preferred size.
+
+    \snippet tutorial/Widgets.java 5
+
+    Here we instantiate a Widgets, show it, and execute the
+    application.
+
+    \section1 Running the Application
+
+    This program is very similar in behavior to the previous one. The
+    difference lies in the way we have implemented it. It does behave
+    slightly differently, however. Just try to resize it to see.
+
+    \section1 Exercises
+
+    Try to create another \c Widgets object in \c main(). What happens?
+
+    Try to add more buttons or put in other widgets than QPushButton.
+*/
+
+/*! \page qtjambi-tutorial5.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial4.html}{Chapter 4}
+    \nextpage {qtjambi-tutorial6.html}{Chapter 6}
+
+    \title Qt Jambi Tutorial 5 - Building Blocks
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Building Blocks}{Blocks.java}
+    \endlist
+
+    \image tutorial5-example.png Screenshot of Chapter 5
+
+    This example shows how to create and connect together several widgets
+    by using signals and slots, and how to handle resizes.
+
+    \snippet tutorial/Blocks.java 0
+
+    \section1 Line by Line Walkthrough
+
+    \snippet tutorial/Blocks.java 1
+
+    \c lcd is a QLCDNumber, a widget that displays numbers in an
+    LCD-like fashion. This instance is set up to display two digits.
+    We set the \l QLCDNumber.segmentStyle property to \l
+    QLCDNumber.SegmentStyle.Filled to make the LCDs more readable.
+
+    \snippet tutorial/Blocks.java 2
+    \snippet tutorial/Blocks.java 3
+    \snippet tutorial/Blocks.java 4
+
+    The user can use the QSlider widget to adjust an integer value in
+    a range. Here we create a horizontal one, set its minimum value
+    to 0, its maximum value to 99, and its initial value to 0.
+
+    \snippet tutorial/Blocks.java 5
+
+    Here we use the \l{signals and slots} mechanism to connect the
+    slider's \l{QSlider.}{valueChanged} signal to the LCD number's
+    \l{QLCDNumber.}{display()} slot.
+
+    Whenever the slider's value changes it broadcasts the new
+    value by emitting the \l{QSlider.}{valueChanged} signal. Because
+    that signal is connected to the LCD number's
+    \l{QLCDNumber.}{display()} slot, the slot is called when the
+    signal is broadcast. Neither of the objects knows about the other.
+    This is essential in component programming.
+
+    Slots are otherwise normal Java member methods and follow the
+    normal Java access rules.
+
+    \snippet tutorial/Blocks.java 6
+    \snippet tutorial/Blocks.java 7
+
+    \c Blocks uses a QVBoxLayout to manage the geometry of its child widgets. For
+    that reason, we don't need to specify the screen coordinates for each widget
+    like we did in Chapter 4. In addition, using a layout ensures that the child
+    widgets are resized when the window is resized. Then we add the \c quit, \c lcd
+    and \c slider widgets to the layout using QBoxLayout.addWidget().
+
+    The QWidget.setLayout() method installs the layout on \c
+    Blocks. The call to \l{QWidget.}{setLayout()} automatically sets
+    the parent of the widgets in the layout so that they are children
+    of \c Blocks. Because of this, we didn't need to specify \c this
+    as the parent for the \c quit, \c lcd and \c slider widgets.
+
+    In Qt Jambi, widgets are either children of other widgets
+    (e.g. \c this), or they have no parent. A widget can be \e added
+    to a layout, in which case the layout becomes responsible for
+    managing the geometry of that widget, but the layout can never act
+    as a parent itself. Indeed, QWidget's constructor takes a QWidget
+    pointer for the parent, and QLayout doesn't inherit from QWidget.
+
+    \section1 Running the Application
+
+    The LCD number reflects everything you do to the slider, and the
+    widget handles resizing well. Notice that the LCD number widget
+    changes in size when the window is resized (because it can), but the
+    others stay about the same (because otherwise they would look strange).
+
+    \section1 Exercises
+
+    Try changing the LCD number to add more digits or to change mode
+    (QLCDNumber.setMode()). You can even add four push buttons to
+    set the number base.
+
+    You can also change the slider's range.
+
+    Perhaps it would have been better to use a QSpinBox than a slider?
+
+    Try to make the application quit when the LCD number overflows.
+*/
+
+/*! \page qtjambi-tutorial6.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial5.html}{Chapter 5}
+    \nextpage {qtjambi-tutorial7.html}{Chapter 7}
+
+    \title Qt Jambi Tutorial 6 - Building Blocks Galore!
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Building Blocks Galore!}{BlocksGalore.java}
+    \endlist
+
+    \image tutorial6-example.png Screenshot of Chapter 6
+
+    This example shows how to encapsulate two widgets into a new component and
+    how easy it is to use many widgets. For the first time, we use a custom
+    widget as a child widget.
+
+    \omit
+    \quotefromfile tutorial/BlocksGalore.java
+    \skipto /class LCDRange/
+    \printuntil /^\s\s\s\s\}/
+    \endomit
+
+    \snippet tutorial/BlocksGalore.java 1
+
+    \section1 Line by Line Walkthrough
+
+    \snippet tutorial/BlocksGalore.java 5
+
+    The \c LCDRange widget is a widget without any API. It just has a
+    constructor. This sort of widget is not very useful, so we'll add
+    some API later.
+
+    \snippet tutorial/BlocksGalore.java 6
+
+    The code in the constructor is lifted straight from the \c Blocks
+    constructor in Chapter 5. The only differences are that the
+    \gui{Quit} button is left out and the class is renamed.
+
+
+    The \c BlocksGalore class, too, contains no API except a constructor:
+
+    \snippet tutorial/BlocksGalore.java 0
+
+    The push button that used to be in what is now \c LCDRange has been
+    separated so that we can have one \gui{Quit} button and many \c LCDRange
+    objects.
+
+    \snippet tutorial/BlocksGalore.java 2
+
+    We create a QWidget with a QGridLayout that will contain three
+    columns.  The QGridLayout automatically arranges its widgets in
+    rows and columns; you can specify the row and column numbers when
+    adding widgets to the layout, and QGridLayout will fit them into
+    the grid.
+
+    We use a QVBoxLayout to lay out the \gui Quit button and the grid
+    layout. The QWidget.addLayout() method is similar to the
+    QWidget.addWidget() method, making the given layout a child of the
+    main layout.
+
+    We then proceed to create the LCDRange widgets:
+
+    \snippet tutorial/BlocksGalore.java 3
+    \snippet tutorial/BlocksGalore.java 4
+
+    We create nine \c LCDRange widgets, and we arrange them in
+    three rows and three columns. We set the parent of the widgets to
+    the BlocksGalore instance in the constructor. If we didn't, the parent
+    of the widgets would be set when the layout is installed on the
+    widget with \l{QWidget.}{setLayout()}. For this reason, it
+    might be a good idea to always set a parent to a widget in its
+    constructor.
+
+    That's all, folks!
+
+    \section1 Running the Application
+
+    This program shows how easy it is to use many widgets at a
+    time. Each one behaves like the slider and LCD number in the
+    previous chapter. Again, the difference lies in the
+    implementation.
+
+    \section1 Exercises
+
+    Initialize each slider with a different/random value on startup.
+*/
+
+/*! \page qtjambi-tutorial7.html
+
+    \contentspage Qt Jambi Tutorial
+    \previouspage {qtjambi-tutorial6.html}{Chapter 6}
+
+    \title Qt Jambi Tutorial 7 - One Thing Leads to Another
+
+    \bold {Code}:
+    \list
+        \o \l{Code for One Thing Leads to Another}{ConnectedSliders.java}
+    \endlist
+
+    \image tutorial7-example.png Screenshot of Chapter 7
+
+    This example shows how to create custom widgets with signals and
+    slots, and how to connect them together in more complex ways.
+
+    \section1 Line by Line Walkthrough
+
+    This file is mainly lifted from \c BlocksGalore in Chapter 6; only
+    the non-trivial changes are noted here.
+
+
+    The LCDRange class now includes three members besides the
+    constructor. They make up an interface between this widget and
+    other components in a program. Until now, \c LCDRange didn't
+    really have an API at all. We will examine them as we stumble
+    upon them in the code.
+
+
+    This class is for the most part equal to LCDRange from chapter
+    6, and only the changes are noted here.
+
+    \snippet tutorial/ConnectedSliders.java 0
+
+    We have added a private variable that will hold the number in
+    the display.
+
+    \snippet tutorial/ConnectedSliders.java 6
+
+    Here we declare our first custom signal: \c valueChanged. We will emit it
+    whenever the value of the LCD changes. A signal is an instance of one of the
+    signal classes, which are Signal1, Signal2 ...  Signal9). The suffix number is
+    equal to the number of arguments of the signal; the types of the arguments must
+    be given as class generics. We want one argument (the value of the LCD
+    display), so we use the Signal1 class with Integers. You already know how to
+    connect to the signal. The signal can be connected to any method that takes an
+    Integer.
+
+    We move on to the constructor:
+
+    \snippet tutorial/ConnectedSliders.java 7
+    \snippet tutorial/ConnectedSliders.java 8
+    \dots 12
+    \snippet tutorial/ConnectedSliders.java 9
+    \snippet tutorial/ConnectedSliders.java 10
+    \dots 12
+    \snippet tutorial/ConnectedSliders.java 11
+
+    We connect the sliders \c valueChanged signal to our \c display()
+    slot, and to our own \c valueChanged signal. The signal you
+    connect will be triggered by the signal to which it is connected.
+
+    Let's take a closer look at what happens when the user operates
+    the slider. The slider sees that its value has changed and emits
+    the QSlider.valueChanged signal. That signal is connected both to
+    the QLCDNumber.display() slot and to the \c valueChanged signal of
+    the \c LCDRange.
+
+    Thus, when the signal is emitted, \c LCDRange emits its own \c
+    valueChanged signal. In addition, QLCDNumber.display() is called
+    and shows the new number.
+
+    Note that you're not guaranteed any particular order of execution;
+    \c LCDRange.valueChanged may be emitted before or after
+    QLCDNumber.display() is called.
+
+    \snippet tutorial/ConnectedSliders.java 12
+
+    The implementation of \c value() is straightforward. It simply
+    returns the slider's value.
+
+    \snippet tutorial/ConnectedSliders.java 13
+
+    The implementation of \c setValue() is equally straightforward.
+    Note that because the slider and LCD number are connected,
+    setting the slider's value automatically updates the LCD number
+    as well. In addition, the slider will automatically adjust the
+    value if it is outside its legal range.
+
+    The \c ConnectedSlider class is copied from BlocksGalore in the previous
+    chapter except for the constructor. We examine the changes here:
+
+
+    \snippet tutorial/ConnectedSliders.java 1
+    \snippet tutorial/ConnectedSliders.java 2
+    \snippet tutorial/ConnectedSliders.java 3
+    \snippet tutorial/ConnectedSliders.java 4
+    \snippet tutorial/ConnectedSliders.java 5
+
+    When we create the nine \c LCDRange objects, we connect them using
+    the \l{signals and slots} mechanism. Each has its \c
+    valueChanged signal connected to the previous one's \c
+    setValue() slot. Because \c LCDRange emits the \c valueChanged
+    signal when its value changes, we are here creating a chain of
+    signals and slots.
+
+    \section1 Running the Application
+
+    On startup, the program's appearance is identical to the previous
+    one. Try operating the slider to the bottom-right.
+
+    \section1 Exercises
+
+    Use the bottom-right slider to set all LCDs to 50. Then set the top
+    six to 30 by clicking on the slider on the row above.
+    Now, use the one to the left of the last one operated to set the first
+    five LCDs back to 50.
+
+    Click to the left of the handle on the bottom-right slider. What
+    happens? Why is this the correct behavior?
+*/
+

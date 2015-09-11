@@ -1,0 +1,7 @@
+08.03.2010	-	Changed numbering of qtjambi and qtjambi-maven-plugin.
+			Plugin versioning is now independent from qtjambi libs version.
+			Removed "Windows XP" from profiles.
+			qtjambi-maven-plugin is now 4.5.2_02
+
+16.04.2010	-	bugfix - translationsDir was ignored
+			qtjambi-maven-plugin is now 4.5.2_03

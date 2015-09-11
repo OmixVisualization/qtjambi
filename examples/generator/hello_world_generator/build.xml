@@ -1,0 +1,438 @@
+<project default="all" name="Basic generator example">
+
+    <property environment="env"/>
+
+    <property file="build.properties"/>
+
+    <!-- You must have setup ${jambi.directory} with the path to the
+    location of the QtJambi project tree BEFORE performing this import
+    of setenv.xml -->
+    <import file="${jambi.directory}/setenv.xml"/>
+
+    <property name="jardir" value="${jambi.directory}/jars"/>
+
+    <property name="generator.out" value="${basedir}/build/generator"/>
+
+    <tstamp/>
+
+    <target name="init.taskdef">
+        <taskdef resource="org/qtjambi/tools/ant/ant-qtjambi.xml">
+            <classpath>
+                <pathelement path="${jardir}/qtjambi-util.jar"/>
+                <pathelement path="${jardir}/nobundle/ant-qtjambi.jar"/>
+            </classpath>
+        </taskdef>
+        <taskdef resource="net/sf/antcontrib/antlib.xml"
+            classpath="${jambi.directory}/extjars/ant-contrib.jar"/>
+    </target>
+
+    <target name="help" description="Provides detailed help.">
+        <echo>Generates the test jambi jar file</echo>
+    </target>
+
+    <target name="init.local" depends="init.taskdef, setup-properties">
+        <qtjambi-initialize verbose="true"/>
+        <!-- We need the ${jambi.directory} to be an absolute path -->
+        <qtjambi-resolve-path var="jambi.directory.abspath" path="${jambi.directory}" verbose="true"/>
+
+        <!-- Try to resolve where generator executable is, MacOSX has working debug_and_release build scheme
+             maybe one day Linux will doo -->
+        <if><!-- linux -->
+            <available property="generator.linux.generic.present"   file="${jambi.directory.abspath}/build/qmake-generator/generator"/>
+            <then>
+                <property name="generator.exe.abspath" value="${jambi.directory.abspath}/build/qmake-generator/generator"/>
+            </then>
+        </if>
+        <if><!-- macosx debug -->
+            <available property="generator.macosx.debug.present"    file="${jambi.directory.abspath}/build/qmake-generator/debug/generator"/>
+            <then>
+                <property name="generator.exe.abspath" value="${jambi.directory.abspath}/build/qmake-generator/debug/generator"/>
+            </then>
+        </if>
+        <if><!-- macosx release -->
+            <available property="generator.macosx.release.present"  file="${jambi.directory.abspath}/build/qmake-generator/release/generator"/>
+            <then>
+                <property name="generator.exe.abspath" value="${jambi.directory.abspath}/build/qmake-generator/release/generator"/>
+            </then>
+        </if>
+        <if><!-- windows debug -->
+            <available property="generator.windows.debug.present"   file="${jambi.directory.abspath}/build/qmake-generator/debug/generator.exe"/>
+            <then>
+                <property name="generator.exe.abspath" value="${jambi.directory.abspath}/build/qmake-generator/debug/generator.exe"/>
+            </then>
+        </if>
+        <if><!-- windows release -->
+            <available property="generator.windows.release.present" file="${jambi.directory.abspath}/build/qmake-generator/release/generator.exe"/>
+            <then>
+                <property name="generator.exe.abspath" value="${jambi.directory.abspath}/build/qmake-generator/release/generator.exe"/>
+            </then>
+        </if>
+
+        <echo message="generator.exe.abspath=${generator.exe.abspath}"/>
+    </target>
+
+    <target name="init.build" depends="init.local, init.taskdef, setup-properties">
+        <qtjambi-initialize-build verbose="true"/>
+    </target>
+
+    <target name="compile.native.qmake" depends="init.build">
+        <!-- Stage 1 - build the liborg_qtjambi_org{,_debuglib}.so -->
+        <mkdir dir="${basedir}/build/qmake/cpp"/>
+        <qmake config="${qtjambi.configuration}"
+               dir="${basedir}/build/qmake/cpp"
+               pro="${basedir}/src/test.pro"
+               qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+
+        <make dir="${basedir}/build/qmake/cpp" target="${qtjambi.qmake.target.default}"/>
+    </target>
+
+    <target name="compile.generate" depends="init.build">
+        <!-- Stage 2 - build the liborg_qtjambi_org{,_debuglib}.so -->
+        <mkdir dir="${generator.out}"/>
+        <generator dir="${generator.out}"
+                   generatorExe="${generator.exe.abspath}"
+                   debugTools="${qtjambi.debug-tools}"
+                   inputDirectory=".${psep}${jambi.directory.abspath}/generator"
+                   outputDirectory="${generator.out}"
+                   generatorDirectory="${jambi.directory.abspath}/generator"
+                   jambiDirectory="${jambi.directory.abspath}"
+                   typesystem="typesystem/typesystem.xml"
+                   header="typesystem/global.h"
+                   phononpath="${qtjambi.phonon.includedir}"
+                   qtincludedirectory="${qtjambi.qt.includedir}"
+                   qtlibdirectory="${qtjambi.tools.qt.libdir}"
+                   includepaths="${generator.includepaths}${psep}${basedir}"
+                   kdephonon="${qtjambi.phonon.kdephonon-path}"/>
+    </target>
+
+    <target name="compile.generate.qmake" depends="init.build">
+        <mkdir dir="${basedir}/build/qmake/org_qtjambi_test"/>
+        <qmake config="${qtjambi.configuration}"
+               dir="${basedir}/build/qmake/org_qtjambi_test"
+               pro="${basedir}/org_qtjambi_test/org_qtjambi_test.pro"
+               debugTools="${qtjambi.debug-tools}"
+               qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+
+        <make dir="${basedir}/build/qmake/org_qtjambi_test" target="${qtjambi.qmake.target.default}"/>
+    </target>
+
+    <target name="compile.java.release" depends="init.local">
+        <!-- Stage 3 - build Java parts -->
+        <mkdir dir="${basedir}/build/platform-output"/>
+        <javac destdir="${basedir}/build/platform-output"
+               debug="true"
+               includeantruntime="false"
+               source="1.5" target="1.5">
+            <classpath>
+                <pathelement location="${jambi.directory.abspath}/qtjambi-${qtjambi.version}.jar"/>
+            </classpath>
+            <src path="${jambi.directory.abspath}/src/java/qtjambi-util"/>
+            <src path="${generator.out}/java"/>
+            <src path="${basedir}/java"/>
+            <include name="org/qtjambi/test/*.java"/>
+            <include name="org/qtjambi/qt/osinfo/*.java"/>
+            <include name="test/*.java"/>
+        </javac>
+    </target>
+
+    <target name="compile.java.debug" depends="init.local">
+        <!-- Stage 3 - build Java parts -->
+        <mkdir dir="${basedir}/build/platform-output-debug"/>
+        <javac destdir="${basedir}/build/platform-output-debug"
+               debug="true"
+               includeantruntime="false"
+               source="1.5" target="1.5">
+            <classpath>
+                <pathelement location="${jambi.directory.abspath}/qtjambi-${qtjambi.version}-debug.jar"/>
+            </classpath>
+            <src path="${jambi.directory.abspath}/src/java/qtjambi-util"/>
+            <src path="${generator.out}/java"/>
+            <src path="${basedir}/java"/>
+            <include name="org/qtjambi/test/*.java"/>
+            <include name="org/qtjambi/qt/osinfo/*.java"/>
+            <include name="test/*.java"/>
+        </javac>
+    </target>
+
+    <target name="compile.java">
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+        <then>
+          <antcall target="compile.java.release"/>
+          <antcall target="compile.java.debug"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="release" />
+        <then>
+          <antcall target="compile.java.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="test" />
+        <then>
+          <antcall target="compile.java.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug" />
+        <then>
+          <antcall target="compile.java.debug"/>
+        </then>
+      </if>
+    </target>
+
+    <target name="compile" depends="init.build, compile.native.qmake, compile.generate, compile.generate.qmake, compile.java">
+    </target>
+
+    <target name="package.release"
+            depends="init.build"
+            description="Creating .jar file with native libs...">
+
+        <!-- Bodge for Windows using subdirs for debug/release -->
+        <copy file="${basedir}/build/qmake/cpp/debug/testGenImpl_debuglib.dll" tofile="${basedir}/build/qmake/cpp/testGenImpl_debuglib.dll"      failonerror="false"/>
+        <copy file="${basedir}/build/qmake/cpp/release/testGenImpl.dll"        tofile="${basedir}/build/qmake/cpp/testGenImpl.dll"               failonerror="false"/>
+        <copy file="${basedir}/build/qmake/lib/org_qtjambi_test_debuglib.dll"  tofile="${basedir}/build/qmake/lib/org_qtjambi_test_debuglib.dll" failonerror="false"/>
+        <copy file="${basedir}/build/qmake/lib/org_qtjambi_test.dll"           tofile="${basedir}/build/qmake/lib/org_qtjambi_test.dll"          failonerror="false"/>
+
+        <qtjambi-platform-jar cacheKey="genex-${qtjambi.compiler}-${DSTAMP}-${TSTAMP}"
+                              outdir="${basedir}/build/platform-output"
+                              debug="false">
+
+            <!-- Qt Libraries... -->
+            <library name="QtCore"    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.core}"   />
+            <library name="QtGui"     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.gui}"    />
+            <library name="QtOpenGL"  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.opengl}" />
+            <library name="QtXml"     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.xml}"    />
+
+            <!-- Qt Plugins... -->
+            <library name="qtaccessiblewidgets" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible"   destSubdir="plugins" load="never" if="${qtjambi.plugins.accessible.qtaccessiblewidgets}" />
+
+            <library name="qsvgicon"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="iconengines"  destSubdir="plugins" load="never" if="${qtjambi.plugins.iconengines.svgicon}" />
+
+            <library name="qgif"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.gif}" />
+            <library name="qico"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.ico}" />
+            <library name="qjpeg"               type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.jpeg}" />
+            <library name="qmng"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.mng}" />
+            <library name="qsvg"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.svg}" />
+            <library name="qtiff"               type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.tiff}" />
+
+            <library name="qcncodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.cncodecs}" />
+            <library name="qjpcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.jpcodecs}" />
+            <library name="qkrcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.krcodecs}" />
+            <library name="qtwcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.twcodecs}" />
+
+            <library name="qsqlite"             type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlite}" />
+            <library name="qsqlite2"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlite2}" />
+            <library name="qsqlmysql"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlmysql}" />
+            <library name="qsqlodbc"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlodbc}" />
+            <library name="qsqlpsql"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlpsql}" />
+            <library name="qsqltds"             type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqltds}" />
+
+            <!-- Qt Jambi Libraries -->
+            <library name="qtjambi"                 dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" />
+            <library name="org_qtjambi_qt_core"   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.core.true}" />
+            <library name="org_qtjambi_qt_gui"    dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.gui.true}" />
+            <library name="org_qtjambi_qt_opengl" dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.opengl.true}" />
+
+            <!-- Win32/Win64 MinGW only -->
+            <library name="libstdc++-6"     type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libstdc++-6}"/>
+            <!-- Win32 MinGW only -->
+            <library name="libgcc_s_dw2-1"  type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libgcc_s_dw2-1}"/>
+            <!-- Win32/Win64 MinGW-W64 only -->
+            <library name="libgcc_s_sjlj-1" type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libgcc_s_sjlj-1}"/>
+            <!-- Win32/Win64 MinGW related but unable to find it required at runtime
+                 by current toolchain versions (mingw gcc 4.5.2, mingw-w64 gcc 4.7.0) -->
+            <library name="mingwm10"        type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.mingwm10}"/>
+
+            <!-- Win32/Win64 zlib1.dll -->
+            <library name="zlib1"           type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.zlib1}"/>
+
+            <!-- Win32/Win64 libssl32.dll MinGW only -->
+            <library name="libssl32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libssl32}"/>
+            <!-- Win32/Win64 ssleay32.dll MSVC only -->
+            <library name="ssleay32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.ssleay32}"/>
+
+            <!-- Win32/Win64 libeay32.dll -->
+            <library name="libeay32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libeay32}"/>
+
+            <plugin path="plugins"/>
+
+            <!-- Finally the generated libraries  -->
+            
+            <!-- This is the implementation of our custom code -->
+            <library name="testGenImpl"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi"     rootPath="build/qmake/cpp" destSubdir="lib" load="yes" />
+            <!-- This is the QtJambi generated shell code to bridge between
+                 the implementation DLL and Java -->
+<!--            <library name="org_qtjambi_test"       type="qtjambi"  rootPath="build/qmake/lib"  dsoVersion="1"/>
+                 -->
+            <library name="org_qtjambi_test"       dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="build/qmake/lib" destSubdir="lib" />
+
+        </qtjambi-platform-jar>
+
+        <mkdir dir="${basedir}/build/platform-output/META-INF/org.qtjambi.qt.deployment"/>
+        <copy file="${basedir}/build/platform-output/qtjambi-deployment.xml"  tofile="${basedir}/build/platform-output/META-INF/org.qtjambi.qt.deployment/${qtjambi.osname}.${qtjambi.compiler}.release.${qtjambi.version}.xml"/>
+
+        <delete file="${basedir}/test-*.jar"/>
+        <jar destfile="test-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}.jar">
+            <fileset dir="${basedir}/build/platform-output"/>
+            <manifest>
+                <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
+                <!-- Should of course put TestMapBorealis here.... attribute name="Main-Class" value="org.qtjambi.examples.GeneratorExample"/ -->
+                <attribute name="Main-Class" value="test.TestJava"/>
+                <attribute name="X-QtJambi-Version"      value="${qtjambi.version}"/>
+                <attribute name="X-QtJambi-Arch"         value="${qtjambi.osname}"/>
+                <attribute name="X-QtJambi-Build"        value="release"/><!-- debug test -->
+                <attribute name="X-QtJambi-Deployment"   value="/qtjambi-deployment.xml /META-INF/org.qtjambi.qt.deployment/${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}.release.${qtjambi.version}.xml"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="package.debug"
+            depends="init.build"
+            description="Creating .jar file with native libs...">
+
+        <!-- Bodge for Windows using subdirs for debug/release -->
+        <copy file="${basedir}/build/qmake/cpp/debug/testGenImpl_debuglib.dll" tofile="${basedir}/build/qmake/cpp/testGenImpl_debuglib.dll"      failonerror="false"/>
+        <copy file="${basedir}/build/qmake/cpp/release/testGenImpl.dll"        tofile="${basedir}/build/qmake/cpp/testGenImpl.dll"               failonerror="false"/>
+        <copy file="${basedir}/build/qmake/lib/org_qtjambi_test_debuglib.dll"  tofile="${basedir}/build/qmake/lib/org_qtjambi_test_debuglib.dll" failonerror="false"/>
+        <copy file="${basedir}/build/qmake/lib/org_qtjambi_test.dll"           tofile="${basedir}/build/qmake/lib/org_qtjambi_test.dll"          failonerror="false"/>
+
+        <qtjambi-platform-jar cacheKey="genex-${qtjambi.compiler}-${DSTAMP}-${TSTAMP}"
+                              outdir="${basedir}/build/platform-output-debug"
+                              debug="true">
+
+            <!-- Qt Libraries... -->
+            <library name="QtCore"    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.core.debug}"   />
+            <library name="QtGui"     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.gui.debug}"    />
+            <library name="QtOpenGL"  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.opengl.debug}" />
+            <library name="QtXml"     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}" destSubdir="lib" if="${qtjambi.xml.debug}"    />
+
+            <!-- Qt Plugins... -->
+            <library name="qtaccessiblewidgets" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible"   destSubdir="plugins" load="never" if="${qtjambi.plugins.accessible.qtaccessiblewidgets.debug}" />
+
+            <library name="qsvgicon"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="iconengines"  destSubdir="plugins" load="never" if="${qtjambi.plugins.iconengines.svgicon.debug}" />
+
+            <library name="qgif"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.gif.debug}" />
+            <library name="qico"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.ico.debug}" />
+            <library name="qjpeg"               type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.jpeg.debug}" />
+            <library name="qmng"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.mng.debug}" />
+            <library name="qsvg"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.svg.debug}" />
+            <library name="qtiff"               type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" load="never" if="${qtjambi.plugins.imageformats.tiff.debug}" />
+
+            <library name="qcncodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.cncodecs.debug}" />
+            <library name="qjpcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.jpcodecs.debug}" />
+            <library name="qkrcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.krcodecs.debug}" />
+            <library name="qtwcodecs"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="codecs"       destSubdir="plugins" load="never" if="${qtjambi.plugins.codecs.twcodecs.debug}" />
+
+            <library name="qsqlite"             type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlite.debug}" />
+            <library name="qsqlite2"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlite2.debug}" />
+            <library name="qsqlmysql"           type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlmysql.debug}" />
+            <library name="qsqlodbc"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlodbc.debug}" />
+            <library name="qsqlpsql"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqlpsql.debug}" />
+            <library name="qsqltds"             type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers"   destSubdir="plugins" load="never" if="${qtjambi.plugins.sqldrivers.sqltds.debug}" />
+
+            <!-- Qt Jambi Libraries -->
+            <library name="qtjambi"                 dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" />
+            <library name="org_qtjambi_qt_core"   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.core.debug.true}" />
+            <library name="org_qtjambi_qt_gui"    dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.gui.debug.true}" />
+            <library name="org_qtjambi_qt_opengl" dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="${qtjambi.opengl.debug.true}" />
+
+            <!-- Win32/Win64 MinGW only -->
+            <library name="libstdc++-6"     type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libstdc++-6}"/>
+            <!-- Win32 MinGW only -->
+            <library name="libgcc_s_dw2-1"  type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libgcc_s_dw2-1}"/>
+            <!-- Win32/Win64 MinGW-W64 only -->
+            <library name="libgcc_s_sjlj-1" type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libgcc_s_sjlj-1}"/>
+            <!-- Win32/Win64 MinGW related but unable to find it required at runtime
+                 by current toolchain versions (mingw gcc 4.5.2, mingw-w64 gcc 4.7.0) -->
+            <library name="mingwm10"        type="system" rootPath="${qtjambi.qt.bindir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.mingwm10}"/>
+
+            <!-- Win32/Win64 zlib1.dll -->
+            <library name="zlib1"           type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.zlib1}"/>
+
+            <!-- Win32/Win64 libssl32.dll MinGW only -->
+            <library name="libssl32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libssl32}"/>
+            <!-- Win32/Win64 ssleay32.dll MSVC only -->
+            <library name="ssleay32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.ssleay32}"/>
+
+            <!-- Win32/Win64 libeay32.dll -->
+            <library name="libeay32"        type="dso" rootPath="${qtjambi.qt.libdir}" destSubdir="lib" load="never" if="${qtjambi.packaging.dso.libeay32}"/>
+
+            <plugin path="plugins"/>
+
+            <!-- Finally the generated libraries  -->
+            
+            <!-- This is the implementation of our custom code -->
+            <library name="testGenImpl"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi"     rootPath="build/qmake/cpp" destSubdir="lib" load="yes" />
+            <!-- This is the QtJambi generated shell code to bridge between
+                 the implementation DLL and Java -->
+<!--            <library name="org_qtjambi_test"       type="qtjambi"  rootPath="build/qmake/lib"  dsoVersion="1"/>
+                 -->
+            <library name="org_qtjambi_test"       dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="build/qmake/lib" destSubdir="lib" />
+
+        </qtjambi-platform-jar>
+
+        <mkdir dir="${basedir}/build/platform-output-debug/META-INF/org.qtjambi.qt.deployment"/>
+        <copy file="${basedir}/build/platform-output-debug/qtjambi-deployment.xml"  tofile="${basedir}/build/platform-output-debug/META-INF/org.qtjambi.qt.deployment/${qtjambi.osname}.${qtjambi.compiler}.debug.${qtjambi.version}.xml"/>
+
+        <delete file="${basedir}/test-*.jar"/>
+        <jar destfile="test-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}-debug.jar">
+            <fileset dir="${basedir}/build/platform-output-debug"/>
+            <manifest>
+                <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
+                <!-- Should of course put TestMapBorealis here.... attribute name="Main-Class" value="org.qtjambi.examples.GeneratorExample"/ -->
+                <attribute name="Main-Class" value="test.TestJava"/>
+                <attribute name="X-QtJambi-Version"      value="${qtjambi.version}"/>
+                <attribute name="X-QtJambi-Arch"         value="${qtjambi.osname}"/>
+                <attribute name="X-QtJambi-Build"        value="debug"/><!-- debug test -->
+                <attribute name="X-QtJambi-Deployment"   value="/qtjambi-deployment.xml /META-INF/org.qtjambi.qt.deployment/${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}.debug.${qtjambi.version}.xml"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="package">
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+        <then>
+          <antcall target="package.release"/>
+          <antcall target="package.debug"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="release" />
+        <then>
+          <antcall target="package.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="test" />
+        <then>
+          <antcall target="package.release"/>
+        </then>
+      </if>
+
+      <if>
+        <equals arg1="${qtjambi.configuration}" arg2="debug" />
+        <then>
+          <antcall target="package.debug"/>
+        </then>
+      </if>
+    </target>
+
+    <target name="clean" depends="init.local">
+        <delete file="${basedir}/test-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}.jar"/>
+        <delete file="${basedir}/test-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}-debug.jar"/>
+        <delete dir="${basedir}/build/platform-output-release"/>
+        <delete dir="${basedir}/build/platform-output-debug"/>
+        <delete dir="${basedir}/build"/>
+    </target>
+
+    <target name="all" depends="compile, package"/>
+
+</project>

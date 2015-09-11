@@ -1,0 +1,288 @@
+<?xml version="1.0"?>
+<typesystem>
+	<rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
+    <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
+    <enum-type name="QQuickItem::ItemChange"/>
+    <enum-type name="QQuickItem::TransformOrigin"/>
+    <enum-type name="QQuickPaintedItem::PerformanceHint" flags="QQuickPaintedItem::PerformanceHints"/>
+    <enum-type name="QQuickPaintedItem::RenderTarget"/>
+    <enum-type name="QQuickView::ResizeMode"/>
+    <enum-type name="QQuickView::Status"/>
+    <enum-type name="QQuickWindow::CreateTextureOption" flags="QQuickWindow::CreateTextureOptions"/>
+    <enum-type name="QSGNode::DirtyStateBit" flags="QSGNode::DirtyState"/>
+    <enum-type name="QSGNode::Flag" flags="QSGNode::Flags"/>
+    <enum-type name="QSGNode::NodeType"/>
+    <enum-type name="QSGGeometry::DataPattern"/>
+    <enum-type name="QSGMaterial::Flag" flags="QSGMaterial::Flags"/>
+    <enum-type name="QSGTexture::Filtering"/>
+    <enum-type name="QSGTexture::WrapMode"/>
+    <enum-type name="QSGMaterialShader::RenderState::DirtyState" flags="QSGMaterialShader::RenderState::DirtyStates"/>
+    <enum-type name="QSGSimpleTextureNode::TextureCoordinatesTransformFlag" flags="QSGSimpleTextureNode::TextureCoordinatesTransformMode"/>
+    <enum-type name="QQuickWindow::SceneGraphError"/>
+	<enum-type name="QQuickWindow::RenderStage"/>
+
+	<object-type name="QQuickRenderControl">
+    </object-type>
+	<object-type name="QQuickItem">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+		<modify-function signature="antialiasing()const" access="non-final"/>
+		<modify-function signature="setAntialiasing(bool)" access="non-final"/>
+        <modify-function signature="childMouseEventFilter(QQuickItem*,QEvent*)">
+            <modify-argument index="2" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="dragEnterEvent(QDragEnterEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="dragLeaveEvent(QDragLeaveEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="dragMoveEvent(QDragMoveEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="dropEvent(QDropEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="focusInEvent(QFocusEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="focusOutEvent(QFocusEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="hoverEnterEvent(QHoverEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="hoverLeaveEvent(QHoverEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="hoverMoveEvent(QHoverEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="inputMethodEvent(QInputMethodEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="keyPressEvent(QKeyEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="keyReleaseEvent(QKeyEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="mouseDoubleClickEvent(QMouseEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="mouseMoveEvent(QMouseEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="mousePressEvent(QMouseEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="mouseReleaseEvent(QMouseEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="touchEvent(QTouchEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="wheelEvent(QWheelEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="updatePaintNode(QSGNode*,QQuickItem::UpdatePaintNodeData*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+			<modify-argument index="2" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <object-type name="QQuickPaintedItem">
+	<modify-function signature="antialiasing()const" remove="all"/>
+        <modify-function signature="paint( QPainter *)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <object-type name="QQuickTextDocument">
+    </object-type>
+    <object-type name="QQuickFramebufferObject">
+    </object-type>
+    <object-type name="QQuickFramebufferObject::Renderer">
+    </object-type>
+    <object-type name="QQuickTextureFactory">
+    </object-type>
+    <object-type name="QQuickView">
+		<modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
+			<modify-argument index="2">
+				<reference-count action="set" variable-name="__rcQmlComponent" />
+			</modify-argument>
+			<modify-argument index="3">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+    <object-type name="QQuickWindow">
+		<modify-function signature="setRenderTarget(QOpenGLFramebufferObject*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QSGNode" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QSGNode::BasicNodeType">
+    </object-type>
+    <object-type name="QSGBasicGeometryNode" force-abstract="yes">
+		<modify-function signature="geometry() const" remove="all"/>
+		<modify-function signature="matrix() const" remove="all"/>
+    </object-type>
+    <object-type name="QSGClipNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::ClipNodeType">
+    </object-type>
+    <object-type name="QSGGeometryNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::GeometryNodeType">
+    </object-type>
+    <object-type name="QSGOpacityNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::OpacityNodeType">
+    </object-type>
+    <object-type name="QSGSimpleTextureNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::GeometryNodeType">
+		<modify-function signature="setTexture(QSGTexture*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<inject-code class="java" position="end">
+				if (texture != null &amp;&amp; ownsTexture()) {
+					texture.disableGarbageCollection();
+				}
+			</inject-code>
+		</modify-function>
+		<modify-function signature="setOwnsTexture(bool)">
+			<inject-code class="java" position="end">
+				if (texture() != null) {
+					if(owns){
+						texture().disableGarbageCollection();
+					}else{
+						texture().setJavaOwnership();
+					}
+				}
+			</inject-code>
+		</modify-function>
+    </object-type>
+    <object-type name="QSGTransformNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::TransformNodeType">
+    </object-type>
+    <object-type name="QSGDynamicTexture">
+    </object-type>
+    <object-type name="QSGFlatColorMaterial">
+    </object-type>
+    <object-type name="QSGGeometry">
+	<modify-function signature="indexData() const" remove="all"/>
+	<modify-function signature="indexDataAsUInt() const" remove="all"/>
+	<modify-function signature="indexDataAsUShort() const" remove="all"/>
+	<modify-function signature="indexDataAsUInt()" remove="all"/>
+	<modify-function signature="indexDataAsUShort()" remove="all"/>
+	<modify-function signature="vertexData() const" remove="all"/>
+	<modify-function signature="vertexDataAsPoint2D() const" remove="all"/>
+	<modify-function signature="vertexDataAsColoredPoint2D() const" remove="all"/>
+	<modify-function signature="vertexDataAsTexturedPoint2D() const" remove="all"/>
+    </object-type>
+    <object-type name="QSGMaterial">
+        <modify-function signature="compare(const QSGMaterial*)const">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <object-type name="QSGMaterialShader">
+        <modify-function signature="updateState(QSGMaterialShader::RenderState,QSGMaterial*,QSGMaterial*)">
+            <modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="3" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <object-type name="QSGOpaqueTextureMaterial">
+		<modify-function signature="setTexture(QSGTexture*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <!--object-type name="QSGSimpleMaterialShader">
+    </object-type-->
+    <!--object-type name="QSGSimpleMaterial">
+    </object-type-->
+    <object-type name="QSGTexture">
+    </object-type>
+    <object-type name="QSGTextureMaterial">
+    </object-type>
+    <object-type name="QSGVertexColorMaterial">
+    </object-type>
+    <object-type name="QQuickTransform">
+    </object-type>
+
+    <!--object-type name="QQuickCloseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::QuickClose"/-->
+
+    <value-type name="QSGGeometry::Attribute">
+    </value-type>
+    <value-type name="QSGGeometry::AttributeSet">
+    </value-type>
+    <value-type name="QSGGeometry::ColoredPoint2D">
+    </value-type>
+    <value-type name="QQuickItem::ItemChangeData">
+		<custom-creator>
+			if(copy)
+				return new QQuickItem::ItemChangeData(*copy);
+			else
+				return Q_NULLPTR;
+		</custom-creator>
+		<modify-function signature="setWindow(QQuickWindow*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setItem(QQuickItem*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </value-type>
+    <value-type name="QSGGeometry::Point2D">
+    </value-type>
+    <object-type name="QQuickImageProvider">
+    </object-type>
+    <value-type name="QQuickItem::UpdatePaintNodeData">
+		<custom-creator>
+			if(copy)
+				return new QQuickItem::UpdatePaintNodeData(*copy);
+			else
+				return Q_NULLPTR;
+		</custom-creator>
+		<modify-function signature="setTransformNode(QSGTransformNode*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </value-type>
+    <value-type name="QSGMaterialShader::RenderState">
+    </value-type>
+    <object-type name="QSGMaterialType">
+    </object-type>
+    <value-type name="QSGGeometry::TexturedPoint2D">
+    </value-type>
+	
+	<object-type name="QQuickItemGrabResult">
+    </object-type>
+	
+	<object-type name="QSGAbstractRenderer">
+        <modify-function signature="nodeChanged(QSGNode*,QFlags&lt;QSGNode::DirtyStateBit&gt;)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+	
+	<enum-type name="QSGAbstractRenderer::ClearModeBit" flags="QSGAbstractRenderer::ClearMode"/>
+	
+	<object-type name="QSGEngine">
+    </object-type>
+	
+	<enum-type name="QSGEngine::CreateTextureOption" flags="QSGEngine::CreateTextureOptions"/>
+	
+	<rejection class="QSGSimpleMaterial"/>
+	<rejection class="QSGSimpleMaterialShader"/>
+	<object-type name="QSGSimpleRectNode">
+    </object-type>
+	<object-type name="QSGTextureProvider">
+    </object-type>
+	
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setTransformNode(QSGTransformNode*)' for function modification in 'QQuickItem::UpdatePaintNodeData' not found. Possible candidates:*"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setWindow(QQuickWindow*)' for function modification in 'QQuickItem::ItemChangeData' not found. Possible candidates:*"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setItem(QQuickItem*)' for function modification in 'QQuickItem::ItemChangeData' not found. Possible candidates:*"/>
+	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'itemTransform(QQuickItem*,bool*)const' for function modification in 'QQuickFramebufferObject' not found. Possible candidates:*"/>
+</typesystem>

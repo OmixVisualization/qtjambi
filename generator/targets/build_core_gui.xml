@@ -1,0 +1,13 @@
+<typesystem>
+  <load-typesystem name="../build/generator/typesystem_core.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_network.xml" generate="yes" />
+<!--
+  <load-typesystem name="../build/generator/typesystem_gui.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_qml.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_qt3dcore.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3drenderer.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_qt3dinput.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dquick.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dquickrenderer.xml" generate="yes" />
+  -->
+</typesystem>

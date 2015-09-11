@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<typesystem>
+    <rejection class="QTest" function-name="qCompare" /><!-- not public API -->
+    <rejection class="QSignalSpy" function-name="initArgs" /><!-- not public API -->
+    <rejection class="QSignalSpy" function-name="qt_metacall" /><!-- not public API -->
+
+    <enum-type name="QTest::AttributeIndex"/>
+    <enum-type name="QTest::KeyAction"/>
+    <enum-type name="QTest::LogElementType"/>
+    <enum-type name="QTest::MouseAction"/>
+    <enum-type name="QTest::QBenchmarkMetric"/>
+    <enum-type name="QTest::SkipMode"/>
+    <enum-type name="QTest::TestFailMode"/>
+
+    <namespace-type name="QTest">
+        <extra-includes>
+            <include file-name="QTest" location="global"/>
+        </extra-includes>
+
+        <modify-function signature="addColumnInternal(int,const char *)" remove="all"/><!-- not public API -->
+        <modify-function signature="asciiToKey(char)" remove="all" /><!-- not public API -->
+        <modify-function signature="compare_helper(bool,const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="compare_helper(bool,const char *,char *,char *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="compare_ptr_helper(const void *,const void *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="compare_string_helper(const char *,const char *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="currentDataTag()" remove="all" /><!-- FIXME: returns (const char *) -->
+<!--        <modify-function signature="currentTestFailed()" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
+        <modify-function signature="currentTestFunction()" remove="all" /><!-- FIXME: returns (const char *) -->
+        <modify-function signature="ignoreMessage(QtMsgType,const char *)" remove="all" /><!-- FIXME: arg1 (const char *) -->
+        <modify-function signature="keyToAscii(Qt::Key)" remove="all" /><!-- not public API -->
+        <modify-function signature="qData(const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="qElementData(const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="qExec(QObject *,int,char **)" remove="all" /><!-- FIXME: arg3 (char **), other overload exist -->
+        <modify-function signature="qExec(QObject *,QStringList&lt;QString&gt;)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QObject"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="qExpectFail(const char *,const char *,QTest::TestFailMode,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="qFail(const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="qGlobalData(const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="qSkip(const char*,const char*,int)" remove="all" /><!-- not public API -->
+<!--        <modify-function signature="qSleep(int)" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
+        <modify-function signature="qVerify(bool,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
+<!--        <modify-function signature="qWait(int)" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
+        <modify-function signature="qWaitForWindowShown(QWidget*)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.gui.QWidget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="qWarn(const char *,const char *,int)" remove="all" /><!-- not public API -->
+        <modify-function signature="testObject()" remove="all" /><!-- not public API -->
+        <modify-function signature="toHexRepresentation(const char*,int)" remove="all" /><!-- FIXME: arg1 (const char *) -->
+        <modify-function signature="toString(const char*)" remove="all" /><!-- FIXME: arg1 (const char *) -->
+        <modify-function signature="toString(const void*)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
+    </namespace-type>
+
+    <value-type name="QTest::QTouchEventSequence"/>
+
+    <value-type name="QTestEventList"/>
+
+    <object-type name="QSignalSpy">
+        <modify-function signature="wait(int)" rename="waitForTimeout" /><!-- not public API -->
+    </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: class 'QSignalSpy' inherits from unknown base class 'QList&lt;QList&lt;QVariant>>'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: class not found for setup inheritance 'QList&lt;QList&lt;QVariant>>'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type 'QTestData&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type 'T*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::toString', unmatched parameter type 'T const&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qTest', unmatched parameter type 'T const&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'compare_helper(bool,const char*,const char*,int)' for function modification in 'QTest' not found. Possible candidates: compare_helper(bool,const char*,char*,char*,const char*,const char*,const char*,int) in QTest"/>
+</typesystem>
+

@@ -1,0 +1,9 @@
+RESOLVE: SOURCE=/home/smar/Projektit/java/jambi/qtjambi-4_7/generator BUILD=
+/usr/include/qt4/QtCore
+/usr/include/qt4/QtGui
+/usr/include/qt4/QtXml
+/usr/include/qt4
+/usr/include/phonon
+/home/smar/Tiedostot/Projektit/java/jambi/qtjambi/generator/parser
+/home/smar/Tiedostot/Projektit/java/jambi/qtjambi/generator/parser/rpp
+/home/smar/Tiedostot/Projektit/java/jambi/qtjambi/src/cpp/common

@@ -1,0 +1,15 @@
+/*!
+    \page qtjambi-treemodel.html
+    \title Tree Model Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Tree Model Example}{TreeModel.java}
+    \endlist
+
+    The Tree Model example shows how to implement hierarchical data
+    models.
+
+    \image treemodel-example.png
+
+*/

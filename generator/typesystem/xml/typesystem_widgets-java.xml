@@ -1,0 +1,2641 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.widgets" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+    </inject-code>
+
+    <template name="gui.init_style_option">
+        protected final void initStyleOption(%TYPE option) {
+            initStyleOption(option.nativePointer());
+        }
+    </template>
+
+	<!-- the following template is necessary because all "QGraphicsItemInterface" returning methods
+		 do not properly return the right java objects when the corresponding cpp object derives from QGraphicsObject.-->
+	<template name="gui.convert_graphicsitem_to_graphicsobject">
+	jobject %JAVA_VALUE;
+	if(%QT_VALUE!=0 &amp;&amp; %QT_VALUE->toGraphicsObject()!=0){
+		%JAVA_VALUE = qtjambi_from_qobject(__jni_env, (QObject *)%QT_VALUE->toGraphicsObject(), "QGraphicsObject$ConcreteWrapper", "org/qtjambi/qt/widgets/");
+	}else{
+		%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QGraphicsItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+	}
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+	</template>
+	
+	
+	<!-- the following template is necessary because all "QGraphicsLayoutItemInterface" returning methods
+		 do not properly return the right java objects when the corresponding cpp object derives from QGraphicsObject.-->
+	<template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+	jobject %JAVA_VALUE;
+	if(%QT_VALUE!=0 &amp;&amp; !%QT_VALUE->isLayout()){
+		try{
+			%JAVA_VALUE = qtjambi_from_qobject(__jni_env, (QObject *)((QGraphicsWidget *)%QT_VALUE)->toGraphicsObject(), "QGraphicsObject$ConcreteWrapper", "org/qtjambi/qt/widgets/");
+		}catch(...){
+			%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QGraphicsLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+		}
+	}else{
+		%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QGraphicsLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+	}
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+	</template>
+	
+	<!-- the following template is necessary because all "QLayoutItemInterface" returning methods
+		 do not properly return the right java objects when the corresponding cpp object derives from QWidget.-->
+	<template name="gui.convert_QLayoutItem">
+	jobject %JAVA_VALUE;
+	if(%QT_VALUE!=0){
+		if(%QT_VALUE->layout()!=0){
+			%JAVA_VALUE = qtjambi_from_qobject(__jni_env, (QObject *)%QT_VALUE->layout(), "QLayout$ConcreteWrapper", "org/qtjambi/qt/widgets/");
+		}else if(%QT_VALUE->spacerItem()!=0){
+			try{
+				%JAVA_VALUE = qtjambi_from_object(__jni_env, (QSpacerItem *)%QT_VALUE, "QSpacerItem", "org/qtjambi/qt/widgets/", true);
+			}catch(...){
+				%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+			}
+		}else if(%QT_VALUE->widget()!=0){
+			try{
+				%JAVA_VALUE = qtjambi_from_object(__jni_env, (QWidgetItem *)%QT_VALUE, "QWidgetItem", "org/qtjambi/qt/widgets/", true);
+			}catch(...){
+				%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+			}
+		}else{
+			%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+		}
+	}else{
+		%JAVA_VALUE = qtjambi_from_object(__jni_env, %QT_VALUE, "QLayoutItem$ConcreteWrapper", "org/qtjambi/qt/widgets/", true);
+	}
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+	</template>
+
+    <template name="gui.convert_graphicsitem_array_to_java">
+        <insert-template name="gui.convert_object_array_to_java">
+            <replace from="%CLASSNAME_ARRAY" to="QGraphicsItemInterface"/>
+            <replace from="%PACKAGE_ARRAY" to="org/qtjambi/qt/widgets/"/>
+            <replace from="%CLASSNAME_SINGLE" to="QGraphicsItem$ConcreteWrapper"/>
+            <replace from="%PACKAGE_SINGLE" to="org/qtjambi/qt/widgets/"/>
+            <replace from="%LOOKUP" to=""/>
+            <replace from="%REFERENCE" to=""/>
+        </insert-template>
+    </template>
+
+    <template name="gui.convert_styleoptiongraphicsitem_array_to_java">
+        <insert-template name="gui.convert_object_array_to_java">
+            <replace from="%CLASSNAME_ARRAY" to="QStyleOptionGraphicsItem"/>
+            <replace from="%PACKAGE_ARRAY" to="org/qtjambi/qt/widgets/"/>
+            <replace from="%CLASSNAME_SINGLE" to="QStyleOptionGraphicsItem"/>
+            <replace from="%PACKAGE_SINGLE" to="org/qtjambi/qt/widgets/"/>
+            <replace from="%LOOKUP" to="&quot;Lorg_qtjambi_qt_widgets_QStyleOption_2&quot;,"/>
+            <replace from="%REFERENCE" to="&amp;"/>
+        </insert-template>
+    </template>
+
+    <template name="gui.convert_interface_array_from_java">
+        %CLASSNAME *%out = 0;
+        QVarLengthArray&lt;%CLASSNAME, 256&gt; __interfaceArray(__length);
+        if (%in != 0) {
+            for (int i=0; i&lt;__length; ++i) {
+                __interfaceArray[i] = (%CLASSNAME) %CONVERSION_FUNCTION(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i) %EXTRA);
+            }
+        }
+        %out = %in == 0 ? 0 : __interfaceArray.data();
+    </template>
+
+    <template name="gui.convert_object_array_from_java">
+        %CLASSNAME *%out = 0;
+        QVarLengthArray&lt;%CLASSNAME, 256&gt; __array(__length);
+        if (%in != 0) {
+            for (int i=0; i&lt;__length; ++i) {
+                __array[i] = *(%CLASSNAME *) %CONVERSION_FUNCTION(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i) %EXTRA);
+            }
+        }
+        %out = %in == 0 ? 0 : __array.data();
+    </template>
+
+    <template name="gui.convert_graphicsitem_array_from_java">
+        <insert-template name="gui.convert_interface_array_from_java">
+            <replace from="%CLASSNAME" to="QGraphicsItem *"/>
+            <replace from="%EXTRA" to=", &quot;QGraphicsItemInterface&quot;, &quot;org/qtjambi/qt/widgets/&quot;, &quot;__qt_cast_to_QGraphicsItem&quot;"/>
+            <replace from="%CONVERSION_FUNCTION" to="qtjambi_to_interface"/>
+        </insert-template>
+    </template>
+
+
+    <template name="gui.convert_styleoptiongraphicsitem_array_from_java">
+        <insert-template name="gui.convert_object_array_from_java">
+            <replace from="%CLASSNAME" to="QStyleOptionGraphicsItem"/>
+            <replace from="%EXTRA" to=""/>
+            <replace from="%CONVERSION_FUNCTION" to="qtjambi_to_object"/>
+        </insert-template>
+    </template>
+
+    <object-type name="QGraphicsTextItem">
+    </object-type>
+
+    <value-type name="QPainterPath">
+       <modify-function signature="operator&amp;=(QPainterPath)" remove="all" />
+        <modify-function signature="operator+=(QPainterPath)" remove="all" />
+        <modify-function signature="operator-=(QPainterPath)" remove="all" />
+        <modify-function signature="operator|=(QPainterPath)" remove="all" />
+    </value-type>
+
+
+
+    <value-type name="QTreeWidgetItemIterator">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QTreeWidgetItemIterator___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+
+    <object-type name="QPixmapConvolutionFilter" polymorphic-id-expression="%1-&gt;type() == QPixmapFilter::ConvolutionFilter">
+    <modify-function signature="setConvolutionKernel(const qreal*,int,int)">
+        <access modifier="private" />
+        <rename to="setConvolutionKernel_private" />
+    </modify-function>
+    <inject-code>
+        <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QPixmapFilter___" quote-before-line="}// class"/>
+    </inject-code>
+    </object-type>
+
+    <value-type name="QPainterPath::Element">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QPainterPath_Element___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+    <interface-type name="QGraphicsItem">
+
+        <modify-function signature="QGraphicsItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            if (%1 != null)
+                disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+
+        <modify-function signature="paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)">
+            <modify-argument index="2">
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOptionGraphicsItem", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    const QStyleOptionGraphicsItem *%out = (QStyleOptionGraphicsItem *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionGraphicsItem"/>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="itemTransform(const QGraphicsItem*,bool*)const">
+            <!-- Remove native pointer argument and return null for !ok. We use this pattern
+                 so it will be inherited by classes that implement the interface -->
+            <modify-argument index="2">
+                <remove-argument />
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    bool okHolder = false;
+                    bool *%out = &amp;okHolder;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="return">
+                <conversion-rule class="shell">
+                    if (%2 != 0) *%2 = %in != 0;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    jobject %out = !okHolder
+                                   ? qtjambi_from_object(__jni_env, &amp;%in, "QTransform", "org/qtjambi/qt/gui/", true)
+                                   : 0;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="setGroup(QGraphicsItemGroup*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="beginning">
+                org.qtjambi.qt.widgets.QGraphicsItemGroup oldGroup = group();
+            </inject-code>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            if (%1 == null &amp;&amp; oldGroup != null &amp;&amp; oldGroup.parentItem() == null)
+                reenableGarbageCollection();
+            else
+                disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+
+        <modify-function signature="setParentItem(QGraphicsItem*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            if (%1 == null)
+                reenableGarbageCollection();
+            else
+                disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+		
+		<modify-function signature="childItems () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="collidingItems ( Qt::ItemSelectionMode ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="commonAncestorItem ( const QGraphicsItem * ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="focusItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="focusProxy () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="panel () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="parentItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="topLevelItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="isBlockedByModalPanel ( QGraphicsItem **) const" rename="isBlockedByModalPanel" access="private" >
+			<modify-argument index="1">
+			  <remove-default-expression/>
+			</modify-argument>
+        </modify-function>
+		<inject-code>
+			@QtBlockedSlot
+			public final BlockedByModalPanelInfo isBlockedByModalPanel()    {
+				org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(QNativePointer.Type.Pointer);
+				pointer.setPointerValue(new org.qtjambi.qt.QNativePointer(QNativePointer.Type.Pointer));
+				boolean result = isBlockedByModalPanel(pointer);
+				QGraphicsItemInterface modalPanel = null;
+				if(!pointer.pointerValue().isNull()){
+					modalPanel = QGraphicsItem.fromNativePointer(pointer);
+					if(modalPanel!=null &amp;&amp; modalPanel.toGraphicsObject()!=null){
+						modalPanel = modalPanel.toGraphicsObject();
+					}
+				}
+				return new BlockedByModalPanelInfo(result, modalPanel);
+			}
+			
+			public static class BlockedByModalPanelInfo{
+				public BlockedByModalPanelInfo(boolean result,
+						QGraphicsItemInterface modalPanel) {
+					super();
+					this.result = result;
+					this.modalPanel = modalPanel;
+				}
+				public final boolean result;
+				public final QGraphicsItemInterface modalPanel;
+			}
+		</inject-code>
+		
+    </interface-type>
+    
+    <object-type name="QGraphicsObject" delete-in-main-thread="yes">
+        <modify-function signature="setGroup(QGraphicsItemGroup*)">
+            <modify-argument index="1">
+                <!-- Handled by injected code in QGraphicsItem -->
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setParentItem(QGraphicsItem*)">
+            <modify-argument index="1">
+                <!-- Handled by injected code in QGraphicsItem -->
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+	<modify-function signature="grabGesture(Qt::GestureType, QFlags&lt;Qt::GestureFlag&gt;)">
+	    <modify-argument index="2">
+		  <replace-default-expression with="new org.qtjambi.qt.core.Qt.GestureFlag[0]"/>
+	    </modify-argument>
+	</modify-function>
+    </object-type>    
+
+    <object-type name="QAbstractGraphicsShapeItem">
+        <modify-function signature="QAbstractGraphicsShapeItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QAbstractItemView">
+        <modify-function signature="setIndexWidget(const QModelIndex &amp;,QWidget *)">
+            <modify-argument index="2">
+                <!-- Safe to ignore because view reparents widget -->
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setItemDelegate(QAbstractItemDelegate *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcItemDelegate"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setModel(QAbstractItemModel *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcItemModel"/>
+            </modify-argument>
+            <inject-code class="java" position="end">
+                // setModel() creates a new selection model for the object
+                org.qtjambi.qt.GeneratorUtilities.setField(this, org.qtjambi.qt.widgets.QAbstractItemView.class, "__rcItemSelectionModel", null);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="setSelectionModel(QItemSelectionModel *)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <reference-count action="set" variable-name="__rcItemSelectionModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setItemDelegateForColumn(int,QAbstractItemDelegate*)">
+            <modify-argument index="2">
+                <reference-count action="put" key-argument="1" variable-name="__rcDelegatesForColumns"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setItemDelegateForRow(int,QAbstractItemDelegate*)">
+            <modify-argument index="2">
+                <reference-count action="put" key-argument="1" variable-name="__rcDelegatesForRows"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QActionGroup">
+        <modify-function signature="addAction(QAction*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcActions"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                org.qtjambi.qt.GeneratorUtilities.setField(%1, QAction.class, "__rcActionGroup", this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="removeAction(QAction*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcActions"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                org.qtjambi.qt.GeneratorUtilities.setField(%1, QAction.class, "__rcActionGroup", null);
+            </inject-code>
+        </modify-function>
+    </object-type>
+	
+	<object-type name="QTabWidget">
+        <modify-function signature="initStyleOption(QStyleOptionTabWidgetFrame*)const">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionTabWidgetFrame"/>
+            </insert-template>
+        </inject-code>
+	</object-type>
+	
+	<object-type name="QDockWidget">
+        <modify-function signature="initStyleOption(QStyleOptionDockWidget*)const">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionDockWidget"/>
+            </insert-template>
+        </inject-code>
+	</object-type>
+	
+    <object-type name="QFocusFrame">
+        <modify-function signature="initStyleOption(QStyleOption*)const">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOption"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QFrame">
+        <modify-function signature="initStyleOption(QStyleOptionFrame*)const">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionFrame"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+	
+	<object-type name="QComboBox">
+        <modify-function signature="initStyleOption(QStyleOptionComboBox*)const">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionComboBox"/>
+            </insert-template>
+        </inject-code>
+	</object-type>
+	
+	<object-type name="QHeaderView">
+        <modify-function signature="initStyleOption(QStyleOptionHeader*)const">
+			<access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionHeader"/>
+            </insert-template>
+        </inject-code>
+	</object-type>
+	
+    <object-type name="QCheckBox">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionButton"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+    <object-type name="QWizardPage">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QWizardPage___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+
+    <object-type name="QFontDialog">
+        <extra-includes>
+	    <include file-name="org.qtjambi.qt.gui.*" location="java"/>
+        </extra-includes>
+
+    <modify-function signature="open(QObject*,const char*)" remove="all" />
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFontDialog___" quote-before-line="}// class"/>
+        </inject-code>
+
+
+        <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)">
+            <access modifier="private" />
+        </modify-function>
+        <modify-function signature="getFont(bool*,QWidget*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+        <!--modify-function signature="getFont(bool*,QFont,QWidget*,QString)">
+            <access modifier="private"/>
+        </modify-function>
+        <modify-function signature="getFont(bool*,QFont,QWidget*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function-->
+    </object-type>
+
+    <object-type name="QGraphicsEllipseItem">
+        <modify-function signature="QGraphicsEllipseItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsEllipseItem(const QRectF &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsEllipseItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="5" meta-name="%5"/>
+                if (%5 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsItemGroup">
+        <modify-function signature="QGraphicsItemGroup(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addToGroup(QGraphicsItem*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeFromGroup(QGraphicsItem*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (parentItem() == null)
+                %1.reenableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsLineItem">
+        <modify-function signature="QGraphicsLineItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsLineItem(const QLineF &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsLineItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="5" meta-name="%5"/>
+                if (%5 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsPathItem">
+        <modify-function signature="QGraphicsPathItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsPathItem(const QPainterPath &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsPixmapItem">
+        <modify-function signature="QGraphicsPixmapItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsPixmapItem(const QPixmap &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsPolygonItem">
+        <modify-function signature="QGraphicsPolygonItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsPolygonItem(const QPolygonF &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QGraphicsRectItem">
+        <modify-function signature="QGraphicsRectItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsRectItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="5" meta-name="%5"/>
+                if (%5 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsRectItem(const QRectF &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QGraphicsSimpleTextItem">
+        <modify-function signature="QGraphicsSimpleTextItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsSimpleTextItem(const QString &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QItemEditorFactory">
+        <modify-function signature="setDefaultFactory(QItemEditorFactory*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QMenu">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QMenu___" quote-before-line="}// class"/>
+        </inject-code>
+
+
+        <template name="gui.addAction">
+        public final QAction addAction(%EXTRA String text, Object receiver, String method %END_EXTRA) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(receiver, method);
+
+            return returned;
+        }
+
+        public final QAction addAction(%EXTRA String text, org.qtjambi.qt.QSignalEmitter.AbstractSignal signal %END_EXTRA) {
+            QAction returned = addAction(%CALL_EXTRA text %END_CALL_EXTRA);
+            %POST_CALL
+            returned.triggered.connect(signal);
+            return returned;
+        }
+        </template>
+
+        <template name="gui.addAction_with_shortcut">
+            <insert-template name="gui.addAction">
+                <replace from="%POST_CALL" to="returned.setShortcut(shortcut);"/>
+                <replace from=" %END_EXTRA" to=", QKeySequence shortcut"/>
+                <replace from=" %END_CALL_EXTRA" to=""/>
+            </insert-template>
+
+        public final QAction addAction(%EXTRA String text, Object receiver, String method) {
+            return addAction(%CALL_EXTRA text, receiver, method, new QKeySequence(0));
+        }
+
+        public final QAction addAction(%EXTRA String text, org.qtjambi.qt.QSignalEmitter.AbstractSignal signal) {
+            return addAction(%CALL_EXTRA text, signal, new QKeySequence(0));
+        }
+        </template>
+
+        <inject-code>
+            <insert-template name="gui.addAction_with_shortcut">
+                <replace from="%EXTRA " to=""/>
+                <replace from="%CALL_EXTRA " to=""/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.addAction_with_shortcut">
+                <replace from="%EXTRA" to="QIcon icon,"/>
+                <replace from="%CALL_EXTRA" to="icon,"/>
+            </insert-template>
+        </inject-code>
+        <modify-function signature="clear()">
+            <inject-code position="end">
+		__rcMenus.clear();
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QMenuBar">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QMenuBar___" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.addAction">
+                <replace from="%POST_CALL" to=""/>
+                <replace from=" %END_EXTRA" to=""/>
+                <replace from=" %END_CALL_EXTRA" to=""/>
+                <replace from="%EXTRA " to=""/>
+                <replace from="%CALL_EXTRA " to=""/>
+            </insert-template>
+        </inject-code>
+        <modify-function signature="clear()">
+            <inject-code position="end">
+		__rcMenus.clear();
+            </inject-code>
+        </modify-function>
+
+
+    </object-type>
+
+    <object-type name="QPictureIO">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+        <inject-code>
+        public QPictureIO(org.qtjambi.qt.core.QIODevice ioDevice, String format) {
+            this(ioDevice, QNativePointer.createCharPointer(format));
+        }
+
+        public QPictureIO(String fileName, String format) {
+            this(fileName, QNativePointer.createCharPointer(format));
+        }
+
+            <insert-template name="core.return_string_instead_of_char*">
+                <replace from="%FUNCTION_NAME" to="format"/>
+            </insert-template>
+            <insert-template name="core.return_string_instead_of_char*">
+                <replace from="%FUNCTION_NAME" to="parameters"/>
+            </insert-template>
+            <insert-template name="core.call_with_string_instead_of_char*">
+                <replace from="%FUNCTION_NAME" to="setFormat"/>
+                <replace from="%ARG_NAME" to="format"/>
+            </insert-template>
+            <insert-template name="core.call_with_string_instead_of_char*">
+                <replace from="%FUNCTION_NAME" to="setParameters"/>
+                <replace from="%ARG_NAME" to="parameters"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+    <object-type name="QPixmapCache">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QPixmapCache___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QProgressBar">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionProgressBar"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QPushButton">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionButton"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+    <object-type name="QShortcut">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QShortcut___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <object-type name="QToolButton">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionToolButton"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QUndoStack">
+        <modify-function signature="push(QUndoCommand *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QWidgetAction">
+        <modify-function signature="setDefaultWidget(QWidget*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QAbstractButton">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QAbstractButton___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <template name="gui::qstyleoption_from_object">
+        jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+    </template>
+
+    <template name="gui::qstyleoptioncomplex_from_object">
+        jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOptionComplex", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+    </template>
+
+    <template name="gui::qstyleoption_to_object">
+        QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+    </template>
+
+
+    <object-type name="QStyle">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QStyle___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="drawControl(QStyle::ControlElement, const QStyleOption *, QPainter *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawComplexControl(QStyle::ComplexControl, const QStyleOptionComplex *, QPainter *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionComplex"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoptioncomplex_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawPrimitive(QStyle::PrimitiveElement, const QStyleOption *, QPainter *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="hitTestComplexControl(QStyle::ComplexControl, const QStyleOptionComplex *, const QPoint &amp;, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionComplex"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoptioncomplex_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="pixelMetric(QStyle::PixelMetric, const QStyleOption *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="sizeFromContents(QStyle::ContentsType, const QStyleOption *, const QSize &amp;, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="standardIcon(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="styleHint(QStyle::StyleHint, const QStyleOption *, const QWidget *, QStyleHintReturn *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="subControlRect(QStyle::ComplexControl, const QStyleOptionComplex *, QStyle::SubControl, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionComplex"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoptioncomplex_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QStyleOptionComplex *%out = (QStyleOptionComplex *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="subElementRect(QStyle::SubElement, const QStyleOption *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="generatedIconPixmap(QIcon::Mode,QPixmap,const QStyleOption*)const">
+            <modify-argument index="3">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="polish(QPalette&amp;)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.gui.QPalette"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QPalette", "org/qtjambi/qt/gui/", false);
+                    jobject __invalidate_me = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QtJambiLink *link = QtJambiLink::findLink(__jni_env, %in);
+                    Q_ASSERT(link != 0);
+
+                    QPalette dummy;
+                    QPalette &amp;%out = link != 0 ? * (QPalette *) link-&gt;pointer() : dummy;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <conversion-rule class="shell">
+                    if (__invalidate_me != 0)
+                    qtjambi_invalidate_object(__jni_env, __invalidate_me);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <!--modify-function signature="standardIconImplementation(QStyle::StandardPixmap,const QStyleOption*,const QWidget*)const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function-->
+
+        <modify-function signature="combinedLayoutSpacing(QFlags&lt;QSizePolicy::ControlType&gt;,QFlags&lt;QSizePolicy::ControlType&gt;,Qt::Orientation,QStyleOption*,QWidget*)const">
+            <access modifier="private"/>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="layoutSpacing(QSizePolicy::ControlType,QSizePolicy::ControlType,Qt::Orientation,const QStyleOption*,const QWidget*)const">
+            <modify-argument index="4">
+		<replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+                <replace-default-expression with="null"/>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-default-expression with="null"/>
+            </modify-argument>
+        </modify-function>
+
+
+        <!--modify-function signature="layoutSpacingImplementation(QSizePolicy::ControlType,QSizePolicy::ControlType,Qt::Orientation,const QStyleOption*,const QWidget*)const">
+            <modify-argument index="4">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function-->
+    </object-type>
+
+
+    <object-type name="QLayout">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QLayout___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="addItem(QLayoutItem *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeItem(QLayoutItem *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="default"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addChildLayout(QLayout *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addChildLayout(QLayout *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="itemAt(int) const">
+            <modify-argument index="return">
+                <define-ownership class="java" owner="cplusplus"/>
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_QLayoutItem">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+		
+		<modify-function signature="takeAt(int)">
+            <modify-argument index="return">
+                <define-ownership class="java" owner="default"/>
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_QLayoutItem">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+
+    </object-type>
+
+
+    <object-type name="QGridLayout">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QGridLayout___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+
+
+    </object-type>
+
+    <template name="gui.inputDialog_get_input">
+    public static %RETURN_TYPE %FUNCTION_NAME(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, %EXTRA, org.qtjambi.qt.core.Qt.WindowFlags f) {
+        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+        %RETURN_TYPE result = %FUNCTION_NAME_internal(parent, title, label, %CALL, ok, f);
+        return ok.booleanValue() ? result : null;
+    }
+
+    public static %RETURN_TYPE %FUNCTION_NAME(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, %EXTRA, org.qtjambi.qt.core.Qt.WindowType ... f) {
+        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+        %RETURN_TYPE result = %FUNCTION_NAME_internal(parent, title, label, %CALL, ok, f);
+        return ok.booleanValue() ? result : null;
+    }
+
+    public static %RETURN_TYPE %FUNCTION_NAME(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, %EXTRA) {
+        return %FUNCTION_NAME(parent, title, label, %CALL, org.qtjambi.qt.core.Qt.WindowType.Widget);
+    }
+
+    </template>
+
+    <object-type name="QColorDialog">
+        <modify-function signature="open(QObject*,const char*)" remove="all" />
+
+        <inject-code>
+            public static Integer getRgba(int initial, org.qtjambi.qt.widgets.QWidget parent) {
+                org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+                int result = getRgba_internal(initial, ok, parent);
+                return ok.booleanValue() ? result : null;
+            }
+
+            public static Integer getRgba(org.qtjambi.qt.widgets.QWidget parent) {
+                return getRgba(0xFFFFFFFF, parent);
+            }
+        </inject-code>
+    </object-type>
+
+    <object-type name="QInputDialog">
+		<modify-function signature="open(QObject*,const char*)" remove="all" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QInputDialog___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QGraphicsScene">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.core.*" location="java"/>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QGraphicsScene___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <modify-function signature="addEllipse(const QRectF &amp;, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addEllipse(qreal, qreal, qreal, qreal, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addLine(const QLineF &amp;, const QPen &amp;)" remove="all" />
+        <modify-function signature="addLine(qreal, qreal, qreal, qreal, const QPen &amp;)" remove="all" />
+        <modify-function signature="addPath(const QPainterPath &amp;, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addPixmap(const QPixmap &amp;)" remove="all" />
+        <modify-function signature="addPolygon(const QPolygonF &amp;, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addRect(const QRectF &amp;, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addRect(qreal, qreal, qreal, qreal, const QPen &amp;, const QBrush &amp;)" remove="all" />
+        <modify-function signature="addSimpleText(const QString &amp;, const QFont &amp;)" remove="all" />
+        <modify-function signature="addText(const QString &amp;, const QFont &amp;)" remove="all" />
+
+        <modify-function signature="drawItems(QPainter*,int,QGraphicsItem**,const QStyleOptionGraphicsItem*,QWidget*)">
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="core.get_array_length">
+                        <replace from="%ARRAY" to="%3"/>
+                    </insert-template>
+                    int __length = %out;
+                </conversion-rule>
+
+            </modify-argument>
+
+            <modify-argument index="3">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QGraphicsItemInterface[]"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.convert_graphicsitem_array_to_java">
+                        <replace from="%LENGTH" to="%2"/>
+                    </insert-template>
+                    jobjectArray graphicsItemArrayHolder = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_array_from_java"/>
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="return">
+                <conversion-rule class="shell">
+                    qtjambi_invalidate_array(__jni_env, styleOptionArrayHolder);
+                    qtjambi_invalidate_array(__jni_env, graphicsItemArrayHolder);
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="4">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionGraphicsItem[]"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.convert_styleoptiongraphicsitem_array_to_java">
+                        <replace from="%LENGTH" to="%2"/>
+                    </insert-template>
+                    jobjectArray styleOptionArrayHolder = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_styleoptiongraphicsitem_array_from_java"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+		
+		<modify-function signature="activePanel () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="focusItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="mouseGrabberItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="itemAt ( const QPointF &amp;, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="itemAt ( qreal, qreal, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="collidingItems ( const QGraphicsItem *, Qt::ItemSelectionMode) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items (Qt::SortOrder) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( Qt::SortOrder ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPointF &amp;, Qt::ItemSelectionMode, Qt::SortOrder, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( qreal, qreal, qreal, qreal, Qt::ItemSelectionMode, Qt::SortOrder, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QRectF &amp;, Qt::ItemSelectionMode, Qt::SortOrder, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPolygonF &amp;, Qt::ItemSelectionMode, Qt::SortOrder, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPainterPath &amp;, Qt::ItemSelectionMode, Qt::SortOrder, const QTransform &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+				
+		<modify-function signature="selectedItems () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+    </object-type>
+	
+	<object-type name="QGraphicsView">
+		<modify-function signature="itemAt ( const QPoint &amp;) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="itemAt ( int, int) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPoint &amp; ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( int, int ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( int, int, int, int, Qt::ItemSelectionMode) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QRect &amp;, Qt::ItemSelectionMode) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPolygon &amp;, Qt::ItemSelectionMode) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="items ( const QPainterPath &amp;, Qt::ItemSelectionMode) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+				jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+				QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+				for (QList&lt;QGraphicsItem* > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+								QGraphicsItem*  __qt_tmp = *__qt___qt_return_value_it;
+								<insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+									<replace from="%JAVA_VALUE" to="__java_tmp"/>
+									<replace from="%QT_VALUE" to="__qt_tmp"/>
+								</insert-template>
+								QTJAMBI_EXCEPTION_CHECK(__jni_env);
+								qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+
+    <object-type name="QProgressDialog">
+        <modify-function signature="open(QObject*,const char*)" remove="all" />
+    </object-type>
+
+    <object-type name="QMessageBox">
+        <modify-function signature="open(QObject*,const char*)" remove="all" />
+    </object-type>
+
+    <object-type name="QWidget">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QWidget___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="setWindowTitle(const QString &amp;)">
+            <inject-code class="java">
+                <argument-map index="1" meta-name="%1"/>
+            if (this instanceof QMessageBox) {
+                org.qtjambi.qt.GeneratorUtilities.threadCheck(this);
+                if (nativeId() == 0)
+                    throw new QNoNativeResourcesException("Function call on incomplete object of type: " +getClass().getName());
+                __qt_QMessageBox_setWindowTitle(nativeId(), %1);
+                return ;
+            }
+            </inject-code>
+        </modify-function>
+
+
+        <modify-function signature="setWindowModality(Qt::WindowModality)">
+            <inject-code class="java">
+                <argument-map index="1" meta-name="%1"/>
+            if (this instanceof QMessageBox) {
+                org.qtjambi.qt.GeneratorUtilities.threadCheck(this);
+                if (nativeId() == 0)
+                    throw new QNoNativeResourcesException("Function call on incomplete object of type: " +getClass().getName());
+                __qt_QMessageBox_setWindowModality(nativeId(), %1.value());
+                return ;
+            }
+            </inject-code>
+        </modify-function>
+    
+	<modify-function signature="grabGesture(Qt::GestureType, QFlags&lt;Qt::GestureFlag&gt;)">
+	    <modify-argument index="2">
+		  <replace-default-expression with="new org.qtjambi.qt.core.Qt.GestureFlag[0]"/>
+	    </modify-argument>
+	</modify-function>
+    
+	<modify-function signature="grab(const QRect &amp;)">
+	    <modify-argument index="1">
+		  <replace-default-expression with="new org.qtjambi.qt.core.QRect(new org.qtjambi.qt.core.QPoint(0, 0), new org.qtjambi.qt.core.QSize(-1, -1))"/>
+	    </modify-argument>
+	</modify-function>
+    </object-type>
+
+    <object-type name="QAbstractSpinBox">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionSpinBox"/>
+                <replace from="final" to=""/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="fixup(QString&amp;)const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="shell">
+                    jobject %out = (jobject) qtjambi_from_qstring(__jni_env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QString %out = qtjambi_to_qstring(__jni_env, (jstring) %in);
+                    QString *__qt_converted = &amp;%out;
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="0">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    jobject %out = (jobject) qtjambi_from_qstring(__jni_env, *__qt_converted);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    %1 = qtjambi_to_qstring(__jni_env, (jstring) %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="validate(QString&amp;,int&amp;)const">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.gui.QValidator$QValidationData"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.convert_validationdata_to_java">
+                        <replace from="%STRING" to="%1"/>
+                        <replace from="%POS" to="%2"/>
+                    </insert-template>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_validationdata_to_string"/>
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing needed
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_validationdata_to_pos">
+                        <replace from="%VALIDATIONDATA" to="%1"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    <insert-template name="gui.cleanup_validationdata_from_java"/>
+                    jint %out = %in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.cleanup_validationdata_to_java">
+                        <replace from="%STRING" to="%1"/>
+                        <replace from="%POS" to="%2"/>
+                    </insert-template>
+                    QValidator::State %out = (QValidator::State) qtjambi_to_enumerator(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QDateTimeEdit">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionSpinBox"/>
+                <replace from="initStyleOption" to="initDateTimeEditStyleOption"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QSlider">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionSlider"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QLabel">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+	    <include file-name="org.qtjambi.qt.gui.*" location="java"/>
+        </extra-includes>
+
+        <inject-code>
+            <insert-template name="gui.getter_returning_nativepointer">
+                <replace from="%RETURN_TYPE" to="QPicture"/>
+                <replace from="%FUNCTION_NAME" to="picture"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.getter_returning_nativepointer">
+                <replace from="%RETURN_TYPE" to="QPixmap"/>
+                <replace from="%FUNCTION_NAME" to="pixmap"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QFileSystemModel">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.*" location="java"/>
+        </extra-includes>
+    </object-type>
+
+
+    <object-type name="QFileDialog">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFileDialog___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+            <include file-name="org.qtjambi.qt.core.QUrl" location="java"/>
+        </extra-includes>
+
+    <modify-function signature="open(QObject*,const char*)" remove="all" />
+
+		<template name="gui.filedialog_get_xxx_fileurl">
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir, Filter filter) {
+            return %FUNCTION_NAME(parent, caption, dir, filter, new Options(0), new java.util.ArrayList&lt;String&gt;());
+        }
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir, Filter filter, Options options) {
+            QNativePointer np = filter != null ? new QNativePointer(QNativePointer.Type.String) : null;
+            %TYPE returned = %FUNCTION_NAME(parent, caption, dir, filter != null ? filter.filter : "", np, options, new java.util.ArrayList&lt;String&gt;());
+            if (filter != null)
+                filter.selectedFilter = np.stringValue();
+            return returned;
+        }
+		</template>
+		
+        <template name="gui.filedialog_get_xxx_filename">
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir, Filter filter, Options options%SUPPORTEDSCHEMESPARAM) {
+            QNativePointer np = filter != null ? new QNativePointer(QNativePointer.Type.String) : null;
+            %TYPE returned = %FUNCTION_NAME(parent, caption, dir, filter != null ? filter.filter : "", np, options%SUPPORTEDSCHEMESCALL);
+            if (filter != null)
+                filter.selectedFilter = np.stringValue();
+            return returned;
+        }
+
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir, Filter filter, Option ... options) {
+            QNativePointer np = filter != null ? new QNativePointer(QNativePointer.Type.String) : null;
+            %TYPE returned = %FUNCTION_NAME(parent, caption, dir, filter != null ? filter.filter : "", np, new Options(options)%DEFAULTSUPPORTEDSCHEME);
+            if (filter != null)
+                filter.selectedFilter = np.stringValue();
+            return returned;
+        }
+
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir, Filter filter%SUPPORTEDSCHEMESPARAM) {
+            return %FUNCTION_NAME(parent, caption, dir, filter, new Options(0)%SUPPORTEDSCHEMESCALL);
+        }
+
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption, %DIRTYPE dir) {
+            return %FUNCTION_NAME(parent, caption, dir, null);
+        }
+
+        public static %TYPE %FUNCTION_NAME(QWidget parent, String caption) {
+            return %FUNCTION_NAME(parent, caption, new %DIRTYPE());
+        }
+
+        public static %TYPE %FUNCTION_NAME(QWidget parent) {
+            return %FUNCTION_NAME(parent, "");
+        }
+
+        public static %TYPE %FUNCTION_NAME() {
+            return %FUNCTION_NAME(null);
+        }
+
+        </template>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getOpenFileName"/>
+				<replace from="%DIRTYPE" to="String"/>
+                <replace from="%TYPE" to="String"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=""/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=""/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=""/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getOpenFileNames"/>
+                <replace from="%DIRTYPE" to="String"/>
+				<replace from="%TYPE" to="java.util.List&lt;String&gt;"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=""/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=""/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=""/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getSaveFileName"/>
+				<replace from="%DIRTYPE" to="String"/>
+                <replace from="%TYPE" to="String"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=""/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=""/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=""/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getOpenFileUrl"/>
+				<replace from="%DIRTYPE" to="QUrl"/>
+                <replace from="%TYPE" to="QUrl"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=", java.util.List&lt;String&gt; supportedSchemes"/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=", supportedSchemes"/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=", new java.util.ArrayList&lt;String&gt;()"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getOpenFileUrls"/>
+                <replace from="%DIRTYPE" to="QUrl"/>
+				<replace from="%TYPE" to="java.util.List&lt;QUrl&gt;"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=", java.util.List&lt;String&gt; supportedSchemes"/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=", supportedSchemes"/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=", new java.util.ArrayList&lt;String&gt;()"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_filename">
+                <replace from="%FUNCTION_NAME" to="getSaveFileUrl"/>
+				<replace from="%DIRTYPE" to="QUrl"/>
+                <replace from="%TYPE" to="QUrl"/>
+				<replace from="%SUPPORTEDSCHEMESPARAM" to=", java.util.List&lt;String&gt; supportedSchemes"/>
+				<replace from="%SUPPORTEDSCHEMESCALL" to=", supportedSchemes"/>
+				<replace from="%DEFAULTSUPPORTEDSCHEME" to=", new java.util.ArrayList&lt;String&gt;()"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_fileurl">
+                <replace from="%FUNCTION_NAME" to="getOpenFileUrl"/>
+				<replace from="%DIRTYPE" to="QUrl"/>
+                <replace from="%TYPE" to="QUrl"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_fileurl">
+                <replace from="%FUNCTION_NAME" to="getOpenFileUrls"/>
+                <replace from="%DIRTYPE" to="QUrl"/>
+				<replace from="%TYPE" to="java.util.List&lt;QUrl&gt;"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.filedialog_get_xxx_fileurl">
+                <replace from="%FUNCTION_NAME" to="getSaveFileUrl"/>
+				<replace from="%DIRTYPE" to="QUrl"/>
+                <replace from="%TYPE" to="QUrl"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+    <object-type name="QTabBar">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QTabBar___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <object-type name="QRadioButton">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionButton"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QScrollBar">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionSlider"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+    <object-type name="QAbstractScrollArea">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QAbstractScrollArea___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <object-type name="QRubberBand">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionRubberBand"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+
+
+    <object-type name="QSplitter">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QSplitter___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+
+    </object-type>
+
+    <object-type name="QGroupBox">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionGroupBox"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QDial">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionSlider"/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QLineEdit">
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionFrame"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="getTextMargins(int*,int*,int*,int*)const">
+            <access modifier="private" />
+            <rename to="getTextMargins_private" />
+        </modify-function>
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QLineEdit___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <object-type name="QToolBar">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <insert-template name="gui.init_style_option">
+                <replace from="%TYPE" to="QStyleOptionToolBar"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.addAction">
+                <replace from="%POST_CALL" to=""/>
+                <replace from=" %END_EXTRA" to=""/>
+                <replace from=" %END_CALL_EXTRA" to=""/>
+                <replace from="%EXTRA" to="QIcon icon,"/>
+                <replace from="%CALL_EXTRA" to="icon,"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.addAction">
+                <replace from="%POST_CALL" to=""/>
+                <replace from=" %END_EXTRA" to=""/>
+                <replace from=" %END_CALL_EXTRA" to=""/>
+                <replace from="%EXTRA " to=""/>
+                <replace from="%CALL_EXTRA " to=""/>
+            </insert-template>
+        </inject-code>
+    </object-type>
+
+    <object-type name="QGuiSignalMapper">
+        <modify-function signature="setMapping(QObject*,QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="add" declare-variable="org.qtjambi.qt.core.QSignalMapper" variable-name="__rcMappings"/>
+            </modify-argument>
+            <inject-code class="java" position="end">
+                <argument-map index="1" meta-name="%1"/>
+                <argument-map index="2" meta-name="%2"/>
+                java.util.Hashtable&lt;org.qtjambi.qt.core.QObject, Object&gt; __rcWidgetForObject = (java.util.Hashtable&lt;org.qtjambi.qt.core.QObject, Object&gt;) org.qtjambi.qt.GeneratorUtilities.fetchField(this, org.qtjambi.qt.core.QSignalMapper.class, "__rcWidgetForObject");
+                if (%2 == null)
+                    __rcWidgetForObject.remove(%1);
+                else
+                    __rcWidgetForObject.put(%1,%2);
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QAction">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QAction___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <modify-function signature="setActionGroup(QActionGroup*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            java.util.Collection&lt;Object&gt; __rcTmp = null;
+            if (__rcActionGroup != null) {
+                __rcTmp = (java.util.Collection&lt;Object&gt;)org.qtjambi.qt.GeneratorUtilities.fetchField(__rcActionGroup, QActionGroup.class, "__rcActions");
+                while (__rcTmp.contains(this))
+                    __rcTmp.remove(this);
+            }
+            __rcActionGroup = %1;
+            if (__rcActionGroup != null) {
+                __rcTmp = (java.util.Collection&lt;Object&gt;)org.qtjambi.qt.GeneratorUtilities.fetchField(__rcActionGroup, QActionGroup.class, "__rcActions");
+                __rcTmp.add(this);
+            }
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+
+    <object-type name="QApplication">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QApplication___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+			<include file-name="qtjambi/qtjambi_cache.h" location="global"/>
+            <include file-name="java.util.Collections" location="java"/>
+            <include file-name="java.util.List" location="java"/>
+        </extra-includes>
+        <modify-function signature="QApplication(int &amp;, char  **, int)">
+            <inject-code class="shell">
+                qtjambi_register_variant_handler();
+            </inject-code>
+        </modify-function>
+        <!-- We implement a custom Java wrapper to this -->
+        <modify-function signature="exec()">
+            <access modifier="private"/>
+            <rename to="exec_internal"/>
+        </modify-function>
+        <template name="gui.application_char_pointer_function">
+        public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {
+            return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());
+        }
+        </template>
+    </object-type>
+
+    <object-type name="QFormLayout">
+        <modify-function signature="getLayoutPosition(QLayout*,int*,QFormLayout::ItemRole*)const" access="private"/>
+        <modify-function signature="getWidgetPosition(QWidget*,int*,QFormLayout::ItemRole*)const" access="private"/>
+        <modify-function signature="getItemPosition(int,int*,QFormLayout::ItemRole*)const" access="private"/>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFormLayout___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+
+    <interface-type name="QGraphicsLayoutItem">
+		<extra-includes>
+			<include file-name="QObject" location="global"/>
+			<include file-name="QGraphicsWidget" location="global"/>
+			<include file-name="QGraphicsObject" location="global"/>
+		</extra-includes>
+        <modify-function signature="getContentsMargins(qreal*,qreal*,qreal*,qreal*)const" access="private" />
+		
+		<modify-function signature="graphicsItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicsitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		
+		<modify-function signature="parentLayoutItem () const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>		
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="interface">
+            public org.qtjambi.qt.core.QMarginsF contentsMargins();
+        </inject-code>
+    </interface-type>
+	
+	<object-type name="QGraphicsLayout">
+		<extra-includes>
+			<include file-name="QObject" location="global"/>
+			<include file-name="QGraphicsWidget" location="global"/>
+			<include file-name="QGraphicsObject" location="global"/>
+		</extra-includes>
+		<modify-function signature="itemAt ( int ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeAt ( int )">
+		<inject-code position="beginning">
+			<argument-map index="1" meta-name="%1" />
+            QGraphicsLayoutItemInterface __item = itemAt(%1);
+			if(__item != null){
+				__item.reenableGarbageCollection();
+			}
+        </inject-code>
+		</modify-function>
+		<modify-function signature="getContentsMargins(qreal*,qreal*,qreal*,qreal*)const" access="private" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
+        </inject-code>
+	</object-type>
+	
+    <object-type name="QGraphicsAnchorLayout">
+		<extra-includes>
+			<include file-name="QObject" location="global"/>
+			<include file-name="QGraphicsWidget" location="global"/>
+			<include file-name="QGraphicsObject" location="global"/>
+		</extra-includes>
+		<modify-function signature="itemAt ( int ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsGridLayout">
+		<extra-includes>
+			<include file-name="QObject" location="global"/>
+			<include file-name="QGraphicsWidget" location="global"/>
+			<include file-name="QGraphicsObject" location="global"/>
+		</extra-includes>
+		<modify-function signature="itemAt ( int ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsLinearLayout">
+		<extra-includes>
+			<include file-name="QObject" location="global"/>
+			<include file-name="QGraphicsWidget" location="global"/>
+			<include file-name="QGraphicsObject" location="global"/>
+		</extra-includes>
+		<modify-function signature="itemAt ( int ) const">
+			<modify-argument index="return">
+				<conversion-rule class="native">
+                    <insert-template name="gui.convert_graphicslayoutitem_to_graphicsobject">
+						<replace from="%JAVA_VALUE" to="__java_return_value"/>
+						<replace from="%QT_VALUE" to="__qt_return_value"/>
+                    </insert-template>
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+    <object-type name="QGraphicsProxyWidget">
+    <modify-function signature="setWidget(QWidget*)">
+        <modify-argument index="1">
+            <reference-count action="ignore" />
+        </modify-argument>
+        <inject-code>
+            <argument-map index="1" meta-name="%1" />
+            if (%1 != null)
+                %1.disableGarbageCollection();
+            else if (widget() != null)
+                widget().reenableGarbageCollection();
+        </inject-code>
+    </modify-function>
+    </object-type>
+	<object-type name="QGraphicsWidget">
+        <modify-function signature="getContentsMargins(qreal*,qreal*,qreal*,qreal*)const" access="private" />
+        <modify-function signature="getWindowFrameMargins(qreal*,qreal*,qreal*,qreal*)const" access="private"/>
+		
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QGraphicsWidget___" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class Subclass_of_QGraphicsLayoutItem___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <modify-function signature="initStyleOption(QStyleOption*)const">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", false);
+                    jobject __tmp = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="return">
+                <conversion-rule class="shell">
+                    // Make sure the java object is not usable after this, since
+                    // the QStyleOption* may be deleted at any time.
+                    qtjambi_invalidate_object(__jni_env, __tmp);
+                    __tmp = 0;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="paintWindowFrame(QPainter*,const QStyleOptionGraphicsItem*,QWidget*)">
+            <modify-argument index="2">
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOptionGraphicsItem", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    const QStyleOptionGraphicsItem *%out = (QStyleOptionGraphicsItem *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionGraphicsItem"/>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="setLayout(QGraphicsLayout*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QStyledItemDelegate">
+        <modify-function signature="initStyleOption(QStyleOptionViewItem*,QModelIndex)const">
+            <modify-argument index="1">
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOptionViewItem", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QStyleOptionViewItem *%out = (QStyleOptionViewItem *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionViewItem" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QListWidget">
+        <modify-function signature="addItem(const QString &amp;)" remove="all" />
+        <modify-function signature="addItems(const QStringList&lt;QString&gt; &amp;)" remove="all" />
+        <modify-function signature="insertItem(int, const QString &amp;)" remove="all" />
+        <modify-function signature="insertItems(int, const QStringList&lt;QString&gt; &amp;)" remove="all" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QListWidget___" quote-before-line="}// class" />
+        </inject-code>
+    </object-type>
+
+    <interface-type name="QPictureFormatInterface" java-name="QPictureFormat">
+        <modify-function signature="loadPicture(const QString &amp;,const QString &amp;,QPicture*)">
+            <modify-argument index="3">
+                <replace-type modified-type="org.qtjambi.qt.gui.QPicture" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QPicture", "org/qtjambi/qt/gui/", false);
+                    jobject __tmp = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QPicture *%out = (QPicture *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="return">
+                <conversion-rule class="shell">
+                    // Make sure the java object is not usable after this, since
+                    // the QPicture* may be deleted at any time.
+                    qtjambi_invalidate_object(__jni_env, __tmp);
+                    __tmp = 0;
+                    bool %out = (bool) %in;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    jboolean %out = (jboolean) %in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+	<object-type name="QPictureFormatPlugin">
+        <modify-function signature="loadPicture(const QString &amp;,const QString &amp;,QPicture*)">
+            <modify-argument index="3">
+                <replace-type modified-type="org.qtjambi.qt.gui.QPicture" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QPicture", "org/qtjambi/qt/gui/", false);
+                    jobject __tmp = %out;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QPicture *%out = (QPicture *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="return">
+                <conversion-rule class="shell">
+                    // Make sure the java object is not usable after this, since
+                    // the QPicture* may be deleted at any time.
+                    qtjambi_invalidate_object(__jni_env, __tmp);
+                    __tmp = 0;
+                    bool %out = (bool) %in;
+                </conversion-rule>
+                <conversion-rule class="native">
+                    jboolean %out = (jboolean) %in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+	
+	<value-type name="QGestureRecognizer">
+		<modify-function signature="registerRecognizer(QGestureRecognizer*)" access="private" />
+		<inject-code>
+		public static org.qtjambi.qt.core.Qt.GestureType registerRecognizer(QGestureRecognizer recognizer)    {
+			return registerRecognizer(recognizer!=null ? recognizer.nativePointer() : null);
+		}
+        </inject-code>
+    </value-type>
+	
+    <object-type name="QTouchEvent">
+      <modify-function signature="QTouchEvent(QEvent::Type,QTouchEvent::DeviceType,QFlags&lt;Qt::KeyboardModifier&gt;,QFlags&lt;Qt::TouchPointState&gt;,const QList&lt;QTouchEvent::TouchPoint&gt; &amp;)">
+	  <modify-argument index="5">
+	      <replace-default-expression with="new java.util.Vector&lt;QTouchEvent_TouchPoint&gt;()"/>
+	  </modify-argument>
+      </modify-function>
+    </object-type>
+	<object-type name="QComboBox">
+		<modify-function signature="findData(const QVariant&amp;,int,QFlags&lt;Qt::MatchFlag&gt;)const">
+			<modify-argument index="3">
+				<replace-default-expression with="org.qtjambi.qt.core.Qt.MatchFlag.MatchExactly, org.qtjambi.qt.core.Qt.MatchFlag.MatchCaseSensitive"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="findText(const QString&amp;,QFlags&lt;Qt::MatchFlag&gt;)const">
+			<modify-argument index="2">
+				<replace-default-expression with="org.qtjambi.qt.core.Qt.MatchFlag.MatchExactly, org.qtjambi.qt.core.Qt.MatchFlag.MatchCaseSensitive"/>
+			</modify-argument>
+    </modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsEffect">
+		<modify-function signature="sourcePixmap(Qt::CoordinateSystem, QPoint *, QGraphicsEffect::PixmapPadMode) const">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QPoint" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QPoint", "org/qtjambi/qt/core/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QPoint *%out = (QPoint *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsRotation">
+		<modify-function signature="applyTo(QMatrix4x4 *)const">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsTransform">
+		<modify-function signature="applyTo(QMatrix4x4 *)const">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QGraphicsScale">
+		<modify-function signature="applyTo(QMatrix4x4 *)const">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+	<object-type name="QProxyStyle">
+		<modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui::qstyleoption_from_object"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui::qstyleoption_to_object"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+	</object-type>
+	
+	<object-type name="QAbstractScrollArea">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+	</object-type>
+	
+	<object-type name="QAbstractButton">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+	</object-type>
+	
+	<object-type name="QAbstractButton">
+	    <extra-includes>
+		<include file-name="org.qtjambi.qt.gui.*" location="java"/>
+	    </extra-includes>
+	</object-type>
+
+
+    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcItems' in 'org.qtjambi.qt.widgets.QGraphicsGridLayout' but not both" />
+</typesystem>

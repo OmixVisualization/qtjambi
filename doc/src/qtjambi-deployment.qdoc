@@ -1,0 +1,633 @@
+/*!
+    \page qtjambi-deployment.html
+
+    \title Deploying Qt Jambi Applications
+
+    Java provides a number of different features which makes it easier
+    to deploy applications, such as the Web Start technology, Java
+    Archives (\c .jar files) and, of course, the virtual machine that
+    enables you to compile your application to bytecode once and run
+    on all architectures.
+
+    The apparent challenge when deploying \QJ applications is that \QJ
+    makes use of Qt's C++ libraries which means that platform
+    dependent code must be distributed in addition to the platform
+    independent bytecode. \QJ provides a solution - all you have to do
+    is to include the native libraries in a JAR bundle.
+
+    To include resources, the programmer must follow a particular
+    syntax since \QJ provides its own resource system. But note that
+    this system makes it easy to access any kind of resource (e.g.,
+    pixmaps, translation files and xml data files), no matter whether
+    they are located, directly on the disk or in a JAR bundle.
+
+    We will first take a look at which building blocks make up a \QJ
+    application. Then we will look at three common deployment
+    scenarios, pure Qt Jambi applications, Qt Jambi applications
+    making use of custom generated code and finally C++ applications
+    making use of Qt Jambi. Where applicable, we'll also take a look
+    at how one can bundle the application into a webstart application
+    and/or a single executable .jar file.
+
+    \tableofcontents
+
+
+    \section1 Composition of a Deployment Package
+
+    A Qt Jambi application will contain a set of application class
+    files, the Qt Jambi library class files and a collection of native
+    libraries. In addition to these, it may contain resources such as
+    images, translation files and data. It may also include some of
+    the Qt C++ plugins to add support for additional image formats or
+    accessibility etc. As the application class files are handled by
+    the user, we won't go into details on these here.
+
+    The details covered in this section are primarly informational and
+    a lot is handled automatically by Qt Jambi. When deploying a Java
+    application making use of Qt Jambi and no other native libraries,
+    all of this can be ignored. See the "Deploying a Pure Qt Jambi
+    Application" section.
+
+    \section2 Class Files
+
+    The Qt Jambi class files are located in the library classed \c
+    qtjambi.jar which is available in the root of the binary package
+    and also in the root of a source package after the \c ant script
+    has completed. The \c qtjambi.jar file also contains some
+    resources that may be needed by some classes so it should be used
+    as-is.
+
+    \section2 Native Libraries
+
+    In a prebuilt Qt Jambi package there are a number of different
+    native libraries, located in certain subdirectories of the root
+    directory. In the library directory, which is \c bin under Windows
+    and \c lib under Linux and Mac OS X, one can find Qt libraries, Qt
+    Jambi libraries and runtime libraries. The Qt C++ plugins can be
+    found in the subdirectories of the \c JAMBIDIR/plugins directory
+    in the prebuilt package.
+
+    \section3 Qt Jambi libraries
+
+    Qt Jambi libraries are the libraries that implement the \c native
+    part of Java functions and are usually named according to the
+    package they implement, such as \c org_qtjambi_qt_gui for the
+    native implementation of the \c org.qtjambi.qt.gui package. Qt
+    Jambi libraries are explicitly loaded by Qt Jambi using called to
+    \c System.load() or similar. These packages are named as
+    following:
+
+    \table
+    \header \o Platform \o Prefix   \o Suffix   \o Example
+    \row    \o Windows  \o None     \o .dll     \o qtjambi.dll
+    \row    \o Linux    \o lib      \o .so      \o libqtjambi.so
+    \row    \o Mac OS X \o lib      \o .jnilib  \o libqtjambi.jnilib
+    \endtable
+
+    \section3 Qt Libraries
+
+    While the Qt Jambi libraries implement the native part of the Java
+    functions, they merly translate the Java function calls into C++
+    function calls and calls into the Qt libraries. This means that
+    the Qt Jambi libraries link against the Qt libraries and are
+    dependent of them. For a process to be able to load a given
+    library, it must be able to locate and load all its
+    dependencies. Qt Jambi explicitly loads the dependent Qt libraries
+    of a Qt Jambi library directly before trying to load a Qt
+    library. This makes sure that the process has the library loaded
+    and dependecies are resolved.
+
+    \table
+    \header \o Platform \o Prefix   \o Suffix   \o Example
+    \row    \o Windows  \o None  \o .dll     \o QtCore4.dll
+    \row    \o Linux    \o lib      \o .so.4    \o libQtCore.so.4
+    \row    \o Mac OS X \o lib      \o .4.dylib \o libQtCore.4.dylib
+    \endtable
+
+    \section3 Runtime Libraries
+
+    The Qt libraries also have dependencies on runtime libraries. For
+    instance, if Qt Jambi was compiled with GCC 3.3, it would depend
+    on the \c libstdc++.so.5, which is not always present on newer
+    linux distributions. To be able to run on newer linux
+    distributions this runtime library needs to be available and
+    loaded/available prior to loading the Qt libraries. Qt Jambi calls
+    these libraries "system libraries" and will load them based on a
+    platform specific deployment specification. The specific runtimes
+    depend on the C++ compiler used to build Qt and the operating
+    system.
+
+    \table 75%
+        \header \o Compiler     \o Runtime Libraries
+        \row    \o MSVC 6.0     \o msvcr60.dll, msvcp60.dll
+        \row    \o MSVC 2002        \o msvcr70.dll, msvcp70.dll
+    \row    \o MSVC 2003        \o msvcr71.dll, msvcp71.dll
+    \row    \o MinGW        \o mingwm10.dll
+    \row    \o GCC 3.3 and older    \o libstdc++.so.5
+    \row    \o GCC 3.4 and newer    \o libstdc++.so.6
+    \row    \o GCC on Mac OS X  \o no dependencies
+        \row    \o MSVC 2005 and 2008   \o
+
+    Microsoft Visual Studio 2005 and 2008 introduces manifest files as
+    a way of describing dependencies between dll's. This restricts the
+    way binaries can be deployed. Manifest based runtime libraries
+    will in this case need to be available for Qt Jambi to load. These
+    files are not available by default on Windows Vista, Windows XP
+    nor Windows 2000. This is solved by either:
+
+      \list
+
+      \o Installing manifest based runtimes on the target system using
+         Microsoft's Visual Studio Redistributable Package. At the
+         time of writing this is possible using the application
+         "vcredist_x86.exe", which is provided on the
+         \c{microsoft.com} websites.
+
+      \o Redistribute the runtime libraries provided in the Qt Jambi
+         package or in your own Visual Studio version along with their
+         manifest next to every .dll. The redistributables can be
+         placed either directly next to the Qt Jambi .dll's or in a
+         subdirectory called Microsoft.VC80.CRT for MSVC 2005 and
+         Microsoft.VC90.CRT for MSVC 2008. For projects with .dll's in
+         multiple folders, such as the Qt Jambi plugins in the plugin
+         sub directory, the files need to be duplicated in all
+         places. Note: Since Qt treats all .dll files in a plugin
+         folder as a plugin it will try to load the the runtime
+         libraries as plugins. To prevent this, it is recommended that
+         the redistributable runtime libraries are placed in a sub
+         directory under each plugin.
+
+       \endlist
+
+    \endtable
+
+    To get a full overview of the dependencies of a library there are
+    some tools available.
+
+    \table
+           \header  \o Platform \o Tools
+       \row     \o Windows  \o \c depends.exe, GUI tool part of MSVC
+       \row     \o Windows  \o \c {dumpbin /dependents}, command line tool part of MSVC
+       \row     \o Linux    \o \c ldd, command line tool, part of GCC
+       \row     \o Mac OS X \o \c otool -L, standard tool
+    \endtable
+
+    \section3 Plugins
+
+    Finally there are the Qt C++ plugins, which are loaded by Qt at
+    runtime to support some features, such as loading / saving of jpeg
+    images. By default, Qt will locate the plugin libraries where the
+    C++ library was built, which is convenient for Qt C++ developers
+    but less relevant for Qt Jambi developers or for deployment. It is
+    possible to extend the default search location by adding
+    directories to the environment variable \c QT_PLUGIN_PATH or by
+    making a call to \c QApplication.addLibraryPath() in the Java
+    code. Both will add searchpaths for Qt to look for plugins.
+
+
+    \section1 Deployment Scenarios
+
+    In this section we'll look more closely at the three primary
+    deployment scenarios that we picture for Qt Jambi. The first and
+    easiest one is to deploy a pure Qt Jambi Application, not relying
+    on any other native libraries than the Qt Jambi ones. Then we look
+    at the scenario where a user has used the Qt Jambi generator to
+    map his own libraries and deploys an application of native
+    libraries from both Qt Jambi his own generated project. Finally
+    we'll look at how it is possible to deploy a C++ application that
+    makes use of Qt Jambi, like our own tool Qt Designer does.
+
+    Since 4.4, Qt Jambi provide two ways of loading libraries. The
+    first and recommended one is via \c .jar file using a deployment
+    specification. A deployment specification contains a list of all
+    libraries to be loaded, directories they reside in and how Qt
+    Jambi should treat them, be it a runtime library, Qt library, JNI
+    library or a plugin. The benefit of this approach is that Qt Jambi
+    handles custom plugin paths and loading of runtime libraries, etc
+    and the user only has to relate to a \c .jar file as with any
+    other Java application. A platform specific \c .jar file for your
+    platform is available in the Qt Jambi binary package.
+
+    The other alternative for loading native libraries is by relying
+    on the traditional method for loading native libraries into Java,
+    which is to make sure that libraries are available in a directory
+    specified in \c {-Djava.library.path} and simply load them. In
+    this case \c QT_PLUGIN_PATH and dependency on runtime libraries
+    has to be handled by the user. Using this method it would
+    theoretically be possible to use pre-installed versions of Qt on a
+    given system, such as a Linux distribution, but we \bold{strongly
+    discourage} this, as the libraries installed on the system may be
+    binary incompatible with the libraries shipped with Qt
+    Jambi. Mixing binary incompatible libraries may lead to load
+    errors and sporadic crashes. Using the \c {.jar} approach ensures
+    that only the precise libraries you want to load, will be loaded,
+    and is \bold{ significantly safer }.
+
+    \section2 Deploying a Pure Qt Jambi Application
+
+    This method of deployment should be used when the application
+    either makes only use of pure Java code in combination with the Qt
+    Jambi libraries. In this scenario the user should make use of the
+    binary package for the target platform. The final application
+    should then consist of the following three pieces:
+
+    \list
+      \o The application classes, for instance called
+         application.jar. This .jar file should only contain classes,
+         making it cross platform.
+      \o The Qt Jambi classes, called qtjambi-$VERSION.jar, available
+         in the binary package. This .jar file contains only java
+         classes and is cross platform.
+      \o The Qt Jambi platform bundle, called
+         qtjambi-$PLATFORM-$VERSION.jar available in the binary
+         package.
+    \endlist
+
+    The only thing needed to deploy this application is to make sure
+    the three \c {.jar} files are available in the applications \c
+    CLASSPATH and start it. To make an application that can launch on
+    multiple platforms, use the qtjambi classes .jar file from along
+    with the platform .jar-file from the binary packages of Qt Jambi
+    for the target platforms that you would like to support and make
+    sure the right platform \c {.jar} file is available in the
+    classpath when you launch the application.
+
+    \section3 Creating a Webstart Application
+
+    To create a webstart application based on Qt Jambi, specify the
+    application \c {.jar} file along with the \c
+    {qtjambi-$VERSION.jar} file as normal resources.
+
+   \code
+     <resources>
+       <j2se version="1.5+"/>
+       <jar href="application.jar"/>
+       <jar href="qtjambi-4.4.0_01.jar"/>
+     </resources>
+   \endcode
+
+   Then, for each target platform to support, add a compatible
+   platform bundle. For instance to add support for Windows 32-bit:
+
+   \code
+     <resources os="Windows" arch="x86">
+       <jar href="qtjambi-win32-msvc2005-4.4.0_01.jar"/>
+     </resources>
+   \endcode
+
+    \section3 Creating an Executable Java Archive
+
+    To create an executable \c {.jar} file for one platform is
+    straightforward, simply unpack the contents of the three \c {.jar}
+    files and repack them together as one .jar file with the
+    appropriate manifest specifying \c {Main-Class}, etc.
+
+    To create a \c {.jar} file that runs on multiple platforms is only
+    possible by creating an executable \c {.jar} file which uses jar
+    \c {.jar} files in the current directory. For instance, deploying
+    \c {application.jar} for windows 32 and linux32 would require the
+    following files:
+
+    \code
+    APPDIR\application.jar
+    APPDIR\qtjambi-4.4.0_01.jar
+    APPDIR\qtjambi-win32-msvc2005-4.4.0_01.jar
+    APPDIR\qtjambi-linux32-gcc3.3-4.4.0_01.jar
+    \endcode
+
+    Where \c {application.jar} has the \c {Class-Path} attribute in
+    its Manifest set to include both the platform specific \c {.jar}
+    files,
+
+    \code
+    Class-Path: qtjambi-4.4.0_01.jar qtjambi-win32-msvc2005-4.4.0_01.jar qtjambi-linux32-gcc3.3-4.4.0_01.jar
+    \endcode
+
+    As long as the four files are distributed together, the
+    application will run on both windows and linux using the command:
+
+    \code
+      > java -jar application.jar
+    \endcode
+
+    \section3 Creating an Application Bundle using Mac OS X JarBundler
+
+    Mac OS X provides a powerful and simple to use tool that lets the
+    user build Mac OS X Application Bundles that can be launched using
+    Finder. This tool is called \c {Jar Bundler} and is by defualt
+    located in \c {/Developer/Applications/Java Tools/Jar
+    Bundler}. Using the tool, one can specify the three classes in the
+    classpath and specify class with the main method used for launching.
+
+    When creating bundles, the \c {-XstartOnFirstThread} parameter is
+    specified by putting the \c {StartOnMainThread} boolean property
+    into the applications \c {Info.plist} under the \c {Java} section.
+
+    \code
+        <key>Java</key>
+        <dict>
+          <key>StartOnMainThread</key> <true/>
+          ... other java properties...
+        </dict>
+    \endcode
+
+
+    \section2 Deploying a Qt Jambi Application making use of generated code
+
+    This method of deployment should be used for deploying
+    applications that contain native libraries generated using the Qt
+    Jambi Generator. This approach should also apply when making use
+    of your own native libraries, but some details may vary from
+    project to project.
+
+    \section3 Build Your Own Binaries
+
+    When building your own libraries, it is evident that all the
+    libraries in your project, both Qt, Qt Jambi and your own
+    generated libraries are compiled with the same compiler based on
+    the same configuration of Qt. \bold{Do not use the prebuilt binary
+    package for this kind of distribution}. Compiling every part of
+    with the same configuration avoids any binary compatibility
+    issues. How to build Qt and Qt Jambi is documented in the \l
+    {Building Qt Jambi from a Source Package} document.
+
+    \section3 Create a Platform Archive
+
+    By default, the Qt Jambi \c ant build script will generate a
+    platform archive containing all the Qt and Qt Jambi
+    libraries. This is done using some Qt Jambi specific \c ant tasks,
+    namely the \c {org.qtjambi.tools.ant.PlatformJarTask},
+    responsible for packaging the libraries, and the \c
+    {org.qtjambi.tools.ant.InitializeTask}, responsible for setting
+    up custom variables, etc required by the packaging process.
+
+    We highly recommend you use the \c ant tasks to build the platform
+    archive, as this will automate most of the work for you. Below we
+    will walk through the steps of creating a custom platform archive
+    containing Qt Core and Qt Gui and the jpeg plugin in addition to
+    \c customlibrary.
+
+    Rather than using \c {System.loadLibrary()} to load custom
+    libraries you should use \c
+    {org.qtjambi.qt.Utilities.loadJambiLibrary()} which supports
+    loading native libraries via platform archives.
+
+    The \c {build.xml} file in the Qt Jambi source package can also be
+    used as a source of information on how to build the platform
+    archives.
+
+    \code
+    <taskdef name="qtjambi-platform-jar"
+             classpath="ant-qtjambi.jar"
+             classname="org.qtjambi.tools.ant.PlatformJarTask"/>
+    <taskdef name="qtjambi-initialize"
+             classpath="ant-qtjambi.jar"
+         classname="org.qtjambi.tools.ant.InitializeTask"/>
+    \endcode
+
+    These steps define the Qt Jambi ant tasks in the \c
+    {ant-qtjambi.jar} archive as tasks for our ant script. The \c
+    {ant-qtjambi.jar} file is built as part of the default build in
+    the source package and is available once the source package is
+    built.
+
+    The next step is to trigger the initialize task. This should be
+    done early in the ant script as other tasks depends on it.
+
+    \code
+    <qtjambi-initialize verbose="true" />
+    \endcode
+
+    Then at a later point, we go on to building the platform
+    archive. This is done in three separate steps, first we define
+    platform archive, but specifying which libraries should go into it
+    and what kind of libraries they are. These libraries along with a
+    generated deployment specification are copied to a temporary
+    output directory. Then we bundle these libraries into our custom
+    platform archive file, and finally we remove the temporary
+    directory.
+
+    \code
+    <target name="qtjambi-customplatform.jar"
+        description="Creating .jar file with native libs...">
+
+      <qtjambi-platform-jar cacheKey="MyCompany.Application.${DSTAMP}.${TSTAMP}"
+                            outdir="platform-output">
+    \endcode
+
+    The \c {qtjambi-platform-jar} section above starts the
+    specification of the platform archive. One important piece here is
+    the \bold cacheKey, which is used to uniqly identify this set of
+    libraries in the cache. If this key is not unique this platform
+    archive may conflict with a different platform archive and the
+    resulting application will most likely fail to run.
+
+    Then we go on to specify the Qt libraries that should be
+    included. In this case we choose to inly include Qt Core and Qt
+    Gui.
+
+    \code
+        <!-- Qt Libraries... -->
+        <library name="QtCore"
+                 type="qt"
+         rootPath="${qtjambi.qtdir}" />
+        <library name="QtGui"
+             type="qt"
+             rootPath="${qtjambi.qtdir}" />
+    \endcode
+
+    We specify the name of the library, excluding the platform
+    specific suffix and extensions. The type of these libraries is \c
+    qt, which means that we will assume the naming convention listed
+    for Qt libraries above. Because plugins can have RPATH or similar
+    set to load Qt Libraries from the \c bin or \c lib subdirectories,
+    it is important that this directory structure is maintained in the
+    final platform archive as well. We therefore only specify the \c
+    rootPath, which describes the base on the directory structure and
+    let the platform task figure out the correct subdirectory for the
+    library. On windows for instance, the above results in files the
+    following files inside the \c {.jar} file:
+
+    \code
+      bin/QtCore4.dll
+      bin/QtGui4.dll
+    \endcode
+
+    Then we move on to specify the \c jpeg plugin.
+
+    \code
+        <!-- Qt Plugins... -->
+        <library name="qjpeg"
+                 type="plugin"
+                 rootPath="${qtjambi.qtdir}"
+                 subdir="plugins/imageformats"
+                 load="never"/>
+
+        <plugin path="plugins" />
+    \endcode
+
+    In this case we override the operating system specific library
+    subdirectory with the precise path to the plugin, since plugins
+    don't follow the default library location. We also specify that
+    the type of the library is a plugin which means that the library
+    follows the naming convention for plugins. The we specify that the
+    library should not be loaded explicitly. This is merly a safty
+    measure, which will give us a runtime warning later if we try to
+    explicitly load it ourselves. Finally we specify that the \c
+    plugins subdirectory contains Qt C++ plugins, which tells Qt that
+    the this part of the platform archive should be used by Qt to load
+    C++ plugins.
+
+    Then we include the Qt Jambi JNI libraries. We always need to
+    include the \c qtjambi library in addition to the JNI libraries
+    for the Qt modules we are using, in this case Qt Core and Qt Gui,
+    and finally our own custom library.
+
+    \code
+        <!-- Qt Jambi Libraries -->
+        <library name="qtjambi"                  type="qtjambi" rootPath="${env.JAMBIDIR}" />
+        <library name="org_qtjambi_qt_core"    type="qtjambi" rootPath="${env.JAMBIDIR}" />
+        <library name="org_qtjambi_qt_gui"     type="qtjambi" rootPath="${env.JAMBIDIR}" />
+    <library name="customlibrary"        type="qtjambi" rootPath="." subdir="." />
+
+      </qtjambi-platform-jar>
+    \endcode
+
+    The \c rootPath of the jambi libraries are referring to the
+    environment variable \c JAMBIDIR which we assume is set in this
+    case. The type of the libraries are qtjambi which means that they
+    follow normal JNI naming rules for this platform, as specified in
+    the table above. In addition we include \c customlibrary from the
+    current directory. That is the final part of the \c
+    {qtjambi-platform-jar} sub-task and we close it.
+
+    Then we move on to packaing the files into a \c {.jar} file and
+    clearing the temporary directory.
+
+    \code
+      <jar destfile="mycustomjar-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}.jar">
+        <fileset dir="platform-output" />
+      </jar>
+
+      <delete dir="platform-output"/>
+    </target>
+    \endcode
+
+    Using these steps in an \c ant build script, building a custom
+    platform archive is pretty straight forward.
+
+    \section3 Creating Webstart and Executable Archives
+
+    Once the previous step is completed you have your own platform
+    archive and can perform the steps outlined under section \l
+    {Deploying a Pure Qt Jambi Application} above and replace the
+    qtjambi platform archive with our own archives.
+
+
+    \section2 Deploying a Native Application using Qt Jambi
+
+    This section describes the less used scenario where a C++
+    application instantiates a virtual machine and starts making use
+    of Qt Jambi. This is the case with for instance our own Qt
+    Designer. The main problem in this case is that Qt will already be
+    loaded into the process as part of the C++ application, prior to
+    Qt Jambi starting. If loading is done via a platform archive, Qt
+    Jambi will try to load the same libraries again, and the process
+    will fail. The platform archive approach can for this reason \b
+    not be used for using Qt Jambi in native applications.
+
+    \section3 Building the Sources
+
+    As with the section \l {Deploying a Qt Jambi Application making
+    use of generated code}, it is important that Qt, Qt Jambi and the
+    application is built using the same compiler and configuration.
+
+    \section3 Configuring the Library Path
+
+    For Qt Jambi to be able to load libraries, they need to be
+    available through \c {-Djava.library.path}. This is for instance
+    done by setting the environment variables:
+
+    \table
+      \header \o Platform   \o Environment Variable
+      \row    \o Windows    \o PATH
+      \row    \o Linux      \o LD_LIBRARY_PATH
+      \row    \o Mac OS X   \o DYLD_LIBRARY_PATH
+    \endtable
+
+    It is also possible to explicitly set these variables using calls
+    to \c {setenv} or by initializing the Virtual Maching with the
+    appropriate input parameters.
+
+    \section3 Setting the Plugin Path
+
+    One also need to set up the plugin path, either by specifying the
+    environment variable \c QT_PLUGIN_PATH or by making explicit calls
+    to \c {QApplication.addLibraryPath()}, if the application needs to
+    find the Qt C++ Plugins.
+
+
+    \section2 Troubleshooting
+
+    The most common problem when deploying is that the native
+    libraries are not found. With the archive based deployment
+    techniques this should be significantly simpler that in previous
+    version of Qt Jambi, but in the event something failing, there are
+    some standard topics to investigate to see where it fails.
+
+    \list
+
+      \o Enable verbose loading to better see what Qt Jambi does when
+         trying to load libraries. This is done by starting the
+         Virtual Machine with the option \c
+         {-Dorg.qtjambi.qt.verbose-loading}.
+
+      \o Check the dependency graph of the libraries you are distributing
+
+      \o Deploying binaries based on Microsoft Visual Studio 2005 or
+         2008 is \e hard, because of the manifests. Read the
+         description above, the documentation on msdn.microsoft.com,
+         and see how our platform archives are organized for guidance.
+
+      \o If you don't deploy a pure Qt Jambi application based on our
+         binary package you must build \bold every part binary your
+         package yourself. If you mix parts from our Qt Jambi binary
+         packages with system Qt or Qt binary packages, you will most
+         likely run into problems.
+
+      \o Verify that the correct libraries are in fact loaded. If a
+         Virtual Machine crashes the hs_err_xxx.log file contains a
+         list of all libraries loaded into the process. There are also
+         tools on each platform that can profile and detect which
+         libraries are being loaded into the path. Be aware of the
+         paths like /usr/lib are always part of LD_LIBRARY_PATH for
+         instance.
+
+    \endlist
+
+    \section1 Including Resources
+
+    \QJ provides a complete file system abstraction that allows a
+    uniform syntax (based on the Java classpath) for accessing
+    resources, whether they are located directly on the disk or in a
+    JAR bundle. While the standard Java API only supports accessing
+    resources in an undocumented subset of its file I/O operations
+    (which does not include the \c java.io.File class), Qt Jambi
+    allows resources to be used wherever a file name is expected.
+    Resources are identified by a \c classpath: prefix.
+
+    \image accessing-resources.png
+
+    Note that it is also possible to load resources as raw data:
+
+    \code
+        QFile file = new QFile("classpath:images/fileopen.png");
+        file.open(QIODevice.OpenModeFlag.ReadOnly);
+        QByteArray rawData = file.readAll();
+    \endcode
+
+    To include resources in your distribution, all you have to do is
+    to ensure that the application follows the \QJ syntax for
+    accessing resources and make the resources available by adding
+    them to your JAR bundle.
+*/

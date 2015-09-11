@@ -1,0 +1,149 @@
+Qt Jambi 4.3.1_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.3.1. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.3.0_01.
+
+
+************************************************************************
+Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ * Java objects that are serializable via java.io.Serializable can now
+   be saved / restored via QVariant, such as being saved in a
+   QSettings object.
+
+ * Support QObjects with dynamic properties.
+
+____________________
+
+Fixes:
+____________________
+
+ * Added runtime option -Dcom.trolltech.qt.load-from-cache which can be
+   set to true/false, deciding if native binaries should be unpacked
+   from .jar files every time the app is launched or if they should be
+   loaded from cache.
+
+ * Fixed a warning about qMetaTypeGuiHelper on shutdown
+
+ * Some QPainter methods would crash when being passed null pointers.
+
+ * Opening a QPainter on a QAbstractScrollArea now gives a runtime
+   exception. Open QPainter on the viewport() instead.
+
+ * Speed up QDataStream.writeXxx() methods significantly.
+
+ * Made emit / connect / disconnect thread safe
+
+
+************************************************************************
+Juic
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ * The linux 64 bit version did not have proper rpath and could
+   potentially load the wrong set of Qt libraries.
+
+ * Juic would produce non-compiling output for QSizePolicy in
+   QSpacerItems
+
+
+************************************************************************
+Qt Jambi Generator
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+ * added option --include-paths to specify additional include paths
+
+ * added "replace-value" for "modify-arguments" in the typesystem.
+
+____________________
+
+Fixes:
+____________________
+
+ * The generator would crash when parsing complex class hierarchies
+   based on namespaces, innerclasses and inheritance.
+
+ * The generator would crash when parsing function definitions on the
+   form "void (function)()".
+
+ * The generator would create non-compiling code for "const QString"
+   function arguments.
+
+ * The generator did not properly parse comments inside defines
+
+ * The generator would not detect subclasses of QObjects as QObjects
+   when declared inside a namespace
+
+ * The generator would fail if QTDIR was not set.
+
+ * The generator did not parse __attribute__ tags in class
+   declarations properly.
+
+
+************************************************************************
+Qt Designer
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ * It was not possible to set a QLabel's alignment property using the
+   property editor
+
+ * Many widgets did not have proper default focus settings, making
+   it appear as if the focus editor did not work.
+
+ * Fixed warning about QGridLayout.margin()
+
+ * The Signal / Slots tool window did not work properly.
+
+ * The "New Form" templates did not work properly.
+
+ * Fixed the "Remove" button in the search path editor in the resource
+   browser
+
+
+************************************************************************
+Qt Jambi Eclipse Integration
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ * The eclipse integration could crash when trying to load custom
+   widgets.
+
+ * Automatically insert "qt_system_libs" in Qt Jambi projects to avoid
+   linker errors when deploying and running applications. Users with
+   existing projects may have to alter them similarly to make them
+   run properly. See the Qt Jambi deployment documentation for more
+   information.
+
+
+************************************************************************
+Examples and Demos
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ * The StarDelegate example was extremely slow on Mac OS X.
+
+ * The SVG cards demos drag and drop was partially broken.
+
+ * The TextEdit demo is now translatable.
+

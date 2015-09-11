@@ -1,0 +1,278 @@
+/*!
+    \page qtjambi-undoframework.html
+    \title Undo Framework Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Undo Framework Example}{UndoFramework.java}
+    \endlist
+
+    This example shows how to implement undo/redo functionality
+    with the Qt undo framework.
+
+    \image undoframeworkexample.png The Undo Framework Example
+
+    In the Qt undo framework, all actions that the user performs are
+    implemented in classes that inherit QUndoCommand. An undo command
+    class knows how to both \l{QUndoCommand::}{redo()} - or just do
+    the first time - and \l{QUndoCommand::}{undo()} an action. For
+    each action the user performs, a command is placed on a
+    QUndoStack. Since the stack contains all commands executed
+    (stacked in chronological order) on the document, it can roll the
+    state of the document backwards and forwards by undoing and redoing
+    its commands. See the \l{Overview of Qt's Undo Framework}{overview
+    document} for a high-level introduction to the undo framework.
+
+    The undo example implements a simple diagram application. It is
+    possible to add and delete items, which are either box or
+    rectangular shaped, and move the items by dragging them with the
+    mouse. The undo stack is shown in a QUndoView, which is a list in
+    which the commands are shown as list items. Undo and redo are
+    available through the edit menu. The user can also select a command
+    from the undo view.
+
+    We use the \l{The Graphics View Framework}{graphics view
+    framework} to implement the diagram. We only treat the related
+    code briefly as the framework has examples of its own (e.g., the
+    \l{Diagram Scene Example}).
+
+    The example consists of the following classes:
+
+    \list
+        \o \c UndoFramework inherits QMainWindow and arranges the
+              example's widgets. It creates the commands based
+              on user input and keeps them on the command stack.
+        \o \c AddCommand adds an item to the scene.
+        \o \c DeleteCommand deletes an item from the scene.
+        \o \c When an item is moved the MoveCommand keeps record
+              of the start and stop positions of the move, and it
+              moves the item according to these when \c redo() and \c undo()
+              is called.
+        \o \c DiagramScene inherits QGraphicsScene and
+              emits signals for the \c MoveComands when an item is moved.
+        \o \c DiagramItem inherits QGraphicsPolygonItem and represents
+              an item in the diagram.
+    \endlist
+
+    \section1 The UndoFramework class
+
+    \snippet UndoFramework.java 0
+
+    The \c UndoFramework class maintains the undo stack, i.e., it creates
+    \l{QUndoCommand}s and pushes and pops them from the stack when it
+    receives the \c triggered() signal from \c undoAction and \c
+    redoAction.
+
+    We will start with a look at the constructor:
+
+    \snippet UndoFramework.java 1
+
+    By connecting the undo stack's \c canRedoChanged() and
+    canUndoChanged() signals to our undo and redo action's
+    setEnabled() slot we make the actions disabled when the stack
+    cannot undo and redo commands.
+
+    The rest of the constructor sets up the DiagramScene and
+    QGraphicsView.  Notice the syntax used for slots in inner classes.
+
+    Here is the \c createUndoView() method:
+
+    \snippet UndoFramework.java 2
+
+    The QUndoView is a widget that displays the text, which is set
+    with the \l{QUndoCommand::}{setText()} method, for each
+    QUndoCommand in the undo stack in a list.
+
+    Here is the \c createActions() method:
+
+    \snippet UndoFramework.java 3
+
+    \dots
+
+    \snippet UndoFramework.java 4
+
+    The \c createActions() method sets up all the examples actions
+    in the manner shown above. We can connect our \c undoAction and \c
+    redoAction directly to the stack's \c undo() and \c redo() slots
+    as we disable the actions when the stack cannot undo and redo.
+    For the other actions we have implemented slots in the \c
+    UndoFramework class.
+
+    Here is the \c createMenues() method:
+
+    \snippet UndoFramework.java 5
+
+    \dots
+    \snippet UndoFramework.java 6
+    \dots
+    \snippet UndoFramework.java 7
+
+    We have to use the QMenu \c aboutToShow() and \c aboutToHide()
+    signals since we only want \c deleteAction to be enabled when we
+    have selected an item. We also want the \l{QUndoCommand::}{text()}
+    to be shown in the \c undoAction and \c redoAction menu items.
+
+    Here is the \c itemMoved() slot:
+
+    \snippet UndoFramework.java 8
+
+    We push a MoveCommand on the stack, which calls \c redo() on it.
+
+    Here is the \c deleteItem() slot:
+
+    \snippet UndoFramework.java 9
+
+    An item must be selected to be deleted.  We need to check if it is
+    selected as the \c deleteAction may be enabled even if an item is
+    not selected. This can happen as we do not catch a signal or event
+    when an item is selected.
+
+    Here is the \c itemMenuAboutToShow() and itemMenuAboutToHide() slots:
+
+    \snippet UndoFramework.java 10
+    \codeline
+    \snippet UndoFramework.java 11
+
+    We implement \c itemMenuAboutToShow() and \c itemMenuAboutToHide()
+    to get a dynamic item menu. These slots are connected to the
+    \l{QMenu::}{aboutToShow()} and \l{QMenu::}{aboutToHide()} signals.
+    We need this to disable or enable the \c deleteAction and fill the
+    \c redoAction and \c undoAction menu item with the text from the
+    next QUndoCommand that will be redone or undone.
+
+    Here is the \c addBox() slot:
+
+    \snippet UndoFramework.java 12
+
+    The \c addBox() method creates an AddCommand and pushes it on
+    the undo stack.
+
+    Here is the \c addTriangle() sot:
+
+    \snippet UndoFramework.java 13
+
+    The \c addTriangle() method creates an AddCommand and pushes it
+    on the undo stack.
+
+    Here is the implementation of \c about():
+
+    \snippet UndoFramework.java 14
+
+    The about slot is triggered by the \c aboutAction and displays an
+    about box for the example.
+
+    \section1 AddCommand Class
+
+    \snippet UndoFramework.java 25
+
+    The \c AddCommand class adds DiagramItem graphics items to the
+    DiagramScene. We will explain the member variables as we stumble
+    upon them in the implementation.
+
+    We start with the constructor:
+
+    \snippet UndoFramework.java 26
+
+    We first create the DiagramItem to add to the DiagramScene.  The
+    \l{QUndoCommand::}{setText()} method let us set a QString that
+    describes the command. We use this to get custom messages in the
+    QUndoView and in the menu of the main window.
+
+    \snippet UndoFramework.java 27
+
+    We set the position of the item as we do not do this in the
+    constructor.
+
+    \snippet UndoFramework.java 28
+
+    \c undo() removes the item from the scene.
+
+    \section1 DeleteCommand Class Definition
+
+    \snippet UndoFramework.java 17
+
+    The DeleteCommand class implements the functionality to remove an
+    item from the scene.
+
+    \snippet UndoFramework.java 18
+
+    We know that there must be one selected item as it is not possible
+    to create a DeleteCommand unless the item to be deleted is
+    selected and that only one item can be selected at any time.
+    The item must be unselected if it is inserted back into the
+    scene.
+
+    \snippet UndoFramework.java 19
+
+    The item is simply reinserted into the scene.
+
+    \snippet UndoFramework.java 23
+
+    The item is removed from the scene.
+
+    \section1 MoveCommand Class
+
+    \snippet UndoFramework.java 20
+
+    MoveCommand implements the command for moving items.
+
+    The constructor of MoveCommand looks like this:
+
+    \snippet UndoFramework.java 21
+
+    We save both the old and new positions for undo and redo
+    respectively.
+
+    \snippet UndoFramework.java 22
+
+    We simply set the items old position and update the scene.
+
+    \snippet UndoFramework.java 27
+
+    We set the item to its new position.
+
+    \snippet UndoFramework.java 24
+
+    The \l{QUndoCommand::}{mergeWith()} is reimplemented to make
+    consecutive moves of an item one MoveCommand, i.e, the item will
+    be moved back to the start position of the first move.
+
+    Whenever a MoveCommand is created, this method is called to
+    check if it should be merged with the previous command. It is the
+    previous command object that is kept on the stack. The method
+    returns true if the command is merged; otherwise false.
+
+    We first check whether it is the same item that has been moved
+    twice, in which case we merge the commands. We update the position
+    of the item so that it will take the last position in the move
+    sequence when undone.
+
+    \section1 DiagramScene Class
+
+    \snippet UndoFramework.java 15
+    \dots
+    \snippet UndoFramework.java 16
+
+    The DiagramScene implements the functionality to move a
+    DiagramItem with the mouse. It emits a signal when a move is
+    completed. This is caught by the \c MainWindow, which makes
+    MoveCommands. We do not examine the implementation of DiagramScene
+    as it only deals with graphics framework issues.
+
+    We declare a signal that is used to notify UndoFramework that an
+    item has been moved in the scene.
+
+    We do not examine the DiagramScene class's implementation in
+    detail, as it does not contain any functionality concerning the
+    undo framework.
+
+    \section1 The \c main() Function
+
+    The \c main() method of the program looks like this:
+
+    \snippet UndoFramework.java 29
+
+    The main method creates the \c MainWindow and shows it as a top
+    level window.
+
+*/

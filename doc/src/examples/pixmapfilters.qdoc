@@ -1,0 +1,15 @@
+
+/*!
+    \page qtjambi-pixmapfilters.html
+    \title PixmapFilters Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Pixmap Filters Example}{PixmapFilters.java}
+    \endlist
+
+    The Pixmap Filters example shows use of \l{QPixmapFilter}s to
+    manipulate pixmaps.
+
+    \image pixmapfiltersexample.png
+*/

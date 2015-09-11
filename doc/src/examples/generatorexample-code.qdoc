@@ -1,0 +1,11 @@
+/*!
+    \page qtjambi-generatorexample-code.html
+    \title Code for Qt Jambi Generator Example
+
+    This is the Java code for the generator example. The the
+    typesystem specification and C++ files are found in the \c
+    generator_example directory in the directory where Qt Jambi was
+    installed.
+
+    \quotefile GeneratorExample.java
+*/

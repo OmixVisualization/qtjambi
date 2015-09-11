@@ -1,0 +1,180 @@
+/*!
+    \page qtjambi-2dpainting.html
+    \title 2D Painting Example
+
+    \bold {Code}:
+    \list
+        \o \l {Code for 2D Painting Example}{Painting2D.java}
+    \endlist
+
+    The 2D Painting example shows how QPainter and QGLWidget can be used
+    together to display accelerated 2D graphics on supported hardware.
+
+    \image 2dpainting-example.png
+
+    The QPainter class is used to draw 2D graphics primitives onto
+    paint devices provided by QPaintDevice subclasses, such as QWidget
+    and QImage.
+
+    Since QGLWidget is a subclass of QWidget, it is possible
+    to reimplement its \l{QWidget::paintEvent()}{paintEvent()} and use
+    QPainter to draw on the device, just as you would with a QWidget.
+    The only difference is that the painting operations will be accelerated
+    in hardware if it is supported by your system's OpenGL drivers.
+
+    In this example, we perform the same painting operations on a
+    QWidget and a QGLWidget. The QWidget is shown with anti-aliasing
+    enabled, and the QGLWidget will also use anti-aliasing if the
+    required extensions are supported by your system's OpenGL driver.
+
+    \section1 Overview
+
+    To be able to compare the results of painting onto a QGLWidget subclass
+    with native drawing in a QWidget subclass, we want to show both kinds
+    of widget side by side. To do this, we derive subclasses of QWidget and
+    QGLWidget, using a separate \c Helper class to perform the same painting
+    operations for each, and lay them out in a top-level widget, itself
+    provided a the \c Painting2D class.
+
+    \section1 Helper Class
+
+    In this example, the painting operations are performed by a helper class.
+    We do this because we want the same painting operations to be performed
+    for both our QWidget subclass and the QGLWidget subclass.
+
+    The \c Helper class is minimal:
+
+    \snippet Painting2D.java 10
+
+    Apart from the constructor, it only provides a \c paint() method
+    to paint using a painter supplied by one of our widget subclasses.
+    We start with a look at the constructor.
+
+    The constructor of the class sets up the resources it needs to paint
+    content onto a widget:
+
+    \snippet Painting2D.java 11
+
+    The actual painting is performed in the \c paint() method. This takes
+    a QPainter that has already been set up to paint onto a paint device
+    (either a QWidget or a QGLWidget), a QPaintEvent that provides information
+    about the region to be painted, and a measure of the elapsed time (in
+    milliseconds) since the paint device was last updated.
+
+    \snippet Painting2D.java 12
+
+    We begin painting by filling in the region contained in the paint event
+    before translating the origin of the coordinate system so that the rest
+    of the painting operations will be displaced towards the center of the
+    paint device.
+
+    We draw a spiral pattern of circles, using the elapsed time specified to
+    animate them so that they appear to move outward and around the coordinate
+    system's origin:
+
+    \snippet Painting2D.java 13
+
+    Since the coordinate system is rotated many times during
+    this process, we \l{QPainter::save()}{save()} the QPainter's state
+    beforehand and \l{QPainter::restore()}{restore()} it afterwards.
+
+    \snippet Painting2D.java 14
+
+    We draw some text at the origin to complete the effect.
+
+    \section1 Widget Class
+
+    The \c Widget class provides a basic custom widget that we use to
+    display the simple animation painted by the \c Helper class.
+
+    \snippet Painting2D.java 6
+
+    Apart from the constructor, the widget class only contains a
+    \l{QWidget::paintEvent()}{paintEvent()} method, that lets us draw
+    customized content, and a slot that is used to animate its contents.
+    One member variable keeps track of the \c Helper that the widget uses
+    to paint its contents, and the other records the elapsed time since
+    it was last updated.
+
+    We start by having a look at the constructor. It stores the \c
+    Helper object supplied, calls the base class's constructor, and
+    enforces a fixed size for the widget:
+
+    \snippet Painting2D.java 7
+
+    The \c animate() slot is called whenever a timer, which we define later, times
+    out:
+
+    \snippet Painting2D.java 8
+
+    Here, we determine the interval that has elapsed since the timer last
+    timed out, and we add it to any existing value before repainting the
+    widget. Since the animation used in the \c Helper class loops every second,
+    we can use the modulo operator to ensure that the \c elapsed variable is
+    always less than 1000.
+
+    Since the \c Helper class does all of the actual painting, we only have
+    to implement a paint event that sets up a QPainter for the widget and calls
+    the helper's \c paint() method:
+
+    \snippet Painting2D.java 9
+
+    \section1 GLWidget Class
+
+    The \c GLWidget class definition is basically the same as the \c Widget
+    class except that it is derived from QGLWidget.
+
+    \snippet Painting2D.java 2
+
+    Again, the member variables record the \c Helper used to paint the
+    widget and the elapsed time since the previous update.
+
+    The constructor differs a little from the \c Widget class's constructor:
+
+    \snippet Painting2D.java 3
+
+    As well as initializing the \c elapsed member variable and storing
+    the \c Helper object used to paint the widget, the base class's
+    constructor is called. This enables anti-aliasing if it is
+    supported by your system's OpenGL driver.
+
+    The \c animate() slot is exactly the same as that provided by the \c Widget
+    class:
+
+    \snippet Painting2D.java 4
+
+    The \c paintEvent() is almost the same as that found in the \c Widget class:
+
+    \snippet Painting2D.java 5
+
+    Since anti-aliasing will be enabled if available, we only need to set up
+    a QPainter on the widget and call the helper's \c paint() method to display
+    the widget's contents.
+
+    \section1 Painting2D Class
+
+    The \c Painting2D class has a basic, minimal definition:
+
+    \snippet Painting2D.java 0
+
+    It contains a single \c Helper object that will be shared between all
+    widgets.
+
+    The constructor does all the work, creating a widget of each type and
+    inserting them with labels into a layout:
+
+    \snippet Painting2D.java 1
+
+    A timer with a 50 millisecond time out is constructed for animation purposes,
+    and connected to the \c animate() slots of the \c Widget and \c GLWidget objects.
+    Once started, the widgets should be updated at around 20 frames per second.
+
+    \section1 Running the Example
+
+    The example shows the same painting operations performed at the same time
+    in a \c Widget and a \c GLWidget. The quality and speed of rendering in the
+    \c GLWidget depends on the level of support for multisampling and hardware
+    acceleration that your system's OpenGL driver provides. If support for either
+    of these is lacking, the driver may fall back on a software renderer that
+    may trade quality for speed.
+*/

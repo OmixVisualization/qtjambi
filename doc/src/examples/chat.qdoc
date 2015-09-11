@@ -1,0 +1,15 @@
+/*!
+    \page qtjambi-chat.html
+    \title Chat Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Chat Example}{Chat.java}
+    \endlist
+
+    The Chat example shows how to implement a peer-to-peer chat
+    client.
+
+    \image chat-example.png
+
+*/

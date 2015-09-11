@@ -1,0 +1,19 @@
+/*!
+    \page qtjambi-overviews.html
+
+    \title C++ Qt Technology Overviews
+
+    Note that this documentation is under development. The documents
+    listed below have been written for Qt C++, but the concepts are the
+    same for Qt Jambi.
+
+    \list
+    \o \l {Drag and Drop}
+    \omit \o \l {Introduction to D-BUS}{Inter-process Communication} \endomit
+    \omit \o \l {Thread Support in Qt}{Multithreaded Programming} \endomit
+    \o \l {The Qt 4 Main Window Classes}{Main Window Architecture}
+    \o \l {Rich Text Processing}
+    \o \l {Model/View Programming}
+    \o \l {How to Create Qt Plugins}{Plugin System}
+    \endlist
+*/

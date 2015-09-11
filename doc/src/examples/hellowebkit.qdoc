@@ -1,0 +1,14 @@
+/*!
+    \page qtjambi-hellowebkit.html
+    \title Hello WebKit Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Hello WebKit Example}{HelloWebKit.java}
+    \endlist
+
+    The Hello WebKit example shows the basics of how to create a
+    WebKit application.
+
+    \image hellowebkitexample.png
+*/

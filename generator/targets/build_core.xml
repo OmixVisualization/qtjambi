@@ -1,0 +1,3 @@
+<typesystem>
+  <load-typesystem name="../build/generator/typesystem_core.xml" generate="yes" />
+</typesystem>

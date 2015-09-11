@@ -1,0 +1,2040 @@
+
+
+$$QStringRef.QStringRef(org.qtjambi.qt.QNativePointer)
+/**
+Constructs a string reference to the given <tt>string</tt>.
+
+*/
+
+
+$$QStringRef.QStringRef()
+/**
+Constructs an empty string reference.
+
+*/
+
+
+$$QStringRef.QStringRef(org.qtjambi.qt.core.QStringRef)
+/**
+Constructs a copy of the <tt>other</tt> string reference.
+
+*/
+
+
+$$QStringRef.QStringRef(org.qtjambi.qt.QNativePointer, int, int)
+/**
+Constructs a string reference to the range of characters in the given
+<tt>string</tt> specified by the starting <tt>position</tt> and
+<tt>length</tt> in characters.
+
+<b>Warning:</b> This function exists to improve performance as much as
+possible, and performs no bounds checking. For program correctness,
+<tt> position</tt> and <tt>length</tt> must describe a valid substring
+of <tt>string</tt>.
+
+This means that the starting <tt>position</tt> must be positive or 0
+and smaller than \a string's length, and <tt>length</tt> must be
+positive or 0 but smaller than the string's length minus the starting
+<tt>position</tt>; i.e, 0 <= position < string->length() and 0 <=
+length <= string->length() - position must both be satisfied.
+
+*/
+
+
+$$QStringRef.appendTo(org.qtjambi.qt.QNativePointer)
+/**
+Appends the string reference to <tt>string</tt>, and returns a new
+reference to the combined string data.
+
+*/
+
+
+$$QStringRef.at(int)
+/**
+Returns the character at the given index <tt>position</tt> in the
+string reference.
+
+The <tt>position</tt> must be a valid index position in the string
+(i.e., 0 <= <tt>position</tt> < size()).
+
+*/
+
+
+$$QStringRef.clear()
+/**
+Clears the contents of the string reference by making it null and
+empty.
+
+*/
+
+
+$$QStringRef.constData()
+/**
+Same as unicode().
+
+@return
+*/
+
+
+$$QStringRef.count()
+/**
+Returns the number of characters in this string.
+
+*/
+
+
+$$QStringRef.data()
+/**
+Same as unicode().
+
+*/
+
+
+$$QStringRef.isEmpty()
+/**
+Returns true if the string reference has no characters; otherwise
+returns false.
+
+A string reference is empty if its size is zero.
+
+*/
+
+
+$$QStringRef.isNull()
+/**
+Returns true if string() returns a null pointer or a pointer to a null
+string; otherwise returns true.
+
+*/
+
+
+$$QStringRef.length()
+/**
+Returns the number of characters in this substring.
+
+*/
+
+
+$$QStringRef.operator_assign(org.qtjambi.qt.core.QStringRef)
+/**
+Assigns the <tt>other</tt> string reference to this string reference,
+and returns the result.
+
+*/
+
+
+$$QStringRef.operator_assign(org.qtjambi.qt.QNativePointer)
+/**
+Constructs a string reference to the given <tt>string</tt> and assigns
+it to this string reference, returning the result.
+
+*/
+
+
+$$QStringRef.position()
+/**
+Returns the starting position in the referenced string that is
+referred to by the string reference.
+
+*/
+
+$$QStringRef.size()
+/**
+Returns the number of characters referred to by the string reference.
+
+*/
+
+
+$$QStringRef.string()
+/**
+Returns a pointer to the string referred to by the string reference,
+or 0 if it does not reference a string.
+
+*/
+
+
+$$QStringRef.unicode()
+/**
+Returns a Unicode representation of the string reference. Since the
+data stems directly from the referenced string, it is not
+null-terminated unless the string reference includes the string's null
+terminator.
+
+*/
+
+
+$$QPersistentModelIndex.compareTo(java.lang.Object)
+/**
+Compares this object with the specified object for order. Returns a
+negative integer, zero, or a positive integer as this object is less
+than, equal to, or greater than the specified object.
+
+*/
+
+
+$$QTimer.singleShot(int, org.qtjambi.qt.core.QObject, java.lang.String)
+/**
+This static function calls a slot after a given time interval.
+<p>
+It is very convenient to use this function because you do not need
+to bother with a QObject.timerEvent() or
+create a local QTimer object.
+<p>
+Example:
+<pre>
+<code>
+    #include &ltQApplication&gt
+    #include &ltQTimer&gt
+
+    int main(int argc, char *argv[])
+    {
+        QApplication app(argc, argv);
+        QTimer::singleShot(600000, &app, SLOT(quit()));
+        ...
+        return app.exec();
+    }
+</endcode>
+</pre>
+<p>
+This sample program automatically terminates after 10 minutes
+(600,000 milliseconds).
+<p>
+The <tt>obj</tt> is the receiving object and the <tt>member</tt> is the
+slot. The time interval is <tt>msec</tt> milliseconds.
+
+*/
+
+
+$$QBitArray.xor(org.qtjambi.qt.core.QBitArray)
+/**
+Returns a bit array that is the XOR of this bit array and <tt>other</tt>.
+<p>
+The result has the length of the longest of the two bit arrays,
+with any missing bits (if one array is shorter than the other)
+taken to be 0.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QBitArray a(3);
+    QBitArray b(2);
+    QBitArray c;
+    a[0] = 1; a[1] = 0; a[2] = 1;   // a: [ 1, 0, 1 ]
+    b[0] = 1; b[1] = 0;             // b: [ 1, 1 ]
+    c = a ^ b;                      // c: [ 0, 1, 1 ]
+</pre>
+</code>
+
+*/
+
+
+$$QBitArray.and(org.qtjambi.qt.core.QBitArray)
+/**
+Returns a bit array that is the AND of this bit array and
+<tt>other</tt>.
+<p>
+The result has the length of the longest of the two bit arrays,
+with any missing bits (if one array is shorter than the other)
+taken to be 0.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QBitArray a(3);
+    QBitArray b(2);
+    QBitArray c;
+    a[0] = 1; a[1] = 0; a[2] = 1;   // a: [ 1, 0, 1 ]
+    b[0] = 1; b[1] = 0;             // b: [ 1, 1 ]
+    c = a & b;                      // c: [ 1, 0, 0 ]
+</pre>
+</endcode>
+
+*/
+
+
+$$QBitArray.or(org.qtjambi.qt.core.QBitArray)
+/**
+Returns a bit array that is the OR of this bit array and
+<tt>other</tt>.
+<p>
+The result has the length of the longest of the two bit arrays,
+with any missing bits (if one array is shorter than the other)
+taken to be 0.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QBitArray a(3);
+    QBitArray b(2);
+    QBitArray c;
+    a[0] = 1; a[1] = 0; a[2] = 1;   // a: [ 1, 0, 1 ]
+    b[0] = 1; b[1] = 0;             // b: [ 1, 1 ]
+    c = a | b;                      // c: [ 1, 1, 1 ]
+</pre>
+</code>
+
+*/
+
+
+$$QBitArray.set(org.qtjambi.qt.core.QBitArray)
+/**
+This function sets the contents of this array to the same as <tt>other</tt>s.
+
+*/
+
+
+$$QBitArray.inverted()
+/**
+Returns a bit array that contains the inverted bits of this bit
+array.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QBitArray a(3);
+    QBitArray b;
+    a[0] = 1; a[1] = 0; a[2] = 1;   // a: [ 1, 0, 1 ]
+    b = ~a;                         // b: [ 0, 1, 0 ]
+</pre>
+</code>
+
+*/
+
+
+$$QBuffer.QBuffer(org.qtjambi.qt.core.QByteArray, org.qtjambi.qt.core.QObject)
+/**
+Constructs a QBuffer that uses the QByteArray pointed to by
+<tt>byteArray</tt> as its internal buffer, and with the given <tt>parent</tt>.
+The caller is responsible for ensuring that <tt>byteArray</tt> remains
+valid until the QBuffer is destroyed, or until setBuffer() is
+called to change the buffer. QBuffer doesn't take ownership of
+the QByteArray.
+<p>
+If you open the buffer in write-only mode or read-write mode and
+write something into the QBuffer, <tt>byteArray</tt> will be modified.
+
+*/
+
+
+$$QBuffer.QBuffer(org.qtjambi.qt.core.QByteArray)
+/**
+Constructs a new QByteArray of which contents will be equal to
+<tt>byteArray</tt>.
+
+*/
+
+
+$$QBuffer.setBuffer(org.qtjambi.qt.core.QByteArray)
+/**
+
+Makes the QBuffer use the <tt>byteArray</tt> as its internal buffer.
+<p>
+Does nothing if isOpen() is true.
+<p>
+If you open the buffer in write-only mode or read-write mode and
+write something into the QBuffer, \a byteArray will be modified.
+<p>
+If <tt>byteArray</tt> is null, the buffer creates its own internal
+QByteArray to work on. This byte array is initially empty.
+
+*/
+
+
+$$QBuffer.setData(byte[])
+/**
+Sets the contents of the internal buffer to be <tt>data</tt>.
+<p>
+Does nothing if isOpen() is true.
+
+*/
+
+$$QProcess.start(java.lang.String, java.util.List<java.lang.String>)
+/**
+Starts the program <tt>program</tt> in a new process, passing the
+command line arguments in <tt>arguments</tt>. QProcess will
+immediately enter the Starting state. If the process starts
+successfully, QProcess will emit started(); otherwise, error() will be
+emitted.
+<p>
+On Windows, arguments that contain spaces are wrapped in quotes.
+<p>
+Note: processes are started asynchronously, which means the started()
+and error() signals may be delayed. Call waitForStarted() to make sure
+the process has started (or has failed to start) and those signals
+have been emitted.
+
+*/
+
+
+$$QTextStream.setCodec(java.lang.String)
+/**
+Sets the codec for this stream to the QTextCodec for the encoding
+specified by <tt>codecName</tt>. Common values for <b>codecName</b>
+include "ISO 8859-1", "UTF-8", and "UTF-16". If the encoding isn't
+recognized, nothing happens.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+</pre>
+</code>
+
+*/
+
+
+$$QTextStream.readByte()
+/**
+Reads a byte from the stream.
+
+*/
+
+
+$$QTextStream.readShort()
+/**
+Reads a short from the stream
+
+*/
+
+
+$$QTextStream.readInt()
+/**
+Reads an int from the stream.
+
+*/
+
+
+$$QTextStream.readLong()
+/**
+Reads a long from the stream.
+
+*/
+
+
+$$QTextStream.readFloat()
+/**
+Reads a float from the stream.
+
+*/
+
+
+$$QTextStream.readDouble()
+/**
+Reads a double from the stream.
+
+*/
+
+
+$$QTextStream.writeShort(short)
+/**
+Writes <tt>s</tt> to the stream.
+
+*/
+
+
+$$QTextStream.readString()
+/**
+Reads a String from the stream.
+
+*/
+
+
+$$QTextStream.writeString(java.lang.String)
+/**
+Writes <tt>string</tt> to the stream.
+
+*/
+
+
+$$QUrl.setQueryItems(java.util.List<org.qtjambi.qt.QPair<java.lang.String, java.lang.String>>)
+/**
+Sets the query string of the URL to an encoded version of
+<tt>query</tt>. The contents of <tt>query</tt> are converted to a
+string internally, each pair delimited by the character returned by
+pairDelimiter(), and the key and value are delimited by
+valueDelimiter().
+
+*/
+
+
+$$QByteArray.QByteArray(java.lang.String)
+/**
+Constructs a byte array initialized with the string <tt>str</tt>.
+<p>
+QByteArray makes a deep copy of the string data.
+
+*/
+
+
+$$QByteArray.QByteArray(byte[])
+/**
+Constructs a new QByteArray with the contents of <tt>data</tt>.
+
+*/
+
+
+$$QByteArray.number(long, int)
+/**
+Returns a byte array containing the string equivalent of the
+number <tt>arg__1</tt> to base <tt>base</tt>. The <tt>base</tt> can be
+any value between 2 and 36.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    int n = 63;
+    QByteArray.number(n, 16);          // returns "3f"
+    QByteArray.number(n, 16).upper();  // returns "3F"
+</pre>
+</code>
+
+*/
+
+
+$$QByteArray.toByteArray()
+/**
+Returns the contents of this QByteArray.
+
+*/
+
+
+$$QByteArray.toChar(int)
+/**
+Returns the byte array converted to an <b>char</b> using base
+<tt>base</tt>, which is 10 by default and must be between 2 and 36, or
+0.
+
+*/
+
+
+$$QByteArray.toChar()
+/**
+Returns the byte array converted to a <b>char</b>.
+
+*/
+
+$$QByteArray.toInt(int)
+/**
+
+Returns the byte array converted to an <b>int</b> using base
+<tt>base</tt>, which is 10 by default and must be between 2 and 36, or
+0.
+<p>
+If <tt>base</tt> is 0, the base is determined automatically using the
+following rules: If the byte array begins with "0x", it is assumed to
+be hexadecimal; if it begins with "0", it is assumed to be octal;
+otherwise it is assumed to be decimal.
+<p>
+The function throws NumberFormatException if conversion fails.
+<p>
+<code>
+<pre>
+    QByteArray str = new QByteArray("FF");
+    int hex = str.toInt(16);     // hex == 255,
+    int dec = str.toInt(10);     // throws NumberFormatException
+</pre>
+</code>
+
+*/
+
+
+$$QByteArray.toInt()
+/**
+Returns the byte array converted to an <b>int</b> using base
+10.
+
+*/
+
+
+$$QByteArray.toDouble()
+/**
+Returns the byte array converted to an <b>double</b>.
+
+*/
+
+
+$$QByteArray.toFloat()
+/**
+Returns the byte array converted to an <b>float</b>.
+
+*/
+
+
+$$QByteArray.add(org.qtjambi.qt.core.QByteArray)
+/**
+This is equal to the append() function and will be removed.
+
+*/
+
+
+$$QByteArray.add(java.lang.String)
+/**
+This is equal to the append() function and will be removed.
+
+*/
+
+
+$$QByteArray.add(byte)
+/**
+This is equal to the append function and will be removed.
+
+*/
+
+
+$$QByteArray.set(org.qtjambi.qt.core.QByteArray)
+/**
+This function sets the contents of this QByteArray equal to <tt>other</tt>.
+
+*/
+
+
+$$QByteArray.append(java.lang.String)
+/**
+This function appends the contents of <tt>other</tt> to the end of this
+QByteArray.
+
+*/
+
+
+$$QByteArray.append(org.qtjambi.qt.core.QByteArray)
+/**
+This function appends the contents of <tt>other</tt> to the end of
+this QByteArray.
+
+*/
+
+
+$$QByteArray.append(byte)
+/**
+This function appends <tt>other</tt> to the end of this QByteArray.
+
+*/
+
+
+$$QByteArray.contains(java.lang.String)
+/**
+Returns true there is at least one occurrence of <tt>str</tt>
+in this QByteArray.
+
+*/
+
+
+$$QByteArray.count(java.lang.String)
+/**
+Returns the number of occurrences of <tt>str</tt> in this QByteArray.
+
+*/
+
+
+$$QByteArray.endsWith(java.lang.String)
+/**
+Returns true if this QByteArray ends with <tt>str</tt>; otherwise,
+returns false.
+
+*/
+
+
+$$QByteArray.fill(byte, int)
+/**
+Sets every byte in the byte array to character <tt>b</tt>. If
+<tt>size</tt> is different from -1 (the default), the byte array is
+resized to size <tt>size</tt> beforehand.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QByteArray ba = new QByteArray("Istanbul");
+    ba.fill("o");
+    // ba == "oooooooo"
+
+    ba.fill("X", 2);
+    // ba == "XX"
+</pre>
+</code>
+
+*/
+
+
+$$QByteArray.fill(byte)
+/**
+Sets every byte in the byte array to character <tt>b</tt>.
+
+*/
+
+
+$$QByteArray.insert(int, org.qtjambi.qt.core.QByteArray)
+/**
+Inserts the byte array <tt>ba</tt> at index position <tt>i</tt> and returns a
+reference to this byte array.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QByteArray ba = new QByteArray("Meal");
+    ba.insert(1, QByteArray("ontr"));
+    // ba == "Montreal"
+</pre>
+</code>
+
+*/
+
+
+$$QByteArray.insert(int, byte)
+/**
+Inserts byte <tt>b</tt> at index position <tt>i</tt> in the byte array.
+If <tt>i</tt> is greater than size(), the array is first extended using
+resize().
+
+*/
+
+
+$$QByteArray.insert(int, java.lang.String)
+/**
+Inserts String <tt>str</tt> at index position <tt>i</tt> in the byte array.
+If <tt>i</tt> is greater than size(), the array is first extended using
+resize().
+
+*/
+
+
+$$QByteArray.prepend(org.qtjambi.qt.core.QByteArray)
+/**
+Prepends <tt>other</tt> to this QByteArray, and returns the resulting
+array.
+
+*/
+
+
+$$QByteArray.prepend(byte)
+/**
+Prepends <tt>other</tt> to this QByteArray, and returns the resulting
+array.
+
+*/
+
+
+$$QByteArray.prepend(java.lang.String)
+/**
+Prepends <tt>str</tt> to this QByteArray, and returns the resulting
+array.
+
+*/
+
+
+$$QByteArray.remove(int, int)
+/**
+Removes <tt>len</tt> bytes from the array, starting at index position
+<tt>pos</tt>, and returns a reference to the array.
+<p>
+If <tt>pos</tt> is out of range, nothing happens. If <tt>pos</tt> is valid,
+but <tt>pos</tt> + <tt>len</tt> is larger than the size of the array, the
+array is truncated at position <tt>pos</tt>.
+<p>
+Example:
+<p>
+<code>
+<pre>
+    QByteArray ba = new QByteArray("Montreal");
+    ba.remove(1, 4);
+    // ba == "Meal"
+</pre>
+</code>
+
+*/
+
+$$QByteArray.replace(org.qtjambi.qt.core.QByteArray, java.lang.String)
+/**
+Replaces every occurrence of the byte array <tt>before</tt> with the
+string <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(byte, org.qtjambi.qt.core.QByteArray)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(java.lang.String, java.lang.String)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(int, int, org.qtjambi.qt.core.QByteArray)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(byte, java.lang.String)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(byte, byte)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(org.qtjambi.qt.core.QByteArray, org.qtjambi.qt.core.QByteArray)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.replace(java.lang.String, org.qtjambi.qt.core.QByteArray)
+/**
+Replaces every occurrence of <tt>before</tt> with <tt>after</tt>.
+
+*/
+
+
+$$QByteArray.setNum(int, int)
+/**
+Sets the array to the printed value of <tt>n</tt> using <tt>base</tt> as base.
+
+*/
+
+
+$$QByteArray.setNum(int)
+/**
+Sets the array to the printed value of <tt>n</tt>
+
+*/
+
+
+$$QByteArray.setNum(float, char, int)
+/**
+Sets the byte array to the printed value of <tt>n</tt>, formatted in format
+<tt>f</tt> with precision <tt>prec</tt>, and returns a reference to the byte
+array.
+
+*/
+
+
+$$QByteArray.setNum(float, char)
+/**
+Sets the byte array to the printed value of <tt>n</tt>, formatted in format
+<tt>f</tt> with precision 6, and returns a reference to the byte
+array.
+
+*/
+
+
+$$QByteArray.setNum(float)
+/**
+Sets the byte array to the printed value of <tt>n</tt>, formatted in format
+<tt>f</tt> with precision 6, and returns a reference to the byte
+array.
+
+*/
+
+
+$$QByteArray.setNum(long, int)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QByteArray.setNum(long)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QByteArray.setNum(double, char, int)
+/**
+    Sets the byte array to the printed value of <tt>n</tt>, formatted in format
+    <tt>f</tt> with precision <tt>prec</tt>, and returns a reference to the
+    byte array.
+*/
+
+
+$$QByteArray.setNum(double, char)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QByteArray.setNum(double)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QByteArray.setNum(short, int)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QByteArray.setNum(short)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QByteArray.startsWith(java.lang.String)
+/**
+Returns true if this byte array starts with string <tt>str</tt>;
+otherwise returns false.
+
+*/
+
+
+$$QDate.weekNumber()
+/**
+Returns the week number (1 to 53).
+<p>
+Returns null if the date is invalid.
+<p>
+In accordance with ISO 8601, weeks start on Qt.DayOfWeek.Monday and
+the first Qt.DayOfWeek.Thursday of a year is always in week 1 of that
+year. Most years have 52 weeks, but some have 53.
+<p>
+Copyright (c) 1989 The Regents of the University of California.
+All rights reserved.
+<p>
+Redistribution and use in source and binary forms are permitted
+provided that the above copyright notice and this paragraph are
+duplicated in all such forms and that any documentation,
+advertising materials, and other materials related to such
+distribution and use acknowledge that the software was developed
+by the University of California, Berkeley.  The name of the
+University may not be used to endorse or promote products derived
+from this software without specific prior written permission.
+THIS SOFTWARE IS PROVIDED "AS IS" AND WITHOUT ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+*/
+
+
+$$QDate.yearOfWeekNumber()
+/**
+This function returns the year number of the QDate's current week.
+
+*/
+
+
+$$QDataStream.QDataStream(org.qtjambi.qt.core.QByteArray, org.qtjambi.qt.core.QIODevice.OpenMode)
+/**
+Constructs a data stream that operates on a byte array, <tt>a</tt>. The
+<tt>mode</tt> describes how the device is to be used.
+
+Since QByteArray is not a QIODevice subclass, internally a QBuffer
+is created to wrap the byte array.
+
+*/
+
+
+$$QDataStream.QDataStream(org.qtjambi.qt.core.QByteArray, org.qtjambi.qt.core.QIODevice.OpenModeFlag...)
+/**
+Constructs a data stream that operates on a byte array, <tt>a</tt>. The
+<tt>mode</tt> describes how the device is to be used.
+
+Since QByteArray is not a QIODevice subclass, internally a QBuffer
+is created to wrap the byte array.
+
+*/
+
+
+$$QDataStream.readBoolean()
+/**
+This function reads a boolean from the stream.
+
+*/
+
+
+$$QDataStream.readByte()
+/**
+This function read a byte from the stream.
+
+*/
+
+
+$$QDataStream.readShort()
+/**
+This function reads a short from the stream.
+
+*/
+
+
+$$QDataStream.readInt()
+/**
+This function reads an int from the stream.
+
+*/
+
+
+$$QDataStream.readLong()
+/**
+This function reads a long from the stream.
+
+*/
+
+$$QDataStream.readFloat()
+/**
+This function reads a float from the stream.
+
+*/
+
+
+$$QDataStream.readDouble()
+/**
+This function read a double from the stream.
+
+*/
+
+
+$$QDataStream.writeShort(short)
+/**
+This function writes the short <tt>s/tt> to the stream. It returns a reference to
+the stream after it has been read from.
+
+*/
+
+
+$$QDataStream.readString()
+/**
+This function reads a string from the stream.
+
+*/
+
+
+$$QDataStream.writeString(java.lang.String)
+/**
+This function writes the short <tt>s/tt> to the stream. It returns a reference to
+the stream after it has been read from.
+
+<tt>string</tt>
+
+*/
+
+
+$$QDataStream.writeBytes(byte[])
+/**
+This function writes the bytes in <tt>buffer</tt> to the stream. It
+returns a reference to the stream after it has been read from.
+
+*/
+
+
+$$QDataStream.writeBytes(byte[], int)
+/**
+This function writes the <tt>length</tt> bytes of <tt>buffer</tt> to
+the stream. It returns a reference to the stream after it has been
+read from.
+
+*/
+
+
+$$QDataStream.readBytes(byte[])
+/**
+This function reads bytes from the stream into <tt>buffer</tt>. It
+returns a reference to the stream after it has been read from.
+
+*/
+
+
+$$QDataStream.readBytes(byte[], int)
+/**
+This function reads <tt>length</tt> bytes from the stream into
+<tt>buffer</tt>. It returns a reference to the stream after it has
+been read from.
+
+*/
+
+
+$$QLocale.toDouble(java.lang.String)
+/**
+Returns the double represented by the localized string <tt>s</tt>, or
+0.0 if the conversion failed.
+
+This function ignores leading and trailing whitespace.
+
+*/
+
+
+$$QLocale.toFloat(java.lang.String)
+/**
+Returns the float represented by the localized string <tt>s</tt>, or
+0.0 if the conversion failed.
+
+This function ignores leading and trailing whitespace.
+
+
+*/
+
+
+$$QLocale.toInt(java.lang.String, int)
+/**
+Returns the int represented by the localized string <tt>s</tt>, using
+base <tt>base</tt>. If <tt>base</tt> is 0 the base is determined automatically
+using the following rules: If the string begins with "0x", it is
+assumed to be hexadecimal; if it begins with "0", it is assumed to
+be octal; otherwise it is assumed to be decimal.
+
+If the conversion fails the function returns 0.
+
+This function ignores leading and trailing whitespace.
+
+*/
+
+
+$$QLocale.toInt(java.lang.String)
+/**
+Returns the int represented by the localized string <tt>s</tt>, using
+base 10.
+
+*/
+
+
+$$QLocale.toLong(java.lang.String, int)
+/**
+Returns the long represented by the localized string <tt>s</tt>, using
+base <tt>base</tt>. If <tt>base</tt> is 0 the base is determined automatically
+using the following rules: If the string begins with "0x", it is
+assumed to be hexadecimal; if it begins with "0", it is assumed to
+be octal; otherwise it is assumed to be decimal.
+
+If the conversion fails the function returns 0.
+
+This function ignores leading and trailing whitespace.
+
+*/
+
+
+$$QLocale.toLong(java.lang.String)
+/**
+Returns the long represented by the localized string <tt>s</tt>, using
+base 10.
+
+*/
+
+
+$$QLocale.toShort(java.lang.String, int)
+/**
+Returns the short represented by the localized string <tt>s</tt>, using
+base <tt>base</tt>. If <tt>base</tt> is 0 the base is determined automatically
+using the following rules: If the string begins with "0x", it is
+assumed to be hexadecimal; if it begins with "0", it is assumed to
+be octal; otherwise it is assumed to be decimal.
+
+If the conversion fails the function returns 0.
+
+This function ignores leading and trailing whitespace.
+
+*/
+
+
+$$QLocale.toShort(java.lang.String)
+/**
+Returns the short represented by the localized string <tt>s</tt>. The
+string is interpreted as a decimal number.
+
+*/
+
+
+$$QLocale.toChar(java.lang.String, int)
+/**
+Returns the char, which must be written as a number between 0 and 255,
+represented by the localized string <tt>s</tt>, using base
+<tt>base</tt>. If <tt>base</tt> is 0 the base is determined
+automatically using the following rules: If the string begins with
+"0x", it is assumed to be hexadecimal; if it begins with "0", it is
+assumed to be octal; otherwise it is assumed to be decimal.
+
+If the conversion fails the function returns 0.
+
+This function ignores leading and trailing whitespace.
+
+*/
+
+
+$$QLocale.toChar(java.lang.String)
+/**
+Returns the char, which must be written as a number between 0 and 255,
+represented by the localized string <tt>s</tt>. The number is assumed
+to be decimal.
+*/
+
+
+$$QTextCodec_ConverterState.QTextCodec_ConverterState()
+/**
+Constructs a ConverterState object.
+
+
+*/
+
+
+$$QTextCodec_ConverterState.QTextCodec_ConverterState(org.qtjambi.qt.core.QTextCodec.ConversionFlags)
+/**
+Constructs a ConverterState object initialized with the given
+<tt>f</tt> flags.
+
+*/
+
+
+$$QTextCodec_ConverterState.setFlags(org.qtjambi.qt.core.QTextCodec.ConversionFlag...)
+/**
+Sets the ConversionFlags of this ConverterState object to <tt>flags</tt>.
+
+*/
+
+
+$$QTextCodec_ConverterState.setFlags(org.qtjambi.qt.core.QTextCodec.ConversionFlags)
+/**
+Sets the ConversionFlags of this ConverterState object to <tt>flags</tt>.
+
+*/
+
+
+$$QTextCodec_ConverterState.flags()
+/**
+Returns the ConversionFlags of this ConverterState object.
+
+*/
+
+
+$$QDir.entryInfoList(java.util.List<java.lang.String>, org.qtjambi.qt.core.QDir.Filters)
+/**
+Returns a list of QFileInfo objects for all the files and
+directories in the directory, ordered according to the name
+and attribute filters previously set with setNameFilters()
+and setFilter(), and sorted according to the flags set with
+setSorting().
+
+The name filter, file attribute filter, and sorting specification
+is set with the <tt>nameFilters</tt>, <tt>filters</tt>.
+
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+
+*/
+
+
+$$QDir.entryInfoList(java.util.List<java.lang.String>)
+/**
+Returns a list of QFileInfo objects for all the files and
+directories in the directory, ordered according to the name
+and attribute filters previously set with setNameFilters()
+and setFilter(), and sorted according to the flags set with
+setSorting().
+
+The <tt>nameFilters</tt> is specified as an argument.
+
+*/
+
+
+$$QDir.entryInfoList(org.qtjambi.qt.core.QDir.Filters)
+/**
+Returns a list of QFileInfo objects for all the files and directories
+in the directory, ordered according to the name and attribute filters
+previously set with setNameFilters() and setFilter(), and sorted according
+to the flags set with setSorting().
+
+The attribute filter is overridden by <tt>filters</tt>.
+
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+
+*/
+
+
+$$QDir.entryInfoList()
+/**
+Returns a list of QFileInfo objects for all the files and directories
+in the directory, ordered according to the name and attribute filters
+previously set with setNameFilters() and setFilter(), and sorted according
+to the flags set with setSorting().
+
+*/
+
+
+$$QDir.entryList(org.qtjambi.qt.core.QDir.Filters)
+/**
+Returns a list of the names of all the files and directories in
+the directory, ordered according to the name and attribute filters
+previously set with setNameFilters() and setFilter(), and sorted
+according to the flags set with setSorting().
+<p>
+The attribute filter is overridden using the <tt>filters</tt>.
+<p>
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+
+*/
+
+
+$$QDir.entryList()
+/**
+Returns a list of the names of all the files and directories in
+the directory, ordered according to the name and attribute filters
+previously set with setNameFilters() and setFilter(), and sorted
+according to the flags set with setSorting().
+<p>
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+*/
+
+
+$$QDir.entryList(java.util.List<java.lang.String>, org.qtjambi.qt.core.QDir.Filters)
+/**
+Returns a list of the names of all the files and
+directories in the directory, ordered according to the name
+and attribute filters previously set with setNameFilters()
+and setFilter(), and sorted according to the flags set with
+setSorting().
+<p>
+The name filter and file attribute filter specification
+are overridden using the <tt>nameFilters</tt> and <tt>filters</tt> arguments.
+<p>
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+
+*/
+
+
+$$QDir.entryList(java.util.List<java.lang.String>)
+/**
+Returns a list of the names of all the files and
+directories in the directory, ordered according to the name
+and attribute filters previously set with setNameFilters()
+and setFilter(), and sorted according to the flags set with
+setSorting().
+<p>
+The name filter attribute specification
+is overridden using the <tt>nameFilters</tt> argument.
+<p>
+Returns an empty list if the directory is unreadable, does not
+exist, or if nothing matches the specification.
+
+*/
+
+
+$$QDir.at(int)
+/**
+Returns the file name at position <tt>i</tt> in the list of file
+names.  Returns an empty string if pos is out of range or if the
+entryList() function failed.
+
+*/
+
+
+$$QSizeF.multiply(double)
+/**
+Multiplies this QSizeF by the factor <tt>d</tt> and return the
+result.
+
+*/
+
+
+$$QSizeF.divide(double)
+/**
+Divides this QSizeF by the divisor <tt>d</tt> and returns the result.
+
+*/
+
+
+$$QSizeF.add(org.qtjambi.qt.core.QSizeF)
+/**
+Adds <tt>s</tt> to this QSizeF and returns the result.
+
+*/
+
+
+$$QSizeF.subtract(org.qtjambi.qt.core.QSizeF)
+/**
+Subtracts <tt>s</tt> from this QSizeF and returns the result.
+
+*/
+
+
+$$QAbstractItemModel.match(org.qtjambi.qt.core.QModelIndex, int, java.lang.Object, int, org.qtjambi.qt.core.Qt.MatchFlag...)
+/**
+Returns a list of indexes for the items where the data stored under
+the given <tt>role</tt> matches the specified <tt>value</tt>. The way the search
+is performed is defined by the <tt>flags</tt> given. The list that is
+returned may be empty.
+<p>
+The search starts from the <tt>start</tt> index, and continues until the
+number of matching data items equals <tt>hits</tt>, the search reaches
+the last row, or the search reaches <tt>start</tt> again, depending on
+whether \c MatchWrap is specified in <tt>flags</tt>.
+<p>
+By default, this function will perform a wrapping, string-based
+comparison
+on all items, searching for items that begin with the search term
+specified
+by \a value.
+
+*/
+
+
+$$QAbstractItemModel.match(org.qtjambi.qt.core.QModelIndex, int, java.lang.Object, int)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QAbstractItemModel.match(org.qtjambi.qt.core.QModelIndex, int, java.lang.Object)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QAbstractItemModel.setItemData(org.qtjambi.qt.core.QModelIndex, java.util.SortedMap<java.lang.Integer, java.lang.Object>)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QAbstractItemModel.setData(int, int, java.lang.Object)
+/**
+Sets the data for the item at <tt>row</tt> and <tt>col</tt> to <tt>value</tt>.
+Returns true if successful; otherwise returns false.
+
+The dataChanged signal should be emitted if the data was successfully set.
+
+The base class implementation returns false. This function and
+data() must be reimplemented for editable models. Note that the
+dataChanged() signal must be emitted explicitly when
+reimplementing this function.
+
+*/
+
+
+$$QAbstractItemModel.setData(int, int, java.lang.Object, int)
+/**
+Sets the models data at <tt>row</tt> and <tt>col</tt> to
+<tt>value</tt>. The data is stored in the <tt>role</tt> role.
+<p>
+
+Returns true if successful; otherwise, returns false.
+
+*/
+
+
+$$QAbstractItemModel.data(int, int, int)
+/**
+Returns the data with the specified <tt>role</tt> at row <tt>row</tt>
+and column <tt>col</tt>
+
+*/
+
+
+$$QAbstractItemModel.data(int, int)
+/**
+Returns the data in the display role at row <tt>row</tt> and column
+<tt>col</tt>.
+
+*/
+
+
+$$QTranslator.load(byte[])
+/**
+Loads the .qm file data <tt>data</tt> into the
+translator.
+<p>
+The data is not copied. The caller must be able to guarantee that
+<tt>data</tt>
+will not be deleted or modified.
+<p>
+Returns true if the file was successfully loaded; otherwise, returns
+false.
+
+*/
+
+
+$$QTranslator.translate(java.lang.String, java.lang.String, java.lang.String)
+/**
+Returns the translation for the key (<tt>context</tt>,
+<tt>sourceText</tt>,
+<tt>comment</tt>). If none is found, also tries (<tt>context</tt>,
+<tt>sourceText</tt>, ""). If that still fails, returns an empty string.
+
+*/
+
+
+$$QTranslator.translate(java.lang.String, java.lang.String)
+/**
+Returns the translation for the key (<tt>context</tt>,
+<tt>sourceText</tt>). If that fails, returns an empty string.
+
+*/
+
+
+$$QObject.findChildren()
+/**
+Returns all children of this QObject, or an empty list if it has no
+children.
+
+*/
+
+
+$$QObject.findChildren(java.lang.Class<?>)
+/**
+Returns all children of this object which are instances of class
+<tt>cl</tt>, or an empty list if there are no such objects.
+The search is performed recursively.
+
+*/
+
+
+$$QObject.findChildren(java.lang.Class<?>, java.lang.String)
+/**
+Returns all children of this object which are instances of class
+<tt>cl</tt> with specified <tt>name</tt>, or an empty list if there are no such objects.
+The search is performed recursively.
+
+*/
+
+
+$$QObject.findChildren(java.lang.Class<?>, org.qtjambi.qt.core.QRegExp)
+/**
+Returns all children of this object which are instances of class
+<tt>cl</tt> with a name that matches <tt>name</tt>, or an empty list if there are no such objects.
+The search is performed recursively.
+
+*/
+
+
+$$QObject.findChild()
+/**
+Returns a child of this object, or 0 if there is no such object.
+The search is performed recursively.
+<p>
+If there is more than one child matching the search, the most
+direct ancestor is returned. If there are several direct
+ancestors, it is undefined which one will be returned. In that
+case, findChildren() should be used.
+
+*/
+
+
+$$QObject.findChild(java.lang.Class<?>)
+/**
+Returns the child of this object that is an instance of <tt>cl</tt>.
+<p>
+If there is more than one child matching the search, the most
+direct ancestor is returned. If there are several direct
+ancestors, it is undefined which one will be returned. In that
+case, findChildren() should be used.
+
+*/
+
+
+$$QObject.findChild(java.lang.Class<?>, java.lang.String)
+/**
+Returns the child of this object that is an instance of <tt>cl</tt>,
+and has the specified <tt>name</tt>.
+<p>
+If there is more than one child matching the search, the most
+direct ancestor is returned. If there are several direct
+ancestors, it is undefined which one will be returned. In that
+case, findChildren() should be used.
+
+*/
+
+
+$$QObject.setProperty(java.lang.String, java.lang.Object)
+/**
+Sets the value of the object's <tt>name</tt> property to
+<tt>value</tt>.
+<p>
+If the property is defined in the class using Q_PROPERTY then
+true is returned on success and false otherwise. If the property
+is not defined using Q_PROPERTY, and therefore not listed in the
+meta-object, it is added as a dynamic property and false is returned.
+<p>
+Information about all available properties is provided through the
+metaObject() and dynamicPropertyNames().
+<p>
+Dynamic properties can be queried again using property() and can be
+removed by setting the property value to an invalid QVariant.
+Changing the value of a dynamic property causes a
+QDynamicPropertyChangeEvent
+to be sent to the object.
+<p>
+<b>Note:</b> Dynamic properties starting with "_q_" are reserved for
+internal purposes.
+
+*/
+
+
+$$QObject.property(java.lang.String)
+/**
+Returns the value of the object's <tt>name</tt> property.
+<p>
+If no such property exists, the returned object is invalid.
+<p>
+Information about all available properties is provided through the
+metaObject() and dynamicPropertyNames().
+
+*/
+
+
+$$QPoint.multiply(double)
+/**
+Multiplies this QPoint by factor <tt>d</tt> and returns the result.
+
+<tt>d</tt>
+@return
+*/
+
+
+$$QPoint.divide(double)
+/**
+Divides this QPoint by divisor <tt>d</tt> and returns the result.
+
+*/
+
+
+$$QPoint.add(org.qtjambi.qt.core.QPoint)
+/**
+Adds this QPoint to <tt>p</tt> and returns the result.
+
+*/
+
+
+$$QPoint.subtract(org.qtjambi.qt.core.QPoint)
+/**
+Subtracts this QPoint by <tt>p</tt> and returns the result.
+
+*/
+
+
+$$QPointF.multiply(double)
+/**
+Multiplies this QPointF by factor <tt>d</tt> and returns the result.
+
+*/
+
+
+$$QPointF.divide(double)
+/**
+Divides this QPointF by deviser <tt>s</tt> and returns the result.
+
+*/
+
+
+$$QPointF.add(org.qtjambi.qt.core.QPointF)
+/**
+Adds <tt>p</tt> to this QPointF and returns the result.
+
+*/
+
+
+$$QPointF.subtract(org.qtjambi.qt.core.QPointF)
+/**
+Subtracts <tt>p</tt> from this QPointF and returns the result.
+
+*/
+
+
+$$QFile.open(int, org.qtjambi.qt.core.QIODevice.OpenModeFlag...)
+/**
+Opens the existing file descriptor <tt>fd</tt>in with the given <tt>flags</tt>.
+Returns true if successful; otherwise returns false.
+<p>
+When a QFile is opened using this function, close() does not
+actually close the file.
+<p>
+The QFile that is opened using this function is automatically set
+to be in raw mode; this means that the file input/output functions
+are slow. If you run into performance issues, you should try to
+use one of the other open functions.
+
+*/
+
+
+$$QFile.decodeName(java.lang.String)
+/**
+Returns the Unicode version of the given <tt>localFileName</tt>. See
+encodeName() for details.
+
+*/
+
+
+$$QCoreApplication.QCoreApplication(java.lang.String[])
+/**
+Constructs a Qt kernel application. Kernel applications are
+applications without a graphical user interface. These type of
+applications are used at the console or as server processes.
+
+The <tt>args</tt> arguments are processed by the application,
+and made available in a more convenient form by the arguments()
+function.
+
+*/
+
+
+$$QCoreApplication.translate(java.lang.String, java.lang.String, java.lang.String)
+/**
+Returns the translation text for <tt>sourceText</tt>, by querying the
+installed translation files. The translation files are searched
+from the most recently installed file back to the first
+installed file.
+<p>
+QObject.tr() and QObject.trUtf8() provide this functionality
+more conveniently.
+<p>
+<tt>context</tt> is typically a class name (e.g., "MyDialog") and
+<tt>sourceText</tt> is either English text or a short identifying text.
+<p>
+<tt>comment</tt> is a disambiguating comment, for when the same
+<tt>sourceText</tt> is used in different roles within the same context. By
+default, it is null. <tt>encoding</tt> indicates the 8-bit encoding of
+character stings See the QTranslator documentation for more
+information about contexts and comments.
+
+*/
+
+
+$$QCoreApplication.translate(java.lang.String, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QCoreApplication.translate(java.lang.String, java.lang.String, java.lang.String, int)
+/**
+Returns the translation text for <tt>sourceText</tt>, by querying the
+installed translation files. The translation files are searched
+from the most recently installed file back to the first
+installed file.
+<p>
+QObject.tr() and QObject.trUtf8() provide this functionality
+more conveniently.
+<p>
+<tt>context</tt> is typically a class name (e.g., "MyDialog") and
+<tt>sourceText</tt> is either English text or a short identifying text.
+<p>
+<tt>comment</tt> is a disambiguating comment, for when the same
+<tt>sourceText</tt> is used in different roles within the same context. By
+default, it is null. <tt>encoding</tt> indicates the 8-bit encoding of
+character stings See the QTranslator documentation for more
+information about contexts and comments.
+<p>
+<tt>n</tt> is used in conjunction with <b>%n</b> to support plural forms.
+See QObject.tr() for details.
+
+*/
+
+
+$$QCoreApplication.invokeLater(java.lang.Runnable)
+/**
+This function will queue the <tt>runnable</tt> and invokes it later.
+
+*/
+
+
+$$QIODevice.open(org.qtjambi.qt.core.QIODevice.OpenModeFlag...)
+/**
+Opens the device and sets its OpenMode to <tt>mode</tt>. Returns true if successful;
+otherwise returns false.
+
+*/
+
+
+$$QIODevice.peek(byte[])
+/**
+Reads from the device into <tt>data</tt>, without side
+effects (i.e., if you call read() after peek(), you will get the same
+data).  Returns the number of bytes read. If an error occurs, such as
+when attempting to peek a device opened in WriteOnly mode, this function
+returns -1.
+<p>
+0 is returned when no more data is available for reading.
+
+*/
+
+
+$$QIODevice.read(byte[])
+/**
+Reads from the device into <tt>data</tt>. Returns the number of bytes read. If
+an error occurs, such as when attempting to peek a device opened in WriteOnly
+mode, this function returns -1.
+<p>
+0 is returned when no more data is available for reading.
+
+*/
+
+
+$$QIODevice.readLine(byte[])
+/**
+This functions reads a line of ASCII characters from the device (the maximum
+characters read is the length of <tt>data</tt>). The data is placed in
+<tt>data</tt>. It returns -1 if an error occurs.
+
+*/
+
+
+$$QIODevice.write(byte[])
+/**
+Writes <tt>data</tt> to the device. Returns the number of bytes that were
+actually written, or -1 if an error occurred.
+
+*/
+
+
+$$QAbstractFileEngine.fileFlags(org.qtjambi.qt.core.QAbstractFileEngine.FileFlag...)
+/**
+
+This function should return the set of OR'd flags that are true for the file
+engine's file, and that are in the type's OR'd members.
+<p>
+In your reimplementation you can use the type argument as an optimization hint
+and only return the OR'd set of members that are true and that match those in
+type; in other words you can ignore any members not mentioned in <tt>type</tt>, thus
+avoiding some potentially expensive lookups or system calls.
+<p>
+This virtual function must be reimplemented by all subclasses.
+
+*/
+
+
+$$QAbstractFileEngine.open(org.qtjambi.qt.core.QIODevice.OpenModeFlag...)
+/**
+Opens the file in the specified <tt>mode</tt>. Returns true if the file
+was successfully opened; otherwise returns false.
+<p>
+The \a mode is an OR combination of QIODevice::OpenMode and
+QIODevice::HandlingMode values.
+
+*/
+
+
+$$QModelIndex.row()
+/**
+Returns the row this model index refers to.
+
+*/
+
+
+$$QModelIndex.column()
+/**
+Returns the column this model index refers to.
+
+*/
+
+
+$$QModelIndex.internalId()
+/**
+Returns an int used by the model to associate
+the index with the internal data structure.
+
+*/
+
+
+$$QTextCodec.codecForName(java.lang.String)
+/**
+Searches all installed QTextCodec objects and returns the one which best
+matches <tt>name</tt>; the match is case-insensitive. Returns 0 if no codec
+matching the name \a name could be found.
+
+*/
+
+
+$$QSize.multiply(double)
+/**
+Multiplies this QSize by factor <tt>d</tt> and returns the result.
+
+*/
+
+
+$$QSize.divide(double)
+/**
+Divides this QSize by divisor <tt>d</tt> and returns the result.
+
+*/
+
+
+$$QSize.add(org.qtjambi.qt.core.QSize)
+/**
+Adds <tt>s</tt> to this QSize and returns the result.
+
+*/
+
+
+$$QSize.subtract(org.qtjambi.qt.core.QSize)
+/**
+Subtracts <tt>s</tt> from this QSize and returns the result.
+
+*/
+
+
+$$QUuid.setData1(int)
+/**
+Sets the data of this QUuid to <tt>data1</tt>.
+
+*/
+
+
+$$QUuid.data1()
+/**
+Returns the data of this QUuid.
+
+
+*/
+
+
+$$QUuid.setData2(char)
+/**
+Sets the data of this QUuid to <tt>data2</tt>.
+
+*/
+
+
+$$QUuid.data2()
+/**
+Returns the data of this QUuid.
+
+
+*/
+
+
+$$QUuid.setData3(char)
+/**
+Sets the data of this QUuid to <tt>data3</tt>.
+
+*/
+
+
+$$QUuid.data3()
+/**
+Returns the data of this QUuid.
+
+
+*/
+
+
+$$QUuid.setData4(byte[])
+/**
+Sets the data of this QUuid to <tt>data4</tt>.
+
+*/
+
+
+$$QUuid.data4()
+/**
+Returns the data of this QUuid.
+
+*/
+
+
+$$QTimerEvent.setId(int)
+/**
+Sets the <tt>id</tt> of this QTimerEvent.
+
+*/
+
+
+$$QTimerEvent.id()
+/**
+Returns the id of this QTimerEvent.
+
+*/
+
+
+$$QDataStream.writeByte(byte)
+/**
+Writes the byte <tt>i</tt> to the stream.
+
+<tt>i</tt>
+
+*/
+
+
+$$QEvent.setT(char)
+/**
+Sets the type of this QEvent to <tt>t</tt>.
+
+*/
+
+
+$$QEvent.t()
+/**
+Returns the type of this QEvent.
+
+
+*/
+
+
+$$QSignalMapper.mapping(java.lang.String)
+/**
+Returns the signal sender associated with the string <tt>text</tt>.
+
+*/
+
+
+$$QCryptographicHash.addData(byte[])
+/**
+Adds <tt>data</tt> to the cryptographic hash.
+
+*/
+
+
+$$QProcess.startDetached(java.lang.String, java.util.List<java.lang.String>, java.lang.String)
+/**
+Starts the program <tt>program</tt> with the arguments <tt>arguments</tt> in a
+new process, and detaches from it. Returns true on success;
+otherwise, returns false. If the calling process exits, the
+detached process will continue to live.
+<p>
+On Unix, the started process will run in its own session and act
+like a daemon. On Windows, it will run as a regular standalone
+process.
+<p>
+On Windows, arguments that contain spaces are wrapped in quotes.
+<p>
+The process will be started in the directory <tt>workingDirectory</tt>.
+
+*/
+
+
+$$QObject.connectSlotsByName()
+/**
+Searches recursively for all child objects of the given object, and connects
+matching signals from them to slots of object that follow the following form:
+<p>
+<code>
+void on_<widget name>_<signal name>(<signal parameters>);
+</code>
+<p>
+Let's assume our object has a child object of type QPushButton with the object
+name button1. The slot to catch the button's <tt>clicked</tt> signal would be:
+<p>
+<code>
+void on_button1_clicked()
+</code>
+
+*/

@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<typesystem>
+  <rejection class="*" function-name="d_func"/>
+  <rejection class="*" function-name="data_ptr"/>
+  <rejection class="*" function-name="detach"/>
+  <rejection class="*" function-name="isDetached"/>
+  <rejection class="*" field-name="d_ptr"/>
+  <rejection class="*" field-name="d"/>
+  <rejection class="QDeclarativeListReference" function-name="listElementType"/>
+  <rejection class="QDeclarativeProperty" function-name="method"/>
+  <rejection class="QDeclarativeProperty" function-name="property"/>
+  <rejection class="QDeclarativeItem" function-name="transform"/>
+  <rejection class="QDeclarativeListProperty"/>
+  <rejection class="QDeclarativeComponent" function-name="qmlAttachedProperties"/>
+  <!--rejection class="QDeclarativeNetworkAccessManagerFactory"/-->
+  
+  <rejection class="QDeclarativeListProperty&lt;T&gt;::AppendFunction"/>
+  <rejection class="QDeclarativeListProperty::AppendFunction"/>
+  <rejection class="QDeclarativeListProperty::CountFunction"/>
+  <rejection class="QDeclarativeListProperty::AtFunction"/>
+  <rejection class="QDeclarativeListProperty::ClearFunction"/>
+  <rejection class="QDeclarativeListProperty" field-name="at"/>
+  <rejection class="QDeclarativeListProperty" field-name="clear"/>
+  <rejection class="QDeclarativeListProperty" field-name="count"/>
+  <rejection class="QDeclarativeListProperty" field-name="append"/>
+  
+    <enum-type name="QDeclarativeComponent::Status"/>
+    <enum-type name="QDeclarativeEngine::ObjectOwnership"/>
+    <enum-type name="QDeclarativeImageProvider::ImageType"/>
+    <enum-type name="QDeclarativeItem::TransformOrigin"/>
+    <enum-type name="QDeclarativeProperty::PropertyTypeCategory"/>
+    <enum-type name="QDeclarativeProperty::Type"/>
+    <enum-type name="QDeclarativeView::ResizeMode"/>
+    <enum-type name="QDeclarativeView::Status"/>
+
+    <object-type name="QDeclarativeComponent">
+	</object-type><!-- since 4.7 -->
+
+    <object-type name="QDeclarativeContext">
+		<modify-function signature="setContextObject(QObject*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setContextProperty(QString,QObject*)">
+			<modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+    <!--modify-function signature="QDeclarativeContext(QDeclarativeContextData *)" remove="all"/>
+    <modify-function signature="QDeclarativeContext(QDeclarativeEngine *, bool)" remove="all"/-->
+    </object-type>
+
+    <object-type name="QDeclarativeEngine">
+		<modify-function signature="addImageProvider(QString,QDeclarativeImageProvider*)">
+			<modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setNetworkAccessManagerFactory(QDeclarativeNetworkAccessManagerFactory*)">
+			<modify-argument index="1">
+                <reference-count action="set" variable-name="__rcNetworkAccessManagerFactory"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setContextForObject(QObject*,QDeclarativeContext*)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+		</modify-function>
+		<modify-function signature="setObjectOwnership(QObject*,QDeclarativeEngine::ObjectOwnership)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<inject-code class="java" position="end">
+                <argument-map index="1" meta-name="%1"/>
+				<argument-map index="2" meta-name="%2"/>
+                if (%1 != null &amp;&amp; %2 != null){
+					switch(%2){
+					case CppOwnership: 
+						if(%1.parent()==null){
+							%1.setJavaOwnership();
+						}
+					default:
+						%1.disableGarbageCollection();
+					}
+				}
+            </inject-code>
+		</modify-function>
+	</object-type><!-- since 4.7 -->
+
+    <value-type name="QDeclarativeError">
+		<modify-function signature="operator=(const QDeclarativeError &amp;)" remove="all"/>
+	</value-type><!-- since 4.7, value type -->
+
+    <object-type name="QDeclarativeExpression">
+	</object-type><!-- since 4.7 -->
+
+    <object-type name="QDeclarativeImageProvider">
+	</object-type><!-- since 4.7, object -->
+
+    <object-type name="QDeclarativeItem" delete-in-main-thread="yes"><!-- since 4.7, value type -->
+		<modify-function signature="setParentItem ( QDeclarativeItem *)">
+			<modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+			<inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 == null) setJavaOwnership();
+				else disableGarbageCollection();
+            </inject-code>
+		</modify-function>
+		<modify-function signature="parentItem() const" rename="private_parentItem" access="private"/>
+        <modify-function signature="hasFocus() const" rename="private_hasFocus" access="private"/>
+		<inject-code>
+		@QtBlockedSlot
+		public final boolean hasFocus() {
+			return private_hasFocus();
+		}
+		
+		@QtBlockedSlot
+		public final org.qtjambi.qt.declarative.QDeclarativeItem parentItem() {
+			return private_parentItem();
+		}
+        </inject-code>
+    </object-type>
+
+    <object-type name="QDeclarativeListReference"/><!-- since 4.7, helper -->
+
+    <interface-type name="QDeclarativeNetworkAccessManagerFactory"><!-- since 4.7, interface -->
+		<modify-function signature="create(QObject *)">
+			<modify-argument index="0">
+				<define-ownership class="shell" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</interface-type>
+
+    <interface-type name="QDeclarativeParserStatus"/><!-- since 4.7, interface -->
+
+    <object-type name="QDeclarativeProperty">
+		<modify-function signature="operator=(const QDeclarativeProperty &amp;)" access="private"/>
+	</object-type><!-- since 4.7, helper -->
+
+    <object-type name="QDeclarativePropertyMap"><!-- since 4.7 -->
+		<modify-function signature="operator[](const QString &amp;)" remove="all"/>
+        <modify-function signature="operator[](const QString &amp;) const" remove="all"/><!-- duplicate with non-const version -->
+    </object-type>
+
+    <interface-type name="QDeclarativePropertyValueSource"><!-- since 4.7, interface -->
+        <modify-function signature="setTarget(QDeclarativeProperty)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </interface-type>
+	
+    <object-type name="QDeclarativeScriptString">
+		<modify-function signature="operator=(const QDeclarativeScriptString &amp;)" access="private"/>
+		<modify-function signature="setContext(QDeclarativeContext*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setScopeObject(QObject*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+		</modify-function>
+	</object-type><!-- since 4.7, value type -->
+
+    <object-type name="QDeclarativeView">
+        <modify-function signature="eventFilter(QObject*,QEvent*)">
+            <modify-argument index="2" invalidate-after-use="yes" />
+        </modify-function>
+		<modify-function signature="setRootObject(QObject*)">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+			<inject-code class="java" position="end">
+				<argument-map index="1" meta-name="%1"/>
+				if (%1 instanceof QDeclarativeItem || 
+					%1 instanceof org.qtjambi.qt.widgets.QGraphicsObject || 
+					%1 instanceof org.qtjambi.qt.widgets.QWidget){
+					%1.disableGarbageCollection();
+				}
+			</inject-code>
+		</modify-function>
+	</object-type>
+		<!-- since 4.7 -->
+
+  <!--interface-type name="QDeclarativeExtensionInterface">
+  </interface-type--><!-- since 4.7, interface -->
+  <interface-type name="QDeclarativeExtensionInterface"/>
+
+    <object-type name="QDeclarativeExtensionPlugin">
+	</object-type><!-- since 4.7, abstract base for interface -->
+
+  <suppress-warning text="Object type 'QDeclarativeError' passed as value. Resulting code will not compile."/>
+  <suppress-warning text="Object type 'QDeclarativeItem' passed as value. Resulting code will not compile."/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDeclarativeComponent::QDeclarativeComponent', unmatched parameter type 'QDeclarativeCompiledData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDeclarativeExpression::QDeclarativeExpression', unmatched parameter type 'QDeclarativeRefCount*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDeclarativeContext::QDeclarativeContext', unmatched parameter type 'QDeclarativeContextData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDeclarativeExpression::QDeclarativeExpression', unmatched parameter type 'QDeclarativeContextData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'enum_2' does not have a type entry or is not an enum"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDeclarativeListProperty::QDeclarativeListProperty', unmatched parameter type 'QDeclarativeListProperty&lt;T>::AppendFunction'"/>
+</typesystem>

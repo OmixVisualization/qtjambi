@@ -1,0 +1,103 @@
+/****************************************************************************
+**
+** This is a generated file, please don't touch.
+**
+****************************************************************************/
+
+/*!
+\page qtjambi-classes.html
+
+\title Qt Jambi's classes
+
+This is a list of all Qt Jambi classes.
+
+\table 100%
+
+\row \o \l{QAbstractButton}{QAbstractButton} \o \l{QFontMetricsF}{QFontMetricsF} \o \l{QPlastiqueStyle}{QPlastiqueStyle} \o \l{QStyleOptionTab}{QStyleOptionTab}
+\row \o \l{QAbstractEventDispatcher}{QAbstractEventDispatcher} \o \l{QFrame}{QFrame} \o \l{QPoint}{QPoint} \o \l{QStyleOptionTabBarBase}{QStyleOptionTabBarBase}
+\row \o \l{QAbstractFileEngine}{QAbstractFileEngine} \o \l{QGL}{QGL} \o \l{QPointF}{QPointF} \o \l{QStyleOptionTabV2}{QStyleOptionTabV2}
+\row \o \l{QAbstractFileEngineHandler}{QAbstractFileEngineHandler} \o \l{QGLColormap}{QGLColormap} \o \l{QPolygon}{QPolygon} \o \l{QStyleOptionTabWidgetFrame}{QStyleOptionTabWidgetFrame}
+\row \o \l{QAbstractItemDelegate}{QAbstractItemDelegate} \o \l{QGLContext}{QGLContext} \o \l{QPolygonF}{QPolygonF} \o \l{QStyleOptionTitleBar}{QStyleOptionTitleBar}
+\row \o \l{QAbstractItemModel}{QAbstractItemModel} \o \l{QGLFormat}{QGLFormat} \o \l{QPrintDialog}{QPrintDialog} \o \l{QStyleOptionToolBar}{QStyleOptionToolBar}
+\row \o \l{QAbstractItemView}{QAbstractItemView} \o \l{QGLPixelBuffer}{QGLPixelBuffer} \o \l{QPrintEngine}{QPrintEngine} \o \l{QStyleOptionToolBox}{QStyleOptionToolBox}
+\row \o \l{QAbstractListModel}{QAbstractListModel} \o \l{QGLWidget}{QGLWidget} \o \l{QPrinter}{QPrinter} \o \l{QStyleOptionToolButton}{QStyleOptionToolButton}
+\row \o \l{QAbstractPageSetupDialog}{QAbstractPageSetupDialog} \o \l{QGradient}{QGradient} \o \l{QProcess}{QProcess} \o \l{QStyleOptionViewItem}{QStyleOptionViewItem}
+\row \o \l{QAbstractPrintDialog}{QAbstractPrintDialog} \o \l{QGridLayout}{QGridLayout} \o \l{QProgressBar}{QProgressBar} \o \l{QStylePainter}{QStylePainter}
+\row \o \l{QAbstractProxyModel}{QAbstractProxyModel} \o \l{QGroupBox}{QGroupBox} \o \l{QProgressDialog}{QProgressDialog} \o \l{QSyntaxHighlighter}{QSyntaxHighlighter}
+\row \o \l{QAbstractScrollArea}{QAbstractScrollArea} \o \l{QHBoxLayout}{QHBoxLayout} \o \l{QProxyModel}{QProxyModel} \o \l{QTabBar}{QTabBar}
+\row \o \l{QAbstractSlider}{QAbstractSlider} \o \l{QHeaderView}{QHeaderView} \o \l{QPushButton}{QPushButton} \o \l{QTabWidget}{QTabWidget}
+\row \o \l{QAbstractSpinBox}{QAbstractSpinBox} \o \l{QHelpEvent}{QHelpEvent} \o \l{QRadialGradient}{QRadialGradient} \o \l{QTableView}{QTableView}
+\row \o \l{QAbstractTableModel}{QAbstractTableModel} \o \l{QHideEvent}{QHideEvent} \o \l{QRadioButton}{QRadioButton} \o \l{QTableWidget}{QTableWidget}
+\row \o \l{QAbstractTextDocumentLayout}{QAbstractTextDocumentLayout} \o \l{QHoverEvent}{QHoverEvent} \o \l{QReadWriteLock}{QReadWriteLock} \o \l{QTableWidgetItem}{QTableWidgetItem}
+\row \o \l{QAbstractTextDocumentLayout::PaintContext}{QAbstractTextDocumentLayout_PaintContext} \o \l{QIODevice}{QIODevice} \o \l{QRect}{QRect} \o \l{QTableWidgetSelectionRange}{QTableWidgetSelectionRange}
+\row \o \l{QAccessible}{QAccessible} \o \l{QIcon}{QIcon} \o \l{QRectF}{QRectF} \o \l{QTabletEvent}{QTabletEvent}
+\row \o \l{QAccessibleBridge}{QAccessibleBridge} \o \l{QIconDragEvent}{QIconDragEvent} \o \l{QRegExp}{QRegExp} \o \l{QTemporaryFile}{QTemporaryFile}
+\row \o \l{QAccessibleEvent}{QAccessibleEvent} \o \l{QIconEngine}{QIconEngine} \o \l{QRegExpValidator}{QRegExpValidator} \o \l{QTextBlock}{QTextBlock}
+\row \o \l{QAccessibleInterface}{QAccessibleInterface} \o \l{QImage}{QImage} \o \l{QRegion}{QRegion} \o \l{QTextBlockFormat}{QTextBlockFormat}
+\row \o \l{QAccessibleObject}{QAccessibleObject} \o \l{QImageIOHandler}{QImageIOHandler} \o \l{QResizeEvent}{QResizeEvent} \o \l{QTextBlockGroup}{QTextBlockGroup}
+\row \o \l{QAccessibleWidget}{QAccessibleWidget} \o \l{QImageReader}{QImageReader} \o \l{QRubberBand}{QRubberBand} \o \l{QTextBlockUserData}{QTextBlockUserData}
+\row \o \l{QAction}{QAction} \o \l{QImageWriter}{QImageWriter} \o \l{QScrollArea}{QScrollArea} \o \l{QTextBlock::iterator}{QTextBlock_iterator}
+\row \o \l{QActionEvent}{QActionEvent} \o \l{QInputContext}{QInputContext} \o \l{QScrollBar}{QScrollBar} \o \l{QTextBrowser}{QTextBrowser}
+\row \o \l{QActionGroup}{QActionGroup} \o \l{QInputContextFactory}{QInputContextFactory} \o \l{QSemaphore}{QSemaphore} \o \l{QTextCharFormat}{QTextCharFormat}
+\row \o \l{QApplication}{QApplication} \o \l{QInputDialog}{QInputDialog} \o \l{QSessionManager}{QSessionManager} \o \l{QTextCodec}{QTextCodec}
+\row \o \l{QBasicTimer}{QBasicTimer} \o \l{QInputEvent}{QInputEvent} \o \l{QSettings}{QSettings} \o \l{QTextCodec::ConverterState}{QTextCodec_ConverterState}
+\row \o \l{QBitArray}{QBitArray} \o \l{QInputMethodEvent}{QInputMethodEvent} \o \l{QShortcut}{QShortcut} \o \l{QTextCursor}{QTextCursor}
+\row \o \l{QBitmap}{QBitmap} \o \l{QInputMethodEvent::Attribute}{QInputMethodEvent_Attribute} \o \l{QShortcutEvent}{QShortcutEvent} \o \l{QTextDecoder}{QTextDecoder}
+\row \o \l{QBoxLayout}{QBoxLayout} \o \l{QIntValidator}{QIntValidator} \o \l{QShowEvent}{QShowEvent} \o \l{QTextDocument}{QTextDocument}
+\row \o \l{QBrush}{QBrush} \o \l{QItemDelegate}{QItemDelegate} \o \l{QSignalMapper}{QSignalMapper} \o \l{QTextDocumentFragment}{QTextDocumentFragment}
+\row \o \l{QBuffer}{QBuffer} \o \l{QItemEditorCreatorBase}{QItemEditorCreatorBase} \o \l{QSize}{QSize} \o \l{QTextEdit}{QTextEdit}
+\row \o \l{QButtonGroup}{QButtonGroup} \o \l{QItemEditorFactory}{QItemEditorFactory} \o \l{QSizeF}{QSizeF} \o \l{QTextEncoder}{QTextEncoder}
+\row \o \l{QByteArray}{QByteArray} \o \l{QItemSelection}{QItemSelection} \o \l{QSizeGrip}{QSizeGrip} \o \l{QTextFormat}{QTextFormat}
+\row \o \l{QByteArrayMatcher}{QByteArrayMatcher} \o \l{QItemSelectionModel}{QItemSelectionModel} \o \l{QSizePolicy}{QSizePolicy} \o \l{QTextFragment}{QTextFragment}
+\row \o \l{QCDEStyle}{QCDEStyle} \o \l{QItemSelectionRange}{QItemSelectionRange} \o \l{QSlider}{QSlider} \o \l{QTextFrame}{QTextFrame}
+\row \o \l{QCheckBox}{QCheckBox} \o \l{QKeyEvent}{QKeyEvent} \o \l{QSocketNotifier}{QSocketNotifier} \o \l{QTextFrameFormat}{QTextFrameFormat}
+\row \o \l{QChildEvent}{QChildEvent} \o \l{QKeySequence}{QKeySequence} \o \l{QSortFilterProxyModel}{QSortFilterProxyModel} \o \l{QTextFrame::iterator}{QTextFrame_iterator}
+\row \o \l{QClipboard}{QClipboard} \o \l{QLCDNumber}{QLCDNumber} \o \l{QSound}{QSound} \o \l{QTextImageFormat}{QTextImageFormat}
+\row \o \l{QClipboardEvent}{QClipboardEvent} \o \l{QLabel}{QLabel} \o \l{QSpacerItem}{QSpacerItem} \o \l{QTextInlineObject}{QTextInlineObject}
+\row \o \l{QCloseEvent}{QCloseEvent} \o \l{QLayout}{QLayout} \o \l{QSpinBox}{QSpinBox} \o \l{QTextItem}{QTextItem}
+\row \o \l{QColor}{QColor} \o \l{QLayoutItem}{QLayoutItem} \o \l{QSplashScreen}{QSplashScreen} \o \l{QTextLayout}{QTextLayout}
+\row \o \l{QColorDialog}{QColorDialog} \o \l{QLayoutItem}{QLayoutItemInterface} \o \l{QSplitter}{QSplitter} \o \l{QTextLayout::FormatRange}{QTextLayout_FormatRange}
+\row \o \l{QColormap}{QColormap} \o \l{QLibraryInfo}{QLibraryInfo} \o \l{QSplitterHandle}{QSplitterHandle} \o \l{QTextLength}{QTextLength}
+\row \o \l{QComboBox}{QComboBox} \o \l{QLine}{QLine} \o \l{QSql}{QSql} \o \l{QTextLine}{QTextLine}
+\row \o \l{QCommonStyle}{QCommonStyle} \o \l{QLineEdit}{QLineEdit} \o \l{QSqlDatabase}{QSqlDatabase} \o \l{QTextList}{QTextList}
+\row \o \l{QConicalGradient}{QConicalGradient} \o \l{QLineF}{QLineF} \o \l{QSqlDriver}{QSqlDriver} \o \l{QTextListFormat}{QTextListFormat}
+\row \o \l{QContextMenuEvent}{QContextMenuEvent} \o \l{QLinearGradient}{QLinearGradient} \o \l{QSqlDriverCreatorBase}{QSqlDriverCreatorBase} \o \l{QTextObject}{QTextObject}
+\row \o \l{QCoreApplication}{QCoreApplication} \o \l{QListView}{QListView} \o \l{QSqlError}{QSqlError} \o \l{QTextObjectInterface}{QTextObjectInterface}
+\row \o \l{QCursor}{QCursor} \o \l{QListWidget}{QListWidget} \o \l{QSqlField}{QSqlField} \o \l{QTextOption}{QTextOption}
+\row \o \l{QDataStream}{QDataStream} \o \l{QListWidgetItem}{QListWidgetItem} \o \l{QSqlIndex}{QSqlIndex} \o \l{QTextStream}{QTextStream}
+\row \o \l{QDate}{QDate} \o \l{QLocale}{QLocale} \o \l{QSqlQuery}{QSqlQuery} \o \l{QTextTable}{QTextTable}
+\row \o \l{QDateEdit}{QDateEdit} \o \l{QMainWindow}{QMainWindow} \o \l{QSqlQueryModel}{QSqlQueryModel} \o \l{QTextTableCell}{QTextTableCell}
+\row \o \l{QDateTime}{QDateTime} \o \l{QMatrix}{QMatrix} \o \l{QSqlRecord}{QSqlRecord} \o \l{QTextTableFormat}{QTextTableFormat}
+\row \o \l{QDateTimeEdit}{QDateTimeEdit} \o \l{QMenu}{QMenu} \o \l{QSqlRelation}{QSqlRelation} \o \l{QTime}{QTime}
+\row \o \l{QDesktopWidget}{QDesktopWidget} \o \l{QMenuBar}{QMenuBar} \o \l{QSqlRelationalTableModel}{QSqlRelationalTableModel} \o \l{QTimeEdit}{QTimeEdit}
+\row \o \l{QDial}{QDial} \o \l{QMessageBox}{QMessageBox} \o \l{QSqlResult}{QSqlResult} \o \l{QTimer}{QTimer}
+\row \o \l{QDialog}{QDialog} \o \l{QMetaClassInfo}{QMetaClassInfo} \o \l{QSqlTableModel}{QSqlTableModel} \o \l{QTimerEvent}{QTimerEvent}
+\row \o \l{QDir}{QDir} \o \l{QMetaEnum}{QMetaEnum} \o \l{QStackedLayout}{QStackedLayout} \o \l{QToolBar}{QToolBar}
+\row \o \l{QDirModel}{QDirModel} \o \l{QMetaMethod}{QMetaMethod} \o \l{QStackedWidget}{QStackedWidget} \o \l{QToolBarChangeEvent}{QToolBarChangeEvent}
+\row \o \l{QDockWidget}{QDockWidget} \o \l{QMetaProperty}{QMetaProperty} \o \l{QStandardItemModel}{QStandardItemModel} \o \l{QToolBox}{QToolBox}
+\row \o \l{QDoubleSpinBox}{QDoubleSpinBox} \o \l{QMimeData}{QMimeData} \o \l{QStatusBar}{QStatusBar} \o \l{QToolButton}{QToolButton}
+\row \o \l{QDoubleValidator}{QDoubleValidator} \o \l{QMotifStyle}{QMotifStyle} \o \l{QStatusTipEvent}{QStatusTipEvent} \o \l{QToolTip}{QToolTip}
+\row \o \l{QDrag}{QDrag} \o \l{QMouseEvent}{QMouseEvent} \o \l{QStringListModel}{QStringListModel} \o \l{QTranslator}{QTranslator}
+\row \o \l{QDragEnterEvent}{QDragEnterEvent} \o \l{QMoveEvent}{QMoveEvent} \o \l{QStringMatcher}{QStringMatcher} \o \l{QTreeView}{QTreeView}
+\row \o \l{QDragLeaveEvent}{QDragLeaveEvent} \o \l{QMovie}{QMovie} \o \l{QStyle}{QStyle} \o \l{QTreeWidget}{QTreeWidget}
+\row \o \l{QDragMoveEvent}{QDragMoveEvent} \o \l{QMutex}{QMutex} \o \l{QStyleFactory}{QStyleFactory} \o \l{QTreeWidgetItem}{QTreeWidgetItem}
+\row \o \l{QDragResponseEvent}{QDragResponseEvent} \o \l{QObject}{QObject} \o \l{QStyleHintReturn}{QStyleHintReturn} \o \l{QTreeWidgetItemIterator}{QTreeWidgetItemIterator}
+\row \o \l{QDropEvent}{QDropEvent} \o \l{QPageSetupDialog}{QPageSetupDialog} \o \l{QStyleHintReturnMask}{QStyleHintReturnMask} \o \l{QUrl}{QUrl}
+\row \o \l{QErrorMessage}{QErrorMessage} \o \l{QPaintDevice}{QPaintDevice} \o \l{QStyleOption}{QStyleOption} \o \l{QUuid}{QUuid}
+\row \o \l{QEvent}{QEvent} \o \l{QPaintDevice}{QPaintDeviceInterface} \o \l{QStyleOptionButton}{QStyleOptionButton} \o \l{QVBoxLayout}{QVBoxLayout}
+\row \o \l{QEventLoop}{QEventLoop} \o \l{QPaintEngine}{QPaintEngine} \o \l{QStyleOptionComboBox}{QStyleOptionComboBox} \o \l{QValidator}{QValidator}
+\row \o \l{QFSFileEngine}{QFSFileEngine} \o \l{QPaintEngineState}{QPaintEngineState} \o \l{QStyleOptionComplex}{QStyleOptionComplex} \o \l{QWaitCondition}{QWaitCondition}
+\row \o \l{QFile}{QFile} \o \l{QPaintEvent}{QPaintEvent} \o \l{QStyleOptionDockWidget}{QStyleOptionDockWidget} \o \l{QWhatsThis}{QWhatsThis}
+\row \o \l{QFileDialog}{QFileDialog} \o \l{QPainter}{QPainter} \o \l{QStyleOptionFocusRect}{QStyleOptionFocusRect} \o \l{QWhatsThisClickedEvent}{QWhatsThisClickedEvent}
+\row \o \l{QFileIconProvider}{QFileIconProvider} \o \l{QPainterPath}{QPainterPath} \o \l{QStyleOptionFrame}{QStyleOptionFrame} \o \l{QWheelEvent}{QWheelEvent}
+\row \o \l{QFileInfo}{QFileInfo} \o \l{QPainterPathStroker}{QPainterPathStroker} \o \l{QStyleOptionFrameV2}{QStyleOptionFrameV2} \o \l{QWidget}{QWidget}
+\row \o \l{QFileOpenEvent}{QFileOpenEvent} \o \l{QPainterPath::Element}{QPainterPath_Element} \o \l{QStyleOptionGroupBox}{QStyleOptionGroupBox} \o \l{QWidgetItem}{QWidgetItem}
+\row \o \l{QFocusEvent}{QFocusEvent} \o \l{QPalette}{QPalette} \o \l{QStyleOptionHeader}{QStyleOptionHeader} \o \l{QWindowStateChangeEvent}{QWindowStateChangeEvent}
+\row \o \l{QFocusFrame}{QFocusFrame} \o \l{QPen}{QPen} \o \l{QStyleOptionMenuItem}{QStyleOptionMenuItem} \o \l{QWindowsStyle}{QWindowsStyle}
+\row \o \l{QFont}{QFont} \o \l{QPersistentModelIndex}{QPersistentModelIndex} \o \l{QStyleOptionProgressBar}{QStyleOptionProgressBar} \o \l{QWorkspace}{QWorkspace}
+\row \o \l{QFontDatabase}{QFontDatabase} \o \l{QPicture}{QPicture} \o \l{QStyleOptionProgressBarV2}{QStyleOptionProgressBarV2} \o \l{Qt}{Qt}
+\row \o \l{QFontDialog}{QFontDialog} \o \l{QPictureIO}{QPictureIO} \o \l{QStyleOptionRubberBand}{QStyleOptionRubberBand}
+\row \o \l{QFontInfo}{QFontInfo} \o \l{QPixmap}{QPixmap} \o \l{QStyleOptionSlider}{QStyleOptionSlider}
+\row \o \l{QFontMetrics}{QFontMetrics} \o \l{QPixmapCache}{QPixmapCache} \o \l{QStyleOptionSpinBox}{QStyleOptionSpinBox}
+\endtable
+*/

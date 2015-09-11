@@ -1,0 +1,155 @@
+Qt Jambi 4.3.0_01 is the first official release of Qt for Java. It
+represents a milestone in the development in terms of feature
+stability.
+
+
+************************************************************************
+Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ - QStringRef is now converted to java.lang.String.
+
+ - Added several accessibility classes.
+
+ - Added com.trolltech.qt.core.QMessageHandler.
+
+ - Support loading Qt's C++ plugins via .jar files using the
+   -Dcom.trolltech.qt.pluginjars=[filelist] system property.
+
+____________________
+
+Fixes:
+____________________
+
+ - Fixed various ownership problems for types being passed between
+   C++ and Java.
+
+ - Fixed potential crashes on application shutdown.
+
+ - Fixed loading of native libraries.
+
+ - It was previously not possible to queue connections from signals to
+   slots that had fewer arguments.
+
+ - Fixed QFtp.read() to work similar to C++ version.
+
+ - It was previously not possible to have a QTreeModel which layout
+   changed.
+
+ - Fixed QTreeModel.insertChildren().
+
+ - QTreeModel now throws exceptions instead when errors occur.
+
+ - Fixed connect statements to print the proper signature for failed
+   connections to array based methods
+
+ - Disable garbage collection on nested QNativePointers.
+
+ - Cleaned up even more QNativePointer API.
+
+ - A number of functions previously marked as obsolete are now
+   removed from the API.
+
+
+
+************************************************************************
+Juic
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ - .jui files using the window icon would not compile.
+
+
+
+************************************************************************
+Qt Jambi Generator
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+ - Basic namespace support has been added.
+
+ - Added "java-name" attribute to value-type, object-type, making it
+   possible to rename classes in Java.
+
+ - Added <access modifier="final|non-final"> to fake virtual
+   functions in the Java API.
+
+ - Added "force-abstract" to value-type and object-type making it
+   possible to force classes to become abstract in Java
+
+ - Support pointers to container classes
+
+ - Generator no longer produces "inconsistent functions", to work
+   around Java's limitation of not being able to do function
+   shadowing. Each such case is instead handled by the typesystem.
+
+____________________
+
+Fixes:
+____________________
+
+ - Global comparison operators in C++ are now included in the generated
+   compareTo() functions.
+
+ - Fixed potential crash when a base class was not found.
+
+
+
+************************************************************************
+Qt Jambi Eclipse Integration
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+____________________
+
+Fixes:
+____________________
+
+ - Resolve libjvm in a smarter way to prevent loading it multiple
+   times in eclipse, causing potential crashes.
+
+
+
+************************************************************************
+Examples and Demos
+************************************************************************
+____________________
+
+New Examples:
+____________________
+
+ - Launcher got a new splash screen
+
+ - Added 4000 Chips, a QGraphicsView demo.
+
+____________________
+
+Fixes:
+____________________
+
+ - ImageViewer demo got a new look
+
+
+
+************************************************************************
+Other things
+************************************************************************
+
+ - Qt Jambi versioning will now follow the versions of Qt / C++, so this
+   first release against Qt / C++ 4.3.0 is named Qt Jambi 4.3.0_01
+   where _01 is used to indicate the build number of this release. A
+   patch release of Qt Jambi against Qt / C++ 4.3.0 will be called
+   4.3.0_02, 4.3.0_03, etc.

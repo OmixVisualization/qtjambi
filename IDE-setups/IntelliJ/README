@@ -1,0 +1,14 @@
+How to use the IntelliJ setup
+=============================
+
+1. First, you need to build the project. Have a look at http://qt.gitorious.org/qt-jambi/pages/BuildingFromGit for help with that.
+2. Open the project in IntelliJ
+3. Open up the settings for the project with the keyboard shortcut ctrl-alt-shift-S
+4. Go to Project -> Project SDK and change to the location of the Java SDK you want to use.
+5. Go to Libraries -> ant and ensure that you have the right location for ant.jar (detach/attach the jar)
+6. Now, it should be possible to compile the java files using ctrl-F9
+7. You could also setup the Launcher class in the example module as a run target. Here's a descripton on how to do that:
+	a. Open up the run configuration (Run -> Edit Configurations in the menu)
+	b. Main class: com.trolltech.launcher.Launcher
+	c. Use classpath and JDK of module: examples
+This should bring up the example app! 

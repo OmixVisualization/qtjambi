@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.sql" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtSql");
+    </inject-code>
+
+
+
+    <value-type name="QSqlDatabase">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_sql-java.java" quote-after-line="class QSqlDatabase___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="addDatabase(QSqlDriver*,QString)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="contains(QString)">
+            <modify-argument index="1">
+                <replace-default-expression with="defaultConnection()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addDatabase(QString,QString)">
+            <modify-argument index="2">
+                <replace-default-expression with="defaultConnection()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addDatabase(QSqlDriver *,QString)">
+            <modify-argument index="2">
+                <replace-default-expression with="defaultConnection()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="database(QString,bool)">
+            <modify-argument index="1">
+                <replace-default-expression with="defaultConnection()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-field name="defaultConnection">
+            <access modifier="private"/>
+            <rename to="defaultConnection_private"/>
+        </modify-field>
+
+    </value-type>
+
+    <object-type name="QSqlTableModel">
+
+        <template name="sql.convert_sqlrecord_reference_to_java">
+            jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QSqlRecord", "org/qtjambi/qt/sql/", false);
+            Q_ASSERT(%out);
+        </template>
+
+        <template name="sql.convert_sqlrecord_reference_from_java">
+            QSqlRecord *__ptr_record = (QSqlRecord *) qtjambi_to_object(__jni_env, %in);
+
+            QSqlRecord dummy;
+            QSqlRecord &amp;%out = __ptr_record == 0 ? dummy : *__ptr_record;
+        </template>
+
+        <modify-function signature="beforeInsert(QSqlRecord&amp;)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+                <conversion-rule class="shell">
+                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="beforeUpdate(int,QSqlRecord&amp;)">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+                <conversion-rule class="shell">
+                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="primeInsert(int,QSqlRecord&amp;)">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+                <conversion-rule class="shell">
+                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+    </object-type>
+
+</typesystem>

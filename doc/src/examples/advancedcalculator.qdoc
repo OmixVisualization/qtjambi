@@ -1,0 +1,15 @@
+/*!
+    \page qtjambi-advancedcalculator.html
+    \title Advanced Calculator
+
+    \bold {Code}:
+    \list
+        \o \l {Code for Advanced Calculator}{AdvancedCalculator.java}
+    \endlist
+
+    The advanced calculator example shows you how to use implement the
+    same functionality for different user interfaces created with the
+    Qt Jambi Designer.
+
+    \image advancedcalculator-example.png
+*/

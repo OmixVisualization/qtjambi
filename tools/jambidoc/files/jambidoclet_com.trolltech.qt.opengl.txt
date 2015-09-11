@@ -1,0 +1,15 @@
+
+
+$$QGLColormap.setEntries(int[], int)
+/**
+Sets an array of cells in this color map, where <tt>colors</tt> is the
+array of colors, and <tt>base</tt> is the starting index.
+
+*/
+
+
+$$QGLColormap.setEntries(int[])
+/**
+This is an overloaded method provided for convenience.
+
+*/

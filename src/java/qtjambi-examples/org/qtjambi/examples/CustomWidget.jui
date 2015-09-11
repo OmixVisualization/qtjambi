@@ -1,0 +1,101 @@
+<ui version="4.0" language="jambi" >
+ <class>CustomWidget</class>
+ <widget class="QWidget" name="CustomWidget" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>511</width>
+    <height>805</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" >
+   <item row="0" column="1" >
+    <widget class="org.qtjambi.examples.CustomWidget" name="customWidget" >
+     <property name="needleColor" stdset="0" >
+      <color alpha="128" >
+       <red>255</red>
+       <green>0</green>
+       <blue>0</blue>
+      </color>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2" >
+    <widget class="QSlider" name="verticalSlider" >
+     <property name="focusPolicy" >
+      <enum>org.qtjambi.qt.core.Qt.FocusPolicy.StrongFocus</enum>
+     </property>
+     <property name="maximum" >
+      <number>260</number>
+     </property>
+     <property name="orientation" >
+      <enum>org.qtjambi.qt.core.Qt.Orientation.Vertical</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" >
+    <widget class="QSlider" name="verticalSlider_2" >
+     <property name="enabled" >
+      <bool>false</bool>
+     </property>
+     <property name="focusPolicy" >
+      <enum>org.qtjambi.qt.core.Qt.FocusPolicy.StrongFocus</enum>
+     </property>
+     <property name="maximum" >
+      <number>260</number>
+     </property>
+     <property name="orientation" >
+      <enum>org.qtjambi.qt.core.Qt.Orientation.Vertical</enum>
+     </property>
+     <property name="invertedAppearance" >
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>org.qtjambi.examples.CustomWidget</class>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged&lt;int></signal>
+   <receiver>customWidget</receiver>
+   <slot>setCurrentSpeed(int)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>488</x>
+     <y>313</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>439</x>
+     <y>317</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>customWidget</sender>
+   <signal>speedChanged&lt;java.lang.Integer></signal>
+   <receiver>verticalSlider_2</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>73</x>
+     <y>448</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>13</x>
+     <y>443</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

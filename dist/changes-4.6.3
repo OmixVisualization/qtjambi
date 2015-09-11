@@ -1,0 +1,52 @@
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ - Most notable changes to qtjambi source it self is now an ongoing
+   project in smar-sandbox that Samu Voutilainen is the main author of. 
+   This work has not been compiled into this release. Will be setup as
+   a new 4.7 repository soon.
+ - Merged the work of Peter Droste that made QtScript, QtScriptTools
+   and QtMultimedia and QtHelp libraries available to qtjambi. Also, new
+   classes that weren't ported (esp. graphics effects) is included now.
+	      
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+   
+ - Added new example on how to use the generator to generate java stubs 
+   for the famous KDE marble project.
+   
+ - Restructured the generator examples to the examples directory
+ 
+************************************************************************
+ Designer
+************************************************************************
+
+ - Finally found the problem that caused the qtjambi designer plugin to
+   fail. The designer.bat file removed everything in the path except
+   %cwd%\bin, causing loading of jvm.dll to fail since it could not find
+   dependent files like msvc**.dll
+
+************************************************************************
+ Build system
+************************************************************************
+
+ - Added OSInfo class to the qtjambi-**.jar, removed qtjambi-utils-**.jar 
+  from package
+
+************************************************************************
+ Examples
+************************************************************************
+
+ - Fixed problem with phonon related examples such as HelloWebKit.
+ - Removed the qtjambi.exe file since it caused crashes on WinXP. 
+   Exchanged it with qtjambi.bat that is more transparent for changes.
+
+************************************************************************
+Known bugs
+************************************************************************
+
+ - QWebView unable to open https links.
+
+************************************************************************

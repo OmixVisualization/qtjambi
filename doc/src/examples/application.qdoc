@@ -1,0 +1,385 @@
+/*!
+    \page qtjambi-application.html
+    \title Application Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Application Example}{Application.java}
+    \endlist
+
+    The Application example shows how to implement a standard GUI
+    application with menus, toolbars, and a status bar. The example
+    itself is a simple text editor program built around QTextEdit.
+
+    \image application.png Screenshot of the Application example
+
+    Nearly all of the code for the Application example is in the \c
+    MainWindow class, which inherits QMainWindow. QMainWindow
+    provides the framework for windows that have menus, toolbars,
+    dock windows, and a status bar. The application provides
+    \menu{File}, \menu{Edit}, and \menu{Help} entries in the menu
+    bar, with the following popup menus:
+
+    \image application-menus.png The Application example's menu system
+
+    The status bar at the bottom of the main window shows a
+    description of the menu item or toolbar button under the cursor.
+
+    To keep the example simple, recently opened files aren't shown in
+    the \menu{File} menu, even though this feature is desired in 90%
+    of applications. The \l{mainwindows/recentfiles}{Recent Files}
+    example shows how to implement this. Furthermore, this example
+    can only load one file at a time. The \l{mainwindows/sdi}{SDI}
+    and \l{mainwindows/mdi}{MDI} examples shows how to lift these
+    restrictions.
+
+    \section1 Importing the Qt Classes
+
+    \snippet Application.java 0
+
+    We start by importing all the classes in the \l QtCore and \l QtGui
+    modules. This saves us from the trouble of having to import
+    every class we use individually.
+
+    \section1 Application Class Implementation
+
+    The entire example is implemented in a single subclass of QMainWindow:
+
+    \snippet Application.java 1
+
+    We declare various variables for widgets, menus, toolbars, and actions
+    that will be explained later.
+
+    In the constructor, we start by creating a menu bar and setting it
+    as the menu bar for the main window:
+
+    \snippet Application.java 2
+
+    We also create a QTextEdit widget, and call
+    \l{QMainWindow::}{setCentralWidget()} to make it occupy the central area
+    of the main window, between the toolbars and the status bar.
+
+    \l{QAction}{Actions} are usually reused in menus and toolbars to provide
+    a consistent user interface. The actions used in the main window are set
+    up before any of the standard menus, toolbars or other window elements.
+
+    \snippet Application.java 3
+
+    We call \c createActions(), \c createMenus(), \c
+    createToolBars(), and \c createStatusBar(), four private methods that set
+    up the user interface.
+    \omit
+    After that, we call \c readSettings() to restore the user's preferences.
+
+    \skipto readSettings()
+    \endomit
+    \snippet Application.java 4
+
+    We establish a signal-slot connection between the QTextEdit's
+    document object and our \c documentWasModified() slot. Whenever
+    the user modifies the text in the QTextEdit, we want to update
+    the title bar to show that the file was modified.
+
+    \omit
+    At the end, we set the window title using the private
+    \c setCurrentFile() method. We'll come back to this later.
+    \endomit
+
+    We reimplement QWidget::closeEvent() to detect when the user attempts
+    to close the window, and warn the user about unsaved changes:
+
+    \target close event handler
+    \snippet Application.java 5
+    \snippet Application.java 6
+    \snippet Application.java 7
+
+    When the user attempts to close the window, we call the private
+    method \c maybeSave() to give the user the possibility to save
+    pending changes. The method returns true if the user wants the
+    application to close; otherwise, it returns false. In the first
+    case, we save the user's preferences to disk and accept the close
+    event; in the second case, we ignore the close event, meaning
+    that the application will stay up and running as if nothing
+    happened.
+
+    \snippet Application.java 8
+    \snippet Application.java 9
+
+    The \c newFile() slot is invoked when the user selects
+    \menu{File|New} from the menu. We call \c maybeSave() to save any
+    pending changes and if the user accepts to go on, we clear the
+    QTextEdit and call the private method \c setCurrentFile() to
+    update the window title and clear the
+    \l{QWidget::windowModified}{windowModified} flag.
+
+    \snippet Application.java 10
+    \snippet Application.java 11
+
+    The \c open() slot is invoked when the user clicks
+    \menu{File|Open}. We pop up a QFileDialog asking the user to
+    choose a file. If the user chooses a file (i.e., \c fileName is
+    not an empty string), we call the private method \c loadFile()
+    to actually load the file.
+
+    \snippet Application.java 12
+    \snippet Application.java 13
+    \snippet Application.java 14
+
+    The \c save() slot is invoked when the user clicks
+    \menu{File|Save}. If the user hasn't provided a name for the file
+    yet, we call \c saveAs(); otherwise, we call the private method
+    \c saveFile() to actually save the file.
+
+    \snippet Application.java 15
+
+    In \c saveAs(), we start by popping up a QFileDialog asking the
+    user to provide a name. If the user clicks \gui{Cancel}, the
+    returned file name is empty, and we do nothing.
+
+    \snippet Application.java 16
+
+    The application's About box is done using one statement, using
+    the \l{QMessageBox::}{about()} static method and relying on its
+    support for an HTML subset.
+
+    The \l{QObject::tr()}{tr()} call around the literal string marks
+    the string for translation. It is a good habit to call
+    \l{QObject::tr()}{tr()} on all user-visible strings, in case you
+    later decide to translate your application to other languages.
+    The \l{Internationalization with Qt} overview convers
+    \l{QObject::tr()}{tr()} in more detail.
+
+    \snippet Application.java 17
+
+    The \c documentWasModified() slot is invoked each time the text
+    in the QTextEdit changes because of user edits. We call
+    \l{QWidget::setWindowModified()}{QWidget.setWindowModified()} to make
+    the title bar show that the file was modified. How this is done varies
+    on each platform.
+
+    \snippet Application.java 18
+    \dots
+    \snippet Application.java 19
+
+    The \c createActions() private method, which is called from the
+    \c MainWindow constructor, creates \l{QAction}s. The code is very
+    repetitive, so we show only the actions corresponding to
+    \menu{File|New}, \menu{File|Open}, and \menu{Help|About Qt}.
+
+    A QAction is an object that represents one user action, such as
+    saving a file or invoking a dialog. An action can be put in a
+    QMenu or a QToolBar, or both, or in any other widget that
+    reimplements QWidget::actionEvent().
+
+    An action has a text that is shown in the menu, an icon, a
+    shortcut key, a tooltip, a status tip (shown in the status bar),
+    a "What's This?" text, and more. It emits a
+    \l{QAction::triggered()}{QAction.triggered()} signal whenever the user
+    invokes the action (e.g., by clicking the associated menu item or
+    toolbar button). We connect this signal to a slot that performs
+    the actual action.
+
+    The code above contains one more idiom that must be explained.
+    For some of the actions, we specify an icon as a QIcon to the
+    QAction constructor. The QIcon constructor takes the file name
+    of an image that it tries to load. Here, the file name starts
+    with \c{:}. Such file names aren't ordinary file names, but
+    rather path in the executable's stored resources. We'll come back
+    to this when we review the \c application.qrc file that's part of
+    the project.
+
+    \snippet Application.java 20
+
+    The \gui{Edit|Cut} and \gui{Edit|Copy} actions must be available
+    only when the QTextEdit contains selected text. We disable them
+    by default and connect the
+    \l{QTextEdit::copyAvailable()}{QTextEdit.copyAvailable()} signal to
+    the action's \l{QAction::}{setEnabled()} slot, ensuring that the
+    actions are disabled when the text editor has no selection.
+
+    \snippet Application.java 21
+
+    Creating actions isn't sufficient to make them available to the
+    user; we must also add them to the menu system. This is what \c
+    createMenus() does. We create a \menu{File}, an \menu{Edit}, and
+    a \menu{Help} menu. \l{QMainWindow::menuBar()}{QMainWindow.menuBar()}
+    lets us access the window's menu bar widget. We don't have to worry
+    about creating the menu bar ourselves; the first time we call this
+    method, the QMenuBar is created.
+
+    Just before we create the \menu{Help} menu, we call
+    \l{QMenuBar::addSeparator()}{QMenuBar.addSeparator()}. This has no
+    effect for most widget styles (e.g., Windows and Mac OS X styles),
+    but for Motif-based styles this makes sure that \menu{Help} is pushed
+    to the right side of the menu bar. Try running the application with
+    various styles and see the results:
+
+    \code
+        application -style=windows
+        application -style=motif
+        application -style=cde
+    \endcode
+
+    Let's now review the toolbars:
+
+    \snippet Application.java 22
+
+    Creating toolbars is very similar to creating menus. The same
+    actions that we put in the menus can be reused in the toolbars.
+
+    \snippet Application.java 23
+
+    QMainWindow::statusBar() returns a pointer to the main window's
+    QStatusBar widget. Like with \l{QMainWindow::menuBar()}, the
+    widget is automatically created the first time the method is
+    called.
+
+    \omit
+    \printline readSettings(
+    \printuntil }
+
+    The \c readSettings() method is called from the constructor to
+    load the user's preferences and other application settings. The
+    QSettings class provides a high-level interface for storing
+    settings permanently on disk. On Windows, it uses the (in)famous
+    Windows registry; on Mac OS X, it uses the native XML-based
+    CFPreferences API; on Unix/X11, it uses text files.
+
+    The QSettings constructor takes arguments that identify your
+    company and the name of the product. This ensures that the
+    settings for different applications are kept separately.
+
+    We use QSettings::value() to extract the value of the "pos" and
+    "size" settings. The second argument to QSettings::value() is
+    optional and specifies a default value for the setting if there
+    exists none. This value is used the first time the application is
+    run.
+
+    When restoring the position and size of a window, it's important
+    to call QWidget::resize() before QWidget::move(). The reason why
+    is given in the \l{geometry.html}{Window Geometry} overview.
+
+    \printline writeSettings(
+    \printuntil }
+
+    The \c writeSettings() method is called from \c closeEvent().
+    Writing settings is similar to reading them, except simpler. The
+    arguments to the QSettings constructor must be the same as in \c
+    readSettings().
+    \endomit
+
+    \snippet Application.java 24
+    \snippet Application.java 25
+
+    The \c maybeSave() method is called to save pending changes. If
+    there are pending changes, it pops up a QMessageBox giving the
+    user to save the document. The options are
+    \l{QMessageBox::Yes}{QMessageBox.Yes},
+    \l{QMessageBox::No}{QMessageBox.No}, and
+    \l{QMessageBox::Cancel}{QMessageBox.Cancel}. The \gui{Yes} button is
+    made the default button (the button that is invoked when the user
+    presses \key{Return}) using the
+    \l{QMessageBox::Default}{QMessageBox.Default} flag; the
+    \gui{Cancel} button is made the escape button (the button that is
+    invoked when the user presses \key{Esc}) using the
+    \l{QMessageBox::Escape}{QMessageBox.Escape} flag.
+
+    The \c maybeSave() method returns \c true in all cases, except
+    when the user clicks \gui{Cancel}. The caller must check the
+    return value and stop whatever it was doing if the return value
+    is \c false.
+
+    \snippet Application.java 26
+    \snippet Application.java 27
+
+    In \c loadFile(), we use QFile and QTextStream to read in the
+    data. The QFile object provides access to the bytes stored in a
+    file.
+
+    We start by opening the file in read-only mode. The QFile::Text
+    flag indicates that the file is a text file, not a binary file.
+    On Unix and Mac OS X, this makes no difference, but on Windows,
+    it ensures that the "\\r\\n" end-of-line sequence is converted to
+    "\\n" when reading.
+
+    If we successfully opened the file, we use a QTextStream object
+    to read in the data. QTextStream automatically converts the 8-bit
+    data into a Unicode QString and supports various encodings. If no
+    encoding is specified, QTextStream assumes the file is written
+    using the system's default 8-bit encoding (for example, Latin-1;
+    see \l{QTextCodec::codecForLocale()}{QTextCodec.codecForLocale()}
+    for details).
+
+    Since the call to \l{QTextStream::readAll()}{QTextStream.readAll()}
+    might take some time, we set the cursor to be
+    \l{Qt::WaitCursor}{Qt.WaitCursor} for the entire application
+    while it goes on.
+
+    At the end, we call the private \c setCurrentFile() method,
+    which we'll cover in a moment, and we display the string "File
+    loaded" in the status bar for 2 seconds (2000 milliseconds).
+
+    \snippet Application.java 28
+    \snippet Application.java 29
+
+    Saving a file is very similar to loading one. Here, the
+    \l{QFile::Text}{QFile.Text} flag ensures that on Windows, "\\n" is
+    converted into "\\r\\n" to conform to the Windows convension.
+
+    \snippet Application.java 30
+
+    The \c setCurrentFile() method is called to reset the state of
+    a few variables when a file is loaded or saved, or when the user
+    starts editing a new file (in which case \c fileName is empty).
+    We update the \c curFile variable, clear the
+    \l{QTextDocument::modified}{QTextDocument.modified} flag and the
+    associated \c QWidget.windowModified flag, and update the window
+    title to contain the new file name (or \c untitled.txt).
+
+    The \c strippedName() method call around \c curFile in the
+    \l{QWidget::}{setWindowTitle()} call shortens the file name to exclude
+    the path. Here's the method:
+
+    \snippet Application.java 31
+
+    \section1 The main() Function
+
+    The \c main() method for this application is typical of
+    applications that contain one main window:
+
+    \snippet Application.java 32
+    \omit
+    \section1 The Resource File
+
+    As you will probably recall, for some of the actions, we
+    specified icons with file names starting with \c{:} and mentioned
+    that such file names aren't ordinary file names, but path in the
+    executable's stored resources. These resources are compiled
+
+    The resources associated with an application are specified in a
+    \c .qrc file, an XML-based file format that lists files on the
+    disk. Here's the \c application.qrc file that's used by the
+    Application example:
+
+    \include mainwindows/application/application.qrc
+
+    The \c .png files listed in the \c application.qrc file are files
+    that are part of the Application example's source tree. Paths are
+    relative to the directory where the \c application.qrc file is
+    located (the \c mainwindows/application directory).
+
+    The resource file must be mentioned in the \c application.pro
+    file  so that \c qmake knows about it:
+
+    \quotefromfile mainwindows/application/application.pro
+    \skipto RESOURCES
+    \printline RESOURCES
+
+    \c qmake will produce make rules to generate a file called \c
+    qrc_application.cpp that is linked into the application. This
+    file contains all the data for the images and other resources as
+    static C++ arrays of compressed binary data. See
+    \l{resources.html}{The Qt Resource System} for more information
+    about resources.
+    \endomit
+*/

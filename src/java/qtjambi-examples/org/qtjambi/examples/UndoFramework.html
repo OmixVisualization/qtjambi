@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/undoframework.qdoc -->
+<head>
+  <title>Undo Framework Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Undo Framework Example<br /><span class="subtitle"></span>
+</h1>
+<p>This example shows how to implement undo/redo functionality with the Qt undo framework.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/undoframeworkexample.png" alt="The Undo Framework Example" /></p><p>In the Qt undo framework, all actions that the user performs are implemented in classes that inherit QUndoCommand. An undo command class knows how to both redo() - or just do the first time - and undo() an action. For each action the user performs, a command is placed on a QUndoStack. Since the stack contains all commands executed (stacked in chronological order) on the document, it can roll the state of the document backwards and forwards by undoing and redoing its commands. See the overview document for a high-level introduction to the undo framework.</p>
+<p>The undo example implements a simple diagram application. It is possible to add and delete items, which are either box or rectangular shaped, and move the items by dragging them with the mouse. The undo stack is shown in a QUndoView, which is a list in which the commands are shown as list items. Undo and redo are available through the edit menu. The user can also select a command from the undo view.</p>
+<p>We use the graphics view framework to implement the diagram. We only treat the related code briefly as the framework has examples of its own (e.g&#x2e;, the Diagram Scene Example).</p>
+<p>The example consists of the following classes:</p>
+<ul>
+<li><tt>UndoFramework</tt> inherits QMainWindow and arranges the example's widgets. It creates the commands based on user input and keeps them on the command stack.</li>
+<li><tt>AddCommand</tt> adds an item to the scene.</li>
+<li><tt>DeleteCommand</tt> deletes an item from the scene.</li>
+<li><tt>When</tt> an item is moved the MoveCommand keeps record of the start and stop positions of the move, and it moves the item according to these when <tt>redo()</tt> and <tt>undo()</tt> is called.</li>
+<li><tt>DiagramScene</tt> inherits QGraphicsScene and emits signals for the <tt>MoveComands</tt> when an item is moved.</li>
+<li><tt>DiagramItem</tt> inherits QGraphicsPolygonItem and represents an item in the diagram.</li>
+</ul>
+<a name="the-undoframework-class"></a>
+<h2>The UndoFramework class</h2>
+<pre>    public class UndoFramework extends QMainWindow
+    {
+        private QAction deleteAction;
+        private QAction addBoxAction;
+        private QAction addTriangleAction;
+        private QAction undoAction;
+        private QAction redoAction;
+        private QAction exitAction;
+        private QAction aboutAction;
+
+        private QMenu fileMenu;
+        private QMenu editMenu;
+        private QMenu itemMenu;
+        private QMenu helpMenu;
+
+        private DiagramScene diagramScene;
+        private QUndoStack undoStack;
+        private QUndoView undoView;</pre>
+<p>The <tt>UndoFramework</tt> class maintains the undo stack, i.e&#x2e;, it creates QUndoCommands and pushes and pops them from the stack when it receives the <tt>triggered()</tt> signal from <tt>undoAction</tt> and <tt>redoAction</tt>.</p>
+<p>We will start with a look at the constructor:</p>
+<pre>        public UndoFramework()
+        {
+            undoStack = new QUndoStack();
+
+            createActions();
+            createMenus();
+
+            undoStack.canRedoChanged.connect(redoAction, &quot;setEnabled(boolean)&quot;);
+            undoStack.canUndoChanged.connect(undoAction, &quot;setEnabled(boolean)&quot;);
+
+            createUndoView();
+
+            diagramScene = new DiagramScene();
+            diagramScene.setSceneRect(new QRectF(0, 0, 500, 500));
+
+            diagramScene.itemMoved.connect(this, &quot;itemMoved(UndoFramework$DiagramItem,QPointF)&quot;);
+
+            setWindowTitle(&quot;Undo Framework&quot;);
+            QGraphicsView view = new QGraphicsView(diagramScene);
+            setCentralWidget(view);
+            resize(700, 500);
+        }</pre>
+<p>By connecting the undo stack's <tt>canRedoChanged()</tt> and canUndoChanged() signals to our undo and redo action's setEnabled() slot we make the actions disabled when the stack cannot undo and redo commands.</p>
+<p>The rest of the constructor sets up the DiagramScene and QGraphicsView. Notice the syntax used for slots in inner classes.</p>
+<p>Here is the <tt>createUndoView()</tt> method:</p>
+<pre>        private void createUndoView()
+        {
+            undoView = new QUndoView(undoStack);
+            undoView.setWindowTitle(tr(&quot;Command List&quot;));
+            undoView.setAttribute(Qt.WidgetAttribute.WA_QuitOnClose, false);
+
+            QDialog dialog = new QDialog(this);
+            QVBoxLayout layout = new QVBoxLayout(dialog);
+            layout.setContentsMargins(0, 0, 0, 0);
+            layout.addWidget(undoView);
+            dialog.show();
+        }</pre>
+<p>The QUndoView is a widget that displays the text, which is set with the setText() method, for each QUndoCommand in the undo stack in a list.</p>
+<p>Here is the <tt>createActions()</tt> method:</p>
+<pre>        private void createActions()
+        {
+            deleteAction = new QAction(tr(&quot;&amp;Delete Item&quot;), this);
+            deleteAction.setShortcut(tr(&quot;Del&quot;));
+            deleteAction.triggered.connect(this, &quot;deleteItem()&quot;);
+        ...
+            undoAction = new QAction(tr(&quot;&amp;Undo&quot;), this);
+            undoAction.setShortcut(tr(&quot;Ctrl+Z&quot;));
+            undoAction.setEnabled(false);
+            undoAction.triggered.connect(undoStack, &quot;undo()&quot;);
+
+            redoAction = new QAction(tr(&quot;&amp;Redo&quot;), this);
+            List&lt;QKeySequence&gt; redoShortcuts = new LinkedList&lt;QKeySequence&gt;();
+            redoShortcuts.add(new QKeySequence(tr(&quot;Ctrl+Y&quot;)));
+            redoShortcuts.add(new QKeySequence(tr(&quot;Shift+Ctrl+Z&quot;)));
+            redoAction.setShortcuts(redoShortcuts);
+            redoAction.setEnabled(false);
+            redoAction.triggered.connect(undoStack, &quot;redo()&quot;);</pre>
+<p>The <tt>createActions()</tt> method sets up all the examples actions in the manner shown above. We can connect our <tt>undoAction</tt> and <tt>redoAction</tt> directly to the stack's <tt>undo()</tt> and <tt>redo()</tt> slots as we disable the actions when the stack cannot undo and redo. For the other actions we have implemented slots in the <tt>UndoFramework</tt> class.</p>
+<p>Here is the <tt>createMenues()</tt> method:</p>
+<pre>        private void createMenus()
+        {
+        ...
+            editMenu = menuBar().addMenu(tr(&quot;&amp;Edit&quot;));
+            editMenu.addAction(undoAction);
+            editMenu.addAction(redoAction);
+            editMenu.addSeparator();
+            editMenu.addAction(deleteAction);
+            editMenu.aboutToShow.connect(this, &quot;itemMenuAboutToShow()&quot;);
+            editMenu.aboutToHide.connect(this, &quot;itemMenuAboutToHide()&quot;);
+        ...
+        }</pre>
+<p>We have to use the QMenu <tt>aboutToShow()</tt> and <tt>aboutToHide()</tt> signals since we only want <tt>deleteAction</tt> to be enabled when we have selected an item. We also want the text() to be shown in the <tt>undoAction</tt> and <tt>redoAction</tt> menu items.</p>
+<p>Here is the <tt>itemMoved()</tt> slot:</p>
+<pre>        public void itemMoved(DiagramItem movedItem, QPointF oldPosition)
+        {
+            undoStack.push(new MoveCommand(movedItem, oldPosition));
+        }</pre>
+<p>We push a MoveCommand on the stack, which calls <tt>redo()</tt> on it.</p>
+<p>Here is the <tt>deleteItem()</tt> slot:</p>
+<pre>        private void deleteItem()
+        {
+            if (diagramScene.selectedItems().isEmpty())
+                return;
+
+            QUndoCommand deleteCommand = new DeleteCommand(diagramScene);
+            undoStack.push(deleteCommand);
+        }</pre>
+<p>An item must be selected to be deleted. We need to check if it is selected as the <tt>deleteAction</tt> may be enabled even if an item is not selected. This can happen as we do not catch a signal or event when an item is selected.</p>
+<p>Here is the <tt>itemMenuAboutToShow()</tt> and itemMenuAboutToHide() slots:</p>
+<pre>        private void itemMenuAboutToHide()
+        {
+            deleteAction.setEnabled(true);
+        }
+
+        private void itemMenuAboutToShow()
+        {
+            undoAction.setText(tr(&quot;Undo &quot;) + undoStack.undoText());
+            redoAction.setText(tr(&quot;Redo &quot;) + undoStack.redoText());
+            deleteAction.setEnabled(!diagramScene.selectedItems().isEmpty());
+        }</pre>
+<p>We implement <tt>itemMenuAboutToShow()</tt> and <tt>itemMenuAboutToHide()</tt> to get a dynamic item menu. These slots are connected to the aboutToShow() and aboutToHide() signals. We need this to disable or enable the <tt>deleteAction</tt> and fill the <tt>redoAction</tt> and <tt>undoAction</tt> menu item with the text from the next QUndoCommand that will be redone or undone.</p>
+<p>Here is the <tt>addBox()</tt> slot:</p>
+<pre>        private void addBox()
+        {
+            QUndoCommand addCommand = new AddCommand(DiagramType.Box, diagramScene);
+            undoStack.push(addCommand);
+        }</pre>
+<p>The <tt>addBox()</tt> method creates an AddCommand and pushes it on the undo stack.</p>
+<p>Here is the <tt>addTriangle()</tt> sot:</p>
+<pre>        private void addTriangle()
+        {
+            QUndoCommand addCommand = new AddCommand(DiagramType.Triangle,
+                                                     diagramScene);
+            undoStack.push(addCommand);
+        }</pre>
+<p>The <tt>addTriangle()</tt> method creates an AddCommand and pushes it on the undo stack.</p>
+<p>Here is the implementation of <tt>about()</tt>:</p>
+<pre>        private void about()
+        {
+            QMessageBox.about(this, tr(&quot;About Undo&quot;),
+                              tr(&quot;The &lt;b&gt;Undo&lt;/b&gt; example demonstrates how to &quot; +
+                              &quot;use Qt's undo framework.&quot;));
+        }</pre>
+<p>The about slot is triggered by the <tt>aboutAction</tt> and displays an about box for the example.</p>
+<a name="addcommand-class"></a>
+<h2>AddCommand Class</h2>
+<pre>        class AddCommand extends QUndoCommand
+        {
+            private DiagramItem myDiagramItem;
+            private QGraphicsScene myGraphicsScene;
+            private QPointF initialPosition;</pre>
+<p>The <tt>AddCommand</tt> class adds DiagramItem graphics items to the DiagramScene. We will explain the member variables as we stumble upon them in the implementation.</p>
+<p>We start with the constructor:</p>
+<pre>            public AddCommand(DiagramType addType, QGraphicsScene scene)
+            {
+                myGraphicsScene = scene;
+                myDiagramItem = new DiagramItem(addType);
+                initialPosition = new QPointF((UndoFramework.itemCount * 15) % (int) scene.width(),
+                                  (UndoFramework.itemCount * 15) % (int) scene.height());
+                scene.update();
+                ++UndoFramework.itemCount;
+                setText(tr(&quot;Add &quot; + UndoFramework.createCommandString(myDiagramItem, initialPosition)));
+            }</pre>
+<p>We first create the DiagramItem to add to the DiagramScene. The setText() method let us set a QString that describes the command. We use this to get custom messages in the QUndoView and in the menu of the main window.</p>
+<pre>            public void redo()
+            {
+                myGraphicsScene.addItem(myDiagramItem);
+                myDiagramItem.setPos(initialPosition);
+                myGraphicsScene.clearSelection();
+                myGraphicsScene.update();
+            }</pre>
+<p>We set the position of the item as we do not do this in the constructor.</p>
+<pre>            public void undo()
+            {
+                myGraphicsScene.removeItem(myDiagramItem);
+                myGraphicsScene.update();
+            }</pre>
+<p><tt>undo()</tt> removes the item from the scene.</p>
+<a name="deletecommand-class-definition"></a>
+<h2>DeleteCommand Class Definition</h2>
+<pre>        class DeleteCommand extends QUndoCommand
+        {
+            private DiagramItem myDiagramItem;
+            private QGraphicsScene myGraphicsScene;</pre>
+<p>The DeleteCommand class implements the functionality to remove an item from the scene.</p>
+<pre>            public DeleteCommand(QGraphicsScene scene)
+            {
+                myGraphicsScene = scene;
+                List&lt;QGraphicsItemInterface&gt; list = myGraphicsScene.selectedItems();
+                list.get(0).setSelected(false);
+                myDiagramItem = (DiagramItem) list.get(0);
+                setText(&quot;Delete &quot; + UndoFramework.createCommandString(myDiagramItem, myDiagramItem.pos()));
+            }</pre>
+<p>We know that there must be one selected item as it is not possible to create a DeleteCommand unless the item to be deleted is selected and that only one item can be selected at any time. The item must be unselected if it is inserted back into the scene.</p>
+<pre>            public void undo()
+            {
+                myGraphicsScene.addItem(myDiagramItem);
+                myGraphicsScene.update();
+            }</pre>
+<p>The item is simply reinserted into the scene.</p>
+<pre>            public void redo()
+            {
+                myDiagramItem.setPos(newPos);
+                setText(tr(&quot;Move &quot; + UndoFramework.createCommandString(myDiagramItem, newPos)));
+            }</pre>
+<p>The item is removed from the scene.</p>
+<a name="movecommand-class"></a>
+<h2>MoveCommand Class</h2>
+<pre>        class MoveCommand extends QUndoCommand
+        {
+            private DiagramItem myDiagramItem;
+            private QPointF myOldPos;
+            private QPointF newPos;</pre>
+<p>MoveCommand implements the command for moving items.</p>
+<p>The constructor of MoveCommand looks like this:</p>
+<pre>            public MoveCommand(DiagramItem diagramItem, QPointF oldPos)
+            {
+                myDiagramItem = diagramItem;
+                newPos = diagramItem.pos();
+                myOldPos = oldPos;
+            }</pre>
+<p>We save both the old and new positions for undo and redo respectively.</p>
+<pre>            public void undo()
+            {
+                myDiagramItem.setPos(myOldPos);
+                myDiagramItem.scene().update();
+                setText(tr(&quot;Move &quot; + UndoFramework.createCommandString(myDiagramItem, newPos)));
+           }
+
+            @Override
+            public void redo()
+            {
+                myDiagramItem.setPos(newPos);
+                setText(tr(&quot;Move &quot; + UndoFramework.createCommandString(myDiagramItem, newPos)));
+            }</pre>
+<p>We simply set the items old position and update the scene.</p>
+<pre>            public void redo()
+            {
+                myGraphicsScene.addItem(myDiagramItem);
+                myDiagramItem.setPos(initialPosition);
+                myGraphicsScene.clearSelection();
+                myGraphicsScene.update();
+            }</pre>
+<p>We set the item to its new position.</p>
+<pre>            public boolean mergeWith(QUndoCommand other)
+            {
+                MoveCommand moveCommand = (MoveCommand) other;
+                DiagramItem item = moveCommand.myDiagramItem;
+
+                if (!myDiagramItem.equals(item))
+                    return false;
+
+                newPos = item.pos();
+                setText(tr(&quot;Move &quot; + UndoFramework.createCommandString(myDiagramItem, newPos)));
+
+                return true;
+            }</pre>
+<p>The mergeWith() is reimplemented to make consecutive moves of an item one MoveCommand, i.e, the item will be moved back to the start position of the first move.</p>
+<p>Whenever a MoveCommand is created, this method is called to check if it should be merged with the previous command. It is the previous command object that is kept on the stack. The method returns true if the command is merged; otherwise false.</p>
+<p>We first check whether it is the same item that has been moved twice, in which case we merge the commands. We update the position of the item so that it will take the last position in the move sequence when undone.</p>
+<a name="diagramscene-class"></a>
+<h2>DiagramScene Class</h2>
+<pre>        class DiagramScene extends QGraphicsScene
+        {
+            public Signal2&lt;DiagramItem,QPointF&gt; itemMoved =
+                new Signal2&lt;DiagramItem,QPointF&gt;();
+
+            private DiagramItem movingItem;
+            private QPointF oldPos;
+        ...
+        }</pre>
+<p>The DiagramScene implements the functionality to move a DiagramItem with the mouse. It emits a signal when a move is completed. This is caught by the <tt>MainWindow</tt>, which makes MoveCommands. We do not examine the implementation of DiagramScene as it only deals with graphics framework issues.</p>
+<p>We declare a signal that is used to notify UndoFramework that an item has been moved in the scene.</p>
+<p>We do not examine the DiagramScene class's implementation in detail, as it does not contain any functionality concerning the undo framework.</p>
+<a name="the-function"></a>
+<h2>The <tt>main()</tt> Function</h2>
+<p>The <tt>main()</tt> method of the program looks like this:</p>
+<pre>        public static void main(String args[])
+        {
+            QApplication.initialize(args);
+
+            UndoFramework mainWindow = new UndoFramework();
+            mainWindow.show();
+
+            QApplication.exec();
+        }</pre>
+<p>The main method creates the <tt>MainWindow</tt> and shows it as a top level window.</p>
+</body>
+</html>

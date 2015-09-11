@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/demos/deform.qdoc -->
+<head>
+  <title>Vector Deformation</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Vector Deformation<br /><span class="subtitle"></span>
+</h1>
+<p>This demo shows how to use advanced vector techniques to draw text using a <tt>QPainterPath</tt>.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/deform-demo.png" /></p><p>We define a vector deformation field in the shape of a lens and apply this to all points in a path. This means that what is rendered on screen is not pixel manipulation, but modified vector representations of the glyphs themselves. This is visible from the high quality of the antialiased edges for the deformed glyphs.</p>
+<p>To get a fairly complex path we allow the user to type in text and convert the text to paths. This is done using the QPainterPath::addText() method.</p>
+<p>The lens is drawn using a single call to QPainter::drawEllipse(), using a QRadialGradient to fill it with a specialized color table, giving the effect of the sun's reflection and a drop shadow. The lens is cached as a pixmap for better performance.</p>
+</body>
+</html>

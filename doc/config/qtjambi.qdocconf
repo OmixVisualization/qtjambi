@@ -1,0 +1,100 @@
+project                 = QtJambi
+description             = QtJambi Reference Documentation
+url                     = .
+
+indexes                 = qtjambi_qt.index
+
+outputdir               = ../html
+sourcedirs              = ../src \
+                          ../src/snippets
+sources.fileextensions  = "*.java *.qdoc"
+exampledirs             = ../../com/trolltech/examples \
+                          ../src
+imagedirs               = ../src/images
+
+extraimages.HTML        = qt-logo \
+                          trolltech-logo
+
+alias.also                      = sa
+alias.group                     = defgroup
+alias.i                         = e
+alias.include                   = input
+alias.inheaderfile              = headerfile
+alias.quotefile                 = include
+alias.quotefromfile             = quotefile
+alias.related                   = relates
+
+macro.key               = "\\bold"
+macro.menu              = "\\bold"
+macro.gui               = "\\bold"
+macro.reg.HTML          = "<sup>&reg;</sup>"
+macro.raisedaster.HTML  = "<sup>*</sup>"
+macro.BR.HTML           = "<br />"
+macro.QD                = "\\e{Qt Designer}"
+macro.QJ                = "Qt Jambi"
+macro.QC                = "Qt/C++"
+macro.QA                = "\\e{Qt Assistant}"
+macro.aring.HTML        = "&aring;"
+macro.Auml.HTML         = "&Auml;"
+macro.uuml.HTML         = "&uuml;"
+
+macro.0                         = "\\\\0"
+macro.b                         = "\\\\b"
+macro.n                         = "\\\\n"
+macro.r                         = "\\\\r"
+macro.i                         = "\\o"
+macro.i11                       = "\\o{1,1}"
+macro.i12                       = "\\o{1,2}"
+macro.i13                       = "\\o{1,3}"
+macro.i14                       = "\\o{1,4}"
+macro.i15                       = "\\o{1,5}"
+macro.i16                       = "\\o{1,6}"
+macro.i17                       = "\\o{1,7}"
+macro.i18                       = "\\o{1,8}"
+macro.i19                       = "\\o{1,9}"
+macro.i21                       = "\\o{2,1}"
+macro.i31                       = "\\o{3,1}"
+macro.i41                       = "\\o{4,1}"
+macro.i51                       = "\\o{5,1}"
+macro.i61                       = "\\o{6,1}"
+macro.i71                       = "\\o{7,1}"
+macro.i81                       = "\\o{8,1}"
+macro.i91                       = "\\o{9,1}"
+macro.img                       = "\\image"
+macro.quotefromfile             = "\\quotefile"
+macro.quote                     = "\\quotation"
+macro.endquote                  = "\\endquotation"
+
+HTML.stylesheets        = classic.css
+
+HTML.style              = "h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }\n" \
+                          "a:link { color: #004faf; text-decoration: none }\n" \
+                          "a:visited { color: #672967; text-decoration: none }\n" \
+                          "td.postheader { font-family: sans-serif }\n" \
+                          "tr.address { font-family: sans-serif }\n" \
+                          "body { background: #ffffff; color: black; }"
+
+HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n" \
+                          "<tr>\n" \
+                          "<td align=\"left\" valign=\"top\" width=\"32\">" \
+                          "<img src=\"images/qt-logo.png\" align=\"left\" width=\"32\" height=\"32\" border=\"0\" />" \
+                          "</td>\n" \
+                          "<td width=\"1\">&nbsp;&nbsp;</td>" \
+                          "<td class=\"postheader\" valign=\"center\">" \
+                          "<a href=\"qtjambi-index.html\">" \
+                          "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
+                          " <a href=\"qtjambi-classes.html\">" \
+                          "<font color=\"#004faf\">Classes</font></a>&nbsp;&middot;" \
+                          " <a href=\"qtjambi-overviews.html\">" \
+                          "<font color=\"#004faf\">Overviews</font></a>&nbsp;&middot;" \
+                          " <a href=\"qtjambi-examples.html\">" \
+                          "<font color=\"#004faf\">Examples</font></a>&nbsp;" \
+                          "</td>\n" \
+                          "<td align=\"right\" valign=\"top\" width=\"230\"><img src=\"images/trolltech-logo.png\" align=\"right\" width=\"203\" height=\"32\" border=\"0\" /></td></tr></table>"
+
+HTML.footer             = "<p /><address><hr /><div align=\"center\">\n" \
+                          "<table width=\"100%\" cellspacing=\"0\" border=\"0\"><tr class=\"address\">\n" \
+                          "<td width=\"30%\">Copyright &copy; \$THISYEAR\$ <a href=\"trolltech.html\">Trolltech</a></td>\n" \
+                          "<td width=\"40%\" align=\"center\"><a href=\"trademarks.html\">Trademarks</a></td>\n" \
+                          "<td width=\"30%\" align=\"right\"><div align=\"right\">Qt Jambi \\version</div></td>\n" \
+                          "</tr></table></div></address>"

@@ -1,0 +1,70 @@
+/*!
+    \page qtjambi-resourcesystemoverview.html
+    \title The Qt Jambi Resource System
+
+    Qt Jambi provides a convenient way to bundle resources with you
+    Java application - such as icons, translation files, etc. With the
+    resource system, Jambi can search for files and directories you
+    specify in the current classpath.
+
+    \section1 Using the Resource System
+    
+    Using the resource system, you can specify resource file names
+    relative to the classpath. This is done by prefixing the filename
+    of the resource with "classpath:", for instance:
+
+    \snippet doc/src/snippets/ResourceSnippets.java 0
+
+    Qt Jambi then goes through the classpath entries and appends \c {
+    images/star.png } to each entry. Notice that this makes it easy to
+    package resources in \c .jar files.
+
+    For instance if you have an image, \c star.png, located in the
+    root directory of the \c .jar file, you can simply access it by
+    "classpath:star.png". The \c .jar file must be in the classpath,
+    of course.
+
+    It is also possible to search for a file in a specific (absolute)
+    location in the classpath, using the syntax "classpath:<absolute
+    path>#<filename>". The absolute path can be the full path to a
+    directory or a \c .jar file, while the filename is the name of the
+    resource.
+
+    In the following code snippet, Qt Jambi will pick the classpath
+    entry \c images, and search for the \c star.png in that directory.
+
+    \snippet doc/src/snippets/ResourceSnippets.java 1
+
+    Giving a specific location is mostly useful if you want to get an
+    absolute path to a resource, i.e., a path to one specific file in
+    the classpath. We give a code example below.
+
+    \snippet doc/src/snippets/ResourceSnippets.java 2
+
+    If your classpath contains \c resources.jar and the directory \c
+    images, Qt Jambi will search for \c absoluteFilePath only in \c
+    images, and search for \c relativeFilePath in \c images/images/
+    and in \c images inside the resources \c .jar file.
+
+    You can list contents of a directory in the classpath, for
+    instance, using a QDir.
+
+    \snippet doc/src/snippets/ResourceSnippets.java 3
+
+    The resource system is read-only, so it is not possible to
+    create new directories, write resource files, etc.
+
+    \section1 The Resource System Implementation
+
+    In Jambi it is possible to write custom file engines by extending
+    QAbstractFileEngine. A file engine knows how to resolve file
+    names, read, and write files through a QIODevice. The QDir, QFile,
+    and QFileInfo classes all make use of a file file engine. The
+    resource system is implemented in such a custom file engine.
+
+    Note that this makes the resource system specific to Qt Jambi,
+    so, for instance, you cannot access resources using the \c java.io
+    package.
+
+    \sa {Resource System Example}, QAbstractFileEngine
+*/

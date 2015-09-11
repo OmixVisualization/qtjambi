@@ -1,0 +1,121 @@
+Qt Jambi 4.3.3_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.3.2. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.3.2_01.
+
+In addition to the changes listed here it also contains numerous
+updates to the Qt Library. See
+http://trolltech.com/developer/notes/changes for recent changes.
+
+
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ * Added QtProperty class and QObject.properties() accessor which deprecates
+   QtPropertyManager. QtPropertyManager will be removed in Qt Jambi
+   4.4.
+
+ * Deprecated QtPropertyOrder because it will be removed in Qt Jambi 4.4
+   where it is no longer needed.
+
+____________________
+
+Fixes:
+____________________
+
+ * Some classes would sometimes crash the Virtual Machine when garbage
+   collected on multi-core machines.
+
+ * A QPainter now prints out a warning if it is garbage collected
+   without being end()'ed first. QPainters open on QWidgets are
+   allways ended by the system, so this applies only to painters
+   opened on QPixmap, QImage and QPrinter.
+
+ * When no CLASSPATH is set, the current directory becomes the
+   CLASSPATH. The resource system (e.g. "classpath:image.png") has
+   been updated to reflect this behaviour.
+
+ * Automatically call QPainter.end() on painters opened on the
+   viewport of a QAbstractScrollArea.
+
+ * QAbstractItemModel.setData() and QAbstractItemModel.data()
+   functions would not be resolved on some systems.
+
+ * Some use cases would cause crashes on VM shutdown because Qt C++
+   objects would do virtual calls into Java after the VM had closed
+   down.
+
+ * Fixed exceptions such as IllegalArgumentException and ClassCastException
+   in certain, rare cases, e.g. when calling addSubWindow() on a
+   QMdiArea widget which reimplemented the eventFilter() method.
+
+ * QObject.properties() now returns the same set of properties as it
+   does in Qt.
+
+ * Mac OS X: The deployment target for the binaries has properly been
+   set to 10.4.
+
+ * Mac OS X: Qt Jambi would get a NullPointerException on startup on
+   Mac OS X 10.5, Leopard, causing Qt Jambi to run unstable later.
+
+
+
+************************************************************************
+ Generator
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ * Allow injection of code into a class' destructor function.
+
+ * Support nested namespaces.
+
+____________________
+
+Fixes:
+____________________
+
+ * The Generator would generate empty directories for packages it knew
+   about, but did not generate code for.
+
+ * The Generator now properly handles interface-type's declared inside
+   namespaces.
+
+ * The Generator now correctly supports forward declarations of classes
+   inside namespaces.
+
+
+************************************************************************
+ Qt Jambi Designer
+************************************************************************
+
+  * A few missing properties have been added to the property editor and
+    some run time properties have been removed.
+
+
+************************************************************************
+ Qt Jambi Eclipse Integration
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ * Part of the Qt Jambi Eclipse Integration would fail to load in some cases.
+
+ * If you launched Eclipse with the property editor open and no current
+   form, no changes made in the property editor would affect the form.
+
+
+************************************************************************
+ Documentation
+************************************************************************
+
+ * Deployment and install docs have been improved.

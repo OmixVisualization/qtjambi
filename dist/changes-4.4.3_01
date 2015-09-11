@@ -1,0 +1,7 @@
+Qt Jambi 4.4.3_01 is a relicensing release. It contains a new license
+compared to that of 4.4.2_01, and no bug fixes or patches. It
+maintains both forward and backwards compatibility (source and binary)
+with Qt Jambi 4.4.2_01.
+
+For details about changes in Qt itself, see the Qt change logs:
+http://trolltech.com/developer/notes/changes

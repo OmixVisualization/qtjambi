@@ -1,0 +1,250 @@
+Qt Jambi 1.0.0-beta2 is the second beta of Qt for Java. It represents a
+milestone in the development in terms of feature stability.
+
+
+
+************************************************************************
+Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ - Internationalization support implemented. This includes the tr()
+   function for translation, plus updates to the tools linguist,
+   lrelease and lupdate.
+
+ - setProperty() / property() in QObject for dynamically setting
+   and accessing properties
+
+ - read / write / reset -Property in QtPropertyManager for
+   manipulating properties.
+
+ - Optimize property access in QtPropertyManager.
+
+ - QTreeModel now has mapping functions for Object <-> QModelIndex
+
+ - More Qt 4.3 classes added to the API, including QMdiArea, QWizard,
+   QColumnView and QXmlStream.
+
+ - Added setShortcut() overload that takes a QKeySequence.StandardKey
+   to QAction and QAbstractButton.
+
+____________________
+
+Fixes:
+____________________
+
+ - Connections between signals and slots of array types
+
+ - Retain references to objects that are passed to C++ functions to
+   prevent garbage collection from disposing them. This prevents sporadic
+   disappearance of objects.
+
+ - Passing null to native functions that take strings no longer throws
+   exceptions.
+
+ - operator_xxx are mostly removed from the API and replaced with more
+   properly named functions.
+
+ - classpath:... based entries are now "absolute" and are not considered
+   to be on the local disk.
+
+ - Throw an exception when trying to connect / disconnect with a signal
+   that is currently emitting.
+
+ - QSignalEmitter.signalSender() is now reentrant
+
+ - Improve loading of native libraries so use of "java.library.path" is
+   in many cases no longer required.
+
+ - Made adding/removing searchpaths in QClassPathFileEngine reentrant.
+
+ - QUiLoader has improved support for: buddies, actions, tabs, docks
+   and a number of different properties.
+
+ - QTreeModel would query children when parent is exposed, now it only
+   queries childCount().
+
+ - QTreeModel would sometimes crash.
+
+ - Improve error propagation from exceptions thrown in slots.
+
+ - Runnables passed to QCoreApplication.invokeLater() were often gc'ed
+   prematurly.
+
+ - Memory leak for java-created objects of certain object types.
+
+ - Compatibility with changes to Java Webstart in Java 1.6.
+
+ - Stability issues with QInvokable.
+
+
+************************************************************************
+Qt Designer
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ - Added support for resetting properties.
+
+____________________
+
+Fixes:
+____________________
+
+ - designer.bat did not work in directories with spaces
+
+ - Support for numerous missing properties, like tabbar titles and
+   layout margins
+
+ - Treat enums and flags better. This avoids things like QDialogButtonBox
+   with all buttons and QSpacers that cannot be Vertical.
+
+ - Qt Designer would leak the Qt Jambi property editor interface.
+
+ - Numerous stability fixes.
+
+
+
+************************************************************************
+Juic
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ - Added option "--generate-main-method" which generates a dummy main
+   method useful for debugging.
+
+____________________
+
+Fixes:
+____________________
+
+ - Juic generated code that did not compile for properties that did not
+   have standard set/get.
+
+ - Layout margins where often generated on the wrong object making code
+   not compile.
+
+ - Buddy support
+
+
+
+************************************************************************
+Qt Jambi Generator
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+ - Operators == and != are converted into an equals() function.
+
+ - Operators >=, >, ==, <= and < are converted into the Comparable
+   interface.
+
+ - Generated code always imports "com.trolltech.qt.*".
+
+ - Extended the <modify-function> tag to include remove, access
+   and rename as attributes.
+
+ - Parse and understand the Q_PROPERTY C++ macro and generate code
+   accordingly.
+
+ - Support the "slots" keyword and generate @QtBlockedSlots annotations
+   for methods that are not slots in the C++ function.
+
+ - Improved error feedback
+
+ - Added <no-null-pointer> tag to specify arguments for which null pointers
+   constitute an exception.
+
+ - Moved "class" attribute from <modify-function> tag to the individual child
+   tags that support it.
+
+ - Replaced <disable-gc> tag with <define-ownership> tag for more flexible
+   control over ownership changes.
+
+ - Added <reference-count> tag to specify reference counting without
+   redefining ownership.
+
+ - fromNativePointer() function now generated for object types as well as
+   value types.
+
+ - Reduce the number of inconsistent functions generated for interface types.
+
+ - Stream operators that are declared in the global scope and that take a
+   QDataStream or QTextStream as first argument will be implemented as
+   Java methods writeTo() and readFrom() in the class of the second argument.
+
+____________________
+
+Fixes:
+____________________
+
+ - The generator would in some cases make use of calls to __override_xxx
+   and __public_xxx functions even though they were not needed
+
+ - When jobjects are returned from functions, it needs to be a global
+   reference to avoid being deleted by the PopLocalStack() call. This
+   also means users of jobjects need to delete these references using
+   DeleteGlobalRef();
+
+************************************************************************
+Qt Jambi Eclipse Integration
+************************************************************************
+____________________
+
+New Implementations:
+____________________
+
+ - New wizard for adding custom widgets to projects.
+
+____________________
+
+Fixes:
+____________________
+
+ - Numerous stability fixes.
+
+ - Pressing certain keys when editing a form would open the preview
+   window by mistake.
+
+
+
+************************************************************************
+Examples and Demos
+************************************************************************
+____________________
+
+New Examples:
+____________________
+
+ - Qt Jambi Tutorial.
+
+ - Internationalization example.
+
+ - Config dialog example.
+
+ - Http server example.
+
+ - StarDelegate example.
+
+____________________
+
+Fixes:
+____________________
+
+ - Updated TextEdit to new shortcut API.
+
+************************************************************************
+Other things
+************************************************************************
+
+ - Added a small section on troubleshooting in the README.

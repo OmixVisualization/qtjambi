@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.webkit.widgets" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGL");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWebKit");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWebKitWidgets");
+    </inject-code>
+    <object-type name="QWebFrame">
+<!--      <modify-function signature="aboutToUpdateHistory(QWebHistoryItem*)">
+    <modify-argument index="1">
+      <replace-type modified-type="org.qtjambi.qt.webkit.QWebHistoryItem" />-->
+
+      <!-- Convert from C++ to Java when the C++ emissions emits the Java signal -->
+<!--      <conversion-rule class="shell">
+        jobject %out = qtjambi_from_object(__jni_env, %in, "QWebHistoryItem", "org/qtjambi/qt/webkit/", false);
+        jobject __qt_savedHistoryItem = %out;
+      </conversion-rule>
+
+      <conversion-rule class="native">
+        Since the signal is protected in a final class
+        we cannot generate the native function. If this
+        code stops compiling, it means the class is no
+        longer final.
+      </conversion-rule>
+    </modify-argument>-->
+    <!-- Make sure history item object gets invalidated after use in case
+             someone retains a reference to it. -->
+<!--    <inject-code position="end" class="signal">
+        qtjambi_invalidate_object(__jni_env, __qt_savedHistoryItem);
+    </inject-code>
+      </modify-function>-->
+    </object-type>
+
+</typesystem>

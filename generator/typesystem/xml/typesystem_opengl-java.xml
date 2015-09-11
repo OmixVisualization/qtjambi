@@ -1,0 +1,693 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.opengl" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+  <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGL");
+  </inject-code>
+<!--
+typedef qint32 GLsizei;
+typedef float GLfloat;
+typedef float GLclampf;
+typedef bool GLboolean;
+typedef qint32 qgl_GLintptr;
+typedef qint32 qgl_GLsizeiptr;
+-->
+
+    <value-type name="QGLColormap">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_opengl-java.java" quote-after-line="class QGLColormap___" quote-before-line="}// class"/>
+        </inject-code>
+	</value-type>
+	<value-type name="QGLBuffer">
+  	</value-type>
+	
+	<object-type name="QGLShaderProgram">
+		<inject-code>
+            <import-file name="typesystem/java/typesystem_opengl-java.java" quote-after-line="class QGLShaderProgram___" quote-before-line="}// class"/>
+        </inject-code>
+		<modify-function signature="setAttributeBuffer ( const char *, GLenum, int, int, int)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="disableAttributeArray ( const char * )">
+			<modify-argument index="1">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="enableAttributeArray ( const char * )">
+			<modify-argument index="1">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setAttributeArray(int, const GLfloat *, int, int)" rename="setAttributeArray_GLfloat" access="private"/>
+		<!--modify-function signature="setAttributeArray(int, GLenum, const void *, int, int)" rename="setAttributeArray_void" access="private"/-->
+        <modify-function signature="setAttributeArray(int, const QVector2D *, int)" rename="setAttributeArray_QVector2D" access="private"/>
+        <modify-function signature="setAttributeArray(int, const QVector3D *, int)" rename="setAttributeArray_QVector3D" access="private"/>
+        <modify-function signature="setAttributeArray(int, const QVector4D *, int)" rename="setAttributeArray_QVector4D" access="private"/>
+        <modify-function signature="setAttributeArray(const char *, const GLfloat *, int, int)" rename="setAttributeArray_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="4">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeArray(const char *, GLenum, const void *, int, int)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="5">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeArray(const char *, const QVector2D *, int)" rename="setAttributeArray_QVector2D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeArray(const char *, const QVector3D *, int)" rename="setAttributeArray_QVector3D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeArray(const char *, const QVector4D *, int)" rename="setAttributeArray_QVector4D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue(const char *, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , GLfloat , GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char *, GLfloat, GLfloat, GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , GLfloat , GLfloat , GLfloat , GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , const QVector2D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , const QVector3D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , const QVector4D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char *, const QColor )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setAttributeValue ( const char * , const GLfloat * , int , int )" rename="setAttributeValue_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QPointF )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QSize )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QSizeF )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix2x2 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix2x3 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix2x4 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix3x2 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix3x3 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix3x4 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix4x2 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix4x3 )">
+			<remove/>
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QMatrix4x4 )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValue(const char *, const QTransform )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLint)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector2D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector3D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector4D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QPoint )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QColor )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValueArray(int, const GLuint *, int)" rename="setUniformValueArray_uint" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const GLint *, int)" rename="setUniformValueArray_int" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const GLfloat *, int, int)" rename="setUniformValueArray_GLfloat" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QVector2D *, int)" rename="setUniformValueArray_QVector2D" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QVector3D *, int)" rename="setUniformValueArray_QVector3D" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QVector4D *, int)" rename="setUniformValueArray_QVector4D" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix2x2 *, int)" rename="setUniformValueArray_QMatrix2x2" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix3x2 *, int)" rename="setUniformValueArray_QMatrix3x2" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix4x2 *, int)" rename="setUniformValueArray_QMatrix4x2" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix2x3 *, int)" rename="setUniformValueArray_QMatrix2x3" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix3x3 *, int)" rename="setUniformValueArray_QMatrix3x3" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix4x3 *, int)" rename="setUniformValueArray_QMatrix4x3" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix2x4 *, int)" rename="setUniformValueArray_QMatrix2x4" access="private"/>
+        <modify-function signature="setUniformValueArray(int, const QMatrix3x4 *, int)" rename="setUniformValueArray_QMatrix3x4" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix4x4 *, int)" rename="setUniformValueArray_QMatrix4x4" access="private"/>
+		<modify-function signature="setUniformValueArray(const char*, const GLuint *, int)" rename="setUniformValueArray_uint" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValueArray(const char*, const GLfloat *, int, int)" rename="setUniformValueArray_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const GLint *, int)" rename="setUniformValueArray_int" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QVector2D *, int)" rename="setUniformValueArray_QVector2D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QVector3D *, int)" rename="setUniformValueArray_QVector3D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QVector4D *, int)" rename="setUniformValueArray_QVector4D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x2 *, int)" rename="setUniformValueArray_QMatrix2x2" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x2 *, int)" rename="setUniformValueArray_QMatrix3x2" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix4x2 *, int)" rename="setUniformValueArray_QMatrix4x2" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x3 *, int)" rename="setUniformValueArray_QMatrix2x3" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x3 *, int)" rename="setUniformValueArray_QMatrix3x3" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix4x3 *, int)" rename="setUniformValueArray_QMatrix4x3" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x4 *, int)" rename="setUniformValueArray_QMatrix2x4" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x4 *, int)" rename="setUniformValueArray_QMatrix3x4" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="setUniformValueArray(const char*, const QMatrix4x4 *, int)" rename="setUniformValueArray_QMatrix4x4" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	
+</typesystem>

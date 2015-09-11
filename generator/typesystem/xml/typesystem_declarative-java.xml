@@ -1,0 +1,288 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.declarative" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtSql");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtScript");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtXmlPatterns");
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtSvg"))
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtSvg");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtDeclarative");
+    </inject-code>
+  
+  <interface-type name="QDeclarativeExtensionInterface" java-name="QDeclarativeExtension">
+    <modify-function signature="initializeEngine ( QDeclarativeEngine * , const char * )">
+        <modify-argument index="2">
+		<replace-type modified-type="java.lang.String" />
+		<conversion-rule class="native">
+		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+		</conversion-rule>
+		<conversion-rule class="shell">
+		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		</conversion-rule>
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="registerTypes ( const char * )">
+        <modify-argument index="1">
+		<replace-type modified-type="java.lang.String" />
+		<conversion-rule class="native">
+		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+		</conversion-rule>
+		<conversion-rule class="shell">
+		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		</conversion-rule>
+		</modify-argument>
+    </modify-function>
+  </interface-type>
+  <object-type name="QDeclarativeItem">
+	<modify-function signature="setParentItem ( QDeclarativeItem * )">
+		<modify-argument index="1">
+            <reference-count action="ignore"/>
+        </modify-argument>
+		<inject-code position="end">
+			<argument-map index="1" meta-name="%1"/>
+			if (%1 != null) {
+				disableGarbageCollection();
+			}else{
+				reenableGarbageCollection();
+			}
+		</inject-code>
+	</modify-function>
+  </object-type>
+  <object-type name="QDeclarativeExtensionPlugin">
+    <modify-function signature="initializeEngine ( QDeclarativeEngine * , const char * )">
+        <modify-argument index="2">
+		<replace-type modified-type="java.lang.String" />
+		<conversion-rule class="native">
+		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+		</conversion-rule>
+		<conversion-rule class="shell">
+		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		</conversion-rule>
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="registerTypes ( const char * )">
+        <modify-argument index="1">
+		<replace-type modified-type="java.lang.String" />
+		<conversion-rule class="native">
+		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+		</conversion-rule>
+		<conversion-rule class="shell">
+		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		</conversion-rule>
+		</modify-argument>
+    </modify-function>
+  </object-type>
+  
+  <object-type name="QDeclarativeListReference">
+	<modify-function signature="QDeclarativeListReference ( QObject *, const char *, QDeclarativeEngine * )">
+        <modify-argument index="2">
+		<replace-type modified-type="java.lang.String" />
+		<conversion-rule class="native">
+		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+		</conversion-rule>
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="operator=(QDeclarativeListReference)" access="private"/>
+  </object-type>
+  
+  <object-type name="QDeclarativeComponent">
+	<inject-code>
+		<import-file name="typesystem/java/typesystem_declarative-java.java" quote-after-line="class __QDeclarativeComponent" quote-before-line="}// class"/>
+	</inject-code>
+    <modify-function signature="errors () const">
+        <modify-argument index="return">
+			<replace-type modified-type="java.util.List&lt;QDeclarativeError&gt;" />
+			<conversion-rule class="native">
+			jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+			QList&lt;QDeclarativeError > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+			for (QList&lt;QDeclarativeError > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+					QDeclarativeError  __qt_tmp = *__qt___qt_return_value_it;
+					jobject __java_tmp = qtjambi_from_object(__jni_env, new QDeclarativeError(__qt_tmp), "QDeclarativeError", "org/qtjambi/qt/declarative/", true);
+					QTJAMBI_EXCEPTION_CHECK(__jni_env);
+					qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+    </modify-function>
+  </object-type>
+  <object-type name="QDeclarativeEngine">
+    <modify-function signature="warnings ( const QList&lt;QDeclarativeError> &amp; )">
+        <modify-argument index="1">
+			<replace-type modified-type="java.util.List&lt;QDeclarativeError&gt;" />
+			<conversion-rule class="shell">
+			jobject __java_warnings0 = qtjambi_arraylist_new(__jni_env, warnings0.size());
+			QList&lt;QDeclarativeError > ::const_iterator __qt_warnings0_end_it = warnings0.constEnd();
+			for (QList&lt;QDeclarativeError > ::const_iterator __qt_warnings0_it = warnings0.constBegin(); __qt_warnings0_it != __qt_warnings0_end_it; ++__qt_warnings0_it) {
+						QDeclarativeError  __qt_tmp = *__qt_warnings0_it;
+						jobject __java_tmp = qtjambi_from_object(__jni_env, new QDeclarativeError(__qt_tmp), "QDeclarativeError", "org/qtjambi/qt/declarative/", true);
+						QTJAMBI_EXCEPTION_CHECK(__jni_env);
+						qtjambi_collection_add(__jni_env, __java_warnings0, __java_tmp);
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+			<conversion-rule class="native">
+			QList&lt;QDeclarativeError > __qt_warnings0;
+			if (warnings0 != 0) {
+				jobjectArray __qt__array = qtjambi_collection_toArray(__jni_env, warnings0);
+				jsize __qt__size = __jni_env->GetArrayLength(__qt__array);
+				for (int i=0; i&lt;__qt__size; ++i) {
+					jobject __java_element = __jni_env->GetObjectArrayElement(__qt__array, i);
+					QDeclarativeError  __qt_element = *(QDeclarativeError*)qtjambi_to_object(__jni_env, __java_element);
+					QTJAMBI_EXCEPTION_CHECK(__jni_env);
+					__qt_warnings0 &lt;&lt; __qt_element;
+				}
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QString * )" rename="__importPlugin" access="private"/>
+	<inject-code>
+	
+    public static class ImportPluginInfo {
+        public ImportPluginInfo(boolean success, String errors) {
+            this.success = success;
+            this.errors = errors;
+        }
+
+        public final boolean success;
+        public final String errors;
+    }
+	
+    @QtBlockedSlot
+    public final ImportPluginInfo importPlugin(String filePath, String uri)  {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.String);
+		boolean success = __importPlugin(filePath, uri, pointer);
+        return new ImportPluginInfo(success, pointer.stringValue());
+    }
+  </inject-code>
+  </object-type>
+  
+  
+  <object-type name="QDeclarativeExpression">
+    <modify-function signature="error () const">
+        <modify-argument index="return">
+			<replace-type modified-type="QDeclarativeError" />
+			<conversion-rule class="native">
+			jobject __java_return_value = qtjambi_from_object(__jni_env, new QDeclarativeError(__qt_return_value), "QDeclarativeError", "org/qtjambi/qt/declarative/", true);
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="evaluate ( bool *)" access="private">
+		<modify-argument index="1">
+			<remove-default-expression />
+		</modify-argument>
+	</modify-function>
+	<inject-code>
+    public static class EvaluateInfo {
+        public EvaluateInfo(Object result, boolean valueIsUndefined) {
+            this.valueIsUndefined = valueIsUndefined;
+            this.result = result;
+        }
+
+        public final boolean valueIsUndefined;
+        public final Object result;
+    }
+	
+    @QtBlockedSlot
+    public final EvaluateInfo evaluate() {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+		Object result = evaluate(pointer);
+        return new EvaluateInfo(result, pointer.booleanValue());
+    }
+	</inject-code>
+  </object-type>
+  
+  
+  <object-type name="QDeclarativeView">
+    <modify-function signature="errors () const">
+        <modify-argument index="return">
+			<replace-type modified-type="java.util.List&lt;QDeclarativeError&gt;" />
+			<conversion-rule class="native">
+			jobject __java_return_value = qtjambi_arraylist_new(__jni_env, __qt_return_value.size());
+			QList&lt;QDeclarativeError > ::const_iterator __qt___qt_return_value_end_it = __qt_return_value.constEnd();
+			for (QList&lt;QDeclarativeError > ::const_iterator __qt___qt_return_value_it = __qt_return_value.constBegin(); __qt___qt_return_value_it != __qt___qt_return_value_end_it; ++__qt___qt_return_value_it) {
+					QDeclarativeError  __qt_tmp = *__qt___qt_return_value_it;
+					jobject __java_tmp = qtjambi_from_object(__jni_env, new QDeclarativeError(__qt_tmp), "QDeclarativeError", "org/qtjambi/qt/declarative/", true);
+					QTJAMBI_EXCEPTION_CHECK(__jni_env);
+					qtjambi_collection_add(__jni_env, __java_return_value, __java_tmp);
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+    </modify-function>
+  </object-type>
+  
+  <object-type name="QDeclarativeImageProvider">
+	<modify-function signature="requestImage ( const QString &amp;, QSize *, const QSize &amp;)">
+		<modify-argument index="2">
+			<replace-type modified-type="org.qtjambi.qt.core.QSize" />
+			<conversion-rule class="native">
+				QSize * %out = (QSize *)qtjambi_to_object(__jni_env, %in);
+			</conversion-rule>
+			<conversion-rule class="shell">
+				jobject %out = qtjambi_from_object(__jni_env, %in, "QSize", "org/qtjambi/qt/core/", true);
+			</conversion-rule>
+		</modify-argument>
+	</modify-function>
+	<modify-function signature="requestPixmap ( const QString &amp;, QSize *, const QSize &amp;)">
+		<modify-argument index="2">
+			<replace-type modified-type="org.qtjambi.qt.core.QSize" />
+			<conversion-rule class="native">
+				QSize * %out = (QSize *)qtjambi_to_object(__jni_env, %in);
+			</conversion-rule>
+			<conversion-rule class="shell">
+				jobject %out = qtjambi_from_object(__jni_env, %in, "QSize", "org/qtjambi/qt/core/", true);
+			</conversion-rule>
+		</modify-argument>
+	</modify-function>
+  </object-type>
+  
+	<object-type name="QDeclarativeProperty">
+		<modify-function signature="connectNotifySignal ( QObject *, const char *) const">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="propertyTypeName()const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+  
+    <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />
+</typesystem>

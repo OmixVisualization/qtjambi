@@ -1,0 +1,61 @@
+Qt Jambi 4.4.2_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.4.2. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.4.0_01. 
+
+For details about changes in Qt itself, see the Qt change logs:
+http://trolltech.com/developer/notes/changes
+
+
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ * Webstart would on some webstart versions download the binaries
+   twice. This is fixed for Linux and Windows. On Mac OS X, it is
+   fixed for webstart versions 12.0.0 and earlier, while 12.1.0 still
+   downloads twice.
+
+ * Removed md5 checksum logic from .jar based deployment as it does
+   more harm than good.
+
+ * Interface types would sometimes crash when passed as QVariants,
+   e.g. QGraphicsItem::itemChange.
+
+ * Signal emittion forwarding from C++ would failed for some template
+   arguments.
+
+ * Fixed some threading issues with the internal caches.
+
+ * Implement fetching primary keys in the JDBC driver.
+
+ * .jar based deployment now supports directories with spaces in them
+
+
+
+************************************************************************
+ Build System
+************************************************************************
+ 
+ * Make it possible to compile using MinGW on windows
+
+
+
+************************************************************************
+ Juic
+************************************************************************
+
+ * Juic now sets the contents of QScrollArea using setWidget()
+
+
+
+************************************************************************
+ Package
+************************************************************************
+
+ * The set_jambi_env.bat file now supports directories with spaces in
+   them
+
+ * Include the sqllite C++ plugin.
+
+ * Prefer release build of the generator in the source package.

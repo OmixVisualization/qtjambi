@@ -1,0 +1,16 @@
+/*!
+    \page qtjambi-imageviewer.html
+    \title Image Viewer
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Image Viewer}{ImageViewer.java}
+    \endlist
+
+    The Image Viewer Demonstration shows how Qt can be used to make an application
+    with standard GUI features such as menus, tool bars, and dock windows. The
+    application itself demonstrates commonly-used widgets for displaying images,
+    exploring tree structures, and accepting user input.
+
+    \image imageviewer-demo.png
+*/

@@ -1,0 +1,3362 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.gui" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+    </inject-code>
+
+  <primitive-type name="GLuint" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLuint64" java-name="long" preferred-conversion="no" jni-name="jlong"/>
+  <primitive-type name="GLint" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLenum" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLbitfield" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLsizei" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="qgl_GLintptr" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="qgl_GLsizeiptr" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLboolean" java-name="boolean" preferred-conversion="no" jni-name="jboolean"/>
+  <primitive-type name="GLdouble" java-name="double" preferred-conversion="no" jni-name="jdouble"/>
+  <primitive-type name="GLfloat" java-name="float" preferred-conversion="no" jni-name="jfloat"/>
+  <primitive-type name="GLubyte" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="GLvoid" java-name="void" preferred-conversion="no" jni-name="jvoid"/>
+  <primitive-type name="GLclampf" java-name="float" preferred-conversion="no" jni-name="jfloat"/>
+  <primitive-type name="qopengl_GLintptr" java-name="int" preferred-conversion="no" jni-name="jint"/>
+  <primitive-type name="qopengl_GLsizeiptr" java-name="int" preferred-conversion="no" jni-name="jint"/>
+
+	<template name="gui.matrix_constructor">
+	public %TYPE(float[] values){
+		super((QPrivateConstructor)null);
+		QNativePointer np = new QNativePointer(QNativePointer.Type.Float, %COUNT);
+		for (int i = 0; i &lt; %COUNT; i++) {
+			np.setFloatAt(i, values[i]);
+		}
+		__qt_%TYPE_nativepointer(np);
+	}
+	
+	@QtBlockedSlot
+	public final void copyDataTo(float[] values)    {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float, %COUNT);
+		copyDataTo(pointer);
+		if(values!=null){
+			for (int i = 0; i &lt; %COUNT; i++) {
+				values[i] = pointer.floatAt(i);
+			}
+		}
+	}
+	
+	@QtBlockedSlot
+	public final float[] data()    {
+		float[] data = new float[%COUNT];
+		org.qtjambi.qt.QNativePointer pointer = data_private();
+		for (int i = 0; i &lt; data.length; i++) {
+			data[i] = pointer.floatAt(i);
+		}
+		return data;
+	}
+	
+	@QtBlockedSlot
+    public final float getValue(int row, int column)    {
+    	QNativePointer np = getPointer(row, column);
+        return np.floatValue();
+    }
+    
+    @QtBlockedSlot
+    public final void setValue(int row, int column, float value)    {
+    	QNativePointer np = getPointer(row, column);
+        np.setFloatValue(value);
+    }
+	</template>
+  
+    <template name="gui.getter_returning_nativepointer">
+        public final %RETURN_TYPE %FUNCTION_NAME() {
+            QNativePointer np = %FUNCTION_NAME_private();
+            %RETURN_TYPE tmp = np == null ? null : %RETURN_TYPE.fromNativePointer(np);
+            return tmp == null ? null : new %RETURN_TYPE(tmp);
+        }
+
+    </template>
+
+    <template name="gui.convert_validationdata_to_java">
+        StaticCache *sc = StaticCache::instance();
+        sc-&gt;resolveValidationData();
+        jstring __qt_converted_input = qtjambi_from_qstring(__jni_env, %STRING);
+        jobject %out = __jni_env-&gt;NewObject(sc-&gt;ValidationData.class_ref, sc-&gt;ValidationData.constructor, __qt_converted_input, %POS);
+        jobject __java_validation_data = %out;
+    </template>
+
+    <template name="gui.cleanup_validationdata_from_java">
+        __jni_env-&gt;SetIntField(%1, sc-&gt;ValidationData.position, *__position_ptr);
+        __jni_env-&gt;SetObjectField(%1, sc-&gt;ValidationData.string, qtjambi_from_qstring(__jni_env, *__string_ptr));
+    </template>
+
+    <template name="gui.convert_validationdata_to_string">
+        StaticCache *sc = StaticCache::instance();
+        sc-&gt;resolveValidationData();
+        jstring __java_string = (jstring) __jni_env-&gt;GetObjectField(%in, sc-&gt;ValidationData.string);
+        QString %out = __java_string == 0 ? QString() : qtjambi_to_qstring(__jni_env, __java_string);
+        QString *__string_ptr = &amp;%out;
+    </template>
+
+    <template name="gui.convert_validationdata_to_pos">
+        int %out = __jni_env-&gt;GetIntField(%1, sc-&gt;ValidationData.position);
+        int *__position_ptr = &amp;%out;
+    </template>
+
+    <template name="gui.cleanup_validationdata_to_java">
+        jstring __java_string = (jstring) __jni_env-&gt;GetObjectField(__java_validation_data, sc-&gt;ValidationData.string);
+        %STRING = __java_string == 0 ? QString() : qtjambi_to_qstring(__jni_env, __java_string);
+        %POS = __jni_env-&gt;GetIntField(__java_validation_data, sc-&gt;ValidationData.position);
+    </template>
+
+    <template name="gui.convert_object_array_to_java">
+        jobjectArray %out = 0;
+
+        {
+            jclass __resolved_class = resolveClass(__jni_env, "%CLASSNAME_ARRAY", "%PACKAGE_ARRAY");
+            QTJAMBI_EXCEPTION_CHECK(__jni_env);
+            Q_ASSERT(__resolved_class != 0);
+
+            %out = %in == 0 ? 0 : __jni_env-&gt;NewObjectArray(%LENGTH, __resolved_class, 0);
+            QTJAMBI_EXCEPTION_CHECK(__jni_env);
+            if (%out != 0) {
+                for (int i=0; i&lt;%LENGTH; ++i) {
+                    __jni_env-&gt;SetObjectArrayElement(%out, i, qtjambi_from_object(__jni_env, %REFERENCE %in[i], "%CLASSNAME_SINGLE", "%PACKAGE_SINGLE", %LOOKUP true));
+                }
+            }
+       }
+    </template>
+
+    <object-type name="QAbstractTextDocumentLayout">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QAbstractTextDocumentLayout___" quote-before-line="}// class" />
+        </inject-code>
+
+        <inject-code class="native">
+            #include &lt;qtjambitextobjectinterface.h&gt;
+            extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QAbstractTextDocumentLayout__1_1qt_1handlerForObject)
+            (JNIEnv *__jni_env,
+             jobject ,
+             jlong __this_nativeId,
+             jint objectType)
+            {
+                QtJambiShell_QAbstractTextDocumentLayout *__qt_this = (QtJambiShell_QAbstractTextDocumentLayout *) qtjambi_from_jlong(__this_nativeId);
+                QTJAMBI_EXCEPTION_CHECK(__jni_env);
+                QtJambiTextObjectInterface *__qt_tmp = static_cast&lt;QtJambiTextObjectInterface *&gt;(__qt_this->handlerForObject(objectType));
+                jobject __java_return_type = qtjambi_from_qobject(__jni_env, __qt_tmp,
+                                                                 "QTextObjectInterface$ConcreteWrapper", "org/qtjambi/qt/gui/");
+                QTJAMBI_EXCEPTION_CHECK(__jni_env);
+
+                return __java_return_type;
+            }
+        </inject-code>
+
+        <!-- Deprecate because we are injecting registerHandler(int, QTextObjectInterface) to ensure the correct class type -->
+        <modify-function signature="registerHandler(int,QObject*)" deprecated="yes">
+            <inject-code>
+            <argument-map index="2" meta-name="%2" />
+                if (!(%2 instanceof QTextObjectInterface)) {
+                    throw new IllegalArgumentException("Handler object must be of class QTextObjectInterface");
+                }
+            </inject-code>
+        </modify-function>
+
+    </object-type>
+
+    <value-type name="QBitmap">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QBitmap___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+    
+    <value-type name="QBrush">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QBrush___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <modify-function signature="gradient()const">
+            <!-- Use custom constructors already defined for gradient -->
+            <modify-argument index="0">
+                <replace-type modified-type="org.qtjambi.qt.gui.QGradient"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QGradient", "org/qtjambi/qt/gui/", "Lorg_qtjambi_qt_gui_QGradient_2", true);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+
+
+    <object-type name="QClipboard">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QClipboard___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+
+    </object-type>
+
+
+    <value-type name="QColor">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QColor___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="QCursor">
+        <template name="gui.cursor_bitmap_getter">
+            <insert-template name="gui.getter_returning_nativepointer">
+                <replace from="%RETURN_TYPE" to="QBitmap"/>
+            </insert-template>
+        </template>
+
+        <modify-function signature="bitmap()const">
+            <access modifier="private"/>
+            <rename to="bitmap_private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.cursor_bitmap_getter">
+                <replace from="%FUNCTION_NAME" to="bitmap"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="mask()const">
+            <access modifier="private"/>
+            <rename to="mask_private"/>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.cursor_bitmap_getter">
+                <replace from="%FUNCTION_NAME" to="mask"/>
+            </insert-template>
+        </inject-code>
+    </value-type>
+
+    <object-type name="QDesktopServices">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QDesktopServices___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </object-type>
+
+    <value-type name="QFontMetricsF">
+        <template name="gui.fontmetricsf_boundingrect">
+            <insert-template name="gui.fontmetrics_tabarray_function">
+                <replace from="%RETURN_TYPE" to="org.qtjambi.qt.core.QRectF"/>
+                <replace from="%FUNCTION_NAME" to="boundingRect"/>
+                <replace from="%RECT_ARGUMENTS" to="%RECT_ARGUMENTS, "/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="%RECT_CALL_ARGUMENTS, "/>
+            </insert-template>
+        </template>
+
+        <inject-code>
+            <insert-template name="gui.fontmetricsf_boundingrect">
+                <replace from="%RECT_ARGUMENTS" to="org.qtjambi.qt.core.QRectF rect"/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="rect"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.fontmetrics_tabarray_function">
+                <replace from="%RETURN_TYPE" to="org.qtjambi.qt.core.QSizeF"/>
+                <replace from="%FUNCTION_NAME" to="size"/>
+                <replace from="%RECT_ARGUMENTS" to=""/>
+                <replace from="%RECT_CALL_ARGUMENTS" to=""/>
+            </insert-template>
+        </inject-code>
+    </value-type>
+
+    <value-type name="QFontMetrics">
+        <template name="gui.fontmetrics_tabarray_function">
+        public final %RETURN_TYPE %FUNCTION_NAME(%RECT_ARGUMENTSint flags, String text, int tabStops, int tabArray[]) {
+            QNativePointer np = tabArray == null ? null : new QNativePointer(QNativePointer.Type.Int, tabArray.length + 1);
+            if (np != null) {
+                for (int i=0; i&lt;tabArray.length; ++i) np.setIntAt(i, tabArray[i]);
+                np.setIntAt(tabArray.length, 0);
+            }
+            return %FUNCTION_NAME(%RECT_CALL_ARGUMENTSflags, text, tabStops, np);
+        }
+
+        public final %RETURN_TYPE %FUNCTION_NAME(%RECT_ARGUMENTSint flags, String text, int tabStops) {
+            return %FUNCTION_NAME(%RECT_CALL_ARGUMENTSflags, text, tabStops, (int []) null);
+        }
+
+        public final %RETURN_TYPE %FUNCTION_NAME(%RECT_ARGUMENTSint flags, String text) {
+            return %FUNCTION_NAME(%RECT_CALL_ARGUMENTSflags, text, 0);
+        }
+        </template>
+
+        <template name="gui.fontmetrics_boundingrect">
+            <insert-template name="gui.fontmetrics_tabarray_function">
+                <replace from="%RETURN_TYPE" to="org.qtjambi.qt.core.QRect"/>
+                <replace from="%FUNCTION_NAME" to="boundingRect"/>
+                <replace from="%RECT_ARGUMENTS" to="%RECT_ARGUMENTS, "/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="%RECT_CALL_ARGUMENTS, "/>
+            </insert-template>
+        </template>
+
+        <inject-code>
+            <insert-template name="gui.fontmetrics_boundingrect">
+                <replace from="%RECT_ARGUMENTS" to="int x, int y, int width, int height"/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="x, y, width, height"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.fontmetrics_boundingrect">
+                <replace from="%RECT_ARGUMENTS" to="org.qtjambi.qt.core.QRect rect"/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="rect"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.fontmetrics_tabarray_function">
+                <replace from="%RETURN_TYPE" to="org.qtjambi.qt.core.QSize"/>
+                <replace from="%FUNCTION_NAME" to="size"/>
+                <replace from="%RECT_ARGUMENTS" to=""/>
+                <replace from="%RECT_CALL_ARGUMENTS" to=""/>
+            </insert-template>
+        </inject-code>
+    </value-type>
+
+    <object-type name="QGuiApplication">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QGuiApplication___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+			<include file-name="qtjambi/qtjambi_cache.h" location="global"/>
+            <include file-name="java.util.Collections" location="java"/>
+            <include file-name="java.util.List" location="java"/>
+        </extra-includes>
+        <modify-function signature="QGuiApplication(int &amp;, char  **, int)">
+            <inject-code class="shell">
+                qtjambi_register_variant_handler();
+            </inject-code>
+        </modify-function>
+        <!-- We implement a custom Java wrapper to this -->
+        <modify-function signature="exec()">
+            <access modifier="private"/>
+            <rename to="exec_internal"/>
+        </modify-function>
+        <template name="gui.application_char_pointer_function">
+        public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {
+            return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());
+        }
+        </template>
+    </object-type>
+
+    <value-type name="QIcon">
+    </value-type>
+
+    <value-type name="QImage">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QImage___" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="native">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QImage::JNI" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="shell-declaration">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QImage::Shell" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.pixmap_save">
+                <replace from="%INPUT_TYPE" to="String"/>
+                <replace from="%INPUT_NAME" to="fileName"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="save(QIODevice *, const char *, int) const">
+            <access modifier="private"/>
+            <rename to="private_save"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_save">
+                <replace from="%INPUT_TYPE" to="org.qtjambi.qt.core.QIODevice"/>
+                <replace from="%INPUT_NAME" to="dev"/>
+            </insert-template>
+        </inject-code>
+
+        <template name="gui.image_load">
+        public final boolean %FUNCTION_NAME(%ARGUMENT_TYPE %ARGUMENT_NAME, String format) {
+            return %FUNCTION_NAME(%OUT_ARGUMENT_NAME, format != null ? QNativePointer.createCharPointer(format) : null);
+        }
+
+        public final boolean %FUNCTION_NAME(%ARGUMENT_TYPE %ARGUMENT_NAME) {
+            return %FUNCTION_NAME(%ARGUMENT_NAME, (String) null);
+        }
+        </template>
+
+        <inject-code>
+            <insert-template name="gui.image_load">
+                <replace from="%FUNCTION_NAME" to="load"/>
+                <replace from="%ARGUMENT_TYPE" to="String"/>
+                <replace from="%ARGUMENT_NAME" to="fileName"/>
+                <replace from="%OUT_ARGUMENT_NAME" to="fileName"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.image_load">
+                <replace from="%FUNCTION_NAME" to="load"/>
+                <replace from="%ARGUMENT_TYPE" to="org.qtjambi.qt.core.QIODevice"/>
+                <replace from="%ARGUMENT_NAME" to="device"/>
+                <replace from="%OUT_ARGUMENT_NAME" to="device"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.image_load">
+                <replace from="%FUNCTION_NAME" to="loadFromData"/>
+                <replace from="%ARGUMENT_TYPE" to="byte[]"/>
+                <replace from="%ARGUMENT_NAME" to="data"/>
+                <replace from="%OUT_ARGUMENT_NAME" to="org.qtjambi.qt.internal.QtJambiInternal.byteArrayToNativePointer(data), data.length"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.image_load">
+                <replace from="%FUNCTION_NAME" to="loadFromData"/>
+                <replace from="%ARGUMENT_TYPE" to="org.qtjambi.qt.core.QByteArray"/>
+                <replace from="%ARGUMENT_NAME" to="data"/>
+                <replace from="%OUT_ARGUMENT_NAME" to="data"/>
+            </insert-template>
+        </inject-code>
+
+        <inject-code>
+            <insert-template name="gui.image_load">
+                <replace from="%FUNCTION_NAME" to="fromData"/>
+                <replace from="%ARGUMENT_TYPE" to="org.qtjambi.qt.core.QByteArray"/>
+                <replace from="%ARGUMENT_NAME" to="data"/>
+                <replace from="%OUT_ARGUMENT_NAME" to="data"/>
+                <replace from="boolean" to="QImage"/>
+                <replace from="final" to="static"/>
+            </insert-template>
+        </inject-code>
+    </value-type>
+
+    <value-type name="QKeySequence">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QKeySequence___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+	<value-type name="QMatrix4x4">
+		<modify-function signature="QMatrix4x4(const float *)" access="private"/>
+		<modify-function signature="QMatrix4x4(const float *, int, int)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(const QMatrix4x4 &amp;)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix4x4 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix4x4 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(float)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x4 *%out = (QMatrix4x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="inverted(bool *)const" rename="inverted" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix4x4"/>
+				<replace from="%COUNT" to="16"/>
+			</insert-template>
+			<import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QMatrix4x4___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+	
+	<value-type name="QtJambiMatrix4x3" java-name="QMatrix4x3">
+		<modify-function signature="QtJambiMatrix4x3(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x3 *%out = (QMatrix4x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix4x3 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x3 *%out = (QMatrix4x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix4x3 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x3 *%out = (QMatrix4x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x3 *%out = (QMatrix4x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix4x3"/>
+				<replace from="%COUNT" to="12"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix4x2" java-name="QMatrix4x2">
+		<modify-function signature="QtJambiMatrix4x2(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x2 *%out = (QMatrix4x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix4x2 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x2 *%out = (QMatrix4x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix4x2 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x2 *%out = (QMatrix4x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix4x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix4x2 *%out = (QMatrix4x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix4x2"/>
+				<replace from="%COUNT" to="8"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix3x4" java-name="QMatrix3x4">
+		<modify-function signature="QtJambiMatrix3x4(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x4 *%out = (QMatrix3x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix3x4 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x4 *%out = (QMatrix3x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix3x4 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x4 *%out = (QMatrix3x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x4 *%out = (QMatrix3x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix3x4"/>
+				<replace from="%COUNT" to="12"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix3x3" java-name="QMatrix3x3">
+		<modify-function signature="QtJambiMatrix3x3(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x3 *%out = (QMatrix3x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix3x3 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x3 *%out = (QMatrix3x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix3x3 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x3 *%out = (QMatrix3x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x3 *%out = (QMatrix3x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix3x3"/>
+				<replace from="%COUNT" to="9"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix3x2" java-name="QMatrix3x2">
+		<modify-function signature="QtJambiMatrix3x2(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x2 *%out = (QMatrix3x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix3x2 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x2 *%out = (QMatrix3x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix3x2 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x2 *%out = (QMatrix3x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix3x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix3x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix3x2 *%out = (QMatrix3x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix3x2"/>
+				<replace from="%COUNT" to="6"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix2x4" java-name="QMatrix2x4">
+		<modify-function signature="QtJambiMatrix2x4(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x4 *%out = (QMatrix2x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix2x4 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x4 *%out = (QMatrix2x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix2x4 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x4 *%out = (QMatrix2x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x4" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x4", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x4 *%out = (QMatrix2x4 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix2x4"/>
+				<replace from="%COUNT" to="8"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix2x3" java-name="QMatrix2x3">
+		<modify-function signature="QtJambiMatrix2x3(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x3 *%out = (QMatrix2x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix2x3 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x3 *%out = (QMatrix2x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix2x3 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x3 *%out = (QMatrix2x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x3" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x3", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x3 *%out = (QMatrix2x3 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix2x3"/>
+				<replace from="%COUNT" to="6"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QtJambiMatrix2x2" java-name="QMatrix2x2">
+		<modify-function signature="QtJambiMatrix2x2(const float *)" access="private"/>
+		<modify-function signature="operator()(int, int)" rename="getPointer" access="private"/>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x2 *%out = (QMatrix2x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QMatrix2x2 &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x2 *%out = (QMatrix2x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QMatrix2x2 &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x2 *%out = (QMatrix2x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="divide(float)">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix2x2" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QMatrix2x2", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QMatrix2x2 *%out = (QMatrix2x2 *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        <modify-function signature="copyDataTo(float*)const" access="private" />
+		<modify-function signature="data()const" rename="data_private" access="private"/>
+		<modify-function signature="data()" remove="all"/>
+		<modify-function signature="constData()const" remove="all"/>
+		<inject-code>
+			<insert-template name="gui.matrix_constructor">
+				<replace from="%TYPE" to="QMatrix2x2"/>
+				<replace from="%COUNT" to="4"/>
+			</insert-template>
+		</inject-code>
+	</value-type>
+	
+    <value-type name="QOpenGLDebugMessage">
+    </value-type>
+    <object-type name="QPaintEngine">
+        <modify-function signature="drawLines(const QLine *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QLine[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QLine", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QLine, 32&gt; __lines;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __lines.append(*(QLine *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QLine *%out = %1 == 0 ? 0 : __lines.constData();
+                </conversion-rule>
+
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawLines(const QLineF *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QLineF[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QLineF", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QLineF, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QLineF *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QLineF *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawRects(const QRectF *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QRectF[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QRectF", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QRectF, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QRectF *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QRectF *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawRects(const QRect *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QRect[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QRect", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QRect, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QRect *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QRect *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawPoints(const QPoint *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QPoint[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QPoint", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QPoint, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QPoint *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QPoint *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawPoints(const QPointF *, int)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QPointF[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QPointF", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QPointF, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QPointF *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QPointF *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawPolygon(const QPoint *, int, QPaintEngine::PolygonDrawMode)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QPoint[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QPoint", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QPoint, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QPoint *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QPoint *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="drawPolygon(const QPointF *, int, QPaintEngine::PolygonDrawMode)">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.core.QPointF[]"/>
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_array(__jni_env, %in, %2,
+                                                       "QPointF", "org/qtjambi/qt/core/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVarLengthArray&lt;QPointF, 32&gt; __data;
+                int __size = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                for (int i=0; i&lt;__size; ++i)
+                    __data.append(*(QPointF *)qtjambi_to_object(__jni_env, __jni_env-&gt;GetObjectArrayElement((jobjectArray) %in, i)));
+                const QPointF *%out = %1 == 0 ? 0 : __data.constData();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                /* nothing */
+                </conversion-rule>
+                <conversion-rule class="native">
+                int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QPainter">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPainter___" quote-before-line="}// class"/>
+        </inject-code>
+
+    <inject-code class="destructor-function">
+      if (((QPainter *) ptr)->isActive()) {
+          qWarning("QPainter: trying to delete an active painter, "
+                       "did you forget to call \"end()\"?\n");
+              return;
+          }
+        </inject-code>
+
+        <template name="gui.painter_draw_text_general">
+        public final void drawText(%RECT_ARGUMENTS, int flags, String text, %RECT_TYPE boundingRect) {
+            drawText(%RECT_CALL_ARGUMENTS, flags, text, boundingRect == null ? null : boundingRect.nativePointer());
+        }
+
+        public final void drawText(%RECT_ARGUMENTS, int flags, String text) {
+            drawText(%RECT_CALL_ARGUMENTS, flags, text, (%RECT_TYPE) null);
+        }
+        </template>
+
+        <template name="gui.painter_draw_text_qrect">
+            <insert-template name="gui.painter_draw_text_general">
+                <replace from="%RECT_ARGUMENTS" to="%RECT_TYPE rectangle"/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="rectangle"/>
+            </insert-template>
+        </template>
+        <inject-code>
+            <insert-template name="gui.painter_draw_text_qrect">
+                <replace from="%RECT_TYPE" to="org.qtjambi.qt.core.QRect"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.painter_draw_text_qrect">
+                <replace from="%RECT_TYPE" to="org.qtjambi.qt.core.QRectF"/>
+            </insert-template>
+        </inject-code>
+        <inject-code>
+            <insert-template name="gui.painter_draw_text_general">
+                <replace from="%RECT_TYPE" to="org.qtjambi.qt.core.QRect"/>
+                <replace from="%RECT_ARGUMENTS" to="int x, int y, int width, int height"/>
+                <replace from="%RECT_CALL_ARGUMENTS" to="x, y, width, height"/>
+            </insert-template>
+        </inject-code>
+
+
+        <modify-function signature="setRedirected(const QPaintDevice*, QPaintDevice*, const QPoint &amp;)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                <argument-map index="2" meta-name="%2"/>
+            __rcRedirections.push(%1);
+            __rcRedirections.push(%2);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="restoreRedirected(const QPaintDevice*)">
+            <inject-code position="end">
+            if (!__rcRedirections.empty()) __rcRedirections.pop();
+            if (!__rcRedirections.empty()) __rcRedirections.pop();
+            </inject-code>
+        </modify-function>
+		<!--modify-function signature="drawPixmapFragments(const QRectF *, const QRectF *, int, const QPixmap, QFlags&lt;QPainter::PixmapFragmentHint&gt;)">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.core.QRectF" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QRectF", "org/qtjambi/qt/core/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QRectF *%out = (QRectF *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QRectF" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QRectF", "org/qtjambi/qt/core/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QRectF *%out = (QRectF *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function-->
+		<modify-function signature="drawPixmapFragments(const QPainter::PixmapFragment *, int, const QPixmap &amp;, QFlags&lt;QPainter::PixmapFragmentHint&gt;)">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.gui.QPainter.PixmapFragment" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_from_object(__jni_env, %in, "QPainter$PixmapFragment", "org/qtjambi/qt/gui/", false);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QPainter::PixmapFragment *%out = (QPainter::PixmapFragment *) qtjambi_to_object(__jni_env, %in);
+                </conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+
+    <value-type name="QPicture">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPicture___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.QIODevice" location="java"/>
+        </extra-includes>
+        <modify-function signature="load(QIODevice*,const char*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="load(QString,const char*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="save(QIODevice*,const char*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="save(QString,const char*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="setData(const char*,uint)">
+            <modify-argument index="1">
+                <replace-type modified-type="byte[]"/>
+                <conversion-rule class="shell">
+                    jbyteArray %out = __jni_env-&gt;NewByteArray(%2);
+                    __jni_env-&gt;SetByteArrayRegion(%out, 0, %2, (jbyte *) %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    char *%out = (char *) __jni_env-&gt;GetByteArrayElements((jbyteArray) %in, 0);
+                    char *__ptr = %out;
+                    Q_UNUSED(__ptr)
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    int %out = %1 == 0 ? 0 : __jni_env-&gt;GetArrayLength((jarray) %1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="pictureFormat(QString)">
+            <remove/>
+        </modify-function>
+
+        <modify-function signature="data()const">
+            <access modifier="private"/>
+            <rename to="data_private"/>
+        </modify-function>
+
+    </value-type>
+
+
+    <value-type name="QRegion">
+        <modify-function signature="setRects(const QRect*,int)">
+            <access modifier="private"/>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QRegion___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+    <value-type name="QPen">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPen___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <value-type name="QPixmap">
+        <modify-function signature="scroll(int, int, int, int, int, int, QRegion *)" access="private">
+			<modify-argument index="7">
+                <remove-default-expression/>
+            </modify-argument>
+		</modify-function>
+        <modify-function signature="scroll(int, int, const QRect &amp;, QRegion *)" access="private">
+			<modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPixmap___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="fill(const QColor &amp;)">
+            <modify-argument index="1">
+                <replace-default-expression with="new org.qtjambi.qt.gui.QColor(org.qtjambi.qt.core.Qt.GlobalColor.white)"/>
+            </modify-argument>
+        </modify-function>
+
+
+        <template name="gui.pixmap_save">
+        public final boolean save(%INPUT_TYPE %INPUT_NAME, String format, int quality) {
+            return private_save(%INPUT_NAME, org.qtjambi.qt.QNativePointer.createCharPointer(format), quality);
+        }
+        public final boolean save(%INPUT_TYPE %INPUT_NAME, String format) {
+            return save(%INPUT_NAME, format, -1);
+        }
+        public final boolean save(%INPUT_TYPE %INPUT_NAME) {
+            return save(%INPUT_NAME, null);
+        }
+        </template>
+
+        <template name="gui.pixmap_loadconstructor">
+        public %RETURN_TYPE %FUNCTION_NAME(%INPUT_TYPE %INPUT_NAME, String format, Qt.ImageConversionFlags flags) {
+            %FUNCTION_CALL(%OUTPUT_NAME, format == null ? null : QNativePointer.createCharPointer(format), flags);
+        }
+
+        public %RETURN_TYPE %FUNCTION_NAME(%INPUT_TYPE %INPUT_NAME, String format, Qt.ImageConversionFlag ... flags) {
+            %FUNCTION_CALL(%OUTPUT_NAME, format == null ? null : QNativePointer.createCharPointer(format), flags);
+        }
+
+        public %RETURN_TYPE %FUNCTION_NAME(%INPUT_TYPE %INPUT_NAME, String format) {
+            %FUNCTION_CALL(%INPUT_NAME, format, Qt.ImageConversionFlag.AutoColor);
+        }
+
+        public %RETURN_TYPE %FUNCTION_NAME(%INPUT_TYPE %INPUT_NAME) {
+            %FUNCTION_CALL(%INPUT_NAME, null);
+        }
+        </template>
+
+        <template name="gui.pixmap_load">
+            <insert-template name="gui.pixmap_loadconstructor">
+                <replace from="%RETURN_TYPE" to="final boolean"/>
+                <replace from="%FUNCTION_CALL" to="return %FUNCTION_NAME"/>
+            </insert-template>
+        </template>
+
+        <template name="gui.pixmap_constructor">
+            <insert-template name="gui.pixmap_loadconstructor">
+                <replace from="%RETURN_TYPE" to=""/>
+                <replace from="%FUNCTION_NAME" to="QPixmap"/>
+                <replace from="%FUNCTION_CALL" to="this"/>
+                <replace from="%INPUT_TYPE" to="String"/>
+                <replace from="%INPUT_NAME" to="fileName"/>
+                <replace from="%OUTPUT_NAME" to="fileName"/>
+            </insert-template>
+        </template>
+
+        <extra-includes>
+            <include file-name="QBitmap" location="global"/>
+            <include file-name="QMatrix" location="global"/>
+            <include file-name="org.qtjambi.qt.core.Qt" location="java"/>
+        </extra-includes>
+        <modify-function signature="save(QIODevice *, const char *, int) const">
+            <access modifier="private"/>
+            <rename to="private_save"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_save">
+                <replace from="%INPUT_TYPE" to="org.qtjambi.qt.core.QIODevice"/>
+                <replace from="%INPUT_NAME" to="dev"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="save(const QString &amp;, const char *, int) const">
+            <access modifier="private"/>
+            <rename to="private_save"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_save">
+                <replace from="%INPUT_TYPE" to="String"/>
+                <replace from="%INPUT_NAME" to="fileName"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="QPixmap(QString,const char*,QFlags&lt;Qt::ImageConversionFlag&gt;)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_constructor"/>
+        </inject-code>
+
+        <modify-function signature="load(QString,const char*,QFlags&lt;Qt::ImageConversionFlag&gt;)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_load">
+                <replace from="%FUNCTION_NAME" to="load"/>
+                <replace from="%INPUT_TYPE" to="String"/>
+                <replace from="%INPUT_NAME" to="fileName"/>
+                <replace from="%OUTPUT_NAME" to="fileName"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="loadFromData(const unsigned char*,uint,const char*,QFlags&lt;Qt::ImageConversionFlag&gt;)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_load">
+                <replace from="%FUNCTION_NAME" to="loadFromData"/>
+                <replace from="%INPUT_TYPE" to="byte[]"/>
+                <replace from="%INPUT_NAME" to="data"/>
+                <replace from="%OUTPUT_NAME" to="org.qtjambi.qt.internal.QtJambiInternal.byteArrayToNativePointer(data), data.length"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="loadFromData(QByteArray,const char*,QFlags&lt;Qt::ImageConversionFlag&gt;)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="gui.pixmap_load">
+                <replace from="%FUNCTION_NAME" to="loadFromData"/>
+                <replace from="%INPUT_TYPE" to="org.qtjambi.qt.core.QByteArray"/>
+                <replace from="%INPUT_NAME" to="data"/>
+                <replace from="%OUTPUT_NAME" to="data"/>
+            </insert-template>
+        </inject-code>
+    </value-type>
+
+    <value-type name="QPolygon">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.QPoint" location="java"/>
+        </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPolygon___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <inject-code class="native">
+      extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QPolygon_add_1private)
+      (JNIEnv *__jni_env, jobject, jlong nativeId, jint x, jint y)
+      {
+          Q_UNUSED(__jni_env);
+          QPolygon *polygon = (QPolygon *) qtjambi_from_jlong(nativeId);
+          if (!polygon)
+              return;
+          *polygon &lt;&lt; QPoint(x, y);
+      }
+        </inject-code>
+    </value-type>
+
+    <value-type name="QPolygonF">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.QPointF" location="java"/>
+        </extra-includes>
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPolygonF___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <inject-code class="native">
+      extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QPolygonF_add_1private)
+      (JNIEnv *__jni_env, jobject, jlong nativeId, jdouble x, jdouble y)
+      {
+          Q_UNUSED(__jni_env);
+          QPolygonF *polygon = (QPolygonF *) qtjambi_from_jlong(nativeId);
+          if (!polygon)
+              return;
+          *polygon &lt;&lt; QPointF(x, y);
+      }
+        </inject-code>
+    </value-type>
+
+	<value-type name="QQuaternion">
+		<modify-function signature="operator*=(const QQuaternion &amp;)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QQuaternion" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QQuaternion", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QQuaternion *%out = (QQuaternion *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QQuaternion" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QQuaternion", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QQuaternion *%out = (QQuaternion *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QQuaternion &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QQuaternion" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QQuaternion", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QQuaternion *%out = (QQuaternion *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QQuaternion &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QQuaternion" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QQuaternion", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QQuaternion *%out = (QQuaternion *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(float)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QQuaternion" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QQuaternion", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QQuaternion *%out = (QQuaternion *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="getAxes(QVector3D *, QVector3D *, QVector3D *) const" access="private">
+		</modify-function>
+		<modify-function signature="getAxisAndAngle(float *, float *, float *, float *) const" remove="all">
+		</modify-function>
+		<modify-function signature="getAxisAndAngle(QVector3D *, float *) const" access="private">
+		</modify-function>
+		<modify-function signature="getEulerAngles(float *, float *, float *) const" access="private">
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QQuaternion___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+	
+    <object-type name="QStandardItem">
+        <modify-function signature="appendColumn(const QList&lt;QStandardItem *&gt; &amp;)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="appendRow(const QList&lt;QStandardItem *&gt; &amp;)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="appendRow(QStandardItem *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertColumn(int, const QList&lt;QStandardItem *&gt; &amp;)">
+            <modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertRow(int, const QList&lt;QStandardItem *&gt; &amp;)">
+            <modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertRow(int, QStandardItem *)">
+            <modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setChild(int,int,QStandardItem *)">
+            <modify-argument index="3">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setChild(int,QStandardItem *)">
+            <modify-argument index="2">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="takeChild(int,int)">
+            <modify-argument index="return">
+                <define-ownership class="java" owner="default"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="takeColumn(int)">
+            <modify-argument index="return">
+                <define-ownership class="java" owner="default"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="takeRow(int)">
+            <modify-argument index="return">
+                <define-ownership class="java" owner="default"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QTextDocument">
+		<extra-includes>
+            <include file-name="qnamespace.h" location="global"/>
+        </extra-includes>
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTextDocument___" quote-before-line="}// class"/>
+        </inject-code>
+		<!--inject-code class="native">
+// Qt::codecForHtml(const QByteArray &amp; ba)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QTextDocument__1_1qt_1codecForHtml_1QByteArray__J)
+(JNIEnv *__jni_env,
+ jclass,
+ jlong  ba0)
+{
+    QTJAMBI_DEBUG_TRACE("(native) entering: Qt::codecForHtml(const QByteArray &amp; ba)");
+    Q_UNUSED(__jni_env)
+    const QByteArray&amp;  __qt_ba0 = (const QByteArray&amp; ) *(QByteArray *)(ba0 != 0 ? qtjambi_from_jlong(ba0) : default_QByteArray());
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QTextCodec*  __qt_return_value = Qt::codecForHtml((const QByteArray&amp; )__qt_ba0);
+
+    jobject __java_return_value = qtjambi_from_object(__jni_env, __qt_return_value, "QTextCodec$ConcreteWrapper", "org/qtjambi/qt/core/", true);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QTJAMBI_DEBUG_TRACE("(native) -> leaving: Qt::codecForHtml(const QByteArray &amp; ba)");
+    return __java_return_value;
+}
+
+// Qt::convertFromPlainText(const QString &amp; plain, Qt::WhiteSpaceMode mode)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QTextDocument__1_1qt_1convertFromPlainText_1String_1WhiteSpaceMode__Ljava_lang_String_2I)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject plain0,
+ jint mode1)
+{
+    QTJAMBI_DEBUG_TRACE("(native) entering: Qt::convertFromPlainText(const QString &amp; plain, Qt::WhiteSpaceMode mode)");
+    Q_UNUSED(__jni_env)
+    QString __qt_plain0 =  qtjambi_to_qstring(__jni_env, (jstring) plain0);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    Qt::WhiteSpaceMode __qt_mode1 = (Qt::WhiteSpaceMode) mode1;
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QString  __qt_return_value = Qt::convertFromPlainText((const QString&amp; )__qt_plain0, (Qt::WhiteSpaceMode )__qt_mode1);
+
+    jstring __java_return_value = qtjambi_from_qstring(__jni_env, __qt_return_value);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QTJAMBI_DEBUG_TRACE("(native) -> leaving: Qt::convertFromPlainText(const QString &amp; plain, Qt::WhiteSpaceMode mode)");
+    return __java_return_value;
+}
+
+// Qt::escape(const QString &amp; plain)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QTextDocument_escape__Ljava_lang_String_2)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject plain0)
+{
+    QTJAMBI_DEBUG_TRACE("(native) entering: Qt::escape(const QString &amp; plain)");
+    Q_UNUSED(__jni_env)
+    QString __qt_plain0 =  qtjambi_to_qstring(__jni_env, (jstring) plain0);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QString  __qt_return_value = Qt::escape((const QString&amp; )__qt_plain0);
+
+    jstring __java_return_value = qtjambi_from_qstring(__jni_env, __qt_return_value);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QTJAMBI_DEBUG_TRACE("(native) -> leaving: Qt::escape(const QString &amp; plain)");
+    return __java_return_value;
+}
+
+// Qt::mightBeRichText(const QString &amp; arg__1)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QTextDocument_mightBeRichText__Ljava_lang_String_2)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject arg__1)
+{
+    QTJAMBI_DEBUG_TRACE("(native) entering: Qt::mightBeRichText(const QString &amp; arg__1)");
+    Q_UNUSED(__jni_env)
+    QString __qt_arg__1 =  qtjambi_to_qstring(__jni_env, (jstring) arg__1);
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    bool  __qt_return_value = Qt::mightBeRichText((const QString&amp; )__qt_arg__1);
+
+    jboolean __java_return_value = (jboolean) __qt_return_value;
+    QTJAMBI_EXCEPTION_CHECK(__jni_env);
+    QTJAMBI_DEBUG_TRACE("(native) -> leaving: Qt::mightBeRichText(const QString &amp; arg__1)");
+    return __java_return_value;
+}
+        </inject-code-->
+    </object-type>
+
+    <object-type name="QTouchEvent">
+        <modify-function signature="QTouchEvent(QEvent::Type, QTouchDevice *, QFlags&lt;Qt::KeyboardModifier>, QFlags&lt;Qt::TouchPointState>, const QList&lt;QTouchEvent::TouchPoint> &amp;)">
+            <access modifier="private"/>
+            <modify-argument index="5">
+                <replace-default-expression with="new java.util.ArrayList&lt;TouchPoint>()"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <value-type name="QTextLine">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTextLine___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="draw(QPainter*,QPointF,const QTextLayout::FormatRange*)const">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+    </value-type>
+
+    <object-type name="QTextLayout">
+        <modify-function signature="draw(QPainter *, const QPointF &amp;, const QVector&lt;QTextLayout::FormatRange> &amp;, const QRectF &amp;) const">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <replace-default-expression with="new java.util.ArrayList&lt;FormatRange>()"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <value-type name="QTextFrame::iterator">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTextFrame_iterator___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+    <value-type name="QTextBlock::iterator">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTextBlock_iterator___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+
+    <value-type name="QTextCursor">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTextCursor___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+	<value-type name="QVector2D">
+		<modify-function signature="operator*=(const QVector2D &amp;)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QVector2D &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QVector2D &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(float)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(QVector2D)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector2D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector2D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector2D *%out = (QVector2D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </value-type>
+	
+	<value-type name="QVector3D">
+		<modify-function signature="operator*=(const QVector3D &amp;)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QVector3D &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QVector3D &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(float)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(QVector3D)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector3D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector3D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector3D *%out = (QVector3D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </value-type>
+	
+	<value-type name="QVector4D">
+		<modify-function signature="operator*=(const QVector4D &amp;)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator*=(float)" rename="multiply">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QVector4D &amp;)" rename="add">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator-=(const QVector4D &amp;)" rename="subtract">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(float)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator/=(QVector4D)" rename="divide">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.gui.QVector4D" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QVector4D", "org/qtjambi/qt/gui/", false);
+				</conversion-rule>
+				<conversion-rule class="shell">
+					QVector4D *%out = (QVector4D *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </value-type>
+
+    <object-type name="QValidator">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QValidator___" quote-before-line="}// class"/>
+        </inject-code>
+
+
+        <modify-function signature="fixup(QString&amp;)const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="shell">
+                    jobject %out = (jobject) qtjambi_from_qstring(__jni_env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QString %out = qtjambi_to_qstring(__jni_env, (jstring) %in);
+                    QString *__qt_converted = &amp;%out;
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="0">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    jobject %out = (jobject) qtjambi_from_qstring(__jni_env, *__qt_converted);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    %1 = qtjambi_to_qstring(__jni_env, (jstring) %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="validate(QString&amp;,int&amp;)const">
+            <modify-argument index="1">
+                <replace-type modified-type="org.qtjambi.qt.gui.QValidator$QValidationData"/>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.convert_validationdata_to_java">
+                        <replace from="%STRING" to="%1"/>
+                        <replace from="%POS" to="%2"/>
+                    </insert-template>
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_validationdata_to_string"/>
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing needed
+                </conversion-rule>
+                <conversion-rule class="native">
+                    <insert-template name="gui.convert_validationdata_to_pos">
+                        <replace from="%VALIDATIONDATA" to="%1"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="return">
+                <conversion-rule class="native">
+                    <insert-template name="gui.cleanup_validationdata_from_java"/>
+                    jint %out = %in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    <insert-template name="gui.cleanup_validationdata_to_java">
+                        <replace from="%STRING" to="%1"/>
+                        <replace from="%POS" to="%2"/>
+                    </insert-template>
+                    QValidator::State %out = (QValidator::State) qtjambi_to_enumerator(__jni_env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <value-type name="QTransform">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QTransform___" quote-before-line="}// class"/>
+        </inject-code>
+
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.Qt.Axis" location="java"/>
+        </extra-includes>
+
+        <modify-function signature="inverted(bool*)const">
+            <access modifier="private"/>
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+        <modify-function signature="rotate(qreal,Qt::Axis)">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+            <access modifier="private"/>
+            <rename to="rotate_private"/>
+        </modify-function>
+        <inject-code>
+    /**
+     * Rotates the transformation around the given axis.
+     *
+     * @return The rotated transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="rotate"/>
+            <replace from="%ARGUMENTS" to="double angle, Axis axis"/>
+            <replace from="%ARGUMENT_NAMES" to="angle, axis"/>
+        </insert-template>
+
+    /**
+     * Rotates the transformation around the z-axis.
+     *
+     * @return The rotated transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="rotate"/>
+            <replace from="%ARGUMENTS" to="double angle"/>
+            <replace from="%ARGUMENT_NAMES" to="angle"/>
+        </insert-template>
+        </inject-code>
+
+        <modify-function signature="rotateRadians(qreal,Qt::Axis)">
+        <modify-argument index="1">
+            <remove-default-expression/>
+        </modify-argument>
+        <access modifier="private"/>
+        <rename to="rotateRadians_private"/>
+    </modify-function>
+    <inject-code>
+    /**
+     * Rotates the transformation around the given axis.
+     *
+     * @return The rotated transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="rotateRadians"/>
+            <replace from="%ARGUMENTS" to="double angle, Axis axis"/>
+            <replace from="%ARGUMENT_NAMES" to="angle, axis"/>
+        </insert-template>
+
+    /**
+     * Rotates the transformation around the z-axis.
+     *
+     * @return The rotated transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="rotateRadians"/>
+            <replace from="%ARGUMENTS" to="double angle"/>
+            <replace from="%ARGUMENT_NAMES" to="angle"/>
+        </insert-template>
+    </inject-code>
+
+    <modify-function signature="scale(qreal,qreal)">
+        <access modifier="private"/>
+        <rename to="scale_private"/>
+    </modify-function>
+    <inject-code>
+    /**
+     * Scales the transformation using x and y.
+     *
+     * @return The scaled transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="scale"/>
+            <replace from="%ARGUMENTS" to="double x, double y"/>
+            <replace from="%ARGUMENT_NAMES" to="x, y"/>
+        </insert-template>
+    </inject-code>
+
+    <modify-function signature="shear(qreal,qreal)">
+        <access modifier="private"/>
+        <rename to="shear_private"/>
+    </modify-function>
+    <inject-code>
+    /**
+      * Shears the transformation using x and y.
+      *
+      * @return The sheared transformation.
+      */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="shear"/>
+            <replace from="%ARGUMENTS" to="double x, double y"/>
+            <replace from="%ARGUMENT_NAMES" to="x, y"/>
+        </insert-template>
+    </inject-code>
+
+
+    <modify-function signature="translate(qreal,qreal)">
+        <access modifier="private"/>
+        <rename to="translate_private"/>
+    </modify-function>
+    <inject-code>
+    /**
+     * Translates the transformation using x and y.
+     *
+     * @return The translated transformation.
+     */
+        <insert-template name="core.private_function_return_self">
+            <replace from="%RETURN_TYPE" to="QTransform"/>
+            <replace from="%FUNCTION_NAME" to="translate"/>
+            <replace from="%ARGUMENTS" to="double x, double y"/>
+            <replace from="%ARGUMENT_NAMES" to="x, y"/>
+        </insert-template>
+    </inject-code>
+
+    <modify-function signature="quadToQuad(QPolygonF,QPolygonF,QTransform&amp;)">
+        <access modifier="private"/>
+        <rename to="quadToQuadPrivate"/>
+    </modify-function>
+
+    <modify-function signature="quadToSquare(QPolygonF,QTransform&amp;)">
+        <access modifier="private"/>
+        <rename to="quadToSquarePrivate"/>
+    </modify-function>
+
+    <modify-function signature="squareToQuad(QPolygonF,QTransform&amp;)">
+        <access modifier="private"/>
+        <rename to="squareToQuadPrivate"/>
+    </modify-function>
+
+    </value-type>
+
+    <value-type name="QPainterPath">
+		<modify-function signature="operator-=(const QPainterPath &amp;)" rename="subtract">
+			<modify-argument index="0">
+				<replace-type modified-type="void"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator+=(const QPainterPath &amp;)" rename="unite">
+			<modify-argument index="0">
+				<replace-type modified-type="void"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="operator&amp;=(const QPainterPath &amp;)" rename="intersect">
+			<modify-argument index="0">
+				<replace-type modified-type="void"/>
+			</modify-argument>
+		</modify-function>
+    </value-type>
+
+    <object-type name="QPixmapCache">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPixmapCache___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+	<object-type name="QOpenGLShaderProgram">
+		<inject-code>
+		    <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLShaderProgram___" quote-before-line="}// class"/>
+		</inject-code>
+		<modify-function signature="setAttributeBuffer ( const char *, GLenum, int, int, int)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="disableAttributeArray ( const char * )">
+			<modify-argument index="1">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="enableAttributeArray ( const char * )">
+			<modify-argument index="1">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setAttributeArray(int, const GLfloat *, int, int)" rename="setAttributeArray_GLfloat" access="private"/>
+		<!--modify-function signature="setAttributeArray(int, GLenum, const void *, int, int)" rename="setAttributeArray_void" access="private"/-->
+		<modify-function signature="setAttributeArray(int, const QVector2D *, int)" rename="setAttributeArray_QVector2D" access="private"/>
+		<modify-function signature="setAttributeArray(int, const QVector3D *, int)" rename="setAttributeArray_QVector3D" access="private"/>
+		<modify-function signature="setAttributeArray(int, const QVector4D *, int)" rename="setAttributeArray_QVector4D" access="private"/>
+		<modify-function signature="setAttributeArray(const char *, const GLfloat *, int, int)" rename="setAttributeArray_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="4">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeArray(const char *, GLenum, const void *, int, int)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="5">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeArray(const char *, const QVector2D *, int)" rename="setAttributeArray_QVector2D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeArray(const char *, const QVector3D *, int)" rename="setAttributeArray_QVector3D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeArray(const char *, const QVector4D *, int)" rename="setAttributeArray_QVector4D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+			<modify-argument index="3">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue(const char *, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , GLfloat , GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char *, GLfloat, GLfloat, GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , GLfloat , GLfloat , GLfloat , GLfloat )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , const QVector2D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , const QVector3D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , const QVector4D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char *, const QColor )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setAttributeValue ( const char * , const GLfloat * , int , int )" rename="setAttributeValue_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QPointF )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QSize )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QSizeF )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix2x2 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix2x3 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix2x4 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValue(const char *, const QMatrix3x2 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix3x3 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix3x4 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix4x2 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix4x3 )" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix2x2 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix2x3 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix2x4 )" remove="all">
+		</modify-function>
+	        <modify-function signature="setUniformValue(int, const QMatrix3x2 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix3x3 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix3x4 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix4x2 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(int, const QMatrix4x3 )" remove="all">
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QMatrix4x4 )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValue(const char *, const QTransform )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLint)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, GLfloat, GLfloat, GLfloat, GLfloat)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector2D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector3D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QVector4D )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QPoint )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValue ( const char *, QColor )">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValueArray(int, const GLuint *, int)" rename="setUniformValueArray_uint" access="private"/>
+	        <modify-function signature="setUniformValueArray(int, const GLint *, int)" rename="setUniformValueArray_int" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const GLfloat *, int, int)" rename="setUniformValueArray_GLfloat" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QVector2D *, int)" rename="setUniformValueArray_QVector2D" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QVector3D *, int)" rename="setUniformValueArray_QVector3D" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QVector4D *, int)" rename="setUniformValueArray_QVector4D" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix4x4 *, int)" rename="setUniformValueArray_QMatrix4x4" access="private"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix2x2 *, int)" rename="setUniformValueArray_QMatrix2x2" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix3x2 *, int)" rename="setUniformValueArray_QMatrix3x2" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix4x2 *, int)" rename="setUniformValueArray_QMatrix4x2" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix2x3 *, int)" rename="setUniformValueArray_QMatrix2x3" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix3x3 *, int)" rename="setUniformValueArray_QMatrix3x3" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix4x3 *, int)" rename="setUniformValueArray_QMatrix4x3" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix2x4 *, int)" rename="setUniformValueArray_QMatrix2x4" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(int, const QMatrix3x4 *, int)" rename="setUniformValueArray_QMatrix3x4" access="private" remove="all"/>
+		<modify-function signature="setUniformValueArray(const char*, const GLuint *, int)" rename="setUniformValueArray_uint" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setUniformValueArray(const char*, const GLfloat *, int, int)" rename="setUniformValueArray_GLfloat" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const GLint *, int)" rename="setUniformValueArray_int" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QVector2D *, int)" rename="setUniformValueArray_QVector2D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QVector3D *, int)" rename="setUniformValueArray_QVector3D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QVector4D *, int)" rename="setUniformValueArray_QVector4D" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+        	<modify-function signature="setUniformValueArray(const char*, const QMatrix4x4 *, int)" rename="setUniformValueArray_QMatrix4x4" access="private">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x2 *, int)" rename="setUniformValueArray_QMatrix2x2" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x2 *, int)" rename="setUniformValueArray_QMatrix3x2" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix4x2 *, int)" rename="setUniformValueArray_QMatrix4x2" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x3 *, int)" rename="setUniformValueArray_QMatrix2x3" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x3 *, int)" rename="setUniformValueArray_QMatrix3x3" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix4x3 *, int)" rename="setUniformValueArray_QMatrix4x3" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix2x4 *, int)" rename="setUniformValueArray_QMatrix2x4" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	        <modify-function signature="setUniformValueArray(const char*, const QMatrix3x4 *, int)" rename="setUniformValueArray_QMatrix3x4" access="private" remove="all">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+
+    <interface-type name="QPaintDevice">
+		<modify-function signature="redirected(QPoint*)const">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.core.QPoint" />
+				<conversion-rule class="shell">
+					jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QPoint", "org/qtjambi/qt/core/", false);
+				</conversion-rule>
+				<conversion-rule class="native">
+					QPoint *%out = (QPoint *) qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="devicePixelRatio()const">
+			<modify-argument index="return">
+				<replace-type modified-type="double" />
+			</modify-argument>
+		</modify-function>
+    </interface-type>
+
+<!-- START ACCESSIBILITY CLASSES -->
+    <primitive-type name="QAccessible::Id" preferred-conversion="no" java-name="int" jni-name="jint"/>
+    <object-type name="QAccessibleTableInterface">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QAccessibleTableInterface___" quote-before-line="}// class"/>
+        </inject-code>
+
+
+        <modify-function signature="cellAtIndex(int,int*,int*,int*,int*,bool*)">
+        <modify-argument index="2">
+            <remove-argument/>
+            <conversion-rule class="native">
+                int rowHolder;
+                int *%out = &amp;rowHolder;
+            </conversion-rule>
+            <conversion-rule class="shell">
+                // nothing
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="3">
+            <remove-argument/>
+            <conversion-rule class="native">
+                int columnHolder;
+                int *%out = &amp;columnHolder;
+            </conversion-rule>
+            <conversion-rule class="shell">
+                // nothing
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="4">
+            <remove-argument/>
+            <conversion-rule class="native">
+                int rowSpanHolder;
+                int *%out = &amp;rowSpanHolder;
+            </conversion-rule>
+            <conversion-rule class="shell">
+                // nothing
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="5">
+            <remove-argument/>
+            <conversion-rule class="native">
+                int columnSpanHolder;
+                int *%out = &amp;columnSpanHolder;
+            </conversion-rule>
+            <conversion-rule class="shell">
+                // nothing
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="6">
+            <remove-argument/>
+            <conversion-rule class="native">
+                bool isSelectedHolder = false;
+                bool *%out = &amp;isSelectedHolder;
+            </conversion-rule>
+            <conversion-rule class="shell">
+                // no conversion
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="return">
+            <replace-type modified-type="org.qtjambi.qt.widgets.QAccessibleTableInterface$CellAtIndex"/>
+            <conversion-rule class="native">
+                jobject %out = qtjambi_to_cellatindex(__jni_env, rowHolder, columnHolder, rowSpanHolder, columnSpanHolder, isSelectedHolder);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                qtjambi_from_cellatindex(__jni_env, %in, %2, %3, %4, %5, %6);
+            </conversion-rule>
+        </modify-argument>
+        </modify-function>
+
+        <modify-function signature="selectedColumns(int,QList&lt;int&gt;*)">
+        <modify-argument index="2">
+            <replace-type modified-type="java.util.List&lt;Integer&gt;"/>
+            <conversion-rule class="shell">
+                StaticCache *sc = StaticCache::instance();
+                sc-&gt;resolveArrayList();
+                sc-&gt;resolveCollection();
+                sc-&gt;resolveInteger();
+
+                jobject columnsHolder = 0;
+                if (%in != 0) {
+                    columnsHolder = __jni_env-&gt;NewObject(sc-&gt;ArrayList.class_ref, sc-&gt;ArrayList.constructor, %in-&gt;size());
+                    qtjambi_exception_check(__jni_env);
+                    if (columnsHolder != 0) for (int i=0; i&lt;%in-&gt;size(); i++) {
+                        __jni_env-&gt;CallVoidMethod(columnsHolder, sc-&gt;Collection.add, qtjambi_from_int(__jni_env, %in-&gt;at(i)));
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+                jobject %out = columnsHolder;
+            </conversion-rule>
+            <conversion-rule class="native">
+                StaticCache *sc = StaticCache::instance();
+                sc-&gt;resolveCollection();
+
+                QList&lt;int&gt; columnHolder;
+                if (%in != 0) {
+                    jobjectArray columnsAsArray = (jobjectArray) __jni_env-&gt;CallObjectMethod(%in, sc-&gt;Collection.toArray);
+                    if (columnsAsArray != 0) {
+                        int len = __jni_env-&gt;GetArrayLength(columnsAsArray);
+                        for (int i=0; i&lt;len; ++i) {
+                            columnHolder.append(qtjambi_to_int(__jni_env, __jni_env-&gt;GetObjectArrayElement(columnsAsArray, i)));
+                        }
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+                QList&lt;int&gt; *%out = &amp;columnHolder;
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="return">
+            <conversion-rule class="shell">
+                // Copy back
+                if (columnsHolder != 0) {
+                    jobjectArray columnsAsArray = (jobjectArray) __jni_env-&gt;CallObjectMethod(columnsHolder, sc-&gt;Collection.toArray);
+                    if (columnsAsArray != 0) {
+                        int len = __jni_env-&gt;GetArrayLength(columnsAsArray);
+                        %2-&gt;clear();
+                        for (int i=0; i&lt;len; ++i) {
+                            %2-&gt;append(qtjambi_to_int(__jni_env, __jni_env-&gt;GetObjectArrayElement(columnsAsArray, i)));
+                        }
+                    }
+                }
+
+                int %out = %in;
+            </conversion-rule>
+            <conversion-rule class="native">
+                // Copy back
+                if (%2 != 0) {
+                    __jni_env-&gt;CallVoidMethod(%2, sc-&gt;Collection.clear);
+                    for (int i=0; i&lt;columnHolder.size(); ++i) {
+                        __jni_env-&gt;CallVoidMethod(%2, sc-&gt;Collection.add, qtjambi_from_int(__jni_env, columnHolder.at(i)));
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+
+                jint %out = %in;
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="selectedRows(int,QList&lt;int&gt;*)">
+        <modify-argument index="2">
+            <replace-type modified-type="java.util.List&lt;Integer&gt;"/>
+            <conversion-rule class="shell">
+                StaticCache *sc = StaticCache::instance();
+                sc-&gt;resolveArrayList();
+                sc-&gt;resolveCollection();
+                sc-&gt;resolveInteger();
+
+                jobject rowsHolder = 0;
+                if (%in != 0) {
+                    rowsHolder = __jni_env-&gt;NewObject(sc-&gt;ArrayList.class_ref, sc-&gt;ArrayList.constructor, %in-&gt;size());
+                    qtjambi_exception_check(__jni_env);
+                    if (rowsHolder != 0) for (int i=0; i&lt;%in-&gt;size(); i++) {
+                        __jni_env-&gt;CallVoidMethod(rowsHolder, sc-&gt;Collection.add, qtjambi_from_int(__jni_env, %in-&gt;at(i)));
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+                jobject %out = rowsHolder;
+            </conversion-rule>
+            <conversion-rule class="native">
+                StaticCache *sc = StaticCache::instance();
+                sc-&gt;resolveCollection();
+
+                QList&lt;int&gt; rowsHolder;
+                if (%in != 0) {
+                    jobjectArray rowsAsArray = (jobjectArray) __jni_env-&gt;CallObjectMethod(%in, sc-&gt;Collection.toArray);
+                    if (rowsAsArray != 0) {
+                        int len = __jni_env-&gt;GetArrayLength(rowsAsArray);
+                        for (int i=0; i&lt;len; ++i) {
+                            rowsHolder.append(qtjambi_to_int(__jni_env, __jni_env-&gt;GetObjectArrayElement(rowsAsArray, i)));
+                        }
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+                QList&lt;int&gt; *%out = &amp;rowsHolder;
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="return">
+            <conversion-rule class="shell">
+                // Copy back
+                if (rowsHolder != 0) {
+                    jobjectArray rowsAsArray = (jobjectArray) __jni_env-&gt;CallObjectMethod(rowsHolder, sc-&gt;Collection.toArray);
+                    if (rowsAsArray != 0) {
+                        int len = __jni_env-&gt;GetArrayLength(rowsAsArray);
+                        %2-&gt;clear();
+                        for (int i=0; i&lt;len; ++i) {
+                            %2-&gt;append(qtjambi_to_int(__jni_env, __jni_env-&gt;GetObjectArrayElement(rowsAsArray, i)));
+                        }
+                    }
+                }
+
+                int %out = %in;
+            </conversion-rule>
+            <conversion-rule class="native">
+                // Copy back
+                if (%2 != 0) {
+                    __jni_env-&gt;CallVoidMethod(%2, sc-&gt;Collection.clear);
+                    for (int i=0; i&lt;rowsHolder.size(); ++i) {
+                        __jni_env-&gt;CallVoidMethod(%2, sc-&gt;Collection.add, qtjambi_from_int(__jni_env, rowsHolder.at(i)));
+                    }
+                    qtjambi_exception_check(__jni_env);
+                }
+
+                jint %out = %in;
+            </conversion-rule>
+        </modify-argument>
+        </modify-function>
+    </object-type>
+
+	<object-type name="QPaintDeviceWindow">
+		<inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPaintDeviceWindow___" quote-before-line="}// class"/>
+        </inject-code>
+	</object-type>
+
+    <object-type name="QAccessibleInterface">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QAccessibleInterface___" quote-before-line="}// class"/>
+        </inject-code>
+
+
+        <template name="gui.accessible_interface_to_target">
+        jclass __target_class = resolveClass(__jni_env, "QAccessibleInterface$Target", "org/qtjambi/qt/gui/");
+        QTJAMBI_EXCEPTION_CHECK(__jni_env);
+        Q_ASSERT(__target_class);
+
+        jmethodID __target_constructor = resolveMethod(__jni_env, "&lt;init&gt;", "(ILorg/qtjambi/qt/gui/QAccessibleInterface;)V", "QAccessibleInterface$Target", "org/qtjambi/qt/gui/");
+        QTJAMBI_EXCEPTION_CHECK(__jni_env);
+        Q_ASSERT(__target_constructor);
+
+        jobject __java_interface = %TARGET != 0 ? qtjambi_from_object(__jni_env, %TARGET, "QAccessibleInterface$ConcreteWrapper", "org/qtjambi/qt/gui/", true) : 0;
+
+        jobject %OUTPUT = __jni_env-&gt;NewObject(__target_class, __target_constructor, %CHILD_INDEX, __java_interface);
+        </template>
+
+        <!--modify-function signature="navigate(QAccessible::RelationFlag,int,QAccessibleInterface**)const">
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QAccessibleInterface *__qt_interface = 0;
+                    QAccessibleInterface **%out = &amp;__qt_interface;
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="0">
+                <replace-type modified-type="org.qtjambi.qt.widgets.QAccessibleInterface$Target"/>
+                <conversion-rule class="native">
+                    <insert-template name="gui.accessible_interface_to_target">
+                        <replace from="%TARGET" to="__qt_interface"/>
+                        <replace from="%CHILD_INDEX" to="%in"/>
+                        <replace from="%OUTPUT" to="%out"/>
+                    </insert-template>
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jfieldID __childIndex_id = resolveField(__jni_env, "childIndex", "I", "QAccessibleInterface$Target", "org/qtjambi/qt/gui/");
+                    Q_ASSERT(__childIndex_id);
+
+                    jfieldID __target_id = resolveField(__jni_env, "target", "Lorg/qtjambi/qt/gui/QAccessibleInterface;", "QAccessibleInterface$Target", "org/qtjambi/qt/gui/");
+                    Q_ASSERT(__target_id);
+
+                    jint %out = __jni_env-&gt;GetIntField(%in, __childIndex_id);
+
+                    jobject __java_interface = __jni_env-&gt;GetObjectField(%in, __target_id);
+                    QtJambiLink *__qt_link = __java_interface != 0 ? QtJambiLink::findLink(__jni_env, __java_interface) : 0;
+                    if (__qt_link != 0) __qt_link-&gt;disableGarbageCollection(__jni_env, __java_interface);
+                    QAccessibleInterface *__qt_interface = __qt_link != 0 ? (QAccessibleInterface *) __qt_link-&gt;pointer() : 0;
+
+                    if (%3 != 0) *%3 = __qt_interface;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function-->
+    </object-type>
+<!-- END ACCESSIBILITY CLASSES -->
+	
+	<value-type name="QTouchEvent::TouchPoint">
+	</value-type>
+	<value-type name="QTextFormat">
+	</value-type>
+	<value-type name="QStaticText">
+	</value-type>
+	<value-type name="QRawFont">
+        <modify-function signature="fontTable(const char *) const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+            </modify-argument>
+        </modify-function>
+	</value-type>
+	<value-type name="QPalette">
+	</value-type>
+	<value-type name="QPageSize">
+	</value-type>
+	<value-type name="QPageLayout">
+	</value-type>
+	<value-type name="QOpenGLPixelTransferOptions">
+	</value-type>
+	<value-type name="QGlyphRun">
+        <modify-function signature="setRawData(const unsigned int *, const QPointF *, int)" remove="all"/>
+	</value-type>
+	<value-type name="QFont">
+	</value-type>
+	<value-type name="QFontInfo">
+	</value-type>
+<!--
+	since Qt5 QMatrix is deprecated
+
+    <value-type name="QMatrix">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QMatrix___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+-->
+</typesystem>
+

@@ -1,0 +1,59 @@
+Qt Jambi 4.5.2_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.5.2. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.5.0_01. 
+
+For details about changes in Qt itself, see the Qt change logs:
+http://www.qtsoftware.com/developer/changes/
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ - Made QTreeModel correctly update its internal cache when dataChanged
+   is emitted.
+   
+ - Fixed missing exception message when exceptions are caused by native
+   binding layer.
+   
+ - Made sure all classes that reimplement equals() also implement 
+   hashCode() to honor contract in java.lang.Object that equal objects
+   implies equal hash codes.
+   
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+   
+ - Made Generator automatically create a hashCode() reimplementation
+   if equals() method is available and hashCode() is missing. 
+   
+ - Added new attribute to <value-type> and <object-type>: "implements"
+ 
+************************************************************************
+ Eclipse Integration
+************************************************************************
+
+ - Fixed crash on startup when widget box was open in the initial 
+   workspace.
+   
+ - Fixed uncaught exception in custom widget selector when project 
+   contains classes that have unresolved dependencies.
+   
+ - Removed the code that added the juic builder to all projects. The 
+   juic builder is now only added automatically to new Qt Jambi 
+   projects.
+   
+ - Added button in project properties that allow you to manually add 
+   the juic builder to any project.
+ 
+************************************************************************
+ Build system
+************************************************************************
+
+- Made WebKit build depend on the availability of Phonon, because of 
+  an internal dependency.
+
+************************************************************************
+ Examples
+************************************************************************
+
+ - Fixed crash on shutdown in HelloGL example.

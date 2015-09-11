@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.network" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+    </inject-code>
+
+    <template name="network.read_char*_long_long">
+        public final int read(byte data[]) {
+            if (data.length == 0) return 0;
+
+            org.qtjambi.qt.QNativePointer np = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Byte, data.length);
+            int len = (int) read(np, data.length);
+            for (int i=0; i&lt;len; ++i) data[i] = np.byteAt(i);
+
+            return len;
+        }
+    </template>
+
+
+
+    <object-type name="QAbstractSocket">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QAbstractSocket___" quote-before-line="}// class"/>
+        </inject-code>
+	<modify-function signature="proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)">
+        	<modify-argument index="2">
+			<replace-type modified-type="org.qtjambi.qt.network.QAuthenticator" />
+			<conversion-rule class="shell">
+				jobject %out = qtjambi_from_object(__jni_env, %in, "QAuthenticator", "org/qtjambi/qt/network/", true);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+			<conversion-rule class="native">
+				QAuthenticator* %out  = (QAuthenticator*)qtjambi_to_object(__jni_env, %in);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <!--modify-function signature="connectToHostImplementation(QString, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="private" /-->
+        <modify-function signature="localPort()const" access="private" rename="localPort_private"/>
+        <modify-function signature="peerPort()const" access="private" rename="peerPort_private"/>
+        <modify-function signature="setLocalPort(unsigned short)" access="private"/>
+        <modify-function signature="setPeerPort(unsigned short)" access="private"/>
+        <modify-function signature="connectToHost(QString, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;,QAbstractSocket::NetworkLayerProtocol)" access="private"/>
+        <modify-function signature="connectToHost(QHostAddress, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="private"/>
+
+        <modify-function signature="abort()" access="non-final" />
+        <!--modify-function signature="disconnectFromHostImplementation()" access="non-final" /-->
+        <modify-function signature="flush()" access="non-final" />
+        <modify-function signature="setReadBufferSize(long long)" access="non-final" />
+    <modify-function signature="setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="non-final" />
+        <modify-function signature="waitForConnected(int)" access="non-final" />
+        <modify-function signature="waitForDisconnected(int)" access="non-final" />
+        <modify-function signature="bind(QHostAddress, unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)" access="private" rename="bind_private"/>
+        <modify-function signature="bind(unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)" access="private" rename="bind_private"/>
+    </object-type>
+
+    <value-type name="QHostInfo">
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QHostInfo___" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
+
+    <object-type name="QTcpServer">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QTcpServer___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+        <modify-function signature="listen(QHostAddress,unsigned short)" access="private">
+            <modify-argument index="1">
+                <remove-default-expression />
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-default-expression />
+            </modify-argument>
+        </modify-function>
+
+
+        <modify-function signature="serverPort()const" access="private" rename="serverPort_private"/>
+
+
+        <modify-function signature="waitForNewConnection(int,bool*)">
+            <access modifier="private"/>
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+
+    </object-type>
+
+    <object-type name="QUdpSocket">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QUdpSocket___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+
+        <modify-function signature="readDatagram(char*,long long,QHostAddress*,unsigned short*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression />
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="writeDatagram(const char*,long long,QHostAddress,unsigned short)">
+            <access modifier="private"/>
+        </modify-function>
+
+        <modify-function signature="writeDatagram(QByteArray, QHostAddress, unsigned short)" access="private"/>
+    </object-type>
+
+
+    <value-type name="QNetworkProxy">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QNetworkProxy___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="QNetworkProxy(QNetworkProxy::ProxyType,QString,unsigned short,QString,QString)" access="private">
+            <modify-argument index="2">
+                <remove-default-expression />
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPort(unsigned short)" access="private"/>
+        <modify-function signature="port()const" access="private" rename="port_private"/>
+    </value-type>
+
+    <object-type name="QNetworkAccessManager">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QNetworkAccessManager___" quote-before-line="}// class"/>
+        </inject-code>
+	<modify-function signature="proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)">
+        	<modify-argument index="2">
+			<replace-type modified-type="org.qtjambi.qt.network.QAuthenticator" />
+			<conversion-rule class="shell">
+				jobject %out = qtjambi_from_object(__jni_env, %in, "QAuthenticator", "org/qtjambi/qt/network/", true);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+			<conversion-rule class="native">
+				QAuthenticator* %out  = (QAuthenticator*)qtjambi_to_object(__jni_env, %in);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+	<modify-function signature="authenticationRequired(QNetworkReply*,QAuthenticator*)">
+        	<modify-argument index="2">
+			<replace-type modified-type="org.qtjambi.qt.network.QAuthenticator" />
+			<conversion-rule class="shell">
+				jobject %out = qtjambi_from_object(__jni_env, %in, "QAuthenticator", "org/qtjambi/qt/network/", true);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+			<conversion-rule class="native">
+				QAuthenticator* %out  = (QAuthenticator*)qtjambi_to_object(__jni_env, %in);
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QLocalServer">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QLocalServer___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="waitForNewConnection(int,bool*)">
+            <access modifier="private"/>
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <value-type name="QSslCipher">
+      <modify-function signature="operator=(QSslCipher)" remove="all" />
+    </value-type>
+
+    <value-type name="QSslError">
+      <modify-function signature="operator=(QSslError)" remove="all" />
+    </value-type>
+
+    <value-type name="QSslKey">
+      <modify-function signature="operator=(QSslKey)" remove="all" />
+    </value-type>
+
+    <value-type name="QSslCertificate">
+      <modify-function signature="operator=(QSslCertificate)" remove="all" />
+    </value-type>
+
+    <value-type name="QSslConfiguration">
+      <modify-function signature="operator=(QSslConfiguration)" remove="all" />
+    </value-type>
+
+
+    <object-type name="QSslSocket">
+      <inject-code>
+        <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QSslSocket___" quote-before-line="}// class"/>
+      </inject-code>
+    </object-type>
+
+	<object-type name="QNetworkSession" >
+		<modify-function signature="interface()const" rename="getInterface"/>
+	</object-type>
+
+    <value-type name="QDnsDomainNameRecord">
+	</value-type>
+    <value-type name="QDnsHostAddressRecord">
+	</value-type>
+    <value-type name="QDnsMailExchangeRecord">
+	</value-type>
+    <value-type name="QDnsServiceRecord">
+	</value-type>
+    <value-type name="QDnsTextRecord">
+	</value-type>
+    <value-type name="QNetworkAddressEntry">
+	</value-type>
+    <value-type name="QNetworkCacheMetaData">
+	</value-type>
+    <value-type name="QNetworkConfiguration">
+	</value-type>
+    <value-type name="QNetworkCookie">
+	</value-type>
+    <value-type name="QNetworkInterface">
+	</value-type>
+    <value-type name="QNetworkProxy">
+	</value-type>
+    <value-type name="QNetworkProxyQuery">
+	</value-type>
+    <value-type name="QNetworkRequest">
+	</value-type>
+	<value-type name="QHostAddress">
+		<modify-function signature="toIPv4Address(bool *) const" remove="all"/>
+	</value-type>
+</typesystem>

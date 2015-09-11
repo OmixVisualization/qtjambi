@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<typesystem>
+  <rejection class="QWebFrame" function-name="handle"/>
+  <rejection class="QWebPage" function-name="handle"/>
+    <enum-type name="QWebPage::Extension" />
+    <enum-type name="QWebPage::Feature" /><!-- since 4.8 -->
+    <enum-type name="QWebPage::NavigationType"/>
+    <enum-type name="QWebPage::PermissionPolicy"/><!-- since 4.8 -->
+    <enum-type name="QWebPage::WebAction"/>
+    <enum-type name="QWebPage::WebWindowType"/>
+    <enum-type name="QWebPage::FindFlag" flags="QWebPage::FindFlags" />
+    <enum-type name="QWebPage::LinkDelegationPolicy" />
+    <enum-type name="QWebPage::ErrorDomain" />
+    <enum-type name="QWebPage::VisibilityState"/>
+    <enum-type name="QWebFrame::ValueOwnership"/>
+    <enum-type name="QWebFrame::RenderLayer" flags="QWebFrame::RenderLayers"/>
+	
+    <object-type name="QWebPage::ExtensionOption" />
+    <object-type name="QWebPage::ChooseMultipleFilesExtensionOption" />
+    <object-type name="QWebPage::ExtensionReturn" />
+    <object-type name="QWebPage::ChooseMultipleFilesExtensionReturn" />
+    <object-type name="QWebPage::ErrorPageExtensionOption" />
+    <object-type name="QWebPage::ErrorPageExtensionReturn" />
+    <value-type name="QWebPage::ViewportAttributes"><!-- since 4.7 -->
+		<modify-function signature="operator=(const QWebPage::ViewportAttributes)" remove="all"/>
+	</value-type>
+    <object-type name="QWebPage">
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_webkit-java.java" quote-after-line="class QWebPage___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="javaScriptPrompt(QWebFrame*,QString,QString,QString*)">
+            <access modifier="private"/>
+        </modify-function>
+        <modify-function signature="setView(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcView"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setNetworkAccessManager(QNetworkAccessManager*)">
+            <modify-argument index="1">
+                 <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+      <modify-function signature="saveFrameStateRequested(QWebFrame*,QWebHistoryItem*)">
+    <modify-argument index="2">
+      <replace-type modified-type="org.qtjambi.qt.webkit.QWebHistoryItem" />
+
+      <!-- Convert from C++ to Java when the C++ emissions emits the Java signal -->
+      <conversion-rule class="shell">
+        jobject %out = qtjambi_from_object(__jni_env, %in, "QWebHistoryItem", "org/qtjambi/qt/webkit/", false);
+        jobject __qt_savedHistoryItem = %out;
+      </conversion-rule>
+
+      <conversion-rule class="native">
+        QWebHistoryItem *%out = %in != 0
+           ? (QWebHistoryItem*)qtjambi_to_object(__jni_env,%in)
+               : (QWebHistoryItem*)0;
+      </conversion-rule>
+    </modify-argument>
+    <!-- Make sure history item object gets invalidated after use in case
+             someone retains a reference to it. -->
+    <inject-code position="end" class="signal">
+        qtjambi_invalidate_object(__jni_env, __qt_savedHistoryItem);
+    </inject-code>
+      </modify-function>
+
+    </object-type>
+    <value-type name="QWebHitTestResult">
+      <modify-function signature="operator=(QWebHitTestResult)" remove="all" />
+    </value-type>
+
+    <object-type name="QWebInspector" />
+    <object-type name="QWebView">
+        <modify-function signature="setPage(QWebPage*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QGraphicsWebView"/>
+    <object-type name="QWebFrame">
+        <modify-function signature="addToJavaScriptWindowObject(QString,QObject*,QWebFrame::ValueOwnership)">
+            <modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebView' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+</typesystem>
+

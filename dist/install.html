@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- C:/depot/qtjambi/scripts/../doc/src/qtjambi-installation.qdoc -->
+<head>
+  <title>Qt 4.5: Installing Qt Jambi</title>
+  <link href="classic.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td align="left" valign="top" width="32"><img src="images/qt-logo.png" align="left" width="32" height="32" border="0" /></td>
+<td width="1">&nbsp;&nbsp;</td><td class="postheader" valign="center"><a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-index.html"><font color="#004faf">Home</font></a>&nbsp;&middot; <a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-overviews.html"><font color="#004faf">Overviews</font></a>&nbsp;&middot; <a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-examples.html"><font color="#004faf">Examples</font></a>&nbsp;</td>
+</tr></table><h1 align="center">Installing Qt Jambi<br /><small></small></h1>
+<p>Qt Jambi is available both in prebuilt and source packages for Linux, Mac OS X, and Windows. Java 1.5 or later is required to install Qt Jambi.</p>
+<p>The procedure of installing is different depending on whether you have downloaded a source or prebuilt package. This installation guide has separate sections for each approach.</p>
+<p>Enjoy !</p>
+<ul><li><a href="#installing-from-a-prebuilt-package">Installing from a Prebuilt Package</a></li>
+<ul><li><a href="#manually-launching-qt-jambi-applications">Manually Launching Qt Jambi Applications</a></li>
+<ul><li><a href="#alternate-way-of-loading-native-libraries">Alternate way of loading native libraries</a></li>
+</ul>
+</ul>
+<li><a href="#building-qt-jambi-from-a-source-package">Building Qt Jambi from a Source Package</a></li>
+<ul><li><a href="#configuring-the-system-for-qt-jambi">Configuring the System for Qt Jambi</a></li>
+<li><a href="#building-qt-for-qt-jambi">Building Qt for Qt Jambi</a></li>
+<li><a href="#setting-up-the-environment">Setting up the environment</a></li>
+<li><a href="#building-qt-jambi">Building Qt Jambi</a></li>
+<li><a href="#trouble-shooting">Trouble Shooting</a></li>
+<ul><li><a href="#common-problems">Common Problems</a></li>
+<li><a href="#load-issues">Load Issues</a></li>
+</ul>
+</ul>
+<li><a href="#platform-notes">Platform Notes</a></li>
+<li><a href="#running-the-qt-designer">Running the Qt Designer</a></li>
+<li><a href="#running-the-qt-jambi-generator">Running the Qt Jambi Generator</a></li>
+</ul>
+<a name="installing-from-a-prebuilt-package"></a>
+<h2>Installing from a Prebuilt Package</h2>
+<p>After extracting the package, you are ready to run the Launcher, which is an application that runs the examples and demos that come with Qt Jambi.</p>
+<p>To run the examples and demo launcher on Windows run the</p>
+<pre>    qtjambi.bat</pre>
+<p>executable from the Qt Jambi directory. On Linux and Mac OS X run the</p>
+<pre>    qtjambi.sh</pre>
+<p>shell script from the Qt Jambi directory.</p>
+<p>Running these files will verify the virtual machine version and set the correct environment for running Qt Jambi applications.</p>
+<p>When you are ready to distribute your own applications, see the <a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-deployment.html">deployment</tt></a> document.</p>
+<a name="manually-launching-qt-jambi-applications"></a>
+<h3>Manually Launching Qt Jambi Applications</h3>
+<p>To manually run Qt Jambi, the qtjambi classes archive and qtjambi platform archive must be available in the CLASSPATH. The qtjambi classes archive is named <tt>qtjambi-4.5.0_01.jar</tt> and the platform archive is named according to the operating system and compiler used to generated the native binaries, such as <tt>qtjambi-win32-msvc2005-4.5.0_01.jar</tt></p>
+<p>To run the examples or launcher, the classpath must also include the <tt>qtjambi-examples-4.5.0_01.jar</tt>.</p>
+<pre><span class="comment">    //</span> Linux
+    java -cp qtjambi-4.5.0_01.jar:qtjambi-linux32-gcc-4.5.0_01.jar:qtjambi-examples-4.5.0_01.jar org.qtjambi.launcher.Launcher
+
+<span class="comment">    //</span> Mac OS X
+    java -XstartOnFirstThread -cp qtjambi-4.5.0_01.jar:qtjambi-mac-gcc-4.5.0_01.jar:qtjambi-examples-4.5.0_01.jar org.qtjambi.launcher.Launcher
+
+<span class="comment">    //</span> Windows
+    java -cp qtjambi-4.5.0_01.jar:qtjambi-win32-msvc2005-4.5.0_01.jar:qtjambi-examples-4.5.0_01.jar org.qtjambi.launcher.Launcher</pre>
+<p><b>Note:</b> When running a Qt Jambi application on Mac, it is necessary to pass the <tt>-XstartOnFirstThread</tt> argument to the Java executable.</p>
+<a name="alternate-way-of-loading-native-libraries"></a>
+<h4>Alternate way of loading native libraries</h4>
+<p>Qt Jambi must be enabled to find the native libraries. The Qt Jambi libraries is a set of class files contained in the <tt>qtjambi-4.5.0_01.jar</tt> file and a set of native libraries. The native libraries are located in a .jar file named according to your operating system, hardware configuration and the compiler that was used to build the package, for instance <tt>qtjambi-win64-msvc2005x64-4.5.0_01.jar</tt>. The native libraries will be automatically loaded when this jar file is part of the classpath.</p>
+<p>An alternative way of loading the native libraries is to rely on Java's standard method of loading native libraries. This is done by specifying either the JVM system property <tt>-Djava.library.path=[path_to_libraries]</tt> or setting the following environment variable:</p>
+<p><table width="100%" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Platform</th><th>Comment</th></tr></thead>
+<tr valign="top" class="odd"><td>Windows</td><td>Set the <tt>PATH</tt> environment variable to include the bin directory in the Qt Jambi directory.</td></tr>
+<tr valign="top" class="even"><td>Linux</td><td>Set the <tt>LD_LIBRARY_PATH</tt> environment variable to include the lib directory in the Qt Jambi directory.</td></tr>
+<tr valign="top" class="odd"><td>Mac OS X</td><td>Set the <tt>DYLD_LIBRARY_PATH</tt> environment variable to include the lib directory in the Qt Jambi directory.</td></tr>
+</table></p>
+<p>Loading directly from files is \b not recommended as the wrong libraries can be found, such as /usr/lib/libQtCore.4.so because /usr/lib is always part of LD_LIBRARY_PATH.</p>
+<p>Some of Qt's functionality is loaded via native plugins. This includes for instance support for jpeg images. When using the platform archive, plugins are configured and loaded correctly automatically. When loading native libraries from the file system, Qt will try to load plugins from the directories in the QT_PLUGIN_PATH environment variable.</p>
+<p>You are then ready to run Qt Jambi applications. An example of how to run the launcher manually is illustrated below:</p>
+<a name="building-qt-jambi-from-a-source-package"></a>
+<h2>Building Qt Jambi from a Source Package</h2>
+<p>This section describes how to build Qt Jambi from source. We first explain how to configure your system, and then we go through the procedure of building Qt Jambi from the command line. Finally, we look at some common installation problems.</p>
+<p>Note that a source package requires a Qt installation. On Mac OS X, Qt must be configured without frameworks (by running the <tt>configure</tt> script with the --no-framework option).</p>
+<a name="configuring-the-system-for-qt-jambi"></a>
+<h3>Configuring the System for Qt Jambi</h3>
+<p>The Jambi source package requires a Qt source package, JDK 1.5 or higher and the build utility <tt>ant</tt>.</p>
+<a name="building-qt-for-qt-jambi"></a>
+<h3>Building Qt for Qt Jambi</h3>
+<p>The first step is to build Qt for Qt Jambi. A normal Qt build will normally work, but there are a few exceptions. For more details on building Qt on any given system see the Qt installation guides.</p>
+<p><table width="80%" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Configuration</th><th>Comment</th></tr></thead>
+<tr valign="top" class="odd"><td>Mac OS X</td><td>Qt Jambi only supports Qt configured with <tt>-no-framework</tt></td></tr>
+<tr valign="top" class="even"><td>Linux</td><td>Sun's Java Virtual Machine has a bug preventing it from using MMX and SSE instructions. For deployment against 1.5 Java runtimes, configure Qt with the options <tt>-no-mmx -no-sse -no-sse2 -no-3dnow</tt> to avoid problems.</td></tr>
+</table></p>
+<a name="setting-up-the-environment"></a>
+<h3>Setting up the environment</h3>
+<p>The following table describes the environment variables necessary to install Qt Jambi.</p>
+<p><table width="80% \header \o Variable \o Value" align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td>QTDIR</td><td>This variable must contain the path to the directory where Qt is installed.</td></tr>
+<tr valign="top" class="even"><td>JAVADIR</td><td>This variable must contain the path to the directory where Java is installed.</td></tr>
+<tr valign="top" class="odd"><td>QMAKESPEC</td><td>This variable is redundant in most cases, but may be required to pick between ambigous compilers, such as MinGW or MSVC on windows.</td></tr>
+</table></p>
+<a name="building-qt-jambi"></a>
+<h3>Building Qt Jambi</h3>
+<p>Qt Jambi provides a ant task which handles all the tasks of building the Qt Jambi libraries. To build Qt Jambi simply make sure the above requirements are met and type</p>
+<pre>    &gt; ant</pre>
+<p>in the Qt Jambi directory. This will automatically go through the following steps:</p>
+<ul>
+<li>Compile the Qt Jambi Generator</li>
+<li>Generate the Qt Jambi libraries based on the Qt specified by $QTDIR</li>
+<li>Compile the Juic tool</li>
+<li>Compile and bundle the native libraries</li>
+<li>Compile and bundle the class libraries</li>
+<li>Run Juic over the examples.</li>
+<li>Compile and bundle the examples</li>
+</ul>
+<p>For a description of the various sub-targets of the ant build one can:</p>
+<pre>    &gt; ant -projecthelp</pre>
+<p>For a description of the various build configurations, one can do:</p>
+<pre>    &gt; ant help</pre>
+<a name="trouble-shooting"></a>
+<h3>Trouble Shooting</h3>
+<p>If you have trouble compiling and running Qt Jambi, we present problems that are commonly encountered in a table. This should be sufficient to solve most problems; failing that, try asking someone. The <a href="http://qtsoftware.com/developer/faqs/Qt%20Jambi">Jambi FAQ</tt></a> is a good place to start. In the <a href="http://lists.trolltech.com/qt-jambi-interest/">Jambi Mailing List</tt></a>, active Jambi users and the Jambi development team can be helpful with installation problems; please run Qt Jambi with the <tt>org.qtjambi.qt.verbose-loading</tt> <a href="qtjambi-systemproperties.html">system property</tt></a> and give stack traces if Qt Jambi fails to load native libraries.</p>
+<a name="common-problems"></a>
+<h4>Common Problems</h4>
+<p>In this section, we have tried to gather common problems encountered while building Qt Jambi. They are listed in a table with columns for the problem description and solution.</p>
+<p><table width="80%" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Problem</th><th>Solution</th></tr></thead>
+<tr valign="top" class="odd"><td>On Linux the <tt>gcj</tt> (GNU Java Compiler) is located in <tt>/usr/bin</tt>; the path to the correct java version must be before this in the PATH. This usually results in <tt>java.lang.ClassFormatError</tt> errors.</td><td>Make sure that it is the correct java executable in the PATH.</td></tr>
+<tr valign="top" class="even"><td>Environment variables are not set correctly.</td><td>Check with the <a href="#configuring-the-system-for-qt-jambi">Configuring the System for Qt Jambi</tt></a> section that your system is properly configured for Jambi.</td></tr>
+<tr valign="top" class="odd"><td>Qt Jambi uses the Qt Header files to generate the mapping from c++ to java. Unless Qt was built with default settings, you may get link problems for bindings that are not in the native libraries.</td><td>Build Qt with default settings</td></tr>
+<tr valign="top" class="even"><td><tt>juic</tt> does not update .jui files that are not modified, which can be a problem if Java sources are deleted.</td><td>Run juic with the <tt>-a</tt> option.</td></tr>
+<tr valign="top" class="odd"><td>Qt Jambi expects that Qt was built with debugging turned off. If Qt was built with debugging, the libraries will not be found.</td><td>Run Qt Jambi with the <tt>org.qtjambi.qt.debug</tt> system property.</td></tr>
+</table></p>
+<a name="load-issues"></a>
+<h4>Load Issues</h4>
+<p>If Jambi cannot find the native libraries, you will get <tt>java.lang.UnsatisfiedLinkError</tt>'s or other load issues. The search paths - in the order Jambi searches - for libraries are listed below.</p>
+<ul>
+<li>The org.qtjambi.qt.library-path system property, which can be given <tt>java</tt> as command line argument.</li>
+<li>The classpath (including jar files).</li>
+<li>The subdirectory <tt>lib</tt> (Mac OS X and Linux) or <tt>bin</tt> (Windows) under the root of the Jambi package structure (i.e&#x2e;, the Qt Jambi directory).</li>
+<li>The java.library.path system property, which is set to LD_LIBRARY_PATH on Linux, PATH on Windows, and DYLD_LIBRARY_PATH on Mac OS X.</li>
+</ul>
+<a name="platform-notes"></a>
+<h2>Platform Notes</h2>
+<p><table width="100%" align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Platform</th><th>Comment</th></tr></thead>
+<tr valign="top" class="odd"><td>Mac OS X</td><td>When running a Qt Jambi application, it is necessary to pass the <tt>-XstartOnFirstThread</tt> argument to the Java executable. Also, if you have a source package, you have to build Qt with the --no-framework option.</td></tr>
+<tr valign="top" class="even"><td>Linux / 64 bit:</td><td>Install a 32 bit virtual machine, e.g&#x2e;, on Ubuntu, install the <tt>ia32-sun-java5-bin</tt> package and put <tt>/usr/lib/jvm/ia32-java-1.5.0-sun-1.5.0.06/jre/bin</tt> into the <tt>PATH</tt> environment variable.</td></tr>
+</table></p>
+<a name="running-the-qt-designer"></a>
+<h2>Running the Qt Designer</h2>
+<p>The Qt Designer is Qt Software's tool for designing and building user interfaces. If you have a prebuilt package, you can run it from the command line with the <tt>designer.bat</tt> or <tt>designer.sh</tt> scripts. The <a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-eclipse.html">Eclipse integration</tt></a> handles the designer automatically.</p>
+<p>You will find more information in the <a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/qtjambi-designer.html">Qt Designer document</tt></a>.</p>
+<a name="running-the-qt-jambi-generator"></a>
+<h2>Running the Qt Jambi Generator</h2>
+<p>The generator is a Qt application which can be used to map C++ based Qt APIs onto equivalent Java APIs. The Qt Jambi package provides an example on how to use the Qt Jambi Generator, located in the <tt>path/to/Qt Jambi/generator_example</tt> directory.</p>
+<p>To build the generator example from the source package simply do:</p>
+<pre>        ant -f build_generator_example.xml</pre>
+<p><b>Warning:</b> The Qt Jambi generator is written to handle Qt based source code, and is not intended for mapping C++ libraries in general.</p>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="30%">Copyright &copy; 2009 <a href="http://www.qtsoftware.com">Qt Software</a></td>
+<td width="40%" align="center"><a href="http://doc.trolltech.com/qtjambi/org/qtjambi/qt/trademarks.html">Trademarks</a></td>
+<td width="30%" align="right"><div align="right">Qt Jambi 4.5.0_01</div></td>
+</tr></table></div></address></body>
+</html>

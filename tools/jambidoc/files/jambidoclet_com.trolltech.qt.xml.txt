@@ -1,0 +1,278 @@
+
+
+$$QDomDocument.setContent(org.qtjambi.qt.core.QIODevice, boolean)
+/**
+This function reads the XML document from the IO device <tt>dev</tt>, returning
+true if the content was successfully parsed; otherwise returns false.
+<p>
+If <tt>namespaceProcessing</tt> is true, the parser recognizes
+namespaces in the XML file and sets the prefix name, local name
+and namespace URI to appropriate values. If <tt>namespaceProcessing</tt>
+is false, the parser does no namespace processing when it reads
+the XML file.
+
+*/
+
+
+$$QDomDocument.setContent(org.qtjambi.qt.core.QByteArray, boolean)
+/**
+This function reads the XML document from the byte array <tt>text</tt>,
+returning true if the content was successfully parsed; otherwise returns
+false.
+<p>
+If <tt>namespaceProcessing</tt> is true, the parser recognizes
+namespaces in the XML file and sets the prefix name, local name
+and namespace URI to appropriate values. If <tt>namespaceProcessing</tt>
+is false, the parser does no namespace processing when it reads
+the XML file.
+
+*/
+
+
+$$QDomDocument.setContent(java.lang.String, boolean)
+/**
+This function reads the XML document from the string <tt>text</tt>, returning
+true if the content was successfully parsed; otherwise returns false.
+Since <tt>text</tt> is already a Unicode string, no encoding detection
+is performed.
+<p>
+If <tt>namespaceProcessing</tt> is true, the parser recognizes
+namespaces in the XML file and sets the prefix name, local name
+and namespace URI to appropriate values. If <tt>namespaceProcessing</tt>
+is false, the parser does no namespace processing when it reads
+the XML file.
+
+*/
+
+
+$$QDomDocument.setContent(org.qtjambi.qt.xml.QXmlInputSource, org.qtjambi.qt.xml.QXmlReader)
+/**
+This function reads the XML document from the QXmlInputSource <tt>source</tt> and
+parses it with the QXmlReader <tt>reader</tt>, returning true if the content was
+successfully parsed; otherwise returns false.
+<p>
+This function doesn't change the features of the <tt>reader</tt>. If you want to
+use certain features for parsing you can use this function to set up the
+reader appropriately.
+
+*/
+
+
+$$QDomDocument.setContent(java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomDocument.setContent(org.qtjambi.qt.core.QByteArray)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomDocument.setContent(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QXmlNamespaceSupport.processName(java.lang.String, boolean)
+/**
+Processes a raw XML 1.0 name in the current context by removing
+the prefix and looking it up among the prefixes currently
+declared.
+<p>
+<tt>qname</tt> is the raw XML 1.0 name to be processed. <tt>isAttribute</tt>
+is true if the name is an attribute name.
+<p>
+Note that attribute names are processed differently than element
+names: an unprefixed element name gets the default namespace (if
+any), while an unprefixed attribute name does not.
+
+*/
+
+
+$$QXmlNamespaceSupport.splitName(java.lang.String)
+/**
+Splits the name <tt>qname</tt> at the ':' and returns the prefix
+prefix and the local name.
+
+*/
+
+
+$$QXmlInputSource.EndOfData()
+/**
+Returns true if the end of the available data has been met.
+
+*/
+
+
+$$QXmlInputSource.EndOfDocument()
+/**
+Returns true if the end of the XML document has been reached.
+
+*/
+
+
+$$QXmlDTDHandler.QXmlDTDHandler()
+/**
+Creates a new QXmlDTDHandler.
+
+
+*/
+
+
+$$QXmlStreamAttributes.QXmlStreamAttributes()
+/**
+Creates a new QXmlStreamAttributes object.
+
+*/
+
+
+$$QXmlStreamAttributes.first()
+/**
+{@inheritDoc}
+
+
+*/
+
+
+$$QXmlStreamAttributes.last()
+/**
+{@inheritDoc}
+
+*/
+
+
+$$QXmlStreamAttributes.value(int)
+/**
+{@inheritDoc}
+
+*/
+
+
+$$QXmlStreamAttributes.value(int, org.qtjambi.qt.xml.QXmlStreamAttribute)
+/**
+{@inheritDoc}
+
+*/
+
+
+$$QXmlReader.QXmlReader()
+/**
+Creates a new QXmlReader.
+
+*/
+
+
+$$QDomElement.setAttribute(java.lang.String, long)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttribute(java.lang.String, float)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttribute(java.lang.String, double)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttribute(java.lang.String, int)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttributeNS(java.lang.String, java.lang.String, double)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttributeNS(java.lang.String, java.lang.String, int)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QDomElement.setAttributeNS(java.lang.String, java.lang.String, long)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QXmlContentHandler.QXmlContentHandler()
+/**
+Creates a new QXmlContentHandler.
+
+*/
+
+
+$$QXmlEntityResolver.QXmlEntityResolver()
+/**
+Creates a new QXmlEntityResolver.
+
+*/
+
+
+$$QXmlLexicalHandler.QXmlLexicalHandler()
+/**
+Creates a new QXmlLexicalHandler.
+
+*/
+
+
+$$QXmlErrorHandler.QXmlErrorHandler()
+/**
+Creates a new QXmlErrorHandler.
+
+*/
+
+
+$$QXmlDeclHandler.QXmlDeclHandler()
+/**
+Creates a new QXmlDeclHandler.
+
+*/
+
+
+$$QXmlStreamAttributes.append(org.qtjambi.qt.xml.QXmlStreamAttribute)
+/**
+Appends <tt>attribute</tt> to this QXmlStreamAttributes.
+
+*/
+
+
+$$QXmlStreamWriter.QXmlStreamWriter(org.qtjambi.qt.core.QByteArray)
+/**
+Constructs a stream writer that writes into <tt>array</tt>. This is the
+same as creating an xml writer that operates on a QBuffer device
+which in turn operates on <tt>array</tt>.
+
+*/
+
+
+$$QXmlStreamWriter.setCodec(java.lang.String)
+/**
+Sets the codec for this stream to the QTextCodec for the encoding
+specified by <tt>codecName</tt>. Common values for \c codecName include
+"ISO 8859-1", "UTF-8", and "UTF-16". If the encoding isn't
+recognized, nothing happens.
+
+*/

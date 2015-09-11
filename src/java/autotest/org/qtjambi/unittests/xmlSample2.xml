@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persons>
+	<person>
+		<firstname>John</firstname>
+		<surename>Doe</surename>
+		<email>john@doe.org</email>
+	</person>
+	<person>
+		<firstname>Jane</firstname>
+		<surename>Doe</surename>
+		<email>jane@doe.org</email>
+	</person>
+	<person>
+		<firstname>Baby</firstname>
+		<surename>Doe</surename>
+		<email>baby@doe.org</email>
+	</person>
+</persons>

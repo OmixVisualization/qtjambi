@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<typesystem>
+  <enum-type name="QScriptEngineDebugger::DebuggerAction"/>
+  <enum-type name="QScriptEngineDebugger::DebuggerState"/>
+  <enum-type name="QScriptEngineDebugger::DebuggerWidget"/>
+  <object-type name="QScriptEngineDebugger">
+  </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
+</typesystem>

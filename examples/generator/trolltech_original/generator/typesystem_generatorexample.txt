@@ -1,0 +1,143 @@
+<typesystem package="org.qtjambi.examples.generator" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <load-typesystem name=":/trolltech/generator/typesystem_core.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_gui.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_sql.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_opengl.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_svg.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_network.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_xml.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_xmlpatterns.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_webkit.txt" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_phonon.txt" generate="no" />
+
+    <template name="from_nativepointer_to_value_type">
+            public final %RETURN_TYPE% %FUNCTION_NAME%() {
+                return %RETURN_TYPE%.fromNativePointer(%ORIGINAL_FUNCTION_NAME%());
+            }
+    </template>
+
+    <namespace-type name="Game">
+        <include file-name="gamenamespace.h" location="local" />
+    </namespace-type>
+
+    <enum-type name="Game::AnimationType" extensible="yes" />
+    <enum-type name="Game::ObjectFlag" flags="Game::ObjectFlags" />
+    <enum-type name="Game::WalkingDirection" />
+
+    <enum-type name="Game::ActionType" extensible="yes">
+        <reject-enum-value name="Take" />
+    </enum-type>
+
+    <interface-type name="AbstractGameObject">
+        <modify-function signature="perform(Game::ActionType,AbstractGameObject**,int)">
+            <modify-argument index="2">
+                <replace-type modified-type="org.qtjambi.examples.generator.AbstractGameObjectInterface[]" />
+                <conversion-rule class="shell">
+                jobjectArray %out = qtjambi_from_interface_array(__jni_env, %in, %3,
+                                                                 "AbstractGameObjectInterface",
+                                                                 "AbstractGameObject$ConcreteWrapper",
+                                                                 "org/qtjambi/examples/generator/");
+                </conversion-rule>
+                <conversion-rule class="native">
+                QVector&lt;AbstractGameObject *> gameObjects;
+
+                int arrayLength = __jni_env->GetArrayLength((jarray) %in);
+                for (int i=0; i&lt;arrayLength; ++i) {
+                    jobject javaGameObject = __jni_env->GetObjectArrayElement((jobjectArray) %in, i);
+                    QtJambiLink *link = QtJambiLink::findLink(__jni_env, javaGameObject);
+
+                    AbstractGameObject *gameObject = (AbstractGameObject* ) qtjambi_to_interface(__jni_env,
+                                                                                link,
+                                                                                "AbstractGameObjectInterface",
+                                                                                "org/qtjambi/examples/generator/",
+                                                                                "__qt_cast_to_AbstractGameObject");
+                    gameObjects.append(gameObject);
+                }
+
+                AbstractGameObject **%out = gameObjects.data();
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="shell">
+                    // intentionally empty
+                </conversion-rule>
+                <conversion-rule class="native">
+                    int %out = __jni_env->GetArrayLength((jarray) %2);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+    </interface-type>
+
+    <object-type name="GameAction" polymorphic-base="yes">
+        <modify-function signature="clone() const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="c++" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="GameAnimation" />
+    <object-type name="GameGrammar">
+        <modify-function signature="addVerb(const QString &amp;, GameAction *)">
+        <modify-argument index="2">
+               <define-ownership class="java" owner="c++" />
+            </modify-argument>
+    </modify-function>
+    </object-type>
+    <object-type name="GameObject">
+        <modify-function signature="rposition()">
+            <access modifier="private" />
+            <rename to="rposition_private" />
+        </modify-function>
+        <inject-code>
+            <insert-template name="from_nativepointer_to_value_type">
+                <replace from="%RETURN_TYPE%" to="Point3D" />
+                <replace from="%FUNCTION_NAME%" to="rposition" />
+                <replace from="%ORIGINAL_FUNCTION_NAME%" to="rposition_private" />
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="setAnimation(GameAnimation *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="c++" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="LookAction" polymorphic-id-expression="%1->type() == Game::Look"/>
+    <object-type name="PickUpAction" polymorphic-id-expression="%1->type() == Game::PickUp"/>
+    <object-type name="UseAction" polymorphic-id-expression="%1->type() == Game::Use"/>
+
+    <object-type name="GameScene">
+        <extra-includes>
+            <include file-name="QStyleOptionGraphicsItem" location="global" />
+        </extra-includes>
+
+        <modify-function signature="setEgoObject(AbstractGameObject *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="c++" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addGameObject(AbstractGameObject *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="c++" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <value-type name="Point3D">
+        <modify-function signature="rx()">
+            <remove />
+        </modify-function>
+        <modify-function signature="ry()">
+            <remove />
+        </modify-function>
+        <modify-function signature="rz()">
+            <remove />
+        </modify-function>
+    </value-type>
+
+    <suppress-warning text="*GameObject::enum_1*" />
+    <suppress-warning text="*class 'GameAction' inherits from polymorphic class 'GameAction'*" />
+
+</typesystem>

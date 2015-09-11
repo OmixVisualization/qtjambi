@@ -1,0 +1,81 @@
+include(compat.qdocconf)
+include(macros.qdocconf)
+include(qt-cpp-ignore.qdocconf)
+include(qt-html-templates.qdocconf)
+include(qt-defines.qdocconf)
+
+project                 = Qt Linguist
+description             = Qt Linguist Manual
+url                     =  http://doc.qt.nokia.com/4.7/
+
+indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
+
+qhp.projects            = Linguist
+
+qhp.Linguist.file                = linguist.qhp
+qhp.Linguist.namespace           = com.trolltech.linguist.471
+qhp.Linguist.virtualFolder       = qdoc
+qhp.Linguist.indexTitle          = Qt Linguist Manual
+qhp.Linguist.extraFiles          = images/bg_l.png \
+                             	    images/bg_l_blank.png \
+									images/bg_ll_blank.png \
+									images/bg_ul_blank.png \
+									images/header_bg.png \
+                             	    images/bg_r.png \
+									images/box_bg.png \
+									images/breadcrumb.png \
+									images/bullet_gt.png \
+                             	    images/bullet_dn.png \
+									images/bullet_sq.png \
+                             	    images/bullet_up.png \
+									images/arrow_down.png \
+                             	    images/feedbackground.png \
+                             	    images/horBar.png \
+									images/page.png \
+									images/page_bg.png \
+									images/sprites-combined.png \
+									images/spinner.gif \
+                             	    images/stylesheet-coffee-plastique.png \
+                             	    images/taskmenuextension-example.png \
+                             	   images/coloreditorfactoryimage.png \
+                             	   images/dynamiclayouts-example.png \
+									scripts/functions.js \
+									scripts/jquery.js \
+									scripts/narrow.js \
+									scripts/superfish.js \
+									style/narrow.css \
+									style/superfish.css \
+									style/style_ie6.css \
+									style/style_ie7.css \
+									style/style_ie8.css \
+                             	    style/style.css
+
+qhp.Linguist.filterAttributes    = qt 4.7.1 tools linguist
+qhp.Linguist.customFilters.Linguist.name = Qt Linguist Manual
+qhp.Linguist.customFilters.Linguist.filterAttributes = qt tools linguist
+qhp.Linguist.subprojects         = manual examples
+qhp.Linguist.subprojects.manual.title = Manual
+qhp.Linguist.subprojects.manual.indexTitle = Qt Linguist Manual
+qhp.Linguist.subprojects.manual.selectors = fake:page
+qhp.Linguist.subprojects.examples.title = Examples
+qhp.Linguist.subprojects.examples.indexTitle = Qt Examples
+qhp.Linguist.subprojects.examples.selectors = fake:example
+qhp.Linguist.subprojects.examples.sortPages = true
+
+language                = Cpp
+
+sources                 = $QT_SOURCE_TREE/doc/src/internationalization/linguist-manual.qdoc \
+                          $QT_SOURCE_TREE/doc/src/examples/hellotr.qdoc \
+                          $QT_SOURCE_TREE/doc/src/examples/arrowpad.qdoc \
+                          $QT_SOURCE_TREE/doc/src/examples/trollprint.qdoc
+
+sources.fileextensions  = "*.cpp *.qdoc"
+
+exampledirs             = $QT_SOURCE_TREE \
+                          $QT_SOURCE_TREE/examples \
+                          $QT_SOURCE_TREE/doc/src
+
+imagedirs               = $QT_SOURCE_TREE/doc/src/images \
+			  $QT_SOURCE_TREE/doc/src/template/images
+outputdir               = $QT_BUILD_TREE/doc-build/html-linguist
+base                    = file:$QT_BUILD_TREE/doc-build/html-linguist

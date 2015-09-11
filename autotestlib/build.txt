@@ -1,0 +1,296 @@
+<typesystem package="org.qtjambi.autotests.generated" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+
+  <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+			org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+		}
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+			org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+		}
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+			org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+		}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtXml"))
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtXml"); // usually available
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtSql"))
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtSql"); // load if exists
+  </inject-code>
+
+  <load-typesystem name="../build/generator/typesystem_core.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_gui.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_widgets.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_xml.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_network.xml" generate="no" />
+  <load-typesystem name="../build/generator/typesystem_sql.xml" generate="no" optional="true" />
+
+  <value-type name="Tulip">
+    <include file-name="tulip.h" location="local"/>
+  </value-type>
+
+  <value-type name="Variants">
+    <include file-name="variants.h" location="local"/>
+  </value-type>
+
+  <enum-type name="TheGlobalEnum"/>
+
+  <object-type name="General" />
+
+  <object-type name="SignalsAndSlots">
+    <include file-name="signalsandslots.h" location="local"/>
+  </object-type>
+
+  <object-type name="SenderQObject" />
+  <object-type name="StyledItemDelegateSubclass" />
+  <object-type name="GraphicsWidgetSubclass" />
+
+  <object-type name="AbstractClass">
+    <include file-name="abstractclass.h" location="local"/>
+  </object-type>
+
+  <object-type name="CustomPaintEngine" />
+  <object-type name="OtherCustomPaintEngine">
+    <extra-includes>
+        <include file-name="QVarLengthArray" location="global" />
+        </extra-includes>
+  </object-type>
+
+  <object-type name="AnotherNonAbstractSubclass">
+    <include file-name="abstractclass.h" location="local"/>
+  </object-type>
+
+  <object-type name="NativePointerTester">
+    <include file-name="nativepointertester.h" location="local"/>
+  </object-type>
+
+  <object-type name="OrdinarySuperclass" />
+  <object-type name="OrdinaryDestroyed">
+    <modify-function signature="getObjectJavaOwnership()">
+        <modify-argument index="return">
+            <define-ownership class="java" owner="java" />
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="getObjectCppOwnership()">
+        <modify-argument index="return">
+            <define-ownership class="java" owner="cplusplus" />
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="setDefaultOwnership(OrdinaryDestroyed *)">
+        <modify-argument index="1">
+            <define-ownership class="java" owner="default" />
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="virtualGetObjectJavaOwnership()">
+        <modify-argument index="return">
+            <define-ownership class="shell" owner="java" />
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="virtualGetObjectCppOwnership()">
+        <modify-argument index="return">
+            <define-ownership class="shell" owner="cplusplus" />
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="virtualSetDefaultOwnership(OrdinaryDestroyed *)">
+        <modify-argument index="1">
+            <define-ownership class="shell" owner="default" />
+        </modify-argument>
+    </modify-function>
+    <inject-code class="java">
+    public static int disposedCount = 0;
+    public static int getDisposedCount() {
+        synchronized(OrdinaryDestroyed.class) {	// PARANOIA
+            return disposedCount;
+        }
+    }
+    public static void setDisposedCount(int disposedCount) {
+        synchronized(OrdinaryDestroyed.class) {	// PARANOIA
+            OrdinaryDestroyed.disposedCount = disposedCount;
+        }
+    }
+
+    @Override
+    protected void disposed() {
+        synchronized(OrdinaryDestroyed.class) {
+            disposedCount++;
+        }
+
+        super.disposed();
+    }
+    </inject-code>
+  </object-type>
+  <object-type name="QObjectDestroyed" />
+  <object-type name="XmlEntityResolverSubclass" />
+  <object-type name="SpinBoxHandler" />
+  <object-type name="SpinBoxSubclass" />
+  <object-type name="GraphicsSceneSubclass">
+  </object-type>
+
+  <object-type name="IODeviceSubclass" />
+  <object-type name="XmlReaderSubclass" />
+  <object-type name="TextCodecSubclass">
+    <!-- see genertor source for "HACK method ownership of constructor return value" -->
+    <!-- this setting does not work, also we should probably do some equality
+         of java object tricks so the java object as same identity as
+         underlying cpp object.  Untested but I suspect multiple java objects
+         would end up sharing the same cpp object. -->
+    <modify-function signature="TextCodecSubclass()">
+        <modify-argument index="-1">
+            <define-ownership class="java" owner="cplusplus" />
+        </modify-argument>
+    </modify-function>
+  </object-type>
+  <value-type name="PictureSubclass" />
+
+  <object-type name="SetupLayout" />
+  <object-type name="GraphicsItemSubclass" />
+  <object-type name="ImageIOHandlerSubclass" />
+  <object-type name="AccessibleInterfaceSubclass" />
+  <object-type name="SqlTableModelSubclass" /><!-- might not exist if QT_NO_SQL is set -->
+
+  <object-type name="Threads"/>
+
+  <object-type name="PolymorphicType">
+
+    <modify-function signature="getButtonStyleOption()">
+        <modify-argument index="return">
+           <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+
+    <modify-function signature="getCustomStyleOption(int)">
+        <modify-argument index="return">
+           <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+
+    <modify-function signature="getUnmappedCustomStyleOption()">
+        <modify-argument index="return">
+            <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+  </object-type>
+
+  <object-type name="CustomEvent"
+               polymorphic-id-expression="int(%1->type()) == QEvent::User + 1" />
+
+  <object-type name="ValidatorSubclass" />
+
+  <object-type name="SomeQObject" />
+
+  <value-type name="CustomStyleOption"
+              polymorphic-id-expression="%1-&gt;type == QStyleOption::SO_CustomBase + 1" />
+
+  <object-type name="TestDialog" />
+
+  <object-type name="MessageHandler"/>
+
+  <!--object-type name="AccessibleTableInterfaceSubclass" /-->
+
+  <namespace-type name="NameSpace::NameSpace2" />
+  <namespace-type name="NameSpace::NameSpace2::NameSpace3" />
+  <object-type name="NameSpace::NameSpace2::NameSpace3::ObjectC" />
+  <object-type name="NameSpace::NameSpace2::NameSpace3::ObjectD" />
+  <value-type name="NameSpace::NameSpace2::NameSpace3::ValueB" />
+  <interface-type name="NameSpace::NameSpace2::NameSpace3::InterfaceA" />
+
+  <namespace-type name="NameSpace">
+    <include file-name="namespace.h" location="local"/>
+  </namespace-type>
+
+  <object-type name="NameSpace::ObjectA">
+    <include file-name="namespace.h" location="local"/>
+  </object-type>
+
+  <object-type name="NameSpace::ObjectB">
+    <include file-name="namespace.h" location="local"/>
+  </object-type>
+
+  <value-type name="NameSpace::ValueA">
+    <include file-name="namespace.h" location="local"/>
+  </value-type>
+
+  <object-type name="AbstractSocketSubclass" />
+
+
+  <object-type name="QHash_int" />
+  <object-type name="QLinkedList_int" />
+  <object-type name="QList_int" />
+  <object-type name="QMap_int" />
+  <object-type name="QQueue_int" />
+  <object-type name="QSet_int" />
+  <object-type name="QStack_int" />
+  <object-type name="QVector_int" />
+  <object-type name="PolymorphicObjectType" />
+  <object-type name="NonPolymorphicObjectType" />
+  <object-type name="QObjectType">
+      <extra-includes>
+          <include file-name="org.qtjambi.autotests.Utils" location="java"/>
+      </extra-includes>
+      <inject-code>
+          <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class QObjectType___" quote-before-line="}// class"/>
+      </inject-code>
+  </object-type>
+  <value-type name="ValueType" />
+
+  <object-type name="InvalidatorPolymorphicObjectType">
+    <modify-function signature="overrideMe(PolymorphicObjectType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
+
+  <object-type name="InvalidatorNonPolymorphicObjectType">
+    <modify-function signature="overrideMe(NonPolymorphicObjectType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
+
+  <object-type name="InvalidatorValueType">
+    <modify-function signature="overrideMe(ValueType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
+
+  <object-type name="InvalidatorQObjectType">
+    <modify-function signature="overrideMe(QObjectType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
+  <object-type name="FlagsAndEnumTest">
+  </object-type>
+  <object-type name="PropertyAndMethodCallTest">
+  </object-type>
+  <object-type name="MetaObjectQtMetaCast">
+    <include file-name="metaobjectqtmetacast.h" location="local"/>
+  </object-type>
+  <object-type name="SharedPointerTest">
+    <modify-function signature="createSharedObject2()" rename="privateCreateSharedObject2" access="private"/>
+    <inject-code>
+        <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class SharedPointerTest___" quote-before-line="}// class"/>
+    </inject-code>
+  </object-type>
+</typesystem>

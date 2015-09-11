@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.qtjambi</groupId>
+  <artifactId>qtjambi-platform-%PLATFORM%</artifactId>
+  <version>%QTJAMBI_VERSION%</version>
+  <description>QtJambi %PLATFORM% libraries</description>
+
+
+  <dependencies>
+    <dependency>
+            <groupId>net.sf.qtjambi</groupId>
+            <artifactId>qtjambi-base-%PLATFORM%</artifactId>
+            <version>%QTJAMBI_VERSION%</version>
+            <type>jar</type>
+    </dependency>
+  </dependencies>
+
+</project>

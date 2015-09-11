@@ -1,0 +1,908 @@
+/*!
+    \page qtjambi-generatorexample.html
+    \title Qt Jambi Generator Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Qt Jambi Generator Example}{GeneratorExample.java}
+    \endlist
+
+    The Qt Jambi Generator example shows how to use the \l {The Qt
+    Jambi Generator}{generator} to map an existing C++ project to
+    Java. Please note that this example is only available in the
+    Qt Jambi source package.
+
+    \image generatorexample.png Screenshot of the Qt Jambi Generator example
+
+    The premise for this example is that we have an existing library
+    written in C++. This library contains an API for programming
+    computer adventure games, and we want to make this API available
+    to Java programmers. Since the library is already in use, the C++
+    code is locked and we cannot make changes to it. For that reason,
+    any tweaks required to make the Java API smoother will have to be
+    added to the type system. The type system is a XML description of
+    the library that is used by the Qt Jambi generator to create a
+    mapping between C++ and Java.
+
+    In this example, we will go through the design of the type system
+    step by step. The given C++ library is designed to illustrate most
+    of the aspects of defining a type system.
+
+    \tableofcontents section1
+
+    \section1 Step 1: Getting Started
+
+    A good way to start is to create an empty type system for the
+    project and then run the generator. This will give us several
+    warnings and log files that we can use to identify the types we
+    must map. A minimal type system only has a root \l typesystem tag
+    specifying the package name. Each package should have its own type
+    system specification.
+
+    In our case, we will only generate one single package. But note
+    that since we are using parts of Qt in our project, we must
+    specify references to the relevant type systems using the \l
+    load-typesystem tag; otherwise the generator will not know how to
+    handle them when it generates the mapping code. The default Qt
+    type systems can be referred to using the following syntax:
+
+    \code
+        :/trolltech/generator/typesystem_module.txt
+    \endcode
+
+    where \c module can be replaced by \c core, \c gui, \c xml, \c
+    svg, \c network, \c opengl, \c phonon, \c webkit or \c sql depending on the
+    project. When importing custom type systems, any absolute or
+    relative path can be used to address the \c .xml specification
+    file.
+
+    In our project, we use types from the the QtCore and QtGui
+    modules:
+
+    \code
+    <typesystem package="org.qtjambi.examples.generator"
+                default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+
+        <load-typesystem name=":/trolltech/generator/typesystem_core.txt"
+                         generate="no" />
+        <load-typesystem name=":/trolltech/generator/typesystem_gui.txt"
+                         generate="no" />
+    </typesystem>
+    \endcode
+
+    By setting the \c generate attribute to \c no, we indicate that we
+    only want to import the information, not actually generate code
+    for the Qt library. We must also specify the default superclass of
+    the project. Note that the given superclass must be derived from
+    \c QtJambiObject.
+
+    Finally, the Qt Jambi Generator requires that the class
+    definitions for all the types that we want to map, are available
+    through a single header file. A simple way to achieve this is to
+    create a top level header file, using the preprocessor directives
+    to import all the header files in the project. For our example, we
+    create a \c global.h file containing the following code:
+
+    \code
+        #include "abstractgameobject.h"
+        #include "gameaction.h"
+        #include "gameanimation.h"
+        #include "gamegrammar.h"
+        #include "gamenamespace.h"
+        #include "gameobject.h"
+        #include "gamescene.h"
+        #include "lookaction.h"
+        #include "pickupaction.h"
+        #include "point3d.h"
+        #include "useaction.h"
+    \endcode
+
+    Now, we are all set to run the Qt Jambi generator. The generator
+    takes two arguments on the command line: The path to the global
+    header file, and the path to the type system specification. Note
+    that the \c $QTDIR environment variable must be set to the
+    location on your disk where the Qt include files resides (i.e.,
+    the generator expects these to be found under \c $QTDIR/include).
+
+    \code
+        generator global.h typesystem_generatorexample.txt
+    \endcode
+
+    Provided that the generator executable is available in your \c
+    $PATH, you can open a command line shell, go into the generator
+    example folder and write the command above.
+
+    \section1 Step 2: Writing a Type System Specification
+
+    As we mentioned in the previous section, running the generator
+    with a minimal type system specification will provide us with
+    several log files and warnings that we can use to identify the
+    types and specifications that must be added to the type system.
+
+    \list
+        \o \l {Adding Types}
+        \o \l {Adding Namespaces}
+        \o \l {Tweaking the Enum Specification}
+        \o \l {Resolving Multiple Inheritance}
+        \o \l {Resolving Polymorphic Values}
+    \endlist
+
+    \section2 Adding Types
+
+    For an overview of the classes that have been defined in the
+    header file but not in the type system, we will look at the \c
+    mjb_rejected_classes.log log file. Under the heading "Not in type
+    system" we find the names of our classes: \c AbstractGameObject,
+    \c GameAction, \c GameAnimation, \c GameGrammar, \c GameObject, \c
+    GameScene, \c LookAction, \c PickUpAction, \c Point3D, and \c
+    UseAction.
+
+    To expose all these classes in the Java API, we must explicitly
+    add them to our type system specification. We will have to provide
+    the generator with at least one significant piece of meta
+    information about each class, i.e., whether the class should be
+    considered a value-type or an object-type, using the \l value-type
+    and \l object-type tags respectively. Value types are usually
+    allocated on the stack and passed by reference or value between
+    functions, e.g., QString. Value types are not polymorphic, and
+    they cannot have virtual functions. Object types, on the other
+    hand, are often allocated on the heap, they can be polymorphic,
+    and they are passed between functions using pointers.
+
+    We add the type definitions to the type system specification:
+
+    \code
+        <object-type name="AbstractGameObject" />
+        <object-type name="GameAction" />
+        <object-type name="GameAnimation" />
+        <object-type name="GameGrammar" />
+        <object-type name="GameObject" />
+        <object-type name="GameScene" />
+        <object-type name="LookAction" />
+        <object-type name="PickUpAction" />
+        <object-type name="UseAction" />
+
+        <value-type name="Point3D" />
+    \endcode
+
+    In our case, the only value type we have is the \c Point3D
+    class. We can tell that \c Point3D is a value type by observing
+    that functions expecting parameters of the \c Point3D type,
+    receive a constant reference to it.
+
+    Now, running the generator again will generate code and we will
+    see several new warnings that can help us continue.
+
+    \section2 Adding Namespaces
+
+    Many of the generator's warnings at this point, are related to
+    missing types inside the \c Game namespace. This namespace defines
+    all the enums that we use in our library. The generator also tells
+    us that the \c Game namespace does not have a type entry. Since
+    Java has the concept of packages, namespaces will typically be
+    ignored by a type system specification. The exception is
+    namespaces used to wrap enum types, e.g., the \c Qt namespace in
+    Qt and our \c Game namespace.
+
+    Since we want to include this namespace in our Java API, we must
+    expliclitly add it to the type system specification using the \l
+    namespace tag:
+
+    \code
+        <namespace-type name="Game" />
+    \endcode
+
+    This will eliminate the warning about the missing type entry, but
+    the generator will still warn us that certain functions cannot be
+    mapped because types defined inside the \c Game namespace have not
+    been specified. The \c mjb_rejected_enums.log log file identifies
+    these.
+
+    In our example, we will map all the enum types in the namespace:
+
+    \code
+        <enum-type name="Game::ActionType" />
+        <enum-type name="Game::AnimationType" />
+        <enum-type name="Game::ObjectFlag" />
+        <enum-type name="Game::WalkingDirection" />
+    \endcode
+
+    In addition to these four types, the log file also mentions a \c
+    GameObject::enum_1. This is a special name given to an anonymous
+    enum type inside the \c GameObject class. It is used in C++ to
+    allow safe casts between QGraphicsItem and its subclasses. Java
+    has a reflection API that covers all classes, so this enum is of
+    no use to us. Therefore we do not have to map it, and we will
+    suppress the warning using the \l suppress-warning tag.
+
+    When suppressing warnings, we either specify the warning exactly
+    as it looks in the output from the generator:
+
+    \code
+        WARNING(MetaJavaBuilder) :: enum 'GameObject::enum_1' does not
+        have a type entry or is not an enum"
+    \endcode
+
+    or we can add wildcards to filter out several warnings with a
+    single entry.  In this example, we do not want any warnings
+    pertaining to the enum type \c GameObject::enum_1, we simply
+    suppress any warning containing this particular type name:
+
+    \code
+        <suppress-warning text="*GameObject::enum_1*" />
+    \endcode
+
+    We will not leave the enum types alone just yet; there is a little
+    more work required to make their functions in Java match the
+    intentions in the original API.
+
+    \section2 Tweaking the Enum Specifications
+
+    In general, there are two things we need to consider for each enum
+    type: Are there any relevant warnings for the enum type, and is
+    the enum type extensible? Looking through our warnings, we can
+    find several reporting about duplicate enum values, an unmatched
+    parameter type and an unmatched return type.
+
+    \list
+        \o \l {Duplicate Enum Values}
+        \o \l {Unmatched Types}
+        \o \l {Extensible Enums}
+    \endlist
+
+    \section3 Duplicate Enum Values
+
+    The first warning alert us that two of the \c Game::ActionType
+    enum type's values are identical; the generator expects a
+    one-to-one relationship between the numerical values in an enum
+    type and its enum values. There are two possible solutions to
+    this problem. In most cases, it will be preferrable to reject one
+    of the two conflicting values, and only expose the other in the
+    Java API:
+
+    \code
+        <enum-type name="Game::ActionType">
+            <reject-enum-value name="Take" />
+        </enum-type>
+    \endcode
+
+    In some rare cases, on the other hand, this will not be a
+    sufficient solution, e.g., in cases where a single enum type
+    contains context specific values that overlap. Removing values
+    from such a type may cause the resulting Java API to become less
+    readable and less usable. In such cases it is possible to force
+    the use of integers rather than proper Java enums in the generated
+    API:
+
+    \code
+        <enum-type name="Game::ActionType" force-integer="yes" />
+    \endcode
+
+    The consequence is that use of the enum type will not be type
+    safe.
+
+    \section3 Unmatched Types
+
+    When running the generator with our current typesystem
+    specification, it complains that the \c Game::ObjectFlags type is
+    used in the API but remains unspecified in the type system. In the
+    original C++ code, this is a type definition of the \c
+    QFlags<Game::ObjectFlag> type where \c Game::ObjectFlag is an enum
+    type. This is a pattern used in Qt to provide type safe flags in
+    the API.
+
+    To map such types, we must tell the generator explicitly that it
+    should provide the same abstraction in the generated Java
+    API. This is done using the \l enum-type's \c flags attribute.
+
+    \code
+        <enum-type name="Game::ObjectFlag" flags="Game::ObjectFlags" />
+    \endcode
+
+    By specifying that the \c Game::ObjectFlag enum type has a
+    corresponding flags type, we ensure that the generator creates a
+    \c ObjectFlags class based on the same pattern as the original
+    type definition in C++.
+
+    \section3 Extensible Enums
+
+    When mapping enums we must also check if they are intended to be
+    extensible in the original API. If they are, we must enter this
+    information into the type system specification. A typical example
+    of an extensible enum is \c Game::ActionType. This enum has a \c
+    UserAction value that can be used as a base for dynamic additions
+    to the enum type (e.g., if the users of the library implement
+    their own \c GameAction subclass).
+
+    \code
+        <enum-type name="Game::ActionType" extensible="yes">
+            <reject-enum-value name="Take" />
+        </enum-type>
+    \endcode
+
+    By setting the \c extensible attribute to \c yes, the generator
+    will generate code allowing the programmer to extend the enum.
+
+    \section2 Resolving Multiple Inheritance
+
+    Java does not allow multiple inheritance. For this reason we must
+    provide a workaround in cases where the original C++ code uses
+    this technique, to generate compilable code. The standard way of
+    resolving such issues in Java is to use an interface pattern. In a
+    multiple inheritance situation we must define all (except for one)
+    classes as interfaces in the type system. The remaining class then
+    becomes the primary base class.
+
+    In our source library, the \c GameObject class inherits from both
+    \c QObject and \c AbstractGameObject, and the generator gives us a
+    warning that both are currently considered the primary base class
+    which is not supported in Java. Note that the \c QObject class
+    cannot be an interface type since we do not have any control over
+    it when mapping our library.
+
+    \code
+        <interface-type name="AbstractGameObject" />
+    \endcode
+
+    Luckily, though, we do control the \c AbstractGameObject class,
+    and by replacing its entry in the type system with an \l
+    interface-type tag, we define it as an interface in the generated
+    API.
+
+    \section2 Resolving Polymorphic Values
+
+    For certain types, the generator must know the place of the types
+    in the class hierarchy, in order to generate the proper conversion
+    code. If the class definitions of these types are not available,
+    the generator will complain that the types have a polymorphic
+    value but no id. These warnings must be taken seriously. They can
+    be resolved by providing the class definitions the generator
+    requires (e.g., by including the relevant header files in the
+    global header described in the first section).
+
+    In our example project, the generator warns us about \c QEvent and
+    several of its subclasses. We resolve these warnings by including
+    the header files for the event classes in our \c global.h file.
+
+    \section1 Step 3: Compiling the Generated Code
+
+    Running the generator with our current type system specification,
+    will now generate code that match the API of the source C++
+    library. It is time to try to compile the project. Note that the
+    generated code usually do not compile directly without some small
+    modifications to the type system.
+
+    \list
+        \o \l {Creating a .pro File}
+        \o \l {Resolving Compile Errors}
+    \endlist
+
+    \section2 Creating a .pro File
+
+    In order to build the C++ code providing the mapping between C++
+    and Java, we first need to write a \c .pro file that \c qmake can
+    use to generate cross platform makefiles.
+
+    An easy way to do this is to base our \c .pro file on the \c
+    generator_example.pro file located in our example folder. We must
+    make some modifications to it in order to map our project: First
+    we must change the name of the target library. When using the Qt
+    Jambi generator, this should be the name of our package
+    (substituting the periods with underscores).
+
+    \code
+        TARGET = org_qtjambi_examples_generator
+    \endcode
+
+    Then we must change the \c HEADERS and \c SOURCES variables so \c
+    qmake can know which files to compile and link into the library.
+
+    \code
+        HEADERS += gameaction.h \
+                   gameanimation.h \
+                   gamegrammar.h \
+                   gamenamespace.h \
+                   gameobject.h \
+                   gamescene.h \
+                   lookaction.h \
+                   pickupaction.h \
+                   useaction.h \
+                   point3d.h \
+                   abstractgameobject.h
+
+        SOURCES += gameaction.cpp \
+                   gameanimation.cpp \
+                   gamegrammar.cpp \
+                   gameobject.cpp \
+                   gamescene.cpp \
+                   lookaction.cpp \
+                   pickupaction.cpp \
+                   useaction.cpp \
+                   main.cpp
+    \endcode
+
+    Finally, we must provide \c qmake with the path to the list of
+    generated C++ files:
+
+    \code
+        include(../cpp/org_qtjambi_examples_generator/org_qtjambi_examples_generator.pri)
+    \endcode
+
+    By default, the generator targets a folder located at \c
+    ../cpp/org_qtjambi_examples_generator where the name \c
+    org_qtjambi_examples_generator is based on the package name of
+    the type system. In this folder, it creates a \c .pri file
+    containing the \c qmake commands required to include the generated
+    files in the build.
+
+    Otherwise, the \c .pro file can remain unchanged.
+
+    \section2 Resolving Compile Errors
+
+    If we start a build at this point, we will get two error messages
+    from the compiler:
+
+    \code
+        Cannot open include file: 'Game'
+        'const QStyleOptionGraphicsItem *' : unknown size
+    \endcode
+
+    It is possible to look at the generated source code to try to
+    figure out the problem. In many cases though, the errors are
+    caused by the generator's failure to find the header file where a
+    certain type is defined.
+
+    In our project, the generator has selected a default header file
+    for the namespace \c Game, which is the same as the name of the
+    namespace. This must be replaced by the actual name of the header
+    file, \c gamenamespace.h. To replace the default include
+    directive of a type, we use the \l include tag:
+
+    \code
+        <namespace-type name="Game">
+            <include file-name="gamenamespace.h" location="local" />
+        </namespace-type>
+    \endcode
+
+    The \c location attribute tells the generator that this is a local
+    header, making the resulting include directive use quotes around the
+    file name.
+
+    In addition, the generator cannot find the definition of the \c
+    QStyleOptionGraphicsItem class that is forward declared in the
+    headers read by the generator. In this case, we must provide the
+    generator with the name of the header file where \c
+    QStyleOptionGraphicsItem is defined. This should not replace the
+    default header for any type in the type system, but should be
+    added as an extra include directive where the type is used, using
+    the \l extra-include tag:
+
+    \code
+        <object-type name="GameScene">
+            <extra-includes>
+                <include file-name="QStyleOptionGraphicsItem" location="global" />
+            </extra-includes>
+        </object-type>
+    \endcode
+
+    Now run the generator again with the modified type system
+    specification. The new generated C++ code should compile without
+    errors.
+
+    The generated Java code should compile without any further
+    modifications of the type system.
+
+    \section1 Step 4: Customizing the Java API
+
+    At this point, we have eliminated the generator warnings and made
+    our project compile. The next step is to make our Java API as user
+    friendly as possible. This can be done using the type system
+    specification, tailoring the generated API to suit our
+    preferences:
+
+    \list
+        \o \l {Replacing QNativePointer API}
+        \o \l {Moving Ownership from Java to C++}
+        \o \l {Identifying Polymorphic Types That Are Not QObjects}
+    \endlist
+
+    \section2 Replacing QNativePointer API
+
+    By default, parts of the generated code are using the
+    QNativePointer API. The QNativePointer class is a generic wrapper
+    around value type pointers. It is specially designed to work
+    regardless of the intended use of the pointer (i.e., whether it's
+    a pointer to an object or an array), bridging the conceptual gap
+    between Java and C++. On the other hand, QNativePointer is error
+    prone and inefficient to use, so in most cases we want modify the
+    generated API so that we do not have any functions where this type
+    is in use.
+
+    To help us with this task, we can use the \c
+    mjb_nativepointer_api.log log file that is created by the
+    generator at runtime. This file contains a complete list of all
+    public and protected functions in the API that are currently using
+    the \c QNativePointer class. In general, there are four different
+    ways of resolving these situations:
+
+    \list
+        \o \l {Remove the Function}
+        \o \l {Inject Conversion Code}
+        \o \l {Modify the Type of an Argument}
+        \o \l {Remove an Argument}
+    \endlist
+
+    \section3 Remove the Function
+
+    Sometimes it is not possible to provide the exact same
+    functionality that we have in the C++ API without using the \c
+    QNativePointer class. Then the alternative is to remove the
+    functions in question all together.
+
+    In our project for example, the \c rx(), \c ry(), \c rz() functions
+    in the \c Point3D class return references to integers in the
+    original API. This particular data resides in the native library's
+    memory, and there is no way we can provide a reference to it
+    without going through some abstraction. But since these functions
+    are provided for convenience, i.e., the same functionality is
+    provided through other functions as well, we can simply remove the
+    functions from the API using the \l modify-function and \l remove
+    tags:
+
+    \code
+        <value-type name="Point3D">
+            <modify-function signature="rx()">
+                <remove />
+            </modify-function>
+            <modify-function signature="ry()">
+                <remove />
+            </modify-function>
+            <modify-function signature="rz()">
+                <remove />
+            </modify-function>
+        </value-type>
+    \endcode
+
+    The \l modify tag's \c signature attribute should hold the
+    function's signature without return type or variable names. Note
+    that the signature provided in the \c mjb_nativepointer_api.log
+    file is correctly formatted for this purpose.
+
+    \section3 Inject Conversion Code
+
+    For non-virtual functions that use \c QNativePointer, the simplest
+    way to improve the API is usually to hide the generated
+    implementation of the function, and provide a new implementation
+    that calls the original one implicitly converting between
+    QNativePointer and a more user friendly type.
+
+    In our project, the \c GameObject::rposition() function is such a
+    function. In the original API, it returns a reference to a \c
+    Point3D object. In the generated API, this reference is
+    represented by a \c QNativePointer object. The first step is to
+    hide the original implementation of the function by making it
+    privat using the \l modify-function and \l access tags:
+
+    \code
+        <object-type name="GameObject">
+            <modify-function signature="rposition()">
+                <access modifier="private" />
+                <rename to="rposition_private" />
+            </modify-function>
+        </object-type>
+    \endcode
+
+    Since we will create a new implementation of the same function, we
+    also rename the original to \c rposition_private() using the \l
+    rename tag, to avoid name collisions.
+
+    The next step is to write the new implementation. We will use the
+    \c inject-code tag to inject code into the generated class. Code
+    can be placed directly inside the \l inject-code tag, or we can
+    write it as a template and simply instantiate this. The latter
+    approach ensures that the code is reusable without being
+    duplicated, and is probably preferable for larger projects.
+
+    \code
+        <template name="from_nativepointer_to_value_type">
+            public final %RETURN_TYPE% %FUNCTION_NAME%() {
+                return %RETURN_TYPE%.fromNativePointer(%ORIGINAL_FUNCTION_NAME%());
+            }
+        </template>
+    \endcode
+
+    Using the \l template tag, we generalize the code by putting place
+    holder tokens in for the function name and the return type.
+
+    \code
+        <object-type name="GameObject">
+            <inject-code>
+                <insert-template name="from_nativepointer_to_value_type">
+                    <replace from="%RETURN_TYPE%" to="Point3D" />
+                    <replace from="%FUNCTION_NAME%" to="rposition" />
+                    <replace from="%ORIGINAL_FUNCTION_NAME%" to="rposition_private" />
+                </insert-template>
+            </inject-code>
+        </object-type>
+    \endcode
+
+    Inside the specification of the \c GameObject class, we can insert
+    the template and replace the tokens with actual values, using the
+    \l insert-template and \l replace tags respectively.
+
+    \section3 Modify the Type of an Argument
+
+    When a function that is using the \c QNativePointer class is
+    virtual, we must be extra careful, i.e., the reimplementation
+    technique from the previous section will not work in this
+    case. The reason is that we would not be able to maintain
+    polymorphism over the boundary between Java and C++. Modifying
+    virtual functions to improve the API can be difficult, as it may
+    require us to write JNI code. It is recommended that you attempt
+    to address these particular situations in the original API if
+    possible.
+
+    The alternative is to manually modify the function signature,
+    providing the generator with special conversion rules that explain
+    how to convert the altered arguments from Java to C++ and vice
+    versa.
+
+    In our project, for example, we have the virtual \c
+    AbstractGameObject::perform(Game::ActionType,AbstractGameObject**,int)
+    function. In the original API it takes, as the second argument, an
+    array of pointers to objects of the \c AbstractGameObject class,
+    and the final argument is an integer containing the length of the
+    array. In the generated Java API, the corresponding arguments are
+    a QNativePointer object and an integer, respectively. We will
+    modify the latter function's signature to take a Java array
+    instead of the QNativePointer object, and since Java arrays have
+    their lengths embedded, we will remove the final argument.
+
+    The first step is to modify the type of the second argument to be
+    a Java array using the \l modify-function and \l replace-type
+    tags:
+
+    \code
+        <interface-type name="AbstractGameObject">
+            <modify-function signature="perform(Game::ActionType,AbstractGameObject**,int)">
+                <modify-argument index="2">
+                    <replace-type modified-type="org.qtjambi.examples.generator.AbstractGameObjectInterface[]" />
+                </modify-argument>
+            </modify-function>
+        </interface-type>
+    \endcode
+
+    The modified type name is the fully qualified name of the
+    substitute class, with square brackets to indicate that the type
+    is an array. At this point, we cannot expect the function to work
+    properly, as the generated code will try to convert a C++ array of
+    \c AbstractGameObject pointers to a Java array with the same
+    conversion routine used for converting to \c QNativePointer, and
+    the other way around. To make it work, we must provide the
+    generator with new conversion code for this particular argument
+    using the \l conversion-rule tag.
+
+    We start by providing code to convert the argument from C++ to
+    Java. This is the case where code written in C++ calls the virtual
+    function, and the function has been reimplemented in Java.  The
+    code above should be added to the \l modify-argument tag that we
+    already have for the function in question.
+
+    \code
+    <conversion-rule class="shell">
+        jobjectArray %out = qtjambi_from_interface_array(__jni_env, %in, %3,
+                                                        "AbstractGameObjectInterface",
+                                                        "AbstractGameObject$ConcreteWrapper",
+                                                        "org/qtjambi/examples/generator/");
+    </conversion-rule>
+    \endcode
+
+    We use JNI and Qt Jambi helper functions to convert the C++ array
+    to Java. There are a few special things to notice in this code:
+
+    \list
+        \o \c __jni_env is the current JNI environment pointer
+        \o \c %out and \c %in which will be replaced by the name of the
+           conversion's output and input variable, respectively
+        \o \c %3 which will be replaced by the name of the third
+           argument (the integer length) in the function call
+
+        \o \c AbstractGameObject$ConcreteWrapper which will be
+           used as the default Java class in cases where the object
+           was created by C++ code. The \c $ConcreteWrapper part is
+           required because the class \c AbstractGameObject is
+           abstract.
+
+    \endlist
+
+    Then we must remember to provide a similar rule for converting the
+    argument from Java to C++. This code is used in the case where the
+    Java code calls the C++ implementation of the function, and is
+    slightly more complicated:
+
+    \code
+    <modify-function signature="perform(Game::ActionType,AbstractGameObject**,int)">
+        <modify-argument index="2">
+                <conversion-rule class="native">
+                    QVector&lt;AbstractGameObject *> gameObjects;
+
+                    int arrayLength = __jni_env->GetArrayLength((jarray) %in);
+                    for (int i=0; i&lt;arrayLength; ++i) {
+                        jobject javaGameObject = __jni_env->GetObjectArrayElement((jobjectArray) %in, i);
+                        QtJambiLink *link = QtJambiLink::findLink(__jni_env, javaGameObject);
+
+                        AbstractGameObject *gameObject =
+                                (AbstractGameObject* )qtjambi_to_interface(__jni_env, link,
+                                                                           "AbstractGameObjectInterface",
+                                                                           "org/qtjambi/examples/generator/",
+                                                                           "__qt_cast_to_AbstractGameObject");
+                        gameObjects.append(gameObject);
+                    }
+
+                    AbstractGameObject **%out = gameObjects.data();
+                </conversion-rule>
+        </modify-argument>
+    </modify-function>
+    \endcode
+
+    Note that we must add a new \l modify-function tag to the \c
+    AbstractGameObject type specification. In this one we set the \c
+    class attribute to native, indicating that we want the conversion
+    rule to have an effect on the C++ part of the mapping.  The \c
+    &lt; tokens are represent the opening angle bracket, providing XML
+    compatibility.
+
+    The code itself converts each object in the Java array to a C++
+    object using a Qt Jambi helper function, and places it inside a \c
+    QVector object. The \c perform() function will not take ownership of
+    the array that is passed in, i.e., it's safe to pass the data
+    pointer of the \c QVector object even though it will be deleted
+    after the call is through.
+
+    As mentioned we also want to remove the final argument from the
+    signature of the \c perform() function (relying on the \c length
+    field in the the Java array class instead). This is covered in the
+    next section.
+
+    \section3 Remove an Argument
+
+    To remove an argument from a function signature, e.g., if it has
+    become redundant due to other modifications, we use the \l
+    remove-argument tag in combination with \l modify-argument and \l
+    modify-function tags.
+
+    In our example from the previous section, we must add a \c
+    modify-argument tag to the first of our two existing function
+    modifications for the \c perform() function:
+
+    \code
+        <modify-argument index="3">
+            <remove-argument />
+        </modify-argument>
+    \endcode
+
+    Just like when we modified the type of an argument, we need to provide the
+    generator with rules for how to convert the length argument
+    between Java and C++. Since the argument has been removed in the
+    Java API, the conversion rule for passing it into Java will be
+    left empty:
+
+    \code
+        <conversion-rule class="shell">
+            // intentionally empty
+        </conversion-rule>
+    \endcode
+
+    In the conversion rule for passing the length argument into C++ we
+    will retrieve the length from the Java array:
+
+    \code
+        <conversion-rule class="native">
+            int %out = __jni_env->GetArrayLength((jarray) %2);
+        </conversion-rule>
+    \endcode
+
+    The \c perform() function can now be called and overridden from C++
+    with its new API.
+
+    \section2 Moving ownership from Java to C++
+
+    In most cases, we want objects created in Java to be garbage
+    collected when there are no more Java references to them. On the
+    other hand, there are a few cases where a C++ function takes
+    ownership of an object, making it possible for the garbage
+    collector to cause objects to disappear or the application to
+    crash.
+
+    The solution is to use the type system specification to supply the
+    generator with information that a certain function changes the
+    ownership rules of an object, using the \c define-ownership tag.
+
+    The functions we must take care of in our library are the \c
+    GameScene class's \c setEgoObject() and \c addGameObject()
+    functions, as well as the \c setAnimation() function in the \c
+    GameObject class, and the \c addVerb() function in the \c
+    GameGrammar class. Enter the following code into the \c GameScene
+    type specification:
+
+    \code
+        <modify-function signature="setEgoObject(AbstractGameObject *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="c++" />
+            </modify-argument>
+        </modify-function>
+    \endcode
+
+    This argument modification specify that any object passed into \c
+    setEgoObject() will be owned by C++ from that point on, i.e., the
+    garbage collector will no longer touch it. We do the same for the
+    other two functions.
+
+    In addition, the \c clone() function in \c GameAction takes
+    ownership of the returned object when it is called from C++ and
+    reimplemented in Java. For that reason, we write a function
+    modification disabling garbage collection for the return value:
+
+    \code
+        <object-type name="GameAction" polymorphic-base="yes">
+            <modify-function signature="clone() const">
+                <modify-argument index="return">
+                    <define-ownership class="shell" ownership="c++" />
+                </modify-argument>
+            </modify-function>
+        </object-type>
+    \endcode
+
+    \section2 Identifying Polymorphic Types That Are Not QObjects
+
+    Sometimes, objects will be created in C++ and passed into Java. If
+    the classes of these objects are polymorphic, we must be able to
+    identify the correct subclass in order to make \c instanceof and
+    similar instructions work as expected. If a class inherits \c
+    QObject and is defined using the \c Q_OBJECT macro, we can use its
+    inherent introspection mechanism to find the subclass in
+    question. In cases where this is not true, on the other hand, we
+    must provide the generator with information about how to identify
+    the class of an arbitrary object.
+
+    In our project, one such case is the \c GameAction class which has
+    three subclasses: \c LookAction, \c PickUpAction and \c
+    UseAction. First we must specify the top-most superclass in the
+    hierarchy, which is \c GameAction in our case. We declare this
+    class to be the polymorphic base in the type system specification,
+    using the \l object-type tag's polymorphic-base attribute:
+
+    \code
+        <object-type name="GameAction" polymorphic-base="yes" />
+    \endcode
+
+    If we run the generator on our project now, we will get warnings
+    requiring a polymorphic id for the classes that inherit \c
+    GameAction. The polymorphic id is a C++ expression that identifies
+    an object to be of a specific class. In our case, we must give the
+    classes \c LookAction, \c PickUpAction and \c UseAction such
+    polymorphic ids using the \c GameAction::type() function to
+    determine the type. Note that the generator also will warn us
+    about the \c GameAction class, but since this is an abstract class
+    that cannot be instantiated, we do not need to worry about it.
+
+    \code
+        <object-type name="LookAction" polymorphic-id-expression="%1->type() == Game::Look"/>
+        <object-type name="PickUpAction" polymorphic-id-expression="%1->type() == Game::PickUp"/>
+        <object-type name="UseAction" polymorphic-id-expression="%1->type() == Game::Use"/>
+    \endcode
+
+    Note that the %1 token will be replaced by the object we are
+    inspecting. If we run the generator again now, the warnings will
+    be gone and the types will be properly converted into Java.
+
+    \section1 Step 5: Using the Java API
+
+    Once we have completed a suitable type system specification, rerun
+    the generator and compiled the generated code, the Java API is
+    ready for use. In addition, you can now run the ant script and then
+    try out the Qt Jambi Generator Example by executing the produced 
+    .jar file.
+
+    See also: \l {The Qt Jambi Generator} and \l {The Qt Jambi Type System}.
+*/

@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.script" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtScript");
+    </inject-code>
+	<object-type name="QScriptEngine">
+		<modify-function signature="QScriptEngine(QObject *)">
+			<inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+		</modify-function>
+	</object-type>
+	<object-type name="QScriptExtensionPlugin">
+		<modify-function signature="QScriptExtensionPlugin(QObject *)">
+			<inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) disableGarbageCollection();
+            </inject-code>
+		</modify-function>
+	</object-type>
+    <object-type name="QScriptClass">
+		<modify-function signature="newIterator(const QScriptValue &amp;)">
+		  <modify-argument index="return">
+			<replace-type modified-type="org.qtjambi.qt.script.QScriptClassPropertyIterator" />
+		  </modify-argument>
+		</modify-function>
+		<modify-function signature="queryProperty(const QScriptValue &amp;, const QScriptString &amp;, QFlags&lt;QScriptClass::QueryFlag&gt;, uint *)" access="private">
+		</modify-function>
+		<modify-function signature="setProperty(QScriptValue &amp;, const QScriptString &amp;, unsigned int, const QScriptValue &amp;)" access="private"/>
+		<inject-code>
+		@QtBlockedSlot
+		public org.qtjambi.qt.script.QScriptClass.QueryFlags queryProperty(org.qtjambi.qt.script.QScriptValue object, org.qtjambi.qt.script.QScriptString name, org.qtjambi.qt.script.QScriptClass.QueryFlags flags, int id)    {
+			org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
+			pointer.setIntValue(id);
+			return this.queryProperty(object, name, flags, pointer);
+		}
+		
+		@QtBlockedSlot
+		public org.qtjambi.qt.script.QScriptClass.QueryFlags queryProperty(org.qtjambi.qt.script.QScriptValue object, org.qtjambi.qt.script.QScriptString name, org.qtjambi.qt.script.QScriptClass.QueryFlags flags)    {
+			return this.queryProperty(object, name, flags, (org.qtjambi.qt.QNativePointer)null);
+		}
+		
+		@QtBlockedSlot
+		public void setProperty(org.qtjambi.qt.script.QScriptValue object, org.qtjambi.qt.script.QScriptString name, int id, org.qtjambi.qt.script.QScriptValue value) {
+			setProperty(object.nativePointer(), name, id, value);
+		}
+		</inject-code>
+    </object-type>
+    <value-type name="QScriptValue">
+      <modify-function signature="call(const QScriptValue &amp;, const QList&lt;QScriptValue&gt; &amp;)">
+		  <modify-argument index="2">
+			<replace-type modified-type="java.util.List&lt;QScriptValue&gt;" />
+			<remove-default-expression />
+		  </modify-argument>
+      </modify-function>
+      <modify-function signature="construct(const QList&lt;QScriptValue&gt; &amp;)">
+		   <modify-argument index="1">
+			<replace-type modified-type="java.util.List&lt;QScriptValue&gt;" />
+			<remove-default-expression />
+		   </modify-argument>
+      </modify-function>
+	  <inject-code>
+	  @QtBlockedSlot
+	  public final org.qtjambi.qt.script.QScriptValue call(org.qtjambi.qt.script.QScriptValue thisObject)    {
+			return call(thisObject, new java.util.ArrayList&lt;QScriptValue&gt;());
+	  }
+	  
+	  @QtBlockedSlot
+	  public final org.qtjambi.qt.script.QScriptValue construct()    {
+			return construct(new java.util.ArrayList&lt;QScriptValue&gt;());
+	  }
+	  
+	  @QtBlockedSlot
+	  public final Integer toInteger() {
+			if(Double.isNaN(private_toInteger())){
+				return null;
+			}else{
+				return toInt();
+			}
+	  }
+	  </inject-code>
+  </value-type>
+  <value-type name="QScriptString">
+  <modify-function signature="toArrayIndex ( bool * ) const" access="private" rename="__toArrayIndex"/>
+  <inject-code>
+    public static class ToArrayIndexInfo {
+        public ToArrayIndexInfo(boolean success, int result) {
+            this.success = success;
+            this.result = result;
+        }
+
+        public final boolean success;
+        public final int result;
+    }
+	
+    @QtBlockedSlot
+    public final ToArrayIndexInfo toArrayIndex()  {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+		int result = __toArrayIndex(pointer);
+        return new ToArrayIndexInfo(pointer.booleanValue(), result);
+    }
+  </inject-code>
+  </value-type>
+    <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />
+</typesystem>

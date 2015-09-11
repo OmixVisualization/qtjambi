@@ -1,0 +1,49 @@
+/*!
+    \page qtjambi-designer.html
+
+    \title Qt Designer
+
+    Qt Designer is a visual tool for designing and building
+    graphical user interfaces (GUIs) from Qt components. It allows you
+    to design and build widgets and dialogs using on-screen
+    forms. Components created with Qt Designer can also take advantage
+    of Qt's signals and slots, and they can be previewed so that you
+    can ensure that they will look and feel exactly as you intended.
+
+    To use Qt Designer with Qt Jambi (from the command line), you must
+    ensure that the Qt Jambi language and custom widget plugins
+    (located in \c path/to/qt/jambi/designer-integration) are compiled
+    and installed, and that the directory in which they reside is
+    added to the \c QT_PLUGIN_PATH environment variable. Note that
+    this is automatically taken care of when using the \l {Qt Jambi
+    Eclipse Integration}{Eclipse integration} or the \c designer.bat
+    and \c designer.sh files.
+
+    In addition to the many standard widgets found in the Qt Designer
+    widget box, you can also add your own custom widgets and use them
+    in your application. Currently you must do this manually, i.e.,
+    you must write an XML file explicitly specifying the class and
+    group of the widgets (see \c
+    path/to/qt/jambi/plugins/qtjambi/qtjambi_examples.xml for an
+    example), and locate this file in a plugins directory like \c
+    path/to/qt/jambi/plugins/qtjambi.
+
+    For more details on how to use Qt Designer, please see the \l {Qt
+    Designer Manual}. This manual covers the fundamental steps that
+    most users will take when creating graphical user interfaces with
+    Qt Designer. Note that this manual is written for C++, e.g., the
+    screenshots may differ from what you will see when running Qt
+    Designer with Qt Jambi.
+
+    \table
+    \header \o {2,1} Screenshots of Qt Designer using Qt Jambi
+    \row
+    \o {2,1} \image designer-propertyeditor.png
+    \row
+    \o {2,1} \image designer-customwidget.png
+    \row
+    \o \image designer-signalsloteditor.png
+    \o \image designer-resourceeditor.png
+    \endtable
+
+*/

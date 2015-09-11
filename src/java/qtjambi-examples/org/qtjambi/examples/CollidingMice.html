@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/collidingmice.qdoc -->
+<head>
+  <title>Colliding Mice Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Colliding Mice Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Colliding Mice example shows how to use the Graphics View framework to implement animated items and detect collision between items.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/collidingmice-example.png" /></p><p>Graphics View provides the QGraphicsScene class for managing and interacting with a large number of custom-made 2D graphical items derived from the QGraphicsItem class, and a QGraphicsView widget for visualizing the items, with support for zooming and rotation.</p>
+<p>The example consists of two classes: the <tt>CollidingMice</tt> class which extends QWidget and provides the main application window, and the <tt>Mouse</tt> class which extends QGraphicsItem and represents the individual mice.</p>
+<p>We will first review the <tt>Mouse</tt> class to see how to animate items and detect item collision, and then we will review the <tt>CollidingMice</tt> class to see how to put the items into a scene and how to implement the corresponding view.</p>
+<a name="mouse-class-implementation"></a>
+<h2>Mouse Class Implementation</h2>
+<p>The <tt>mouse</tt> class extends QGraphicsItem. The QGraphicsItem class is the base class for all graphical items in the Graphics View framework, and provides a light-weight foundation for writing your own custom items.</p>
+<pre>        public class Mouse extends QGraphicsItem {
+
+            double angle = 0;
+            double speed = 0;
+            double mouseEyeDirection = 0;
+            QColor color = null;
+            Random generator = new Random();
+
+            static final double TWO_PI = Math.PI * 2;
+
+            public Mouse(QObject parent) {
+                color = new QColor(generator.nextInt(256), generator.nextInt(256),
+                                   generator.nextInt(256));
+                rotate(generator.nextDouble() * 360);</pre>
+<p>In the constructor, we first initialize the color of the mouse using a random number generator to calculate the color components. Then we call the rotate() method inherited from QGraphicsItem. Items live in their own local coordinate system. Their coordinates are usually centered around (0, 0), and this is also the center for all transformations. By calling the item's rotate() method we alter the direction in which the mouse will start moving.</p>
+<pre>                QTimer timer = new QTimer(CollidingMice.this);
+                timer.start(1000/33);
+            }</pre>
+<p>Then we create a QObject instance that will act as a timer. We override the implementation of the QObject.timerEvent() method to receive the timer events it generates. We start our timer by calling QObject's startTimer() method; making a timer event occur every 1000/33 milliseconds. Whenever a mouse receives a timer event it will call the <tt>move()</tt> method which we will come back to later.</p>
+<p>When writing your own graphics item, you must implement the pure virtual boundingRect() and paint() methods:</p>
+<pre>            public QRectF boundingRect() {
+                return boundingRect;
+            }</pre>
+<p>The boundingRect() method defines the outer bounds of the item as a rectangle. Note that the Graphics View framework uses the bounding rectangle to determine whether the item requires redrawing, so all painting must be restricted inside this rectangle.</p>
+<pre>            public void paint(QPainter painter,
+                              QStyleOptionGraphicsItem styleOptionGraphicsItem,
+                              QWidget widget) {
+
+                // Body
+                painter.setBrush(color);
+                painter.drawEllipse(-10, -20, 20, 40);
+
+                // Eyes
+                brush.setColor(QColor.white);
+                painter.setBrush(brush);
+                painter.drawEllipse(-10, -17, 8, 8);
+                painter.drawEllipse(2, -17, 8, 8);
+
+                // Nose
+                brush.setColor(QColor.black);
+                painter.setBrush(brush);
+                painter.drawEllipse(-2, -22, 4, 4);
+
+                // Pupils
+                painter.drawEllipse(pupilRect1);
+                painter.drawEllipse(pupilRect2);
+
+                // Ears
+                if (scene().collidingItems(this).isEmpty())
+                    brush.setColor(QColor.darkYellow);
+                else
+                    brush.setColor(QColor.red);
+                painter.setBrush(brush);
+
+                painter.drawEllipse(-17, -12, 16, 16);
+                painter.drawEllipse(1, -12, 16, 16);
+
+                // Tail
+                painter.setBrush(QBrush.NoBrush);
+                painter.drawPath(tail);
+            }</pre>
+<p>The Graphics View framework calls the paint() method to paint the contents of the item; the method paints the item in local coordinates.</p>
+<p>Note the painting of the ears: Whenever a mouse item collides with other mice items its ears are filled with red; otherwise they are filled with dark yellow. We use the QGraphicsScene.collidingItems() method to check if there are any colliding mice. The actual collision detection is handled by the Graphics View framework using shape-shape intersection. All we have to do is to ensure that the QGraphicsItem.shape() method returns an accurate shape for our item:</p>
+<pre>            public QPainterPath shape() {
+                return shape;
+            }</pre>
+<p>Because the complexity of arbitrary shape-shape intersection grows with an order of magnitude when the shapes are complex, this operation can be noticably time consuming. An alternative approach is to reimplement the collidesWithItem() method to provide your own custom item and shape collision algorithm.</p>
+<p>Finally, we must implement the <tt>move()</tt> method that is called whenever the mouse item receives a timer event from the timer we started in the constructor:</p>
+<pre>            public void move() {
+                QLineF lineToCenter = new QLineF(origo,
+                                                 mapFromScene(0, 0));
+                if (lineToCenter.length() &gt; 150) {
+                    double angleToCenter = Math.acos(lineToCenter.dx()
+                                                     / lineToCenter.length());
+                    if (lineToCenter.dy() &lt; 0)
+                        angleToCenter = TWO_PI - angleToCenter;
+                    angleToCenter = normalizeAngle((Math.PI - angleToCenter)
+                                                   + Math.PI / 2);
+
+                    if (angleToCenter &lt; Math.PI &amp;&amp; angleToCenter &gt; Math.PI / 4) {
+                        // Rotate left
+                        angle += (angle &lt; -Math.PI / 2) ? 0.25 : -0.25;
+                    } else if (angleToCenter &gt;= Math.PI
+                               &amp;&amp; angleToCenter &lt; (Math.PI + Math.PI / 2
+                                                   + Math.PI / 4)) {
+                        // Rotate right
+                        angle += (angle &lt; Math.PI / 2) ? 0.25 : -0.25;
+                    }
+                } else if (Math.sin(angle) &lt; 0) {
+                    angle += 0.25;
+                } else if (Math.sin(angle) &gt; 0) {
+                    angle -= 0.25;
+                }</pre>
+<p>First we ensure that the mice stays within a circle with a radius of 150 pixels.</p>
+<p>Note the mapFromScene() method provided by QGraphicsItem. This method maps a position given in <i>scene</i> coordinates, to the item's coordinate system.</p>
+<pre>                polygon.clear();
+                polygon.append(mapToScene(0, 0));
+                polygon.append(mapToScene(-30, -50));
+                polygon.append(mapToScene(30, -50));
+
+                List&lt;QGraphicsItemInterface&gt; dangerMice = scene().items(polygon);
+                for (QGraphicsItemInterface item : dangerMice) {
+                    if (item == this)
+                        continue;
+
+                    QLineF lineToMouse = new QLineF(origo,
+                                                    mapFromItem(item, 0, 0));
+                    double angleToMouse = Math.acos(lineToMouse.dx()
+                                                    / lineToMouse.length());
+                    if (lineToMouse.dy() &lt; 0)
+                        angleToMouse = TWO_PI - angleToMouse;
+                    angleToMouse = normalizeAngle((Math.PI - angleToMouse)
+                                                  + Math.PI / 2);
+
+                    if (angleToMouse &gt;= 0 &amp;&amp; angleToMouse &lt; (Math.PI / 2)) {
+                        // Rotate right
+                        angle += 0.5;
+                    } else if (angleToMouse &lt;= TWO_PI
+                               &amp;&amp; angleToMouse &gt; (TWO_PI - Math.PI / 2)) {
+                        // Rotate left
+                        angle -= 0.5;
+                    }
+                }
+
+                if (dangerMice.size() &lt; 1 &amp;&amp; generator.nextDouble() &lt; 0.1) {
+                    if (generator.nextDouble() &gt; 0.5)
+                        angle += generator.nextDouble() / 5;
+                    else
+                        angle -= generator.nextDouble() / 5;
+                }</pre>
+<p>Then we try to avoid colliding with other mice.</p>
+<pre>                speed += (-50 + generator.nextDouble() * 100) / 100.0;
+
+                double dx = Math.sin(angle) * 10;
+                mouseEyeDirection = (Math.abs(dx / 5) &lt; 1) ? 0 : dx / 5;
+
+                rotate(dx);
+                setPos(mapToParent(0, -(3 + Math.sin(speed) * 3)));
+            }</pre>
+<p>Finally, we calculate the mouse's speed, its eye direction (for use when painting the mouse), and set its new position.</p>
+<p>The position of an item describes its origin (local coordinate (0, 0)) in the parent coordinates. The QGraphicsItem.setPos() method sets the position of the item to the given position in the parent's coordinate system. For items with no parent, the given position is interpreted as scene coordinates. QGraphicsItem also provides a mapToParent() method to map a position given in item coordinates, to the parent's coordinate system. If the item has no parent, the position will be mapped to the scene's coordinate system instead.</p>
+<pre>            private double normalizeAngle(double angle) {
+                while (angle &lt; 0)
+                    angle += TWO_PI;
+                while (angle &gt; TWO_PI)
+                    angle -= TWO_PI;
+                return angle;
+            }</pre>
+<p>The <tt>normalizeAngle()</tt> method is only a convenience method used when calculating the mouse's new position in the <tt>move()</tt> method.</p>
+<p>This completes the <tt>Mouse</tt> class implementation, it is now ready for use. Let's take a look at the <tt>CollidingMice</tt> class to see how to implement a scene for the mice and a view for displaying the contents of the scene.</p>
+<a name="collidingmice-class-implementation"></a>
+<h2>CollidingMice Class Implementation</h2>
+<p>The <tt>CollidingMice</tt> class extends QWidget and provides the main application window:</p>
+<pre>    public class CollidingMice extends QWidget {
+
+        static final int MOUSE_COUNT = 7;
+        public CollidingMice(QWidget parent) {
+            super(parent);
+
+            QGraphicsScene scene = new QGraphicsScene(this);
+            scene.setSceneRect(-300, -300, 600, 600);</pre>
+<p>In the constructor, we first create a scene. The QGraphicsScene class serves as a container for QGraphicsItems. It also provides functionality that lets you efficiently determine the location of items as well as determining which items that are visible within an arbitrary area on the scene.</p>
+<p>When creating a scene it is recommended to set the scene's rectangle, i.e&#x2e;, the rectangle that defines the extent of the scene. It is primarily used by QGraphicsView to determine the view's default scrollable area, and by QGraphicsScene to manage item indexing. If not explicitly set, the scene's default rectangle will be the largest bounding rectangle of all the items on the scene since the scene was created (i.e&#x2e;, the rectangle will grow when items are added to or moved in the scene, but it will never shrink).</p>
+<pre>            scene.setItemIndexMethod(QGraphicsScene.ItemIndexMethod.NoIndex);</pre>
+<p>The item index method is used to speed up item discovery. NoIndex implies that item location is of linear complexity, as all items on the scene are searched. Adding, moving and removing items, however, is done in constant time. This approach is ideal for dynamic scenes, where many items are added, moved or removed continuously. The alternative is BspTreeIndex which makes use of binary search resulting in item location algorithms that are of an order closer to logarithmic complexity.</p>
+<pre>            for (int i = 0; i &lt; MOUSE_COUNT; ++i) {
+                Mouse mouse = new Mouse(this);
+                mouse.setPos(Math.sin((i * 6.28) / MOUSE_COUNT) * 200,
+                             Math.cos((i * 6.28) / MOUSE_COUNT) * 200);
+                scene.addItem(mouse);
+            }</pre>
+<p>Then we add the mice to the scene.</p>
+<pre>            QGraphicsView view = new QGraphicsView(scene);
+            view.setRenderHint(QPainter.RenderHint.Antialiasing);
+            view.setBackgroundBrush(new QBrush(new QPixmap(</pre>
+<p>To be able to view the scene we must also create a QGraphicsView widget. The QGraphicsView class visualizes the contents of a scene in a scrollable viewport. We also ensure that the contents is rendered using antialiasing, and we create the cheese background by setting the view's background brush.</p>
+<pre>            view.setCacheMode(new QGraphicsView.CacheMode(
+            view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag);
+            QGridLayout layout = new QGridLayout();
+            layout.addWidget(view, 0, 0);
+            setLayout(layout);
+
+            setWindowTitle(&quot;Colliding Mice&quot;);
+            setWindowIcon(new QIcon(&quot;classpath:org/qtjambi/classpath:org/qtjambi/images/qt-logo.png&quot;));
+            resize(400, 300);
+        }</pre>
+<p>Then we set the cache mode; QGraphicsView can cache pre-rendered content in a QPixmap, which is then drawn onto the viewport. The purpose of such caching is to speed up the total rendering time for areas that are slow to render, e.g&#x2e;, texture, gradient and alpha blended backgrounds. The CacheMode property holds which parts of the view that are cached, and the CacheBackground flag enables caching of the view's background.</p>
+<p>By setting the dragMode property we define what should happen when the user clicks on the scene background and drags the mouse. The ScrollHandDrag flag makes the cursor change into a pointing hand, and dragging the mouse around will scroll the scrollbars.</p>
+<p>In the end, we put the view into a layout that we install on the <tt>CollidingMice</tt> widget, and set the application window's title, size and icon.</p>
+<pre>        public static void main(String args[]) {
+            QApplication.initialize(args);
+
+            CollidingMice collidingMice = new CollidingMice(null);
+            collidingMice.show();
+            QApplication.exec();
+        }
+    }</pre>
+<p>The <tt>main()</tt> method is provided to create and show the main application window when the example is run.</p>
+</body>
+</html>

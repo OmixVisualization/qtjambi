@@ -1,0 +1,69 @@
+# TODO no mac support at all yet !!
+
+Add this into your pom.xml:
+
+<dependencies>
+	<dependency>
+		<groupId>net.sf.qtjambi</groupId>
+		<artifactId>qtjambi</artifactId>
+		<version>4.5.2_01</version>
+	</dependency>
+</dependencies>
+
+<build>
+	<plugins>
+		<plugin>
+			<groupId>net.sf.qtjambi</groupId>
+			<artifactId>qtjambi-maven-plugin</artifactId>
+			<executions>
+				<execution>
+					<id>qtjambi</id>
+					<goals>
+						<goal>generate</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<!-- Specifies where sources are. This parameter is MANDATORY -->
+				<sourcesDir>src/main/java</sourcesDir>
+				<!-- following parameters aren't mandatory, they use defaults as specified here
+				if not specified
+				<translationsDir>src/main/resources/translations</translationsDir>
+				<destinationDir>target/generated-sources/qtjambi</destinationDir>
+				-->
+				<!-- cause -noobsolete switch for lupdate -->
+				<noObsoleteTranslations>true</noObsoleteTranslations>
+			</configuration>
+		</plugin>
+	</plugins>
+</build>
+
+
+You also need to specify remote repositories:
+
+    <repositories>
+        <repository>
+            <id>qtjambi</id>
+            <name>qtjambi</name>
+            <url>http://qtjambi.sourceforge.net/maven2/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>qtjambi</id>
+            <name>qtjambi</name>
+            <url>http://qtjambi.sourceforge.net/maven2/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+You MUST specify sourcesDir. Other parameters aren't mandatory, you should remove them if you are
+using standard maven project layout.
+
+To use translations, create zero-length .ts file in translations dir ( >src/main/resources/translations/en_UK.ts ).
+Plugin starts updating that file *1. You should use translations from project resources in your app.
+
+See example project at http://qtjambi.sourceforge.net/maven2/net/sf/qtjambi/testapp/SimpleQtApplication/
+
+*1 - .qm files aren't generated yet, TODO

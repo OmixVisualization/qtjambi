@@ -1,0 +1,58 @@
+This is a beta2 release of QtJambi 4.7. These release notes are summed
+to the ones in beta1.
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+ - Build now based on new 4.7 repo from Smar
+ - No new classes as such in 4.7 compared to 4.6
+ 
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+ - Temporarily we cannot build the generator examples. Will be fixed in
+the final 4.7 release.
+    
+************************************************************************
+ Designer
+************************************************************************
+ - We brought some designer source from the Qt sources into our repo to
+be able to build the designer plugins from system qt on linux. 
+This due to the fact that designer src is not available as a source 
+package in any package repos around.
+
+************************************************************************
+ Build system
+************************************************************************
+ - We are now able to build towards system Qt on Linux! This is a major
+breakthrough since it will be much easier for us to get QtJambi into
+the automatic package build engines of Canonical/Redhat etc.
+
+************************************************************************
+ Examples
+************************************************************************
+ - Made workaround for the crash reported on the example app (see closed 
+ bug #35 in bugtracker at qtjambi.sf.net)
+
+***********************************************************************
+Other fixes
+***********************************************************************
+ - Resolving of https:// links in WebKit seems to work again both on
+Linux and Windows (unknown weather this is the case on Mac too). You
+have to install the ssl libs on Windows thought.
+
+************************************************************************
+Known bugs
+************************************************************************
+
+ - QDir.entryInfoList() unstable using classpath: prefix. See
+ http://sourceforge.net/apps/trac/qtjambi/ticket/42 for more details
+ - Use of QThread can also lead to crashes apperantly. See 
+ http://sourceforge.net/apps/trac/qtjambi/ticket/40 for details.
+ - SSL support need to be installed on Windows to make Webkit opening
+ of of https:// pages.
+ - qtjambi-deployment-spec.xml in the native lib jar on Windows is 
+ created with some "typos" in the directory separators, making it
+ necessary to do some manual editing of this file.
+
+************************************************************************

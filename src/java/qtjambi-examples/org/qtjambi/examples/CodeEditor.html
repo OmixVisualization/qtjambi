@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/codeeditor.qdoc -->
+<head>
+  <title>Code Editor Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Code Editor Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Code Editor example shows how to create a simple editor that has line numbers and that highlights the current line.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/codeeditorexample.png" /></p><p>As can be seen from the image, the editor displays the line numbers in an area to the left of the area for editing. The editor will highlight the line containing the cursor.</p>
+<p>We implement the editor in <tt>CodeEditor</tt>, which is a widget that inherits QPlainTextEdit. We keep a separate widget in <tt>CodeEditor</tt> (<tt>LineNumberArea</tt>) onto which we draw the line numbers.</p>
+<p>QPlainTextEdit inherits from QAbstractScrollArea, and editing takes place within its viewport()'s margins. We make room for our line number area by setting the left margin of the viewport to the size we need to draw the line numbers.</p>
+<p>When it comes to editing code, we prefer QPlainTextEdit over QTextEdit because it is optimized for handling plain text. See the QPlainTextEdit class description for details.</p>
+<p>QPlainTextEdit lets us add selections in addition to the the selection the user can make with the mouse or keyboard. We use this functionality to highlight the current line. More on this later.</p>
+<a name="the-linenumberarea-class"></a>
+<h2>The LineNumberArea Class</h2>
+<p>We paint the line numbers on this widget, and place it over the <tt>CodeEditor</tt>'s viewport()'s left margin area.</p>
+<p>We need to use protected functions in QPlainTextEdit while painting the area. So to keep things simple, we paint the area in the <tt>CodeEditor</tt> class. The area also asks the editor to calculate its size hint.</p>
+<p>Note that we could simply paint the line numbers directly on the code editor, and drop the LineNumberArea class. However, the QWidget class helps us to scroll() its contents. Also, having a separate widget is the right choice if we wish to extend the editor with breakpoints or other code editor features. The widget would then also help in the handling of mouse events.</p>
+<pre>        private static class LineNumberArea extends QWidget
+        {
+            public LineNumberArea(CodeEditor editor)
+            {
+                codeEditor = editor;
+                setParent(codeEditor);
+            }
+
+            @Override
+            public QSize sizeHint()
+            {
+                return new QSize(codeEditor.lineNumberAreaWidth(), 0);
+            }
+
+            @Override
+            protected void paintEvent(QPaintEvent event)
+            {
+                codeEditor.lineNumberAreaPaintEvent(event);
+            }
+
+            private CodeEditor codeEditor;
+        }</pre>
+<a name="codeeditor-class"></a>
+<h2>CodeEditor Class</h2>
+<p>In the editor we resize and draw the line numbers on the <tt>LineNumberArea</tt>. We need to do this when the number of lines in the editor changes, and when the editor's viewport() is scrolled. Of course, it is also done when the editor's size changes. We do this in <tt>updateLineNumberWidth()</tt> and <tt>updateLineNumberArea()</tt>.</p>
+<p>When the cursor's position changes, we highlight the current line in <tt>highlightCurrentLine()</tt>.</p>
+<a name="codeeditor-class-implementation"></a>
+<h2>CodeEditor Class Implementation</h2>
+<p>We will now go through the code editor's implementation, starting with the constructor.</p>
+<pre>        public CodeEditor()
+        {
+            lineNumberArea = new LineNumberArea(this);
+
+            blockCountChanged.connect(this, &quot;updateLineNumberAreaWidth(Integer)&quot;);
+            updateRequest.connect(this, &quot;updateLineNumberArea(QRect,Integer)&quot;);
+            cursorPositionChanged.connect(this, &quot;highlightCurrentLine()&quot;);
+
+            updateLineNumberAreaWidth(0);
+            highlightCurrentLine();
+
+            setWindowTitle(&quot;Code Editor Example&quot;);
+        }</pre>
+<p>In the constructor we connect our slots to signals in QPlainTextEdit. It is necessary to calculate the line number area width and highlight the first line when the editor is created.</p>
+<pre>        public int lineNumberAreaWidth()
+        {
+            int digits = 1;
+            int max = Math.max(1, blockCount());
+            while (max &gt;= 10) {
+                max /= 10;
+                ++digits;
+            }
+
+            int space = 3 + fontMetrics().width('9') * digits;
+
+            return space;
+        }</pre>
+<p>The <tt>lineNumberAreaWidth()</tt> function calculates the width of the <tt>LineNumberArea</tt> widget. We take the number of digits in the last line of the editor and multiply that with the maximum width of a digit.</p>
+<pre>        public void updateLineNumberAreaWidth(Integer newBlockCount)
+        {
+            setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+        }</pre>
+<p>When we update the width of the line number area, we simply call QAbstractScrollArea::setViewportMargins().</p>
+<pre>        public void updateLineNumberArea(QRect rect, Integer dy)
+        {
+            if (dy &gt; 0)
+                lineNumberArea.scroll(0, dy);
+            else
+                lineNumberArea.update(0, rect.y(), lineNumberArea.width(),
+                                      rect.height());
+
+            if (rect.contains(viewport().rect()))
+                updateLineNumberAreaWidth(0);
+        }</pre>
+<p>This slot is invoked when the editors viewport has been scrolled. The QRect given as argument is the part of the editing area that is do be updated (redrawn). <tt>dy</tt> holds the number of pixels the view has been scrolled vertically.</p>
+<pre>        @Override
+        protected void resizeEvent(QResizeEvent e)
+        {
+            super.resizeEvent(e);
+
+            QRect cr = contentsRect();
+            lineNumberArea.setGeometry(new QRect(cr.left(), cr.top(),
+                                       lineNumberAreaWidth(), cr.height()));
+        }</pre>
+<p>When the size of the editor changes, we also need to resize the line number area.</p>
+<pre>        private void highlightCurrentLine()
+        {
+            List&lt;QTextEdit_ExtraSelection&gt; extraSelections =
+                new Vector&lt;QTextEdit_ExtraSelection&gt;();
+
+            if (!isReadOnly()) {
+                QTextEdit_ExtraSelection selection =
+                    new QTextEdit_ExtraSelection();
+
+                QColor lineColor = QColor.yellow.lighter(160);
+
+                QTextCharFormat format = selection.format();
+                format.setBackground(new QBrush(lineColor));
+                format.setProperty(QTextFormat.Property.FullWidthSelection.value(), new Boolean(true));
+                selection.setFormat(format);
+                QTextCursor cursor = textCursor();
+                cursor.clearSelection();
+                selection.setCursor(cursor);
+                extraSelections.add(selection);
+            }
+
+            setExtraSelections(extraSelections);
+        }</pre>
+<p>When the cursor position changes, we highlight the current line, i.e&#x2e;, the line containing the cursor.</p>
+<p>QPlainTextEdit gives the possibility to have more than one selection at the same time. we can set the character format (QTextCharFormat) of these selections. We clear the cursors selection before setting the new new QPlainTextEdit::ExtraSelection, else several lines would get highlighted when the user selects multiple lines with the mouse.</p>
+<p>One sets the selection with a text cursor. When using the FullWidthSelection property, the current cursor text block (line) will be selected. If you want to select just a portion of the text block, the cursor should be moved with QTextCursor::movePosition() from a position set with setPosition().</p>
+<pre>        public void lineNumberAreaPaintEvent(QPaintEvent event)
+        {
+            QPainter painter = new QPainter(lineNumberArea);
+            painter.setPen(new QPen(QColor.black));
+            painter.fillRect(event.rect(), new QBrush(QColor.lightGray));</pre>
+<p>The <tt>lineNumberAreaPaintEvent()</tt> is called from <tt>LineNumberArea</tt> whenever it receives a paint event. We start off by painting the widget's background.</p>
+<pre>            QTextBlock block = firstVisibleBlock();
+            int blockNumber = block.blockNumber();
+            int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+            int bottom = top + (int) blockBoundingRect(block).height();</pre>
+<p>We will now loop through all visible lines and paint the line numbers in the extra area for each line. Notice that in a plain text edit each line will consist of one QTextBlock; though, if line wrapping is enabled, a line may span several rows in the text edit's viewport.</p>
+<p>We get the top and bottom y-coordinate of the first text block, and adjust these values by the height of the current text block in each iteration of the loop.</p>
+<pre>            while (block.isValid() &amp;&amp; top &lt;= event.rect().bottom()) {
+                if (block.isVisible() &amp;&amp; bottom &gt;= event.rect().top()) {
+                    String number = String.valueOf(blockNumber + 1);
+                    painter.drawText(0, top, lineNumberArea.width(), fontMetrics().height(),
+                                    Qt.AlignmentFlag.AlignRight.value(), number);
+                }
+
+                block = block.next();
+                top = bottom;
+                bottom = top + (int) blockBoundingRect(block).height();
+                ++blockNumber;
+            }
+        }</pre>
+<p>Notice that we check if the block is visible in addition to check if it is in the areas viewport - a block can, for example, be hidden by a window placed over the text edit.</p>
+<a name="suggestions-for-extending-the-code-editor"></a>
+<h2>Suggestions for Extending the Code Editor</h2>
+<p>No self-respecting code editor is without a syntax highligther; the <a href="qtjambi-syntaxhighlighter.html">Syntax Highlighter Example</a> shows how to create one.</p>
+<p>In addition to line numbers, you can add more to the extra area, for instance, break points.</p>
+<p>QSyntaxHighlighter gives the possibility to add user data to each text block with setCurrentBlockUserData(). This can be used to implement parenthesis matching. In the <tt>highlightCurrentLine()</tt>, the data of the currentBlock() can be fetched with QTextBlock::userData(). Matching parentheses can be highlighted with an extra selection.</p>
+</body>
+</html>

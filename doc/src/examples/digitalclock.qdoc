@@ -1,0 +1,14 @@
+/*!
+    \page qtjambi-digitalclock.html
+    \title Digital Clock Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Digital Clock Example}{DigitalClock.java}
+    \endlist
+
+    The Digital Clock example shows how to use QLCDNumber to display a
+    number with LCD-like digits.
+
+    \image digitalclock-example.png
+*/

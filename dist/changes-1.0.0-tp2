@@ -1,0 +1,86 @@
+Qt Jambi 1.0.0-tp2 is the second technology preview of Qt for Java.
+It contains bugfixes and new features.
+
+
+************************************************************************
+Qt Jambi Library
+
+ - Pure virtual C++ functions are given the abstract attrbiute
+   in Java where possible.
+
+ - The "native id" of Qt objects is set to null when they are deleted
+   to provide safer execution.
+
+ - QNativePointer now supports the java.lang.String class.
+
+ - Added API to QtJambiUtils to add and remove search paths from
+   the class path file engine.
+
+ - Bugfix: Auto-connections did not work for signals with zero
+   arguments.
+
+ - Bugfix: The qtjambi.exe launcher would sometimes crash on windows.
+
+
+************************************************************************
+Deployment
+
+ - It is now possible to deploy Qt Jambi's shared libraries in a .jar
+   file along with the class files for the application. The libraries
+   will be automatically extracted from the .jar file by Qt Jambi allowing
+   for single file deployment.
+
+ - Qt Jambi works with Java Web Start.
+
+
+************************************************************************
+Generator
+
+ - Extended <enum-type> with upper-bound and lower-bound attributes to
+   make for safer integer enums.
+
+ - Better handling of shadowed and reimplemented functions.
+
+ - Make pure virtual functions as abstract in the generated Java API.
+
+ - Set default include file for C++ files to the file where the
+   class was defined.
+
+ - Automatically include necessary files for classes used as return
+   types or argument types in functions.
+
+************************************************************************
+Juic
+
+ - Added -e option for excluding source folders. This is primarily used
+   by the eclipse plugin when project has nested source folders.
+
+ - Added -i option for including only specific folders. This is
+   primarily used by the eclipse plugin.
+
+ - Added -a option to force regeneration of files.xs.
+
+ - Make the -d option work together with the -cp option.
+
+
+************************************************************************
+Eclipse Integration
+
+ - Added "New Qt Designer Form" wizard
+
+ - Optionally generate java classes into a separate source folder. Add
+   option for this to property sheet.
+
+ - Bugfix: Make integration work with source folders and
+   exclusion/inclusion patterns.
+
+ - Bugfix: Some common key sequences caused actions to be invoked twice
+   (such as paste, copy, etc.)
+
+ - Bugfix: Form editor did not respond to keyboard shortcuts, e.g. for
+   layout actions.
+
+ - Bugfix: Possible infinite recursion on startup of Eclipse if
+   workbench is in a specific state.
+
+

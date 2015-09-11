@@ -1,0 +1,298 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.quick" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+		if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtV8")){
+			org.qtjambi.qt.Utilities.loadQtLibrary("QtV8");
+		}
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtQml");
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtQuick");
+		org.qtjambi.qt.Utilities.loadJambiJniLibrary("org_qtjambi_qt_qml");
+    </inject-code>
+    <object-type name="QQuickItem">
+		<!--modify-function signature="grabToImage(const QSize &amp;)">
+			<modify-argument index="return">
+				<replace-type modified-type="QQuickItemGrabResult"/>
+                <conversion-rule class="native">
+					//conversion-rule-native
+                </conversion-rule>
+			</modify-argument>
+		</modify-function-->
+		<modify-function signature="setParentItem ( QQuickItem * )">
+			<modify-argument index="1">
+				<reference-count action="ignore"/>
+			</modify-argument>
+			<inject-code position="end">
+				<argument-map index="1" meta-name="%1"/>
+				if (%1 != null) {
+					disableGarbageCollection();
+				}else{
+					setJavaOwnership();
+				}
+			</inject-code>
+		</modify-function>
+    </object-type>
+    <object-type name="QSGNode">
+		<modify-function signature="removeChildNode ( QSGNode * )">
+			<modify-argument index="1">
+				<reference-count action="remove" variable-name="__rcChildren"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="removeAllChildNodes()">
+			<inject-code position="end">
+				__rcChildren.clear();
+			</inject-code>
+		</modify-function>
+		<modify-function signature="appendChildNode ( QSGNode * )">
+			<modify-argument index="1">
+				<reference-count action="add" variable-name="__rcChildren"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="prependChildNode ( QSGNode * )">
+			<modify-argument index="1">
+				<reference-count action="add" variable-name="__rcChildren"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="insertChildNodeBefore ( QSGNode *, QSGNode * )">
+			<modify-argument index="1">
+				<reference-count action="add" variable-name="__rcChildren"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="insertChildNodeAfter ( QSGNode *, QSGNode * )">
+			<modify-argument index="1">
+				<reference-count action="add" variable-name="__rcChildren"/>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QSGBasicGeometryNode">
+		<modify-function signature="setGeometry(QSGGeometry *)">
+			<modify-argument index="1">
+				<reference-count declare-variable="QSGGeometry" action="set" variable-name="__rcGeometry"/>
+			</modify-argument>
+		</modify-function>
+		</object-type>
+		<object-type name="QSGGeometryNode">
+		<modify-function signature="setMaterial(QSGMaterial *)">
+			<modify-argument index="1">
+				<reference-count declare-variable="QSGMaterial" action="set" variable-name="__rcMaterial"/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setOpaqueMaterial(QSGMaterial *)">
+			<modify-argument index="1">
+				<reference-count declare-variable="QSGMaterial" action="set" variable-name="__rcOpaqueMaterial"/>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <value-type name="QSGGeometry::AttributeSet">
+		<modify-function signature="AttributeSet()" remove="java"/>
+		<modify-field name="attributes" access="private" rename="attributes_private"/>
+		<modify-field name="count" access="private"/>
+		<modify-field name="stride" access="private"/>
+		<inject-code code="java">
+            <import-file name="typesystem/java/typesystem_quick-java.java" quote-after-line="class QSGGeometry.AttributeSet__" quote-before-line="}// class"/>
+		</inject-code>
+    </value-type>
+    <value-type name="QSGGeometry::Attribute">
+		<modify-function signature="Attribute()" remove="java"/>
+		<modify-field name="position" write="false" access="private"/>
+		<modify-field name="tupleSize" write="false" access="private"/>
+		<modify-field name="type" write="false" access="private"/>
+		<modify-field name="isVertexCoordinate" write="false" access="private"/>
+		<modify-field name="reserved" write="false" access="private"/>
+    </value-type>
+    <object-type name="QSGMaterialShader">
+		<modify-function signature="attributeNames()const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String[]"/>
+				<conversion-rule class="native">
+			int size = 0;
+			while(%in[size]!=0){
+				size++;
+			}
+			jobjectArray __java_return_array = __jni_env->NewObjectArray(size, __jni_env->FindClass("java/lang/String"), 0);
+			for(int i = 0; i &lt; size; i++){
+				jobject element = (jobject)__jni_env->NewStringUTF(%in[i]);
+				__jni_env->SetObjectArrayElement(__java_return_array, i, element);
+			}
+			jobject %out = (jobject)__java_return_array;
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobjectArray __java_return_array = (jobjectArray)%in;
+            jsize __java_return_array_length = __jni_env->GetArrayLength(__java_return_array);
+            const char** __qt_return_array = new const char*[__java_return_array_length+1];
+            for(int i=0; i&lt;__java_return_array_length; i++){
+                jobject element = __jni_env->GetObjectArrayElement(__java_return_array, i);
+                __qt_return_array[__java_return_array_length] = __jni_env->GetStringUTFChars((jstring)element, NULL);
+            }
+            __qt_return_array[__java_return_array_length] = 0;
+            
+            const char*const * %out = (const char*const*)__qt_return_array;
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="vertexShader()const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="fragmentShader()const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QSGGeometry">
+		<modify-function signature="indexData()" rename="indexData_private" access="private"/>
+		<modify-function signature="vertexData()" rename="vertexData_private" access="private"/>
+		<modify-function signature="vertexDataAsPoint2D()" rename="vertexDataAsPoint2D_private" access="private"/>
+		<modify-function signature="vertexDataAsColoredPoint2D()" rename="vertexDataAsColoredPoint2D_private" access="private"/>
+		<modify-function signature="vertexDataAsTexturedPoint2D()" rename="vertexDataAsTexturedPoint2D_private" access="private"/>
+		<modify-function signature="attributes()const" rename="attributes_private" access="private"/>
+		<inject-code code="java">
+            <import-file name="typesystem/java/typesystem_quick-java.java" quote-after-line="class QSGGeometry__" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+	<object-type name="QQuickTransform">
+		<modify-function signature="applyTo(QMatrix4x4 *)const">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.gui.QMatrix4x4"/>
+				<conversion-rule class="native">
+			QMatrix4x4 * %out = (QMatrix4x4 *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QMatrix4x4", "org/qtjambi/qt/gui/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="QQuickRenderControl">
+		<modify-function signature="renderWindow(QPoint *)">
+			<modify-argument index="1">
+				<replace-type modified-type="org.qtjambi.qt.core.QPoint"/>
+				<conversion-rule class="native">
+			QPoint * %out = (QPoint *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QPoint", "org/qtjambi/qt/core/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="renderWindowFor(QQuickWindow *, QPoint *)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QPoint"/>
+				<conversion-rule class="native">
+			QPoint * %out = (QPoint *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QPoint", "org/qtjambi/qt/core/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+	<object-type name="QQuickPaintedItem">
+		<modify-function signature="updatePaintNode(QSGNode *, QQuickItem::UpdatePaintNodeData *)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.quick.QQuickItem.UpdatePaintNodeData"/>
+				<conversion-rule class="native">
+			QQuickItem::UpdatePaintNodeData * %out = (QQuickItem::UpdatePaintNodeData *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QQuickItem$UpdatePaintNodeData", "org/qtjambi/qt/quick/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+	<object-type name="QQuickItem">
+		<modify-function signature="itemTransform(QQuickItem *, bool *) const" access="private">
+		</modify-function>
+		<modify-function signature="updatePaintNode(QSGNode *, QQuickItem::UpdatePaintNodeData *)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.quick.QQuickItem.UpdatePaintNodeData"/>
+				<conversion-rule class="native">
+			QQuickItem::UpdatePaintNodeData * %out = (QQuickItem::UpdatePaintNodeData *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QQuickItem$UpdatePaintNodeData", "org/qtjambi/qt/quick/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<inject-code code="java">
+            <import-file name="typesystem/java/typesystem_quick-java.java" quote-after-line="class QQuickItem__" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+	<object-type name="QQuickFramebufferObject">
+		<modify-function signature="updatePaintNode(QSGNode *, QQuickItem::UpdatePaintNodeData *)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.quick.QQuickItem.UpdatePaintNodeData"/>
+				<conversion-rule class="native">
+			QQuickItem::UpdatePaintNodeData * %out = (QQuickItem::UpdatePaintNodeData *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QQuickItem$UpdatePaintNodeData", "org/qtjambi/qt/quick/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+	<object-type name="QQuickImageProvider">
+		<modify-function signature="requestImage(const QString &amp;, QSize *, const QSize &amp;)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QSize"/>
+				<conversion-rule class="native">
+			QSize * %out = (QSize *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QSize", "org/qtjambi/qt/core/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="requestPixmap(const QString &amp;, QSize *, const QSize &amp;)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QSize"/>
+				<conversion-rule class="native">
+			QSize * %out = (QSize *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QSize", "org/qtjambi/qt/core/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="requestTexture(const QString &amp;, QSize *, const QSize &amp;)">
+			<modify-argument index="2">
+				<replace-type modified-type="org.qtjambi.qt.core.QSize"/>
+				<conversion-rule class="native">
+			QSize * %out = (QSize *)qtjambi_to_object(__jni_env, %in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = qtjambi_from_object(__jni_env, %in, "QSize", "org/qtjambi/qt/core/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+</typesystem>

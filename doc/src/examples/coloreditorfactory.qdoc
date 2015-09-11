@@ -1,0 +1,13 @@
+/*!
+    \page qtjambi-coloreditorfactory.html
+    \title Color Editor Factory Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Color Editor Factory Example}{ColorEditorFactory.java}
+    \endlist
+
+    This example shows how to create an editor that can be used by a QItemDelegate.
+
+    \image coloreditorfactoryimage.png
+*/

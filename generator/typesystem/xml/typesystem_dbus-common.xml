@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<typesystem>
+    <rejection class="DBusError" />
+
+    <!-- DBus -->
+    <!--rejection class="QDBusAbstractAdaptor" />
+    <rejection class="QDBusAbstractInterface" />
+    <rejection class="QDBusArgument" />
+    <rejection class="QDBusConnection" />
+    <rejection class="QDBusConnectionInterface" />
+    <rejection class="QDBusContext" />
+    <rejection class="QDBusInterface" />
+    <rejection class="QDBusMessage" />
+    <rejection class="QDBusMetaType" />
+    <rejection class="QDBusObjectPath" />
+    <rejection class="QDBusReply" />
+    <rejection class="QDBusServer" />
+    <rejection class="QDBusSignature" />
+    <rejection class="QDBusVariant" /-->
+    <!--rejection class="QDBusPendingReply" /--><!-- FIXME won't build QtJambi with is in -->
+    <!--rejection class="QDBusPendingReply::Type" /--><!-- FIXME won't build QtJambi with is in -->
+    <rejection class="QDBusConnection" function-name="registerVirtualObject"/>
+
+    <namespace-type name="QDBus">
+        <extra-includes>
+            <include file-name="QDBus" location="global"/>
+        </extra-includes>
+    </namespace-type>
+
+    <enum-type name="QDBus::CallMode"/>
+    <enum-type name="QDBusConnectionInterface::ServiceQueueOptions"/>
+    <enum-type name="QDBusConnectionInterface::RegisterServiceReply"/>
+    <enum-type name="QDBusConnectionInterface::ServiceReplacementOptions"/>
+    <enum-type name="QDBusConnection::VirtualObjectRegisterOption"/>
+
+    <enum-type name="QDBusConnection::RegisterOption" flags="QDBusConnection::RegisterOptions"><!-- namespace and QDBusConnection -->
+	<reject-enum-value name="ExportAllSignal"/>
+    </enum-type>
+
+    <enum-type name="QDBusConnection::UnregisterMode"/><!-- namespace and QDBusConnection -->
+
+    <enum-type name="QDBusArgument::ElementType"/><!-- QDBusArgument -->
+
+    <enum-type name="QDBusConnection::BusType"/><!-- QDBusConnection -->
+    <enum-type name="QDBusConnection::ConnectionCapability" flags="QDBusConnection::ConnectionCapabilities"/><!-- QDBusConnection -->
+
+    <enum-type name="QDBusConnection::RegisterServiceReply"/><!-- QDBusConnectionInterface -->
+    <enum-type name="QDBusConnection::ServiceQueueOptions"/><!-- QDBusConnectionInterface -->
+    <enum-type name="QDBusConnection::ServiceReplacementOption" flags="QDBusConnection::ServiceReplacementOptions"/><!-- QDBusConnectionInterface -->
+
+    <enum-type name="QDBusError::ErrorType"><!--QDBusError -->
+        <reject-enum-value name="LastErrorType"/>
+    </enum-type>
+
+    <enum-type name="QDBusMessage::MessageType"><!--QDBusMessage -->
+    </enum-type>
+
+    <enum-type name="QDBusServiceWatcher::WatchModeFlag" flags="QDBusServiceWatcher::WatchMode"/><!--QDBusServiceWatcher -->
+
+
+    <object-type name="QDBusAbstractAdaptor"/><!-- since 4.2 -->
+    <object-type name="QDBusAbstractInterface"><!-- since 4.2, looks like interface -->
+	<modify-function signature="interface() const" rename="interfaceName"/>
+        <modify-function signature="asyncCall(const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)">
+		<modify-argument index="return">
+			<conversion-rule class="native">
+					jobject %out = qtjambi_from_cpointer(__jni_env, new QDBusPendingCall(%in), QTJAMBI_NATIVEPOINTER_TYPEID__POINTER_8, 0);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <modify-function signature="asyncCallWithArgumentList(const QString &amp;, const QList&lt;QVariant > &amp;)">
+		<modify-argument index="return">
+			<conversion-rule class="native">
+					jobject %out = qtjambi_from_cpointer(__jni_env, new QDBusPendingCall(%in), QTJAMBI_NATIVEPOINTER_TYPEID__POINTER_8, 0);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDBusAbstractInterfaceBase"/><!-- since 4.2, looks like interface -->
+
+    <object-type name="QDBusArgument"><!-- since 4.2 -->
+	<modify-function signature="beginMapEntry() const" remove="all"/>
+	<modify-function signature="beginStructure() const" remove="all"/>
+	<modify-function signature="endStructure() const" remove="all"/>
+	<modify-function signature="endArray() const" remove="all"/>
+	<modify-function signature="endMap() const" remove="all"/>
+	<modify-function signature="endMapEntry() const" remove="all"/>
+	<modify-function signature="operator&lt;&lt;(int)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(long long)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(short)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(unsigned char)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(bool)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(double)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QString &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QDBusVariant &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QStringList&lt;QString> &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QByteArray &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QDBusObjectPath &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QDBusSignature &amp;)" rename="append"/>
+	<modify-function signature="operator&lt;&lt;(const QDBusUnixFileDescriptor &amp;)" rename="append"/>
+	<modify-function signature="operator>>(unsigned char &amp;)const" access="private" rename="getByte"/>
+	<modify-function signature="operator>>(bool &amp;)const" access="private" rename="getBoolean"/>
+	<modify-function signature="operator>>(short &amp;)const" access="private" rename="getShort"/>
+	<modify-function signature="operator>>(unsigned short &amp;)const" remove="all"/>
+	<modify-function signature="operator>>(int &amp;)const" access="private" rename="getInt"/>
+	<modify-function signature="operator>>(uint &amp;)const" remove="all"/>
+	<modify-function signature="operator>>(long long &amp;)const" access="private" rename="getLong"/>
+	<modify-function signature="operator>>(unsigned long long &amp;)const" remove="all"/>
+	<modify-function signature="operator>>(double &amp;)const" access="private" rename="getDouble"/>
+	<modify-function signature="operator>>(String &amp;)const" access="private" rename="getString"/>
+	<modify-function signature="operator>>(QDBusVariant &amp;)const" access="private" rename="getQDBusVariant"/>
+	<modify-function signature="operator>>(QDBusObjectPath &amp;)const" access="private" rename="getQDBusObjectPath"/>
+	<modify-function signature="operator>>(QDBusSignature &amp;)const" access="private" rename="getQDBusSignature"/>
+	<modify-function signature="operator>>(QDBusUnixFileDescriptor &amp;)const" access="private" rename="getQDBusUnixFileDescriptor"/>
+	<modify-function signature="operator>>(QStringList&lt;QString> &amp;)const" access="private" rename="getStringList"/>
+	<modify-function signature="operator>>(QByteArray &amp;)const" access="private" rename="getQByteArray"/>
+	<modify-function signature="operator&lt;&lt;(uint)" remove="all"/>
+	<modify-function signature="operator&lt;&lt;(unsigned long long)" remove="all"/>
+	<modify-function signature="operator&lt;&lt;(unsigned short)" remove="all"/>
+    </object-type>
+    <value-type name="QDBusConnection"><!-- since 4.2 -->
+        <extra-includes>
+            <include file-name="QDBusConnection" location="global"/>
+        </extra-includes>	
+        <custom-creator>
+	if(copy){
+        	return new QDBusConnection(*copy);
+	}else{
+        	return new QDBusConnection("");
+	}
+        </custom-creator>
+        <modify-function signature="asyncCall(const QDBusMessage &amp;, int) const">
+		<modify-argument index="return">
+			<conversion-rule class="native">
+					jobject %out = qtjambi_from_cpointer(__jni_env, new QDBusPendingCall(%in), QTJAMBI_NATIVEPOINTER_TYPEID__POINTER_8, 0);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+	<modify-function signature="interface() const" rename="connectionInterface"/>
+    </value-type>
+
+    <object-type name="QDBusConnectionInterface"/><!-- since 4.2, looks like interface -->
+
+    <interface-type name="QDBusContext"/><!-- since 4.3, looks like interface -->
+
+    <value-type name="QDBusError"><!-- since 4.2 -->
+    </value-type>
+
+    <object-type name="QDBusInterface"><!-- since 4.2, looks like interface -->
+	<modify-function signature="qt_metacast(const char *)" remove="all"/>
+	<modify-function signature="qt_metacall(QMetaObject::Call, int, void **)" remove="all"/>
+    </object-type>
+
+    <value-type name="QDBusMessage"><!-- since 4.2 -->
+	<modify-function signature="interface() const" rename="interfaceName"/>
+    </value-type>
+
+    <value-type name="QDBusObjectPath"><!-- since 4.2, inherits QString(private) -->
+	<modify-function signature="QDBusObjectPath(QLatin1String)" remove="all"/>
+    </value-type>
+
+    <interface-type name="QDBusPendingCall"> <!-- since 4.5 -->
+        <modify-function signature="QDBusPendingCall(const QDBusPendingCall &amp;)">
+		<modify-argument index="1">
+			<conversion-rule class="native">
+					const QDBusPendingCall&amp;  %out = * (QDBusPendingCall *) qtjambi_to_interface(__jni_env, (QtJambiLink *)%in, "QDBusPendingCallInterface", "org/qtjambi/qt/dbus/", "__qt_cast_to_QDBusPendingCall");
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <modify-function signature="operator=(const QDBusPendingCall &amp;)">
+		<modify-argument index="1">
+			<conversion-rule class="native">
+					const QDBusPendingCall&amp;  %out = * (QDBusPendingCall *) qtjambi_to_interface(__jni_env, (QtJambiLink *)%in, "QDBusPendingCallInterface", "org/qtjambi/qt/dbus/", "__qt_cast_to_QDBusPendingCall");
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <modify-function signature="swap(QDBusPendingCall &amp;)">
+		<modify-argument index="1">
+			<conversion-rule class="native">
+					const QDBusPendingCall&amp;  %out = * (QDBusPendingCall *) qtjambi_to_interface(__jni_env, (QtJambiLink *)%in, "QDBusPendingCallInterface", "org/qtjambi/qt/dbus/", "__qt_cast_to_QDBusPendingCall");
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <modify-function signature="fromCompletedCall(const QDBusMessage &amp;)">
+		<modify-argument index="return">
+			<conversion-rule class="native">
+					jobject %out = qtjambi_from_cpointer(__jni_env, new QDBusPendingCall(%in), QTJAMBI_NATIVEPOINTER_TYPEID__POINTER_8, 0);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+        <modify-function signature="fromError(const QDBusError &amp;)">
+		<modify-argument index="return">
+			<conversion-rule class="native">
+					jobject %out = qtjambi_from_cpointer(__jni_env, new QDBusPendingCall(%in), QTJAMBI_NATIVEPOINTER_TYPEID__POINTER_8, 0);
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+    </interface-type>
+
+    <object-type name="QDBusPendingCallWatcher"><!-- since 4.5 -->
+        <modify-function signature="QDBusPendingCallWatcher(const QDBusPendingCall &amp;, QObject*)">
+		<modify-argument index="1">
+			<conversion-rule class="native">
+					const QDBusPendingCall&amp;  %out = * (QDBusPendingCall *) qtjambi_to_interface(__jni_env, (QtJambiLink *)%in, "QDBusPendingCallInterface", "org/qtjambi/qt/dbus/", "__qt_cast_to_QDBusPendingCall");
+			</conversion-rule>
+		</modify-argument>
+        </modify-function>
+    </object-type>
+
+<!--    <value-type name="QDBusPendingReply"> --><!-- since 4.5 -->
+<!--        <modify-function signature="argumentAt() const" remove="all"/> --><!-- FIXME: return type (Type) -->
+<!--        <modify-function signature="Type() const" remove="all"/> --><!-- non-public API -->
+<!--        <modify-function signature="value() const" remove="all"/> --><!-- non-public API -->
+<!--    </value-type> -->
+
+    <!--value-type name="QDBusReply" generate="no">
+        <modify-function signature="operator Type() const" remove="all" />
+	<modify-function signature="error() const" remove="all"/>
+    </value-type>
+    <value-type name="QtJambiDBusReply" java-name="QDBusReply">
+	<modify-function signature="error() const" remove="all"/>
+    </value-type-->
+
+    <object-type name="QDBusServiceWatcher"><!-- since 4.6 -->
+        <modify-function signature="connection() const" remove="all"/><!-- FIXME: commented out due to build errors -->
+        <!-- FIXME: QDBusServiceWatcher() this probably makes this class pretty useless, need to fix QDBusConnection type  -->
+        <modify-function signature="QDBusServiceWatcher(const QString &amp;,const QDBusConnection &amp;,QFlags&lt;QDBusServiceWatcher::WatchModeFlag&gt;,QObject *)" remove="all"/>
+        <modify-function signature="setConnection(const QDBusConnection &amp;)" remove="all"/>
+    </object-type>
+
+    <value-type name="QDBusSignature"><!-- since 4.2, inherits QString(private) -->
+	<modify-function signature="QDBusSignature(QLatin1String)" remove="all"/>
+    </value-type>
+
+    <value-type name="QDBusUnixFileDescriptor"/><!-- since 4.8 -->
+
+    <object-type name="QDBusVariant"/><!-- since 4.2, inherits QVariant(private) -->
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusError::QDBusError', unmatched parameter type 'DBusError const*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusReply::QDBusReply', unmatched parameter type 'QDBusPendingReply&lt;T> const&amp;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QDBusAbstractInterfaceBase' set to non-final, as it is extended by other classes" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDBusObjectPath' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDBusVariant' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDBusSignature' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+</typesystem>

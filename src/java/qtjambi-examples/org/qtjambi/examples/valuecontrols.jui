@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<ui version="4.0" language="jambi" >
+ <class>ValueControls</class>
+ <widget class="QWidget" name="ValueControls" >
+  <property name="enabled" >
+   <bool>true</bool>
+  </property>
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>321</width>
+    <height>420</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout" >
+   <item>
+    <widget class="QWidget" native="true" name="ColorizeControlWidget" >
+     <layout class="QFormLayout" name="formLayout" >
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label" >
+        <property name="text" >
+         <string>Red</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QSlider" name="colorizeRedSlider" >
+        <property name="value" >
+         <number>64</number>
+        </property>
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_2" >
+        <property name="text" >
+         <string>Green</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QSlider" name="colorizeGreenSlider" >
+        <property name="value" >
+         <number>32</number>
+        </property>
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_3" >
+        <property name="text" >
+         <string>Blue</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QSlider" name="colorizeBlueSlider" >
+        <property name="value" >
+         <number>99</number>
+        </property>
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" native="true" name="DropShadowControlWidget" >
+     <layout class="QFormLayout" name="formLayout_2" >
+      <property name="fieldGrowthPolicy" >
+       <enum>org.qtjambi.qt.widgets.QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow</enum>
+      </property>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_4" >
+        <property name="text" >
+         <string>Red</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QSlider" name="dropShadowRedSlider" >
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_5" >
+        <property name="text" >
+         <string>Green</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QSlider" name="dropShadowGreenSlider" >
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_6" >
+        <property name="text" >
+         <string>Blue</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QSlider" name="dropShadowBlueSlider" >
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" >
+       <widget class="QLabel" name="label_7" >
+        <property name="text" >
+         <string>X Distance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1" >
+       <widget class="QSlider" name="dropShadowXSlider" >
+        <property name="maximum" >
+         <number>999</number>
+        </property>
+        <property name="value" >
+         <number>600</number>
+        </property>
+        <property name="minimum" >
+         <number>0</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" >
+       <widget class="QLabel" name="label_8" >
+        <property name="text" >
+         <string>Y Distance</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1" >
+       <widget class="QSlider" name="dropShadowYSlider" >
+        <property name="value" >
+         <number>99</number>
+        </property>
+        <property name="maximum" >
+         <number>999</number>
+        </property>
+        <property name="value" >
+         <number>600</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" >
+       <widget class="QLabel" name="label_9" >
+        <property name="text" >
+         <string>Blur Radius</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1" >
+       <widget class="QSlider" name="dropShadowRadiusSlider" >
+        <property name="maximum" >
+         <number>299</number>
+        </property>
+        <property name="value" >
+         <number>30</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" >
+       <widget class="QLabel" name="label_10" >
+        <property name="text" >
+         <string>Alpha</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" >
+       <widget class="QSlider" name="dropShadowAlphaSlider" >
+        <property name="value" >
+         <number>99</number>
+        </property>
+        <property name="maximum" >
+         <number>255</number>
+        </property>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" native="true" name="ConvolutionControlWidget" >
+     <layout class="QGridLayout" name="gridLayout" >
+      <item row="0" column="0" >
+       <widget class="QLineEdit" name="kernel_1x1" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="kernel_2x1" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QLineEdit" name="kernel_3x1" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLineEdit" name="kernel_1x2" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="kernel_2x2" >
+        <property name="text" >
+         <string>0.2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" >
+       <widget class="QLineEdit" name="kernel_3x2" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLineEdit" name="kernel_1x3" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QLineEdit" name="kernel_2x3" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2" >
+       <widget class="QLineEdit" name="kernel_3x3" >
+        <property name="text" >
+         <string>0.1</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

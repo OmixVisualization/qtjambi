@@ -1,0 +1,91 @@
+Qt Jambi 4.3.2_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.3.2. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.3.1_01.
+
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+____________________
+
+New Implementation:
+____________________
+
+ * QObject::setProperty() and QObject::property() can now read and write
+   Qt C++ properties. This is primarly useful when an unmapped Qt C++
+   class is passed to into Qt Jambi.
+
+____________________
+
+Fixes:
+____________________
+
+ * Improved error messages on native library
+   loading. -Dcom.trolltech.qt.verbose-loading is now only required
+   when investigating load order.
+
+ * Fixed crash when using custom icon engines.
+
+ * Fixed Mac source package to properly build on when the OS is set to
+   case-sensitive.
+
+ * Types that inherit Qt C++ template classes now contain
+   out-of-bounds checks, throwing exceptions instead of crashing. This
+   includes QPolygon, QPolygonF, QItemSelection among others.
+
+ * Fixed internal race condition in use of text related API which in
+   rare cases would cause the application to crash.
+
+
+************************************************************************
+ Qt Designer
+************************************************************************
+
+____________________
+
+Fixes:
+____________________
+
+ * QDockWidgets now have the properties "docked", "windowTitle" and
+   "dockWidgetArea".
+
+ * The "Show all signals and slots" option in the signal / slot editor
+   now properly filters out slots in the base classes of the current
+   widget.
+
+
+
+************************************************************************
+ Juic
+************************************************************************
+
+____________________
+
+Fixes:
+____________________
+
+ * Juic now detects a number of Java keywords and will try to escape
+   names like "native", "final", etc, when these are used as object
+   names in Designer.
+
+
+************************************************************************
+ Examples
+************************************************************************
+
+ * New example: HTTP, showing use of QHttp class.
+
+ * New example: OrderForm, showing more advanced textlayout handling.
+
+ * New Example: Slider example, showing range controls.
+
+ * "About Qt Jambi" menu item has been added to examples.
+
+ * The Launcher now properly detects Aqua style on Mac OS X.
+
+
+************************************************************************
+ Package
+************************************************************************
+
+ * The binary package now contains translation files for Qt

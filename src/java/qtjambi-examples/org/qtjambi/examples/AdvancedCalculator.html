@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/calculator.qdoc -->
+<head>
+  <title>Calculator UI Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Calculator UI Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Calculator UI Example shows how to use forms created with <i>Qt Designer</i> in an application.</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td><img src="classpath:org/qtjambi/images/calculator-simple-example.png" /></td><td><img src="classpath:org/qtjambi/images/calculator-normal-example.png" /></td><td><img src="classpath:org/qtjambi/images/calculator-dockable-example.png" /></td></tr>
+<thead><tr valign="top" class="qt-style"><th>Simple</th><th>Normal</th><th>Dockable</th></tr></thead>
+</table></p>
+<p>The example provides a calculator application that allows the user to choose the preferred user interface among <b>Simple</b>, <b>Normal</b> and <b>Dockable</b>. The main application window is provided by the <tt>Calculator</tt> class which extends the QMainWindow class.</p>
+<a name="calculator-class-definition"></a>
+<h2>Calculator Class Definition</h2>
+<p>In general, you only have to subclass QWidget to implement the UI forms. The reason we have chosen to derive from QMainWindow (which is a QWidget subclass) instead, is rooted in the dockable version of our calculator. QWidget does not support dock widgets; QMainWindow does.</p>
+<pre>    public class AdvancedCalculator extends QMainWindow {
+
+        public static void main(String[] args) {
+            QApplication.initialize(args);
+            AdvancedCalculator calculator = new AdvancedCalculator();
+            calculator.show();
+            QApplication.exec();
+        }
+
+        private QLineEdit lineEdit;
+        private QTextBrowser textBrowser;
+
+        private Interpreter interpreter = new Interpreter();</pre>
+<p>In the <tt>Calculator</tt> class, we first provide a <tt>main()</tt> method to create and show the main application window when the example is run. While running the calculator, we will have to access the line edit to accept input and the text browser to display the calculations and results. For that reason, we declare corresponding variables in the application wide scope. We also have to provide methods that correspond to the application's user interface. All of this is taken care of in the <tt>Calculator</tt> class's constructor.</p>
+<a name="calculator-class-constructor"></a>
+<h2>Calculator Class Constructor</h2>
+<p>In the constructor, we first define the various user interfaces that the user can choose from, and the we use the QInputDialog class to retrieve the user's preferred alternative:</p>
+<pre>        public AdvancedCalculator() {
+            Vector&lt;String&gt; uiTypes = new Vector&lt;String&gt;(3);
+            uiTypes.add(&quot;Simple&quot;);
+            uiTypes.add(&quot;Normal&quot;);
+            uiTypes.add(&quot;Dockable&quot;);
+            ...
+            String item = QInputDialog.getItem(this, tr(&quot;Ui selector&quot;), tr(&quot;Ui configurations:&quot;), uiTypes, 0, false);</pre>
+<p>The QInputDialog class provides a simple convenience dialog to get a single value from the user. The input value can be a string, a number or an item from a list. We use the static QInputDialog.getItem() convenience method to let the user select one of our predefined alternatives using a combobox.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/calculator-selector.png" /></p><p>When pressing the dialog's <b>OK</b> button, the getItem() method returns the text of the current item; otherwise it returns <tt>null</tt>.</p>
+<pre>            if (item == null || item.equals(&quot;Simple&quot;)) {
+                Ui_CalculatorSimple uiSimple = new Ui_CalculatorSimple();
+                uiSimple.setupUi(this);
+                lineEdit = uiSimple.lineEdit;
+                textBrowser = uiSimple.textBrowser;
+            } else if (item.equals(&quot;Normal&quot;)) {
+                Ui_CalculatorNormal uiNormal = new Ui_CalculatorNormal();
+                uiNormal.setupUi(this);
+                lineEdit = uiNormal.lineEdit;
+                textBrowser = uiNormal.textBrowser;
+            } else if (item.equals(&quot;Dockable&quot;)) {
+                Ui_CalculatorDockable uiDockable = new Ui_CalculatorDockable();
+                uiDockable.setupUi(this);
+                lineEdit = uiDockable.lineEdit;
+                textBrowser = uiDockable.textBrowser;
+            }</pre>
+<p>Once we know which user interface the user prefer, we can create an object of the corresponding class. Note that you must run the user interface compiler for Qt (juic) to generate the latter class. For example, if the form created in <i>Qt Designer</i> is saved as <tt>CalculatorSimple.jui</tt>, running juic on the file will generate the corresponding <tt>Ui_CalculatorSimple.java</tt> file that defines the public <tt>Ui_CalculatorSimple</tt> class. The latter file must be located in the same directory as the application executable to be successfully loaded at runtime.</p>
+<p>The generated class has a <tt>setupUI()</tt> method that we can use to set up the preferred user interface. We pass <tt>this</tt> as the argument to this method to use the <tt>Calculator</tt> widget itself as the container for the user interface. With the user interface in place, we can also establish the previously mentioned access to the input line edit and output text browser.</p>
+<a name="connecting-to-the-user-interface"></a>
+<h2>Connecting to the User Interface</h2>
+<p>In addition to creating the user interface, <tt>setupUi()</tt> automatically calls the QObject.connectSlotsByName() method, connecting signals from widgets on the form to methods in our code. To indicate which widgets and signals in the user interface that should be connected to each method, we use a predefined naming convention. For example:</p>
+<pre>        public void on_button_equal_clicked() {
+            String expression = lineEdit.text();
+            String result = &quot;&quot;;
+            boolean error = false;
+            try {
+                result = interpreter.evaluate(interpreter.parse(expression)).toString();
+            } catch (Interpreter.ParseException exception) {
+                result = &quot;Error: &lt;font color=\&quot;red\&quot;&gt;&quot; + exception.getMessage() + &quot;&lt;/font&gt;&quot;;
+                error = true;
+            }
+
+            textBrowser.append(expression + &quot;&lt;b&gt; = &quot; + result + &quot;&lt;/b&gt;&lt;br&gt;&quot;);
+            if (error)
+                result = expression;
+            lineEdit.setText(result);
+        }
+        ...
+    }</pre>
+<p>The <tt>on_button_equal_clicked()</tt> method is called whenever the button called &quot;button_equal&quot; in the user interface emits the QAbstractButton.clicked() signal. By providing similar methods for all the buttons in the user interface we get a fully responsive calculator application.</p>
+<p>Note that the <tt>Calculator</tt> class defines several other methods used to perform the various calculations, but these are beyond the scope of this documentation. Please see the example code for implementation details.</p>
+</body>
+</html>

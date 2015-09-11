@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../..">
+      <excludeFolder url="file://$MODULE_DIR$/../../Demos.app" />
+      <excludeFolder url="file://$MODULE_DIR$/../../ant" />
+      <excludeFolder url="file://$MODULE_DIR$/../../antfiles" />
+      <excludeFolder url="file://$MODULE_DIR$/../../autotestlib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../bin" />
+      <excludeFolder url="file://$MODULE_DIR$/../../common" />
+      <excludeFolder url="file://$MODULE_DIR$/../../cpp" />
+      <excludeFolder url="file://$MODULE_DIR$/../../extjars" />
+      <excludeFolder url="file://$MODULE_DIR$/../../generator.out" />
+      <excludeFolder url="file://$MODULE_DIR$/../../generator/.kdev4" />
+      <excludeFolder url="file://$MODULE_DIR$/../../generator/debug" />
+      <excludeFolder url="file://$MODULE_DIR$/../../generator/parser" />
+      <excludeFolder url="file://$MODULE_DIR$/../../generator/release" />
+      <excludeFolder url="file://$MODULE_DIR$/../../jars" />
+      <excludeFolder url="file://$MODULE_DIR$/../../java" />
+      <excludeFolder url="file://$MODULE_DIR$/../../jogl" />
+      <excludeFolder url="file://$MODULE_DIR$/../../juic" />
+      <excludeFolder url="file://$MODULE_DIR$/../../lib" />
+      <excludeFolder url="file://$MODULE_DIR$/../../libbenchmark" />
+      <excludeFolder url="file://$MODULE_DIR$/../../platform-output" />
+      <excludeFolder url="file://$MODULE_DIR$/../../plugins" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_core" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_designer" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_generator" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_gui" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_help" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_multimedia" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_network" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_opengl" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_phonon" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_script" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_scripttools" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_sql" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_svg" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_webkit" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_xml" />
+      <excludeFolder url="file://$MODULE_DIR$/../../qtjambi_xmlpatterns" />
+      <excludeFolder url="file://$MODULE_DIR$/../../timestamps" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
+

@@ -1,0 +1,18 @@
+/*!
+    \page qtjambi-simplehttpserver.html
+    \title Simple HTTP Server
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Simple HTTP Server}{HttpServerExample.java}
+    \endlist
+
+    This demo shows how to create a http server by inheriting
+    QTcpServer.
+
+    \image simplehttpserver-example.png
+
+    The above image is of the application. The html written in the
+    text edit will be published by the server and can be viewed at
+    http://localhost:8080.
+*/

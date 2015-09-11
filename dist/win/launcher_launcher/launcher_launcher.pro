@@ -1,0 +1,20 @@
+TEMPLATE = app
+TARGET = QtJambi
+DEPENDPATH += .
+INCLUDEPATH += .
+
+QMAKE_CXXFLAGS_RELEASE -= -MD
+QMAKE_CXXFLAGS_DEBUG -= -MDd
+QMAKE_CXXFLAGS_RELEASE += -MT
+QMAKE_CXXFLAGS_DEBUG += -MTd
+
+# Input
+SOURCES += main.cpp
+DESTDIR = ..
+INCLUDEPATH += $(JAVADIR)/include $(JAVADIR)/include/win32
+LIBS += -luser32 -ladvapi32
+CONFIG -= qt
+
+RC_FILE=launcher_launcher.rc
+
+console:DEFINES += QT_CONSOLE_BUILD

@@ -1,0 +1,26 @@
+<antlib>
+    <taskdef name="juic" classname="org.qtjambi.tools.ant.JuicTask"/>
+    <taskdef name="qmake" classname="org.qtjambi.tools.ant.QMakeTask"/>
+    <taskdef name="make" classname="org.qtjambi.tools.ant.MakeTask"/>
+    <taskdef name="generator"
+        classname="org.qtjambi.tools.ant.GeneratorTask"/>
+    <taskdef name="qtjambi-platform-jar"
+        classname="org.qtjambi.tools.ant.PlatformJarTask"/>
+    <taskdef name="qtjambi-initialize"
+        classname="org.qtjambi.tools.ant.InitializeTask"/>
+    <taskdef name="qtjambi-initialize-build"
+        classname="org.qtjambi.tools.ant.InitializeBuildTask"/>
+    <taskdef name="qtjambi-resolve-path"
+        classname="org.qtjambi.tools.ant.ResolvePathTask"/>
+    <taskdef name="qtjambi-version-properties"
+        classname="org.qtjambi.tools.ant.VersionPropertiesTask"/>
+
+    <!-- Added due to dash in name -->
+    <typedef name="plugin-designer"
+         classname="org.qtjambi.tools.ant.PluginDesignerPath"/>
+    <typedef name="directory"
+         classname="org.qtjambi.tools.ant.Directory"/>
+    <typedef name="file"
+         classname="org.qtjambi.tools.ant.File"/>
+</antlib>
+

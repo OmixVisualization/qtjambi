@@ -1,0 +1,16 @@
+# It is no longer necessary to configure this variable, the QtJambi
+#  build will automatically base itself on: qmake -query QT_VERSION
+# However if this property is set it must match that found.
+#qtjambi.version = 4.7.4
+
+# We not longer hardwire this information into code and also make it
+#  platform independant (i.e. the mechanism works for all platforms).
+# If you are using MinGW on Windows and need this you can uncomment
+#  it however this will be moved to qtjambi-deployment.xml soon.
+#qtjambi.system.libraries.1 = lib/libgcc_s_dw2-1.dll
+#qtjambi.system.libraries.2 = lib/libstdc++-6.dll
+#qtjambi.system.libraries.3 = lib/mingwm10.dll
+
+# .1 to .9 is before 
+# .10+ is after
+#qtjambi.jni.libdir.1 = /usr/lib/jni

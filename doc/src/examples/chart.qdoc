@@ -1,0 +1,416 @@
+/*!
+    \page qtjambi-itemviewchart.html
+    \title Item View Chart Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Item View Chart Example}{ItemviewChart.java}
+    \endlist
+
+    The Item View Chart example shows how to create a custom view for the
+    model/view framework.
+
+    \image chart-example.png
+
+    In this example, the items in a table model are represented as slices in a pie
+    chart, relying on the flexibility of the model/view architecture to handle custom
+    editing and selection features.
+
+    \bold{Note that you only need to create a new view class if your data requires a
+    specialized representation.} You should first consider using a standard QListView,
+    QTableView, or QTreeView with a custom QItemDelegate subclass if you need to
+    represent data in a special way.
+
+    Many alternative representations of the same data, such as bar charts, could
+    more easily be obtained using \l{Pixelator Example}{custom delegates} with a
+    QTableView.
+
+    The example provides a custom QAbstractItemView class, \c PieView, that is
+    displayed side-by-side with a QTableView in a main window provided by the
+    \c ItemviewChart class, a subclass of QMainWindow.
+
+    \section1 ItemviewChart Class Implementation
+
+    The \c ItemviewChart class contains methods to handle the user interface and
+    set up a model with data obtained from a file. It also contains the
+    implementation of the \c PieView class
+    (\l{#PieView Class Implementation}{shown later}).
+
+    \snippet ItemviewChart.java 0
+
+    We define private variables for the model so that we can access
+    and modify it as required.
+
+    The constructor sets up the user interface, connecting actions used in the
+    menus to slots in the class, constructs a model, and arranges the views in
+    the window:
+
+    \snippet ItemviewChart.java 1
+
+    The data in the \c qtdata.cht file is accessed from the classpath via the
+    \l{Resource System Example}{resource system}.
+
+    The \c setupModel() method provides an empty model with a reasonable number
+    of rows and columns:
+
+    \snippet ItemviewChart.java 2
+
+    Since the data used with the example is arranged in the form of a two-column
+    table with an arbitrary number of rows, it is useful to set the number of
+    columns when the model is constructed. The number of rows defined here is
+    a useful minimum value, allowing the user to experiment by adding additional
+    data to small data sets.
+
+    The \c setupViews() method arranges a table view alongside the custom pie
+    view in a QSplitter widget, enabling the amount of space assigned to each
+    to be adjusted by the user:
+
+    \snippet ItemviewChart.java 3
+
+    We construct a selection model for both views to share, before setting the
+    splitter as the central widget for the main window.
+
+    The \c openFile() and \c saveFile() methods are called when the user
+    selects the respective \gui{File|Open...} and \gui{File|Save As...} menu items.
+    \c openFile() reads and parses data in a simple format, and populates the model
+    with items. \c saveFile() exports the contents of the model to a file in the
+    same format.
+
+    \section1 PieView Class Overview
+
+    There are a number of different groups of methods in the \c PieView class.
+    Some methods provide functionality defined in QAbstractItemView, and are
+    required for the view to method correctly. These typically handle
+    interaction between the view and its model, or indicate the mapping between
+    model indexes and the visual location of items within the view.
+
+    \list
+    \o The \l{QAbstractItemView::}{dataChanged()},
+       \l{QAbstractItemView::}{rowsInserted()}, and
+       \l{QAbstractItemView::}{rowsAboutToBeRemoved()} methods
+       are the couterparts of the signals with the same signatures in the
+       QAbstractItemModel class. These handle changes to the model's data and
+       underlying structure specified by model indexes.
+    \o The \l{QAbstractItemView::}{edit()} method is called whenever the user
+       attempts to edit an item.
+       Since the base class implements the basic mechanism to do this, we don't
+       need to provide more than a simple reimplementation of this method.
+    \endlist
+
+    Each view class needs to provide implementations of methods that specify
+    how it arranges items in a view. These relate model indexes to the
+    positions of corresponding visible items and the regions they occupy.
+
+    \list
+    \o The \l{QAbstractItemView::}{indexAt()} method is used to relate a
+       position in the view to a model index. Since views manage their own item
+       placement, this method must be implemented.
+    \o \l{QAbstractItemView::}{visualRect()} and
+       \l{QAbstractItemView::}{visualRegionForSelection()} relate model indexes to
+       rectangles and regions specified in the viewport's coordinate system, so
+       that visible items can be displayed.
+    \o The \l{QAbstractItemView::}{isIndexHidden()} method is used in certain
+       types of view to support hidden items. We need to provide a default
+       implementation even if he do not provide this feature.
+    \o \c itemRect() and \c itemRegion() relate model indexes to rectangles
+       and regions specified in the view's coordinate system. These are private
+       helper methods that make implementating other methods easier.
+    \endlist
+
+    Three methods are needed to control which part of the view is shown in the
+    viewport:
+
+    \list
+    \o \l{QAbstractItemView::}{horizontalOffset()} and
+       \l{QAbstractItemView::}{verticalOffset()} are used to indicate the
+       horizontal and vertical displacements of the area in the view that is
+       shown in the viewport. These can usually be related to values provided by
+       the view's scroll bars.
+    \o The \l{QAbstractItemView::}{scrollTo()} method is used to navigate to a
+       particular item in the view by scrolling the viewport. Although useful for
+       many views, we only provide a minimal implementation of this method.
+    \o The updateGeometries() method is called whenever the user scrolls the
+       viewport.
+    \endlist
+
+    The view also needs to handle keyboard input to allow navigation between items,
+    and provide support for selections.
+
+    \list
+    \o The \l{QAbstractItemView::}{moveCursor()} method is called when the user
+       presses a key corresponding to a
+       \l{QAbstractItemView::CursorAction}{standard action}.
+       It is up to the view to provide behavior that is appropriate for its
+       visual representation of model data.
+    \o \l{QAbstractItemView::}{setSelection()} must be implemented to relate a
+       rectangle in view coordinates to a range of model indexes, and adjust the
+       underlying selection model according to the specified selection mode. The
+       \c itemRect() and \c itemRegion() methods can be used to help implement
+       this method.
+    \endlist
+
+    A selection of event handlers are reimplemented to provide support for
+    item selection and painting:
+
+    \list
+    \o The \l{QAbstractItemView::}{mousePressEvent()},
+       \l{QAbstractItemView::}{mouseMoveEvent()}, and
+       \l{QAbstractItemView::}{mouseReleaseEvent()} methods
+       handle item selection, but can also be used to provide support for drag
+       and drop.
+    \o We render the visible part of the view in the \l{QWidget::}{paintEvent()}
+       method.
+    \o The \l{QWidget::}{resizeEvent()} handler method is called whenever the
+       view changes size. This method is reimplemented to ensure that the
+       region shown in the viewport corresponds to the scroll bar positions.
+    \endlist
+
+    For convenience, we also implement a rows() method specific to this view
+    that provides a convenient way to obtain the number of sibling of the item
+    corresponding to a given model index.
+
+    \section1 PieView Class Implementation
+
+    The \c PieView class is subclassed from QAbstractItemView rather than one of
+    the standard view classes because it represents data obtained from a model in
+    a way that is quite different from those views.
+
+    To operate correctly, the view needs to record certain pieces of information
+    about the data supplied by the model, including the sum of all values in the
+    second column of the model and the number of valid items:
+
+    \snippet ItemviewChart.java 4
+
+    The constructor provides default values for these variables:
+
+    \snippet ItemviewChart.java 5
+
+    We also set constant values for the total size of the view and its margin,
+    calculating the pie chart's size from these values.
+
+    \section2 Handling Changes to Data
+
+    When data in the model is changed, the \c dataChanged() slot is called:
+
+    \snippet ItemviewChart.java 6
+    \snippet ItemviewChart.java 7
+
+    Since the view needs to know the sum of all values in the second column in
+    order to correctly represent each individual item in the pie chart, it is
+    useful to keep a running total of all values. Since we do not know the
+    previous values of the items of data changed, we simply recalculate the
+    total and number of valid items.
+
+    The \c rowsInserted() and \c rowsAboutToBeRemoved() slots are able to
+    modify the running total and update the number of valid items:
+
+    \snippet ItemviewChart.java 28
+    \snippet ItemviewChart.java 29
+    \snippet ItemviewChart.java 30
+
+    The \c edit() slot handles item editing:
+
+    \snippet ItemviewChart.java 8
+
+    We only allow the user to edit the labels for each item; these are stored in
+    the first column of the model.
+
+    \section2 Relating Model Indexes to the View
+
+    When the user interacts with the view using the mouse cursor, the position of
+    the cursor needs to be related to the relevant model index so that the
+    appropriate editing or selection actions can be performed.
+
+    Since custom views manage the geometries of the items they display, the
+    \c indexAt() method must be implemented to perform this relation for each
+    view, returning a model index corresponding to the item in which the given
+    point lies, or an invalid model index if the point does not intersect with
+    an item.
+
+    \snippet ItemviewChart.java 9
+
+    The initial conversion between viewport and view (contents) coordinates is
+    straightforward for this view, requiring a simple translation based on the
+    scroll offsets.
+
+    Since the view displays a pie chart in the left half of its area and a key
+    on the right, we need to handle the point differently depending on its
+    location. We compare a point that lies within the pie chart area against each
+    of the slices in the pie and, if it lies within a slice, we return the
+    corresponding model index:
+
+    \snippet ItemviewChart.java 10
+    \snippet ItemviewChart.java 11
+    \snippet ItemviewChart.java 12
+
+    If the point did not lie within any parts of the view that
+    correspond to model indexes, null is returned.
+
+    The \c itemRect() method is used to obtain rectangles defined in view
+    coordinates that correspond to model indexes:
+
+    \snippet ItemviewChart.java 13
+    \snippet ItemviewChart.java 14
+    \snippet ItemviewChart.java 15
+
+    In this example, we only return useful information for the model indexes
+    that are used to obtain information about the key labels in the right half
+    of the view. For the pie chart, we simply return a QRect that covers the
+    entire pie chart. We return a null QRect for invalid model indexes.
+
+    For the \c itemRegion() implementation, we can provide more accurate
+    information about the geometry of each slice in the pie chart that corresponds
+    to the specified model index:
+
+    \snippet ItemviewChart.java 16
+    \snippet ItemviewChart.java 17
+    \snippet ItemviewChart.java 18
+
+    We are only interested in items in the second column in the model
+    that contain positive double values, so we return null for all
+    other model indexes.
+
+    For each suitable model index, we use a QPainterPath to define the
+    geometry of the item, and convert it to a filled polygon to construct a
+    new QRegion object:
+
+    \snippet ItemviewChart.java 19
+    \snippet ItemviewChart.java 20
+    \snippet ItemviewChart.java 21
+
+    If the model index supplied was invalid, null is returned.
+
+    The \c visualRect() method returns the rectangle that corresponds to a given
+    model index in viewport coordinates, calling the \c itemRect() method to
+    avoid duplicating effort:
+
+    \snippet ItemviewChart.java 39
+
+    The \c visualRegionForSelection() method is similar to \c visualRect() but,
+    where \c visualRect(), \c itemRect(), and \c itemRegion() are only used to
+    obtain geometric information about individual items, this method is used to
+    obtain regions that correspond to a number of selected items in viewport
+    coordinates:
+
+    \snippet ItemviewChart.java 40
+    \snippet ItemviewChart.java 41
+
+    We start with an empty region, and cumulatively find its union with the
+    region that corresponds to each selected item. The result we return is the
+    union of all selected items.
+
+    \section2 Scrolling and Viewport Handling
+
+    We need to ensure that the viewport only shows the part of the visible part
+    of the view's contents, represented by the positions of the scroll bars if
+    they are shown. To do this, we need to implement the \c horizontalOffset() and
+    \c verticalOffset() methods to return the position of the top-left corner of
+    the visible area relative to the top-left corner of the view's contents:
+
+    \snippet ItemviewChart.java 22
+    \codeline
+    \snippet ItemviewChart.java 38
+
+    Since the view does not contain scaled content, these methods simply return
+    the corresponding scroll bar values.
+
+    The \c scrollTo() method is used to navigate to the item that corresponds to
+    a particular model index:
+
+    \snippet ItemviewChart.java 31
+
+    We find the position of the item in viewport coordinates, and calculate
+    the displacement from the top-left of the viewport. The result is used to
+    provide new values for the horizontal and vertical scroll bars.
+
+    The \c updateGeometries() method ensures that the scroll bars have the
+    correct size when the size of the viewport changes:
+
+    \snippet ItemviewChart.java 37
+
+    This method is called by the implementation of \c resizeEvent() handler
+    method.
+
+    \section2 Keyboard Navigation and Selections
+
+    In the moveCursor() method, we interpret standard keyboard actions
+    entered by the user, and update the current model index to refer to the
+    corresponding current item in the view.
+
+    In this model, we only handle actions for the cursor keys:
+
+    \snippet ItemviewChart.java 26
+    \snippet ItemviewChart.java 27
+
+    Here, we interpret the left and up cursor keys in the same way, setting the
+    current model index to the index in the row above it in the model.
+    Similarly, the right and down cursor keys cause the current model index to
+    be set to the index in the row below it in the model. Although the view
+    represents the items of data in the form of a pie chart, we do not allow
+    the current index to "wrap around" from one end of the data set to the
+    other.
+
+    Selections of items are handled by the \c setSelection() method, which
+    translates a QRect, given in viewport coordinates, to the corresponding
+    QRect in view contents coordinates, and determines which items lie within
+    this selection rectangle.
+
+    First, we obtain model indexes from the model for each item of data,
+    using \c itemRegion() to obtain a region for each item.
+
+    \snippet ItemviewChart.java 32
+    \snippet ItemviewChart.java 33
+    \snippet ItemviewChart.java 34
+
+    If an item's region intersects the selection rectangle, we add the
+    model index to a vector of indexes.
+
+    Once we have examined the regions of each item, we check whether any
+    indexes were stored in the vector. If so, we construct a selection by
+    extending the current selection to cover a range of indexes.
+
+    \snippet ItemviewChart.java 35
+    \snippet ItemviewChart.java 36
+
+    Note that we still apply a selection even if there are no model indexes
+    to select; this ensures that selection commands such as
+    \l{QItemSelectionModel::}{Clear} have an effect on the selection.
+
+    \section2 Event Handler Functions
+
+    We reimplement mouse event handlers for the view to control the way items
+    are selected in the view.
+
+    In the \c mousePressEvent() method, we call the base class's method
+    to ensure that various basic tasks are performed and, if necessary, we
+    create a QRubberBand object that we will use to indicate the region the
+    user has selected in the view:
+
+    \snippet ItemviewChart.java 23
+
+    We record the position of the mouse press in the instance's \c origin
+    variable for later use.
+    The rubber band initially has an invalid size; it will be resized if the
+    user moves the mouse while the mouse button is held down.
+
+    The \c mouseMoveEvent() implementation resizes the rubber band using the
+    value previously stored in \c origin, taking care to normalize the
+    newly-constructed rectangle first, and calls the base class's
+    implementation of the method:
+
+    \snippet ItemviewChart.java 24
+
+    If the mouse is over an item in the view, we update the selection to
+    include the corresponding model index. We also update the visible part
+    of the view to show any changes.
+
+    In the \c mouseReleaseEvent() method, we call the base class's
+    implementation, hide the rubber band, and update the visible part of the
+    view:
+
+    \snippet ItemviewChart.java 25
+
+    Although the selection handling provided by these event handlers is quite
+    simple, it demonstrates a basic level of functionality that can be used
+    as a starting point for more complex views.
+*/

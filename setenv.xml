@@ -1,0 +1,119 @@
+<!--
+    This file has two purposes:
+
+    * download ant-contrib and use it (or pick up the jar from the system itself)
+    * set various properties necessary for the build process.
+-->
+
+<project name="qtjambi.setenv" default="setenv">
+
+    <property file="${jambi.directory}/build.properties"/>
+    <property file="${jambi.directory}/antcontrib.properties"/>
+
+    <!--
+        We want the environment variables and we want a timestamp for jars.
+    -->
+
+    <property environment="env"/>
+    <tstamp/>
+
+    <!--
+        Macro for creating a timestamp
+    -->
+
+    <macrodef name="dostamp">
+        <attribute name="stampfile"/>
+        <sequential>
+            <mkdir dir="${timestamp.dir}"/>
+            <touch file="${timestamp.dir}/@{stampfile}"/>
+        </sequential>
+    </macrodef>
+
+    <!--
+        Preliminary: we download and enable ant-contrib tasks, unless a
+        timestamp file exists that tells us this is already done.
+
+        As an alternative, we get ant-contrib from the system itself if the
+        antcontrib.system.location is set in antcontrib.properties.
+
+        As we don't have ant-contrib yet at this stage (obviously), we must
+        rely on a proxy task to tell whether the timestamp file exists.
+    -->
+
+    <target name="check.antcontrib">
+        <available file="${timestamp.dir}/antcontrib" type="file"
+                   property="antcontrib.done"/>
+    </target>
+
+    <target name="antcontrib.systemcopy" if="antcontrib.system.location">
+        <mkdir dir="extjars"/>
+        <copy failonerror="true" overwrite="true"
+              file="${antcontrib.system.location}"
+              tofile="extjars/ant-contrib.jar"/>
+        <property name="antcontrib.done" value="yes"/>
+    </target>
+
+    <target name="get.antcontrib"
+            depends="check.antcontrib, antcontrib.systemcopy"
+            unless="antcontrib.done">
+        <!--
+            Yes, pathnames are hardcoded here. Since this is the only use we
+            have for them, there's no need to make properties out of them.
+        -->
+        <mkdir dir="tmp"/>
+        <mkdir dir="extjars"/>
+        <!--
+            NOTE about the use of <get> below: there is a usetimestamp property
+            that can avoid regetting the file if it is considered up to date wrt
+            the remote side. Unfortunately, it will not do its job quite
+            correctly since it doesn't check for the size... So we don't use it
+            here (it is set to "false" by default). Later, we should add some
+            kind of timestamp to tell that yes, the file is there, and not
+            download it again.
+        -->
+        <get src="${antcontrib.download.url}" dest="tmp/ant-contrib.zip"
+             verbose="true"/>
+        <unzip src="tmp/ant-contrib.zip" dest="tmp"/>
+        <copy file="tmp/${antcontrib.jar.location}"
+              tofile="extjars/ant-contrib.jar"/>
+        <!--
+            ... And remove the temporary directory, which we don't need anymore.
+        -->
+        <delete dir="tmp"/>
+        <dostamp stampfile="antcontrib"/>
+    </target>
+
+    <target name="source.antcontrib" depends="get.antcontrib">
+        <!--
+            OK, we have extracted the zip file, copied the ant-contrib.jar where
+            we expect it to be, we can now import all tasks...
+        -->
+        <taskdef resource="net/sf/antcontrib/antlib.xml"
+                 classpath="extjars/ant-contrib.jar"/>
+    </target>
+
+    <!--
+        Handle environment variables.
+        If QTDIR isn't set, look LIBDIR and INCLUDEDIR, which points to
+        to qt's libraries's dir and include dir.
+    -->
+
+    <target name="check-kdephonon">
+        <if>
+        <equals arg1="${qtjambi.phonon.kdephonon}" arg2="true" />
+        <then>
+            <property name="qtjambi.phonon.kdephonon-path"
+                    value="${generatorDir}/targets/masterinclude_with_kdephonon.h" />
+        </then>
+        </if>
+    </target>
+
+    <target name="setup-properties" depends="check-kdephonon">
+        <!-- these are used by examples/generator/hello_world_generator/** not by QtJambi to build itself -->
+        <property name="qtjambi.jambi.libdir"       value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}lib"/>
+        <property name="qtjambi.jambi.pluginsdir"   value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}plugins"/>
+    </target>
+
+    <target name="setenv" depends="source.antcontrib, setup-properties"/>
+
+</project>

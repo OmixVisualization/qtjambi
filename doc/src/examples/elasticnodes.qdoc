@@ -1,0 +1,13 @@
+/*!
+    \page qtjambi-elasticnodes.html
+    \title Elastic Nodes Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Elastic Nodes Example}{ElasticNodes.java}
+    \endlist
+
+    This GraphicsView example shows how to implement edges between nodes in a graph.
+
+    \image elasticnodes-example.png
+*/

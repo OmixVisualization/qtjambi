@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/customwidget.qdoc -->
+<head>
+  <title>Custom Widget Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Custom Widget Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Custom Widget example shows how to make your custom widgets ready for use in Qt Jambi Designer or the Qt Jambi Eclipse Integration.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/customwidget.png" alt="Screenshot of the custom widget example" /></p><p>Often, you will want to reuse certain widget types in your application for several different contexts. Qt Jambi has a handy mechanism for importing such widget types into the visual designer tool, letting you visually place the components in your windows and dialgos, visually connect signals and slots, preview your layouts and connections, and edit the widget's properties with instant feed back of the effects.</p>
+<p>For this example, we have a speedometer component which we wish to expose to Designer and Eclipse. We will focus on the parts of the code directly related to using the component as a custom widget, and show a step-by-step tutorial on how the custom widget is made. If you launch either Designer or the Eclipse Integration, the component should already be available under &quot;Qt Jambi Examples&quot;, so you are able to test the results of this tutorial.</p>
+<ul><li><a href="#step-1-making-the-widget-appear-in-the-widget-box">Step 1: Making the widget appear in the widget box</a></li>
+<li><a href="#step-2-signals-and-slots">Step 2: Signals and slots</a></li>
+<li><a href="#step-3-properties">Step 3: Properties</a></li>
+<ul><li><a href="#resetting-properties">Resetting properties</a></li>
+<li><a href="#naming-properties">Naming properties</a></li>
+<li><a href="#removing-properties-from-the-api">Removing properties from the API</a></li>
+<li><a href="#types-of-properties">Types of properties</a></li>
+</ul>
+</ul>
+<a name="step-1-making-the-widget-appear-in-the-widget-box"></a>
+<h2>Step 1: Making the widget appear in the widget box</h2>
+<p>Both Qt Jambi Designer and the Qt Jambi Eclipse Integration have a widget box window where different widget types can be instantiated and dragged over to the form you are editing. In order to use our speedometer component with these tools, we need for it to be listed in the widget box.</p>
+<p>For the Qt Jambi Eclipse Integration, this is simply a matter of making the <tt>org.qtjambi.examples.CustomWidget</tt> class a part of your project, and marking it as a Qt Designer Plugin. In order to achieve this, right click on your project, select &quot;Properties&quot;, then &quot;Qt Designer Plugins&quot; and finally tick the check box under the &quot;Enable plugin&quot; heading.</p>
+<p>In order to expose a custom widget to Qt Jambi Designer, you will need to edit an XML file and tell the Qt Jambi Designer to load the widget (more information in the <a href="qtjambi-designer.html">Qt Designer</a> documentation.)</p>
+<p>For our example, we'll edit the file <tt>path/to/jambi/plugins/qtjambi/qtjambi_example.xml</tt> and add the following code:</p>
+<pre>    &lt;qt-jambi-custom-widget
+        class=&quot;org.qtjambi.examples.CustomWidget&quot;
+        group=&quot;Qt Jambi Examples&quot;
+    /&gt;</pre>
+<p>At this point, the component should be available in the widget box, and you should be able to drag and drop it into a form like any of the default widget types.</p>
+<a name="step-2-signals-and-slots"></a>
+<h2>Step 2: Signals and slots</h2>
+<p>The next step is to expose the widget's signals and slots to the designer. This is largely done automatically. By default, any signal in your widget type will be listed in Qt Jambi Designer's signal list, and any method in the type will be listed a slot.</p>
+<p>Sometimes, however, you do not wish for a particular method to be listed in the slot list, because it may not make sense to ever make a connection to it, so it only serves to overpopulate the list and make it harder to find the more relevant methods.</p>
+<p>This is the case for e.g&#x2e; getters for properties, which will only return a value. In a connection, the emitting signal simply throws away the returned value of the slot, so if there are no side effects, there is no reason to allow connections to getter methods.</p>
+<p>In order to remove the methods from the list, we annotate them using the <tt>QtBlockedSlot</tt> annotation, as follows:</p>
+<pre>    @QtBlockedSlot public int currentSpeed() { return currentSpeed; }</pre>
+<p>Using this annotation we can tailor the contents of the slot list, and make our widget more friendly to the designer who is using it.</p>
+<a name="step-3-properties"></a>
+<h2>Step 3: Properties</h2>
+<p>The final step is to expose the widget's properties to the property editor. Properties in Qt Jambi are defined by their accessor methods. In particular, properties available Qt Jambi Designer require at least two accessor methods: a getter and a setter.</p>
+<p>The default behavior in Qt Jambi is to automatically identify properties by their name. Qt Jambi then recognizes certain patterns of method naming and identifies the properties based on this.</p>
+<p>If you wish to use the automatic discovery mechanism, your setter accessor should always be called <tt>setXxx()</tt> where <tt>Xxx</tt> should be substituted by the name of your property. The first character of the property name will always be lower case, so the actual property name becomes <tt>xxx</tt>.</p>
+<p>An example of this is the setter for the property <tt>needleColor</tt> in the speedometer component:</p>
+<pre>    public final void setNeedleColor(QColor needleColor)</pre>
+<p>In addition to the naming pattern, the method also has to take a single argument, return <tt>void</tt>, and the type of this argument needs to be recognized by Qt Jambi Designer (it needs to know what type of editor to use for it.) We'll get back to the typing later on.</p>
+<p>In addition to the setter, the property also needs to have a getter. Depending on which pattern you prefer, the getter for property <tt>xxx</tt> can be called either <tt>xxx()</tt> or <tt>getXxx()</tt>, or, if the property's type is <tt>boolean</tt>, it can also be called either <tt>isXxx()</tt> or <tt>hasXxx()</tt>. The getter must return the same type as the argument type for the setter, and it must not take any arguments.</p>
+<p>For the property <tt>needleColor</tt>, the signature of the getter looks as follows:</p>
+<pre>    public final QColor needleColor()</pre>
+<p>This is how you expose a property in simplest terms, and most of the properties in the example are made in this way. We will continue to look at what else you can do with properties if you need to tweak the API a little more.</p>
+<a name="resetting-properties"></a>
+<h3>Resetting properties</h3>
+<p>In addition to getters and setters, Qt Jambi also recognizes resetter accessors. These are, however, not recognized automatically. If a property has a resetter, then it will get a <tt>Reset</tt> button in the property editor, and pressing the button will cause the method to be called. In the example, this is used to set certain properties back to their default values.</p>
+<p>Mark a method as a resetter by annotating it using the <tt>QtPropertyResetter</tt> class, and supplying the name of the property. For the <tt>needleColor</tt> property, the code is as follows:</p>
+<pre>    @QtPropertyResetter(name=&quot;needleColor&quot;)
+    public final void resetNeedleColor() {
+        setNeedleColor(NEEDLE_COLOR);
+    }</pre>
+<a name="naming-properties"></a>
+<h3>Naming properties</h3>
+<p>In some cases, you may want to use a different naming for your properties than the patterns described above will allow. In these cases, Qt Jambi allows you to explicitly name your properties using annotations.</p>
+<p>In the example, we have a property accessed by methods <tt>maxSpeed()</tt> and <tt>setMaxSpeed()</tt>. We decide, however, that it will look better in the designer if the property is called <tt>topSpeed</tt> instead.</p>
+<p>We use the <tt>QtPropertyReader</tt> and <tt>QtPropertyWriter</tt> annotations to customize the name of this property:</p>
+<pre>    @QtPropertyReader(name=&quot;topSpeed&quot;)
+    @QtBlockedSlot public final int maxSpeed() {
+        return maxSpeed;
+    }
+
+    @QtPropertyWriter(name=&quot;topSpeed&quot;)
+    public final void setMaxSpeed(int maxSpeed) {
+        this.maxSpeed = maxSpeed; propertyChanged.emit();
+    }</pre>
+<a name="removing-properties-from-the-api"></a>
+<h3>Removing properties from the API</h3>
+<p>Sometimes, Qt Jambi might find the property accessor pattern in the naming of methods that are not intended to be properties, or available in the designer tool. In these cases, you can tell Qt Jambi to ignore the methods by using annotations. If you want the methods to be ignored entirely, you can annotate the getter method with <tt>QtPropertyReader</tt> and set the <tt>enabled</tt> argument to false.</p>
+<p>If it does not make sense to edit the property in the designer tool, but you still want to make it available to other parts of Qt Jambi (e.g&#x2e; through the accessors <tt>getProperty()</tt> and <tt>property()</tt> in <tt>QObject</tt>) then you can use the <tt>QtPropertyDesignable</tt> annotation on the getter method. This will tell Qt Jambi whether the property is &quot;designable&quot; i.e&#x2e; available in the designer tool.</p>
+<p>In the example, the <tt>currentSpeed</tt> property is more a run time property, and should not be set on the non-live widget. Therefore, we make it non-designable:</p>
+<pre>    @QtPropertyDesignable(value=&quot;false&quot;)
+    @QtBlockedSlot public int currentSpeed()</pre>
+<a name="types-of-properties"></a>
+<h3>Types of properties</h3>
+<p>Since the Qt Jambi Designer needs to know how to visually edit each property, only properties of recognized types will be available in the property editor.</p>
+<p>The recognized types include most of the primitive types, as well as many of the default types in Qt Jambi.</p>
+<p>Qt Jambi will also recognize user defined types if they are defined inside a subclass of <tt>QObject</tt>, and if they are <tt>enums</tt> or <tt>flags</tt>.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/customwidget-unit-property.png" alt="Editing a custom enum property" /></p><p>Enums must be declared using Java's <tt>enum</tt> mechanism. By default, the ordinal value of the enum constant will be used to represent it internally, but if the enum implements the <tt>QtEnumerator</tt> interface, the integer returned from the <tt>value()</tt> method is used instead.</p>
+<p>In order to declare flags, you will need to extend the <tt>QFlags</tt> class, and the enum type used to parameterize the class needs to be declared inside the same class as the <tt>QFlags</tt> subclass.</p>
+<p>If these rules are upheld, then the property will become available in the designer, editable in a convenient way depending on whether it's an enum type or a flag type.</p>
+<p>The example has a single enum property which is called <tt>unit</tt>.</p>
+</body>
+</html>

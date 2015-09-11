@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.tools.designer" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtScript"))
+            org.qtjambi.qt.Utilities.loadQtLibrary("QtScript");    // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtDesigner");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtDesignerComponents");
+    </inject-code>
+
+    <primitive-type name="qdesigner_internal::FlagType" java-name="int" preferred-conversion="no" jni-name="jint" />
+    <primitive-type name="qdesigner_internal::EnumType" java-name="int" preferred-conversion="no" jni-name="jint" />
+
+</typesystem>

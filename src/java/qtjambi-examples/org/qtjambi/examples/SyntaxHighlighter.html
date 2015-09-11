@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/syntaxhighlighter.qdoc -->
+<head>
+  <title>Syntax Highlighter Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Syntax Highlighter Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Syntax Highlighter example shows how to perform simple syntax highlighting by subclassing the QSyntaxHighlighter class.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/syntaxhighlighter-example.png" /></p><p>The Syntax Highlighter application displays Java files with custom syntax highlighting.</p>
+<p>The example consists of several classes: The <tt>SyntaxHighlighter</tt> class which extends QMainWindow and provides the main application window, the <tt>Highlighter</tt> class which extends QSyntaxHighlighter, providing the actual syntax highlighting, and the <tt>HighlightingRule</tt> class defining the rules used by the syntax highlighter.</p>
+<p>We will first review the <tt>Highlighter</tt> and <tt>HighlightingRule</tt> classes to see how you can customize the QSyntaxHighlighter class to fit your preferences, then we will take a look at the relevant parts of the <tt>SyntaxHighlighter</tt> class to see how you can use your custom highlighter class in an application.</p>
+<a name="highlighter-class-implementation"></a>
+<h2>Highlighter Class Implementation</h2>
+<p>To provide your own syntax highlighting, you must subclass QSyntaxHighlighter, reimplement the highlightBlock() method, and define your own highlighting rules.</p>
+<pre>        private class Highlighter extends QSyntaxHighlighter {
+
+            QRegExp commentStartExpression;
+            QRegExp commentEndExpression;
+
+            QTextCharFormat keywordFormat = new QTextCharFormat();
+            QTextCharFormat classFormat = new QTextCharFormat();
+            QTextCharFormat commentFormat = new QTextCharFormat();
+            QTextCharFormat quotationFormat = new QTextCharFormat();
+            QTextCharFormat functionFormat = new QTextCharFormat();
+
+            public class HighlightingRule {
+                public QRegExp pattern;
+                public QTextCharFormat format;
+
+                public HighlightingRule(QRegExp pattern, QTextCharFormat format) {
+                    this.pattern = pattern;
+                    this.format = format;
+                }
+            }</pre>
+<p>We have chosen to store our highlighting rules using the private <tt>HighlightingRule</tt> class: A rule consists of a QRegExp pattern and a QTextCharFormat instance.</p>
+<p>The QTextCharFormat class provides formatting information for characters in a QTextDocument specifying the visual properties of the text, as well as information about its role in a hypertext document. In this example, we will only define the font weight and color using the QTextCharFormat.setFontWeight() and QTextCharFormat.setForeground() methods.</p>
+<pre>            Vector&lt;HighlightingRule&gt; highlightingRules = new Vector&lt;HighlightingRule&gt;();</pre>
+<p>We will use a vector to store our highlighting rules.</p>
+<pre>            public Highlighter(QTextDocument parent) {
+
+                super(parent);
+
+                HighlightingRule rule;
+                QBrush brush;
+                QRegExp pattern;</pre>
+<p>When subclassing the QSyntaxHighlighter class you must pass the constructor's <tt>parent</tt> parameter to the super class's constructor. The <tt>parent</tt> is the text document upon which the syntax highligning will be applied. In this example, we have also chosen to define our highlighting rules in the constructor:</p>
+<pre>                brush = new QBrush(QColor.darkBlue,Qt.BrushStyle.SolidPattern);
+                keywordFormat.setForeground(brush);
+                keywordFormat.setFontWeight(QFont.Weight.Bold.value());
+
+                String[] keywords = { &quot;abstract&quot;, &quot;continue&quot;, &quot;for&quot;, &quot;new&quot;,
+                                      &quot;switch&quot;, &quot;assert&quot;, &quot;default&quot;, &quot;goto&quot;,
+                                      &quot;package&quot;, &quot;synchronized&quot;, &quot;boolean&quot;,
+                                      &quot;do&quot;, &quot;if&quot;, &quot;private&quot;, &quot;this&quot;, &quot;break&quot;,
+                                      &quot;double&quot;, &quot;implements&quot;, &quot;protected&quot;,
+                                      &quot;throw&quot;, &quot;byte&quot;, &quot;else&quot;, &quot;import&quot;,
+                                      &quot;public&quot;, &quot;throws&quot;, &quot;case&quot;, &quot;enum&quot;,
+                                      &quot;instanceof&quot;, &quot;return&quot;, &quot;transient&quot;,
+                                      &quot;catch&quot;, &quot;extends&quot;, &quot;int&quot;, &quot;short&quot;,
+                                      &quot;try&quot;, &quot;char&quot;, &quot;final&quot;, &quot;interface&quot;,
+                                      &quot;static&quot;, &quot;void&quot;, &quot;class&quot;, &quot;finally&quot;,
+                                      &quot;long&quot;, &quot;strictfp&quot;, &quot;volatile&quot;, &quot;const&quot;,
+                                      &quot;float&quot;, &quot;native&quot;, &quot;super&quot;, &quot;while&quot; };
+
+                for (String keyword : keywords) {
+                    pattern = new QRegExp(&quot;\\b&quot; + keyword + &quot;\\b&quot;);
+                    rule = new HighlightingRule(pattern, keywordFormat);
+                    highlightingRules.add(rule);
+                }</pre>
+<p>First we define a keyword rule which recognizes the most common Java keywords. We give the <tt>keywordFormat</tt> a bold, dark blue font. For each keyword, we assign the keyword and the specified format to a <tt>HighlightingRule</tt> object and append the object to our list of rules.</p>
+<pre>                brush = new QBrush(QColor.darkMagenta);
+                pattern = new QRegExp(&quot;\\bQ[A-Za-z]+\\b&quot;);
+                classFormat.setForeground(brush);
+                classFormat.setFontWeight(QFont.Weight.Bold.value());
+                rule = new HighlightingRule(pattern, classFormat);
+                highlightingRules.add(rule);
+
+                brush = new QBrush(QColor.gray, Qt.BrushStyle.SolidPattern);
+                pattern = new QRegExp(&quot;//[^\n]*&quot;);
+                commentFormat.setForeground(brush);
+                rule = new HighlightingRule(pattern, commentFormat);
+                highlightingRules.add(rule);
+
+                brush = new QBrush(QColor.blue, Qt.BrushStyle.SolidPattern);
+                pattern = new QRegExp(&quot;\&quot;.*\&quot;&quot;);
+                pattern.setMinimal(true);
+                quotationFormat.setForeground(brush);
+                rule = new HighlightingRule(pattern, quotationFormat);
+                highlightingRules.add(rule);</pre>
+<p>Then we create a format that we will apply to Qt class names. The class names will be rendered with a dark magenta color and a bold style. We specify a string pattern that is actually a regular expression capturing all Qt class names. Then we assign the regular expression and the specified format to a <tt>HighlightingRule</tt> object and add the object to our list of rules.</p>
+<p>We also define highlighting rules for quotations and methods using the same approach: The patterns have the form of regular expressions and are stored in <tt>HighlightingRule</tt> objects with the associated format.</p>
+<pre>                brush = new QBrush(QColor.gray, Qt.BrushStyle.SolidPattern);
+                pattern = new QRegExp(&quot;//[^\n]*&quot;);
+                commentFormat.setForeground(brush);
+                rule = new HighlightingRule(pattern, commentFormat);
+                highlightingRules.add(rule);
+
+                commentStartExpression = new QRegExp(&quot;/\\*&quot;);
+                commentEndExpression = new QRegExp(&quot;\\*/&quot;);
+            }</pre>
+<p>The Java language has two variations of comments: The single line comment (//) and the multiline comment (/*..&#x2e;* /). The single line comment can easily be defined through a highlighting rule similar to the previous ones. But the multiline comment needs special care due to the design of the QSyntaxHighlighter class.</p>
+<p>After a QSyntaxHighlighter object is created, its highlightBlock() method will be called automatically whenever it is necessary by the rich text engine, highlighting the given text block. The problem appears when a comment spans several text blocks.</p>
+<pre>            public void highlightBlock(String text) {
+
+                for (HighlightingRule rule : highlightingRules) {
+                    QRegExp expression = rule.pattern;
+                    int index = expression.indexIn(text);
+                    while (index &gt;= 0) {
+                        int length = expression.matchedLength();
+                        setFormat(index, length, rule.format);
+                        index = expression.indexIn(text, index + length);
+                    }
+                }</pre>
+<p>The <tt>highlightBlock()</tt> method is called automatically whenever there are text blocks that have changed.</p>
+<p>First we apply the syntax highlighting rules that we stored in the <tt>highlightingRules</tt> vector. For each rule (i.e&#x2e; for each <tt>HighlightingRule</tt> object) we search for the pattern in the given textblock using the QRegExp.indexIn() method. When the first occurrence of the pattern is found, we use the QRegExp.matchedLength() method to determine the string that will be formatted. QRegExp.matchedLength() returns the length of the last matched string, or -1 if there was no match.</p>
+<p>To perform the actual formatting the QSyntaxHighlighter class provides the setFormat() method. This method operates on the text block that is passed as argument to the <tt>highlightBlock()</tt> method. The specified format is applied to the text from the given start position for the given length. The formatting properties set in the given format are merged at display time with the formatting information stored directly in the document. Note that the document itself remains unmodified by the format set through this method.</p>
+<p>This process is repeated until the last occurrence of the pattern in the current text block is found.</p>
+<pre>                setCurrentBlockState(0);</pre>
+<p>To deal with constructs that can span several text blocks (like the Java multiline comment), it is necessary to know the end state of the previous text block (e.g&#x2e; &quot;in comment&quot;). Inside your <tt>highlightBlock()</tt> implementation you can query the end state of the previous text block using the QSyntaxHighlighter.previousBlockState() method. After parsing the block you can save the last state using QSyntaxHighlighter's setCurrentBlockState() method.</p>
+<p>The previousBlockState() method return an int value. If no state is set, the returned value is -1. You can designate any other value to identify any given state using the setCurrentBlockState() method. Once the state is set, the QTextBlock keeps that value until it is set again or until the corresponding paragraph of text is deleted.</p>
+<p>In this example we have chosen to use 0 to represent the &quot;not in comment&quot; state, and 1 for the &quot;in comment&quot; state. When the stored syntax highlighting rules are applied, we initialize the current block state to 0.</p>
+<pre>                int startIndex = 0;
+                if (previousBlockState() != 1)
+                    startIndex = commentStartExpression.indexIn(text);</pre>
+<p>If the previous block state was &quot;in comment&quot; (<tt>previousBlockState() == 1</tt>), we start the search for an end expression at the beginning of the text block. If the previousBlockState() method returns 0, we start the search at the location of the first occurrence of a start expression.</p>
+<pre>                while (startIndex &gt;= 0) {
+                    int endIndex = commentEndExpression.indexIn(text, startIndex);
+                    int commentLength;
+                    if (endIndex == -1) {
+                        setCurrentBlockState(1);
+                        commentLength = text.length() - startIndex;
+                    } else {
+                        commentLength = endIndex - startIndex + commentEndExpression.matchedLength();
+                    }
+                    setFormat(startIndex, commentLength, commentFormat);
+                    startIndex = commentStartExpression.indexIn(text, startIndex + commentLength);
+                }
+            }</pre>
+<p>When an end expression is found, we calculate the length of the comment and apply the multiline comment format. Then we search for the next occurrence of the start expression and repeat the process. If no end expression can be found in the current text block we set the current block state to 1, i.e&#x2e; &quot;in comment&quot;.</p>
+<p>This completes the <tt>Highlighter</tt> class implementation; it is now ready for use.</p>
+<a name="syntaxhighlighter-class-implementation"></a>
+<h2>SyntaxHighlighter Class Implementation</h2>
+<p>The constructor of the main application window is straight forward. We first set up the menus, then we initialize the editor and make it the central widget of the application. Finally, we set the main window's title and icon:</p>
+<pre>    public class SyntaxHighlighter extends QMainWindow {
+
+        private QTextEdit editor;
+        public SyntaxHighlighter() {
+            setupFileMenu();
+            setupHelpMenu();
+            setupEditor();
+
+            setCentralWidget(editor);
+            resize(640, 480);
+            setWindowTitle(tr(&quot;Syntax Highlighter&quot;));
+            setWindowIcon(new QIcon(
+                          &quot;classpath:org/qtjambi/classpath:org/qtjambi/images/qt-logo.png&quot;));
+        }</pre>
+<p>Using a QSyntaxHighlighter subclass is simple; just provide your application with an instance of the class and pass it the document upon which you want the highlighting to be applied.</p>
+<p>We initialize and install the <tt>Highlighter</tt> object in the private <tt>setupEditor()</tt> convenience method:</p>
+<pre>        private void setupEditor() {
+            QFont font = new QFont();
+            font.setFamily(&quot;Courier&quot;);
+            font.setFixedPitch(true);
+            font.setPointSize(10);
+
+            editor = new QTextEdit();
+            editor.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap);
+            editor.setFont(font);
+
+            new Highlighter(editor.document());
+
+            QFile file = new QFile(
+                   &quot;classpath:org/qtjambi/examples/SyntaxHighlighter.java&quot;);
+
+            if (file.open(new QFile.OpenMode(QFile.OpenModeFlag.ReadOnly,
+                                             QFile.OpenModeFlag.Text)))
+                editor.setPlainText(file.readAll().toString());
+        }</pre>
+<p>First we create the font we want to use in the editor, then we create the editor itself which is an instance of the QTextEdit class. Before we initialize the editor with the <tt>SyntaxHighlighter.java</tt> file, we create a <tt>Highlighter</tt> instance passing the editor's document as argument. This is the document that the highlighting will be applied to. Then we are done.</p>
+<p>A QSyntaxHighlighter object can only be installed on one document at the time, but you can easily reinstall the highlighter on another document using the QSyntaxHighlighter.setDocument() method. The QSyntaxHighlighter class also provides the document() method which returns the currently set document.</p>
+<pre>        public static void main(String args[]) {
+            QApplication.initialize(args);
+
+            SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
+            syntaxHighlighter.show();
+
+            QApplication.exec();
+        }
+    }</pre>
+<p>Finally, we provide a <tt>main()</tt> method to create and show the main application window when the example is run.</p>
+</body>
+</html>

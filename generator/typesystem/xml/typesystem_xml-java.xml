@@ -1,0 +1,334 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.xml" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+    </inject-code>
+
+
+    <value-type name="QDomDocument">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QDomDocument___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer.Type" location="java"/>
+            <include file-name="org.qtjambi.qt.core.QIODevice" location="java"/>
+            <include file-name="org.qtjambi.qt.core.QByteArray" location="java"/>
+        </extra-includes>
+
+
+
+        <template name="xml.domdocument_setContent">
+            public final Result setContent(%ARGUMENTS){
+                QNativePointer errorStr = new QNativePointer(Type.String);
+                QNativePointer errorLine = new QNativePointer(Type.Int);
+                QNativePointer errorColumn = new QNativePointer(Type.Int);
+
+                boolean success = setContent(%CALL_ARGUMENTS, errorStr, errorLine, errorColumn);
+                return new Result(success, errorStr, errorLine, errorColumn);
+            }
+        </template>
+
+
+        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)">
+            <access modifier="private" />
+            <modify-argument index="3">
+                <remove-default-expression />
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression />
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression />
+            </modify-argument>
+        </modify-function>
+
+        <!--bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 ); -->
+        <modify-function signature="setContent(QIODevice*, bool, QString*, int*, int*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code class="java">
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="QIODevice dev, boolean namespaceProcessing"/>
+                <replace from="%CALL_ARGUMENTS" to="dev, namespaceProcessing"/>
+            </insert-template>
+        </inject-code>
+
+        <!--bool setContent(const QByteArray& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 ); -->
+        <modify-function signature="setContent(QByteArray, bool, QString*, int*, int*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression/>
+            </modify-argument>
+
+        </modify-function>
+        <inject-code class="java">
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="QByteArray text, boolean namespaceProcessing"/>
+                <replace from="%CALL_ARGUMENTS" to="text, namespaceProcessing"/>
+            </insert-template>
+        </inject-code>
+
+        <!--bool setContent(const QString& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );-->
+        <modify-function signature="setContent(QString, bool, QString*, int*, int*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code class="java">
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="String text, boolean namespaceProcessing"/>
+                <replace from="%CALL_ARGUMENTS" to="text, namespaceProcessing"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="setContent(QXmlInputSource*,QXmlReader*,QString*,int*,int*)">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="QXmlInputSource source, QXmlReader reader"/>
+                <replace from="%CALL_ARGUMENTS" to="source, reader"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="setContent(QString,QString*,int*,int*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="String text"/>
+                <replace from="%CALL_ARGUMENTS" to="text"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="setContent(QByteArray,QString*,int*,int*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="QByteArray buffer"/>
+                <replace from="%CALL_ARGUMENTS" to="buffer"/>
+            </insert-template>
+        </inject-code>
+
+        <modify-function signature="setContent(QIODevice*,QString*,int*,int*)">
+            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <insert-template name="xml.domdocument_setContent">
+                <replace from="%ARGUMENTS" to="QIODevice dev"/>
+                <replace from="%CALL_ARGUMENTS" to="dev"/>
+            </insert-template>
+        </inject-code>
+
+    </value-type>
+
+
+
+    <value-type name="QXmlNamespaceSupport">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QXmlNamespaceSupport___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+        </extra-includes>
+        <modify-function signature="processName(QString,bool,QString&amp;,QString&amp;)const">
+            <access modifier="private"/>
+        </modify-function>
+
+
+        <modify-function signature="splitName(QString,QString&amp;,QString&amp;)const">
+            <access modifier="private"/>
+        </modify-function>
+
+    </value-type>
+
+    <value-type name="QDomElement">
+
+        <template name="xml.constQString_to_constQStringRef">
+            QString %out = qtjambi_to_qstring(__jni_env, (jstring) %in);
+        </template>
+
+        <modify-function signature="attributeNS(const QString, const QString &amp;, const QString &amp;) const">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, const QString &amp;)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, int)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, uint)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, long long)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, unsigned long long)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAttributeNS(const QString, const QString &amp;, double)">
+            <modify-argument index="1">
+                <conversion-rule class="native">
+                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+    </value-type>
+
+    <object-type name="QXmlReader">
+        <modify-function signature="parse(const QXmlInputSource &amp;)">
+            <remove class="java"/>
+		<inject-code class="shell">
+			return this->parse(&amp;input0);
+		</inject-code>
+        </modify-function>
+
+        <modify-function signature="property(QString,bool*)const">
+            <remove class="java"/>
+        </modify-function>
+        <modify-function signature="setProperty(QString,void*)">
+            <remove class="java"/>
+        </modify-function>
+
+        <modify-function signature="feature(QString,bool*)const">
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    bool *%out = 0;
+                </conversion-rule>
+            </modify-argument>
+
+            <modify-argument index="0">
+                <conversion-rule class="shell">
+                    bool %out = (bool) %in;
+                    if (%2 != 0) *%2 = hasFeature(%1);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <interface-type name="QXmlEntityResolver">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="interface QXmlEntityResolver___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="resolveEntity(QString,QString,QXmlInputSource&amp;*)">
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                    // nothing
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QXmlInputSource *inputSourceHolder = 0;
+                    QXmlInputSource *&amp;%out = inputSourceHolder;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="return">
+                <replace-type modified-type="org.qtjambi.qt.xml.QXmlEntityResolver$ResolvedEntity" />
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_to_resolvedentity(__jni_env, %in, inputSourceHolder);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    bool %out = qtjambi_from_resolvedentity(__jni_env, (void *&amp;) %3, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+
+    </interface-type>
+</typesystem>

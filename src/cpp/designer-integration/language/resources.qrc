@@ -1,0 +1,13 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource prefix="">
+    <file>jambiwidgetbox.xml</file>
+
+    <file alias="templates/forms/Dialog_with_Buttons_Bottom.jui">templates/forms/Dialog_with_Buttons_Bottom.jui.template</file>
+    <file alias="templates/forms/Dialog_with_Buttons_Right.jui">templates/forms/Dialog_with_Buttons_Right.jui.template</file>
+    <file alias="templates/forms/Dialog_without_Buttons.jui">templates/forms/Dialog_without_Buttons.jui.template</file>
+    <file alias="templates/forms/Main_Window.jui">templates/forms/Main_Window.jui.template</file>
+    <file alias="templates/forms/Widget.jui">templates/forms/Widget.jui.template</file>
+
+  </qresource>
+</RCC>

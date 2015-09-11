@@ -1,0 +1,21 @@
+Layout of Qt Jambi
+---
+
+TODO: file layout. It needs to be redone, too.
+
+Control variables for Ant tasks
+---
+
+Most of them are still inconsistent with new system, but they will be changed 
+as they are checked whether they are still used and useful.
+
+There is several namespaces, which provides easy lookup about where certain variables falls in:
+ qtjambi: namespace which contains all variables actually used in ant tasks.
+  Subnamespaces described below is used for further convention.
+ qt: namespace for data directly related to Qt
+ phonon: namespace which can be used to specify data for phonon. There is two phonon versions,
+  Qt and KDE phonon, the latter may not use same paths Qt libraries uses.
+
+For example, qtjambi.qt.libdir is a path used in ant tasks to find Qt libraries. qt.libdir, found
+in buildpath.properties, specifies preset path which may been overridden by path calculated
+from QTDIR environment variable.

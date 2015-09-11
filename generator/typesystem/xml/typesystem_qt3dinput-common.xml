@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<typesystem>
+	<object-type name="Qt3D::Q3DKeyEvent" java-name="Q3DKeyEvent">
+	</object-type>
+	<object-type name="Qt3D::QInputAspect" java-name="QInputAspect">
+		<modify-function signature="setCamera(Qt3D::QCamera*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcCamera"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QKeyboardController" java-name="QKeyboardController">
+	</object-type>
+	<object-type name="Qt3D::QKeyboardInput" java-name="QKeyboardInput">
+		<modify-function signature="setController(Qt3D::QKeyboardController*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+</typesystem>

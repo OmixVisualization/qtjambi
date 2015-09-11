@@ -1,0 +1,3482 @@
+
+
+$$QPictureIO.QPictureIO(org.qtjambi.qt.core.QIODevice, java.lang.String)
+/**
+Constructs a QPictureIO object with the I/O device <tt>ioDevice</tt> and a
+<tt>format</tt> tag.
+
+*/
+
+
+$$QPictureIO.QPictureIO(java.lang.String, java.lang.String)
+/**
+Constructs a QPictureIO object with the file name <tt>fileName</tt> and a
+<tt>format</tt> tag.
+
+*/
+
+
+$$QPictureIO.format()
+/**
+Returns the picture format string or null if no format has been
+explicitly set.
+
+*/
+
+
+$$QPictureIO.parameters()
+/**
+Returns the picture's parameters string.
+
+*/
+
+
+$$QPictureIO.setFormat(java.lang.String)
+/**
+Sets the picture format to <tt>format</tt> for the picture to be read or
+written.
+<p>
+It is necessary to specify a format before writing an picture, but
+it is not necessary to specify a format before reading an picture.
+<p>
+If no format has been set, Qt guesses the picture format before
+reading it. If a format is set the picture will only be read if it
+has that format.
+
+*/
+
+
+$$QPictureIO.setParameters(java.lang.String)
+/**
+Sets the picture's parameter string to <tt>parameters</tt>. This is for
+picture handlers that require special parameters.
+<p>
+Although the current picture formats supported by Qt ignore the
+parameters string, it may be used in future extensions or by
+contributions (for example, JPEG).
+
+*/
+
+
+$$QToolButton.initStyleOption(org.qtjambi.qt.gui.QStyleOptionToolButton)
+/**
+Initialize <tt>option</tt> with the values from this QToolButton. This method
+is useful for subclasses when they need a QStyleOptionToolButton, but don't
+want to fill in all the information themselves.
+
+*/
+
+
+$$QMdiArea.subWindowList()
+/**
+Returns a list of all subwindows in the MDI area.
+
+*/
+
+
+$$QDial.initStyleOption(org.qtjambi.qt.gui.QStyleOptionSlider)
+/**
+Initialize <tt>option</tt> with the values from this QDial. This method
+is useful for subclasses when they need a QStyleOptionSlider, but don't want
+to fill in all the information themselves.
+
+*/
+
+
+$$QTabWidget.initStyleOption(org.qtjambi.qt.gui.QStyleOptionTabWidgetFrame)
+/**
+Initialize <tt>option</tt> with the values from this QTabWidget. This method
+is useful for subclasses when they need a QStyleOptionSlider, but don't want
+to fill in all the information themselves.
+
+*/
+
+
+$$QToolBar.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, java.lang.Object, java.lang.String)
+/**
+Creates a new action with the icon <tt>icon</tt> and text <tt>text</tt>. This
+action is added to the end of the toolbar. The action's QAction.triggered()
+signal is connected to <tt>method</tt> in <tt>receiver</tt>.
+<p>
+Finally, it returns the created action.
+*/
+
+
+$$QToolBar.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal)
+/**
+Creates a new action with the icon <tt>icon</tt> and text <tt>text</tt>. This
+action is added to the end of the toolbar. The action is triggered by
+<tt>signal</tt>. The created QAction is returned.
+
+*/
+
+
+$$QToolBar.addAction(java.lang.String, java.lang.Object, java.lang.String)
+/**
+Creates a new action with text <tt>text</tt>. This
+action is added to the end of the toolbar. The action's QAction.triggered()
+signal is connected to <tt>method</tt> in <tt>receiver</tt>. The created
+action is returned.
+
+*/
+
+
+$$QToolBar.addAction(java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal)
+/**
+Creates a new action with text <tt>text</tt>. It is connected to
+<tt>signal</tt> and returned.
+
+*/
+
+
+$$QGraphicsScene.collidingItems(org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Returns a list of all items that collide with <tt>item</tt>. Collisions are
+determined by calling QGraphicsItem.collidesWithItem(); the collision
+detection is determined by \a mode. By default, all items whose shape
+intersects \a item or is contained inside \a item's shape are returned.
+<p>
+The items are returned in descending Z order (i.e., the first item in the
+list is the top-most item, and the last item is the bottom-most item).
+
+*/
+
+
+$$QGraphicsScene.items(org.qtjambi.qt.gui.QPolygonF)
+/**
+Returns all visible items that are either inside or
+intersect with the polygon <tt>polygon</tt>.
+
+*/
+
+
+$$QGraphicsScene.items(double, double, double, double)
+/**
+This convenience function is equivalent to calling items(QRectF(<tt>x</tt>,
+<tt>y</tt>, <tt>w</tt>, <tt>h</tt>).
+
+*/
+
+
+$$QGraphicsScene.items(org.qtjambi.qt.gui.QPainterPath)
+/**
+Returns all visible items that are either inside or
+intersect with the path <tt>path</tt>.
+
+*/
+
+
+$$QGraphicsScene.items(org.qtjambi.qt.core.QRectF)
+/**
+Returns all visible items that are either inside or intersect with the
+specified <tt>rectangle</tt>.
+
+*/
+
+
+$$QComboBox.initStyleOption(org.qtjambi.qt.gui.QStyleOptionComboBox)
+/**
+Initialize <tt>option</tt> with the values from this QComboBox. This method is
+useful for subclasses when they need a QStyleOptionComboBox, but don't want to
+fill in all the information themselves.
+
+*/
+
+
+$$QGraphicsItem.collidingItems()
+/**
+Returns a list of all items that collide with this item.
+
+*/
+
+
+$$QProgressBar.initStyleOption(org.qtjambi.qt.gui.QStyleOptionProgressBar)
+/**
+Initialize <tt>option</tt> with the values from this QProgressBar. This method
+is useful for subclasses when they need a QStyleOptionProgressBar or
+QStyleOptionProgressBarV2, but don't want to fill in all the information
+themselves. This function will check the version of the
+QStyleOptionProgressBar and fill in the additional values for a
+QStyleOptionProgressBarV2.
+
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double, double, double, int, org.qtjambi.qt.core.Qt.WindowFlags)
+/**
+Static convenience function to get a floating point number from
+the user. <tt>title</tt> is the text which is displayed in the title
+bar of the dialog. <tt>label</tt> is the text which is shown to the user
+(it should say what should be entered). <tt>value</tt> is the default
+floating point number that the line edit will be set to.
+<tt>minValue</tt> and <tt>maxValue</tt> are the minimum and maximum values the
+user may choose, and <tt>decimals</tt> is the maximum number of decimal
+places the number may have.
+<p>
+The dialog's parent is <tt>parent</tt>. The dialog will be modal and uses
+the widget flags <tt>f</tt>.
+<p>
+This function returns the floating point number which has been
+entered by the user.
+
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double, double, double, int, org.qtjambi.qt.core.Qt.WindowType...)
+/**
+This is a overloaded function provided for convenience.
+
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double, double, double, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double, double, double)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double, double)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, double)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getDouble(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int, int, int, int, org.qtjambi.qt.core.Qt.WindowFlags)
+/**
+Static convenience function to get an integer input from the
+user. <tt>title</tt> is the text which is displayed in the title bar
+of the dialog.  <tt>label</tt> is the text which is shown to the user
+(it should say what should be entered). <tt>value</tt> is the default
+integer which the spin box will be set to.  <tt>minValue</tt> and
+<tt>maxValue</tt> are the minimum and maximum values the user may choose,
+and <tt>step</tt> is the amount by which the values change as the user
+presses the arrow buttons to increment or decrement the value.
+<p>
+The dialog's parent is <tt>parent</tt>. The dialog will be modal and uses
+the widget flags <tt>f</tt>.
+<p>
+This function returns the integer which has been entered by the user.
+
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int, int, int, int, org.qtjambi.qt.core.Qt.WindowType...)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int, int, int, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int, int, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getInteger(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getItem(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, java.util.List<java.lang.String>, int, boolean, org.qtjambi.qt.core.Qt.WindowFlags)
+/**
+Static convenience function to let the user select an item from a
+string list. <tt>title</tt> is the text which is displayed in the title
+bar of the dialog. <tt>label</tt> is the text which is shown to the user (it
+should say what should be entered). <tt>list</tt> is the
+string list which is inserted into the combo box, and <tt>current</tt> is the number
+of the item which should be the current item. If <tt>editable</tt> is true
+the user can enter their own text; if <tt>editable</tt> is false the user
+may only select one of the existing items.
+<p>
+The dialog's parent is <tt>parent</tt>. The dialog will be modal and uses
+the widget flags <tt>f</tt>.
+<p>
+This function returns the text of the current item, or if
+<tt>editable</tt> is true, the current text of the combo box.
+
+*/
+
+
+$$QInputDialog.getItem(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, java.util.List<java.lang.String>, int, boolean, org.qtjambi.qt.core.Qt.WindowType...)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getItem(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, java.util.List<java.lang.String>, int, boolean)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getItem(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, java.util.List<java.lang.String>, int)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getItem(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, java.util.List<java.lang.String>)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getText(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QLineEdit.EchoMode, java.lang.String, org.qtjambi.qt.core.Qt.WindowFlags)
+/**
+Static convenience function to get a string from the user.
+<tt>title</tt> is the text which is displayed in the title bar of the
+dialog. <tt>label</tt> is the text which is shown to the user (it should
+say what should be entered). <tt>text</tt> is the default text which is
+placed in the line edit. The <tt>mode</tt> is the echo mode the line
+edit will use.
+<p>
+The dialog's parent is <tt>parent</tt>. The dialog will be
+modal and uses the widget flags <tt>f</tt>.
+<p>
+This function returns the text which has been entered in the line
+edit. It will not return an empty string.
+
+*/
+
+
+$$QInputDialog.getText(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QLineEdit.EchoMode, java.lang.String, org.qtjambi.qt.core.Qt.WindowType...)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getText(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QLineEdit.EchoMode, java.lang.String)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getText(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QLineEdit.EchoMode)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QInputDialog.getText(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QLineEdit.initStyleOption(org.qtjambi.qt.gui.QStyleOptionFrame)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QRubberBand.initStyleOption(org.qtjambi.qt.gui.QStyleOptionRubberBand)
+/**
+This is a overloaded function provided for convenience.
+*/
+
+
+$$QCheckBox.initStyleOption(org.qtjambi.qt.gui.QStyleOptionButton)
+/**
+Initialize <tt>option</tt> with the values from this QCheckBox. This method is
+useful for subclasses when they need a QStyleOptionButton, but don't want to
+fill in all the information themselves.
+
+*/
+
+
+$$QLabel.picture()
+/**
+Returns the label's picture or null if the label doesn't have a picture.
+
+*/
+
+
+$$QLabel.pixmap()
+/**
+Returns the label's pixmap or null if the label doesn't have a picture.
+
+*/
+
+
+$$QMenuBar.addAction(java.lang.String, java.lang.Object, java.lang.String)
+/**
+This convenience function creates a new action with the given <tt>text</tt>.
+The action's triggered() signal is connected to the <tt>receiver</tt>'s
+<tt>method</tt> slot. The function adds the newly created action to the menu's
+list of actions and returns it.
+
+*/
+
+
+$$QMenuBar.addAction(java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal)
+/**
+This convenience function creates a new action with the given <tt>text</tt>.
+The action's triggered() signal is connected to the <tt>signal</tt>. The
+function adds the newly created action to the menu's list of actions and
+returns it.
+
+*/
+
+
+$$QMenuBar.initStyleOption(org.qtjambi.qt.gui.QStyleOptionMenuItem, org.qtjambi.qt.gui.QAction)
+/**
+Initialize <tt>option</tt> with the values from the menu bar and information
+from <tt>action</tt>. This method is useful for subclasses when they need a
+QStyleOptionMenuItem, but don't want to fill in all the information
+themselves.
+
+*/
+
+
+$$QWorkspace.windowList()
+/**
+Returns a list of all visible or minimized child windows.
+
+*/
+
+
+$$QAbstractSpinBox.initStyleOption(org.qtjambi.qt.gui.QStyleOptionSpinBox)
+/**
+Initialize <tt>option</tt> with the values from this QSpinBox. This method
+is useful for subclasses when they need a QStyleOptionSpinBox, but don't want
+to fill in all the information themselves.
+
+*/
+
+
+$$QLayoutItem.setAlign(org.qtjambi.qt.core.Qt.AlignmentFlag...)
+/**
+Sets the alignment of this item to <tt>align</tt>.
+<p>
+<b>Note:</b> Item alignment is only supported by QLayoutItem subclasses
+where it would have a visual effect. Except for QSpacerItem, which provides
+blank space for layouts, all public Qt classes that inherit QLayoutItem
+support item alignment.
+
+*/
+
+
+$$QTabBar.initStyleOption(org.qtjambi.qt.gui.QStyleOptionTab, int)
+/**
+Initialize <tt>option</tt> with the values from the tab at <tt>tabIndex</tt>.
+This method is useful for subclasses when they need a QStyleOptionTab or
+QStyleOptionTabV2, but don't want to fill in all the information themselves.
+This function will check the version of the QStyleOptionTab and fill in the
+additional values for a QStyleOptionTabV2.
+
+*/
+
+
+$$QSplitter.getRange(int)
+/**
+Returns the valid range of the splitter with index <tt>index</tt>.
+
+*/
+
+
+$$QStandardItemModel.findItems(java.lang.String, org.qtjambi.qt.core.Qt.MatchFlags)
+/**
+Returns a list of items that match the given <tt>text</tt>, using the given
+<tt>flags</tt>.
+
+*/
+
+
+$$QStandardItemModel.findItems(java.lang.String)
+/**
+Returns a list of items that match the given <tt>text</tt>.
+
+*/
+
+
+$$QStyleOptionFrameV2.setFeatures(org.qtjambi.qt.gui.QStyleOptionFrameV2.FrameFeature...)
+/**
+Sets this style option's frame <tt>features</tt>.
+
+*/
+
+
+$$QFontMetricsF.boundingRect(org.qtjambi.qt.core.QRectF, int, java.lang.String, int, int[])
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QFontMetricsF.boundingRect(org.qtjambi.qt.core.QRectF, int, java.lang.String, int)
+/**
+Returns the bounding rectangle of the characters in the given <tt>text</tt>.
+This is the set of pixels the text would cover if drawn when constrained
+to the bounding rectangle specified by <tt>rect</tt>.
+<p>
+The <tt>flags</tt> argument is the bitwise OR of the following flags:
+<dir>
+<li> Qt::AlignLeft aligns to the left border, except for
+      Arabic and Hebrew where it aligns to the right.
+<li> Qt::AlignRight aligns to the right border, except for
+      Arabic and Hebrew where it aligns to the left.
+<li> Qt::AlignJustify produces justified text.
+<li> Qt::AlignHCenter aligns horizontally centered.
+<li> Qt::AlignTop aligns to the top border.
+<li> Qt::AlignBottom aligns to the bottom border.
+<li> Qt::AlignVCenter aligns vertically centered
+<li> Qt::AlignCenter (== <b>Qt::AlignHCenter | Qt::AlignVCenter</b>)
+<li> Qt::TextSingleLine ignores newline characters in the text.
+<li> Qt::TextExpandTabs expands tabs (see below)
+<li> Qt::TextShowMnemonic interprets "&amp;x" as <u>x</u>, i.e. underlined.
+<li> Qt::TextWordBreak breaks the text to fit the rectangle.
+</dir>
+<p>
+Qt::Horizontal alignment defaults to Qt::AlignLeft and vertical
+alignment defaults to Qt::AlignTop.
+<p>
+If several of the horizontal or several of the vertical alignment
+flags are set, the resulting alignment is undefined.
+<p>
+These flags are defined in Qt::AlignmentFlag.
+<p>
+If Qt::TextExpandTabs is set in <tt>flags</tt>, the following behavior is
+used to interpret tab characters in the text:
+<dir>
+<li> If <tt>tabArray</tt> is non-null, it specifies a 0-terminated sequence of
+     pixel-positions for tabs in the text.
+<li> If <tt>tabStops</tt> is non-zero, it is used as the tab spacing (in pixels).
+</dir>
+<p>
+Note that the bounding rectangle may extend to the left of (0, 0),
+e.g. for italicized fonts.
+<p>
+Newline characters are processed as line breaks.
+<p>
+Despite the different actual character heights, the heights of the
+bounding rectangles of "Yes" and "yes" are the same.
+<p>
+The bounding rectangle returned by this function is somewhat larger
+than that calculated by the simpler boundingRect() function. This
+function uses the minLeftBearing() maximum left and minRightBearing()
+right font bearings as is necessary for multi-line text to align
+correctly. Also, fontHeight() and lineSpacing() are used to calculate
+the height, rather than individual character heights.
+
+*/
+
+
+$$QFontMetricsF.boundingRect(org.qtjambi.qt.core.QRectF, int, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFontMetricsF.size(int, java.lang.String, int, int[])
+/**
+Returns the size in pixels of the characters in the given
+<tt>text</tt>.
+<p>
+The <tt>flags</tt> argument is the bitwise OR of the following flags:
+<dir>
+<li> Qt::TextSingleLine ignores newline characters.
+<li> Qt::TextExpandTabs expands tabs (see below)
+<li> Qt::TextShowMnemonic interprets "&amp;x" as <u>x</u>, i.e.
+underlined.
+<li> Qt::TextWordBreak breaks the text to fit the rectangle.
+</dir>
+<p>
+These flags are defined in Qt::TextFlags.
+<p>
+If Qt::TextExpandTabs is set in <tt>flags</tt>, the following behavior is
+used to interpret tab characters in the text:
+<dir>
+<li> If <tt>tabArray</tt> is non-null, it specifies a 0-terminated sequence of pixel-positions for tabs in the text.
+<li> If <tt>tabStops</tt> is non-zero, it is used as the tab spacing (in pixels).
+</dir>
+<p>
+Newline characters are processed as line breaks.
+<p>
+Note: Despite the different actual character heights, the heights of
+the
+bounding rectangles of "Yes" and "yes" are the same.
+
+*/
+
+
+$$QFontMetricsF.size(int, java.lang.String, int)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QFontMetricsF.size(int, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QGroupBox.initStyleOption(org.qtjambi.qt.gui.QStyleOptionGroupBox)
+/**
+Initialize <tt>option</tt> with the values from this QGroupBox. This
+method is useful for subclasses when they need a QStyleOptionGroupBox,
+but don't want to fill in all the information themselves.
+
+*/
+
+
+$$QGraphicsView.items(int, int, int, int)
+/**
+This convenience function is equivalent to calling
+items(QRectF(<tt>x</tt>, <tt>y</tt>, <tt>w</tt>, <tt>h</tt>)).
+
+*/
+
+
+$$QGraphicsView.items(org.qtjambi.qt.gui.QPainterPath)
+/**
+Returns a list of all the items that are either
+contained by or intersect with <tt>path</tt>.
+
+*/
+
+
+$$QGraphicsView.items(org.qtjambi.qt.core.QRect)
+/**
+Returns a list of all the items that are either contained by or
+intersect with <tt>rect</tt>. <tt>rect</tt> is in viewport
+coordinates.
+
+*/
+
+
+$$QGraphicsView.items(org.qtjambi.qt.gui.QPolygon)
+/**
+Returns a list of all the items that are either contained by or
+intersect with <tt>polygon</tt>. <tt>polygon</tt> is in viewport
+coordinates.
+
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Options)
+/**
+This is a convenience static function that returns an existing file
+selected by the user. If the user presses Cancel, it returns null.
+<p>
+The function creates a modal file dialog with the given
+<tt>parent</tt>
+widget. If the parent is not 0, the dialog will be shown centered over the
+parent widget.
+<p>
+The file dialog's working directory will be set to <tt>dir</tt>.  If
+<tt>dir</tt> includes a file name, the file will be selected. Only
+files that match the given <tt>filter</tt> are shown. The parameter
+<tt>dir</tt> can be an empty string. The <tt>options</tt> argument
+holds various options about how to run the dialog, see the
+QFileDialog. Option enum for more information on the flags you can
+pass.
+<p>
+The dialog's caption is set to <tt>caption</tt>. If <tt>caption</tt>
+is not specified then a default <tt>caption</tt> will be used.
+<p>
+Under Windows and Mac OS X, this static function will use the native
+file dialog and not a QFileDialog. On Mac OS X, the <tt>dir</tt> argument is
+ignored, the native dialog always displays the last visited directory.
+<p>
+Note that on Windows the dialog will spin a blocking modal event loop
+that will not dispatch any QTimers, and if parent is not 0 then it
+will
+position the dialog just under the parent's title bar.
+<p>
+Under Unix/X11, the normal behavior of the file dialog is to resolve
+and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
+\c{/var/tmp}, the file dialog will change to \c{/var/tmp} after
+entering \c{/usr/tmp}. If <tt>options</tt> includes DontResolveSymlinks,
+the file dialog will treat symlinks as regular directories.
+
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Option...)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileName(org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileName()
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Options)
+/**
+This is a convenience static function that will return one or more
+existing files selected by the user.
+<p>
+This function creates a modal file dialog with the given
+<tt>parent</tt> widget. If the parent is not null, the dialog will be
+shown centered over the parent widget.
+<p>
+The file dialog's working directory will be set to <tt>dir</tt>. If
+dir includes a file name, the file will be selected. The filter is set
+to <tt>filter</tt> so that only those files which match the filter are
+shown. The filter selected is set to <tt>selectedFilter</tt>. The
+parameters <tt>dir</tt> parameter may be an empty string.
+<p>
+The dialog's caption is set to <tt>caption</tt>. If <tt>caption</tt>
+is not specified then a default caption will be used.
+<p>
+Under Windows and Mac OS X, this static function will use the native
+file dialog and not a QFileDialog. On Mac OS X, the <tt>dir</tt> argument
+is ignored, the native dialog always displays the last visited
+directory.
+<p>
+Note that on Windows the dialog will spin a blocking modal event loop
+that will not dispatch any QTimers, and if parent is not null then it
+will position the dialog just under the parent's title bar.
+<p>
+Under Unix/X11, the normal behavior of the file dialog is to resolve
+and follow symlinks. For example, if <b>/usr/tmp</b> is a symlink to
+<b>/var/tmp</b>, the file dialog will change to <b>/var/tmp</b> after
+entering <b>/usr/tmp</b>. The <tt>options</tt> argument holds various
+options about how to run the dialog, see the QFileDialog.Option enum
+for more information on the flags you can pass.
+<p>
+Note that if you want to iterate over the list of files, you should
+iterate over a copy. For example:
+
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Option...)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames(org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getOpenFileNames()
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Options)
+/**
+This is a convenience static function that will return a file name
+selected by the user. The file does not have to exist.
+<p>
+It creates a modal file dialog with the given <tt>parent</tt> widget. If the
+parent is not null, the dialog will be shown centered over the parent
+widget.
+<p>
+The file dialog's working directory will be set to <tt>dir</tt>. If
+<tt>dir</tt> includes a file name, the file will be selected. Only
+files that match the <tt>filter</tt> are shown. The parameter
+<tt>dir</tt> may be an empty string. The <tt>options</tt> argument
+holds various options about how to run the dialog, see the
+QFileDialog.Option enum for more information on the flags you can
+pass.
+<p>
+The dialog's caption is set to <tt>caption. If <tt>caption</tt> is not
+specified then a default caption will be used.
+<p>
+Under Windows and Mac OS X, this static function will use the native
+file dialog and not a QFileDialog.
+<p>
+Note that on Windows the dialog will spin a blocking modal event loop
+that will not dispatch any QTimers, and if parent is not 0 then it
+will position the dialog just under the parent's title bar.  On Mac OS
+X, the filter argument is ignored.
+<p>
+Under Unix/X11, the normal behavior of the file dialog is to resolve
+and follow symlinks. For example, if \c{/usr/tmp} is a symlink to
+<b>/var/tmp</b>, the file dialog will change to <b>/var/tmp</b> after
+entering <b>/usr/tmp</b>. If <tt>options</tt> includes DontResolveSymlinks,
+the file dialog will treat symlinks as regular directories.
+
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter, org.qtjambi.qt.gui.QFileDialog.Option...)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String, org.qtjambi.qt.gui.QFileDialog.Filter)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget, java.lang.String, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName(org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFileDialog.getSaveFileName()
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QTreeWidget.findItems(java.lang.String, org.qtjambi.qt.core.Qt.MatchFlags)
+/**
+Returns a list of items that match the given <tt>text</tt>, using the
+given <tt>flags</tt>.
+
+*/
+
+
+$$QTreeWidgetItemIterator.next(int)
+/**
+This function advances the iterator by <tt>i</tt> items.
+
+*/
+
+
+$$QTreeWidgetItemIterator.previous(int)
+/**
+Makes the iterator go backwards by <tt>i</tt> items.
+
+*/
+
+
+$$QTreeWidgetItemIterator.next()
+/**
+Advances the iterator by one item.
+
+
+*/
+
+
+$$QTreeWidgetItemIterator.previous()
+/**
+Makes the iterator go backwards by one item.
+
+
+*/
+
+
+$$QTreeWidgetItemIterator.current()
+/**
+Returns the current item.
+
+*/
+
+
+$$QFontDatabase.families()
+/**
+Returns a sorted list of the available font families.
+
+*/
+
+
+$$QFontDatabase.pointSizes(java.lang.String)
+/**
+Returns a list of the point sizes available for the font that has
+the specified <tt>family</tt>. The list may be empty.
+
+*/
+
+
+$$QPixmapCache.find(java.lang.String, org.qtjambi.qt.gui.QPixmap)
+/**
+Looks for a cached pixmap associated with the <tt>key</tt> in the cache.
+If the pixmap is found, the function sets <tt>pm</tt> to that pixmap and
+returns true; otherwise it leaves <tt>pm</tt> alone and returns false.
+
+*/
+
+
+$$QFocusFrame.initStyleOption(org.qtjambi.qt.gui.QStyleOption)
+/**
+Initialize <tt>option</tt> with the values from this QFocusFrame. This
+method is useful for subclasses when they need a QStyleOption, but
+don't want to fill in all the information themselves.
+
+*/
+
+
+$$QRadioButton.initStyleOption(org.qtjambi.qt.gui.QStyleOptionButton)
+/**
+Initialize <tt>option</tt> with the values from this QRadioButton. This
+method is useful for subclasses when they need a QStyleOption, but
+don't want to fill in all the information themselves.
+
+*/
+
+
+$$QDockWidget.initStyleOption(org.qtjambi.qt.gui.QStyleOptionDockWidget)
+/**
+Initialize <tt>option</tt> with the values from this QDockWidget. This
+method is useful for subclasses when they need a QStyleOption, but
+don't want to fill in all the information themselves.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_Selection.QAbstractTextDocumentLayout_Selection()
+/**
+Constructs a new QAbstractTextDocumentLayout_Selection object.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_Selection.setCursor(org.qtjambi.qt.gui.QTextCursor)
+/**
+Sets the <tt>cursor</tt> of this
+QAbstractTextDocumentLayout_Selection.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_Selection.cursor()
+/**
+Returns the cursor of this QAbstractTextDocumentLayout_Selection.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_Selection.setFormat(org.qtjambi.qt.gui.QTextCharFormat)
+/**
+Sets the <tt>format</tt> of this
+QAbstractTextDocumentLayout_Selection.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_Selection.format()
+/**
+Returns the format of this QAbstractTextDocumentLayout_Selection.
+
+*/
+
+
+$$QFontDialog.getFont(org.qtjambi.qt.gui.QFont, org.qtjambi.qt.gui.QWidget, java.lang.String)
+/**
+Executes a modal font dialog and returns a font.
+<p>
+If the user clicks OK, the selected font is returned. If the user
+clicks Cancel, the <tt>initial</tt> font is returned.
+<p>
+The dialog is constructed with the given <tt>parent</tt>.
+<tt>caption</tt> is shown as the window title of the dialog and
+<tt>initial</tt> is the initially selected font.
+<p>
+This static function is less flexible than the full QFontDialog
+object, but is convenient and easy to use.
+
+*/
+
+
+$$QFontDialog.getFont(org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontDialog.getFont()
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontDialog.getFont(org.qtjambi.qt.gui.QFont, org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontDialog.getFont(org.qtjambi.qt.gui.QFont)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QShortcut.QShortcut(org.qtjambi.qt.gui.QKeySequence, org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QShortcut.QShortcut(org.qtjambi.qt.gui.QKeySequence, org.qtjambi.qt.gui.QWidget, org.qtjambi.qt.core.Qt.ShortcutContext)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QTextLine.draw(org.qtjambi.qt.gui.QPainter, org.qtjambi.qt.core.QPointF)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QMouseEvent.setMouseState(org.qtjambi.qt.core.Qt.MouseButton...)
+/**
+Sets the <tt>mouseState</tt> of this QMouseEvent.
+
+*/
+
+
+$$QApplication.QApplication(java.lang.String[])
+/**
+Initializes the window system and constructs an application object
+with the command line arguments in <tt>argv</tt>.
+
+*/
+
+
+$$QApplication.aboutQtJambi()
+/**
+Displays a simple message box about Qt Jambi. The message includes the
+version number of Qt being used by the application.
+<p>
+This is useful for inclusion in the Help menu of an application.
+
+*/
+
+
+$$QApplication.instance()
+/**
+Returns the unique QApplication instance.
+
+*/
+
+
+$$QApplication.setFont(org.qtjambi.qt.gui.QFont)
+/**
+Changes the default application font to <tt>font</tt>.
+
+*/
+
+
+$$QApplication.setPalette(org.qtjambi.qt.gui.QPalette)
+/**
+Changes the default application palette to <tt>palette</tt>.
+
+*/
+
+
+$$QApplication.overrideCursor()
+/**
+Returns the active application override cursor.
+<p>
+This function returns null if no application cursor has been defined
+(i.e. the internal cursor stack is empty).
+
+*/
+
+
+$$QGradient.setStops(java.util.List<org.qtjambi.qt.QPair<java.lang.Double, org.qtjambi.qt.gui.QColor>>)
+/**
+Replaces the current set of stop points with the given <tt>stops</tt>.
+The positions of the points must be in the range 0 to 1, and must be
+sorted with the lowest point first.
+
+*/
+
+
+$$QDropEvent.setModState(org.qtjambi.qt.core.Qt.KeyboardModifier...)
+/**
+This method sets the keyboard modifiers for this QDropEvent to <tt>modState</tt>.
+
+*/
+
+
+$$QDropEvent.setMouseState(org.qtjambi.qt.core.Qt.MouseButton...)
+/**
+Sets the mouse button state for this QDropEvent to
+<tt>mouseState</tt>.
+
+*/
+
+
+$$QDropEvent.setAct(org.qtjambi.qt.core.Qt.DropAction...)
+/**
+Sets this QDropEvent's drop actions to <tt>act</tt>.
+
+<tt>act</tt>
+
+*/
+
+
+$$QWheelEvent.setMouseState(org.qtjambi.qt.core.Qt.MouseButton...)
+/**
+Sets the mouse button state of this QWheelEvent to
+<tt>mouseState</tt>.
+
+*/
+
+
+$$QSlider.initStyleOption(org.qtjambi.qt.gui.QStyleOptionSlider)
+/**
+Initialize <tt>option</tt> with the values from this QSlider. This
+method is useful for subclasses when they need a QStyleOptionSlider,
+but don't want to fill in all the information themselves.
+
+*/
+
+
+$$QAbstractItemView.startDrag(org.qtjambi.qt.core.Qt.DropAction...)
+/**
+Starts a drag by calling drag.start() using the given
+<tt>supportedActions</tt>.
+
+*/
+
+$$QClipboard.text(java.lang.String, org.qtjambi.qt.gui.QClipboard.Mode)
+/**
+Returns the clipboard text in subtype <tt>subtype</tt>, or an empty
+string if the clipboard does not contain any text. If <tt>subtype</tt>
+is null, any subtype is acceptable, and <tt>subtype</tt> is set to the
+chosen subtype.
+<p>
+The <tt>mode</tt> argument is used to control which part of the system
+clipboard is used.  If <tt>mode</tt> is QClipboard::Clipboard, the
+text is retrieved from the global clipboard.  If <tt>mode</tt> is
+QClipboard::Selection, the text is retrieved from the global mouse
+selection.
+<p>
+Common values for <tt>subtype</tt> are "plain" and "html".
+
+*/
+
+
+$$QClipboard.text(java.lang.String)
+/**
+Returns the clipboard text as plain text, or an empty string if the
+clipboard does not contain any text.
+<p>
+The <tt>mode</tt> argument is used to control which part of the system
+clipboard is used.  If <tt>mode</tt> is QClipboard.Clipboard, the text
+is retrieved from the global clipboard.  If <tt>mode</tt> is
+QClipboard::Selection, the text is retrieved from the global mouse
+selection. If <tt>mode</tt> is QClipboard.FindBuffer, the text is
+retrieved from the search string buffer.
+
+*/
+
+
+$$QKeySequence.toInt()
+/**
+For backward compatibility: returns the first keycode
+as integer. If the key sequence is empty, 0 is returned.
+
+*/
+
+
+$$QKeySequence.at(int)
+/**
+Returns the key at index <tt>i</tt> in this key sequence.
+
+*/
+
+
+$$QPixmap.QPixmap(java.lang.String[])
+/**
+Constructs a pixmap from the given <tt>xpm</tt> data, which must be a
+valid XPM image.
+<p>
+Errors are silently ignored.
+
+*/
+
+
+$$QPixmap.QPixmap(java.lang.String, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlags)
+/**
+Constructs a pixmap from the file with the given <tt>fileName</tt>. If the
+file does not exist or is of an unknown format, the pixmap becomes a
+null pixmap.
+<p>
+The loader attempts to read the pixmap using the specified
+<tt>format</tt>. If the <tt>format</tt> is not specified (which is the default),
+the loader probes the file for a header to guess the file format.
+<p>
+The file name can either refer to an actual file on disk or to
+one of the application's embedded resources. See the
+\l{resources.html}{Resource System} overview for details on how
+to embed images and other resource files in the application's
+executable.
+<p>
+If the image needs to be modified to fit in a lower-resolution
+result (e.g. converting from 32-bit to 8-bit), use the
+<tt>flags</tt> to control the conversion.
+<p>
+The <tt>fileName, <tt>format</tt> and <tt>flags</tt> parameters are
+passed on to load(). This means that the data in <tt>fileName</tt> is
+not compiled into the binary. If <tt>fileName</tt> contains a relative
+path (e.g. the filename only) the relevant file must be found
+relative to the runtime working directory.
+
+*/
+
+
+$$QPixmap.QPixmap(java.lang.String, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QPixmap.QPixmap(java.lang.String, java.lang.String)
+/**
+This is an overloaded constructor provided for convenience.
+*/
+
+
+$$QPixmap.QPixmap(java.lang.String)
+/**
+This is an overloaded constructor provided for convenience.
+*/
+
+
+$$QPixmap.fromImage(org.qtjambi.qt.gui.QImage, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+Converts the given <tt>image</tt> to a pixmap using the specified <tt>flags</tt> to
+control the conversion. The flags argument is a bitwise-OR of the
+Qt.ImageConversionFlags. Passing 0 for flags sets all the default
+options.
+<p>
+In case of monochrome and 8-bit images, the image is first converted
+to a 32-bit pixmap and then filled with the colors in the color table.
+If this is too expensive an operation, you can use
+QBitmap.fromImage() instead.
+
+*/
+
+
+$$QPixmap.save(org.qtjambi.qt.core.QIODevice, java.lang.String, int)
+/**
+This function writes a QPixmap to the given <tt>dev</tt> using the
+specified image file <tt>format</tt> and <tt>quality</tt> factor. This can be
+used, for example, to save a pixmap directly into a QByteArray:
+
+*/
+
+
+$$QPixmap.save(org.qtjambi.qt.core.QIODevice, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.save(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.save(java.lang.String, java.lang.String, int)
+/**
+Saves the pixmap to the file with the given <tt>fileName</tt> using the
+specified image file <tt>format</tt> and <tt>quality</tt> factor. Returns true
+if successful; otherwise returns false.
+<p>
+The <tt>quality</tt> factor must be in the range [0,100] or -1. Specify
+0 to obtain small compressed files, 100 for large uncompressed
+files, and -1 to use the default settings.
+<p>
+If <tt>format</tt> is 0, an image format will be chosen from <tt>fileName</tt>'s
+suffix.
+
+*/
+
+
+$$QPixmap.save(java.lang.String, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.save(java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.load(java.lang.String, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlags)
+/**
+Loads a pixmap from the file with the given <tt>fileName</tt>. Returns
+true if the pixmap was successfully loaded; otherwise returns
+false.
+<p>
+The loader attempts to read the pixmap using the specified
+<tt>format</tt>. If the <tt>format</tt> is not specified (which is the default),
+the loader probes the file for a header to guess the file format.
+<p>
+The file name can either refer to an actual file on disk or to one
+of the application's embedded resources. See the
+\l{resources.html}{Resource System} overview for details on how to
+embed pixmaps and other resource files in the application's
+executable.
+<p>
+If the data needs to be modified to fit in a lower-resolution
+result (e.g. converting from 32-bit to 8-bit), use the <tt>flags</tt> to
+control the conversion.
+<p>
+Note that QPixmaps are automatically added to the QPixmapCache
+when loaded from a file; the key used is internal and can not
+be acquired.
+
+*/
+
+
+$$QPixmap.load(java.lang.String, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.load(java.lang.String, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.load(java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(byte[], java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlags)
+/**
+Loads a pixmap from the binary
+<tt>data</tt>.  Returns true if the pixmap was loaded successfully;
+otherwise returns false.
+<p>
+The loader attempts to read the pixmap using the specified
+<tt>format</tt>. If the <tt>format</tt> is not specified (which is the default),
+the loader probes the file for a header to guess the file format.
+<p>
+If the data needs to be modified to fit in a lower-resolution
+result (e.g. converting from 32-bit to 8-bit), use the <tt>flags</tt> to
+control the conversion.
+
+*/
+
+
+$$QPixmap.loadFromData(byte[], java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(byte[], java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(byte[])
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(org.qtjambi.qt.core.QByteArray, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlags)
+/**
+Loads a pixmap from the binary <tt>data</tt> using the specified
+<tt>format</tt> and conversion <tt>flags</tt>.
+
+*/
+
+
+$$QPixmap.loadFromData(org.qtjambi.qt.core.QByteArray, java.lang.String, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(org.qtjambi.qt.core.QByteArray, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPixmap.loadFromData(org.qtjambi.qt.core.QByteArray)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QMenu.initStyleOption(org.qtjambi.qt.gui.QStyleOptionMenuItem, org.qtjambi.qt.gui.QAction)
+/**
+Initialize <tt>option</tt> with the values from this menu and information
+from <tt>action</tt>. This method is useful for subclasses when they need a
+QStyleOptionMenuItem, but don't want to fill in all the information
+themselves.
+
+*/
+
+
+$$QMenu.addAction(java.lang.String, java.lang.Object, java.lang.String, org.qtjambi.qt.gui.QKeySequence)
+/**
+This convenience function creates a new action with the text
+<tt>text</tt>. The action's QAction.triggered() signal is connected to
+the <tt>receiver</tt>'s <tt>method</tt> slot. The function adds the
+newly created action to the menu's list of actions and returns it.
+
+*/
+
+
+$$QMenu.addAction(java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal, org.qtjambi.qt.gui.QKeySequence)
+/**
+This convenience function creates a new action with the text
+<tt>text</tt> and specified <tt>shortcut</tt>. The action's
+QAction.triggered() signal is connected to the <tt>signal</tt>. The
+function adds the newly created action to the menu's list of actions
+and returns it.
+
+*/
+
+
+$$QMenu.addAction(java.lang.String, java.lang.Object, java.lang.String)
+/**
+This convenience function creates a new action with the text
+<tt>text</tt>. The action's QAction.triggered() signal is connected to
+the <tt>receiver</tt>'s <tt>method</tt> slot. The function adds the
+newly created action to the menu's list of actions and returns it.
+
+*/
+
+
+$$QMenu.addAction(java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal)
+/**
+This convenience function creates a new action with the given
+<tt>text</tt>. It is connected to <tt>signal</tt>.
+
+<tt>text</tt>
+<tt>signal</tt>
+@return
+*/
+
+
+$$QMenu.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, java.lang.Object, java.lang.String, org.qtjambi.qt.gui.QKeySequence)
+/**
+This function creates a new action with the given <tt>icon</tt>,
+<tt>shortcut</tt>, and <tt>text</tt>. It is connected to the
+<tt>receiver</tt>'s <tt>method</tt> slot. It returns the created
+action.
+
+*/
+
+
+$$QMenu.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal, org.qtjambi.qt.gui.QKeySequence)
+/**
+This function creates a new action with the given <tt>icon</tt>,
+<tt>shortcut</tt>, and <tt>text</tt>. It is connected to
+<tt>signal</tt>. It returns the created action.
+
+*/
+
+
+$$QMenu.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, java.lang.Object, java.lang.String)
+/**
+This method creates a new action with the given <tt>icon</tt> and
+<tt>text</tt>. It is connected to the <tt>receiver</tt>'s
+<tt>method</tt> slot. It returns the created action.
+
+*/
+
+
+$$QMenu.addAction(org.qtjambi.qt.gui.QIcon, java.lang.String, org.qtjambi.qt.QSignalEmitter.AbstractSignal)
+/**
+This method creates an action with the given <tt>icon</tt> and <tt>text</tt>.
+It is connected to <tt>signal</tt> and returned.
+
+*/
+
+
+$$QTextEdit_ExtraSelection.QTextEdit_ExtraSelection()
+/**
+Creates a new QTextEdit_ExtraSelection.
+
+
+*/
+
+
+$$QTextEdit_ExtraSelection.setCursor(org.qtjambi.qt.gui.QTextCursor)
+/**
+Sets this QTextEdit_ExtraSelection's <tt>cursor</tt>.
+
+*/
+
+
+$$QTextEdit_ExtraSelection.cursor()
+/**
+Returns the cursor of this QTextEdit_ExtraSelection.
+
+*/
+
+
+$$QTextEdit_ExtraSelection.setFormat(org.qtjambi.qt.gui.QTextCharFormat)
+/**
+Sets the <tt>format</tt> of this QTextEdit_ExtraSelection.
+
+*/
+
+
+$$QTextEdit_ExtraSelection.format()
+/**
+Returns the format of this QTextEdit_ExtraSelection.
+
+*/
+
+
+$$QInputEvent.setModState(org.qtjambi.qt.core.Qt.KeyboardModifier...)
+/**
+Sets this QInputEvent's keyboard modifiers to <tt>modState</tt>.
+
+*/
+
+
+$$QPainter.QPainter(org.qtjambi.qt.gui.QWidget)
+/**
+Creates a QPainter with parent <tt>widget</tt>.
+
+*/
+
+
+$$QPainter.setBrush(org.qtjambi.qt.gui.QColor)
+/**
+Sets the brush of this QPainter to a solid <tt>color</tt> brush.
+
+*/
+
+
+$$QPainter.setBrush(org.qtjambi.qt.gui.QGradient)
+/**
+Sets this QPainter's brush to use <tt>gradient</tt>.
+
+<tt>gradient</tt>
+
+*/
+
+
+$$QPainter.setBrush(org.qtjambi.qt.gui.QPixmap)
+/**
+Sets this QPainter's brush to use <tt>pm</tt>.
+
+*/
+
+
+$$QPainter.drawText(org.qtjambi.qt.core.QRect, int, java.lang.String, org.qtjambi.qt.core.QRect)
+/**
+Draws the given <tt>text</tt> within the provided <tt>rectangle</tt>.
+<p>
+The <tt>boundingRect</tt> (if not null) is set to the actual bounding
+rectangle of the output.  The <tt>flags</tt> argument is a bitwise OR of
+Qt.AlignmentFlags.
+
+*/
+
+
+$$QPainter.drawText(org.qtjambi.qt.core.QRect, int, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QPainter.drawText(org.qtjambi.qt.core.QRectF, int, java.lang.String, org.qtjambi.qt.core.QRectF)
+/**
+Draws the given <tt>text</tt> within the provided <tt>rectangle</tt>.
+<p>
+The <tt>boundingRect</tt> (if not null) is set to the actual bounding
+rectangle of the output.  The <tt>flags</tt> argument is a bitwise OR of
+Qt.AlignmentFlags.
+
+*/
+
+
+$$QPainter.drawText(org.qtjambi.qt.core.QRectF, int, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QPainter.drawText(int, int, int, int, int, java.lang.String, org.qtjambi.qt.core.QRect)
+/**
+Draws the given <tt>text</tt> within the rectangle with origin
+(<tt>x</tt>, <tt>y</tt>), <tt>width</tt> and <tt>height</dd>.
+<p>
+The <tt>boundingRect</tt> (if not null) is set to the actual bounding
+rectangle of the output.  The <tt>flags</tt> argument is a bitwise OR
+of the following flags:
+
+*/
+
+
+$$QPainter.drawText(int, int, int, int, int, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPainter.redirected(org.qtjambi.qt.gui.QPaintDeviceInterface, org.qtjambi.qt.core.QPoint)
+/**
+Returns the replacement for given <tt>device</tt>. The optional out
+parameter <tt>offset</tt> returns the offset within the replaced
+device.
+
+*/
+
+
+$$QPainter.begin(org.qtjambi.qt.gui.QWidget)
+/**
+This method initializes the painter to draw on <tt>widget</tt>.
+It returns true if successful; otherwise, it returns false.
+*/
+
+
+$$QTextLayout_FormatRange.QTextLayout_FormatRange()
+/**
+Creates a new QTextLayout_FormatRange.
+
+*/
+
+
+$$QTextLayout_FormatRange.setFormat(org.qtjambi.qt.gui.QTextCharFormat)
+/**
+Sets this QTextLayout_FormatRange text char format to <tt>format</tt>.
+
+*/
+
+
+$$QTextLayout_FormatRange.format()
+/**
+Returns this QTextLayout_FormatRange's text char format.
+
+*/
+
+
+$$QTextLayout_FormatRange.setLength(int)
+/**
+Sets this QTextLayout_FormatRange's length to <tt>length</tt>.
+
+*/
+
+
+$$QTextLayout_FormatRange.length()
+/**
+Returns the length of this QTextLayout_FormatRange.
+
+*/
+
+
+$$QTextLayout_FormatRange.setStart(int)
+/**
+Sets the <tt>start</tt>, which is the beginning of the format range
+within the text layout's text, of this QTextLayout_FormatRange.
+
+*/
+
+
+$$QTextLayout_FormatRange.start()
+/**
+Returns the beginning of the format range within the text layout's
+text.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.QAbstractTextDocumentLayout_PaintContext()
+/**
+Creates a new QAbstractTextDocumentLayout_PaintContext object.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.setPalette(org.qtjambi.qt.gui.QPalette)
+/**
+Sets the <tt>palette</tt> palette of this
+QAbstractTextDocumentLayout_PaintContext.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.palette()
+/**
+Returns the palette of this QAbstractTextDocumentLayout_PaintContext.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.setCursorPosition(int)
+/**
+Sets this QAbstractTextDocumentLayout_PaintContext's <tt>cursorPosition</tt>.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.cursorPosition()
+/**
+Returns this QAbstractTextDocumentLayout_PaintContext's cursor
+position.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.setClip(org.qtjambi.qt.core.QRectF)
+/**
+Sets this QAbstractTextDocumentLayout_PaintContext's clip region to <tt>clip</tt>.
+
+*/
+
+
+$$QAbstractTextDocumentLayout_PaintContext.clip()
+/**
+Returns the clip region of this
+QAbstractTextDocumentLayout_PaintContext.
+
+*/
+
+
+$$QFontMetrics.boundingRect(int, int, int, int, int, java.lang.String, int, int[])
+/**
+Returns the bounding rectangle for the given <tt>text</tt> within the
+rectangle specified by the <tt>x</tt> and <tt>y</tt> coordinates, <tt>width</tt>, and
+<tt>height</tt>.
+<p>
+If Qt::TextExpandTabs is set in <tt>flags</tt> and <tt>tabArray</tt> is
+non-null, it specifies a 0-terminated sequence of pixel-positions
+for tabs; otherwise, if <tt>tabStops</tt> is non-zero, it is used as the
+tab spacing (in pixels).
+
+*/
+
+
+$$QFontMetrics.boundingRect(int, int, int, int, int, java.lang.String, int)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontMetrics.boundingRect(int, int, int, int, int, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontMetrics.boundingRect(org.qtjambi.qt.core.QRect, int, java.lang.String, int, int[])
+/**
+Returns the bounding rectangle of the characters in the string
+specified by <tt>text</tt>, which is the set of pixels the text would
+cover if drawn at (0, 0). The drawing, and hence the bounding
+rectangle, is constrained to the rectangle <tt>rect</tt>.
+<p>
+The <tt>flags</tt> argument is the bitwise OR of the following flags:
+<p>
+<dir>
+<li> Qt.AlignLeft aligns to the left border, except for
+      Arabic and Hebrew where it aligns to the right.
+<li> Qt.AlignRight aligns to the right border, except for
+      Arabic and Hebrew where it aligns to the left.
+<li> Qt.AlignJustify produces justified text.
+<li> Qt.AlignHCenter aligns horizontally centered.
+<li> Qt.AlignTop aligns to the top border.
+<li> Qt.AlignBottom aligns to the bottom border.
+<li> Qt.AlignVCenter aligns vertically centered
+<li> Qt.AlignCenter
+<li> Qt.TextSingleLine ignores newline characters in the text.
+<li> Qt.TextExpandTabs expands tabs (see below)
+<li> Qt.TextShowMnemonic interprets "&amp;x" as \underline{x}, i.e.
+underlined.
+<li> Qt.TextWordBreak breaks the text to fit the rectangle.
+</dir>
+<p>
+Qt::Horizontal alignment defaults to Qt::AlignLeft and vertical
+alignment defaults to Qt::AlignTop.
+<p>
+If several of the horizontal or several of the vertical alignment
+flags are set, the resulting alignment is undefined.
+<p>
+If Qt::TextExpandTabs is set in <tt>flags</tt>, then: if <tt>tabArray</tt> is
+non-null, it specifies a 0-terminated sequence of pixel-positions
+for tabs; otherwise if <tt>tabStops</tt> is non-zero, it is used as the
+tab spacing (in pixels).
+<p>
+Note that the bounding rectangle may extend to the left of (0, 0),
+e.g. for italicized fonts, and that the text output may cover
+<b>all</b> pixels in the bounding rectangle.
+<p>
+Newline characters are processed as line breaks.
+<p>
+Despite the different actual character heights, the heights of the
+bounding rectangles of "Yes" and "yes" are the same.
+<p>
+The bounding rectangle returned by this function is somewhat larger
+than that calculated by the simpler boundingRect() function. This
+function uses the minLeftBearing() maximum left  and
+minRightBearing() right font bearings as is
+necessary for multi-line text to align correctly. Also,
+fontHeight() and lineSpacing() are used to calculate the height,
+rather than individual character heights.
+
+*/
+
+
+$$QFontMetrics.boundingRect(org.qtjambi.qt.core.QRect, int, java.lang.String, int)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFontMetrics.boundingRect(org.qtjambi.qt.core.QRect, int, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QFontMetrics.size(int, java.lang.String, int, int[])
+/**
+Returns the size in pixels of <tt>text</tt>.
+<p>
+The <tt>flags</tt> argument is the bitwise OR of the following flags:
+<p>
+<dir>
+<li> Qt::TextSingleLine ignores newline characters.
+<li> Qt::TextExpandTabs expands tabs (see below)
+<li> Qt::TextShowMnemonic interprets "&amp;x" as \underline{x}, i.e.
+underlined.
+<li> Qt::TextWordBreak breaks the text to fit the rectangle.
+</dir>
+<p>
+If Qt::TextExpandTabs is set in <tt>flags</tt>, then: if <tt>tabArray</tt> is
+non-null, it specifies a 0-terminated sequence of pixel-positions
+for tabs; otherwise if <tt>tabStops</tt> is non-zero, it is used as the
+tab spacing (in pixels).
+<p>
+Newline characters are processed as line breaks.
+<p>
+Despite the different actual character heights, the heights of the
+bounding rectangles of "Yes" and "yes" are the same.
+
+*/
+
+
+$$QFontMetrics.size(int, java.lang.String, int)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QFontMetrics.size(int, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QGridLayout.getItemPosition(int)
+/**
+Returns the position information of the item with the given index.
+
+*/
+
+
+$$QWidget.getContentsMargins()
+/**
+Returns the widget's contents margins.
+
+*/
+
+
+$$QPicture.load(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded member function, provided for convenience.
+
+<tt>dev</tt> is the device used for loading.
+
+*/
+
+
+$$QPicture.load(java.lang.String)
+/**
+Loads a picture from the file specified by fileName and returns true
+if successful; otherwise returns false.
+
+*/
+
+
+$$QPicture.save(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded member function, provided for convenience.
+<p>
+<tt>dev</tt> is the device to use for saving.
+
+*/
+
+
+$$QPicture.save(java.lang.String)
+/**
+Saves a picture to the file specified by <tt>fileName</tt> and returns
+true if successful; otherwise returns false.
+
+*/
+
+
+$$QPicture.data()
+/**
+Returns the picture data.
+
+*/
+
+
+$$QRegion.setRects(org.qtjambi.qt.core.QRect[])
+/**
+Sets the region using the array of rectangles specified by rects. The
+rectangles must be optimally Y-X sorted and follow these restrictions:
+<p>
+<dir>
+<li> The rectangles must not intersect.
+<li> All rectangles with a given top coordinate must have the same height.
+<li> No two rectangles may abut horizontally (they should be combined into a single wider rectangle in that case).
+<li> The rectangles must be sorted in ascending order, with Y as the major sort key and X as the minor sort key.
+</dir>
+
+*/
+
+
+$$QInputMethodEvent_Attribute.QInputMethodEvent_Attribute(org.qtjambi.qt.gui.QInputMethodEvent.AttributeType, int, int, java.lang.Object)
+/**
+Constructs an input method attribute. <tt>t</tt> specifies the type of
+attribute, start (<tt>s</tt>) and length (<tt>l</tt>) the position of
+the attribute, and <tt>val</tt> the value of the attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.setLength(int)
+/**
+Sets the length of this QInputMethodEvent_Attribute.
+
+<tt>length</tt>
+
+*/
+
+
+$$QInputMethodEvent_Attribute.length()
+/**
+Returns the length of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.setType(org.qtjambi.qt.gui.QInputMethodEvent.AttributeType)
+/**
+Sets the <tt>type</tt> of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.type()
+/**
+Returns the type of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.setValue(java.lang.Object)
+/**
+Sets the value of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.value()
+/**
+Returns the value of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.setStart(int)
+/**
+Sets the <tt>start</tt> of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QInputMethodEvent_Attribute.start()
+/**
+Returns the start of this QInputMethodEvent_Attribute.
+
+*/
+
+
+$$QTextDocument.redo(org.qtjambi.qt.gui.QTextCursor)
+/**
+Redoes the last editing operation on the document if
+QTextDocument.isRedoAvailable() redo is available.
+<p>
+The provided <tt>cursor</tt> is positioned at the end of the location where
+the edition operation was redone.
+
+*/
+
+
+$$QTextDocument.undo(org.qtjambi.qt.gui.QTextCursor)
+/**
+Undoes the last editing operation on the document if undo is
+available. The provided <tt>cursor</tt> is positioned at the end of the
+location where the edition operation was undone.
+<p>
+See the \l {Overview of Qt's Undo Framework}{Qt Undo Framework}
+documentation for details.
+
+*/
+
+
+$$QItemSelection.split(org.qtjambi.qt.gui.QItemSelectionRange, org.qtjambi.qt.gui.QItemSelectionRange, org.qtjambi.qt.gui.QItemSelection)
+/**
+Splits the selection <tt>range</tt> using the selection <tt>other</tt> range.
+Removes all items in <tt>other</tt> from <tt>range</tt> and puts the result in
+<tt>result</tt>.
+
+*/
+
+
+$$QMatrix.rotate(double)
+/**
+Rotates the coordinate system the given <tt>other</tt> degrees
+counterclockwise.
+<p>
+Note that if you apply a QMatrix to a point defined in widget
+coordinates, the direction of the rotation will be clockwise
+because the y-axis points downwards.
+<p>
+Returns a reference to the matrix.
+
+*/
+
+
+$$QMatrix.scale(double, double)
+/**
+Scales the coordinate system by <tt>sx</tt> horizontally and
+<tt>sy</tt> vertically, and returns a reference to the matrix.
+
+*/
+
+
+$$QMatrix.shear(double, double)
+/**
+Shears the coordinate system by <tt>sh</tt> horizontally and
+<tt>sv</tt> vertically, and returns a reference to the matrix.
+
+*/
+
+
+$$QMatrix.translate(double, double)
+/**
+Moves the coordinate system <tt>dx</tt> along the x axis and
+<tt>dy</tt> along the y axis, and returns a reference to the matrix.
+
+*/
+
+
+$$QMatrix.multiply(org.qtjambi.qt.gui.QMatrix)
+/**
+Returns the result of multiplying this matrix by <tt>other</tt>, and
+also store the result in this QMatrix.
+
+*/
+
+
+$$QMatrix.multiplied(org.qtjambi.qt.gui.QMatrix)
+/**
+Returns the result of multiplying this matrix by <tt>other</tt>.
+
+*/
+
+
+$$QPolygonF.add(double, double)
+/**
+Adds the point (<tt>x</tt>, <tt>y</tt>) to the end of this polygon's
+point list.
+
+*/
+
+
+$$QPolygonF.add(org.qtjambi.qt.core.QPointF)
+/**
+Adds <tt>pt</tt> to the end of this polygons point list.
+
+*/
+
+
+$$QPolygonF.add(org.qtjambi.qt.gui.QPolygonF)
+/**
+Appends the points of <tt>p</tt> to the end of this polygons point
+list.
+
+*/
+
+
+$$QTextBlock_iterator.QTextBlock_iterator(org.qtjambi.qt.gui.QTextBlock_iterator)
+/**
+Constructs a new QTextBlock_iterator by copying <tt>o</tt>.
+
+*/
+
+
+$$QTextBlock_iterator.QTextBlock_iterator()
+/**
+Creates a new QTextBlockIterator.
+
+*/
+
+
+$$QTextBlock_iterator.atEnd()
+/**
+Returns true if the iterator is at the end of the text block.
+
+*/
+
+
+$$QTextBlock_iterator.fragment()
+/**
+Returns the text fragment the iterator currently points to.
+
+*/
+
+
+$$QTextBlock_iterator.next()
+/**
+Advances the iterator to the next item in the hash.
+
+*/
+
+
+$$QTextBlock_iterator.previous()
+/**
+Makes the preceding item the current item.
+
+*/
+
+
+$$QBitmap.QBitmap(java.lang.String, java.lang.String)
+/**
+Constructs a bitmap from the file specified by the given
+<tt>fileName</tt>. If the file does not exist, or has an unknown
+format, the bitmap becomes a null bitmap.
+<p>
+The <tt>fileName</tt> and <tt>format</tt> parameters are passed on to
+the QPixmap::load() function. If the file format uses more than 1 bit
+per pixel, the resulting bitmap will be dithered automatically.
+
+*/
+
+
+$$QBitmap.QBitmap(java.lang.String)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QBitmap.fromData(org.qtjambi.qt.core.QSize, byte[], org.qtjambi.qt.gui.QImage.Format)
+/**
+Constructs a bitmap with the given <tt>size</tt>, and sets the
+contents to the <tt>bits</tt> supplied.
+<p>
+The bitmap data has to be byte aligned and provided in in the bit
+order specified by <tt>monoFormat</tt>. The mono format must be either
+QImage::Format_Mono or QImage::Format_MonoLSB. Use QImage::Format_Mono
+to specify data on the XBM format.
+
+*/
+
+
+$$QBitmap.fromData(org.qtjambi.qt.core.QSize, byte[])
+/**
+This is an overloaded constructor provided for convenience.
+*/
+
+
+$$QLineF.intersect(org.qtjambi.qt.gui.QLineF, org.qtjambi.qt.core.QPointF)
+/**
+Returns a value indicating whether or not <b>this</b> line intersects
+with the given <tt>line</tt>.
+<p>
+The actual intersection point is extracted to
+<tt>intersectionPoint</tt> (if the pointer is valid). If the lines are
+parallel, the intersection point is undefined.
+
+*/
+
+
+$$QPainterPath.toFillPolygons()
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPainterPath.toFillPolygons(org.qtjambi.qt.gui.QMatrix)
+/**
+Converts the path into a list of polygons using the
+QMatrix <tt>matrix</tt>, and returns the list.
+<p>
+The function differs from the toFillPolygon() function in that it
+creates several polygons. It is provided because it is usually
+faster to draw several small polygons than to draw one large
+polygon, even though the total number of points drawn is the same.
+<p>
+The toFillPolygons() function differs from the toSubpathPolygons()
+function in that it create only polygon for subpaths that have
+overlapping bounding rectangles.
+<p>
+Like the toFillPolygon() function, this function uses a rewinding
+technique to make sure that overlapping subpaths can be filled
+using the correct fill rule. Note that rewinding inserts addition
+lines in the polygons so the outline of the fill polygon does not
+match the outline of the path.
+
+*/
+
+
+$$QPainterPath.toSubpathPolygons()
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QPainterPath.toSubpathPolygons(org.qtjambi.qt.gui.QMatrix)
+/**
+Converts the path into a list of polygons using the QMatrix
+<tt>matrix</tt>, and returns the list.
+<p>
+This function creates one polygon for each subpath regardless of
+intersecting subpaths (i.e. overlapping bounding rectangles). To
+make sure that such overlapping subpaths are filled correctly, use
+the toFillPolygons() function instead.
+
+*/
+
+
+$$QCursor.bitmap()
+/**
+Returns the cursor bitmap, or null if it is one of the standard
+cursors.
+
+*/
+
+
+$$QCursor.mask()
+/**
+Returns the cursor bitmap mask, or null if it is one of the standard
+cursors.
+
+*/
+
+
+$$QPen.QPen(org.qtjambi.qt.gui.QColor, double, org.qtjambi.qt.core.Qt.PenStyle, org.qtjambi.qt.core.Qt.PenCapStyle, org.qtjambi.qt.core.Qt.PenJoinStyle)
+/**
+Constructs a pen with the specified <tt>color</tt>, <tt>width</tt>,
+pen style <tt>s</tt>, pen cap style <tt>c</tt>, and pen join style
+<tt>j</tt>
+
+*/
+
+
+$$QPen.QPen(org.qtjambi.qt.gui.QColor, double, org.qtjambi.qt.core.Qt.PenStyle, org.qtjambi.qt.core.Qt.PenCapStyle)
+/**
+Constructs a pen with the specified <tt>color</tt>, <tt>width</tt>, pen style <tt>s</tt>,
+and <tt>c</tt> cap style.
+
+*/
+
+
+$$QPen.QPen(org.qtjambi.qt.gui.QColor, double, org.qtjambi.qt.core.Qt.PenStyle)
+/**
+This is an overloaded constructor provided for convenience.
+*/
+
+
+$$QPen.QPen(org.qtjambi.qt.gui.QColor, double)
+/**
+This is an overloaded constructor provided for convenience.
+*/
+
+
+$$QImage.QImage(java.lang.String[])
+/**
+Constructs an image from the given <tt>xpm</tt> image.
+<p>
+Make sure that the image is a valid XPM image. Errors are silently
+ignored.
+
+*/
+
+
+$$QImage.QImage(byte[], int, int, org.qtjambi.qt.gui.QImage.Format)
+/**
+Constructs an image with the given <tt>width</tt>, <tt>height</tt> and
+<tt>format</tt>, that uses an existing read-only memory buffer,
+<tt>data</tt>. The <tt>width</tt> and <tt>height</tt> must be
+specified in pixels, <tt>data</tt> must be 32-bit aligned, and each
+scanline of data in the image must also be 32-bit aligned.
+<p>
+The buffer must remain valid throughout the life of the QImage and all
+copies that have not been modified or otherwise detached from the
+original buffer. The image does not delete the buffer at destruction.
+<p>
+If the image is in an indexed color format, set the color table
+for the image using setColorTable().
+<p>
+Unlike the similar QImage constructor that takes a non-const data
+buffer, this version will never alter the contents of the buffer. For
+example, calling QImage::bits() will return a deep copy of the image,
+rather than the buffer passed to the constructor.  This allows for the
+efficiency of constructing a QImage from raw data, without the
+possibility of the raw data being changed.
+
+*/
+
+
+$$QImage.QImage(java.lang.String, java.lang.String)
+/**
+Constructs an image and tries to load the image from the file with the
+given <tt>fileName</tt>.
+<p>
+The loader attempts to read the image using the specified
+<tt>format</tt>. If the <tt>format</tt> is not specified (which is the
+default), the loader probes the file for a header to guess the file
+format.
+<p>
+If the loading of the image failed, this object is a null image.
+<p>
+The file name can either refer to an actual file on disk or to one of
+the application's embedded resources. See the
+\l{resources.html}{Resource System} overview for details on how to
+embed images and other resource files in the application's executable.
+
+*/
+
+
+$$QImage.QImage(java.lang.String)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QImage.convertToFormat(org.qtjambi.qt.gui.QImage.Format, java.util.List<java.lang.Integer>)
+/**
+Returns a copy of the image converted to the given <tt>format</tt>,
+using the specified <tt>colorTable</tt>.
+<p>
+Conversion from 32 bit to 8 bit indexed is a slow operation and
+will use a straightforward nearest color approach, with no
+dithering.
+
+*/
+
+
+$$QImage.save(java.lang.String, java.lang.String, int)
+/**
+Saves the image to the file with the given <tt>fileName</tt>, using the
+given image file <tt>format</tt> and <tt>quality</tt> factor. If <tt>format</tt> is
+null, QImage will attempt to guess the format by looking at <tt>fileName</tt>'s
+suffix.
+<p>
+The <tt>quality</tt> factor must be in the range 0 to 100 or -1. Specify
+0 to obtain small compressed files, 100 for large uncompressed
+files, and -1 (the default) to use the default settings.
+<p>
+Returns true if the image was successfully saved; otherwise
+returns false.
+
+*/
+
+
+$$QImage.save(java.lang.String, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.save(java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.copyOfBytes()
+/**
+Returns a copy of the image data.
+
+@return
+*/
+
+
+$$QImage.save(org.qtjambi.qt.core.QIODevice, java.lang.String, int)
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QImage.save(org.qtjambi.qt.core.QIODevice, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.save(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded function provided for convenience.
+
+*/
+
+
+$$QImage.load(java.lang.String, java.lang.String)
+/**
+Loads an image from the file with the given <tt>fileName</tt>. Returns
+true if the image was successfully loaded; otherwise returns false.
+<p>
+The loader attempts to read the image using the specified
+<tt>format</tt>. If the <tt>format</tt> is null, the loader probes the
+file for a header to guess the file format.
+<p>
+The file name can either refer to an actual file on disk or to one of
+the application's embedded resources. See the
+\l{resources.html}{Resource System} overview for details on how to
+embed images and other resource files in the application's executable.
+
+*/
+
+
+$$QImage.load(java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.load(org.qtjambi.qt.core.QIODevice, java.lang.String)
+/**
+This is an overloaded function provided for convenience.
+*/
+
+
+$$QImage.load(org.qtjambi.qt.core.QIODevice)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.loadFromData(byte[], java.lang.String)
+/**
+Loads an image from the binary <tt>data</tt>. Returns true if the image
+was successfully loaded; otherwise returns false.
+<p>
+The loader attempts to read the image using the specified format. If
+the <tt>format</tt> is not specified (which is the default), the
+loader probes the file for a header to guess the file format.
+
+*/
+
+
+$$QImage.loadFromData(byte[])
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QImage.loadFromData(org.qtjambi.qt.core.QByteArray, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.loadFromData(org.qtjambi.qt.core.QByteArray)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QImage.fromData(org.qtjambi.qt.core.QByteArray, java.lang.String)
+/**
+This is an overloaded method provided for convenience.
+<p>
+Loads an image from the given QByteArray <tt>data</tt>.
+
+*/
+
+
+$$QImage.fromData(org.qtjambi.qt.core.QByteArray)
+/**
+This is an overloaded method provided for convenience.
+<p>
+Loads an image from the given QByteArray <tt>data</tt>.
+
+*/
+
+
+$$QPolygon.add(int, int)
+/**
+Adds the point (<tt>x</tt>, <tt>y</tt>) to the end of this QPolygon's
+point list.
+
+*/
+
+
+$$QPolygon.add(org.qtjambi.qt.core.QPoint)
+/**
+Adds <tt>pt</tt> to this polygon's point list.
+
+*/
+
+
+$$QPolygon.add(org.qtjambi.qt.gui.QPolygon)
+/**
+Adds the points in <tt>p</tt> to the end of this polygons point list.
+
+*/
+
+
+$$QPushButton.initStyleOption(org.qtjambi.qt.gui.QStyleOptionButton)
+/**
+Initialize <tt>option</tt> with the values from this QPushButton. This
+method is useful for subclasses when they need a QStyleOptionButton,
+but don't want to fill in all the information themselves.
+
+*/
+
+
+$$QPaintEngineState.setDirtyFlags(org.qtjambi.qt.gui.QPaintEngine.DirtyFlag...)
+/**
+Sets this QPaintEngineState's <tt>dirtyFlags</tt>.
+
+*/
+
+
+$$QHeaderView.initStyleOption(org.qtjambi.qt.gui.QStyleOptionHeader)
+/**
+Initialize <tt>option</tt> with the values from this QHeaderView. This
+method is useful for subclasses when they need a QStyleOptionButton,
+but don't want to fill in all the information themselves.
+
+*/
+
+
+$$QScrollBar.initStyleOption(org.qtjambi.qt.gui.QStyleOptionSlider)
+/**
+Initialize <tt>option</tt> with the values from this QScrollBar. This
+method is useful for subclasses when they need a QStyleOptionButton,
+but don't want to fill in all the information themselves.
+
+*/
+
+
+$$QAction.setIcon(org.qtjambi.qt.gui.QPixmap)
+/**
+Sets this QAction's icon to <tt>pm</tt>.
+
+*/
+
+
+$$QPaintEngine.drawImage(org.qtjambi.qt.core.QRectF, org.qtjambi.qt.gui.QImage, org.qtjambi.qt.core.QRectF, org.qtjambi.qt.core.Qt.ImageConversionFlag...)
+/**
+Reimplement this function to draw the part of the <tt>pm</tt>
+specified by the <tt>sr</tt> rectangle in the given <tt>r</tt> using
+the given conversion flags <tt>flags</tt>, to convert it to a pixmap.
+
+*/
+
+
+$$QPaintEngine.setGccaps(org.qtjambi.qt.gui.QPaintEngine.PaintEngineFeature...)
+/**
+Sets this QPaintEngine's <tt>gccaps</tt>.
+
+*/
+
+
+$$QTextLayout.draw(org.qtjambi.qt.gui.QPainter, org.qtjambi.qt.core.QPointF, java.util.List<org.qtjambi.qt.gui.QTextLayout_FormatRange>)
+/**
+Draws the whole layout on the painter <tt>p</tt> at the position
+specified by <tt>pos</tt>.  The rendered layout includes the given
+<tt>selections</tt>.
+
+*/
+
+
+$$QItemSelectionModel.selectedColumns()
+/**
+Returns the indexes in row 0 for columns where all rows are
+selected.
+
+*/
+
+
+$$QItemSelectionModel.selectedRows()
+/**
+Returns the indexes in column 0 for the rows where all
+columns are selected.
+
+*/
+
+
+$$QItemSelectionModel.select(org.qtjambi.qt.core.QModelIndex, org.qtjambi.qt.gui.QItemSelectionModel.SelectionFlag...)
+/**
+Selects the model item <tt>index</tt> using the specified
+<tt>command</tt>, and emits selectionChanged().
+
+*/
+
+
+$$QItemSelectionModel.select(org.qtjambi.qt.gui.QItemSelection, org.qtjambi.qt.gui.QItemSelectionModel.SelectionFlag...)
+/**
+Selects the item <tt>selection</tt> using the specified <tt>command</tt>, and
+emits selectionChanged().
+
+*/
+
+
+$$QTextCursor.selectedTableCells()
+/**
+Returns the selected table cells as a QTableArea.
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(org.qtjambi.qt.gui.QLineF, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsLineItem from <tt>line</tt> with the specified
+<tt>parent</tt>
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(org.qtjambi.qt.gui.QLineF)
+/**
+Creates a new QGraphicsLineItem from <tt>line</tt> with no parent (null).
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(org.qtjambi.qt.gui.QLineF, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsLineItem from <tt>line</tt> with the specified
+<tt>parent</tt>, and then adds it to <tt>scene</tt>.
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+
+This is equal to QGraphicsLineItem(new QLineF(<tt>x1</tt>, <tt>y1</tt>,
+<tt>x2</tt>, <tt>y2</tt>), <tt>parent</tt>).
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(double, double, double, double)
+/**
+This is equal to QGraphicsLineItem(new QLineF(<tt>x1</tt>, <tt>y1</tt>,
+   2802 <tt>x2</tt>, <tt>y2</tt>)).
+
+*/
+
+
+$$QGraphicsLineItem.QGraphicsLineItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+This is equal to QGraphicsLineItem(new QLineF(<tt>x1</tt>, <tt>y1</tt>,
+<tt>x2</tt>, <tt>y2</tt>), <tt>parent</tt>, <tt>scene</tt>).
+
+*/
+
+
+$$QGraphicsSimpleTextItem.QGraphicsSimpleTextItem(java.lang.String, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsSimpleTextItem with the specified <tt>text</tt> and
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsSimpleTextItem.QGraphicsSimpleTextItem(java.lang.String)
+/**
+Creates a new parentless QGraphicsSimpleTextItem with the specified <tt>text</tt>.
+
+*/
+
+
+$$QGraphicsSimpleTextItem.QGraphicsSimpleTextItem(java.lang.String, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsSimpleTextItem with the specified <tt>text</tt> and
+<tt>parent</tt>, and adds it to <tt>scene</tt>.
+
+*/
+
+
+$$QStyleOptionToolBoxV2.setPosition(org.qtjambi.qt.gui.QStyleOptionToolBoxV2.TabPosition)
+/**
+Sets the tab position of this QStyleOptionToolBoxV2 to <tt>position</tt>.
+
+*/
+
+
+$$QStyleOptionToolBoxV2.position()
+/**
+Returns the tab position of this QStyleOptionToolBoxV2.
+
+*/
+
+
+$$QGraphicsItem.QGraphicsItem(org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsItem with the specified <tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsItem.QGraphicsItem()
+/**
+Creates a new QGraphicsItem with no parent.
+
+
+*/
+
+
+$$QGraphicsItem.QGraphicsItem(org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsItem with the specified <tt>parent</tt> and adds it to
+<tt>scene</tt>.
+
+*/
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(org.qtjambi.qt.core.QRectF, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsEllipseItem with the specified <tt>rect</tt> bounds and
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(org.qtjambi.qt.core.QRectF)
+/**
+tes a new QGraphicsEllipseItem with the specified <tt>rect</tt> bounds.
+
+*/
+
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(org.qtjambi.qt.core.QRectF, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsEllipseItem with the specified <tt>rect</tt> bounds and
+<tt>parent</tt>, and then adds it to <tt>scene</tt>.
+
+*/
+
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsEllipseItem with top left corner in the point
+(<tt>x</tt>, <tt>y</tt>), width <tt>w</tt>, and height <tt>h</tt>, and the
+specified <tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(double, double, double, double)
+/**
+Creates a new QGraphicsEllipseItem with top left corner in the point
+(<tt>x</tt>, <tt>y</tt>), width <tt>w</tt>.
+
+*/
+
+
+$$QGraphicsEllipseItem.QGraphicsEllipseItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsEllipseItem with top left corner in the point
+(<tt>x</tt>, <tt>y</tt>), width <tt>w</tt>, and height <tt>h</tt>, and the
+specified <tt>parent</tt>. It is then added to <tt>scene</tt>.
+
+*/
+
+
+$$QGraphicsPathItem.QGraphicsPathItem(org.qtjambi.qt.gui.QPainterPath, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsPathItem from the specified <tt>path</tt> and
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsPathItem.QGraphicsPathItem(org.qtjambi.qt.gui.QPainterPath)
+/**
+Creates a new QGraphicsPathItem from the specified <tt>path</tt>.
+
+*/
+
+
+$$QGraphicsPathItem.QGraphicsPathItem(org.qtjambi.qt.gui.QPainterPath, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsPathItem from the specified <tt>path</tt>,
+<tt>parent</tt>, and <tt>scene</tt>.
+
+*/
+
+
+$$QShortcutEvent.setSequence(org.qtjambi.qt.gui.QKeySequence)
+/**
+Constructs a shortcut event for the given <tt>sequence</tt>.
+
+*/
+
+
+$$QShortcutEvent.sequence()
+/**
+Returns the key sequence (QKeySequence) for this QShortcutEvent.
+
+*/
+
+
+$$QShortcutEvent.setSid(int)
+/**
+Sets this QShortcutEvent's ID to <tt>sid</tt>.
+
+*/
+
+
+$$QShortcutEvent.sid()
+/**
+Returns this QShortcutEvent's ID.
+
+
+*/
+
+
+$$QShortcutEvent.setAmbig(boolean)
+/**
+Sets this QShortcutEvent as having an ambiguous key sequence.
+
+*/
+
+
+$$QShortcutEvent.ambig()
+/**
+Returns true if the key sequence that triggered the event is
+ambiguous.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(org.qtjambi.qt.core.QRectF, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsRectItem with the specified bounds <tt>rect</tt> and
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(org.qtjambi.qt.core.QRectF)
+/**
+Creates a new QGraphicsRectItem with the specified bounds <tt>rect</tt>.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(org.qtjambi.qt.core.QRectF, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsRectItem with the specified bounds <tt>rect</tt>,
+<tt>parent</tt>, and then adds it to <tt>scene</tt>.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsRectItem of which top-left corner is (<tt>x</tt>,
+<tt>y</tt>), width is <tt>w</tt>, and height is <tt>h</tt>. It will have the
+specified <tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(double, double, double, double)
+/**
+Creates a new QGraphicsRectItem of which top-left corner is (<tt>x</tt>,
+<tt>y</tt>), width is <tt>w</tt>, and height is <tt>h</tt>.
+
+*/
+
+
+$$QGraphicsRectItem.QGraphicsRectItem(double, double, double, double, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsRectItem of which top-left corner is (<tt>x</tt>,
+<tt>y</tt>), width is <tt>w</tt>, and height is <tt>h</tt>. It will have the
+specified <tt>parent</tt> and <tt>scene</tt>.
+
+*/
+
+$$QStyleOptionDockWidgetV2.QStyleOptionDockWidgetV2(org.qtjambi.qt.gui.QStyleOptionDockWidget)
+/**
+Creates a new QStyleOptionDockWidgetV2, which is a copy of <tt>other</tt>.
+
+*/
+
+
+$$QStyleOptionDockWidgetV2.QStyleOptionDockWidgetV2(org.qtjambi.qt.gui.QStyleOptionDockWidgetV2)
+/**
+Creates a new QStyleOptionDockWidgetV2, which is a copy of <tt>other</tt>.
+
+*/
+
+
+$$QStyleOptionDockWidgetV2.QStyleOptionDockWidgetV2(int)
+/**
+Creates a new QStyleOptionDockWidgetV2 with the specified <tt>version</tt>.
+
+*/
+
+
+$$QStyleOptionDockWidgetV2.QStyleOptionDockWidgetV2()
+/**
+Creates a new QStyleOptionDockWidgetV2, initializing the  member variables to
+their default values.
+
+*/
+
+
+$$QStyleOptionDockWidgetV2.setVerticalTitleBar(boolean)
+/**
+Sets this QStyleOptionDockWidgetV2's title bar to vertical if
+<tt>verticalTitleBar</tt> is true; otherwise, horizontal.
+
+*/
+
+
+$$QStyleOptionDockWidgetV2.verticalTitleBar()
+/**
+Returns true if this QStyleOptionDockWidgetV2 has a vertical title
+bar; otherwise, false.
+
+*/
+
+
+$$QGraphicsTextItem.QGraphicsTextItem(java.lang.String, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsTextItem with the specified <tt>text</tt> and
+<tt>parent</tt> graphics item.
+
+*/
+
+
+$$QGraphicsTextItem.QGraphicsTextItem(java.lang.String)
+/**
+Creates a new QGraphicsTextItem with the specified <tt>text</tt>.
+
+*/
+
+
+$$QGraphicsTextItem.QGraphicsTextItem(java.lang.String, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsTextItem with the specified <tt>text</tt>,
+<tt>parent</tt>, and <tt>scene</tt>.
+
+*/
+
+
+$$QStyleOptionViewItemV3.QStyleOptionViewItemV3(org.qtjambi.qt.gui.QStyleOptionViewItemV3)
+/**
+Creates a new QStyleOptionViewItemV3 that is a copy of <tt>other</tt>.
+
+*/
+
+$$QAbstractGraphicsShapeItem.QAbstractGraphicsShapeItem(org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Constructs a QAbstractGraphicsShapeItem. <tt>parent<tt> is passed to QGraphicsItem's
+constructor.
+
+*/
+
+
+$$QAbstractGraphicsShapeItem.QAbstractGraphicsShapeItem()
+/**
+Constructs a parentless QAbstractGraphicsShapeItem.
+
+
+*/
+
+
+$$QAbstractGraphicsShapeItem.QAbstractGraphicsShapeItem(org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Constructs a new QAbstractGraphicsShapeItem with the specified <tt>parent</tt>
+and adds it to <tt>scene</tt>.
+
+*/
+
+$$QLayoutItem.setAlign(org.qtjambi.qt.core.Qt.Alignment)
+/**
+Sets the alignment of this item to <tt>align</tt>.
+<p>
+<b>Note:</b> Item alignment is only supported by QLayoutItem subclasses
+where it would have a visual effect. Except for QSpacerItem, which provides
+blank space for layouts, all public Qt classes that inherit QLayoutItem
+support item alignment.
+
+*/
+
+
+$$QLayoutItem.align()
+/**
+Returns the alignment of this QlayoutItem.
+
+*/
+
+
+$$QGraphicsPolygonItem.QGraphicsPolygonItem(org.qtjambi.qt.gui.QPolygonF, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsPolygonItem of the specified <tt>polygon</tt> and
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsPolygonItem.QGraphicsPolygonItem(org.qtjambi.qt.gui.QPolygonF)
+/**
+Creates a new QGraphicsPolygonItem from <tt>polygon</tt>.
+
+*/
+
+
+$$QGraphicsPolygonItem.QGraphicsPolygonItem(org.qtjambi.qt.gui.QPolygonF, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsPolygonItem from the given <tt>polygon</tt>, and with
+the specified <tt>parent</tt>. It is then added to <tt>scene</tt>.
+
+*/
+
+
+$$QStandardItemModel.setItem(int, org.qtjambi.qt.gui.QStandardItem)
+/**
+This is an overloaded method provided for convenience. It is equal to
+<i>setItem(<tt>row</tt>, 0, <tt>item</tt>)</i>.
+
+*/
+
+
+$$QStyleOptionFrameV2.setFeatures(org.qtjambi.qt.gui.QStyleOptionFrameV2.FrameFeatures)
+/**
+Sets the FrameFeatures of this QStyleOptionFrameV2 to <tt>features</tt>.
+
+*/
+
+
+$$QStyleOptionFrameV2.features()
+/**
+Returns the  QStyleOptionFrameV2.FrameFeatures of this QStyleOptionFrameV2.
+
+*/
+
+
+$$QGraphicsItemGroup.QGraphicsItemGroup(org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsItemGroup with the specified  <tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsItemGroup.QGraphicsItemGroup()
+/**
+Creates a new parentless orphan QGraphicsItemGroup.
+
+*/
+
+
+$$QGraphicsItemGroup.QGraphicsItemGroup(org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsItemGroup with the specified <tt>parent</tt>, and then
+adds it to <tt>scene</tt>.
+
+*/
+
+
+$$QGraphicsPixmapItem.QGraphicsPixmapItem(org.qtjambi.qt.gui.QPixmap, org.qtjambi.qt.gui.QGraphicsItemInterface)
+/**
+Creates a new QGraphicsPixmapItem from <tt>pixmap</tt> and with the specified
+<tt>parent</tt>.
+
+*/
+
+
+$$QGraphicsPixmapItem.QGraphicsPixmapItem(org.qtjambi.qt.gui.QPixmap)
+/**
+Creates a new QGraphicsPixmapItem from the given <tt>pixmap</tt>.
+
+*/
+
+
+$$QGraphicsPixmapItem.QGraphicsPixmapItem(org.qtjambi.qt.gui.QPixmap, org.qtjambi.qt.gui.QGraphicsItemInterface, org.qtjambi.qt.gui.QGraphicsScene)
+/**
+Creates a new QGraphicsPixmapItem from the given <tt>pixmap</tt> and with
+the specified <tt>parent</tt>. It is added to <tt>scene</tt>.
+
+*/
+
+
+$$QFileDialog.setDirectory(org.qtjambi.qt.core.QDir)
+/**
+Set the current directory of this QFileDialog to <tt>directory</tt>.
+
+*/
+
+
+$$QTextLine.cursorToX(int, org.qtjambi.qt.gui.QTextLine.Edge)
+/**
+Converts the cursor position <tt>cursorPos</tt> to the corresponding x position inside
+the line, taking account of the <tt>edge</tt>.
+
+*/
+
+
+$$QWidget.style()
+/**
+Returns the widget's style object, i.e., the style in which the widget is
+drawn.
+
+*/
+
+
+$$QTextDocumentFragment.toHtml()
+/**
+Returns the contents of the document fragment as HTML, using the specified
+encoding (e.g., "UTF-8", "ISO 8859-1").
+
+*/
+
+
+$$QTextDocument.setUseDesignMetrics(boolean)
+/**
+If <tt>b</tt> is true then the layout will use design metrics; otherwise it will
+use the metrics of the paint device (which is the default behavior).
+
+*/
+
+
+$$QTextDocument.undo()
+/**
+This is an overloaded member function, provided for convenience.
+
+*/
+
+
+$$QTextDocument.useDesignMetrics()
+/**
+Returns true if this QTextDocument uses design metrics.
+
+*/
+
+
+$$QPainterPath.toFillPolygon(org.qtjambi.qt.gui.QMatrix)
+/**
+This is an overloaded member function, provided for convenience.
+
+*/
+
+
+$$QTextEdit.overwriteMode()
+/**
+Returns this QTextEdit's overwrite mode.
+<p>
+If FALSE (the default) characters entered by the user are inserted with any
+characters to the right being moved out of the way. If TRUE, the editor is in
+overwrite mode, i.e. characters entered by the user overwrite any characters
+to the right of the cursor position.
+
+*/
+
+
+$$QTextEdit.setOverwriteMode(boolean)
+/**
+This property holds the text edit's overwrite mode to <tt>overwrite</tt>.
+<p>
+If FALSE (the default) characters entered by the user are inserted with any
+characters to the right being moved out of the way. If TRUE, the editor is in
+overwrite mode, i.e. characters entered by the user overwrite any characters
+to the right of the cursor position.
+
+*/
+
+
+$$QTextFrame_iterator.next()
+/**
+Returns the next QTextFrame in this iterator.
+
+*/
+
+
+$$QTextFrame_iterator.previous()
+/**
+Returns the previous QTextFrame in this iterator.
+
+*/
+
+
+$$QPaintEngine.setActive(int)
+/**
+Sets the active state of the paint engine to <tt>active</tt>.
+
+*/
+
+
+$$QPaintEngine.active()
+/**
+Returns the active state of this paint engine.
+
+*/
+
+
+$$QToolBar.initStyleOption(org.qtjambi.qt.gui.QStyleOptionToolBar)
+/**
+Initialize <tt>option</tt> with the values from the menu bar and information from
+action. This method is useful for subclasses when they need a
+QStyleOptionMenuItem, but don't want to fill in all the information
+themselves.
+
+*/
+
+
+$$QStyle.combinedLayoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption, org.qtjambi.qt.gui.QWidget)
+/**
+Returns the spacing that should be used between <tt>controls1</tt> and
+<tt>controls2</tt> in a layout. <tt>orientation</tt> specifies whether the
+controls are laid out side by side or stacked vertically. The
+<tt>option</tt> parameter can be used to pass extra information about the
+parent widget. The <tt>widget</tt> parameter is optional and can also
+be used if <tt>option</tt> is 0.
+<p>
+<tt>controls1</tt> and <tt>controls2</tt> are OR-combination of zero or more
+\l{QSizePolicy::ControlTypes}{control types}.
+<p>
+This function is called by the layout system. It is used only if
+PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
+negative value.
+
+*/
+
+
+$$QStyle.combinedLayoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption)
+/**
+This is an overloaded mthod provided for convenience.
+*/
+
+
+$$QStyle.combinedLayoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.gui.QSizePolicy.ControlTypes, org.qtjambi.qt.core.Qt.Orientation)
+/**
+This is an overloaded mthod provided for convenience.
+*/
+
+
+$$QStyle.layoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption, org.qtjambi.qt.gui.QWidget)
+/**
+This is an overloaded mthod provided for convenience.
+*/
+
+
+$$QStyle.layoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption)
+/**
+This is an overloaded mthod provided for convenience.
+*/
+
+
+$$QStyle.layoutSpacing(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation)
+/**
+This is an overloaded mthod provided for convenience.
+*/
+
+
+$$QStyle.layoutSpacingImplementation(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption, org.qtjambi.qt.gui.QWidget)
+/**
+This slot is called by layoutSpacing() to determine the spacing
+that should be used between <tt>control1</tt> and <tt>control2</tt> in a
+layout. <tt>orientation</tt> specifies whether the controls are laid
+out side by side or stacked vertically. The <tt>option</tt> parameter
+can be used to pass extra information about the parent widget.
+The <tt>widget</tt> parameter is optional and can also be used if
+<tt>option</tt> is 0.
+<p>
+If you want to provide custom layout spacings in a QStyle
+subclass, implement a slot called layoutSpacingImplementation()
+in your subclass. Be aware that this slot will only be called if
+PM_LayoutHorizontalSpacing or PM_LayoutVerticalSpacing returns a
+negative value.
+<p>
+The default implementation returns -1.
+
+*/
+
+
+$$QStyle.layoutSpacingImplementation(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation, org.qtjambi.qt.gui.QStyleOption)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QStyle.layoutSpacingImplementation(org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.gui.QSizePolicy.ControlType, org.qtjambi.qt.core.Qt.Orientation)
+/**
+This is an overloaded method provided for convenience.
+*/
+
+
+$$QTransform.multiply(double)
+/**
+Multiplies this QTransform with <tt>d</tt>.
+
+*/
+
+
+$$QTransform.add(double)
+/**
+Adds <tt>d</tt> to this QTransform.
+
+<tt>d</tt>
+
+*/
+
+
+$$QTransform.divide(double)
+/**
+Divides this QTransform by <tt>d</tt>.
+
+*/
+
+
+$$QTransform.subtract(double)
+/**
+Subtracts <tt>d</tt> from this QTransform.
+
+*/
+
+
+$$QWidget.setContentsMargins(org.qtjambi.qt.gui.QContentsMargins)
+/**
+Sets the <tt>margins</tt> around the contents of the widget. The
+margins are used by the layout system, and may be used by subclasses
+to specify the area to draw in (e.g. excluding the frame).
+<p>
+Changing the margins will trigger a resizeEvent().
+
+*/
+
+
+$$QLayout.getContentsMargins()
+/**
+Returns the contents margins of this QLayout.
+
+*/
+
+
+$$QLayout.setContentsMargins(org.qtjambi.qt.gui.QContentsMargins)
+/**
+Sets the contents margins of this QLayout to <tt>margins</tt>.
+
+*/
+
+

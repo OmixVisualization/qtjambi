@@ -1,0 +1,183 @@
+/*!
+    \page qtjambi-svgcards.html
+    \title SVG Cards Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for SVG Cards Example}{SvgCards.java}
+    \endlist
+
+    The SVG Cards example shows how to render SVG files using
+    QSvgRenderer and the Graphics View framework.
+
+    \image svgcards-example.png
+
+    The QSvgRenderer class is used to draw the contents of SVG files
+    onto paint devices. It provides an API that supports basic
+    features of SVG rendering, such as loading and rendering of static
+    drawings, and more interactive features like animation.
+
+    The Graphics View framework provides the QGraphicsScene class for
+    managing and interacting with a large number of custom-made 2D
+    graphical items derived from the QGraphicsItem class, and a
+    QGraphicsView widget for visualizing the items, with support for
+    zooming and rotation. The framework also provides the
+    QGraphicsSvgItem class to render the contents of SVG files.
+
+    The SVG Cards example displays a set of cards and lets the user
+    move the cards and alter their stacking order. The example consists
+    of several classes:
+
+    \list
+
+        \o The \c Card class represents the individual cards.
+        \o The \c CardDeck class is used to create a set of cards.
+        \o The \c CardBox class provide the application's message box,
+        displaying information about the application's status and the
+        user's interaction.
+        \o The \c CardManager class controls the messages displayed in
+        the message box.
+        \o The \c SvgCards provides the main application window.
+
+    \endlist
+
+    We will take a look at the \c Card and \c CardDeck classes to see
+    how to render the content of a SVG file onto an item, and we will
+    take a look at the relevant parts of the \c SvgCards class to see
+    how to implement a graphics view, i.e., how to create a scene with
+    a corresponding view and how to put the items into the scene.
+
+    \section1 The CardDeck Class Implementation
+
+    The contents of a SVG file can be rendered onto an item by passing
+    the file name to the QGraphicsSvgItem constructor or by setting a
+    SVG renderer for it. In this example we use the latter approach,
+    making the \c CardDeck class create the card items:
+
+    \snippet SvgCards.java 9
+    \dots 8
+    \snippet SvgCards.java 10
+
+    First we create the renderer, loading the contents of our file by
+    passing the filename to the QSvgRenderer constructor, then we
+    create the cards: For each card we pass an XML identifier that
+    specifies the element to render, along with the renderer to the \c
+    Card class's constructor.
+
+    \section1 The Card Class Implementation
+
+    The \c Card class extends the QGraphicsSvgItem class:
+
+    \snippet SvgCards.java 1
+    \snippet SvgCards.java 2
+
+    When constructing a card item, we start by calling the base class
+    \l {QGraphicsSvgItem::QGraphicsSvgItem()}{constructor} to create a
+    top-level item. Then we specify the XML element we want this item
+    to render using QGraphicsSvgItem's \l
+    {QGraphicsSvgItem::setElementId()}{setElementId()} method.
+
+    We also set the item's renderer using it as a shared renderer; in
+    this example we use the same renderer for all our items. The
+    benefit of using a shared renderer is that the SVG file is parsed
+    only once. Note that the QSvgRenderer object that we pass to the
+    \l {QGraphicsSvgItem::setSharedRenderer()}{setSharedRenderer()}
+    method has to exist for as long as this item is used.
+
+    \table
+    \header \o Graphics Item Stacking Order
+    \row
+    \o
+
+    When moving the cards around in the view, we want the moving card
+    to appear on top of the others. The Graphics View framework
+    provides a concept of Z values to control the stacking order of
+    the items. An item's Z value decides the stacking order of sibling
+    (neighboring) items. An item of high Z-value will be drawn on top
+    of an item with a lower Z-value if they share the same parent
+    item.
+
+    \snippet SvgCards.java 3
+    \dots 12
+    \snippet SvgCards.java 4
+    \codeline
+    \snippet SvgCards.java 5
+    \snippet SvgCards.java 6
+    \dots 12
+    \snippet SvgCards.java 7
+    \dots 8
+    \snippet SvgCards.java 8
+
+    We reimplement the \l
+    {QGraphicsItem::mousePressEvent()}{mousePressEvent()} and \l
+    {QGraphicsItem::mouseReleaseEvent()}{mouseReleaseEvent()}
+    methods inherited from QGraphicsItem, to receive the mouse press
+    and release events for our item. Then, whenever the user press or
+    release the left mouse-button over a card we alter its Z value
+    using the \l
+    {QGraphicsItem::setZValue()}{QGraphicsItem.setZValue()} method:
+    When our card item receives a mouse press event, we set its Z
+    value to 10 making it appear on top of all other cards; when the
+    item receives a mouse release event the value is reduced to 5.
+
+    \endtable
+
+    \section1 The SvgCards Class Implementation
+
+    In this example, the view widget is also the main application
+    window; the \c SvgCards class provides the widget by extending the
+    QGraphicsView class. To implement the view we must first create
+    and set up a scene, then we must add our card items:
+
+    \snippet SvgCards.java 0
+    \dots
+    \snippet SvgCards.java 12
+
+    The view widget is used to visualize the contents of a
+    QGraphicsScene object in a scrollable viewport. When a scene is
+    set on a view, the \l
+    {QGraphicsScene::changed()}{QGraphicsScene.changed()} signal is
+    automatically connected to the view's \l
+    {QGraphicsView::updateScene()}{updateScene()} method, and the
+    view's scrollbars are adjusted to fit the size of the scene.
+
+    \snippet SvgCards.java 13
+
+    Once the scene is set up, we create a card deck. Remember that the
+    \c CardDeck constructor creates a complete set of cards based on
+    the given SVG file.
+
+    \dots 8
+    \snippet SvgCards.java 14
+    \snippet SvgCards.java 15
+
+    Finally, we load the cards into the application by calling the \c
+    loadCards() method.
+
+    \snippet SvgCards.java 11
+
+    The \c loadCards() method is a recursive method, randomly
+    spreading out the cards one by one. While loading the cards, the
+    application's view is continuously updated to reflect the
+    progress. Each card is added to the view using the \c addCard()
+    convenience method:
+
+    \snippet SvgCards.java 16
+    \dots 8
+    \snippet SvgCards.java 17
+    \snippet SvgCards.java 18
+
+    Note that it is the \c addCard() method that actually adds each
+    card item to the view's scene using QGraphicsScene's \l
+    {QGraphicsScene::addItem()}{addItem()} method. But before we add
+    the card to the scene, we set its position using the
+    QGraphicsItem's \l {QGraphicsItem::setPos()}{setPos()}
+    method. The given position is interpreted in scene
+    coordinates. We also set the item's \l
+    {QGraphicsItem::ItemIsMovable}{ItemIsMovable} flag to ensure that
+    we can move the card around once all the cards are loaded into the
+    application.
+
+    This completes the walk-through documentation of this
+    example. Please see the example code for implementation details.
+*/

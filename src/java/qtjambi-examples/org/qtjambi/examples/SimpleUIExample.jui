@@ -1,0 +1,296 @@
+<ui version="4.0" language="jambi" >
+ <class>SimpleUIExample</class>
+ <widget class="QDialog" name="SimpleUIExample" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>460</width>
+    <height>351</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Dialog</string>
+  </property>
+  <property name="modal" >
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item row="5" column="0" colspan="3" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="orientation" >
+      <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+     </property>
+     <property name="standardButtons" >
+      <set>org.qtjambi.qt.widgets.QDialogButtonBox.StandardButton.Cancel|org.qtjambi.qt.widgets.QDialogButtonBox.StandardButton.NoButton|org.qtjambi.qt.widgets.QDialogButtonBox.StandardButton.Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0" colspan="3" >
+    <widget class="Line" name="line" >
+     <property name="orientation" >
+      <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="0" column="0" >
+    <widget class="QGroupBox" name="groupBox_Required" >
+     <property name="title" >
+      <string>Required</string>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="3" column="1" >
+       <spacer>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Vertical</enum>
+        </property>
+        <property name="sizeHint" >
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QCheckBox" name="checkBox_Spam" >
+        <property name="text" >
+         <string>Send me SPAM</string>
+        </property>
+        <property name="checked" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_Email" >
+        <property name="text" >
+         <string>E-Mail</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_Name" >
+        <property name="text" >
+         <string>Full Name</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="QLineEdit" name="lineEdit_Email" />
+      </item>
+      <item row="0" column="1" >
+       <widget class="QLineEdit" name="lineEdit_Name" />
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item rowspan="2" row="2" column="0" >
+    <widget class="QGroupBox" name="groupBox_Optional" >
+     <property name="enabled" >
+      <bool>true</bool>
+     </property>
+     <property name="title" >
+      <string>Optional</string>
+     </property>
+     <property name="checkable" >
+      <bool>true</bool>
+     </property>
+     <property name="checked" >
+      <bool>false</bool>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="3" column="1" >
+       <spacer>
+        <property name="orientation" >
+         <enum>org.qtjambi.qt.core.Qt.Orientation.Vertical</enum>
+        </property>
+        <property name="sizeHint" >
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="1" colspan="2" >
+       <widget class="QLineEdit" name="lineEdit_What" />
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="label_Born" >
+        <property name="text" >
+         <string>Born</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QLabel" name="label_Profession" >
+        <property name="text" >
+         <string>Profession</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="label_What" >
+        <property name="text" >
+         <string>What</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" colspan="2" >
+       <widget class="QDateEdit" name="dateEdit_Born" />
+      </item>
+      <item row="1" column="1" colspan="2" >
+       <widget class="QComboBox" name="comboBox_Profession" >
+        <item>
+         <property name="text" >
+          <string/>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Superstar</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Programmer</string>
+         </property>
+        </item>
+        <item>
+         <property name="text" >
+          <string>Teacher</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2" >
+    <widget class="QLabel" name="label_Comments" >
+     <property name="sizePolicy" >
+      <sizepolicy>
+       <hsizetype>5</hsizetype>
+       <vsizetype>4</vsizetype>
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text" >
+      <string>Comments:</string>
+     </property>
+    </widget>
+   </item>
+   <item rowspan="2" row="1" column="1" colspan="2" >
+    <widget class="QTextEdit" name="textEdit_Comments" >
+     <property name="html" >
+      <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal; text-decoration:none;">
+&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS'; font-size:8pt;">You can write some &lt;span style=" text-decoration: underline;">comments&lt;/span> here.&lt;/p>&lt;/body>&lt;/html></string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2" >
+    <widget class="QPushButton" name="pushButton_Clear" >
+     <property name="text" >
+      <string>Clear comment</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" >
+    <spacer>
+     <property name="orientation" >
+      <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>231</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>lineEdit_Name</tabstop>
+  <tabstop>lineEdit_Email</tabstop>
+  <tabstop>checkBox_Spam</tabstop>
+  <tabstop>lineEdit_What</tabstop>
+  <tabstop>comboBox_Profession</tabstop>
+  <tabstop>dateEdit_Born</tabstop>
+  <tabstop>textEdit_Comments</tabstop>
+  <tabstop>pushButton_Clear</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_Clear</sender>
+   <signal>clicked</signal>
+   <receiver>textEdit_Comments</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>466</x>
+     <y>278</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>266</x>
+     <y>270</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted</signal>
+   <receiver>SimpleUIExample</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>406</x>
+     <y>340</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>200</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected</signal>
+   <receiver>SimpleUIExample</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>406</x>
+     <y>326</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>415</x>
+     <y>0</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

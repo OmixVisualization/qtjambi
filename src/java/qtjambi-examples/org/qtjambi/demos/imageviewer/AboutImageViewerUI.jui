@@ -1,0 +1,167 @@
+<ui version="4.0" language="jambi" >
+ <class>AboutImageViewer</class>
+ <widget class="QDialog" name="AboutImageViewer" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>445</width>
+    <height>307</height>
+   </rect>
+  </property>
+  <property name="autoFillBackground" >
+   <bool>true</bool>
+  </property>
+  <layout class="QGridLayout" >
+   <item row="0" column="0" colspan="3" >
+    <layout class="QGridLayout" >
+     <item row="0" column="0" >
+      <widget class="QLabel" name="label" >
+       <property name="pixmap" >
+        <pixmap>classpath:production/Qt Jambi (rc)/org/qtjambi/images/qt-logo.png</pixmap>
+       </property>
+       <property name="text" >
+        <string/>
+       </property>
+       <property name="alignment" >
+        <set>org.qtjambi.qt.core.Qt.AlignmentFlag.AlignHorizontal_Mask|org.qtjambi.qt.core.Qt.AlignmentFlag.AlignLeft|org.qtjambi.qt.core.Qt.AlignmentFlag.AlignTop|org.qtjambi.qt.core.Qt.AlignmentFlag.AlignVertical_Mask</set>
+       </property>
+      </widget>
+     </item>
+     <item rowspan="2" row="0" column="1" >
+      <widget class="QTextEdit" name="textEdit" >
+       <property name="palette" >
+        <palette>
+         <active>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>224</red>
+             <green>223</green>
+             <blue>227</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>224</red>
+             <green>223</green>
+             <blue>227</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>224</red>
+             <green>223</green>
+             <blue>227</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
+       </property>
+       <property name="acceptDrops" >
+        <bool>true</bool>
+       </property>
+       <property name="frameShape" >
+        <enum>org.qtjambi.qt.widgets.QFrame.Shape.Box</enum>
+       </property>
+       <property name="html" >
+        <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;title>Image Viewer&lt;/title>&lt;style type="text/css">
+p, li { white-space: pre-wrap; }
+&lt;/style>&lt;/head>&lt;body style=" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;">
+&lt;p align="center" style=" margin-top:16px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt; font-weight:600;">&lt;span style=" font-size:x-large;">Image Viewer&lt;/span>&lt;/p>
+&lt;p style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:10pt;">This application was written to show the various aspects of Qt that can be used from Java, such as:&lt;/p>
+&lt;ul style="-qt-list-indent: 1;">&lt;li style=" font-size:10pt;" style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Qt Designer and generated user interfaces.&lt;/li>
+&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Convenient default models for the item view framework, such as the &lt;span style=" font-family:'Courier New';">QDirModel&lt;/span>, which shows the local filesystem in a&lt;span style=" font-family:'Courier New';"> QTreeView&lt;/span>.&lt;/li>
+&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Main window and docking architecture  the core of any application.&lt;/li>
+&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Signals and Slots  Qt's intercomponent communication architecture with support for the following features:&lt;/li>
+&lt;ul type="circle" style="-qt-list-indent: 2;">&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Queued connections that provide a powerful mechanism for threaded programming.&lt;/li>
+&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Automatic connections based on naming conventions.&lt;/li>&lt;/ul>
+&lt;li style=" font-size:10pt;" style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">The overall power and flexibility of the Qt API.&lt;/li>&lt;/ul>&lt;/body>&lt;/html></string>
+       </property>
+       <property name="undoRedoEnabled" >
+        <bool>false</bool>
+       </property>
+       <property name="readOnly" >
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" >
+      <spacer>
+       <property name="orientation" >
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeHint" >
+        <size>
+         <width>20</width>
+         <height>221</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="1" >
+    <widget class="QPushButton" name="okButton" >
+     <property name="text" >
+      <string>OK</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2" >
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>okButton</sender>
+   <signal>clicked</signal>
+   <receiver>AboutImageViewer</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>270</x>
+     <y>279</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>96</x>
+     <y>254</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

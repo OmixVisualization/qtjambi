@@ -1,0 +1,54 @@
+/****************************************************************************
+**
+** Copyright (C) 1992-$THISYEAR$ $TROLLTECH$. All rights reserved.
+**
+** This file is part of the Qt GUI Toolkit.
+** EDITIONS: FREE, PROFESSIONAL, ENTERPRISE
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+/*! \page qtjambi-tutorial1-code.html
+    \title Code for Hello World
+
+    \quotefile tutorial/HelloWorld.java
+*/
+
+/*! \page qtjambi-tutorial2-code.html
+    \title Code for Calling it Quits
+
+    \quotefile tutorial/Quit.java
+*/
+
+/*! \page qtjambi-tutorial3-code.html
+    \title Code for Family Values
+
+    \quotefile tutorial/FamilyValues.java
+*/
+
+/*! \page qtjambi-tutorial4-code.html
+    \title Code for Let There Be Widgets
+
+    \quotefile tutorial/Widgets.java
+*/
+
+/*! \page qtjambi-tutorial5-code.html
+    \title Code for Building Blocks
+
+    \quotefile tutorial/Blocks.java
+*/
+
+/*! \page qtjambi-tutorial6-code.html
+    \title Code for Building Blocks Galore
+
+    \quotefile tutorial/BlocksGalore.java
+*/
+
+/*! \page qtjambi-tutorial7-code.html
+    \title Code for One Thing Leads to Another
+
+    \quotefile tutorial/ConnectedSliders.java
+*/
+

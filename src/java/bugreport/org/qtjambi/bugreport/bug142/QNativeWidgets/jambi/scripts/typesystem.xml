@@ -1,0 +1,25 @@
+<typesystem package="qtjambi.nativewidgets" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+
+  <inject-code>
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+	org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+  </inject-code>
+
+    <load-typesystem name=":/trolltech/generator/typesystem_core.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_gui.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_xml.xml" generate="no" />
+
+    <template name="from_nativepointer_to_value_type">
+            public final %RETURN_TYPE% %FUNCTION_NAME%() {
+                return %RETURN_TYPE%.fromNativePointer(%ORIGINAL_FUNCTION_NAME%());
+            }
+    </template>
+	
+	<object-type name="QNativeWidgetTest">
+		<extra-includes>
+			<include file-name="QActionEvent" location="global"/>
+		</extra-includes> 
+	</object-type>
+
+</typesystem>

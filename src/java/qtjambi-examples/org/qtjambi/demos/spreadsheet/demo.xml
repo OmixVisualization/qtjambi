@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doc>
+    <Cell col="3" row="1" border="bottom top right ">
+        <TextColor r="85" g="0" b="255" a="255"></TextColor>
+        <BackgroundColor r="0" g="0" b="0" a="255"></BackgroundColor><![CDATA[]]></Cell>
+    <Cell col="2" row="7" align="AlignRight" font="Sans Serif,9,-1,5,75,1,0,0,0,0" border="top ">
+        <TextColor r="0" g="85" b="255" a="255"></TextColor><![CDATA[SUM:]]></Cell>
+    <Cell col="2" row="6" align="AlignRight">
+        <TextColor r="0" g="85" b="255" a="255"></TextColor>
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[Sennep]]></Cell>
+    <Cell col="2" row="5" align="AlignRight">
+        <TextColor r="0" g="85" b="255" a="255"></TextColor>
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[Pølse]]></Cell>
+    <Cell col="2" row="4" align="AlignRight">
+        <TextColor r="0" g="85" b="255" a="255"></TextColor>
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[Hund]]></Cell>
+    <Cell col="2" row="3" align="AlignRight">
+        <TextColor r="0" g="85" b="255" a="255"></TextColor>
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[Katt]]></Cell>
+    <Cell col="2" row="2">
+        <TextColor r="0" g="0" b="0" a="255"></TextColor>
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[]]></Cell>
+    <Cell col="2" row="1" border="bottom top ">
+        <TextColor r="85" g="0" b="255" a="255"></TextColor>
+        <BackgroundColor r="0" g="0" b="0" a="255"></BackgroundColor><![CDATA[]]></Cell>
+    <Cell col="4" row="1"><![CDATA[]]></Cell>
+    <Cell col="1" row="7" border="top "><![CDATA[]]></Cell>
+    <Cell col="1" row="6" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[4.0]]></Cell>
+    <Cell col="1" row="5" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[3.0]]></Cell>
+    <Cell col="1" row="4" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[2.0]]></Cell>
+    <Cell col="3" row="8" border="top "><![CDATA[]]></Cell>
+    <Cell col="1" row="3" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[1.0]]></Cell>
+    <Cell col="3" row="7" align="AlignRight" border="bottom top ">
+        <BackgroundColor r="255" g="255" b="127" a="255"></BackgroundColor><![CDATA[sum(d4 d7)]]></Cell>
+    <Cell col="1" row="2">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[]]></Cell>
+    <Cell col="1" row="1" font="Sans Serif,22,-1,5,50,0,0,0,0,0" border="bottom top left ">
+        <TextColor r="255" g="255" b="255" a="255"></TextColor>
+        <BackgroundColor r="0" g="0" b="0" a="255"></BackgroundColor><![CDATA[Test]]></Cell>
+    <Cell col="3" row="6" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[12.0]]></Cell>
+    <Cell col="3" row="5" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[23.0]]></Cell>
+    <Cell col="3" row="4" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[123.0]]></Cell>
+    <Cell col="3" row="3" align="AlignRight">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[12.0]]></Cell>
+    <Cell col="3" row="2">
+        <BackgroundColor r="238" g="229" b="255" a="255"></BackgroundColor><![CDATA[]]></Cell>
+</doc>

@@ -1,0 +1,76 @@
+Note: moved to our website, http://qt-jambi.org/rationale
+
+1. Rationale
+
+Qt/Java is a binding of Qt, the popular cross platform C++ toolkit, to
+Java Enterprise Edition 5.0, Java Standard Edition 5.0 and later
+versions. It produces high performance applications that will run
+using a Java Virtual Machine and Java Run Time Environment 1.5.
+
+
+1.1 Goals
+
+Writing commercial software in Qt has so far been a privilege limited
+to actors who are comfortable with and have the possibility of working
+with C++ as their core programming language. It is Trolltech's goal to
+expand this support to cover customer projects that require or benefit
+from partially or completely implementing code in other languages.
+
+As well as being a product which fulfils this goal for one popular
+language, Qt/Java can also be considered proof of concept that the
+goal can be reached for similar languages in the future. Qt/Java
+encompasses technology and experience which can be reused for binding
+Qt to languages such as C#.
+
+For the Qt 3 series there exists a third party binding of Qt, which is
+similar to Qt/Java, but licensed under the GNU Public License. At the
+time of writing, there were no known plans of updating these bindings
+to support Qt 4.  Therefore, it is another project goal to offer an
+officially supported replacement for the Qt 3 Java bindings, aimed at
+Open Source Java programmers who would like to share in the increased
+convenience and efficiency of Qt 4.
+
+
+1.2 What we offer to Java programmers
+
+One of the major benefits Qt/Java can offer to programmers accustomed
+to writing software in Java, is the speed of natively executable
+code. A great majority of the Qt/Java code is implemented in C++ and
+compiled to native machine code, and Qt itself is written to take
+advantage of the possibilities of the platform hardware on which it is
+run.
+
+By the same vein of thinking, Qt is carefully crafted to have a native
+look and feel on its supported platforms, meaning that widgets by
+default behave and look like programs written specifically for the
+operating system on which the software is running.
+
+Java users will also benefit from the inclusion of the powerful Qt API
+to their language platform. Qt has a clean API, which is easy and
+efficient to use, and code written in Qt tends to be readable and
+maintainable. As part of this API, Qt/Java also introduces the signals
+and slots mechanism to Java. This is an intuitive and powerful
+mechanism for dynamic function invocation, which is used, among other
+things, for communication between otherwise separate GUI items.
+
+In addition, Qt/Java includes technology which connects the Java API
+to the Qt Designer application. Using Qt Designer, entire user
+interfaces can be visually designed using a convenient drag and drop
+interface. Actual program code can then be written separately as
+fill-ins of functionality in the running user interface.
+
+
+1.3 What we offer to Qt/c++ programmers
+
+In addition to offering the whole of the Qt API inside Java's type
+safe and statically verifiable (to a degree) environment, Qt/Java also
+gives programmers the ability to easily bind their own native code to
+Java. This is done using the Qt/Java Generator, which reads the code
+of an existing C++ library and generates a Java API which binds into
+the library.  The very same tool was used for generating the actual
+Qt/Java bindings.
+
+The Qt/Java Generator can ease the transition from a C++ environment
+to a Java environment, and it can greatly improve the degree and
+efficiency of collaboration between C++ programmers and Java
+programmers in a single project team.

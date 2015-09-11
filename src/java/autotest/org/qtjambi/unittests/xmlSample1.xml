@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persons xmlns:c="http://qt-jambi.org" xmlns:d="http://en.wikipedia.org">
+	<c:person id="John">John</c:person>
+	<d:person id="Jane">Jane</d:person>
+</persons>

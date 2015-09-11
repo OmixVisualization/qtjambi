@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<typesystem>
+    <rejection class="QPrinter" function-name="printerSelectionOption"/>
+    <rejection class="QPrinter" function-name="setPrinterSelectionOption"/>
+
+    <enum-type name="QAbstractPrintDialog::PrintDialogOption" flags="QAbstractPrintDialog::PrintDialogOptions"/>
+    <enum-type name="QAbstractPrintDialog::PrintRange"/>
+    <enum-type name="QPrintPreviewWidget::ViewMode" />
+    <enum-type name="QPrintPreviewWidget::ZoomMode" />
+    <enum-type name="QPrintEngine::PrintEnginePropertyKey">
+        <reject-enum-value name="PPK_PaperSize" />
+    </enum-type>
+    <enum-type name="QPrinter::ColorMode"/>
+    <enum-type name="QPrinter::Orientation"/>
+    <enum-type name="QPrinter::OutputFormat"/>
+    <enum-type name="QPrinter::PageOrder"/>
+    <enum-type name="QPrinter::PaperSource">
+        <reject-enum-value name="Upper"/>
+        <reject-enum-value name="LastPaperSource"/>
+    </enum-type>
+    <enum-type name="QPrinter::PrintRange"/>
+    <enum-type name="QPrinter::PrinterMode"/>
+    <enum-type name="QPrinter::PrinterState"/>
+    <enum-type name="QPrinter::Unit" />
+    <enum-type name="QPrinter::DuplexMode" />
+
+    <value-type name="QPrinterInfo">
+        <modify-function signature="operator=(const QPrinterInfo &amp;)" remove="all" />
+    </value-type>
+
+    <object-type name="QAbstractPrintDialog"/>
+    <object-type name="QPrintDialog">
+    </object-type>
+    <object-type name="QPrintEngine"/>
+    <object-type name="QPrinter" delete-in-main-thread="yes">
+        <modify-function signature="setEngines(QPrintEngine*,QPaintEngine*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcPrintEngine"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <reference-count action="set" variable-name="__rcPaintEngine"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QPrintPreviewDialog" >
+    </object-type>
+    <object-type name="QPrintPreviewWidget" />
+    <!--enum-type name="QPageSetupDialog::PageSetupDialogOption" flags="QPageSetupDialog::PageSetupDialogOptions" /-->
+    <object-type name="QPageSetupDialog" />
+    <!--object-type name="QAbstractPageSetupDialog"/-->
+</typesystem>

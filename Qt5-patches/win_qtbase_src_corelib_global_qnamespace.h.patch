@@ -1,0 +1,20 @@
+--- qtbase/src/corelib/global/qnamespace.h	2015-06-29 23:04:58.000000000 +0200
++++ qtbase/src/corelib/global/qnamespace.h	2015-08-26 08:23:42.333784900 +0200
+@@ -1767,8 +1767,17 @@
+         DockCount
+     };
+ 
++/**Required by QtJambi 5**/
++#define QT_QTJAMBI_PORT
++/*************************/
++
+     enum Callback {
+         EventNotifyCallback,
++        /**Required by QtJambi 5**/
++        ConnectCallback,
++        DisconnectCallback,
++        AdoptCurrentThread,
++        /*************************/
+         LastCallback
+     };
+     static bool registerCallback(Callback, qInternalCallback);

@@ -1,0 +1,234 @@
+/*!
+    \page qtjambi-syntaxhighlighter.html
+    \title Syntax Highlighter Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Syntax Highlighter Example}{SyntaxHighlighter.java}
+    \endlist
+
+    The Syntax Highlighter example shows how to perform simple syntax
+    highlighting by subclassing the QSyntaxHighlighter class.
+
+    \image syntaxhighlighter-example.png
+
+    The Syntax Highlighter application displays Java files with custom
+    syntax highlighting.
+
+    The example consists of several classes: The \c SyntaxHighlighter
+    class which extends QMainWindow and provides the main application
+    window, the \c Highlighter class which extends QSyntaxHighlighter,
+    providing the actual syntax highlighting, and the \c
+    HighlightingRule class defining the rules used by the syntax
+    highlighter.
+
+    We will first review the \c Highlighter and \c HighlightingRule
+    classes to see how you can customize the QSyntaxHighlighter class
+    to fit your preferences, then we will take a look at the relevant
+    parts of the \c SyntaxHighlighter class to see how you can use
+    your custom highlighter class in an application.
+
+    \section1 Highlighter Class Implementation
+
+    To provide your own syntax highlighting, you must subclass
+    QSyntaxHighlighter, reimplement the \l
+    {QSyntaxHighlighter::highlightBlock()}{highlightBlock()} method,
+    and define your own highlighting rules.
+
+    \snippet SyntaxHighlighter.java 4
+    \codeline
+    \snippet SyntaxHighlighter.java 8
+    \codeline
+    \snippet SyntaxHighlighter.java 5
+    \snippet SyntaxHighlighter.java 6
+
+    We have chosen to store our highlighting rules using the private
+    \c HighlightingRule class: A rule consists of a QRegExp pattern
+    and a QTextCharFormat instance.
+
+    The QTextCharFormat class provides formatting information for
+    characters in a QTextDocument specifying the visual properties of
+    the text, as well as information about its role in a hypertext
+    document. In this example, we will only define the font weight and
+    color using the \l
+    {QTextCharFormat::setFontWeight()}{QTextCharFormat.setFontWeight()}
+    and \l
+    {QTextCharFormat::setForeground()}{QTextCharFormat.setForeground()}
+    methods.
+
+    \snippet SyntaxHighlighter.java 7
+
+    We will use a vector to store our highlighting rules.
+
+    \snippet SyntaxHighlighter.java 9
+
+    When subclassing the QSyntaxHighlighter class you must pass the
+    constructor's \c parent parameter to the super class's
+    constructor. The \c parent is the text document upon which the
+    syntax highligning will be applied. In this example, we have also
+    chosen to define our highlighting rules in the constructor:
+
+    \snippet SyntaxHighlighter.java 10
+    \snippet SyntaxHighlighter.java 11
+
+    First we define a keyword rule which recognizes the most common
+    Java keywords. We give the \c keywordFormat a bold, dark blue
+    font. For each keyword, we assign the keyword and the specified
+    format to a \c HighlightingRule object and append the object to
+    our list of rules.
+
+    \snippet SyntaxHighlighter.java 12
+    \codeline
+    \snippet SyntaxHighlighter.java 13
+    \codeline
+    \snippet SyntaxHighlighter.java 14
+
+    Then we create a format that we will apply to Qt class names. The
+    class names will be rendered with a dark magenta color and a bold
+    style. We specify a string pattern that is actually a regular
+    expression capturing all Qt class names. Then we assign the
+    regular expression and the specified format to a \c
+    HighlightingRule object and add the object to our list of rules.
+
+    We also define highlighting rules for quotations and methods
+    using the same approach: The patterns have the form of regular
+    expressions and are stored in \c HighlightingRule objects with the
+    associated format.
+
+    \snippet SyntaxHighlighter.java 13
+    \codeline
+    \snippet SyntaxHighlighter.java 15
+
+    The Java language has two variations of comments: The single line
+    comment (//) and the multiline comment (/*...* /). The
+    single line comment can easily be defined through a highlighting
+    rule similar to the previous ones. But the multiline comment needs
+    special care due to the design of the QSyntaxHighlighter class.
+
+    After a QSyntaxHighlighter object is created, its \l
+    {QSyntaxHighlighter::highlightBlock()}{highlightBlock()} method
+    will be called automatically whenever it is necessary by the rich
+    text engine, highlighting the given text block. The problem
+    appears when a comment spans several text blocks.
+
+    \snippet SyntaxHighlighter.java 16
+
+    The \c highlightBlock() method is called automatically whenever
+    there are text blocks that have changed.
+
+    First we apply the syntax highlighting rules that we stored in the
+    \c highlightingRules vector. For each rule (i.e. for each \c
+    HighlightingRule object) we search for the pattern in the given
+    textblock using the \l {QRegExp::indexIn()}{QRegExp.indexIn()}
+    method. When the first occurrence of the pattern is found, we
+    use the \l {QRegExp::matchedLength()}{QRegExp.matchedLength()}
+    method to determine the string that will be formatted. \l
+    {QRegExp::matchedLength()}{QRegExp.matchedLength()} returns the
+    length of the last matched string, or -1 if there was no match.
+
+    To perform the actual formatting the QSyntaxHighlighter class
+    provides the \l {QSyntaxHighlighter::setFormat()}{setFormat()}
+    method. This method operates on the text block that is passed
+    as argument to the \c highlightBlock() method. The specified
+    format is applied to the text from the given start position for
+    the given length. The formatting properties set in the given
+    format are merged at display time with the formatting information
+    stored directly in the document. Note that the document itself
+    remains unmodified by the format set through this method.
+
+    This process is repeated until the last occurrence of the pattern
+    in the current text block is found.
+
+    \snippet SyntaxHighlighter.java 17
+
+    To deal with constructs that can span several text blocks (like
+    the Java multiline comment), it is necessary to know the end state
+    of the previous text block (e.g. "in comment"). Inside your \c
+    highlightBlock() implementation you can query the end state of the
+    previous text block using the \l
+    {QSyntaxHighlighter::previousBlockState()}{QSyntaxHighlighter.previousBlockState()}
+    method. After parsing the block you can save the last state
+    using QSyntaxHighlighter's \l
+    {QSyntaxHighlighter::setCurrentBlockState()}{setCurrentBlockState()}
+    method.
+
+    The \l
+    {QSyntaxHighlighter::previousBlockState()}{previousBlockState()}
+    method return an int value. If no state is set, the returned
+    value is -1. You can designate any other value to identify any
+    given state using the \l
+    {QSyntaxHighlighter::setCurrentBlockState()}{setCurrentBlockState()}
+    method. Once the state is set, the QTextBlock keeps that value
+    until it is set again or until the corresponding paragraph of text
+    is deleted.
+
+    In this example we have chosen to use 0 to represent the "not in
+    comment" state, and 1 for the "in comment" state. When the stored
+    syntax highlighting rules are applied, we initialize the current
+    block state to 0.
+
+    \snippet SyntaxHighlighter.java 18
+
+    If the previous block state was "in comment" (\c
+    {previousBlockState() == 1}), we start the search for an end
+    expression at the beginning of the text block. If the \l
+    {QSyntaxHighlighter::previousBlockState()}{previousBlockState()}
+    method returns 0, we start the search at the location of the
+    first occurrence of a start expression.
+
+    \snippet SyntaxHighlighter.java 19
+    \snippet SyntaxHighlighter.java 20
+    \snippet SyntaxHighlighter.java 21
+    \snippet SyntaxHighlighter.java 22
+    \snippet SyntaxHighlighter.java 23
+
+
+    When an end expression is found, we calculate the length of the
+    comment and apply the multiline comment format. Then we search for
+    the next occurrence of the start expression and repeat the
+    process.  If no end expression can be found in the current text
+    block we set the current block state to 1, i.e. "in comment".
+
+    This completes the \c Highlighter class implementation; it is now
+    ready for use.
+
+    \section1 SyntaxHighlighter Class Implementation
+
+    The constructor of the main application window is straight
+    forward. We first set up the menus, then we initialize the editor
+    and make it the central widget of the application. Finally, we set
+    the main window's title and icon:
+
+    \snippet SyntaxHighlighter.java 0
+    \snippet SyntaxHighlighter.java 2
+
+    Using a QSyntaxHighlighter subclass is simple; just provide your
+    application with an instance of the class and pass it the document
+    upon which you want the highlighting to be applied.
+
+    We initialize and install the \c Highlighter object in the private
+    \c setupEditor() convenience method:
+
+    \snippet SyntaxHighlighter.java 3
+
+    First we create the font we want to use in the editor, then we
+    create the editor itself which is an instance of the QTextEdit
+    class. Before we initialize the editor with the \c
+    SyntaxHighlighter.java file, we create a \c Highlighter instance
+    passing the editor's document as argument. This is the document
+    that the highlighting will be applied to. Then we are done.
+
+    A QSyntaxHighlighter object can only be installed on one document
+    at the time, but you can easily reinstall the highlighter on
+    another document using the \l
+    {QSyntaxHighlighter::setDocument()}{QSyntaxHighlighter.setDocument()}
+    method. The QSyntaxHighlighter class also provides the \l
+    {QSyntaxHighlighter::document()}{document()} method which
+    returns the currently set document.
+
+    \snippet SyntaxHighlighter.java 1
+    \snippet SyntaxHighlighter.java 24
+
+    Finally, we provide a \c main() method to create and show the
+    main application window when the example is run.
+*/

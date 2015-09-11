@@ -1,0 +1,40 @@
+
+
+$$QSqlDatabase.tables()
+/**
+This is an overloaded method provided for convenience.
+
+*/
+
+
+$$QSqlDatabase.defaultConnection()
+/**
+Returns this QSqlDatabase's default connection.
+
+*/
+
+
+$$QSqlResult.bindValue(int, java.lang.Object, org.qtjambi.qt.sql.QSql.ParamTypeFlag...)
+/**
+Binds the value <tt>val</tt> of parameter type <tt>type</tt> to
+position <tt>index</tt>.  in the current record (row).
+
+*/
+
+
+$$QSqlResult.bindValue(java.lang.String, java.lang.Object, org.qtjambi.qt.sql.QSql.ParamTypeFlag...)
+/**
+Binds the value <tt>val</tt> of parameter type <tt>Type</tt> to the
+<tt>placeholder</tt> name in the current record (row).
+<p>
+Note that binding an undefined placeholder will result in undefined
+behavior.
+
+*/
+
+
+$$QSqlDriverCreatorBase.QSqlDriverCreatorBase()
+/**
+Creates a new QSqlDriverCreatorBase. Currently, this does nothing.
+
+*/

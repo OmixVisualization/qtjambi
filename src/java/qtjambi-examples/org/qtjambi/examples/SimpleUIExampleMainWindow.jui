@@ -1,0 +1,93 @@
+<ui version="4.0" language="jambi" >
+ <class>SimpleUIExampleMainWindow</class>
+ <widget class="QMainWindow" name="SimpleUIExampleMainWindow" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>459</width>
+    <height>343</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget" >
+   <layout class="QGridLayout" >
+    <property name="margin" >
+     <number>9</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item row="3" column="0" colspan="2" >
+     <widget class="QTextBrowser" name="textBrowser" />
+    </item>
+    <item row="2" column="0" >
+     <widget class="QLabel" name="label_Result" >
+      <property name="text" >
+       <string>Result:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" >
+     <widget class="QPushButton" name="pushButton_OpenDialog" >
+      <property name="text" >
+       <string>Open Dialog</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2" >
+     <widget class="Line" name="line" >
+      <property name="orientation" >
+       <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1" >
+     <spacer>
+      <property name="orientation" >
+       <enum>org.qtjambi.qt.core.Qt.Orientation.Horizontal</enum>
+      </property>
+      <property name="sizeHint" >
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>459</width>
+     <height>19</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar" />
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>pushButton_OpenDialog</sender>
+   <signal>clicked</signal>
+   <receiver>textBrowser</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>46</x>
+     <y>37</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>65</x>
+     <y>129</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

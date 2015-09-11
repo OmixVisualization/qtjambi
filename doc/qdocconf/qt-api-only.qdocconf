@@ -1,0 +1,2 @@
+include(qt-build-docs.qdocconf)
+include(qt-project-api-only.qdocconf)

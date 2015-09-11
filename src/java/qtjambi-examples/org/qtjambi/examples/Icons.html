@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/icons.qdoc -->
+<head>
+  <title>Icons Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Icons Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Icons example shows how QIcon can generate pixmaps reflecting an icon's state, mode and size. These pixmaps are generated from the set of pixmaps made available to the icon, and are used by Qt widgets to show an icon representing a particular action.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons-example.png" alt="Screenshot of the Icons example" /></p><p>Contents:</p>
+<ul><li><a href="#qicon-overview">QIcon Overview</a></li>
+<li><a href="#overview-of-the-icons-application">Overview of the Icons Application</a></li>
+<li><a href="#line-by-line-walkthrough">Line-by-Line Walkthrough</a></li>
+<ul><li><a href="#iconpreviewarea-class-definition">IconPreviewArea Class Definition</a></li>
+<li><a href="#the-class-icon">The Class Icon</a></li>
+<li><a href="#the-iconsizespinbox-class">The IconSizeSpinBox Class</a></li>
+<li><a href="#the-imagedelegate-class">The ImageDelegate Class</a></li>
+</ul>
+</ul>
+<a name="qicon-overview"></a>
+<h2>QIcon Overview</h2>
+<p>The QIcon class provides scalable icons in different modes and states. An icon's state and mode are depending on the intended use of the icon. Qt currently defines four modes:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Mode</th><th>Description</th></tr></thead>
+<tr valign="top" class="odd"><td>QIcon::Normal</td><td>Display the pixmap when the user is not interacting with the icon, but the functionality represented by the icon is available.</td></tr>
+<tr valign="top" class="even"><td>QIcon::Active</td><td>Display the pixmap when the functionality represented by the icon is available and the user is interacting with the icon, for example, moving the mouse over it or clicking it.</td></tr>
+<tr valign="top" class="odd"><td>QIcon::Disabled</td><td>Display the pixmap when the functionality represented by the icon is not available.</td></tr>
+<tr valign="top" class="even"><td>QIcon::Selected</td><td>Display the pixmap when the icon is selected.</td></tr>
+</table></p>
+<p>QIcon's states are QIcon::On and QIcon::Off, which will display the pixmap when the widget is in the respective state. The most common usage of QIcon's states are when displaying checkable tool buttons or menu entries (see QAbstractButton::setCheckable() and QAction::setCheckable()). When a tool button or menu entry is checked, the QIcon's state is On, otherwise it's Off. You can, for example, use the QIcon's states to display differing pixmaps depending on whether the tool button or menu entry is checked or not.</p>
+<p>A QIcon can generate smaller, larger, active, disabled, and selected pixmaps from the set of pixmaps it is given. Such pixmaps are used by Qt widgets to show an icon representing a particular action.</p>
+<a name="overview-of-the-icons-application"></a>
+<h2>Overview of the Icons Application</h2>
+<p>With the Icons application you get a preview of an icon's generated pixmaps reflecting its different states, modes and size.</p>
+<p>When an image is loaded into the application, it is converted into a pixmap and becomes a part of the set of pixmaps available to the icon. An image can be excluded from this set by checking off the related checkbox. The application provides a sub directory containing sets of images explicitly designed to illustrate how Qt renders an icon in different modes and states.</p>
+<p>The application allows you to manipulate the icon size with some predefined sizes and a spin box. The predefined sizes are style dependent, but most of the styles have the same values: Only the Macintosh style differ by using 32 pixels, instead of 16 pixels, for toolbar buttons. You can navigate between the available styles using the <b>View</b> menu.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons-view-menu.png" alt="Screenshot of the View menu" /></p><p>The <b>View</b> menu also provide the option to make the application guess the icon state and mode from an image's file name. The <b>File</b> menu provide the options of adding an image and removing all images. These last options are also available through a context menu that appears if you press the right mouse button within the table of image files. In addition, the <b>File</b> menu provide an <b>Exit</b> option, and the <b>Help</b> menu provide information about the example and about Qt.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_find_normal.png" alt="Screenshot of the Find Files" /></p><p>The screenshot above shows the application with one image file loaded. The <b>Guess Image Mode/State</b> is enabled and the style is Plastique.</p>
+<p>When QIcon is provided with only one available pixmap, that pixmap is used for all the states and modes. In this case the pixmap's icon mode is set to normal, and the generated pixmaps for the normal and active modes will look the same. But in disabled and selected mode, Qt will generate a slightly different pixmap.</p>
+<p>The next screenshot shows the application with an additional file loaded, providing QIcon with two available pixmaps. Note that the new image file's mode is set to disabled. When rendering the <b>Disabled</b> mode pixmaps, Qt will now use the new image. We can see the difference: The generated disabled pixmap in the first screenshot is slightly darker than the pixmap with the originally set disabled mode in the second screenshot.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_find_normal_disabled.png" alt="Screenshot of the Find Files" /></p><p>When Qt renders the icon's pixmaps it searches through the set of available pixmaps following a particular algorithm. The algorithm is documented in QIcon, but we will describe some particular cases below.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_monkey_active.png" alt="Screenshot of the Find Files" /></p><p>In the screenshot above, we have set <tt>monkey_on_32x32</tt> to be an Active/On pixmap and <tt>monkey_off_64x64</tt> to be Normal/Off. To render the other six mode/state combinations, QIcon uses the search algorithm described in the table below:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th colspan="2">Requested Pixmap</th><th colspan="8">Preferred Alternatives (mode/state)</th></tr>
+<tr valign="top" class="qt-style"><th>Mode</th><th>State</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th></tr></thead>
+<tr valign="top" class="odd"><td rowspan="2">Normal</td><td>Off</td><td><b>N0</b></td><td>A0</td><td>N1</td><td>A1</td><td>D0</td><td>S0</td><td>D1</td><td>S1</td></tr>
+<tr valign="top" class="even"><td>On</td><td>N1</td><td><b>A1</b></td><td>N0</td><td>A0</td><td>D1</td><td>S1</td><td>D0</td><td>S0</td></tr>
+<tr valign="top" class="odd"><td rowspan="2">Active</td><td>Off</td><td>A0</td><td><b>N0</b></td><td>A1</td><td>N1</td><td>D0</td><td>S0</td><td>D1</td><td>S1</td></tr>
+<tr valign="top" class="even"><td>On</td><td><b>A1</b></td><td>N1</td><td>A0</td><td>N0</td><td>D1</td><td>S1</td><td>D0</td><td>S0</td></tr>
+<tr valign="top" class="odd"><td rowspan="2">Disabled</td><td>Off</td><td>D0</td><td><b>N0'</b></td><td>A0'</td><td>D1</td><td>N1'</td><td>A1'</td><td>S0'</td><td>S1'</td></tr>
+<tr valign="top" class="even"><td>On</td><td>D1</td><td>N1'</td><td><b>A1'</b></td><td>D0</td><td>N0'</td><td>A0'</td><td>S1'</td><td>S0'</td></tr>
+<tr valign="top" class="odd"><td rowspan="2">Selected</td><td>Off</td><td>S0</td><td><b>N0''</b></td><td>A0''</td><td>S1</td><td>N1''</td><td>A1''</td><td>D0''</td><td>D1''</td></tr>
+<tr valign="top" class="even"><td>On</td><td>S1</td><td>N1''</td><td><b>A1''</b></td><td>S0</td><td>N0''</td><td>A0''</td><td>D1''</td><td>D0''</td></tr>
+</table></p>
+<p>In the table, &quot;0&quot; and &quot;1&quot; stand for Off&quot; and &quot;On&quot;, respectively. Single quotes indicates that QIcon generates a disabled (&quot;grayed out&quot;) version of the pixmap; similarly, double quuote indicate that QIcon generates a selected (&quot;blued out&quot;) version of the pixmap.</p>
+<p>The alternatives used in the screenshot above are shown in bold. For example, the Disabled/Off pixmap is derived by graying out the Normal/Off pixmap (<tt>monkey_off_64x64</tt>).</p>
+<p>In the next screenshots, we loaded the whole set of monkey images. By checking or unchecking file names from the image list, we get different results:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td><img src="classpath:org/qtjambi/images/icons_monkey.png" alt="Screenshot of the Monkey Files" /></td><td><img src="classpath:org/qtjambi/images/icons_monkey_mess.png" alt="Screenshot of the Monkey Files" /></td></tr>
+</table></p>
+<p>For any given mode/state combination, it is possible to specify several images at different resolutions. When rendering an icon, QIcon will automatically pick the most suitable image and scale it down if necessary. (QIcon never scales up images, because this rarely looks good.)</p>
+<p>The screenshots below shows what happens when we provide QIcon with three images (<tt>qtopia_16x16.png</tt>, <tt>qtopia_32x32.png</tt>, <tt>qtopia_48x48.png</tt>) and try to render the QIcon at various resolutions:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_8x8.png" alt="Qtopia icon at 8 x 8" /></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_16x16.png" alt="Qtopia icon at 16 x 16" /></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_17x17.png" alt="Qtopia icon at 17 x 17" /></td></tr>
+<tr valign="top" class="even"><td></td><td>8 x 8</td><td><b>16 x 16</b></td><td>17 x 17</td></tr>
+<tr valign="top" class="odd"><td><img src="classpath:org/qtjambi/images/icons_qtopia_32x32.png" alt="Qtopia icon at 32 x 32" /></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_33x33.png" alt="Qtopia icon at 33 x 33" /></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_48x48.png" alt="Qtopia icon at 48 x 48" /></td><td><img src="classpath:org/qtjambi/images/icons_qtopia_64x64.png" alt="Qtopia icon at 64 x 64" /></td></tr>
+<tr valign="top" class="even"><td><b>32 x 32</b></td><td>33 x 33</td><td><b>48 x 48</b></td><td>64 x 64</td></tr>
+</table></p>
+<p>For sizes up to 16 x 16, QIcon uses <tt>qtopia_16x16.png</tt> and scales it down if necessary. For sizes between 17 x 17 and 32 x 32, it uses <tt>qtopia_32x32.png</tt>. For sizes above 32 x 32, it uses <tt>qtopia_48x48.png</tt>.</p>
+<a name="line-by-line-walkthrough"></a>
+<h2>Line-by-Line Walkthrough</h2>
+<p>The Icons example consists of four classes:</p>
+<ul>
+<li><tt>MainWindow</tt> inherits QMainWindow and is the main application window.</li>
+<li><tt>IconPreviewArea</tt> is a custom widget that displays all combinations of states and modes for a given icon.</li>
+<li><tt>IconSizeSpinBox</tt> is a subclass of QSpinBox that lets the user enter icon sizes (e.g&#x2e;, &quot;48 x 48&quot;).</li>
+<li><tt>ImageDelegate</tt> is a subclass of QItemDelegate that provides comboboxes for letting the user set the mode and state associated with an image.</li>
+</ul>
+<p>We will start by reviewing the <tt>IconPreviewArea</tt> class before we take a look at the <tt>MainWindow</tt> class. Finally, we will review the <tt>IconSizeSpinBox</tt> and <tt>ImageDelegate</tt> classes.</p>
+<a name="iconpreviewarea-class-definition"></a>
+<h3>IconPreviewArea Class Definition</h3>
+<p>An <tt>IconPreviewArea</tt> widget consists of a group box containing a grid of QLabel widgets displaying headers and pixmaps.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_preview_area.png" alt="Screenshot of IconPreviewArea." /></p><p>The <tt>IconPreviewArea</tt> class inherits QWidget. It displays the generated pixmaps corresponding to an icon's possible states and modes at a given size.</p>
+<p>We will now review the IconPreviewArea's implementation:</p>
+<p>(I think we need to say something about the data members)</p>
+<pre>            public IconPreviewArea()
+            {
+                QGridLayout mainLayout = new QGridLayout();
+                setLayout(mainLayout);
+
+                icon = new QIcon();
+
+                stateLabels[0] = createHeaderLabel(tr(&quot;Off&quot;));
+                stateLabels[1] = createHeaderLabel(tr(&quot;On&quot;));
+
+                modeLabels[0] = createHeaderLabel(tr(&quot;Normal&quot;));
+                modeLabels[1] = createHeaderLabel(tr(&quot;Active&quot;));
+                modeLabels[2] = createHeaderLabel(tr(&quot;Disabled&quot;));
+                modeLabels[3] = createHeaderLabel(tr(&quot;Selected&quot;));
+
+                for (int j = 0; j &lt; NumStates; ++j)
+                    mainLayout.addWidget(stateLabels[j], j + 1, 0);
+
+                for (int i = 0; i &lt; NumModes; ++i) {
+                    mainLayout.addWidget(modeLabels[i], 0, i + 1);
+
+                    for (int j = 0; j &lt; NumStates; ++j) {
+                        pixmapLabels[i][j] = createPixmapLabel();
+                        mainLayout.addWidget(pixmapLabels[i][j], j + 1, i + 1);
+                    }
+                }
+            }</pre>
+<p>In the constructor we create the labels displaying the headers and the icon's generated pixmaps, and add them to a grid layout.</p>
+<pre>            public void setIcon(QIcon icon)
+            {
+                this.icon = icon;
+                updatePixmapLabels();
+            }
+            public void setSize(QSize size)
+            {
+                if (size != this.size) {
+                    this.size = size;
+                    updatePixmapLabels();
+                }
+            }</pre>
+<p>The public <tt>setIcon()</tt> and <tt>setSize()</tt> methods change the icon or the icon size, and make sure that the generated pixmaps are updated.</p>
+<pre>            private QLabel createHeaderLabel(String text)
+            {
+                QLabel label = new QLabel(tr(&quot;&lt;b&gt;&quot;+text+&quot;&lt;/b&gt;&quot;));
+                label.setAlignment(Qt.AlignmentFlag.AlignCenter);
+                return label;
+            }
+            private QLabel createPixmapLabel()
+            {
+                QLabel label = new QLabel();
+                label.setEnabled(false);
+                label.setAlignment(Qt.AlignmentFlag.AlignCenter);
+                label.setFrameShape(QFrame.Shape.Box);
+                label.setSizePolicy(QSizePolicy.Policy.Expanding,
+                                    QSizePolicy.Policy.Expanding);
+                label.setBackgroundRole(QPalette.ColorRole.Base);
+                label.setAutoFillBackground(true);
+                label.setMinimumSize(132, 132);
+                return label;
+            }</pre>
+<p>We use the <tt>createHeaderLabel()</tt> and <tt>createPixmapLabel()</tt> methods to create the preview area's labels displaying the headers and the icon's generated pixmaps. Both methods return the QLabel that is created.</p>
+<pre>            private void updatePixmapLabels()
+            {
+                for (int i = 0; i &lt; NumModes; ++i) {
+                    QIcon.Mode mode;
+                    if (i == 0) {
+                        mode = QIcon.Mode.Normal;
+                    } else if (i == 1) {
+                        mode = QIcon.Mode.Active;
+                    } else if (i == 2) {
+                        mode = QIcon.Mode.Disabled;
+                    } else {
+                        mode = QIcon.Mode.Selected;
+                    }
+
+                    for (int j = 0; j &lt; NumStates; ++j) {
+                        QIcon.State state = (j == 0) ? QIcon.State.Off : QIcon.State.On;
+                        QPixmap pixmap = icon.pixmap(size, mode, state);
+                        pixmapLabels[i][j].setPixmap(pixmap);
+                        pixmapLabels[i][j].setEnabled(!pixmap.isNull());
+                    }
+                }
+            }</pre>
+<p>We use the private <tt>updatePixmapLabel()</tt> method to update the generated pixmaps displayed in the preview area.</p>
+<p>For each mode, and for each state, we retrieve a pixmap using the QIcon::pixmap() method, which generates a pixmap corresponding to the given state, mode and size.</p>
+<a name="the-class-icon"></a>
+<h3>The Class Icon</h3>
+<p>The <tt>Icons</tt> widget consists of three main elements: an images group box, an icons size group box and a preview area.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons-example.png" alt="Screenshot of the Icons example" /></p><p>The Icons class inherits from QMainWindow. We reimplement the constructor, and declare several private slots:</p>
+<ul>
+<li>The <tt>about()</tt> slot simply provides information about the example.</li>
+<li>The <tt>changeStyle()</tt> slot changes the application's GUI style and adjust the style dependent size options.</li>
+<li>The <tt>changeSize()</tt> slot changes the size of the preview area's icon.</li>
+<li>The <tt>changeIcon()</tt> slot updates the set of pixmaps available to the icon displayed in the preview area.</li>
+<li>The <tt>addImage()</tt> slot allows the user to load a new image into the application.</li>
+</ul>
+<p>In addition we declare several private methods - which will be examined later - to simplify the constructor. We will now review the implementation of the Icons class</p>
+<pre>        public Icons()
+        {
+            centralWidget = new QWidget();
+            setCentralWidget(centralWidget);
+
+            createPreviewGroupBox();
+            createImagesGroupBox();
+            createIconSizeGroupBox();
+
+            createActions();
+            createMenus();
+            createContextMenu();
+
+            QGridLayout mainLayout = new QGridLayout();
+            mainLayout.addWidget(previewGroupBox, 0, 0, 1, 2);
+            mainLayout.addWidget(imagesGroupBox, 1, 0);
+            mainLayout.addWidget(iconSizeGroupBox, 1, 1);
+            centralWidget.setLayout(mainLayout);
+
+            setWindowTitle(tr(&quot;Icons&quot;));
+            otherRadioButton.click();
+
+            resize(minimumSizeHint());
+        }</pre>
+<p>In the constructor, we first create the main window's central widget and its child widgets, and put them in a grid layout. Then we create the menus with their associated entries and actions.</p>
+<p>Before we resize the application window to a suitable size, we set the window title and determine the current style for the application. We also enable the icon size spin box by clicking the associated radio button, making the current value of the spin box the icon's initial size.</p>
+<pre>        private void about()
+        {
+            QMessageBox.about(this, tr(&quot;About Icons&quot;),
+                tr(&quot;The &lt;b&gt;Icons&lt;/b&gt; example illustrates how Qt renders an icon in &quot;+
+                   &quot;different modes (active, normal, disabled, and selected) and &quot;+
+                   &quot;states (on and off) based on a set of images.&quot;));
+        }</pre>
+<p>The <tt>about()</tt> slot displays a message box using the static QMessageBox::about() method. In this example it displays a simple box with information about the example.</p>
+<p>The <tt>about()</tt> method looks for a suitable icon in four locations: It prefers its parent's icon if that exists. If it doesn't, the method tries the top-level widget containing parent, and if that fails, it tries the active window. As a last resort it uses the QMessageBox's Information icon.</p>
+<pre>        private void changeStyle(boolean checked)
+        {
+            if (!checked)
+                return;
+
+            QAction action = (QAction) QSignalEmitter.signalSender();</pre>
+<p>In the <tt>changeStyle()</tt> slot we first check the slot's parameter. If it is false we immediately return, otherwise we find out which style to change to, i.e&#x2e; which action that triggered the slot, using the QSignalEmitter.signalSender() method.</p>
+<p>This method returns the sender as a QSignalEmitter. Since we know that the sender is a QAction object, we can safely cast the QSignalEmitter object.</p>
+<pre>            QStyle style = QStyleFactory.create((String) action.data());
+            if (style != null) {
+                QApplication.setStyle(style);
+                QApplication.setPalette(style.standardPalette());
+            }
+
+            int smallIconSize = style.pixelMetric(QStyle.PixelMetric.PM_SmallIconSize);
+            smallRadioButton.setText(&quot;Small (&quot; + smallIconSize + &quot; x &quot; + smallIconSize + &quot;)&quot;);
+
+            int largeIconSize = style.pixelMetric(QStyle.PixelMetric.PM_LargeIconSize);
+            largeRadioButton.setText(&quot;Large (&quot; + largeIconSize + &quot; x &quot; + largeIconSize + &quot;)&quot;);
+
+            int toolBarIconSize = style.pixelMetric(QStyle.PixelMetric.PM_ToolBarIconSize);
+            toolBarRadioButton.setText(&quot;Toolbars (&quot; + toolBarIconSize + &quot; x &quot; + toolBarIconSize + &quot;)&quot;);
+
+            int listViewIconSize = style.pixelMetric(QStyle.PixelMetric.PM_ListViewIconSize);
+            listViewRadioButton.setText(&quot;List views (&quot; + listViewIconSize + &quot; x &quot; + listViewIconSize + &quot;)&quot;);
+
+            int iconViewIconSize = style.pixelMetric(QStyle.PixelMetric.PM_IconViewIconSize);
+            iconViewRadioButton.setText(&quot;Icon views (&quot; + iconViewIconSize + &quot; x &quot; + iconViewIconSize + &quot;)&quot;);
+
+            int tabBarIconSize = style.pixelMetric(QStyle.PixelMetric.PM_TabBarIconSize);
+            tabBarRadioButton.setText(&quot;Tab bars (&quot; + tabBarIconSize + &quot; x &quot; + tabBarIconSize + &quot;)&quot;);
+
+            changeSize(true);
+        }</pre>
+<p>Once we have the action, we extract the style name using QAction::data(). Then we create a QStyle object using the static QStyleFactory::create() method.</p>
+<p>As a precaution, we check that the style is valid before we use the QApplication::setStyle() method to set the application's GUI style to the new style.</p>
+<p>The predefined icon size options provided in the application are style dependent, so we need to update the labels in the icon size group box and in the end call the <tt>changeSize()</tt> slot to update the icon's size.</p>
+<pre>        private void changeSize(int value)
+        {
+            changeSize(true);
+        }</pre>
+<p>The <tt>changeSize()</tt> slot sets the size for the preview area's icon.</p>
+<p>To determine the new size we first check if the spin box is enabled. If it is, we extract the extent of the new size from the box. If it's not, we search through the predefined size options, extract the QStyle::PixelMetric and use the QStyle::pixelMetric() method to determine the extent. Then we create a QSize object based on the extent, and use that object to set the size of the preview area's icon.</p>
+<pre>        private void addImages()
+        {
+            List&lt;String&gt; fileNames = QFileDialog.getOpenFileNames(this,
+                                        tr(&quot;Open Images&quot;), &quot;&quot;,
+                                        new QFileDialog.Filter(tr(&quot;Images (*.png *.xpm *.jpg);;&quot;+
+                                           &quot;All Files (*)&quot;)));
+            if (!fileNames.isEmpty()) {
+                for (String fileName : fileNames) {
+                    int row = imagesTable.rowCount();
+                    imagesTable.setRowCount(row + 1);</pre>
+<p>The first thing we do when the <tt>addImages()</tt> slot is called, is to show a file dialog to the user. The easiest way to create a file dialog is to use QFileDialog's static methods. Here we use the getOpenFileNames() method, which will return one or more existing files selected by the user.</p>
+<p>For each of the files the file dialog returns, we add a row to the table widget. The table widget is listing the images the user has loaded into the application.</p>
+<pre>                    String imageName = new QFileInfo(fileName).baseName();
+                    QTableWidgetItem item0 = new QTableWidgetItem(imageName);
+                    item0.setData(Qt.ItemDataRole.UserRole, fileName);
+                    Qt.ItemFlags flags = item0.flags();
+                    flags.clear(Qt.ItemFlag.ItemIsEditable);</pre>
+<p>We retrieve the image name using the QFileInfo::baseName() method that returns the base name of the file without the path, and create the first table widget item in the row. Then we add the file's complete name to the item's data. Since an item can hold several information pieces, we need to assign the file name a role that will distinguish it from other data. This role can be Qt.ItemDataRole.UserRole or any value above it.</p>
+<p>We also make sure that the item is not editable by removing the Qt.ItemFlag.ItemIsEditable flag. Table items are editable by default.</p>
+<pre>                    QTableWidgetItem item1 = new QTableWidgetItem(tr(&quot;Normal&quot;));
+                    QTableWidgetItem item2 = new QTableWidgetItem(tr(&quot;Off&quot;));
+
+                    if (guessModeStateAct.isChecked()) {
+                        if (fileName.contains(&quot;_act&quot;)) {
+                            item1.setText(tr(&quot;Active&quot;));
+                        } else if (fileName.contains(&quot;_dis&quot;)) {
+                            item1.setText(tr(&quot;Disabled&quot;));
+                        } else if (fileName.contains(&quot;_sel&quot;)) {
+                            item1.setText(tr(&quot;Selected&quot;));
+                        }
+
+                        if (fileName.contains(&quot;_on&quot;))
+                            item2.setText(tr(&quot;On&quot;));
+                    }</pre>
+<p>Then we create the second and third items in the row making the default mode Normal and the default state Off. But if the <b>Guess Image Mode/State</b> option is checked, and the file name contains &quot;_act&quot;, &quot;_dis&quot;, or &quot;_sel&quot;, the modes are changed to Active, Disabled, or Selected. And if the file name contains &quot;_on&quot;, the state is changed to On. The sample files in the example's <tt>images</tt> subdirectory respect this naming convension.</p>
+<pre>                    imagesTable.setItem(row, 0, item0);
+                    imagesTable.setItem(row, 1, item1);
+                    imagesTable.setItem(row, 2, item2);
+                    imagesTable.openPersistentEditor(item1);
+                    imagesTable.openPersistentEditor(item2);
+
+                    item0.setCheckState(Qt.CheckState.Checked);
+                }
+            }
+        }</pre>
+<p>In the end we add the items to the associated row, and use the QTableWidget::openPersistentEditor() method to create comboboxes for the mode and state columns of the items.</p>
+<p>Due to the the connection between the table widget's itemChanged() signal and the <tt>changeIcon()</tt> slot, the new image is automatically converted into a pixmap and made part of the set of pixmaps available to the icon in the preview area. So we need to make sure that the new image's check box is enabled.</p>
+<pre>        private void changeIcon()
+        {
+            QIcon icon = new QIcon();
+
+            for (int row = 0; row &lt; imagesTable.rowCount(); ++row) {
+                QTableWidgetItem item0 = imagesTable.item(row, 0);
+                QTableWidgetItem item1 = imagesTable.item(row, 1);
+                QTableWidgetItem item2 = imagesTable.item(row, 2);
+
+                if (item0.checkState() == Qt.CheckState.Checked) {
+                    QIcon.Mode mode;
+                    if (item1.text().equals(tr(&quot;Normal&quot;))) {
+                        mode = QIcon.Mode.Normal;
+                    } else if (item1.text().equals(tr(&quot;Active&quot;))) {
+                        mode = QIcon.Mode.Active;
+                    } else if (item1.text().equals(tr(&quot;Disabled&quot;))) {
+                        mode = QIcon.Mode.Disabled;
+                    } else {
+                        mode = QIcon.Mode.Selected;
+                    }
+
+                    QIcon.State state;
+                    if (item2.text().equals(tr(&quot;On&quot;))) {
+                        state = QIcon.State.On;
+                    } else {
+                        state = QIcon.State.Off;
+                    }</pre>
+<p>The <tt>changeIcon()</tt> slot is called when the user alters the set of images listed in the QTableWidget to update the QIcon object rendered by the <tt>IconPreviewArea</tt>.</p>
+<p>We first create a QIcon object, and then we run through the QTableWidget, which lists the images the user has loaded into the application.</p>
+<pre>                    String fileName = (String) item0.data(Qt.ItemDataRole.UserRole);
+                    QImage image = new QImage(fileName);
+                    if (!image.isNull())
+                        icon.addPixmap(QPixmap.fromImage(image), mode, state);
+                }
+            }</pre>
+<p>We also extract the image file's name using the QTableWidgetItem::data() method. This method takes a Qt::DataItemRole as an argument to retrieve the correct data (remember that an item can hold several pieces of information) and returns it as an Object. Then we use the QVariant::toString() method to get the file name as a QString.</p>
+<p>To create a pixmap from the file, we need to first create an image and then convert this image into a pixmap using QPixmap::fromImage(). Once we have the final pixmap, we add it, with its associated mode and state, to the QIcon's set of available pixmaps.</p>
+<pre>            previewArea.setIcon(icon);
+        }</pre>
+<p>After running through the entire list of images, we change the icon of the preview area to the one we just created.</p>
+<pre>        private void removeAllImages()
+        {
+            imagesTable.setRowCount(0);
+            changeIcon();
+        }</pre>
+<p>In the <tt>removeAllImages()</tt> slot, we simply set the table widget's row count to zero, automatically removing all the images the user has loaded into the application. Then we update the set of pixmaps available to the preview area's icon using the <tt>changeIcon()</tt> slot.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_images_groupbox.png" alt="Screenshot of the images group box" /></p><p>The <tt>createImagesGroupBox()</tt> method is implemented to simplify the constructor. The main purpose of the method is to create a QTableWidget that will keep track of the images the user has loaded into the application.</p>
+<pre>        private void createImagesGroupBox()
+        {
+            imagesGroupBox = new QGroupBox(tr(&quot;Images&quot;));
+
+            imagesTable = new QTableWidget();
+            imagesTable.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection);
+            imagesTable.setItemDelegate(new ImageDelegate(this));</pre>
+<p>First we create a group box that will contain the table widget. Then we create a QTableWidget and customize it to suit our purposes.</p>
+<p>We call QAbstractItemView::setSelectionMode() to prevent the user from selecting items.</p>
+<p>The QAbstractItemView::setItemDelegate() call sets the item delegate for the table widget. We create a <tt>ImageDelegate</tt> that we make the item delegate for our view.</p>
+<p>The QItemDelegate class can be used to provide an editor for an item view class that is subclassed from QAbstractItemView. Using a delegate for this purpose allows the editing mechanism to be customized and developed independently from the model and view.</p>
+<p>In this example we derive <tt>ImageDelegate</tt> from QItemDelegate. QItemDelegate usually provides line editors, while our subclass <tt>ImageDelegate</tt>, provides comboboxes for the mode and state fields.</p>
+<pre>            List&lt;String&gt; labels = new LinkedList&lt;String&gt;();
+            labels.add(tr(&quot;Image&quot;));
+            labels.add(tr(&quot;Mode&quot;));
+            labels.add(tr(&quot;State&quot;));
+
+            imagesTable.horizontalHeader().setDefaultSectionSize(90);
+            imagesTable.setColumnCount(3);
+            imagesTable.setHorizontalHeaderLabels(labels);
+            imagesTable.horizontalHeader().setResizeMode(0, QHeaderView.ResizeMode.Stretch);
+            imagesTable.horizontalHeader().setResizeMode(1, QHeaderView.ResizeMode.Fixed);
+            imagesTable.horizontalHeader().setResizeMode(2, QHeaderView.ResizeMode.Fixed);
+            imagesTable.verticalHeader().hide();</pre>
+<p>Then we customize the QTableWidget's horizontal header, and hide the vertical header.</p>
+<pre>            imagesTable.itemChanged.connect(this, &quot;changeIcon()&quot;);
+            QVBoxLayout layout = new QVBoxLayout();
+            layout.addWidget(imagesTable);
+            imagesGroupBox.setLayout(layout);
+        }</pre>
+<p>At the end, we connect the QTableWidget::itemChanged() signal to the <tt>changeIcon()</tt> slot to ensuret that the preview area is in sync with the image table.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_size_groupbox.png" alt="Screenshot of the icon size group box" /></p><p>The <tt>createIconSizeGroupBox()</tt> method is called from the constructor. It creates the widgets controlling the size of the preview area's icon.</p>
+<pre>        private void createIconSizeGroupBox()
+        {
+            iconSizeGroupBox = new QGroupBox(tr(&quot;Icon Size&quot;));
+
+            smallRadioButton = new QRadioButton();
+            largeRadioButton = new QRadioButton();
+            toolBarRadioButton = new QRadioButton();
+            listViewRadioButton = new QRadioButton();
+            iconViewRadioButton = new QRadioButton();
+            tabBarRadioButton = new QRadioButton();
+            otherRadioButton = new QRadioButton(tr(&quot;Other:&quot;));
+
+            otherSpinBox = new IconSizeSpinBox();
+            otherSpinBox.setRange(8, 128);
+            otherSpinBox.setValue(64);</pre>
+<p>First we create a group box that will contain all the widgets. Then we create the radio buttons and the spin box.</p>
+<p>The spin box is not a regular QSpinBox but an <tt>IconSizeSpinBox</tt>. The <tt>IconSizeSpinBox</tt> class inherits QSpinBox and reimplements two methods: QSpinBox::textFromValue() and QSpinBox::valueFromText(). The <tt>IconSizeSpinBox</tt> is designed to handle icon sizes, e.g&#x2e;, &quot;32 x 32&quot;, instead of plain integer values.</p>
+<pre>            smallRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            largeRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            toolBarRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            listViewRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            iconViewRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            tabBarRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            otherRadioButton.toggled.connect(this, &quot;changeSize(boolean)&quot;);
+            otherSpinBox.valueChanged.connect(this, &quot;changeSize(int)&quot;);
+
+            QHBoxLayout otherSizeLayout = new QHBoxLayout();
+            otherSizeLayout.addWidget(otherRadioButton);
+            otherSizeLayout.addWidget(otherSpinBox);
+            otherSizeLayout.addStretch();
+
+            QGridLayout layout = new QGridLayout();
+            layout.addWidget(smallRadioButton, 0, 0);
+            layout.addWidget(largeRadioButton, 1, 0);
+            layout.addWidget(toolBarRadioButton, 2, 0);
+            layout.addWidget(listViewRadioButton, 0, 1);
+            layout.addWidget(iconViewRadioButton, 1, 1);
+            layout.addWidget(tabBarRadioButton, 2, 1);
+            layout.addLayout(otherSizeLayout, 3, 0, 1, 2);
+            layout.setRowStretch(4, 1);
+            iconSizeGroupBox.setLayout(layout);
+        }</pre>
+<p>Then we connect all of the radio buttons toggled() signals and the spin box's valueChanged() signal to the <tt>changeSize()</tt> slot to make sure that the size of the preview area's icon is updated whenever the user changes the icon size. In the end we put the widgets in a layout that we install on the group box.</p>
+<pre>        private void createActions()
+        {
+            addImagesAct = new QAction(tr(&quot;&amp;Add Images...&quot;), this);
+            addImagesAct.setShortcut(tr(&quot;Ctrl+A&quot;));
+            addImagesAct.triggered.connect(this, &quot;addImages()&quot;);
+
+            removeAllImagesAct = new QAction(tr(&quot;&amp;Remove All Images&quot;), this);
+            removeAllImagesAct.setShortcut(tr(&quot;Ctrl+R&quot;));
+            removeAllImagesAct.triggered.connect(this, &quot;removeAllImages()&quot;);
+
+            exitAct = new QAction(tr(&quot;&amp;Quit&quot;), this);
+            exitAct.setShortcut(tr(&quot;Ctrl+Q&quot;));
+            exitAct.triggered.connect(this, &quot;close()&quot;);
+
+            styleActionGroup = new QActionGroup(this);
+            for (String styleName : QStyleFactory.keys()) {
+                QAction action = new QAction(styleActionGroup);
+                action.setText(styleName + &quot; Style&quot;);
+                action.setData(styleName);
+                action.setCheckable(true);
+                action.triggered.connect(this, &quot;changeStyle(boolean)&quot;);
+            }
+
+            guessModeStateAct = new QAction(tr(&quot;&amp;Guess Image Mode/State&quot;), this);
+            guessModeStateAct.setCheckable(true);
+            guessModeStateAct.setChecked(true);
+
+            aboutAct = new QAction(tr(&quot;&amp;About&quot;), this);
+            aboutAct.triggered.connect(this, &quot;about()&quot;);
+
+            aboutQtAct = new QAction(tr(&quot;About &amp;Qt&quot;), this);
+            aboutQtAct.triggered.connect(QApplication.instance(), &quot;aboutQt()&quot;);
+        }</pre>
+<p>In the <tt>createActions()</tt> method we create and customize all the actions needed to implement the functionality associated with the menu entries in the application.</p>
+<p>In particular we create the <tt>styleActionGroup</tt> based on the currently available GUI styles using QStyleFactory. QStyleFactory::keys() returns a list of valid keys, typically including &quot;windows&quot;, &quot;motif&quot;, &quot;cde&quot;, and &quot;plastique&quot;. Depending on the platform, &quot;windowsxp&quot; and &quot;macintosh&quot; may be available.</p>
+<p>We create one action for each key, and adds the action to the action group. Also, for each action, we call QAction::setData() with the style name. We will retrieve it later using QAction::data().</p>
+<pre>        private void createMenus()
+        {
+            fileMenu = menuBar().addMenu(tr(&quot;&amp;File&quot;));
+            fileMenu.addAction(addImagesAct);
+            fileMenu.addAction(removeAllImagesAct);
+            fileMenu.addSeparator();
+            fileMenu.addAction(exitAct);
+
+            viewMenu = menuBar().addMenu(tr(&quot;&amp;View&quot;));
+            for (QAction action : styleActionGroup.actions())
+                viewMenu.addAction(action);
+            viewMenu.addSeparator();
+            viewMenu.addAction(guessModeStateAct);
+
+            menuBar().addSeparator();
+
+            helpMenu = menuBar().addMenu(tr(&quot;&amp;Help&quot;));
+            helpMenu.addAction(aboutAct);
+            helpMenu.addAction(aboutQtAct);
+        }</pre>
+<p>In the <tt>createMenu()</tt> method, we add the previously created actions to the <b>File</b>, <b>View</b> and <b>Help</b> menus.</p>
+<p>The QMenu class provides a menu widget for use in menu bars, context menus, and other popup menus. We put each menu in the application's menu bar, which we retrieve using QMainWindow::menuBar().</p>
+<pre>        private void createContextMenu()
+        {
+            imagesTable.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu);
+            imagesTable.addAction(addImagesAct);
+            imagesTable.addAction(removeAllImagesAct);
+        }</pre>
+<p>QWidgets have a contextMenuPolicy property that controls how the widget should behave when the user requests a context menu (e.g&#x2e;, by right-clicking). We set the QTableWidget's context menu policy to Qt::ActionsContextMenu, meaning that the QActions associated with the widget should appear in its context menu.</p>
+<p>Then we add the <b>Add Image</b> and <b>Remove All Images</b> actions to the table widget. They will then appear in the table widget's context menu.</p>
+<pre>        private void checkCurrentStyle()
+        {
+            for (QAction action : styleActionGroup.actions()) {
+                String styleName = action.data().toString();
+                QStyle candidate = QStyleFactory.create(styleName);
+
+                if (candidate.objectName().equals(
+                        QApplication.style().objectName())) {
+                    action.trigger();
+                    return;
+                }
+            }
+        }</pre>
+<p>In the <tt>checkCurrentStyle()</tt> method we go through the group of style actions, looking for the current GUI style.</p>
+<p>For each action, we first extract the style name using QAction::data(). Since this is only a QStyleFactory key (e.g&#x2e;, &quot;macintosh&quot;), we cannot compare it directly to the current style's class name. We need to create a QStyle object using the static QStyleFactory::create() method and compare the class name of the created QStyle object with that of the current style.</p>
+<a name="the-iconsizespinbox-class"></a>
+<h3>The IconSizeSpinBox Class</h3>
+<p>The <tt>IconSizeSpinBox</tt> class is a subclass of QSpinBox. A plain QSpinBox can only handle integers. But since we want to display the spin box's values in a more sophisticated way, we need to subclass QSpinBox and reimplement the QSpinBox::textFromValue() and QSpinBox::valueFromText() methods.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/icons_size_spinbox.png" alt="Screenshot of the icon size spinbox" /></p><p>The IconSizeSpinBox does not implement a constructor, so we move on to the <tt>textFromValue</tt> method:</p>
+<pre>            public String textFromValue(int value)
+            {
+                return &quot;&quot; + value +&quot; x &quot; + value;
+            }</pre>
+<p>QSpinBox::textFromValue() is used by the spin box whenever it needs to display a value. The default implementation returns a base 10 representation of the <tt>value</tt> parameter.</p>
+<p>Our reimplementation returns a QString of the form &quot;32 x 32&quot;.</p>
+<pre>            public int valueFromText(String text)
+            {
+                QRegExp regExp = new QRegExp(tr(&quot;(\\d+)(\\s*[xx]\\s*\\d+)?&quot;));
+
+                if (regExp.exactMatch(text)) {
+                    return Integer.parseInt(regExp.cap(1));
+                } else {
+                    return 0;
+                }
+            }</pre>
+<p>The QSpinBox::valueFromText() method is used by the spin box whenever it needs to interpret text typed in by the user. Since we reimplement the <tt>textFromValue()</tt> method we also need to reimplement the <tt>valueFromText()</tt> method to interpret the parameter text and return the associated int value.</p>
+<p>We parse the text using a regular expression (a QRegExp). We define an expression that matches one or several digits, optionally followed by whitespace, an &quot;x&quot; or the times symbol, whitespace and one or several digits again.</p>
+<p>The first digits of the regular expression are captured using parentheses. This enables us to use the QRegExp::cap() or QRegExp::capturedTexts() methods to extract the matched characters. If the first and second numbers of the spin box value differ (e.g&#x2e;, &quot;16 x 24&quot;), we use the first number.</p>
+<p>When the user presses <b>Enter</b>, QSpinBox first calls QSpinBox::valueFromText() to interpret the text typed by the user, then QSpinBox::textFromValue() to present it in a canonical format (e.g&#x2e;, &quot;16 x 16&quot;).</p>
+<a name="the-imagedelegate-class"></a>
+<h3>The ImageDelegate Class</h3>
+<p>The <tt>ImageDelegate</tt> class is a subclass of QItemDelegate. The QItemDelegate class provides display and editing facilities for data items from a model. A single QItemDelegate object is responsible for all items displayed in a item view (in our case, a QTableWidget).</p>
+<p>A QItemDelegate can be used to provide an editor for an item view class that is subclassed from QAbstractItemView. Using a delegate for this purpose allows the editing mechanism to be customized and developed independently from the model and view.</p>
+<p>The default implementation of QItemDelegate creates a QLineEdit. Since we want the editor to be a QComboBox, we need to subclass QItemDelegate and reimplement the QItemDelegate::createEditor(), QItemDelegate::setEditorData() and QItemDelegate::setModelData() methods.</p>
+<p>We also implement <tt>emitCommitData()</tt>, which is a slot used to emit the QImageDelegate::commitData() signal with the appropriate argument.</p>
+<p>We move on to examine the implementation of the individual methods.</p>
+<pre>            public ImageDelegate(QWidget widget)
+            {
+                super(widget);
+            }</pre>
+<p>The constructor is trivial.</p>
+<pre>            public QWidget createEditor(QWidget parent, QStyleOptionViewItem option,
+                                        QModelIndex index)
+            {
+                QComboBox comboBox = new QComboBox(parent);
+                if (index.column() == 1) {
+                    comboBox.addItem(tr(&quot;Normal&quot;));
+                    comboBox.addItem(tr(&quot;Active&quot;));
+                    comboBox.addItem(tr(&quot;Disabled&quot;));
+                    comboBox.addItem(tr(&quot;Selected&quot;));
+                } else if (index.column() == 2) {
+                    comboBox.addItem(tr(&quot;Off&quot;));
+                    comboBox.addItem(tr(&quot;On&quot;));
+                }
+
+                comboBox.activated.connect(this, &quot;emitCommitData()&quot;);
+
+                return comboBox;
+            }</pre>
+<p>The default QItemDelegate::createEditor() implementation returns the widget used to edit the item specified by the model and item index for editing. The parent widget and style option are used to control the appearance of the editor widget.</p>
+<p>Our reimplementation create and populate a combobox instead of the default line edit. The contents of the combobox depends on the column in the table for which the editor is requested. Column 1 contains the QIcon modes, whereas column 2 contains the QIcon states.</p>
+<p>In addition, we connect the combobox's activated() signal to the <tt>emitCommitData()</tt> slot to emit the QAbstractItemDelegate::commitData() signal whenever the user chooses an item using the combobox. This ensures that the rest of the application notices the change and updates itself.</p>
+<pre>            public void setEditorData(QWidget editor, QModelIndex index)
+            {
+                QComboBox comboBox = (QComboBox) editor;
+                if (comboBox == null)
+                    return;
+
+                int pos = comboBox.findText((String) index.model().data(index),
+                                             Qt.MatchFlag.MatchExactly);
+                comboBox.setCurrentIndex(pos);
+            }</pre>
+<p>The QItemDelegate::setEditorData() method is used by QTableWidget to transfer data from a QTableWidgetItem to the editor. The data is stored as a string; we use QComboBox::findText() to locate it in the combobox.</p>
+<p>Delegates work in terms of models, not items. This makes it possible to use them with any item view class (e.g&#x2e;, QListView, QListWidget, QTreeView, etc.)&#x2e; The transition between model and items is done implicitly by QTableWidget; we don't need to worry about it.</p>
+<pre>            public void setModelData(QWidget editor, QAbstractItemModel model,
+                                     QModelIndex index)
+            {
+                QComboBox comboBox = (QComboBox) editor;
+                if (comboBox == null)
+                    return;
+
+                model.setData(index, comboBox.currentText());
+            }</pre>
+<p>The QItemDelegate::setEditorData() method is used by QTableWidget to transfer data back from the editor to the QTableWidgetItem.</p>
+<pre>            private void emitCommitData()
+            {
+                commitData.emit((QWidget) QSignalEmitter.signalSender());
+            }</pre>
+<p>The <tt>emitCommitData()</tt> slot simply emit the QAbstractItemDelegate::commitData() signal for the editor that triggered the slot. This signal must be emitted when the editor widget has completed editing the data, and wants to write it back into the model.</p>
+</body>
+</html>

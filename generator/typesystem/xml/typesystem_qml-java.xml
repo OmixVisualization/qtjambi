@@ -1,0 +1,287 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.qml" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+<inject-code>
+			if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+					org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+				}
+				if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+					org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+				}
+				if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+					org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+				}
+			org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+			org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+			if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtV8")){
+			org.qtjambi.qt.Utilities.loadQtLibrary("QtV8");
+			}
+			org.qtjambi.qt.Utilities.loadQtLibrary("QtQml");
+</inject-code>
+	<object-type name="QQmlExtensionPlugin">
+		<modify-function signature="initializeEngine ( QQmlEngine * , const char * )">
+			<modify-argument index="2">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="registerTypes ( const char * )">
+			<modify-argument index="1">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+
+    <value-type name="QJSValue">
+      <modify-function signature="call(const QList&lt;QJSValue&gt; &amp;)">
+		  <modify-argument index="1">
+			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
+			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
+		  </modify-argument>
+      </modify-function>
+      <modify-function signature="callWithInstance(const QJSValue &amp;, const QList&lt;QJSValue&gt; &amp;)">
+		  <modify-argument index="2">
+			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
+			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
+		  </modify-argument>
+      </modify-function>
+      <modify-function signature="callAsConstructor(const QList&lt;QJSValue&gt; &amp;)">
+		   <modify-argument index="1">
+			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
+			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
+		   </modify-argument>
+      </modify-function>
+  </value-type>
+  <value-type name="QQmlScriptString">
+  <modify-function signature="numberLiteral( bool * ) const" access="private" rename="__numberLiteral"/>
+  <modify-function signature="booleanLiteral( bool * ) const" access="private" rename="__booleanLiteral"/>
+  <inject-code>
+    @QtBlockedSlot
+    public final Double numberLiteral()  {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+		double result = __numberLiteral(pointer);
+	if(pointer.booleanValue()){
+		return result;
+	}else{
+	        return null;
+	}
+    }
+    @QtBlockedSlot
+    public final Boolean booleanLiteral()  {
+		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
+		boolean result = __booleanLiteral(pointer);
+	if(pointer.booleanValue()){
+		return result;
+	}else{
+	        return null;
+	}
+    }
+  </inject-code>
+  </value-type>
+
+    <object-type name="QQmlEngine">
+		<modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
+        	<modify-argument index="1">
+			<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
+			<conversion-rule class="shell">
+			jobject %out = qtjambi_arraylist_new(__jni_env, %in.size());
+			QList&lt;QQmlError > ::const_iterator endIter = %in.constEnd();
+			for (QList&lt;QQmlError > ::const_iterator iter = %in.constBegin(); iter != endIter; ++iter) {
+						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
+						QTJAMBI_EXCEPTION_CHECK(__jni_env);
+						qtjambi_collection_add(__jni_env, %out, jtmp);
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+			<conversion-rule class="native">
+			QList&lt;QQmlError > %out;
+			if (warnings0 != 0) {
+				jobjectArray jarray = qtjambi_collection_toArray(__jni_env, %in);
+				jsize __qt__size = __jni_env->GetArrayLength(jarray);
+				for (int i=0; i&lt;__qt__size; ++i) {
+					jobject jtmp = __jni_env->GetObjectArrayElement(jarray, i);
+					QTJAMBI_EXCEPTION_CHECK(__jni_env);
+					%out &lt;&lt; *(QQmlError*)qtjambi_to_object(__jni_env, jtmp);
+				}
+			}
+			QTJAMBI_EXCEPTION_CHECK(__jni_env);
+			</conversion-rule>
+		</modify-argument>
+	    </modify-function>
+	<modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
+		<modify-argument index="3">
+			<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
+			<conversion-rule class="native">
+			QList&lt;QQmlError > errorList;
+			QList&lt;QQmlError >* %out = &amp;errorList;
+			</conversion-rule>
+		</modify-argument>
+		<modify-argument index="0">
+			<conversion-rule class="native">
+			jboolean %out = (jboolean) %in;
+			QList&lt;QQmlError > ::const_iterator endIter = errorList.constEnd();
+			for (QList&lt;QQmlError > ::const_iterator iter = errorList.constBegin(); iter != endIter; ++iter) {
+						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
+						QTJAMBI_EXCEPTION_CHECK(__jni_env);
+						qtjambi_collection_add(__jni_env, errors2, jtmp);
+			}
+		    	</conversion-rule>
+		</modify-argument>
+	    </modify-function>
+    </object-type>
+	<object-type name="QQmlComponent">
+		<inject-code>
+			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QQmlComponent" quote-before-line="}// class"/>
+		</inject-code>	
+		<modify-function signature="errors () const">
+			<modify-argument index="return">
+				<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
+				<conversion-rule class="native">
+				jobject %out = qtjambi_arraylist_new(__jni_env, %in.size());
+				QList&lt;QQmlError > ::const_iterator endIter = %in.constEnd();
+				for (QList&lt;QQmlError > ::const_iterator iter = %in.constBegin(); iter != endIter; ++iter) {
+						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
+						QTJAMBI_EXCEPTION_CHECK(__jni_env);
+						qtjambi_collection_add(__jni_env, %out, jtmp);
+				}
+				QTJAMBI_EXCEPTION_CHECK(__jni_env);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<value-type name="QQmlListReference">
+		<inject-code class="java">
+			@QtBlockedSlot
+			public Class&lt;?> listElementType(){
+				return __qt_listElementType(nativeId());
+			}
+			
+			@QtBlockedSlot
+			private native Class&lt;?> __qt_listElementType(long __this_nativeId);
+		</inject-code>
+		<modify-function signature="QQmlListReference ( QObject *, const char *, QQmlEngine * )">
+			<modify-argument index="2">
+			<replace-type modified-type="java.lang.String" />
+			<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+	<value-type name="QQmlProperty">
+		<modify-function signature="connectNotifySignal(QObject *, const char *) const">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="propertyTypeName() const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+    <value-type name="QQmlExtensionPlugin">
+		<modify-function signature="initializeEngine(QQmlEngine *, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="registerTypes(const char *)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+    <object-type name="QQmlExpression">
+		<modify-function signature="evaluate(bool *)" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<inject-code>
+			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlExpression__" quote-before-line="}// class"/>
+		</inject-code>
+    </object-type>
+    <namespace-type name="QtQml">
+        <extra-includes>
+            <include file-name="org.qtjambi.qt.core.*" location="java"/>
+        </extra-includes>
+		<inject-code>
+			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml" quote-before-line="}// class"/>
+		</inject-code>
+    </namespace-type>
+    <interface-type name="QQmlTypesExtensionInterface" java-name="QQmlTypesExtension">
+		<modify-function signature="registerTypes(const char *)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </interface-type>
+    <interface-type name="QQmlExtensionInterface" java-name="QQmlExtension">
+		<modify-function signature="registerTypes(const char *)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="initializeEngine(QQmlEngine *, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </interface-type>
+    <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />
+</typesystem>

@@ -1,0 +1,135 @@
+/*!
+    \page qtjambi-analogclock.html
+    \title Analog Clock Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Analog Clock Example}{AnalogClock.java}
+    \endlist
+
+    The Analog Clock example shows how to draw the contents of a custom
+    widget.
+
+    \image analogclock-example.png Screenshot of the Analog Clock example
+
+    This example also demonstrates how the transformation and scaling
+    features of QPainter can be used to make drawing custom widgets
+    easier.
+
+    \section1 AnalogClock Class Implementation
+
+    The \c AnalogClock class provides a clock widget with hour and minute
+    hands that is automatically updated every few seconds.
+
+    \snippet AnalogClock.java 0
+
+    We subclass \l QWidget and define polygons to use for the hour and minute
+    hands, as well as a timer that enables us to update the clock face.
+
+    In the constructor, we set up a one-second timer to keep track of the
+    current time, and we connect it to the standard
+    \l{QWidget::}{update()} slot so that the clock face is updated when the
+    timer emits the \l{QTimer::}{timeout()} signal:
+
+    \snippet AnalogClock.java 1
+
+    We also resize the widget so that it is displayed at a reasonable size.
+
+    The \c paintEvent() method is called whenever the widget's
+    contents need to be updated. This happens when the widget is
+    first shown, and when it is covered then exposed, but it is also
+    executed when the widget's \l{QWidget::update()}{update()} slot
+    is called.
+    Since we connected the timer's \l{QTimer::timeout()}{timeout()} signal to
+    this slot, it will be called at least once every five seconds.
+
+    \snippet AnalogClock.java 2
+
+    Before we set up the painter and draw the clock, we first define
+    two \l{QColor}s that will be used for the hour and minute hands.
+    The minute hand's color has an alpha component of 191, meaning that
+    it's 75% opaque.
+
+    We also determine the length of the widget's shortest side so that we
+    can fit the clock face inside the widget. It is also useful to determine
+    the current time before we start drawing.
+
+    \snippet AnalogClock.java 3
+
+    The contents of custom widgets are drawn with a QPainter.
+    Painters can be used to draw on any QPaintDevice, but they are
+    usually used with widgets, so we pass the widget instance to the
+    painter's constructor.
+
+    We call \l{QPainter::setRenderHint()}{QPainter.setRenderHint()} with
+    \l{QPainter::Antialiasing}{QPainter.Antialiasing} to
+    turn on antialiasing. This makes drawing of diagonal lines much
+    smoother.
+
+    The translation moves the origin to the center of the widget, and
+    the scale operation ensures that the following drawing operations
+    are scaled to fit within the widget. We use a scale factor that
+    let's us use x and y coordinates between -100 and 100, and that
+    ensures that these lie within the length of the widget's shortest
+    side.
+
+    To make our code simpler, we will draw a fixed size clock face that will
+    be positioned and scaled so that it lies in the center of the widget.
+
+    The painter takes care of all the transformations made during the
+    paint event, and ensures that everything is drawn correctly. Letting
+    the painter handle transformations is often easier than performing
+    manual calculations just to draw the contents of a custom widget.
+
+    \image analogclock-viewport.png
+
+    We draw the hour hand first, using a formula that rotates the coordinate
+    system counterclockwise by a number of degrees determined by the current
+    hour and minute. This means that the hand will be shown rotated clockwise
+    by the required amount.
+
+    \snippet AnalogClock.java 4
+
+    We set the pen to be Qt::NoPen because we don't want any outline,
+    and we use a solid brush with the color appropriate for
+    displaying hours. Brushes are used when filling in polygons and
+    other geometric shapes.
+
+    \snippet AnalogClock.java 5
+
+    We save and restore the transformation matrix before and after the
+    rotation because we want to place the minute hand without having to
+    take into account any previous rotations.
+
+    \snippet AnalogClock.java 6
+
+    We draw markers around the edge of the clock for each hour. We
+    draw each marker then rotate the coordinate system so that the
+    painter is ready for the next one.
+
+    \snippet AnalogClock.java 7
+
+    The minute hand is rotated in a similar way to the hour hand.
+
+    \snippet AnalogClock.java 8
+
+    Again, we draw markers around the edge of the clock, but this
+    time to indicate minutes. We skip multiples of 5 to avoid drawing
+    minute markers on top of hour markers.
+
+    The rest of the class contains a \l{QWidget::}{showEvent()} implementation
+    that starts the timer when the window is shown, and a
+    \l{QWidget::}{hideEvent()} implementation that stops it when the window
+    is hidden.
+
+    \snippet AnalogClock.java 9
+    \snippet AnalogClock.java 10
+
+    These methods ensure that we don't do unnecessary work when the clock is
+    not visible to the user.
+
+    Finally, we provide a \c main() method to create and show the analog clock
+    when the example is run:
+
+    \snippet AnalogClock.java 11
+*/

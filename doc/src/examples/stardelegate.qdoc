@@ -1,0 +1,242 @@
+/*!
+    \page qtjambi-stardelegate.html
+    \title Star Delegate Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Star Delegate Example}{StarDelegate.java}
+    \endlist
+
+    The Star Delegate example shows how to create a delegate that
+    can paint itself and that supports edition.
+
+    \image jambistardelegate.png The Star Delegate Example
+
+    When displaying data in a QListView, QTableView, or QTreeView,
+    the individual items are drawn by a \l{Delegate
+    Classes}{delegate}. Also, when the user starts editing an item
+    (e.g., by double-clicking the item), the delegate provides an
+    editor widget that is placed on top of the item while editing
+    takes place.
+
+    Delegates are subclasses of QAbstractItemDelegate. Qt Jambi
+    provides QItemDelegate, which inherits QAbstractItemDelegate and
+    handles the most common data types (notably \c Integer and
+    String). If we need to support custom data types, or want to
+    customize the rendering or the editing for existing data types, we
+    can subclass QAbstractItemDelegate or QItemDelegate. See
+    \l{Delegate Classes} for more information about delegates, and
+    \l{Model/View Programming} if you need a high-level introduction
+    to Qt Jambi's model/view architecture (including delegates).
+
+    In this example, we will see how to implement a custom
+    delegate to render and edit a "star rating" data type, which can
+    stores values such as "1 out of 5 stars".
+
+    The example consists of the following classes:
+
+    \list
+    \o \c StarRating is the custom data type. It stores a rating
+       expressed as stars, such as "2 out of 5 stars" or "5 out of
+       6 stars".
+
+    \o \c StarDelegate inherits QItemDelegate and provides support
+       for \c StarRating (in addition to the data types already
+       handled by QItemDelegate).
+
+    \o \c StarEditor inherits QWidget and is used by \c StarDelegate
+       to let the user edit a star rating using the mouse.
+
+    \o \c StarWindow fills a QTableWidget with some data and
+      installs the delegate on it.
+    \endlist
+
+    \section1 StarDelegate Class Implementation
+
+
+    The StarDelegate consists of public methods reimplemented
+    from QItemDelegate to provide custom rendering and editing.
+
+    We provide the class with a constructor that takes a QWidget,
+    which we use for instantiating the superclass. The native Qt code
+    demands that all objects that inherit QObject has a parent;
+    otherwise the program will fail.
+
+    The \l{QAbstractItemDelegate.}{paint()} method is
+    reimplemented from QItemDelegate and is called whenever the view
+    needs to repaint an item:
+
+    \snippet StarDelegate.java 2
+
+    The method is invoked once for each item, represented by a
+    QModelIndex object from the model. If the data stored in the item
+    is a \c StarRating, we paint it ourselves; otherwise, we let
+    QItemDelegate paint it for us. This ensures that the \c
+    StarDelegate can handle the most common data types.
+
+    In the case where the item is a \c StarRating, we draw the
+    background if the item is selected, and we draw the item using \c
+    StarRating.paint(), which we will review later.
+
+    Any kind of Object can be stored in a model, but when the item
+    delegate encounters items it does not know how to paint, it will
+    leave the view for that item empty.
+
+    The \l{QAbstractItemDelegate.}{createEditor()} method is
+    called when the user starts editing an item:
+
+    \snippet StarDelegate.java 4
+
+    If the item is a \c StarRating, we create a \c StarEditor. The
+    editor must have the \a parent; if not, it would be displayed as a
+    top-level window.
+
+    The \l{QAbstractItemDelegate.}{setEditorData()} method is
+    called when an editor is created to initialize it with data from
+    the model:
+
+    \snippet StarDelegate.java 5
+
+    We simply call \c setStarRating() on the editor.
+
+    The \l{QAbstractItemDelegate.}{setModelData()} method is
+    called when editing is finished, to commit data from the editor to
+    the model:
+
+    \snippet StarDelegate.java 6
+
+    The editing is finished when the user clicks on the editor.
+    Since we propagate the mouse click event (i.e., do not accept it),
+    the view will close the editor for us when it receives the
+    QMouseEvent.
+
+    The \c sizeHint() method returns an item's preferred size:
+
+    \snippet StarDelegate.java 3
+
+    We simply forward the call to \c StarRating.
+
+    \section1 StarEditor Class Implementation
+
+    The \c StarEditor is used by \c StarDelegate to edit items.
+    The user edits a \c StarRating by moving the mouse over the
+    editor. When the editing is finished the value of the star rating
+    can be retrieved with \c getRating().
+
+    The protected methods are reimplemented from QWidget to
+    handle mouse and paint events. The private method \c
+    starAtPosition() is a helper method that returns the number of
+    the star under the mouse pointer.
+
+    Let's start with the constructor:
+
+    \snippet StarDelegate.java 7
+
+    We enable \l{QWidget.setMouseTracking()}{mouse tracking} on
+    the widget so we can follow the cursor even when the user doesn't
+    hold down any mouse button. We also turn on QWidget's
+    \l{QWidget.autoFillBackground}{auto-fill background} feature to
+    obtain an opaque background. (Without the call, the view's
+    background would shine through the editor.)
+
+    The \l{QWidget.}{paintEvent()} method is reimplemented from
+    QWidget:
+
+    \snippet StarDelegate.java 8
+
+    We simply call \c StarRating.paint() to draw the stars, just
+    like we did when implementing \c StarDelegate.
+
+    \snippet StarDelegate.java 9
+
+    In the mouse event handler, we call \c setRating() on the
+    private data member \c starCount to reflect the current cursor
+    position, and we call QWidget.update() to force a repaint.
+
+    \snippet StarDelegate.java 10
+
+    The \c starAtPosition() method uses basic linear algebra to
+    find out which star is under the cursor.
+
+    \section1 StarRating Class Implementation
+
+    The \c StarRating class represents a rating as a number of
+    stars.  In addition to holding the data, it is also capable of
+    painting the stars on a QPaintDevice, which in this example is
+    either a view or an editor. The \c starCount member variable
+    stores the current rating, and \c maxStarCount stores the highest
+    possible rating (typically 5). The polygons used for drawing stars
+    and diamonds are set up in a static block.
+
+    The constructor initializes \c starCount and \c maxStarCount:
+
+    \snippet StarDelegate.java 11
+
+    The \c paint() method paints the stars in this \c StarRating
+    object on a paint device:
+
+    \snippet StarDelegate.java 12
+
+    We first set the pen and brush we will use for painting. The
+    \c mode parameter can be either \c ReadWrite or \c ReadOnly. If \c
+    mode is read and write, we use the \l{QPalette.}{Highlight} color
+    instead of the \l{QPalette.}{Foreground} color to draw the stars.
+
+    Then we draw the stars. If we are in \c ReadWrite mode, we
+    paint diamonds in place of stars if the rating is less than the
+    highest rating.
+
+    The \c sizeHint() method returns the preferred size for an area
+    to paint the stars on:
+
+    \snippet StarDelegate.java 3
+
+    The preferred size is just enough to paint the maximum number of
+    stars. The method is called by both \c StarDelegate.sizeHint()
+    and \c StarEditor.sizeHint().
+
+    \section1 StarWindow Class Implementation
+
+    StarWindow inherits QWidget and displays a table that has a
+    star delegate installed.
+
+    The table is set up in the \c createTable() method:
+
+    \snippet StarDelegate.java 0
+
+    The \c createTable() method creates a QTableWidget and sets
+    a \c StarDelegate on it. We set
+
+    \dots
+
+    \snippet StarDelegate.java 1
+
+    The rest of the method fills the table with data including
+    star ratings. \l{QAbstractItemView.}{DoubleClicked} and
+    \l{QAbstractItemView.}{SelectedClicked} are set as
+    \l{QAbstractItemView.editTriggers()}{edit triggers}, so that the
+    editor is opened by a single click when the star rating item is
+    selected.
+
+    \section1 Possible Extensions and Suggestions
+
+    There are many ways to customize Qt Jambi's \l{Model/View
+    Programming}{model/view framework}. The approach used in this
+    example is appropriate for most custom delegates and editors.
+    Examples of possibilities not used by the star delegate and star
+    editor are:
+
+    \list
+    \o It is possible to open editors programmatically by calling
+       QAbstractItemView.edit(), instead of relying on edit
+       triggers. This could be use to support other edit triggers
+       than those offered by QAbstractItemView.
+       For example, in the Star Delegate example, hovering over an
+       item with the mouse might make sense as a way to pop up an
+       editor.
+
+    \o By reimplementing QAbstractItemDelegate.editorEvent(), it is
+       possible to implement the editor directly in the delegate,
+       instead of creating a separate QWidget subclass.
+    \endlist
+*/

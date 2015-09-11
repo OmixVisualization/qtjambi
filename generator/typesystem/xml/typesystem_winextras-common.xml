@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<typesystem>
+  <namespace-type name="QtWin">
+	<modify-function signature="setWindowDisallowPeek(QWindow*,bool)">
+		<modify-argument index="1">
+			<reference-count action="ignore" />
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="setWindowExcludedFromPeek(QWindow*,bool)">
+		<modify-argument index="1">
+			<reference-count action="ignore" />
+		</modify-argument>
+    </modify-function>
+	<modify-function signature="setWindowFlip3DPolicy(QWindow*,QtWin::WindowFlip3DPolicy)">
+		<modify-argument index="1">
+			<reference-count action="ignore" />
+		</modify-argument>
+    </modify-function>
+  </namespace-type>
+  <enum-type name="QtWin::HBitmapFormat"/>
+  <enum-type name="QWinJumpListCategory::Type"/>
+  <enum-type name="QWinJumpListItem::Type"/>
+  <enum-type name="QtWin::WindowFlip3DPolicy"/>
+  <object-type name="QWinJumpList">
+        <modify-function signature="addCategory(QWinJumpListCategory*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcCategories"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addCategory(const QString &amp;, const QList&lt;QWinJumpListItem *&gt;)">
+			<!-- the list entries must be added in __rcItems of the returned QWinJumpListCategory object!!!
+			<modify-argument index="2">
+                <reference-count action="add" variable-name="__rcCategories"/>
+            </modify-argument>
+			-->
+			<modify-argument index="return">
+                <reference-count action="add" variable-name="__rcCategories"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <object-type name="QWinJumpListCategory">
+        <modify-function signature="addItem(QWinJumpListItem*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcItems"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <object-type name="QWinJumpListItem">
+  </object-type>
+  <!--object-type name="QWinMime">
+  </object-type-->
+  <object-type name="QWinTaskbarButton">
+	<modify-function signature="setWindow(QWindow*)">
+		<modify-argument index="1">
+			<reference-count action="ignore" />
+		</modify-argument>
+	</modify-function>
+	<modify-function signature="eventFilter(QObject*,QEvent*)">
+		<modify-argument index="2" invalidate-after-use="yes" />
+	</modify-function>
+  </object-type>
+  <object-type name="QWinTaskbarProgress">
+  </object-type>
+  <object-type name="QWinThumbnailToolBar">
+        <modify-function signature="addButton(QWinThumbnailToolButton*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcToolButtons"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeButton(QWinThumbnailToolButton*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcToolButtons"/>
+            </modify-argument>
+        </modify-function>
+		<modify-function signature="setWindow(QWindow*)">
+			<modify-argument index="1">
+				<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+  </object-type>
+  <object-type name="QWinThumbnailToolButton">
+  </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HBITMAP'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HRESULT'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HDC'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HRGN'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HICON'"/>
+  <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcCategories' in 'org.qtjambi.qt.winextras.QWinJumpList' but not both"/>
+  <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcItems' in 'org.qtjambi.qt.winextras.QWinJumpListCategory' but not both"/>
+</typesystem>

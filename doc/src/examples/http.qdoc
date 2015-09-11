@@ -1,0 +1,14 @@
+/*!
+    \page qtjambi-http.html
+    \title HTTP Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for HTTP Example}{Http.java}
+    \endlist
+
+    The HTTP example demonstrates a simple HTTP client that shows how to fetch files
+    specified by URLs from remote hosts.
+
+    \image http-example.png
+*/

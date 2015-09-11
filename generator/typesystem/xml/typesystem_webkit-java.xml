@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.webkit" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+    if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtDBus"))
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtDBus");  // load if exists
+    if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("phonon"))
+        org.qtjambi.qt.Utilities.loadQtLibrary("phonon");  // This might be optional (i.e. load only if provided)
+    if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtMultimedia"))
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtMultimedia");  // This might be optional (i.e. load only if provided)
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtWebKit");
+    </inject-code>
+
+	<value-type name="QWebElement">
+		<modify-function signature="takeFromDocument ()">
+			<modify-argument index="return">
+				<replace-type modified-type="org.qtjambi.qt.webkit.QWebElement" />
+				<conversion-rule class="native">
+					jobject %out = qtjambi_from_object(__jni_env, new QWebElement(%in), "QWebElement", "org/qtjambi/qt/webkit/", true);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+</typesystem>

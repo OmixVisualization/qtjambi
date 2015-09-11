@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/stardelegate.qdoc -->
+<head>
+  <title>Star Delegate Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Star Delegate Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Star Delegate example shows how to create a delegate that can paint itself and that supports edition.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/jambistardelegate.png" alt="The Star Delegate Example" /></p><p>When displaying data in a QListView, QTableView, or QTreeView, the individual items are drawn by a delegate. Also, when the user starts editing an item (e.g&#x2e;, by double-clicking the item), the delegate provides an editor widget that is placed on top of the item while editing takes place.</p>
+<p>Delegates are subclasses of QAbstractItemDelegate. Qt Jambi provides QItemDelegate, which inherits QAbstractItemDelegate and handles the most common data types (notably <tt>Integer</tt> and String). If we need to support custom data types, or want to customize the rendering or the editing for existing data types, we can subclass QAbstractItemDelegate or QItemDelegate. See Delegate Classes for more information about delegates, and Model/View Programming if you need a high-level introduction to Qt Jambi's model/view architecture (including delegates).</p>
+<p>In this example, we will see how to implement a custom delegate to render and edit a &quot;star rating&quot; data type, which can stores values such as &quot;1 out of 5 stars&quot;.</p>
+<p>The example consists of the following classes:</p>
+<ul>
+<li><tt>StarRating</tt> is the custom data type. It stores a rating expressed as stars, such as &quot;2 out of 5 stars&quot; or &quot;5 out of 6 stars&quot;.</li>
+<li><tt>StarDelegate</tt> inherits QItemDelegate and provides support for <tt>StarRating</tt> (in addition to the data types already handled by QItemDelegate).</li>
+<li><tt>StarEditor</tt> inherits QWidget and is used by <tt>StarDelegate</tt> to let the user edit a star rating using the mouse.</li>
+<li><tt>StarWindow</tt> fills a QTableWidget with some data and installs the delegate on it.</li>
+</ul>
+<a name="stardelegate-class-implementation"></a>
+<h2>StarDelegate Class Implementation</h2>
+<p>The StarDelegate consists of public methods reimplemented from QItemDelegate to provide custom rendering and editing.</p>
+<p>We provide the class with a constructor that takes a QWidget, which we use for instantiating the superclass. The native Qt code demands that all objects that inherit QObject has a parent; otherwise the program will fail.</p>
+<p>The paint() method is reimplemented from QItemDelegate and is called whenever the view needs to repaint an item:</p>
+<pre>            public void paint(QPainter painter, QStyleOptionViewItem option, QModelIndex index)
+            {
+                Object data = index.data();
+
+                if (data != null &amp;&amp; data instanceof StarRating) {
+                    if (option.state().isSet(QStyle.StateFlag.State_Selected)) {
+                        painter.fillRect(option.rect(), option.palette().highlight());
+                    }
+                    ((StarRating) data).paint(painter, option.rect(), option.palette(),
+                                              StarRating.ReadOnly);
+                } else
+                    super.paint(painter, option, index);
+            }</pre>
+<p>The method is invoked once for each item, represented by a QModelIndex object from the model. If the data stored in the item is a <tt>StarRating</tt>, we paint it ourselves; otherwise, we let QItemDelegate paint it for us. This ensures that the <tt>StarDelegate</tt> can handle the most common data types.</p>
+<p>In the case where the item is a <tt>StarRating</tt>, we draw the background if the item is selected, and we draw the item using <tt>StarRating.paint()</tt>, which we will review later.</p>
+<p>Any kind of Object can be stored in a model, but when the item delegate encounters items it does not know how to paint, it will leave the view for that item empty.</p>
+<p>The createEditor() method is called when the user starts editing an item:</p>
+<pre>            public QWidget createEditor(QWidget parent, QStyleOptionViewItem item,
+                                        QModelIndex index)
+            {
+                Object data = index.data();
+
+                if (data instanceof StarRating)
+                    return new StarEditor(parent, (StarRating) data);
+                else
+                    return super.createEditor(parent, item, index);
+            }</pre>
+<p>If the item is a <tt>StarRating</tt>, we create a <tt>StarEditor</tt>. The editor must have the <i>parent</i>; if not, it would be displayed as a top-level window.</p>
+<p>The setEditorData() method is called when an editor is created to initialize it with data from the model:</p>
+<pre>            public void setEditorData(QWidget editor, QModelIndex index)
+            {
+                Object data = index.data();
+
+                if (data instanceof StarRating)
+                    ((StarEditor) editor).setStarRating((StarRating) data);
+                else
+                    super.setEditorData(editor, index);
+            }</pre>
+<p>We simply call <tt>setStarRating()</tt> on the editor.</p>
+<p>The setModelData() method is called when editing is finished, to commit data from the editor to the model:</p>
+<pre>            public void setModelData(QWidget editor, QAbstractItemModel model,
+                                     QModelIndex index)
+            {
+                if (index.data() instanceof StarRating)
+                    model.setData(index, ((StarEditor) editor).starRating());
+                else
+                    super.setModelData(editor, model, index);
+            }</pre>
+<p>The editing is finished when the user clicks on the editor. Since we propagate the mouse click event (i.e&#x2e;, do not accept it), the view will close the editor for us when it receives the QMouseEvent.</p>
+<p>The <tt>sizeHint()</tt> method returns an item's preferred size:</p>
+<pre>            public QSize sizeHint(QStyleOptionViewItem option, QModelIndex index)
+            {
+                Object data = index.data();
+
+                if (data instanceof StarRating)
+                    return ((StarRating) data).sizeHint();
+                else
+                    return super.sizeHint(option, index);
+            }</pre>
+<p>We simply forward the call to <tt>StarRating</tt>.</p>
+<a name="stareditor-class-implementation"></a>
+<h2>StarEditor Class Implementation</h2>
+<p>The <tt>StarEditor</tt> is used by <tt>StarDelegate</tt> to edit items. The user edits a <tt>StarRating</tt> by moving the mouse over the editor. When the editing is finished the value of the star rating can be retrieved with <tt>getRating()</tt>.</p>
+<p>The protected methods are reimplemented from QWidget to handle mouse and paint events. The private method <tt>starAtPosition()</tt> is a helper method that returns the number of the star under the mouse pointer.</p>
+<p>Let's start with the constructor:</p>
+<pre>            public StarEditor(QWidget parent, StarRating rating)
+            {
+                super(parent);
+
+                starRating = rating;
+                setMouseTracking(true);
+                setAutoFillBackground(true);
+            }</pre>
+<p>We enable mouse tracking on the widget so we can follow the cursor even when the user doesn't hold down any mouse button. We also turn on QWidget's auto-fill background feature to obtain an opaque background. (Without the call, the view's background would shine through the editor.)</p>
+<p>The paintEvent() method is reimplemented from QWidget:</p>
+<pre>            public void paintEvent(QPaintEvent event)
+            {
+                QPainter painter = new QPainter(this);
+                starRating.paint(painter, rect(), palette(), StarRating.ReadWrite);
+            }</pre>
+<p>We simply call <tt>StarRating.paint()</tt> to draw the stars, just like we did when implementing <tt>StarDelegate</tt>.</p>
+<pre>            public void mouseMoveEvent(QMouseEvent event)
+            {
+                int star = starAtPosition(event.x());
+
+                if (star != starRating.getRating() &amp;&amp; star &gt; 0) {
+                    starRating.setRating(star);
+                    update();
+                }
+            }</pre>
+<p>In the mouse event handler, we call <tt>setRating()</tt> on the private data member <tt>starCount</tt> to reflect the current cursor position, and we call QWidget.update() to force a repaint.</p>
+<pre>            public int starAtPosition(int x)
+            {
+                int star = (x / (starRating.sizeHint().width()
+                                / starRating.getMaxRating())) + 1;
+
+                if (star &lt;= 0 || star &gt; starRating.getMaxRating())
+                    return -1;
+
+                return star;
+            }</pre>
+<p>The <tt>starAtPosition()</tt> method uses basic linear algebra to find out which star is under the cursor.</p>
+<a name="starrating-class-implementation"></a>
+<h2>StarRating Class Implementation</h2>
+<p>The <tt>StarRating</tt> class represents a rating as a number of stars. In addition to holding the data, it is also capable of painting the stars on a QPaintDevice, which in this example is either a view or an editor. The <tt>starCount</tt> member variable stores the current rating, and <tt>maxStarCount</tt> stores the highest possible rating (typically 5). The polygons used for drawing stars and diamonds are set up in a static block.</p>
+<p>The constructor initializes <tt>starCount</tt> and <tt>maxStarCount</tt>:</p>
+<pre>            public StarRating(int rating, int maxRating)
+            {
+                setupPolygons();
+                maxCount = maxRating;
+                setRating(rating);
+            }</pre>
+<p>The <tt>paint()</tt> method paints the stars in this <tt>StarRating</tt> object on a paint device:</p>
+<pre>            public void paint(QPainter painter, QRect rect, QPalette palette,
+                          int mode)
+            {
+                painter.save();
+
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing, true);
+                painter.setPen(Qt.PenStyle.NoPen);
+
+                if (mode == ReadWrite)
+                    painter.setBrush(palette.highlight());
+                else
+                    painter.setBrush(palette.text());
+
+                int yOffset = (rect.height() - PaintingFactor) / 2;
+                painter.translate(rect.x(), rect.y() + yOffset);
+                painter.scale(PaintingFactor, PaintingFactor);
+
+                for (int i = 0; i &lt; maxCount; i++) {
+                    if (i &lt; starCount)
+                        painter.drawPolygon(starPolygon, Qt.FillRule.WindingFill);
+                    else
+                        painter.drawPolygon(diamondPolygon, Qt.FillRule.WindingFill);
+
+                    painter.translate(1.0, 0.0);
+                }
+
+                painter.restore();
+            }</pre>
+<p>We first set the pen and brush we will use for painting. The <tt>mode</tt> parameter can be either <tt>ReadWrite</tt> or <tt>ReadOnly</tt>. If <tt>mode</tt> is read and write, we use the Highlight color instead of the Foreground color to draw the stars.</p>
+<p>Then we draw the stars. If we are in <tt>ReadWrite</tt> mode, we paint diamonds in place of stars if the rating is less than the highest rating.</p>
+<p>The <tt>sizeHint()</tt> method returns the preferred size for an area to paint the stars on:</p>
+<pre>            public QSize sizeHint(QStyleOptionViewItem option, QModelIndex index)
+            {
+                Object data = index.data();
+
+                if (data instanceof StarRating)
+                    return ((StarRating) data).sizeHint();
+                else
+                    return super.sizeHint(option, index);
+            }</pre>
+<p>The preferred size is just enough to paint the maximum number of stars. The method is called by both <tt>StarDelegate.sizeHint()</tt> and <tt>StarEditor.sizeHint()</tt>.</p>
+<a name="starwindow-class-implementation"></a>
+<h2>StarWindow Class Implementation</h2>
+<p>StarWindow inherits QWidget and displays a table that has a star delegate installed.</p>
+<p>The table is set up in the <tt>createTable()</tt> method:</p>
+<pre>        public void createTable()
+        {
+            LinkedList&lt;String&gt; headers = new LinkedList&lt;String&gt;();
+
+            table = new QTableWidget(4, 4);
+
+            table.setItemDelegate(new Delegate(table));
+
+            table.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked,
+                                  QAbstractItemView.EditTrigger.SelectedClicked);
+            table.setSelectionBehavior(
+                QAbstractItemView.SelectionBehavior.SelectRows);</pre>
+<p>The <tt>createTable()</tt> method creates a QTableWidget and sets a <tt>StarDelegate</tt> on it. We set</p>
+<pre>        ...
+        }</pre>
+<p>The rest of the method fills the table with data including star ratings. DoubleClicked and SelectedClicked are set as edit triggers, so that the editor is opened by a single click when the star rating item is selected.</p>
+<a name="possible-extensions-and-suggestions"></a>
+<h2>Possible Extensions and Suggestions</h2>
+<p>There are many ways to customize Qt Jambi's model/view framework. The approach used in this example is appropriate for most custom delegates and editors. Examples of possibilities not used by the star delegate and star editor are:</p>
+<ul>
+<li>It is possible to open editors programmatically by calling QAbstractItemView.edit(), instead of relying on edit triggers. This could be use to support other edit triggers than those offered by QAbstractItemView. For example, in the Star Delegate example, hovering over an item with the mouse might make sense as a way to pop up an editor.</li>
+<li>By reimplementing QAbstractItemDelegate.editorEvent(), it is possible to implement the editor directly in the delegate, instead of creating a separate QWidget subclass.</li>
+</ul>
+</body>
+</html>

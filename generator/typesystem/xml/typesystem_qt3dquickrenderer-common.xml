@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<typesystem>
+	<namespace-type name="Qt3D::Render::Quick" java-name="Qt3DQuickRenderer" generate="no"/>
+	<object-type name="Qt3D::Render::Quick::Quick3DEffect" java-name="Quick3DEffect">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DMaterial" java-name="Quick3DMaterial">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DParameter" java-name="Quick3DParameter">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DRenderPass" java-name="Quick3DRenderPass">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DRenderPassFilter" java-name="Quick3DRenderPassFilter">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DRenderTarget" java-name="Quick3DRenderTarget">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DRenderTargetSelector" java-name="Quick3DRenderTargetSelector">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DScene" java-name="Quick3DScene">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DShaderData" java-name="Quick3DShaderData">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DShaderDataArray" java-name="Quick3DShaderDataArray">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DSortMethod" java-name="Quick3DSortMethod">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DStateSet" java-name="Quick3DStateSet">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DTechnique" java-name="Quick3DTechnique">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DTechniqueFilter" java-name="Quick3DTechniqueFilter">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DTextureExtension" java-name="Quick3DTextureExtension">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Render::Quick::Quick3DViewport" java-name="Quick3DViewport">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+</typesystem>

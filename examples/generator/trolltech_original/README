@@ -1,0 +1,15 @@
+The generator example is an example that illustrates how to make use
+of the Qt Jambi Generator
+
+Before you start compiling the example, you will need to set the JAMBIDIR
+environment variable to the root of your JAMBI installation. Also include
+$JAMBIDIR/generator in your path.
+
+To compile the generator example, simply run 'ant' on the
+'build.xml' file in the generator directory. This will
+create a custom platform .jar file which includes the native libraries
+which should be used when deploying the generator example application.
+
+To launch the example, simply issue 
+
+java -jar qtjambi-generator-example-<platform>-<qt-version>.jar

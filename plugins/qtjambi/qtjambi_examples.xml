@@ -1,0 +1,35 @@
+<qt-jambi-custom-widget-list>
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.AnalogClock"
+    group="Qt Jambi Examples"
+  />
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.CollidingMice"
+    group="Qt Jambi Examples"
+  />
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.LineEdits"
+    group="Qt Jambi Examples"
+  />
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.SpinBoxes"
+    group="Qt Jambi Examples"
+  />
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.Tetrix"
+    group="Qt Jambi Examples"
+  />
+
+  <qt-jambi-custom-widget
+    class="org.qtjambi.examples.CustomWidget"
+    group="Qt Jambi Examples"
+  />
+
+</qt-jambi-custom-widget-list>
+
+

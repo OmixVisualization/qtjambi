@@ -1,0 +1,87 @@
+/*!
+    \page qtjambi-cppguide.html
+    \title Qt Jambi for C++ Developers
+
+    This overview is intended for C++ programmers that are already
+    familiar with Qt and that would like to migrate to Qt Jambi. We will
+    give a quick guide to issues that might confuse or misslead
+    unexpecting C++ programmers venturing into the Java World with Qt
+    Jambi.
+
+    We present these issues in a list in the next section.
+  
+    \section1 The List
+
+    We here present a list of issues that it might be good to know
+    about. 
+    
+    \list
+        \o \bold{Collecting garbage}: Garbage Collection of Jambi
+           objects are handled automatically, so you do not have
+           to worry about object ownership. They will all be
+           deleted automatically.
+        \o \bold{Where did QVariant go?}: QVariant is Qt's way to
+           deal with that C++ forbids unions from including types
+           that have non-default constructors or destructors. In
+           Java, \bold{all} classes inherits from the same
+           ancestor, \c{java.lang.Object}; they are all already united,
+           so there is no need for a QVariant anymore. In the places
+           you find \l{QVariant}s in the C++ API, you will find
+           \c{java.lang.Object}s in the Java API.
+
+           Jambi has its own QVariant, but that only serves as
+           a set of methods to do datatype conversions.
+        \o \bold {Enums and Values}: In Java enums are first-class
+            citizens, so ...
+        \o \bold {"Where is QVector?" or "What about collection classes?"}:
+            Qt Jambi converts between Java and Qt collection classes.
+            You will find the Java versions in the \c{java.util}
+            package. The Qt collection classes are not ported to
+            Java.
+        \o \bold {Value and Object types}: In Java we have no
+            value and object types. All objects behave like C++
+            object types, and they are all sent by reference.
+            Notice that Qt Jambi does copy objects sent as value
+            types (typically by const reference) and returned from
+            methods. \omit need something more here, I think.
+            About c++= operator and java copying types copy field
+            by field. \endomit
+        \o \bold{What about Signals and Slots?}: Qt Jambi has
+            implemented its own mechanism for signals and slots.
+            It works basically in the same way, but the syntax is
+            somewhat different. See the {Signals and Slots}
+            overview.
+        \o \bold {Flagging with QFlags}: Java's enum values
+            cannot directly be used as ints and OR'ed together when constructing
+            QFlags, which makes constructing flags a lot more
+            verbose in Java. Study the QFlags and QtEnumerator class
+            descriptions and you will see the light.
+        \o \bold {    } : 
+    \endlist
+
+    \omit Qt Streams and java.io.serialization resources. Some of
+    this just links, I guess. might not be a list anymore either.
+    need something about properties and anotations (something on
+    the most usual macros, mention rtt, moc, etc, ) something
+    about plugins and multiple inheritance mabe.
+    \endomit
+
+    Note that using the '=' operator in java is a potentially
+    dangerous operation for C++ programmers used to value types. In
+    C++, the object will be copied and a new reference returned, but
+    in Java, you will just get a new reference to the same object. If
+    you wan't to copy an object, you will have to copy it field by
+    field, or use any copy constructor explicitly.
+
+    Note also that Java has run-time type inference. We can therefore
+    leave the Qt \c rcc tool and all the QObject macros. Also the
+    \l{Qt Meta Object System}, with its properties and is unessasary
+    in Java, because of the introspection provided for all classes
+    provided by Java (see the \c{java.lang.reflect} package for
+    details).
+
+    That sums up the most important issues to be aware about. If you
+    bump into others you feel deserve a place in this list, don't
+    hesitate to let us know through the Jambi mailing list.
+*/
+

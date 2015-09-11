@@ -1,0 +1,169 @@
+/*!
+    \page qtjambi-systemtrayexample.html
+    \title System Tray Icon Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for System Tray Icon Example}{SystemTrayExample.java}
+    \endlist
+
+    The System Tray Icon example shows how to add an icon with a menu
+    and popup messages, to a desktop environment's system tray.
+
+    \image systemtray-example.png
+
+    Modern operating systems usually provide a special area on the
+    desktop, called the system tray or notification area, where
+    long-running applications can display icons and short messages.
+
+    \section1 SystemTrayExample Class Implementation
+
+    The SystemTrayExample class extends QWidget and provides an editor
+    for the system tray icon.
+
+    \snippet SystemTrayExample.java 0
+
+    The editor enables the user to modify the message title, edit the
+    actual message and choose the message type. The information
+    display will contain status messages for the icon. In addition,
+    the user can select an icon of the preferred size.
+
+    \image systemtray-editor.png
+
+    When constructing the editor widget, we first check if the system
+    tray is available on the user's desktop. If it is not, we show a
+    message to the user:
+
+    \snippet SystemTrayExample.java 2
+    \snippet SystemTrayExample.java 3
+
+    The QMessageBox class provides a modal dialog with a short
+    message, an icon, and buttons laid out depending on the current
+    style. It supports four severity levels: "Question",
+    "Information", "Warning" and "Critical". The easiest way to pop up
+    a message box in Qt is to call one of the associated static
+    methods, e.g. \l
+    {QMessageBox::warning()}{QMessageBox.warning()}.
+
+    \snippet SystemTrayExample.java 4
+
+    Then we create the menu that will appear when right-clicking over
+    the icon in the system tray. The QMenu class provides a menu
+    widget for use in menu bars, context menus, and other popup
+    menus. We use the menu's \l {QMenu::aboutToShow()}{aboutToShow()}
+    signal to ensure that the menu is updated when it is shown. We
+    will come back to the editor's \c updateMenu() method later on.
+
+    A menu consists of a list of action items, i.e., a collection of
+    QAction objects:
+
+    \snippet SystemTrayExample.java 5
+
+    The purpose of the various actions in our menu, is to control the
+    appearance of the editor widget: Before we add each action to the
+    menu, we connect their \l {QAction::triggered()}{triggered()}
+    signal to the appropiate methods of the editor widget. The \l
+    {QWidget::showNormal()}{showNormal()}, \l
+    {QWidget::showMinimized()}{showMinimized()}, \l
+    {QWidget::showMaximized()}{showMaximized()} and \l
+    {QWidget::close()}{close()} methods are inherited from QWidget,
+    while the \c toggleVisibility() method is specific to this
+    example and simply hides or shows the editor depending on its
+    current state.
+
+    \snippet SystemTrayExample.java 6
+
+    It is the QSystemTrayIcon class that actually provides the icon in
+    the system tray. When we create our icon, we first set its tooltip
+    to be the message title and ensure that our newly created menu
+    appears as the icon's context menu.
+
+    To provide respons to user interaction, we then connect the icon's
+    \l {QSystemTrayIcon::activated()}{activated()} and \l
+    {QSystemTrayIcon::messageClicked()}{messageClicked()} signals to
+    the editor's \c activated() and \c balloonClicked() methods,
+    respectively. Before we show the icon, we also choose its initial
+    size using the editor's \c changeIcon() method. We will take a
+    look at the editor's methods shortly.
+
+    \snippet SystemTrayExample.java 7
+    \codeline
+    \snippet SystemTrayExample.java 8
+
+    Finally, we create the editor's various window elements and use a
+    QGridLayout to organize them. The QGridLayout class takes the
+    space made available to it, divides it up into rows and columns,
+    and puts each widget it manages into the correct cell.
+
+    \snippet SystemTrayExample.java 9
+
+    It is important to note that QObject subclasses normally have a
+    lifetime beyond what is visible to the garbage collector. To
+    ensure that such a object is deleted, you must either assign the
+    object to a parent (child widgets are automatically disposed of by
+    their parents upon destruction) or call the \c dispose() method
+    explicitly.
+
+    Since we use the QSystemTrayIcon class (which is a QObject
+    subclass) without giving our icon a parent, we must reimplement
+    QWidget's \l {QWidget::closeEvent()}{closeEvent()} method to
+    dispose the icon when the application is terminated.
+
+    \snippet SystemTrayExample.java 10
+
+    The \c updateMenu() method is called whenever the system tray
+    icon's context menu is about to be shown, i.e. when the user
+    right-clicks the icon in the system tray. The method simply
+    checks whether the editor widget is currently visible or not, and
+    update the menu accordingly.
+
+    \snippet SystemTrayExample.java 11
+
+    The \c toggleVisibility() method is called whenever the user
+    chooses \gui Hide or \gui Show in the context menu, and use the \l
+    {QWidget::hide()}{hide()} and \l {QWidget::show()}{show()}
+    methods inherited from QWidget to control the appearance of the
+    editor widget.
+
+    \snippet SystemTrayExample.java 12
+    \snippet SystemTrayExample.java 13
+    \snippet SystemTrayExample.java 14
+    \snippet SystemTrayExample.java 15
+
+    The \c showMessage() method is called whenever the user presses
+    the \gui {Balloon message} button. Note that balloon tips are not
+    supported on Mac OS X. On any other platform, we create a message
+    icon (i.e., the icon that is shown next to the message title when
+    a balloon message is displayed), show the message and update the
+    icon's tooltip.
+
+    \snippet SystemTrayExample.java 16
+
+    The \c balloonClicked() method is called whenever the user
+    clicks the system tray icon's message, and simply append a status
+    message to the information display in the editor.
+
+    \snippet SystemTrayExample.java 17
+
+    Whenever the user activates the system tray icon, e.g., by
+    clicking it, the icon's \l
+    {QSystemTrayIcon::activated()}{activated()} signal is emitted and
+    the editor's \c activated() method is called (due to the
+    connection we created in the constructor).  The \c activated()
+    method determines the reason the icon was activated and derives
+    a corresponding message that it append to the information display
+    in the editor.
+
+    \snippet SystemTrayExample.java 18
+    \snippet SystemTrayExample.java 19
+
+    The \c changeIcon() method is used to change the icon pixmap,
+    and is called whenever the user select a different size for the
+    system tray icon.
+
+    \snippet SystemTrayExample.java 1
+    \snippet SystemTrayExample.java 20
+
+    Finally, we provide a \c main() method to create and show the
+    editor widget when the example is run.
+*/

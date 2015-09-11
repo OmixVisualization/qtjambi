@@ -1,0 +1,133 @@
+Qt Jambi 1.0.0-tp3 is the third technology preview of Qt for Java.
+It contains bugfixes and new features.
+
+
+************************************************************************
+Qt Jambi Library
+
+ - The Qt Jambi library is now based on Qt 4.2 giving access to
+   features such as StyleSheets and QGraphicsView.
+
+ - Qt Jambi now makes use of real Java enums and typesafe QFlags.
+
+ - QPainter opened on a widget in the paintEvent() will be closed
+   automatically, so there is no longer a need for an explicit call to
+   QPainter.end()
+
+ - Added Annotation @QtBlockedSlot which makes it possible to block
+   a method to be used as a slot.
+
+ - Added Property Annotations support.
+   Annotations
+   - @QtPropertyReader
+   - @QtPropertyWriter
+   - @QtPropertyResetter
+   - @QtPropertyDesignable
+
+ - Added QtPropertyManager which uses annotations and naming patterns
+   to detect properties.
+
+ - Added support for connecting to java signals from C++.
+
+ - Added QtSvg
+
+ - Added QCoreApplication.invokeLater(Runnable exec) which executes
+   the runnable in the gui thread when available.
+
+ - finalize() is final to preserve our memory model. Added virtual
+   function disposed() which will be called when the native resource
+   or the java object is finalized.
+
+ - Bugfix: QObject.moveToThread() did not work properly.
+
+ - Bugfix: Queued connections would often fire in the wrong thread.
+
+ - Bugfix: connectSlotsByName() would sometimes crash
+
+ - Bugfix: A default constructed QModelIndex should be invalid
+
+ - Bugfix: QVariant to/from boolean
+
+ - Bugfix: Potential deadlocks
+
+ - Bugfix: For virtual functions in C++ that are overriden as private in
+   subclasses are now marked @deprecated since they cannot be called.
+
+ - Bugfix: Passing null to functions would sometimes crash
+
+ - Bugfix: Virtual functions returning objects of interface types would
+   sometimes crash
+
+
+************************************************************************
+Qt Jambi JNI Layer
+
+ - Added support for starting the JVM from C++
+
+
+************************************************************************
+JUIC
+
+ - Added support for Font kerning and antialiasing
+
+ - Added support for excluding subpaths in the classpath when using the
+   -cp command line option
+
+ - Added support for customizable prefix (in addition to Ui_) using -pf
+   command line option
+
+ - Added safety check before overwriting generated files
+
+ - Bugfix: Palette was not written out correctly
+
+
+************************************************************************
+Qt Jambi Generator
+
+ - Removed several warnings that would appear when generating certain
+   small projects.
+
+ - Added more flexibility to disable-gc-tag
+
+ - Added support for containers parameterized by pointer types
+
+ - Bugfix: Bogus dependencies would be generated for some small projects.
+
+
+************************************************************************
+Eclipse integration
+
+ - Several usability changes to the "new form" wizard and property page
+
+ - Replaced icons
+
+ - Close editor when resource is deleted from the project
+
+ - Bugfix: Changing the case of letters in a form name and regenerating
+   would create uncompilable code on Windows
+
+ - Bugfix: The Qt Jambi property page would sometimes not appear in
+   the properties list
+
+ - Bugfix: A form would not be marked as dirty when it was resized
+
+
+************************************************************************
+Documentation
+
+ - Java Doc is now available for the Qt Jambi library
+
+
+************************************************************************
+Examples and demos
+
+ - Added examples:
+    - Calculator
+    - Colliding Mice
+    - Custom Sort / Filter Model
+    - Elastic Nodes
+    - SVG Cards" example
+    - SimpleUiExample
+    - System Tray
+    - Syntax Highlighter
+    - Mandelbrot

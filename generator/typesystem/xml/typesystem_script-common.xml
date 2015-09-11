@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<typesystem>
+  <rejection class="QScriptEngine::FunctionWithArgSignature"/>
+  <rejection class="QScriptEngine::FunctionSignature"/>
+    <rejection class="QScriptEngine" function-name="fromScriptValue"/>
+    <rejection class="QScriptEngine" function-name="toScriptValue"/>
+    <rejection class="QScriptEngine" function-name="newQMetaObject"/>
+    <rejection class="QScriptEngine" function-name="registerCustomType"/>
+    <rejection class="QScriptEngine" function-name="scriptValueFromQMetaObject"/>
+    <rejection class="QScriptEngine" function-name="newFunction"/>
+    <!-- objectById is marked as internal API and would expose memory pointer in QtJambi API -->
+    <rejection class="QScriptEngine" function-name="objectById"/>
+    <rejection class="QScriptValue" function-name="toQMetaObject"/>
+    <rejection class="QScriptValueList"/>
+    <rejection class="QScriptValue::QScriptValueList"/>
+    <!--   <rejection class="QScriptContext" function-name="scopeChain"/> -->
+    <enum-type name="QScriptClass::Extension"/>
+    <enum-type name="QScriptClass::QueryFlag" flags="QScriptClass::QueryFlags"/>
+    <enum-type name="QScriptContext::Error"/>
+    <enum-type name="QScriptContext::ExecutionState"/>
+    <enum-type name="QScriptContextInfo::FunctionType"/>
+    <enum-type name="QScriptEngine::QObjectWrapOption" flags="QScriptEngine::QObjectWrapOptions"/>
+    <enum-type name="QScriptEngine::ValueOwnership"/>
+    <enum-type name="QScriptEngineAgent::Extension"/>
+    <enum-type name="QScriptValue::PropertyFlag" flags="QScriptValue::PropertyFlags"/>
+    <enum-type name="QScriptValue::ResolveFlag" flags="QScriptValue::ResolveFlags"/>
+    <enum-type name="QScriptValue::SpecialValue"/>
+    <enum-type name="QScriptSyntaxCheckResult::State"/>
+    <object-type name="QScriptClass" >
+    </object-type>
+    <value-type name="QScriptClassPropertyIterator"/>
+    <object-type name="QScriptContext">
+    <modify-function signature="scopeChain()const" remove="all"/>
+    </object-type>
+  <value-type name="QScriptContextInfo">
+	<modify-function signature="operator=(const QScriptContextInfo &amp;)" remove="all"/>
+  </value-type>
+  <object-type name="QScriptEngineAgent">
+    </object-type>
+  <value-type name="QScriptString">
+	<modify-function signature="operator= ( const QScriptString &amp; )" remove="all"/>
+  </value-type>
+  <value-type name="QScriptProgram">
+	<modify-function signature="operator= ( const QScriptProgram &amp; )" remove="all"/>
+  </value-type>
+  <interface-type name="QScriptExtensionInterface" java-name="QScriptExtension"/>
+    <value-type name="QScriptSyntaxCheckResult">
+	<modify-function signature="operator= ( const QScriptSyntaxCheckResult &amp; )" remove="all"/>
+        <custom-creator>
+		if(copy)
+			return new QScriptSyntaxCheckResult(*copy);
+		else return Q_NULLPTR;
+        </custom-creator>
+    </value-type>
+    <value-type name="QScriptValue">
+        <modify-function signature="QScriptValue(uint)" remove="all"/>
+        <modify-function signature="QScriptValue(QScriptEngine*,uint)" remove="all"/>
+        <modify-function signature="QScriptValue(const QLatin1String &amp;)" remove="all"/>
+	  <modify-function signature="QScriptValue(QScriptEngine * , const char * )" remove="all"/>
+	  <modify-function signature="QScriptValue(const char * )" remove="all"/>
+	  <modify-function signature="operator= ( const QScriptValue &amp; )" remove="all"/>
+	  <modify-function signature="toBoolean () const" remove="all"/>
+	  <modify-function signature="isBoolean () const" remove="all"/>
+	  <modify-function signature="toObject () const" remove="all"/>
+	  <modify-function signature="toUInt32 () const" remove="all"/>
+	  <modify-function signature="isQMetaObject () const" remove="all"/>
+	  <modify-function signature="toUInt16 () const" rename="toShort"/>
+	  <modify-function signature="toBool () const" rename="toBoolean"/>
+	  <modify-function signature="isBool () const" rename="isBoolean"/>
+	  <modify-function signature="toInt32 () const" rename="toInt"/>
+	  <modify-function signature="toNumber () const" rename="toDouble"/>
+	  <modify-function signature="toInteger () const" access="private" rename="private_toInteger"/>
+		<modify-function signature="setScriptClass(QScriptClass*)">
+			<modify-argument index="1">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </value-type>
+    <!--object-type name="QScriptValueIterator">
+		<modify-function signature="operator= ( QScriptValue &amp; )" remove="all"/>
+    </object-type-->
+    <interface-type name="QScriptable"/>
+    <object-type name="QScriptEngine">
+		<modify-function signature="setAgent(QScriptEngineAgent*)">
+			<modify-argument index="1">
+				<define-ownership class="java" owner="cplusplus"/>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <object-type name="QScriptExtensionPlugin">
+		<modify-function signature="setupPackage(QString,QScriptEngine*)const">
+			<modify-argument index="2">
+			<reference-count action="ignore" />
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScriptContextInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScriptProgram' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScriptValueList' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: QSysInfo::BigEndian in QAudioFormat::Endian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unmatched enum QSysInfo::BigEndian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: QSysInfo::LittleEndian in QAudioFormat::Endian" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: unmatched enum QSysInfo::LittleEndian" />
+</typesystem>

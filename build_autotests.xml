@@ -1,0 +1,414 @@
+<!--
+    TODO:
+    - We work the target names into "tests.*" namespace "compile.java" => "tests.compile.java".
+-->
+<project default="all" basedir=".">
+
+    <property environment="env"/>
+
+    <tstamp/>
+
+    <property file="tests.properties"/>
+
+    <property name="junit.exists" value="tests.junit.exists" />
+
+    <condition property="qtjambi.osx">
+        <os family="mac"/>
+    </condition>
+
+    <target name="help"
+                description="Provides detailed help.">
+        <echo>Generates an executable .jar file that runs the generator example...</echo>
+    </target>
+
+    <target name="tests.clean" description="Cleans built test files">
+        <delete dir="${outputDir}/tests/autotest-generator"/>
+        <delete dir="${outputDir}/tests/autotests"/>
+        <delete dir="${outputDir}/tests/auto"/>
+        <delete dir="${outputDir}/tests"/>
+    </target>
+
+    <target name="reports.clean" description="Cleans the Unit Test results">
+        <delete dir="${outputDir}/tests/junitxml-release"/>
+        <delete dir="${outputDir}/tests/junitxml-debug"/>
+        <delete dir="${outputDir}/tests/TestResults-release"/>
+        <delete dir="${outputDir}/tests/TestResults-debug"/>
+    </target>
+
+    <target name="check.junit">
+        <available property="junit.path" type="file" file="${tests.junit}"/>
+        <fail message="Path to JUnit is required to build the Unit Tests. Specify the path in tests.properties">
+            <condition>
+                    <not>
+                        <isset property="junit.path"/>
+                    </not>
+            </condition>
+        </fail>
+    </target>
+	
+	<target name="check.ssl">
+        <available property="qtjambi.ssl" type="file" file="build/generator/out/java/org/qtjambi/qt/network/QSslSocket.java"/>
+    </target>
+
+    <target name="compile.native.generator" depends="init.build">
+        <mkdir dir="${outputDir}/tests/autotest-generator"/>
+        <generator dir="${generator.builddir}"
+                debugTools="${qtjambi.debug-tools}"
+                inputDirectory="${generatorDir}${psep}${basedir}/autotestlib"
+                outputDirectory="${outputDir}/tests/autotest-generator"
+                generatorDirectory="${generator.builddir}"
+                typesystem="${basedir}/autotestlib/build.txt"
+                header="${basedir}/autotestlib/global.h"
+                qtincludedirectory="${qtjambi.qt.includedir}"
+                qtlibdirectory="${tools.qt.libdir}"
+                includepaths="${basedir}/autotestlib${psep}${generator.includepaths}"
+                outputPreprocessFile="preprocessed_autotests.tmp"
+            />
+    </target>
+
+    <target name="compile.native" depends="init.build">
+        <qmake  dir="${outputDir}/tests/autotest-generator"
+                pro="${basedir}/autotestlib/autotestlib.pro"
+                config="${qtjambi.configuration}"
+                qtconfig="${qtjambi.qtconfig}"
+                debugTools="${qtjambi.debug-tools}"
+                qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+
+        <make dir="${outputDir}/tests/autotest-generator" target="${qtjambi.qmake.target.default}"/>
+    </target>
+
+    <target name="compile.deps">
+<!--        <mkdir dir="${outputDir}/tests/autotests" />
+        <javac destdir="${outputDir}/tests/autotests" debug="true"
+                includeantruntime="false"
+                source="1.5" target="1.5">
+            <classpath>
+                <pathelement location="${basedir}/jars/qtjambi.jar" />
+                <pathelement location="." />
+            </classpath>
+        </javac> -->
+    </target>
+
+    <target name="compile.java" depends="init.build, compile.deps, check.junit, check.ssl">
+        <mkdir dir="${outputDir}/tests/auto"/>
+        <!-- encoding="UTF-8" required due to some file tests (I18N) using
+        no ASCII/ISO-8859-1 characters and the MacOSX Java using "MacRoman"
+        character set by default. -->
+        <javac destdir="${outputDir}/tests/auto" debug="true"
+                includeantruntime="false"
+                source="1.5" target="1.5" encoding="UTF-8">
+            <compilerarg value="-Xlint:deprecation" />
+            <compilerarg value="-Xlint:unchecked" />
+            <classpath>
+                <pathelement location="${basedir}/jars/qtjambi.jar" />
+                <pathelement location="${tests.junit}" />
+				<pathelement location="${tests.hamcrest}" />
+            </classpath>
+            <src path="${basedir}/src/java/autotest"/>
+            <!-- pick up the generated code from compile.native -->
+            <src path="${outputDir}/tests/autotest-generator/java"/>
+            <include name="org/qtjambi/autotests/**/*.java"/>
+            <include name="org/qtjambi/generatortests/**/*.java"/>
+            <exclude name="org/qtjambi/unittests/**/*.java"/>
+            <exclude name="org/qtjambi/autotests/**/*QPlastiqueStyle.java" if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"/>
+            <exclude name="org/qtjambi/autotests/**/TestCloneableOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+            <exclude name="org/qtjambi/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+			<exclude name="org/qtjambi/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+            <exclude name="org/qtjambi/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
+            <exclude name="org/qtjambi/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
+            <exclude name="org/qtjambi/autotests/**/TestInjectedCodeOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+            <exclude name="org/qtjambi/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
+        </javac>
+        <mkdir dir="${outputDir}/tests/unit"/>
+        <javac destdir="${outputDir}/tests/unit" debug="true"
+                includeantruntime="false"
+                source="1.5" target="1.5" encoding="UTF-8">
+            <compilerarg value="-Xlint:deprecation" />
+            <compilerarg value="-Xlint:unchecked" />
+            <classpath>
+                <pathelement location="${basedir}/jars/qtjambi.jar" />
+                <pathelement location="${tests.junit}" />
+				<pathelement location="${tests.hamcrest}" />
+                <pathelement location="${outputDir}/tests/auto" />
+                <pathelement location="${basedir}/src/java/autotest" />
+            </classpath>
+            <src path="src/java/autotest"/>
+            <exclude name="org/qtjambi/autotests/**/*.java"/>
+            <exclude name="org/qtjambi/generatortests/**/*.java"/>
+            <include name="org/qtjambi/unittests/**/*.java"/>
+			<exclude name="org/qtjambi/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
+            <exclude name="org/qtjambi/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+			<exclude name="org/qtjambi/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
+            <!-- MacOSX version of Qt does not have this API -->
+            <exclude name="org/qtjambi/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
+        </javac>
+    </target>
+
+    <!-- NOTES: This should be merged with the normal target as the only difference is the -XstartOnFirstThread option.
+         In order to execute I needed to "export DYLD_LIBRARY_PATH=$QTDIR/lib:${absNativeBaseDir}/lib"
+         and then run the usual "ant compile.tests tests.run"
+      -->
+    <target name="run.osx" if="qtjambi.osx" depends="init.test">
+        <qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
+        <qtjambi-resolve-path var="absQtLib"         path="${qtLib}" />
+        <qtjambi-resolve-path var="absJambiLib"      path="${jambiLib}" />
+        <qtjambi-resolve-path var="absNativeBaseDir" path="${nativeBaseDir}" />
+        <delete dir="${outputDir}/tests/junitxml-${kind}" />
+        <delete dir="${outputDir}/tests/TestResults-${kind}" />
+        <mkdir dir="${outputDir}/tests/junitxml-${kind}"/>
+        <mkdir dir="${outputDir}/tests/TestResults-${kind}"/>
+        <junit fork="yes" printsummary="true" haltonfailure="no" timeout="600000" showoutput="yes" logfailedtests="yes">
+            <classpath>
+                <pathelement location="${tests.junit}" />
+                <pathelement location="${tests.hamcrest}" />
+                <pathelement location="${basedir}/jars/qtjambi.jar" />
+<!--                <pathelement location="${outputDir}/qtjambi-native-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}${qtjambi.configuration.dash}.jar" /> -->
+                <pathelement path="src/java/qtjambi-examples" />
+                <pathelement path="${absOutputDir}/tests/auto" />
+                <pathelement path="${absOutputDir}/tests/unit" />
+                <pathelement path="${absOutputDir}/tests/autotests" />
+                <pathelement path="${basedir}/src/java/qtjambi-examples" />
+                <!-- examples: is needed to pickup some images and non-code resource files to work with  -->
+                <!-- this is needed by 2 tests in org/qtjambi/autotests/TestInjectedCode.java#testIODevicePeek() -->
+                <pathelement path="src/java/autotest" />
+            </classpath>
+            <jvmarg value="-XstartOnFirstThread"/><!-- if="qtjambi.config.ismacosx" -->
+            <jvmarg value="-d64"/><!-- This option can force 32bit JRE when
+            we're built using fat binaries supporting both 32 and 64bit -->
+            <jvmarg value="-Djava.library.path=${absQtLib}${psep}${absJambiLib}${psep}${outputDir}/tests/lib"/>
+            <!-- <jvmarg value="-Dorg.qtjambi.qt.verbose-loading=true"/> -->
+            <jvmarg value="-Dorg.qtjambi.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+            <jvmarg value="-Dorg.qtjambi.qt.debug.inhibitNativeResourceThread=true"/>
+            <!-- <jvmarg value="-Dorg.qtjambi.qt.debug.level=255"/> -->
+            <jvmarg value="-Dorg.qtjambi.qt.exceptions-for-messages=none"/>
+            <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+            from native code (so we can see where/why it crashed) otherwise
+            the JVM may promote SIGSEGV to NullPointerException, which is
+            not that useful for debugging. -->
+            <jvmarg value="-Xcheck:jni"/>
+            <env key="QTJAMBI_DEBUG_TRACE" value="true"/>
+            <env key="DYLD_LIBRARY_PATH" value="${env.DYLD_LIBRARY_PATH}${psep}${absQtLib}${psep}${absJambiLib}"/><!-- if="qtjambi.config.ismacosx" -->
+            <formatter type="xml" usefile="yes" />
+            <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}">
+                <fileset dir="src/java/autotest">
+                    <include name="**/org/qtjambi/autotests/**/Test*.java"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestClipboard.java"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestStartup.java"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementNonPolymorphicObject.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementPolymorphicObject.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementQObjectType.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementValueType.java" unless="${qtjambi.debug-tools}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/*QPlastiqueStyle.java" if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestCloneableOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+                </fileset>
+                <fileset dir="src/java/autotest">
+                    <include name="**/org/qtjambi/unittests/**/Test*.java"/>
+                    <!-- MacOSX version of Qt does not have this API -->
+					<exclude name="**/org/qtjambi/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
+					<exclude name="**/org/qtjambi/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+					<exclude name="**/org/qtjambi/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
+                    <exclude name="**/org/qtjambi/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
+                </fileset>
+                <fileset dir="src/java/autotest" includes="**/org/qtjambi/generatortests/**/Test*.java"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="run.other" unless="qtjambi.osx" depends="init.test, check.junit">
+        <qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
+        <qtjambi-resolve-path var="absQtLib"         path="${qtLib}" />
+        <qtjambi-resolve-path var="absJambiLib"      path="${jambiLib}" />
+        <qtjambi-resolve-path var="absNativeBaseDir" path="${nativeBaseDir}" />
+        <delete dir="${outputDir}/tests/junitxml-${kind}" />
+        <delete dir="${outputDir}/tests/TestResults-${kind}" />
+        <mkdir dir="${outputDir}/tests/junitxml-${kind}"/>
+        <mkdir dir="${outputDir}/tests/TestResults-${kind}"/>
+        <!-- files contained in todir being accessed from the tests -->
+        <copy todir="${outputDir}/tests/auto/org/qtjambi/autotests">
+            <fileset dir="src/java/autotest/org/qtjambi/autotests" excludes="**/*.java"/>
+        </copy>
+        <copy todir="${outputDir}/tests/auto/org/qtjambi/unittests">
+            <fileset dir="src/java/autotest/org/qtjambi/unittests" excludes="**/*.java"/>
+        </copy>
+        <junit fork="yes" printsummary="true" haltonfailure="no" timeout="600000" showoutput="yes" logfailedtests="yes">
+            <classpath>
+                <pathelement location="${tests.junit}" />
+                <pathelement location="${tests.hamcrest}" />
+                <pathelement location="${basedir}/jars/qtjambi.jar" />
+<!--                <pathelement location="${outputDir}/qtjambi-native-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}${qtjambi.configuration.dash}.jar" /> -->
+                <pathelement path="src/java/qtjambi-examples" />
+                <pathelement path="${absOutputDir}/tests/auto" />
+                <pathelement path="${absOutputDir}/tests/unit" />
+                <pathelement path="${absOutputDir}/tests/autotests" />
+                <!-- platform-output folder is needed by Windows so that the addLibraryPath()
+                     is setup correctly so plugins can be loaded -->
+                <pathelement path="${absNativeBaseDir}" />
+                <pathelement path="${basedir}/src/java/qtjambi-examples" />
+                <!-- examples: is needed to pickup some images and non-code resource files to work with  -->
+                <!-- this is needed by 2 tests in org/qtjambi/autotests/TestInjectedCode.java#testIODevicePeek() -->
+                <pathelement path="src/java/autotest" />
+            </classpath>
+            <jvmarg value="-Djava.library.path=${absQtLib}${psep}${absJambiLib}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
+            <jvmarg value="-Dorg.qtjambi.qt.verbose-loading=true"/>
+            <jvmarg value="-Dorg.qtjambi.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+            <jvmarg value="-Dorg.qtjambi.qt.debug.inhibitNativeResourceThread=true"/>
+            <jvmarg value="-Dorg.qtjambi.qt.debug.level=255"/>
+            <jvmarg value="-Dorg.qtjambi.qt.exceptions-for-messages=none"/>
+            <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+            from native code (so we can see where/why it crashed) otherwise
+            the JVM may promote SIGSEGV to NullPointerException, which is
+            not that useful for debugging. -->
+            <jvmarg value="-Xcheck:jni"/>
+            <env key="QTJAMBI_DEBUG_TRACE" value="true"/>
+<!--            <jvmarg value="-verbose"/> -->
+            <formatter type="xml" usefile="yes" />
+            <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}">
+                <fileset dir="src/java/autotest">
+<!--                    <include name="**/org/qtjambi/autotests/**/TestClipboard.java"/>                -->
+                    <include name="**/org/qtjambi/autotests/**/Test*.java"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestClipboard.java"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestStartup.java"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementNonPolymorphicObject.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementPolymorphicObject.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementQObjectType.java" unless="${qtjambi.debug-tools}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementValueType.java" unless="${qtjambi.debug-tools}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/*QPlastiqueStyle.java"/> <!-- if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"-->
+                    <exclude name="**/org/qtjambi/autotests/**/TestCloneableOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeOpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+                    <exclude name="**/org/qtjambi/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+					<exclude name="**/org/qtjambi/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+                </fileset>
+                <fileset dir="src/java/autotest">
+                    <include name="**/org/qtjambi/unittests/**/Test*.java"/>
+                    <!-- MacOSX version of Qt does not have this API -->
+					<exclude name="**/org/qtjambi/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
+					<exclude name="**/org/qtjambi/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+					<exclude name="**/org/qtjambi/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
+                    <exclude name="**/org/qtjambi/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
+                </fileset>
+                <fileset dir="src/java/autotest" includes="**/org/qtjambi/generatortests/**/Test*.java"/>
+            </batchtest>
+        </junit>
+    </target>
+
+    <target name="run" depends="init">
+        <if>
+			<available file="${outputDir}/platform-output-debug" type="dir"/>
+			<then>
+				<antcall target="debug.run"/>
+			</then>
+			<else>
+				<if>
+					<available file="${outputDir}/platform-output" type="dir"/>
+					<then>
+						<antcall target="release.run"/>
+					</then>
+					<else>
+						<fail message="No build available."/>
+					</else>
+				</if>
+			</else>
+        </if>
+    </target>
+	
+	<target name="release.run" depends="init">
+		<if>
+			<available file="${outputDir}/platform-output" type="dir"/>
+			<then>
+				<antcall target="run.other">
+					<param name="kind"          value="release"/>
+					<param name="nativeBaseDir" value="${outputDir}/platform-output"/>
+					<param name="qtLib"         value="${outputDir}/platform-output/lib"/>
+					<param name="jambiLib"      value="${outputDir}/platform-output/lib"/>
+				</antcall>
+				<antcall target="run.osx">
+					<param name="kind"          value="release"/>
+					<param name="nativeBaseDir" value="${outputDir}/platform-output"/>
+					<param name="qtLib"         value="${outputDir}/platform-output/lib"/>
+					<param name="jambiLib"      value="${outputDir}/platform-output/lib"/>
+				</antcall>
+				<junitreport todir="${outputDir}/tests/junitxml-release">
+					<fileset dir="${outputDir}/tests/junitxml-release">
+						<include name="TEST-*.xml" />
+					</fileset>
+					<report format="frames" todir="${outputDir}/tests/TestResults-release" />
+				</junitreport>
+			</then>
+			<else>
+				<fail message="No release build available."/>
+			</else>
+		</if>
+    </target>
+	
+	<target name="debug.run" depends="init">
+		<if>
+			<available file="${outputDir}/platform-output-debug" type="dir"/>
+			<then>
+				<antcall target="run.other">
+					<param name="kind"          value="debug"/>
+					<param name="nativeBaseDir" value="${outputDir}/platform-output-debug"/>
+					<param name="qtLib"         value="${outputDir}/platform-output-debug/lib"/>
+					<param name="jambiLib"      value="${outputDir}/platform-output-debug/lib"/>
+				</antcall>
+				<antcall target="run.osx">
+					<param name="kind"          value="debug"/>
+					<param name="nativeBaseDir" value="${outputDir}/platform-output-debug"/>
+					<param name="qtLib"         value="${outputDir}/platform-output-debug/lib"/>
+					<param name="jambiLib"      value="${outputDir}/platform-output-debug/lib"/>
+				</antcall>
+				<junitreport todir="${outputDir}/tests/junitxml-debug">
+					<fileset dir="${outputDir}/tests/junitxml-debug">
+						<include name="TEST-*.xml" />
+					</fileset>
+					<report format="frames" todir="${outputDir}/tests/TestResults-debug" />
+				</junitreport>
+			</then>
+			<else>
+				<fail message="No debug build available."/>
+			</else>
+		</if>
+	</target>
+	
+	<target name="tests.generate"
+            depends="init.build, compile.native.generator, compile.native, compile.java" description="Builds tests and required libraries"/>
+
+    <target name="tests.compile"
+            depends="init.build, compile.native, compile.java" description="Builds tests and required libraries"/>
+
+    <target name="tests.run"
+            depends="init.build, init.test, setenv, run" description="Runs tests and generates report in TestReport subdir"/>
+
+    <target name="tests.release.run"
+            depends="init.build, init.test, setenv, release.run" description="Runs tests on the release build and generates report in TestReport subdir"/>
+
+    <target name="tests.debug.run"
+            depends="init.build, init.test, setenv, debug.run" description="Runs tests on the debug build and generates report in TestReport subdir"/>
+
+</project>

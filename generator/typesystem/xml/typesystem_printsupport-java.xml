@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.printsupport" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtPrintSupport");
+    </inject-code>
+    <object-type name="QPrintPreviewDialog">
+      <modify-function signature="open(QObject*,const char*)"  remove="all" />
+    </object-type>
+
+    <object-type name="QPageSetupDialog">
+      <modify-function signature="open(QObject*,const char*)"  remove="all" />
+    </object-type>
+
+    <object-type name="QPrintDialog">
+        <modify-function signature="open(QObject*,const char*)" remove="all" />
+
+        <inject-code class="shell-declaration">
+#if !defined(Q_NO_USING_KEYWORD)
+        using QDialog::accepted;
+#else
+    inline void accepted(QPrinter *printer)
+    { QPrintDialog::accepted(printer); }
+#endif
+        </inject-code>
+    </object-type>
+
+    <object-type name="QPrinter">
+        <modify-function signature="getPageMargins(qreal*,qreal*,qreal*,qreal*,QPrinter::Unit)const" access="private" />
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_printsupport-java.java" quote-after-line="class QPrinter___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Shadowing: QDialog::accepted() and QPrintDialog::accepted(); Java code will not compile" />
+
+</typesystem>

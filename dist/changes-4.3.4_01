@@ -1,0 +1,33 @@
+Qt Jambi 4.3.4_01 is a patch release, containing bug fixes and an
+upgrade to Qt 4.3.3. It maintains both forward and backwards
+compatibility (source and binary) with Qt Jambi 4.3.3_01.
+
+In addition to the changes listed here it also contains numerous
+updates to the Qt Library. See
+http://trolltech.com/developer/notes/changes for recent changes.
+
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+____________________
+
+Fixes:
+____________________
+
+ - Fixed: JVM 1.6 and newer from Sun(tm) have a bug in their JIT
+   compiling which will eventually cause crashes in Qt Jambi. We are
+   now generating code to work around this problem.
+
+ - Fixed: Many Qt classes are tied to the GUI thread and may only be
+   deleted from the GUI thread. Many more classes has now been marked
+   as such.
+
+ - Fixed: A racecondition would some times cause VM crashes when
+   deleting objects marked as "delete-in-main-thread" in the
+   typesystem. This includes QFont, QPixmap etc...
+
+ - Fixed: Potential race condition in Qt Jambi's internal JNI
+   datastructe cache.
+
+

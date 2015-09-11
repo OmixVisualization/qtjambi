@@ -1,0 +1,47 @@
+/*!
+    \page qtjambi-systemproperties.html
+
+    \title Qt Jambi System Properties Reference
+
+    Qt Jambi provides a few system properties. Notably, the
+    properties can be used to specify locations of native resources,
+    e.g., libraries and Qt plugins. We present the properties in the
+    table below.
+
+    You specify a system property on the command line to the Java VM
+    with the \c{-D} option. For instance:
+
+    \code
+        java -Dorg.qtjambi.qt.verbose-loading=true -jar qtjambi.jar
+    \endcode
+
+    \table 75%
+        \header
+            \o Property
+            \o Description
+        \row
+            \o org.qtjambi.qt.verbose-loading
+            \o When this property is true, Qt Jambi will report on
+               all attempts to load native libraries.
+        \row
+            \o org.qtjambi.qt.debug
+            \o When this property is set to true, the Qt debug libraries
+               will be used. This is necessary if Qt was built with
+               debugging turned on.
+        \row
+            \o org.qtjambi.qt.library-path-override
+            \o This property can be used to set paths to where Qt Jambi will1
+               search for native libraries.
+        \row
+            \o org.qtjambi.qt.exclude-libraries
+            \o If you start a Qt Jambi application from an already
+               running VM, you do not want to reload the native
+               libraries. In this property, you can separate library
+               names that are not to be loaded with the system path
+               separator.
+        \row 
+            \o org.qtjambi.qt.exceptions-for-messages
+ 	    \o Installs a default QMessageHandler that produces exceptions when
+	    would normally issue a warning. This can be helpful for debuggin.
+    \endtable
+*/

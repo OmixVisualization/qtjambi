@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<typesystem>
+
+  <rejection class="QAbstractExtensionFactory" />
+  <rejection class="QAbstractExtensionManager" />
+  <rejection class="QAbstractFormBuilder" />
+  <rejection class="QDesignerActionEditorInterface" />
+  <rejection class="QDesignerBrushManagerInterface" />
+  <rejection class="QDesignerContainerExtension" />
+  <rejection class="QDesignerCustomWidgetCollectionInterface" />
+  <rejection class="QDesignerCustomWidgetInterface" />
+  <rejection class="QDesignerDnDItemInterface" />
+  <rejection class="QDesignerExtraInfoExtension" />
+  <rejection class="QDesignerFormEditorInterface" />
+  <rejection class="QDesignerFormEditorPluginInterface" />
+  <rejection class="QDesignerFormWindowCursorInterface" />
+  <rejection class="QDesignerFormWindowInterface" />
+  <rejection class="QDesignerFormWindowManagerInterface" />
+  <rejection class="QDesignerFormWindowToolInterface" />
+  <rejection class="QDesignerIconCacheInterface" />
+  <rejection class="QDesignerIntegrationInterface" />
+  <rejection class="QDesignerLanguageExtension" />
+  <rejection class="QDesignerLayoutDecorationExtension" />
+  <rejection class="QDesignerMetaDataBaseInterface" />
+  <rejection class="QDesignerMetaDataBaseItemInterface" />
+  <rejection class="QDesignerObjectInspectorInterface" />
+  <rejection class="QDesignerPropertyEditorInterface" />
+  <rejection class="QDesignerTaskMenuExtension" />
+  <rejection class="QDesignerWidgetBoxInterface" />
+  <rejection class="QDesignerWidgetDataBaseInterface" />
+  <rejection class="QDesignerWidgetDataBaseItemInterface" />
+  <rejection class="QDesignerWidgetFactoryInterface" />
+  <rejection class="QExtensionManager" />
+  <rejection class="QFormBuilder" />
+  <rejection class="QDesignerDynamicPropertySheetExtension" />
+  <rejection class="QDesignerPromotionInterface" />
+  <rejection class="QDesignerScriptExtension" />
+  <rejection class="QDesignerPropertySheetExtension" />
+  <rejection class="JambiPropertySheet" />
+  <rejection class="QDesignerMemberSheetExtension" />
+  <rejection class="JambiMemberSheet" />
+
+  <object-type name="QDesignerResourceBrowserInterface">
+    <include file-name="abstractresourcebrowser.h" location="global"/>
+  </object-type>
+
+  <object-type name="JambiResourceBrowser" />
+
+</typesystem>

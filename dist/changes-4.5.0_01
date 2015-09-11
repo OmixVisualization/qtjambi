@@ -1,0 +1,82 @@
+Qt Jambi 4.5.0_01 is the first release of Qt 4.5 for Java. It represents a 
+milestone in the feature development and includes bug fixes compared to previous 
+releases. It maintains both forward and backwards compatibility (source and 
+binary) with Qt Jambi 4.4.
+
+For details about changes in Qt itself, see the Qt change logs:
+http://www.qtsoftware.com/developer/changes/
+
+
+************************************************************************
+ Build system
+************************************************************************
+
+ - Added dependency tree to ant script to avoid rebuilding more than necessary.
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ - Added LGPL license.
+
+ - Added class com.trolltech.qt.sql.QSqlRelationalDelegate which existed in Qt,
+   but previously had no Qt Jambi equivalent.
+   
+ - Due to technical issues, the method 
+   QAbstractTextDocumentLayout.registerHandler() was previously unusable in 
+   Qt Jambi.
+
+ - removeItemWidget() in QListWidget and QTreeWidget no longer enables 
+   garbage collection on the item.
+   
+ - Avoid crashes in corner case where the QApplication instance is accessed
+   after aboutToQuit signal has been emitted.
+   
+ - Manually emitting signals in the library which took enum types as arguments
+   would have no effect.
+   
+ - Fixed crash when QTreeModel.index() is called with invalid row/column.
+ 
+ - Added missing signals in item views API.
+   
+ - Fixed unexpected results when subclassing QGraphicsScene and
+   simultaneously reimplementing itemChange() in a QGraphicsItem subclass.
+   
+ - Add support for signals with "long" arguments.
+
+   
+************************************************************************
+ Qt Jambi Designer
+************************************************************************
+
+ - Fixed crash when adding QMdiArea to form.
+ 
+ - Don't crash if custom widget has exceptions in the initializer.
+   
+   
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+
+ - New attribute to <modify-function> tag: "allow-as-slot"
+
+ - Function signatures with more than one container typed argument no longer
+   generates code that does not compile.
+   
+ - Fixed missing functions when mapping a subclass of QGraphicsItem.
+ 
+
+************************************************************************
+ Juic
+************************************************************************
+
+ - Setting the alignment of certain widgets would cause juic to generate code
+   that didn't compile.
+   
+ - Using text in higher unicode ranges would generate the wrong strings in the 
+   resulting UI.
+   
+ - Setting the alignment of a QGroupBox would generate code that didn't compile.
+ 
+ - Generated classes now implement QUiForm interface.
+ 

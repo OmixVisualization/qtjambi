@@ -1,0 +1,54 @@
+In folder QNativeWidgets:
+1) Go into the "cpptest" folder, run qmake and your make tool.
+	1.2) check the "bin" folder, there should be an executable testGenerator. Run it.
+	
+2) Go into the "jambi/scripts" folder. You can see the global.h, the typesystem.xml and a test.pro.
+	2.1) Run "ant compile" in order to run the qtjambi generator.
+	2.2) See the "QNativeWidgets/jambi/qtjambi/nativewidgets" folder for the generated QNativeWidgetTest.java. 
+	2.3) Open it and add the "import com.trolltech.qt.*;" import and remove the leading dot in front of the QWidget extend.
+
+3) Back in the "jambi/scripts" folder. Run "ant compilejava".
+
+Here I tried two approaches:
+4a) Run "ant package" 
+	4a.1) Switch to the "QNativeWidgets/javatest" folder. Either run the test4a.bat or adapt it to your platform.
+	
+4b) Run "ant copy"
+	4b.1) Switch to the "QNativeWidgets/javatest" folder. Either run the test4b.bat or adapt it to your platform.
+	
+	
+	
+4a) yields a long list of exceptions, among them the following:
+Caused by: java.lang.RuntimeException: Failed to unpack native libraries, progress so far:
+Unpacking .jar file: 'myTest-win32-msvc2008-4.7.1.jar'
+..........
+Caused by: java.io.FileNotFoundException: Library 'plugins/imageformats//Microsoft.VC90.CRT/Microsoft.VC90.CRT.manifest' specified in qtjambi-deployment.xml in 'myTest-win32-msvc2008-4.7.1.jar' does n
+ot exist
+..........
+Caused by: com.trolltech.qt.internal.DeploymentSpecException: <library> 'lib/QtCore4.dll' is duplicated. Present in both 'myTest-win32-msvc2008-4.7.1.jar' and 'myTest-win32-msvc2008-4.7.1.jar'.
+
+
+4b) yields the following exception:
+vtable setup failed: qtjambi.nativewidgets.QNativeWidgetTest::actionEvent (LQActionEvent;)V
+QtJambi: Exception pending in native code
+Exception in thread "main" java.lang.NoSuchMethodError: actionEvent
+        at qtjambi.nativewidgets.QNativeWidgetTest.__qt_QNativeWidgetTest_QWidget(Native Method)
+        at qtjambi.nativewidgets.QNativeWidgetTest.<init>(QNativeWidgetTest.java:20)
+        at qtjambi.nativewidgets.QNativeWidgetTest.<init>(QNativeWidgetTest.java:16)
+        at TestJava.main(TestJava.java:15)
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_ACCESS_VIOLATION (0xc0000005) at pc=0x6d8e95a5, pid=1116, tid=1160
+#
+# JRE version: 6.0_24-b07
+# Java VM: Java HotSpot(TM) Client VM (19.1-b02 mixed mode, sharing windows-x86 )
+# Problematic frame:
+# V  [jvm.dll+0xf95a5]
+#
+# An error report file with more information is saved as:
+# C:\Users\dorn\Documents\QNativeWidgets\javatest\hs_err_pid1116.log
+#
+# If you would like to submit a bug report, please visit:
+#   http://java.sun.com/webapps/bugreport/crash.jsp
+#

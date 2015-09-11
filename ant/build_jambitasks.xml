@@ -1,0 +1,15 @@
+<project default="ant-qtjambi.jar" basedir="..">
+
+    <target name="ant-qtjambi.jar"
+            description="Create a jar containing all the Qt Jambi ant tasks.">
+        <mkdir dir="ant-qtjambi"/>
+        <javac srcdir="." destdir="ant-qtjambi" debug="true" source="1.5" target="1.5">
+            <include name="org/qtjambi/tools/ant/*.java"/>
+        </javac>
+        <jar destfile="ant-qtjambi.jar">
+            <fileset dir="ant-qtjambi"/>
+        </jar>
+        <delete dir="ant-qtjambi"/>
+    </target>
+
+</project>

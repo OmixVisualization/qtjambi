@@ -1,0 +1,277 @@
+/*!
+    \page qtjambi-calendarwidget.html
+    \title Calendar Widget Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Calendar Widget Example}{CalendarWidget.java}
+    \endlist
+
+    The Calendar Widget example shows use of \c QCalendarWidget.
+
+    \image qtjambi-calendarwidgetexample.png
+
+    QCalendarWidget displays one calendar month at a time and lets the
+    user select a date.  The calendar consists of four components: a
+    navigation bar that lets the user change the month that is
+    displayed, a grid where each cell represents one day in the month,
+    and two headers that display weekday names and week numbers.
+
+    The Calendar Widget example displays a QCalendarWidget and lets
+    the user configure its appearance and behavior using
+    \l{QComboBox}es, \l{QCheckBox}es, and \l{QDateEdit}s. In addition,
+    the user can influence the formatting of individual dates and
+    headers.
+
+    The properties of the QCalendarWidget are summarized in the table
+    below.
+
+    \table
+    \header \o Property
+            \o Description
+    \row \o \l{QCalendarWidget::}{selectedDate}
+         \o The currently selected date.
+    \row \o \l{QCalendarWidget::}{minimumDate}
+         \o The earliest date that can be selected.
+    \row \o \l{QCalendarWidget::}{maximumDate}
+         \o The latest date that can be selected.
+    \row \o \l{QCalendarWidget::}{firstDayOfWeek}
+         \o The day that is displayed as the first day of the week
+            (usually Sunday or Monday).
+    \row \o \l{QCalendarWidget::}{gridVisible}
+         \o Whether the grid should be shown.
+    \row \o \l{QCalendarWidget::}{selectionMode}
+         \o Whether the user can select a date or not.
+    \row \o \l{QCalendarWidget::}{horizontalHeaderFormat}
+         \o The format of the day names in the horizontal header
+            (e.g., "M", "Mon", or "Monday").
+    \row \o \l{QCalendarWidget::}{verticalHeaderFormat}
+         \o The format of the vertical header.
+    \row \o \l{QCalendarWidget::}{navigationBarVisible}
+         \o Whether the navigation bar at the top of the calendar
+            widget is shown.
+    \endtable
+
+    The example consists of one class, \c CalendarWidget, which creates and
+    lays out the QCalendarWidget and the other widgets that let the
+    user configure the QCalendarWidget.
+
+    \section1 The CalendarWidget Class
+
+    \omit
+    Here are the data member declarations for the class:
+
+    \quotefromfile CalendarWidget.java
+    \skipto /QGroupBox/
+    \printuntil firstDayLabel
+    \dots
+    \skipto headerTextFormatCombo
+    \printuntil mayFirstCheckBox
+    \endomit
+
+    As is often the case with classes that represent self-contained
+    windows, most of the API is private. We will review the private
+    members as we stumble upon them in the implementation.
+
+    Here is the constructor of CalendarWidget:
+
+    \snippet CalendarWidget.java 0
+
+    We start by creating the four \l{QGroupBox}es and their child
+    widgets (including the QCalendarWidget) using four private \c
+    create...GroupBox() methods, described below. Then we arrange
+    the group boxes in a QGridLayout.
+
+    We set the grid layout's resize policy to QLayout::SetFixedSize to
+    prevent the user from resizing the window. In that mode, the
+    window's size is set automatically by QGridLayout based on the
+    size hints of its contents widgets.
+
+    To ensure that the window isn't automatically resized every time
+    we change a property of the QCalendarWidget (e.g., hiding the
+    navigation bar, the vertical header, or the grid), we set the
+    minimum height of row 0 and the minimum width of column 0 to the
+    initial size of the QCalendarWidget.
+
+    Let's move on to the \c createPreviewGroupBox() method:
+
+    \snippet CalendarWidget.java 9
+
+    The \gui {Preview group box} contains only one widget: the
+    QCalendarWidget. We set it up, connect its
+    \l{QCalendarWidget::}{currentPageChanged()} signal to our \c
+    reformatCalendarPage() slot to make sure that every new page gets
+    the formatting specified by the user.
+
+    The \c createGeneralOptionsGroupBox() method is somewhat large
+    and several widgets are set up the same way; we look at parts of
+    its implementation here and skip the rest:
+
+    \snippet CalendarWidget.java 10
+
+    The calendar widget can display the numbers of dates and years in
+    various languages and locales. The current language/locale used
+    by the calendar is specified by a QLocale. We loop through all
+    possible pairs of languages and locales and add them to the \gui
+    {Locale combo box}, from which the user selects the current locale
+    of the calendar widget.
+
+    Note that the QLocale object for each pair is stored in each combo
+    box item's user data. We can later retrieve this object with
+    QComboBox's \l{QComboBox::}{itemData()} when a new item is
+    selected.
+
+    \snippet CalendarWidget.java 11
+    \dots
+
+    The \gui{Week starts on} combobox controls which day should be
+    displayed as the first day of the week.
+
+    \dots
+    \snippet CalendarWidget.java 12
+    \dots
+
+    After creating the widgets, we connect the signals and slots. We
+    connect the comboboxes to private slots of \c Window or to
+    public slots provided by QCalendarWidget.
+
+    \dots
+    \snippet CalendarWidget.java 13
+
+    At the end of the method, we call the slots that update the calendar to ensure
+    that the QCalendarWidget is synchronized with the other widgets on startup.
+
+    Let's now take a look at the \c createDatesGroupBox() private method:
+
+    \snippet CalendarWidget.java 14
+
+    In this method, we create the \gui {Minimum Date}, \gui {Maximum Date},
+    and \gui {Current Date} editor widgets,
+    which control the calendar's minimum, maximum, and selected dates.
+    The calendar's minimum and maximum dates have already been
+    set in \c createPrivewGroupBox(); we can then set the widgets
+    default values to the calendars values.
+
+    \snippet CalendarWidget.java 15
+    \dots
+    \snippet CalendarWidget.java 16
+
+    We connect the \c currentDateEdit's
+    \l{QDateEdit::}{dateChanged()} signal directly to the calendar's
+    \l{QCalendarWidget::}{setSelectedDate()} slot. When the calendar's
+    selected date changes, either as a result of a user action or
+    programmatically, our \c selectedDateChanged() slot updates
+    the \gui {Current Date} editor. We also need to react when the user
+    changes the \gui{Minimum Date} and \gui{Maximum Date} editors.
+
+    Here is the \c createTextFormatsGroup() method:
+
+    \snippet CalendarWidget.java 17
+
+    We set up the \gui {Weekday Color} and \gui {Weekend Color} comboboxes
+    using \c createColorCombo(), which instantiates a QComboBox and
+    populates it with colors ("Red", "Blue", etc.).
+
+    \snippet CalendarWidget.java 18
+
+    The \gui {Header Text Format} combobox lets the user change the
+    text format (bold, italic, or plain) used for horizontal and
+    vertical headers. The \gui {First Friday in blue} and \gui {May 1
+    in red} check box affect the rendering of specific dates.
+
+    \snippet CalendarWidget.java 19
+
+    We connect the check boxes and comboboxes to various private
+    slots. The \gui {First Friday in blue} and \gui {May 1 in red}
+    check boxes are both connected to \c reformatCalendarPage(),
+    which is also called when the calendar switches month.
+
+    \dots
+    \snippet CalendarWidget.java 20
+
+    At the end of \c createTextFormatsGroupBox(), we call private
+    slots to synchronize the QCalendarWidget with the other widgets.
+
+    We're now done reviewing the four \c create...GroupBox()
+    methods. Let's now take a look at the other private methods
+    and slots.
+
+    \snippet CalendarWidget.java 21
+
+    In \c createColorCombo(), we create a combobox and populate it with
+    standard colors. The second argument to QComboBox::addItem()
+    is user data stored for each item (in this case, QColor objects).
+
+    This method was used to set up the \gui {Weekday Color}
+    and \gui {Weekend Color} comboboxes.
+
+    \snippet CalendarWidget.java 1
+
+    When the user changes the \gui {Week starts on} combobox's
+    value, \c firstDayChanged() is invoked with the index of the
+    combobox's new value. We retrieve the custom data item
+    associated with the new current item using
+    \l{QComboBox::}{itemData()} and cast it to a Qt::DayOfWeek.
+
+    \c selectionModeChanged(), \c horizontalHeaderChanged(), and \c
+    verticalHeaderChanged() are very similar to \c firstDayChanged(),
+    so they are omitted.
+
+    \snippet CalendarWidget.java 2
+
+    The \c selectedDateChanged() updates the \gui{Current Date}
+    editor to reflect the current state of the QCalendarWidget.
+
+    \snippet CalendarWidget.java 3
+
+    When the user changes the minimum date, we tell the
+    QCalenderWidget. We also update the \gui {Maximum Date} editor,
+    because if the new minimum date is later than the current maximum
+    date, QCalendarWidget will automatically adapt its maximum date
+    to avoid a contradicting state.
+
+    \snippet CalendarWidget.java 4
+
+    \c maximumDateChanged() is implemented similarly to \c
+    minimumDateChanged().
+
+    \snippet CalendarWidget.java 5
+
+    Each combobox item has a QColor object as user data corresponding to the
+    item's text. After fetching the colors from the comboboxes, we
+    set the text format of each day of the week.
+
+    The text format of a column in the calendar is given as a
+    QTextCharFormat, which besides the foreground color lets us
+    specify various character formatting information. In this
+    example, we only show a subset of the possibilities.
+
+    \snippet CalendarWidget.java 6
+
+    \c weekendFormatChanged() is the same as \c
+    weekdayFormatChanged(), except that it affects Saturday and
+    Sunday instead of Monday to Friday.
+
+    \snippet CalendarWidget.java 7
+
+    The \c reformatHeaders() slot is called when the user
+    changes the text format of
+    the headers. We compare the current text of the \gui {Header Text Format}
+    combobox to determine which format to apply. (An alternative would
+    have been to store \l{QTextCharFormat} values alongside the combobox
+    items.)
+
+    \snippet CalendarWidget.java 8
+
+    In \c reformatCalendarPage(), we set the text format of the first
+    Friday in the month and May 1 in the current year. The text
+    formats that are actually used depend on which check boxes are
+    checked.
+
+    QCalendarWidget lets us set the text format of individual dates
+    with the \l{QCalendarWidget::}{setDateTextFormat()}. We chose to
+    set the dates when the calendar page changes, i.e., a new month is
+    displayed. We check which of the \c mayFirstCheckBox and \c
+    firstDayCheckBox, if any, are checked
+    and set the text formats accordingly.
+*/

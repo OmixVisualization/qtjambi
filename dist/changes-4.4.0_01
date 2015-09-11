@@ -1,0 +1,171 @@
+Qt Jambi 4.4.0_01 is the first release of Qt 4.4 for Java. It
+represents a milestone in the feature development and includes bug
+fixes compared to previous releases.
+
+For details about changes in Qt itself, see the Qt change logs:
+http://trolltech.com/developer/notes/changes
+
+This release of Qt Jambi WILL break compatibility for a very few
+classes. This is primarily to enable the possibility of non-GUI-based
+Qt Jambi applications and to fix some errors that were introduced in
+Qt Jambi 4.3 before the user base is too large.
+
+
+
+************************************************************************
+ Package Structure
+************************************************************************
+
+ - Binary package no longer contains generator or generator
+   example. This is because only a package that is built from source
+   can properly make use of the generator. Providing the generator in
+   the binary package where it could in fact not be used made this
+   less clear.
+
+ - The binary package or a successfully built source package now
+   contains several .jar files in the root directory.
+
+   * qtjambi-4.4.0_01.jar; The platform independent classes
+   * qtjambi-$OS-$COMPILER-4.4.0_01.jar; The native libraries
+   * qtjambi-examples-4.4.0_01.jar; The examples and demos
+   * qtjambi-designer-4.4.0_01.jar; Classes used by Qt Designer
+
+   The classes jar and native library jar files are the only two files
+   needed to run Qt Jambi applications. The libraries in the bin and
+   lib subdirectories are there solely for running Qt Designer, Qt
+   Linguist and the other C++ tools.
+
+
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ - New Modules:
+
+   * com.trolltech.qt.webkit; The API for the WebKit browser.
+
+   * com.trolltech.qt.phonon; Multimedia API.
+
+   * com.trolltech.qt.xmlpatterns; XQuery and XML Patternist API.
+
+   * com.trolltech.extensions.signalhandler; A statically typechecked way
+     of doing signal / slot connections.
+
+   * com.trolltech.tools.ant; Some convenience ANT tasks for use with
+     Qt Jambi build systems.
+
+   * com.trolltech.qt.core; now contains Qt Concurrent.
+
+   * com.trolltech.qt.sql; now contains QJdbc; A JDBC bridge.
+
+   * com.trolltech.qt.internal; This package is internal, we mean
+     it.
+
+
+ - New deployment system. By default a complete jar file with native
+   libraries is provided both binary packages and in a built source
+   package. For more information, see the deployment documentation.
+
+ - Qt Jambi now fakes QMetaObjects of C++ QObjects, making it possible
+   to introspect, get and set the properties of, and call methods in
+   Java objects from C++ code using the regular QMetaObject system in
+   Qt.
+
+ - Allow recursive signal emissions.
+
+ - QPropertyManager has been removed. QObject's property functions
+   should be used instead.
+
+ - Fixed: Java Objects packed into QVariants in C++ would be given an
+   thread affinity, which led to potential VM crash. This affinity is
+   now removed.
+
+ - Fixed: Many Qt classes are tied to the GUI thread and may only be
+   deleted from the GUI thread. Many more classes are now specially
+   handled to avoid destruction outside of the GUI thread.
+
+ - Fixed: JVM 1.6 and newer from Sun(tm) have a bug in their JIT
+   compiling which will eventually cause crashes in Qt Jambi. We are
+   now generating code to work around this problem.
+
+ - Fixed: Potential memory leak in QListWidget::addItem().
+
+ - Fixed: Qt libraries could potentially be loaded from the wrong
+   location when plugins, SVG Icon Engine in particular, were
+   loaded. By explicitly loading the dependent libraries prior to
+   loading the plugins, this potential problem is avoided.
+
+ - Fixed: Potential memory leak and race condition in Qt Jambi's
+   internal JNI datastructure cache.
+
+ - Fixed: The memory management system has been redone to avoid
+   potential memory leaks.
+
+ - Fixed: A race condition would sometimes cause VM crashes when
+   deleting objects marked as "delete-in-main-thread" in the
+   typesystem. This includes QFont, QPixmap etc.
+
+ - Fixed: QCoreApplication.invokeAndWait() now invokes the Runnable
+   before returning, when called from the GUI thread.
+
+ - QReadWriteLock has been moved to QtCore, in accordance with its
+   actual location in the Qt C++ libraries.
+
+ - Deprecated: com.trolltech.qt.QtJambiInternal.
+
+
+
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+
+ - Improved error messages on wrong use and potential problems.
+
+ - Better support for namespaces.
+
+ - New Command-line option: --custom-widgets.
+
+ - The generator now defaults to current directory as output folder.
+
+
+
+************************************************************************
+ Build System in source package
+************************************************************************
+
+ - Qt Jambi uses now an ANT-based build system. There are two ant
+   build.xml files in the root directory, one for Qt Jambi and one
+   to illustrate the generator and deployment. See installation and
+   deployment guides for more details.
+
+ - All libraries now make use of the JAMBI/qtjambi/qtjambi_base.pri
+   qmake include file which serves also as a good starting point for
+   generator based projects.
+
+ - OpenGL, Phonon and WebKit are optional in the build process. If Qt
+   was not configured for any of these, they will be excluded from
+   Qt Jambi.
+
+ - The qmake .pro files now support both JAVADIR and JAVA_HOME as
+   location for the JDK.
+
+
+************************************************************************
+ Examples and Demos
+************************************************************************
+
+ - New Examples:
+   * Web Browser
+   * Media Player
+   * XML Query example
+   * Pad Navigator, showing Widgets in QGraphicsView
+   * Music Player
+   * Code Editor
+   * Custom Widget
+
+ - Generator Example: Changed to make use of the ANT tasks to create
+   deployable packages.
+
+ - Mac OS X binary package now comes with a Demos.app bundle for the
+   examples launcher.

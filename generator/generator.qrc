@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+<qresource prefix="/trolltech/generator/">
+<file>parser/rpp/pp-qt-configuration</file>
+
+</qresource>
+</RCC>

@@ -1,0 +1,61 @@
+<typesystem package="org.qtjambi.test" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+
+  <inject-code>
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGL");
+    // we need to ensure we take charge of loading our custom QtJambi aware C++ library 
+    org.qtjambi.qt.Utilities.loadJambiLibrary("testGenImpl");
+  </inject-code>
+
+    <load-typesystem name="../build/generator/typesystem_core.xml" generate="no" />
+    <load-typesystem name="../build/generator/typesystem_gui.xml" generate="no" />
+    <load-typesystem name="../build/generator/typesystem_xml.xml" generate="no" />
+    <load-typesystem name="../build/generator/typesystem_opengl.xml" generate="no" />
+<!--
+    <load-typesystem name=":/trolltech/generator/typesystem_core.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_gui.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_xml.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_opengl.xml" generate="no" />
+ -->
+<!-- 
+    <load-typesystem name=":/trolltech/generator/typesystem_sql.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_svg.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_network.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_xmlpatterns.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_webkit.xml" generate="no" />
+    <load-typesystem name=":/trolltech/generator/typesystem_phonon.xml" generate="no" />
+ -->
+
+    <template name="from_nativepointer_to_value_type">
+            public final %RETURN_TYPE% %FUNCTION_NAME%() {
+                return %RETURN_TYPE%.fromNativePointer(%ORIGINAL_FUNCTION_NAME%());
+            }
+    </template>
+
+  <object-type name="TestSuper">
+    <extra-includes>
+      <include file-name="QCursor" location="global"/>
+      <include file-name="org.qtjambi.qt.core.*" location="java"/>
+      <include file-name="org.qtjambi.qt.gui.*" location="java"/>
+    </extra-includes>
+  </object-type>
+
+  <object-type name="TestItem">
+    <extra-includes>
+      <include file-name="QCursor" location="global"/>
+      <include file-name="org.qtjambi.qt.core.*" location="java"/>
+      <include file-name="org.qtjambi.qt.gui.*" location="java"/>
+    </extra-includes>
+  </object-type>
+
+  <object-type name="TestView">
+    <extra-includes>
+      <include file-name="QStyleOptionGraphicsItem" location="global"/>
+      <include file-name="org.qtjambi.qt.core.*" location="java"/>
+      <include file-name="org.qtjambi.qt.gui.*" location="java"/>
+    </extra-includes>
+  </object-type>
+
+</typesystem>

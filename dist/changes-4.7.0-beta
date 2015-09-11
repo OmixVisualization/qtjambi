@@ -1,0 +1,42 @@
+This is a beta release before the final 4.7 release of QtJambi.
+
+************************************************************************
+ Qt Jambi Library
+************************************************************************
+
+ - Build now based on new 4.7 repo from Smar
+ - No new classes as such in 4.7 compared to 4.6
+ 
+************************************************************************
+ Qt Jambi Generator
+************************************************************************
+ - Temporarily we cannot build the generator examples. Will be fixed in
+the final 4.7 release.
+    
+************************************************************************
+ Designer
+************************************************************************
+
+************************************************************************
+ Build system
+************************************************************************
+
+************************************************************************
+ Examples
+************************************************************************
+
+ - Made workaround for the crash reported on the example app (see closed 
+ bug #35 in bugtracker at qtjambi.sf.net)
+
+************************************************************************
+Known bugs
+************************************************************************
+
+ - QDir.entryInfoList() unstable using classpath: prefix. See
+ http://sourceforge.net/apps/trac/qtjambi/ticket/42 for more details
+ - Use of QThread can also lead to crashes apperantly. See 
+ http://sourceforge.net/apps/trac/qtjambi/ticket/40 for details.
+ - SSL support need to be installed on Windows to make Webkit opening
+ of of https:// pages.
+
+************************************************************************

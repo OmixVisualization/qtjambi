@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<typesystem>
+    <namespace-type name="WebCore"/>
+    <rejection class="QWebElementCollection::const_iterator" />
+    <rejection class="QWebElementCollection::iterator" />
+    <rejection class="QWebElementCollection" function-name="constBegin" />
+    <rejection class="QWebElementCollection" function-name="begin" />
+    <rejection class="QWebElementCollection" function-name="constEnd" />
+    <rejection class="QWebElementCollection" function-name="end" />
+
+    <enum-type name="QWebSettings::FontFamily"/>
+    <enum-type name="QWebSettings::FontSize"/>
+    <enum-type name="QWebSettings::WebGraphic"/>
+    <enum-type name="QWebSettings::ThirdPartyCookiePolicy"/>
+    <enum-type name="QWebSettings::WebAttribute">
+        <reject-enum-value name="LocalStorageEnabled" />
+    </enum-type>
+    <enum-type name="QWebPluginFactory::Extension" />
+    <enum-type name="QWebElement::StyleResolveStrategy" />
+    <enum-type name="QWebSecurityOrigin::SubdomainSetting" />
+    <!--<enum-type name="QWebHistory::HistoryStateVersion">
+        <reject-enum-value name="DefaultHistoryVersion" />
+    </enum-type>-->
+
+    <value-type name="QWebElementCollection">
+		<modify-function signature="operator=(QWebElementCollection)" remove="all"/>
+		<modify-function signature="operator+=(const QWebElementCollection)" remove="all"/>
+		<modify-function signature="operator+(const QWebElementCollection)const" remove="all"/>
+		<modify-function signature="operator[](int)const" remove="all"/>
+	</value-type>
+
+    <object-type name="QWebHistory">
+      <!--<modify-function signature="saveState(QWebHistory::HistoryStateVersion)const">
+         <modify-argument index="1"><remove-default-expression /></modify-argument>
+      </modify-function>-->
+    </object-type>
+    <object-type name="QWebSettings"/>
+
+    <value-type name="QWebHistoryItem">
+        <custom-creator>
+            if(copy)
+				return new QWebHistoryItem(*copy);
+			else return Q_NULLPTR;
+        </custom-creator>
+        <modify-function signature="operator=(QWebHistoryItem)" remove="all"/>
+    </value-type>
+
+    <object-type name="QWebHistoryInterface">
+        <modify-function signature="setDefaultInterface(QWebHistoryInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcInterface"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QWebPluginFactory" />
+
+<!--     <value-type name="QWebPluginInfo" /> -->
+    <value-type name="QWebElement">
+		<modify-function signature="operator=(QWebElement)" remove="all"/>
+	</value-type>
+    <value-type name="QWebPluginFactory::Plugin" />
+    <value-type name="QWebPluginFactory::MimeType" />
+    <value-type name="QWebSecurityOrigin">
+		<modify-function signature="operator=(const QWebSecurityOrigin)" remove="all"/>
+        <custom-creator>  
+            if(copy)
+				return new QWebSecurityOrigin(*copy);
+			else return Q_NULLPTR;
+        </custom-creator>
+    </value-type>
+    <value-type name="QWebDatabase">
+		<modify-function signature="operator=(QWebDatabase)" remove="all"/>
+        <custom-creator>  
+            if(copy)
+				return new QWebDatabase(*copy);
+			else return Q_NULLPTR;
+        </custom-creator>
+    </value-type>
+    <object-type name="QWebPluginFactory::ExtensionOption" />
+    <object-type name="QWebPluginFactory::ExtensionReturn" />
+
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebFrame::QWebFrame', unmatched parameter type 'QWebFrameData*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebSettings::QWebSettings', unmatched parameter type 'WebCore::Settings*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebPluginInfo::QWebPluginInfo', unmatched parameter type 'WebCore::PluginPackage*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebElement::enclosingElement', unmatched parameter type 'WebCore::Node*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebElement::QWebElement', unmatched parameter type 'WebCore::Node*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebElement::QWebElement', unmatched parameter type 'WebCore::Element*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QWebPluginFactory_Plugin::mimeTypes' with unmatched type 'QList&lt;MimeType&gt;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QWebPluginInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QWebPluginFactory_MimeType' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QWebElement' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+
+    <!-- for webkitless builds -->
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPluginFactory::Plugin' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPluginFactory::ExtensionReturn' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPluginFactory::MimeType' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebPage' for enum 'Extension' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPluginFactory::ExtensionOption' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebPluginFactory' for enum 'Extension' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPluginFactory' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebPage' for enum 'NavigationRequestResponse' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebSettings' for enum 'WebAttribute' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebSettings' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebHistoryItem' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebHistoryInterface' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebPage' for enum 'WebAction' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebSettings' for enum 'FontSize' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebSettings' for enum 'WebGraphic' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebPage' for enum 'NavigationType' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.webkit.QWebSettings' for enum 'FontType' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebFrame' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebHistory' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebView' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebPage' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QWebHitTestResult' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QWebPluginFactory$MimeType' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
+</typesystem>
+

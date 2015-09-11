@@ -1,0 +1,48 @@
+The Marble widget
+
+This example shows how to compile/test a jambi version of the marble widget. This example
+have only been tested on Linux (Ubuntu 10.04). It should be possible to adapt to windows
+as well.
+
+Prerequisites:
+
+1. Install ant 1.7 (1.8 support soon to come) and Java JDK. OpenJDK and Sun JDK
+should work equally well. Be sure to have JAVA_HOME set in your
+environment, together with PATH=$JAVA_HOME/bin:$PATH. This is necessary to be able
+to build Jambi.
+
+2. Build Qt and Qt Jambi
+You must have a development version of Qt available. On Linux, we are working on a
+setup which allows you to compile against system Qt (development version), but at the
+time of writing, you have to brew your own using the description found here:
+http://qt.gitorious.org/qt-jambi/pages/BuildingFromGit. Set your QTDIR and modify your
+path as described in the bottom of this wiki page. PS: Be sure to have QtDbus support
+in your Qt configure! 
+ 
+3. Build marble
+A description on how to do this can be found on http://edu.kde.org/marble/obtain.php
+When you install marble (make install), it default ends up in /usr/local. On my Ubuntu system, apps seem
+to pick up shared libraries that resides in /usr/local/lib, on other systems you may
+have to modify your LD_LIBRARY_PATH or similar.
+
+4. Modify some paths
+Set JAMBIDIR=<root path of your jambi installation> and PATH=$JAMBIDIR/generator:$PATH. Then set
+MARBLEDIR=<root path of your marble installation>.
+
+Build:
+
+Now, all you should have to do is to run ant in the "scripts" directory! This will produce
+c++ and java stub files for qtjambi libraries, compile them and bundle them all together
+in a jar file which should end up in the directory "target".
+
+Test:
+
+You should now be able to run the testit.sh program found in the java directory. Just replace
+the version/os/compiler in the classpath loading so that they match the actual jar files 
+produced in the steps earlier. It should bring up the famous marble widget with the globe
+if everything is setup correctly (and working). Enjoy! I hope for many feedbacks on the
+#marble IRC channel!
+
+Bodø 12.05.2010, 
+Helge Fredriksen
+ 

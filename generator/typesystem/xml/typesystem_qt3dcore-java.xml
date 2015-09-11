@@ -1,0 +1,62 @@
+<typesystem package="org.qtjambi.qt3d.core" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+            if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+        org.qtjambi.qt.Utilities.loadQtLibrary("Qt3DCore");
+    </inject-code>
+	<object-type name="Qt3D::QScenePropertyChange">
+		<modify-function signature="propertyName()const">
+			<modify-argument index="0">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setPropertyName(const char *)">
+			<modify-argument index="1">
+				<replace-type modified-type="java.lang.String"/>
+				<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::QCamera">
+	</object-type>
+	<value-type name="Qt3D::QAspectFactory">
+	</value-type>
+	<value-type name="Qt3D::QAxisAlignedBoundingBox">
+		<modify-function signature="transform(const QMatrix4x4 &amp;)">
+			<modify-argument index="0">
+				<replace-type modified-type="void"/>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+	<value-type name="Qt3D::QRay3D">
+		<modify-function signature="transform(const QMatrix4x4 &amp;)">
+			<modify-argument index="0">
+				<replace-type modified-type="void"/>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+</typesystem>

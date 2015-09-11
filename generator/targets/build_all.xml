@@ -1,0 +1,40 @@
+<typesystem>
+  <load-typesystem name="../build/generator/typesystem_core.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_concurrent.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_gui.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_widgets.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_sql.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_network.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_xml.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_xmlpatterns.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qml.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_quick.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_quickwidgets.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_macextras.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_winextras.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_x11extras.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_serialport.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_script.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_scripttools.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_multimedia.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_printsupport.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_multimediawidgets.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_opengl.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_svg.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_dbus.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_test.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_declarative.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_help.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_phonon.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_webkit.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_webkitwidgets.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_designer.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dcore.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3drenderer.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dinput.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dquick.xml" generate="yes" />
+  <load-typesystem name="../build/generator/typesystem_qt3dquickrenderer.xml" generate="yes" />
+  <!--
+  <load-typesystem name="../build/generator/typesystem_qt3d.xml" generate="yes" />
+  -->
+</typesystem>

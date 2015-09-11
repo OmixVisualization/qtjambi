@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/2dpainting.qdoc -->
+<head>
+  <title>2D Painting Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">2D Painting Example<br /><span class="subtitle"></span>
+</h1>
+<p>The 2D Painting example shows how QPainter and QGLWidget can be used together to display accelerated 2D graphics on supported hardware.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/2dpainting-example.png" /></p><p>The QPainter class is used to draw 2D graphics primitives onto paint devices provided by QPaintDevice subclasses, such as QWidget and QImage.</p>
+<p>Since QGLWidget is a subclass of QWidget, it is possible to reimplement its paintEvent() and use QPainter to draw on the device, just as you would with a QWidget. The only difference is that the painting operations will be accelerated in hardware if it is supported by your system's OpenGL drivers.</p>
+<p>In this example, we perform the same painting operations on a QWidget and a QGLWidget. The QWidget is shown with anti-aliasing enabled, and the QGLWidget will also use anti-aliasing if the required extensions are supported by your system's OpenGL driver.</p>
+<a name="overview"></a>
+<h2>Overview</h2>
+<p>To be able to compare the results of painting onto a QGLWidget subclass with native drawing in a QWidget subclass, we want to show both kinds of widget side by side. To do this, we derive subclasses of QWidget and QGLWidget, using a separate <tt>Helper</tt> class to perform the same painting operations for each, and lay them out in a top-level widget, itself provided a the <tt>Painting2D</tt> class.</p>
+<a name="helper-class"></a>
+<h2>Helper Class</h2>
+<p>In this example, the painting operations are performed by a helper class. We do this because we want the same painting operations to be performed for both our QWidget subclass and the QGLWidget subclass.</p>
+<p>The <tt>Helper</tt> class is minimal:</p>
+<pre>        class Helper {
+            private QBrush background;
+            private QBrush circleBrush;
+            private QFont textFont;
+            private QPen circlePen;
+            private QPen textPen;</pre>
+<p>Apart from the constructor, it only provides a <tt>paint()</tt> method to paint using a painter supplied by one of our widget subclasses. We start with a look at the constructor.</p>
+<p>The constructor of the class sets up the resources it needs to paint content onto a widget:</p>
+<pre>            public Helper() {
+                QLinearGradient gradient =
+                    new QLinearGradient(new QPointF(50, -20), new QPointF(80, 20));
+                gradient.setColorAt(0.0, new QColor(Qt.GlobalColor.white));
+                gradient.setColorAt(1.0, new QColor(0xa6, 0xce, 0x39));
+
+                background = new QBrush(new QColor(64, 32, 64));
+                circleBrush = new QBrush(gradient);
+                circlePen = new QPen(new QColor(Qt.GlobalColor.black));
+                circlePen.setWidth(1);
+                textPen = new QPen(new QColor(Qt.GlobalColor.white));
+
+                textFont = new QFont();
+                textFont.setPixelSize(50);
+            }</pre>
+<p>The actual painting is performed in the <tt>paint()</tt> method. This takes a QPainter that has already been set up to paint onto a paint device (either a QWidget or a QGLWidget), a QPaintEvent that provides information about the region to be painted, and a measure of the elapsed time (in milliseconds) since the paint device was last updated.</p>
+<pre>            public void paint(QPainter painter, QPaintEvent event, int elapsed) {
+                painter.fillRect(event.rect(), background);
+                painter.translate(100, 100);</pre>
+<p>We begin painting by filling in the region contained in the paint event before translating the origin of the coordinate system so that the rest of the painting operations will be displaced towards the center of the paint device.</p>
+<p>We draw a spiral pattern of circles, using the elapsed time specified to animate them so that they appear to move outward and around the coordinate system's origin:</p>
+<pre>                painter.save();
+                painter.setBrush(circleBrush);
+                painter.setPen(circlePen);
+                painter.rotate(elapsed * 0.030);
+
+                double r = (elapsed)/1000.0;
+                int n = 30;
+                for (int i = 0; i &lt; n; ++i) {
+                    painter.rotate(30);
+                    double radius = 0 + 120.0*((i+r)/n);
+                    double circleRadius = 1 + ((i+r)/n)*20;
+                    painter.drawEllipse(new QRectF(radius, -circleRadius,
+                    circleRadius*2, circleRadius*2));
+                }
+                painter.restore();</pre>
+<p>Since the coordinate system is rotated many times during this process, we save() the QPainter's state beforehand and restore() it afterwards.</p>
+<pre>                painter.setPen(textPen);
+                painter.setFont(textFont);
+                painter.drawText(new QRect(-50, -50, 100, 100), Qt.AlignmentFlag.AlignCenter.value(), &quot;Qt&quot;);
+            }</pre>
+<p>We draw some text at the origin to complete the effect.</p>
+<a name="widget-class"></a>
+<h2>Widget Class</h2>
+<p>The <tt>Widget</tt> class provides a basic custom widget that we use to display the simple animation painted by the <tt>Helper</tt> class.</p>
+<pre>        class Widget extends QWidget {
+            private int elapsed;
+            private Helper helper;</pre>
+<p>Apart from the constructor, the widget class only contains a paintEvent() method, that lets us draw customized content, and a slot that is used to animate its contents. One member variable keeps track of the <tt>Helper</tt> that the widget uses to paint its contents, and the other records the elapsed time since it was last updated.</p>
+<p>We start by having a look at the constructor. It stores the <tt>Helper</tt> object supplied, calls the base class's constructor, and enforces a fixed size for the widget:</p>
+<pre>            public Widget(Helper helper, QWidget parent) {
+                super(parent);
+                this.helper = helper;
+                setFixedSize(200, 200);
+            }</pre>
+<p>The <tt>animate()</tt> slot is called whenever a timer, which we define later, times out:</p>
+<pre>            public void animate() {
+                elapsed = (elapsed + ((QTimer) signalSender()).interval()) % 1000;
+                repaint();
+            }</pre>
+<p>Here, we determine the interval that has elapsed since the timer last timed out, and we add it to any existing value before repainting the widget. Since the animation used in the <tt>Helper</tt> class loops every second, we can use the modulo operator to ensure that the <tt>elapsed</tt> variable is always less than 1000.</p>
+<p>Since the <tt>Helper</tt> class does all of the actual painting, we only have to implement a paint event that sets up a QPainter for the widget and calls the helper's <tt>paint()</tt> method:</p>
+<pre>            public void paintEvent(QPaintEvent event) {
+                QPainter painter = new QPainter();
+                painter.begin(this);
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing);
+                helper.paint(painter, event, elapsed);
+                painter.end();
+            }</pre>
+<a name="glwidget-class"></a>
+<h2>GLWidget Class</h2>
+<p>The <tt>GLWidget</tt> class definition is basically the same as the <tt>Widget</tt> class except that it is derived from QGLWidget.</p>
+<pre>        class GLWidget extends QGLWidget {
+            private Helper helper;
+            private int elapsed;</pre>
+<p>Again, the member variables record the <tt>Helper</tt> used to paint the widget and the elapsed time since the previous update.</p>
+<p>The constructor differs a little from the <tt>Widget</tt> class's constructor:</p>
+<pre>            public GLWidget(Helper helper, QWidget parent) {
+                super(new QGLFormat(), parent);
+
+                this.helper = helper;
+                setFixedSize(200, 200);
+            }</pre>
+<p>As well as initializing the <tt>elapsed</tt> member variable and storing the <tt>Helper</tt> object used to paint the widget, the base class's constructor is called. This enables anti-aliasing if it is supported by your system's OpenGL driver.</p>
+<p>The <tt>animate()</tt> slot is exactly the same as that provided by the <tt>Widget</tt> class:</p>
+<pre>            public void animate() {
+                elapsed = (elapsed + ((QTimer) signalSender()).interval()) % 1000;
+                repaint();
+            }</pre>
+<p>The <tt>paintEvent()</tt> is almost the same as that found in the <tt>Widget</tt> class:</p>
+<pre>            protected void paintEvent(QPaintEvent event) {
+                QPainter painter = new QPainter();
+                painter.begin(this);
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing);
+                helper.paint(painter, event, elapsed);
+                painter.end();
+            }</pre>
+<p>Since anti-aliasing will be enabled if available, we only need to set up a QPainter on the widget and call the helper's <tt>paint()</tt> method to display the widget's contents.</p>
+<a name="painting2d-class"></a>
+<h2>Painting2D Class</h2>
+<p>The <tt>Painting2D</tt> class has a basic, minimal definition:</p>
+<pre>    public class  Painting2D extends QWidget
+    {
+        private Helper helper;</pre>
+<p>It contains a single <tt>Helper</tt> object that will be shared between all widgets.</p>
+<p>The constructor does all the work, creating a widget of each type and inserting them with labels into a layout:</p>
+<pre>        public Painting2D() {
+            helper = new Helper();
+
+            Widget widget = new Widget(helper, this);
+            GLWidget openGL = new GLWidget(helper, this);
+            QLabel nativeLabel = new QLabel(tr(&quot;Native&quot;));
+            nativeLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter);
+            QLabel openGLLabel = new QLabel(tr(&quot;OpenGL&quot;));
+            openGLLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter);
+
+            QGridLayout layout = new QGridLayout();
+            layout.addWidget(widget, 0, 0);
+            layout.addWidget(openGL, 0, 1);
+            layout.addWidget(nativeLabel, 1, 0);
+            layout.addWidget(openGLLabel, 1, 1);
+            setLayout(layout);
+
+            QTimer timer = new QTimer(this);
+            timer.timeout.connect(openGL, &quot;animate()&quot;);
+            timer.timeout.connect(widget, &quot;animate()&quot;);
+            timer.setInterval(1);
+            timer.start(50);
+
+            setWindowTitle(tr(&quot;2D Painting on Native and OpenGL Widgets&quot;));
+            setWindowIcon(new QIcon(&quot;classpath:org/qtjambi/images/qt-logo.png&quot;));
+        }</pre>
+<p>A timer with a 50 millisecond time out is constructed for animation purposes, and connected to the <tt>animate()</tt> slots of the <tt>Widget</tt> and <tt>GLWidget</tt> objects. Once started, the widgets should be updated at around 20 frames per second.</p>
+<a name="running-the-example"></a>
+<h2>Running the Example</h2>
+<p>The example shows the same painting operations performed at the same time in a <tt>Widget</tt> and a <tt>GLWidget</tt>. The quality and speed of rendering in the <tt>GLWidget</tt> depends on the level of support for multisampling and hardware acceleration that your system's OpenGL driver provides. If support for either of these is lacking, the driver may fall back on a software renderer that may trade quality for speed.</p>
+</body>
+</html>

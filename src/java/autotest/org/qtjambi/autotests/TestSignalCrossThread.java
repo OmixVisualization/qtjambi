@@ -1,0 +1,677 @@
+/****************************************************************************
+**
+** Copyright (C) 2011 Darryl L. Miles.  All rights reserved.
+** Copyright (C) 2011 D L Miles Consulting Ltd.  All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+**
+** $BEGIN_LICENSE$
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+** 
+** In addition, as a special exception, the copyright holders grant you
+** certain additional rights. These rights are described in the Nokia Qt
+** LGPL Exception version 1.0, included in the file LGPL_EXCEPTION.txt in
+** this package.
+** 
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 2.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL2 included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 2.0 requirements will be
+** met: http://www.gnu.org/licenses/gpl-2.0.html
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL3 included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
+package org.qtjambi.autotests;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.Thread.UncaughtExceptionHandler;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import org.qtjambi.qt.QThread;
+import org.qtjambi.qt.core.QEventLoop;
+import org.qtjambi.qt.core.QEventLoop.ProcessEventsFlag;
+import org.qtjambi.qt.core.QCoreApplication;
+import org.qtjambi.qt.core.QEvent;
+import org.qtjambi.qt.core.QObject;
+import org.qtjambi.qt.core.Qt;
+import org.qtjambi.qt.widgets.QApplication;
+
+// This testcase attempts to validate that the APIs allow and emit/deliver
+//  signals across threads correctly.
+//
+// This testcase (with the old broken code) used to throw a thread affinity exc
+//  QThreadAffinityException when it tried to call:
+//  QSignalEmitterInternal.this.signalsBlocked()
+//  from QSignalEmitterInternal.emit_helper().  This check correctly checks access
+//  to the #signalsBlocked() method.  However this inhibited sending signals auto
+//  AutoConnection/QueuedConnection to marshal across threads.
+// Now it is possible to use -Dorg.qtjambi.qt.thread-check=false to stop the
+//  thread affinity checking and this caused direct connections setup between two
+//  different QObject with different thread affinity to be delivered.
+//
+// So the solution is to:
+//   Not use the signalsBlocked() API call until the Java<>Java delivery phase (after
+//    it has confirm same thread affinity of receiver and current thread)
+//   Correctly detect when a cross-thread situation exist and cause it to marshal via
+//    QMetaEvent.
+//   Detect that you have attempted to setup a DirectConnection type but at the time of
+//    emit the thread affinity is not correct (you called emit from the wrong thread)
+//    and generate a warning.
+//
+// This testcase was a bit of a sandbox to investigate the problem and provide a
+//  testcase for the future.
+//
+// Improvements/TODO:
+//   Use a single MyNotifier (instead of 2, but I named them now)
+//   Test scenarios where the opposite side setup the Connection with connect()
+//   Remove the need for runOut() and runIn() as we have ability to on demand setup
+//    QEventLoop in runOut() now.  So merge these 2 methods.
+//  Verify the QMessage output for attempting DirectConnection and not be able to.
+public class TestSignalCrossThread extends QApplicationTest implements UncaughtExceptionHandler {
+
+	private Thread mainThread;
+
+	@Before
+	public void setUp() {
+		mainThread = Thread.currentThread();
+	}
+
+	@After
+	public void tearDown() {
+	}
+
+	// /////////////////////////////////////////////////
+	// Tests start
+
+	// Source implementation
+	static class MyImpl extends QObject implements Runnable {
+		public Signal1<Object> signalReceiver;
+
+		public Object dataObject;
+		private Notifiable notifyObject;
+
+		private boolean emit;
+		private boolean processEvents;
+		private boolean shutdown;
+		private boolean slotInvoked;
+		private Qt.ConnectionType connectionType;
+
+		public final Signal1<Object> signal = new Signal1<Object>();
+		private QEventLoop eventLoop;
+
+		public MyImpl(Notifiable notifyObject, Signal1<Object> signalReceiver, Qt.ConnectionType connectionType) {
+			this.notifyObject = notifyObject;
+			this.signalReceiver = signalReceiver;
+			this.connectionType = connectionType;
+		}
+
+		public void run() {
+			Utils.println(2, "run() start " + Thread.currentThread() + " " + this.thread());
+			if(signalReceiver == null)
+				runIn();
+			else
+				runOut();
+			Utils.println(2, "run() finish " + Thread.currentThread() + " " + this.thread());
+		}
+		private void runIn() {
+			// create and connect up from inside the thread
+			if(signalReceiver == null) {
+				//signal = new Signal1<Object>();
+				signal.connect(this, "testThreadCallback(Object)", connectionType);
+				signalReceiver = signal;
+				Utils.println(2, "runIn(connect testThreadCallback(Object)) " + Thread.currentThread() + " " + this.thread());
+			}
+
+			eventLoop = new QEventLoop();
+			Utils.println(2, "runIn(eventLoop.parent=" + eventLoop.parent() + ") " + Thread.currentThread() + " " + this.thread());
+			if(notifyObject != null)
+				notifyObject.doNotify(1);
+			while(true) {
+				synchronized (this) {
+					if(shutdown)
+						break;
+				}
+				eventLoop.processEvents();
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDelete.value());
+				synchronized (this) {
+					if(shutdown)
+						break;
+					if(notifyObject != null)
+						notifyObject.doNotify(2);
+					try {
+						wait();
+					} catch(InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			eventLoop = null;
+		}
+		private void runOut() {
+			Utils.println(2, "runOut(eventLoop=" + eventLoop + ") " + Thread.currentThread() + " " + this.thread());
+			if(notifyObject != null)
+				notifyObject.doNotify(1);
+			while(true) {
+				boolean doEmit = false;
+				boolean doProcessEvents = false;
+				synchronized (this) {
+					if(shutdown)
+						break;
+					if(emit) {
+						emit = false;
+						doEmit = true;
+					}
+					if(processEvents) {
+						processEvents = false;
+						doProcessEvents = true;
+					}
+				}
+				if(doEmit) {
+					Utils.println(2, "emit(" + dataObject + ") from subthread " + Thread.currentThread() + " " + this.thread());
+					signalReceiver.emit(dataObject);
+					if(notifyObject != null)
+						notifyObject.doNotify(4);
+				}
+				if(doProcessEvents) {
+					Utils.println(2, "processEvents() from subthread " + Thread.currentThread() + " " + this.thread());
+					if(eventLoop == null)
+						eventLoop = new QEventLoop();
+					eventLoop.processEvents();
+					QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDelete.value());
+					if(notifyObject != null)
+						notifyObject.doNotify(6);
+				}
+				synchronized (this) {
+					if(shutdown)
+						break;
+					if(notifyObject != null)
+						notifyObject.doNotify(2);
+					if(!emit && !processEvents) {
+						Utils.println(2, "runOut() SLEEP " + Thread.currentThread() + " " + this.thread());
+						try {
+							wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							break;
+						}
+						Utils.println(2, "runOut() WAKE " + Thread.currentThread() + " " + this.thread());
+					}
+				}
+			}
+			eventLoop = null;
+		}
+		public void signalShutdown() {
+			QEventLoop tmpEventLoop;
+			synchronized (this) {
+				shutdown = true;
+				tmpEventLoop = eventLoop;  // take reference before it is nulled
+				notifyAll();
+			}
+			if(tmpEventLoop != null) {
+				Utils.println(2, "signalShutdown(thread=" + tmpEventLoop.thread() + ") " + Thread.currentThread() + " " + this.thread());
+				Utils.println(2, "signalShutdown(" + tmpEventLoop + ") " + Thread.currentThread() + " " + this.thread());
+				// postEvent() does not work, maybe because there is no parent/child relationship
+				//  between QEventLoops.
+				//QCoreApplication.postEvent(tmpEventLoop, new QEvent(Type.Quit));
+				// Part of the point of this testcase was to highlight the problem with
+				// cross-thread signal/slot and invoking this eventLoop.quit(); method
+				// triggers the bug that is not hopefully fixed.  So I opted to use
+				// QEvent::Quit instead.
+				try {
+					tmpEventLoop.quit();  // thread unsafe but works (if you remove the thread guard)
+				} catch(Exception e) {
+					//e.printStackTrace();
+				}
+				// QMetaObject.invokeMethod(tmpEventLoop, "quit", Qt.ConnectionType.QueuedConnection);
+			}
+		}
+		public void signalEmit(Object dataObject) {
+			synchronized (this) {
+				emit = true;
+				this.dataObject = dataObject;
+				notifyAll();
+			}
+			if(notifyObject != null)
+				notifyObject.doNotify(3);
+		}
+		public void signalProcessEvents() {
+			synchronized (this) {
+				processEvents = true;
+				notifyAll();
+			}
+			if(notifyObject != null)
+				notifyObject.doNotify(5);
+		}
+
+		protected void testThreadCallback(Object o) {
+			Utils.println(2, "testThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
+			synchronized (this) {
+				this.dataObject = o;
+				this.slotInvoked = true;
+				notifyAll();
+			}
+			if(notifyObject != null)
+				notifyObject.doNotify(7);
+		}
+		protected void reset() {
+			synchronized (this) {
+				dataObject = null;
+				slotInvoked = false;
+			}
+		}
+		protected boolean isSlotInvoked() {
+			synchronized (this) {
+				return slotInvoked;
+			}
+		}
+		protected boolean isResultExactly(Object o) {
+			synchronized (this) {
+				if(dataObject == o)
+					return true;
+				return false;
+			}
+		}
+	}
+	static class MyReceiver extends QObject {
+		public final Signal1<Object> signal = new Signal1<Object>();
+		private Object result;
+		private Notifiable notifyObject;
+		protected MyReceiver(Notifiable notifyObject) {
+			this.notifyObject = notifyObject;
+		}
+		public void connect(Qt.ConnectionType connectionType) {
+			signal.connect(this, "recvThreadCallback(Object)", connectionType);
+			Utils.println(2, "MyRecever() connect recvThreadCallback(Object)" + Thread.currentThread() + " " + this.thread());
+		}
+		protected void recvThreadCallback(Object o) {  // renamed to avoice confusion
+			Utils.println(2, "recvThreadCallback(" + o + ") " + Thread.currentThread() + " " + this.thread());
+			synchronized (this) {
+				this.result = o;
+				notifyAll();
+			}
+			if(notifyObject != null)
+				notifyObject.doNotify(8);
+		}
+		protected void reset() {
+			synchronized (this) {
+				result = null;
+			}
+		}
+		protected boolean isResultExactly(Object o) {
+			synchronized (this) {
+				if(result == o)
+					return true;
+				return false;
+			}
+		}
+	}
+
+	interface Notifiable {
+		void doNotify(int kind);
+	}
+	static class MyNotifiable implements Notifiable {
+		private String name;
+		public MyNotifiable(String name) {
+			this.name = name;
+		}
+		public String toString() {
+			return name;
+		}
+		// 1 = thread started and ready
+		// 2 = thread polled state and entering wait (can fire multiple times)
+		// 3 = request emit()
+		// 4 = did emit()
+		// 5 = request processEvents()
+		// 6 = did processEvents()
+		// 7 = completed/inside callback: testThreadCallback
+		// 8 = completed/inside callback: recvThreadCallback
+		private int didKind = 0;
+		public void doNotify(int kind) {
+			synchronized (this) {
+				Utils.println(2, "doNotify(" + kind + "; change=" + ((didKind < kind) ? "true" : "false") + "; on=" + this + ") " + Thread.currentThread());
+				if(didKind < kind)
+					didKind = kind;
+				notifyAll();
+			}
+		}
+		protected void doNotiftyReset() {
+			synchronized (this) {
+				didKind = 0;
+			}
+		}
+		public int getNotified() {
+			synchronized (this) {
+				return didKind;
+			}
+		}
+		protected boolean isNotified(int kind) {
+			synchronized (this) {
+				Utils.println(2, "isNotified(at=" + didKind + "; want=" + kind + "; on=" + this + ") " + Thread.currentThread());
+				if(didKind >= kind)
+					return true;
+			}
+			return false;
+		}
+		public boolean waitForNotify(long timeout, int kind) {
+			long millis = System.currentTimeMillis();
+			long expiry = millis + timeout;
+			while(true) {
+				long left = expiry - System.currentTimeMillis();
+				if(left <= 0)
+					break;
+				synchronized (this) {
+					if(didKind >= kind)
+						return true;
+					try {
+						wait(left);  // we wake when delivery was performed
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+						assertTrue(false);
+					}
+					if(didKind >= kind)
+						return true;
+				}
+			}
+			Utils.println(2, "waitForNotify(is=" + didKind + "; want=" + kind + "; on=" + this + ") EXPIRED after " + timeout + " " + Thread.currentThread());
+			return false;
+		}
+	}
+
+	private void helperThreadOut(Qt.ConnectionType connectionType) {
+		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
+		MyNotifiable mySendNotifiable = new MyNotifiable("mySendNotifiable");
+
+		Utils.println(2, "helperThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread() + " " + this.thread());
+
+		// we test emitting out from another thread into callback on this thread
+		// myReceiver has thread affinity with this testcase thread
+		MyReceiver myReceiver = new MyReceiver(myRecvNotifiable);
+		myReceiver.connect(connectionType);
+		assertTrue(myReceiver.isResultExactly(null));
+
+		// myImpl has thread affinity with the new thread being spawned
+		MyImpl myImpl = new MyImpl(mySendNotifiable, myReceiver.signal, connectionType);
+		Thread thread = new Thread(myImpl);
+		thread.setName("subThreadOut");
+		thread.setUncaughtExceptionHandler(this);
+		myImpl.moveToThread(thread);  // not required
+
+		helperImplThreadOut(thread, myReceiver, myImpl, myRecvNotifiable, mySendNotifiable, connectionType);
+
+		assertTrue(thread.isAlive());
+		myImpl.signalShutdown();
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();
+		try {
+			thread.join(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		assertFalse(thread.isAlive());
+	}
+
+	private void helperQThreadOut(Qt.ConnectionType connectionType) {
+		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
+		MyNotifiable mySendNotifiable = new MyNotifiable("mySendNotifiable");
+
+		Utils.println(2, "helperQThreadOut() connectionType=" + connectionType + "; " + Thread.currentThread() + " " + this.thread());
+
+		// we test emitting out from another thread into callback on this thread
+		// myReceiver has thread affinity with this testcase thread
+		MyReceiver myReceiver = new MyReceiver(myRecvNotifiable);
+		myReceiver.connect(connectionType);
+		assertTrue(myReceiver.isResultExactly(null));
+		assertEquals(QThread.currentThread(), myReceiver.thread());
+
+		// myImpl has thread affinity with the new thread being spawned
+		MyImpl myImpl = new MyImpl(mySendNotifiable, myReceiver.signal, connectionType);
+		QThread thread = new QThread(myImpl);
+		thread.setName("subQThreadOut");
+		thread.setUncaughtExceptionHandler(this);
+		myImpl.moveToThread(thread);  // not required
+
+		helperImplThreadOut(thread, myReceiver, myImpl, myRecvNotifiable, mySendNotifiable, connectionType);
+
+		assertTrue(thread.isAlive());
+		myImpl.signalShutdown();
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();
+		try {
+			thread.join(4000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		assertFalse(thread.isAlive());
+	}
+
+	private void helperImplThreadOut(Thread thread, MyReceiver myReceiver, MyImpl myImpl, MyNotifiable myRecvNotifiable, MyNotifiable mySendNotifiable, Qt.ConnectionType connectionType) {
+		Object o = new Object();
+
+		thread.start();
+		assertTrue(mySendNotifiable.waitForNotify(1000, 2));
+		assertEquals(2, mySendNotifiable.getNotified());
+		assertEquals(0, myRecvNotifiable.getNotified());
+
+		myImpl.signalEmit(o);  // tell other there to emit
+		assertTrue(mySendNotifiable.waitForNotify(1000, 4));  // wait for subordinate thread
+
+		assertEquals(0, myRecvNotifiable.getNotified());  // verify it is not delivered yet
+		// After waiting for state 4 and then exhaust our event queue (causing signal delivery)
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();  // allow delivery to be performed in this thread QEventLoop
+
+		// This was testing other interactions on the main problem
+		//myImpl.signalProcessEvents();
+		//assertTrue(mySendNotifiable.waitForNotify(1000, 5));
+		//assertTrue(mySendNotifiable.waitForNotify(1000, 6));
+		//while(QApplication.hasPendingEvents())
+		//	QApplication.processEvents();
+
+		if(connectionType == Qt.ConnectionType.DirectConnection) {
+			// FIXME: We need to check that a WARNING/ERROR log message was emitted but right now
+			//  we are using stderr to send the message.
+			assertEquals(0, myRecvNotifiable.getNotified());  // verify it never gets delivered
+		} else {
+			assertTrue(myRecvNotifiable.waitForNotify(2000, 8));  // wait for subordinate thread QEventLoop
+			assertTrue(myReceiver.isResultExactly(o));  // check delivery occurred
+			assertTrue(myRecvNotifiable.isNotified(8));
+		}
+	}
+
+	private void helperThreadIn(Qt.ConnectionType connectionType) {
+		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
+
+		Utils.println(2, "helperThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread() + " " + this.thread());
+
+		MyImpl myImpl = new MyImpl(myRecvNotifiable, null, connectionType);
+		Thread thread = new Thread(myImpl);
+		thread.setName("subThreadIn");
+		thread.setUncaughtExceptionHandler(this);
+
+		helperImplThreadIn(thread, myImpl, myRecvNotifiable, connectionType);
+
+		assertTrue(thread.isAlive());
+		myImpl.signalShutdown();
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();
+		try {
+			thread.join(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		assertFalse(thread.isAlive());
+	}
+
+	private void helperQThreadIn(Qt.ConnectionType connectionType) {
+		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
+
+		Utils.println(2, "helperQThreadIn() connectionType=" + connectionType + "; " + Thread.currentThread() + " " + this.thread());
+
+		MyImpl myImpl = new MyImpl(myRecvNotifiable, null, connectionType);
+		QThread thread = new QThread(myImpl);
+		thread.setName("subQThreadIn");
+		thread.setUncaughtExceptionHandler(this);
+
+		helperImplThreadIn(thread, myImpl, myRecvNotifiable, connectionType);
+
+		assertTrue(thread.isAlive());
+		myImpl.signalShutdown();
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();
+		try {
+			thread.join(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+		assertFalse(thread.isAlive());
+	}
+
+	private void helperImplThreadIn(Thread thread, MyImpl myImpl, MyNotifiable myRecvNotifiable, Qt.ConnectionType connectionType) {
+		Object o = new Object();
+
+		thread.start();
+		assertTrue(myRecvNotifiable.waitForNotify(1000, 2));
+		assertEquals(2, myRecvNotifiable.getNotified());
+
+		Utils.println(2, "emit(" + o + ") " + Thread.currentThread() + " " + this.thread());
+		myImpl.signal.emit(o);  // do delivery (or queue delivery) from this thread
+		int counter = 0;
+		while(counter++<1000 && QApplication.hasPendingEvents())
+			QApplication.processEvents();  // allow delivery to be performed in this QEventLoop (only really for queued testcases)
+		// during delivery the other thread will perform delivery in its QEventLoop right away
+		assertTrue(myRecvNotifiable.waitForNotify(1000, 7));
+		assertTrue(myImpl.isSlotInvoked());
+		assertTrue(myImpl.isResultExactly(o));
+	}
+
+	// ///////////////////////////////////////////////
+	
+	@Test
+	public void testThreadOutAuto() {
+		helperThreadOut(Qt.ConnectionType.AutoConnection);
+	}
+
+	@Test
+	public void testThreadInAuto() {
+		helperThreadIn(Qt.ConnectionType.AutoConnection);
+	}
+
+	@Test
+	public void testQThreadOutAuto() {
+		helperQThreadOut(Qt.ConnectionType.AutoConnection);
+	}
+
+	@Test
+	public void testQThreadInAuto() {
+		helperQThreadIn(Qt.ConnectionType.AutoConnection);
+	}
+
+	@Test
+	public void testThreadOutQueued() {
+		helperThreadOut(Qt.ConnectionType.QueuedConnection);
+	}
+
+	@Test
+	public void testThreadInQueued() {
+		helperThreadIn(Qt.ConnectionType.QueuedConnection);
+	}
+
+	@Test
+	public void testQThreadOutQueued() {
+		helperQThreadOut(Qt.ConnectionType.QueuedConnection);
+	}
+
+	@Test
+	public void testQThreadInQueued() {
+		helperQThreadIn(Qt.ConnectionType.QueuedConnection);
+	}
+
+	@Test
+	public void testThreadOutDirect() {
+		helperThreadOut(Qt.ConnectionType.DirectConnection);
+	}
+
+	@Test
+	public void testThreadInDirect() {
+		helperThreadIn(Qt.ConnectionType.DirectConnection);
+	}
+
+	@Test
+	public void testQThreadOutDirect() {
+		helperQThreadOut(Qt.ConnectionType.DirectConnection);
+	}
+
+	@Test
+	public void testQThreadInDirect() {
+		helperQThreadIn(Qt.ConnectionType.DirectConnection);
+	}
+
+	@Test
+	public void testThreadOutBlockingQueued() {
+		helperThreadOut(Qt.ConnectionType.BlockingQueuedConnection);
+	}
+
+	@Test
+	public void testThreadInBlockingQueued() {
+		helperThreadIn(Qt.ConnectionType.BlockingQueuedConnection);
+	}
+
+	@Test
+	public void testQThreadOutBlockingQueued() {
+		helperQThreadOut(Qt.ConnectionType.BlockingQueuedConnection);
+	}
+
+	@Test
+	public void testQThreadInBlockingQueued() {
+		helperQThreadIn(Qt.ConnectionType.BlockingQueuedConnection);
+	}
+
+	public void uncaughtException(Thread t, Throwable e) {
+		System.err.println("uncaughtException() thread=" + t);
+		e.printStackTrace();
+
+		Thread tmpMainThread = mainThread;
+		if(tmpMainThread != null)
+			tmpMainThread.interrupt();
+	}
+	
+	public static void main(String[] args) {
+		org.junit.runner.JUnitCore.main(TestSignalCrossThread.class.getName());
+	}
+}

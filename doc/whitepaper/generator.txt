@@ -1,0 +1,452 @@
+Note: moved to our website, http://qt-jambi.org/material/generator-design
+
+The Qt/Java Generator
+---------------------
+
+The Qt/Java code generator is a tool that parses C++ header files and
+generates Java source files and a binding layer based on the Java
+Native Interface that will tie the Java classes to Qt/C++ classes. It
+is written to handle Qt/C++ source code, according to the coding
+patterns known in the Qt/C++ library, and is not intended for mapping
+C++ in general, such as std, templates etc.
+
+The generator is a command line tool that takes as input a typesystem
+specification and a header file. When generating code for Qt we
+specify the typesystem specification build_all.txt and a headerfile
+that includes QtCore and QtGui. The header files are then preprocessed
+so all macros and typedefs are expanded. Enums, namespaces and classes
+are mapped according to how they are specified in the type system. For
+each C++ class that is encountered, we generate a Java source file, a
+C++ header file and a C++ source file.
+
+The Java source file contains one public class named as the class in
+C++. All public and protected members are included in this Java
+class. Each function generates a native Java function and each field
+generates a getter and setter function for the field. Using the
+typsystem it is possible to change access, rename or completly remove
+a function, or change the read/write access on a field. It is also
+possible to use the typesystem to inject arbitrary code in the Java
+source file, such as an extra member function.
+
+C++ implementation files contain two different parts. A subclass of
+the Qt/C++ class that is being generated, called the "shell" class and
+the implementation of the native Java functions, declared in the Java
+source file. The shell classes are primarly there to forward virtual
+function calls made in C++ into Java, so that we get polymorphic
+behaviour. It is possible to inject code in the reimplemented virtual
+functions in the shell classes using the typesystem. The C++ header
+file is primarly an implementation detail and can be ignored.
+
+--------------------------------------------------------------------------------
+
+
+The command line options available are:
+
+--debug-level=sparse | medium | full: Specifies the debug level of the
+generator. This is mostly for the understanding how the typesystem is
+loaded.
+
+--dump-object-tree: Dumps the parsed objectree as plain text. This can
+be helpful when debugging the typesystem.
+
+--juic-file: Specifies the location the information file that is used
+together with juic to generate code for custom libraries.
+
+--no-cpp-h: The generator will not generate any C++ header files.
+
+--no-cpp-impl: The generator will not generate any C++ source files.
+
+--no-java: The generator will not generate any Java code.
+
+--no-metainfo: The generator will not generate any meta info file.
+
+--no-suppress-warnings: All warnings are shown even if they are
+labeled to be suppressed by the typesystem.
+
+--output-directory: Specifies the output directory for the generated
+code.
+
+--rebuild-only: Specifies comma separated a list of classes to be
+generated. All other classes are ignored.
+
+
+--------------------------------------------------------------------------------
+
+
+Below is given a complete reference to the nodes in the typesystem. In
+addition to this, it might be helpful to look at the typesystem files
+used to generate Qt, typesystem_gui.txt, typesystem_core.txt and
+build_all.txt for examples of use.
+
+
+The Typesystem
+--------------
+
+The typesystem node is the root node that contains all the
+typesystem information.
+
+<typesystem
+  package="..."
+  default-superclass="..." (optional)
+  >
+
+package attribute: A string describing the package to be used, such as
+"org.qtjambi.qt.core"
+
+default-superclass attribute: The complete className of the default
+baseclass of all objects in Java, such as "org.qtjambi.qt.QtObject"
+
+
+Multiple typesystems
+--------------------
+
+When mapping multiple libraries to Java or basing one library on
+another library, it is possible to use the <load-typesystem>
+node. This node can be specified as a child of the <typesystem> node.
+
+<load-typesystem
+  name="..."
+  generate="yes | no"
+  >
+
+name attribute: The filename of the typesystem to load.
+
+generate attribute: Specifies wether code should be generated or not.
+yes: The code is generated
+no: No code is generated. This is needed when basing one library on
+another for the generator to be able to understand inheritance
+hierarchies, primitive mapping and parameter types in functions
+etc.. Most libraries will be based on both QtCore and QtGui, in which
+case generation for these will be disabled.
+
+
+Global Rejections
+-----------------
+
+The rejection nodes are specified as children of the typesystem
+node. The are used to reject an entire class, or specific functions or
+fields. One should not specify both field-name and function-name at
+the same time.
+
+<rejection
+  class="..."
+  function-name="..." (optional)
+  field-name="..." (optional)
+  >
+
+class attribute: The C++ classname of the class to reject. This name
+can be "*" in combination with a field or function to remove for
+instance all functions named "d_func".
+
+function-name attribute: The name of the function to rejected. This attribute is optional.
+
+field-name attribute: The name of the field to reject. This attribute is optional.
+
+
+Primitives
+----------
+
+The primitive nodes are specified as children of the typesystem node
+and are used to describe how a primitive type maps from C++ to Java
+and the JNI interface. Most primitives are already specified in the
+QtCore typesystem so users willn not have to add existing ones.
+
+<primitive-type
+  name="..."
+  java-name="..." (optional)
+  jni-name="..." (optional)
+  preferred-conversion="no" (optional)
+  >
+
+name attribute: The name of the primitive in C++, such as "char".
+
+java-name attribute: The name of the primitive in Java, such as
+"byte". If this value is not specified it will be the same as the name
+attribute.
+
+jni-name attribute: The name of the primitive in JNI, such as
+"jbyte". If this value is not specified it will be the same as the
+name attribute.
+
+preferred-conversion attribute: When this attribute is specified to
+"no" it indicatest that this version of the primitive is not the
+preferred C++ equivalent of the Java type. For instance both "qint64"
+and "long long" becomes "long" in Java but we should prefer the
+"qint64" version, hence we mark "long long" with this attribute.
+
+
+Namespaces
+----------
+
+The namespace nodes are specified as children of the typesystem node
+and are used to enable a namespace to be mapped to Java. The generator
+only supports enums in namespaces, no functions or classes. A C++
+namespace becomes an interface in Java.
+
+<namespace-type
+  name="..."
+  >
+
+name attribute: The name of the namespace, such as "Qt"
+
+
+Enums
+-----
+
+The enum nodes are used to enable a specific enum within a
+class. Enums and flags are converted to ints in Java. Enums are
+disabled by default.
+
+<enum-type
+  name="..."
+  flags="yes | no" (optional)
+  >
+
+name attribute: The fully qualified C++ name of the enum, such as
+"Qt::FillRule".
+
+flags attribute: If this attribute is set the generator will expect
+there to exist a QFlags<T> for the enum type.
+
+
+Value Types
+-----------
+
+The value type nodes are specified as children of the typesystem node
+and are used to specify that a C++ type is mapped into Java as a value
+type.
+
+<value-type
+  name="..."
+  >
+
+name attribute: The fully qualified C++ class name, such as "QMatrix"
+or "QPainterPath::Element".
+
+
+Object Types
+------------
+
+The value type nodes are specified as children of the typesystem node
+and are used to specifye that a C++ type is mapped into Java as an
+object type.
+
+<object-type
+  name="..."
+  memory-managed="yes | no" (optional)
+  >
+
+name attribute: fully qualified C++ class name, such as "QPushButton".
+
+memory-managed attribute: Specifies if the type, due to its use
+pattern should still be memory managed by Java, even though it is an
+object type, such as QFile.
+
+
+Modifying Fields
+----------------
+
+The field modification nodes are specified as children of a
+<object-type> or <value-type> node and will affect fields for this
+type.
+
+<modify-field
+  name="..."
+  write="true | false" (optional)
+  read="true | false" (optional)
+  />
+
+name attribute: The name of the field
+
+write attribute: Specifies if the field is writable in Java, enabled
+by default.
+
+read attribute: Specifies if the field is readable in Java, enabled by
+default.
+
+
+Modifying Functions
+-------------------
+
+The function modification nodes are specified as children of a
+<object-type> or <value-type> node and will affect functions for this
+type. The <remove>, <access>, <rename>, <inject-code> nodes are used
+to specify the details of the modification.
+
+<modify-function
+  class="shell" (optional)
+  signature="...">
+
+class attribute: Specifies in which part of the generated code the
+modification should apply. This is only relevant for code injections,
+otherwise leave out.
+shell: Virtual functions are reimplemented in a special subclass,
+called the shell class. Specifying the "shell" value for the class
+attribute will inject code into this reimplemented function.
+
+signature attribute: normalized C++ signature, excluding return value,
+including potential 'const'
+
+
+Removing
+--------
+
+The remove node can be specified as a child of a <modify-function>
+node and will remove this function from the generated code.
+
+<modify-function ...>
+  <remove />
+</modify-funnction>
+
+
+Change Access
+-------------
+
+The change access node can be specified as a child of a
+<modify-function> node and will change the access rights of this
+function in java.
+
+<modify-function ...>
+  <access modifier="public | protected | private"/>
+</modify-function>
+
+
+Renaming
+--------
+
+The rename node can be specified as child of a <modify-function> node
+and will change the name of that function.
+
+<modify-...>
+  <rename to="..."
+</modify-...>
+
+to attribute: The new name of the field or function.
+
+
+Custom Constructor
+------------------
+
+Value types are required to have a copy constructor because of their
+use pattern in the generated code, but not all classes have this. In
+these cases we specify a custom constructor that provides the code for
+making a copy of the object. A custom constructor has a signature like
+this:
+
+T *customConstructor(T *copy);
+
+The custon constructor nodes can be specified as a child of
+<value-type> nodes.
+
+<custom-constructor>
+  // code for custom constructor
+</custom-constructor>
+
+
+Custom Destructor
+-----------------
+
+When a custom constructor is provided we are most likely required to
+clean up the memory allocated in the custom construcotr. This is done
+in the custom destructor. The custom destructor has the following signature:
+
+void customDestructor(T *copy);
+
+<custom-destructor>
+  // code for custom destructor
+</custom-destructor>
+
+
+Includes
+--------
+
+By default, the generator assumes that for each type, such as
+QPainter, there exists a globally accessible header accessible with
+"#include <QPainter>". If this is not the case it is possible to
+rename the include with with an include node. The include node can be
+specified as a child of the <primitive-type>, <value-type> or
+<object-type> nodes.
+
+<...-type>
+  <include file-name="..." location="global | local"/>
+</...-type>
+
+It is some times required to include extra files in the generated C++
+code to make sure that the generated code compiles. The
+<extra-includes> node can be specified as a child of the <value-type>
+or <object-type> nodes. A list of <include> nodes is specified inside
+the <extra-includes> node.
+
+<extra-includes>
+  <include file-name="..." location="global | local"/>
+</extra-includes>
+
+file-name attribute: The file to include, such as "QStringList".
+
+location attribute: Where the file is located.
+global: The file is in located $INCLUDEPATH and will be included using
+#include <...>
+local: The file is in local directory and will be included using:
+#include "..."
+
+
+Code Injections
+---------------
+
+Code injections can be inserted to an <object-type>, <value-type> or a
+<modify-function> node.
+
+<inject-code
+  class="java | native | shell | shell-declaration | shell-definition"
+  position="beginning | end"
+  >
+    // the code
+</inject-code>
+
+class attribute:
+java: Code inserted into the java source code on the class level,
+making it possible to declare variables and functions
+native:
+shell: Applicable to modify-function nodes of class="shell". Code is
+injected into shell function.
+shell-declaration:
+shell-definition:
+
+position attribute:
+beginning: (the default), code is inserted at the beginning of the
+function.
+ end: code is inserted at the end of the function
+
+
+Argument Mapping
+----------------
+
+Argument mapping can be inserted into code injections to map an
+argument name to the argument name actually used in the generated
+code.
+
+<argument-map
+  position="numeric value"
+  meta-name="string value"
+  >
+
+position attribute: An index, starting at 1, indicating the argument
+foposition which this argument map applies.
+
+meta-name attribute: The name used within the code injection to adress
+the argument at the given position
+
+
+Warnings
+--------
+
+The generator will generate several warnings, many of which can be
+determined as irrelevant by the user. It is then possible to suppress
+warnings, using the <suppress-warning> node which can be specified as
+a child of the typesystem node.
+
+<suppress-warning
+  text="..."
+  >
+
+text attribute: The warning text to suppress.

@@ -1,0 +1,166 @@
+==== //depot/qtjambi/4.5.0_01/org/qtjambi/demos/Chips.java#1 - /Users/gunnar/dev/qtjambi-4.5.0_01/org/qtjambi/demos/Chips.java ====
+@@ -262,7 +262,9 @@
+             graphicsView.setDragMode(QGraphicsView.DragMode.RubberBandDrag);
+             graphicsView.setViewportUpdateMode(QGraphicsView.ViewportUpdateMode.SmartViewportUpdate);
+ 
++            System.out.println("doing style thingy for " + name);
+             int size = style().pixelMetric(QStyle.PixelMetric.PM_ToolBarIconSize);
++            System.out.println(" -> doing style thingy for " + name);
+             QSize iconSize = new QSize(size, size);
+ 
+             QToolButton zoomInIcon = new QToolButton();
+==== //depot/qtjambi/4.5.0_01/generator/cppimplgenerator.cpp#1 - /Users/gunnar/dev/qtjambi-4.5.0_01/generator/cppimplgenerator.cpp ====
+@@ -1802,14 +1802,7 @@
+     s << INDENT << "}" << endl;
+ 
+ 
+-    if (cls->isQObject()) {
+-        // Make sure all qobjects created by Java are owned by java only if
+-        // parent object has not been set.
+-        // All other objects will default to split ownership.
+-        s << INDENT << "if(!__qt_this->QObject::parent()){" << endl;
+-        s << INDENT << "    __qt_java_link->setJavaOwnership(__jni_env, " << java_object_name << ");" << endl;
+-        s << INDENT << "}" << endl;
+-    } else {
++    if (!cls->isQObject()) {
+         // All non-qobjects created by Java are owned by java
+         s << INDENT << "__qt_java_link->setJavaOwnership(__jni_env, " << java_object_name << ");" << endl;
+     }
+==== //depot/qtjambi/4.5.0_01/generator/typesystem_core-java.java#1 - /Users/gunnar/dev/qtjambi-4.5.0_01/generator/typesystem_core-java.java ====
+@@ -85,6 +85,20 @@
+     public final void connectSlotsByName() {
+         org.qtjambi.qt.internal.QtJambiInternal.connectSlotsByName(this);
+     }
++
++    private void addChild(QObject child) {
++        if (m_children == null)
++            m_children = new java.util.ArrayList<QObject>();
++        m_children.add(child);
++    }
++
++    private void removeChild(QObject child) {
++        if (m_children != null)
++            m_children.remove(child);
++    }
++
++    private java.util.List<QObject> m_children;
++
+ }// class
+ 
+ abstract class QAbstractItemModel___ extends QAbstractItemModel {
+==== //depot/qtjambi/4.5.0_01/qtjambi/qtjambi_cache.cpp#3 - /Users/gunnar/dev/qtjambi-4.5.0_01/qtjambi/qtjambi_cache.cpp ====
+@@ -1011,6 +1011,13 @@
+ 
+     QObject.class_ref = ref_class(qtjambi_find_class(env, "org/qtjambi/qt/core/QObject"));
+     Q_ASSERT(QObject.class_ref);
++
++    QObject.addChild = env->GetMethodID(QObject.class_ref, "addChild", "(Lorg/qtjambi/qt/core/QObject;)V");
++    Q_ASSERT(QObject.addChild);
++
++    QObject.removeChild = env->GetMethodID(QObject.class_ref, "removeChild", "(Lorg/qtjambi/qt/core/QObject;)V");
++    Q_ASSERT(QObject.removeChild);
++
+ }
+ 
+ void StaticCache::resolveAbstractSignal_internal()
+==== //depot/qtjambi/4.5.0_01/qtjambi/qtjambi_cache.h#1 - /Users/gunnar/dev/qtjambi-4.5.0_01/qtjambi/qtjambi_cache.h ====
+@@ -282,6 +282,8 @@
+ 
+     struct {
+         jclass class_ref;
++        jmethodID addChild;
++        jmethodID removeChild;
+     } QObject;
+ 
+     struct {
+==== //depot/qtjambi/4.5.0_01/qtjambi/qtjambi_core.cpp#2 - /Users/gunnar/dev/qtjambi-4.5.0_01/qtjambi/qtjambi_core.cpp ====
+@@ -2105,16 +2105,25 @@
+             if (link) {
+                 if (link->qobject()) {
+                     JNIEnv *env = qtjambi_current_environment();
+-            if (!env) // VM has shut down...
+-                return false;
+-                    if (e->added())
+-                       link->setCppOwnership(env, link->javaObject(env));
+-            else
+-               link->setDefaultOwnership(env, link->javaObject(env));
++                    if (!env) // VM has shut down...
++                        return false;
++                    StaticCache *sc = StaticCache::instance();
++                    Q_ASSERT(sc->QObject.class_ref);
++
++                    jobject javaParent = qtjambi_from_QObject(env, parent);
++                    jobject javaChild = qtjambi_from_QObject(env, e->child());
++
++                    if (e->added()) {
++                        env->CallVoidMethod(javaParent, sc->QObject.addChild, javaChild);
++                    } else {
++                        env->CallVoidMethod(javaParent, sc->QObject.removeChild, javaChild);
++                    }
+                 } else if (event->type() == QEvent::ChildAdded) {
+-            qWarning("%s [%s] was garbage collected before it was reparented to %s [%s]",
+-                 qPrintable(e->child()->objectName()), e->child()->metaObject()->className(),
+-                 qPrintable(parent->objectName()), parent->metaObject()->className());
++                    qWarning("%s [%s] was garbage collected before it was reparented to %s [%s]",
++                             qPrintable(e->child()->objectName()),
++                             e->child()->metaObject()->className(),
++                             qPrintable(parent->objectName()),
++                             parent->metaObject()->className());
+                 }
+             }
+         }
+==== //depot/qtjambi/4.5.0_01/qtjambi/qtjambi_functions.cpp#2 - /Users/gunnar/dev/qtjambi-4.5.0_01/qtjambi/qtjambi_functions.cpp ====
+@@ -40,9 +40,13 @@
+ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QtJambi_1LibraryInitializer_initialize(JNIEnv *, jclass))
+ {
+     qtjambi_register_callbacks();
+-
+     if (QCoreApplication::instance())
+         QtJambiVariant::registerHandler();
++
++    // Resolve some cache things that we know we are going to need, to avoid
++    // us having to add resolveXx all over the place..
++    StaticCache *sc = StaticCache::instance();
++    sc->resolveQObject();
+ }
+ 
+ 
+==== //depot/qtjambi/4.5.0_01/qtjambi/qtjambilink.cpp#1 - /Users/gunnar/dev/qtjambi-4.5.0_01/qtjambi/qtjambilink.cpp ====
+@@ -106,9 +106,6 @@
+     StaticCache *sc = StaticCache::instance();
+     sc->resolveQtJambiObject();
+     env->SetLongField(link->m_java_object, sc->QtJambiObject.native_id, reinterpret_cast<jlong>(link));
+-
+-    link->setCppOwnership(env, link->m_java_object);
+-
+     return link;
+ }
+ 
+@@ -130,8 +127,18 @@
+     Q_ASSERT(constructorId);
+ 
+     jobject java_object = env->NewObject(object_class, constructorId, 0);
++
+     QtJambiLink *link = createLinkForQObject(env, java_object, object);
+     link->setMetaObject(object->metaObject());
++
++    // Make sure that the object's parent has a java link to this to avoid it
++    // being destroyed...
++    jobject java_parent = qtjambi_from_QObject(env, object->parent());
++    if (java_parent) {
++        StaticCache *sc = StaticCache::instance();
++        env->CallVoidMethod(java_parent, sc->QObject.addChild, java_object);
++    }
++
+     return link;
+ }
+ 
+@@ -514,7 +521,7 @@
+         g_deleteLinkLock()->unlock();
+ 
+     // **** Link may be deleted at this point (QObjects and GUI objects that are Java owned)
+-    
++
+     if ((!isQObject || qobjectDeleted) && (!deleteInMainThread || isGUIThread))
+         delete this;
+ }

@@ -1,0 +1,103 @@
+Simple Hello World example
+
+NOTE: Text below is outdated, instead please write us proper text...
+
+This is a simple hello world example to show the most basic use of the qtjambi generator.
+The example shows how to transfer a Qt C++ Widget including some classes to a it's
+java equivalents.
+
+Prerequisites:
+You must compile QtJambi from source to be able to run this example. This is done issuing
+ant on the root directory of your source installation.
+
+1)
+You must edit build.properties with the location of the toplevel directory
+if the QtJambi build tree.
+
+2)
+You must edit build.properties with qtjambi.config to match the value from
+the same setting in the QtJambi build tree.
+
+3)
+You must edit org_qtjambi_test/org_qtjambi_test.pro to set the value of
+
+CONFIG += debug
+
+to match that of ${qtjambi.config} in point 2) above.
+
+4)
+Ensure your shell environment it setup for build Qt C++, like ensuring
+qmake and the compiler are in the $PATH.
+
+5)
+This step is not needed for the out-the-box case of building the main
+project at ../../.. and then building this.  However see the setting
+
+<generator ... generatorExe="${generator.exe.abspath}" ... />
+
+You can provide ab absolute path with -Dgenerator.exe.abspath=/tmp/generator
+argument to ANT.
+
+Alternativly setup $PATH as below.
+
+Ensure your shell environment it setup to include the generator binary from
+the QtJambi build from source.  This maybe generator/generator on Unix
+system and generator\release\generator.exe in Windows systems.
+
+For example:
+export PATH=$PATH:$JAMBIDIR/generator
+or
+set PATH=%PATH%;%JAMBIDIR%\generator\release
+
+
+
+Stages:
+
+1) Have a look in the directory src. Here you will find the C++ sources of the widget. It
+is possible to create a binary out of these sources issuing qmake and make in the directory
+makefiles. The binary will end up in a new directory bin.
+
+2) Now, in the jambi sub directory you will find a directory structure suitable for building
+a qtjambi widget. The scripts directory contains the generator build files (build.xml,
+pro file, typesystem file and an include file global.h). In this directory you can issue the
+command "ant" to start the build. This should produce a file
+test-<platform>-<compiler>-<qt-version>.jar
+
+3) In the java directory you will find a TestJava.java. It corresponds mainly to src/main.cpp.
+If you adjust the testit.sh with the correct name of qtjambi.jar and test.jar, and rework it
+to a bat file if you are working on Windows, you should be able to compile and launch the
+java version of the widget.
+
+The class is now built and included by default inside the generated JAR, so
+it can be run almost right away with:
+
+
+I did not need the native JAR at $QTJAMBI/build/qtjambi-*.jar because this
+example repackages the native parts into test-<platform>-<compiler>-<qt-version>.jar
+
+You may need "-debug" in the name of $QTJAMBI/qtjambi-4.7.4.jar if you are
+building in debug mode.
+
+
+On Linux 64bit the command line looked like this:
+
+java -cp $QTJAMBI/qtjambi-4.7.4.jar:test-linux64-gcc-4.7.4.jar test.TestJava
+
+More generally:
+
+java -cp $QTJAMBI/qtjambi-<qt-version>.jar:test-<platform>-<compiler>-<qt-version>.jar test.TestJava
+
+Expand the above wildcards manually before executing the command.
+
+
+If there are problems loading the implementation library (such as the error below) try:
+
+Caused by: java.lang.UnsatisfiedLinkError: /tmp/QtJambi_userid_amd64_4.7.4_genex-gcc-YYYYMMDD-HHMM/lib/liborg_qtjambi_test_debuglib.so.1: libtestGenImpl_debuglib.so.1: cannot open shared object file: No such file or directory
+
+on windows =>  add build/platform-output*/lib directory to %PATH%
+on Linux   =>  add build/platform-output*/lib directory to $LD_LIBRARY_PATH
+on MacOSX  =>  add build/platform-output*/lib directory to $DYLD_LIBRARY_PATH
+
+
+Bodø 29.04.2010,
+Helge Fredriksen

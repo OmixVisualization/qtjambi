@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/resourcesystem.qdoc -->
+<head>
+  <title>Resource System Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Resource System Example<br /><span class="subtitle"></span>
+</h1>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>The resource system example illustrates how you can easily bundle resources with your Java application by using the class path file engine. The class path file engine searches for the files or directories you specify in all directories or <tt>.jar</tt> files in the current class path. It also allows you to list the contents of directories in the class path, even if they are actually distributed over several different actual locations.</p>
+<p>You can tell Qt Jambi to use the class path file engine when specifying the file name. Simply prefix the name with <tt>classpath:</tt>, and Qt Jambi will automatically invoke the class path file engine. If you wish to search for a file at a specific location in the class path, then a second request format is available: <tt>classpath:&lt;absolute path&gt;#&lt;filename&gt;</tt>. The first variable, the absolute path, can be the full path of a directory or <tt>.jar</tt> file, while the filename should be the resource you want to request. Qt Jambi will then only search the specific directory or <tt>.jar</tt> file for the file. This can be useful in cases when you want to work with <tt>.jar</tt> files inside of Qt Jambi.</p>
+<a name="the-example"></a>
+<h2>The Example</h2>
+<p>The Resource System (<tt>org.qtjambi.examples.ResourceSystem</tt>) example shows off the different features of the class path file engine.</p>
+<p>The example has two modes:</p>
+<ul>
+<li>In the default mode it will list the contents of the entire class path.</li>
+<li>In the second mode it will limit itself to the contents of a single <tt>.jar</tt> file.</li>
+</ul>
+<p>In either mode, it will show these contents in a QTreeWidget and let the user select images to show them in the window.</p>
+<p>In the default mode, the application should list the contents of the entire class path. We do this by specifying the root directory and prefixing it with <tt>classpath:</tt> with the following assignment:</p>
+<pre>    searchPath = &quot;classpath:/&quot;;</pre>
+<p>Every entry of the class path has a root directory, so this directory is distributed over all parts of the class path; i.e&#x2e; if the classpath contains two entries: <tt>/my_java_files/:/java_sdk/rt.jar</tt>, the root directory will contain all contents of <tt>/my_java_files</tt> as well as all contents in the root of <tt>rt.jar</tt>. We simply use QDir on the root directory and entryList() to get its contents.</p>
+<p>In the alternative mode, we only want to search a single .jar file specified by the user. This is accomplished by asking the user to select a file, and then requesting the root from th specific <tt>.jar</tt> file selected:</p>
+<pre>    String fileName = QFileDialog.getOpenFileName(this, &quot;Select a .jar file&quot;,
+            null, new QFileDialog.Filter(&quot;Jar Files (*.jar)&quot;));
+
+    if (fileName.length() == 0) {
+        browseClassPath = true;
+        browseClassPathButton.setChecked(true);
+    }
+
+    QFileInfo jarInfo = new QFileInfo(fileName);
+    searchPath = &quot;classpath:&quot; + jarInfo.canonicalFilePath() + &quot;#/&quot;;</pre>
+<p>After the search path has been selected, the application recursively fills the tree widget with any directory or image file it finds. From this point on it works as you would expect it to if it was a normal image viewer application that searched the main file system. When the user selects a file from the tree widget, the application will attempt to load it as a pixmap and set it on its label at the bottom of the window:</p>
+<pre>    QFileInfo info = selected_item.getInfo();
+    if (info.exists() &amp;&amp; !info.isDir()) {
+        QPixmap pm = new QPixmap(info.absoluteFilePath());
+        m_currentImage.setPixmap(pm);
+    }</pre>
+</body>
+</html>

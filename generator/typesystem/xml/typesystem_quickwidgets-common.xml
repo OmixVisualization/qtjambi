@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<typesystem>
+  <enum-type name="QQuickWidget::ResizeMode"/>
+  <enum-type name="QQuickWidget::Status"/>
+  <object-type name="QQuickWidget">
+	<modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
+		<modify-argument index="2">
+			<reference-count action="set" variable-name="__rcQmlComponent" />
+		</modify-argument>
+		<modify-argument index="3">
+			<define-ownership class="java" owner="cplusplus"/>
+		</modify-argument>
+	</modify-function>
+  </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
+</typesystem>

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<typesystem>
+	<namespace-type name="Qt3D::Quick" java-name="Qt3DQuick" generate="no"/>
+	<enum-type name="Qt3D::Quick::QQmlAspectEngine::Status"/>
+	<object-type name="Qt3D::Quick::QQmlAspectEngine" java-name="QQmlAspectEngine">
+	</object-type>
+	<object-type name="Qt3D::Quick::Quick3DConfiguration" java-name="Quick3DConfiguration">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+		<modify-function signature="setControlledCamera(Qt3D::QCamera*)">
+			<modify-argument index="1">
+				<reference-count action="set" variable-name="__rcControlledCamera"/>
+			</modify-argument>
+		</modify-function>
+	</object-type>
+	<object-type name="Qt3D::Quick::Quick3DEntity" java-name="Quick3DEntity">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Quick::Quick3DEntityLoader" java-name="Quick3DEntityLoader">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Quick::Quick3DNode" java-name="Quick3DNode">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+	<object-type name="Qt3D::Quick::Quick3DTransform" java-name="Quick3DTransform">
+		<extra-includes>
+			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+		</extra-includes>
+	</object-type>
+</typesystem>

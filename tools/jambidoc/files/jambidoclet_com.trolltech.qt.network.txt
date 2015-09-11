@@ -1,0 +1,369 @@
+
+
+$$QHttp.read(byte[])
+/**
+Reads from the response content into <tt>data</tt> and
+returns the number of bytes read. Returns -1 if an error occurred.
+
+*/
+
+
+$$QTcpServer.waitForNewConnection(int)
+/**
+Waits for at most <tt>msec</tt> milliseconds or until an incoming connection
+is available. Returns true if a connection is available; otherwise returns
+false.
+<p>
+This is a blocking function call. Its use is not adviced in a single-threaded
+GUI application, since the whole application will stop responding until the
+function returns.  waitForNewConnection() is mostly useful when there is no
+event loop available.
+<p>
+The non-blocking alternative is to connect to the newConnection()
+signal.
+
+*/
+
+
+$$QTcpServer.waitForNewConnection()
+/**
+This is an overloaded method provided for convenience.
+
+@return
+*/
+
+
+$$QUdpSocket.readDatagram(byte[], org.qtjambi.qt.network.QUdpSocket.HostInfo)
+/**
+Receives a datagram from the host described by <tt>info</tt> and stores it in
+<tt>data</tt>. Returns the size of the datagram on success; otherwise returns
+-1.
+
+*/
+
+
+$$QUdpSocket.writeDatagram(byte[], org.qtjambi.qt.network.QHostAddress, char)
+/**
+Writes <tt>data</tt> to the host at <tt>address</tt> using the given
+<tt>port</tt>.
+
+*/
+
+
+$$QFtp.read(byte[])
+/**
+Reads from the data socket into <tt>data</tt> and returns the number of bytes
+read. Returns -1 if an error occurred.
+
+*/
+
+
+$$QHttpHeader.setValues(java.util.List<org.qtjambi.qt.QPair<java.lang.String, java.lang.String>>)
+/**
+Sets the header entries to be the list of key value pairs in <tt>values</tt>.
+
+*/
+
+
+$$QIPv6Address.QIPv6Address()
+/**
+Constructs a new QIPv6Address.
+
+
+*/
+
+
+$$QIPv6Address.setC(byte[])
+/**
+Sets this QIPv6Address to <tt>c</tt>.
+
+*/
+
+
+$$QIPv6Address.c()
+/**
+Returns this QIPv6Address as a byte array.
+
+
+*/
+
+
+$$QHostAddress.QHostAddress(org.qtjambi.qt.network.QIPv6Address)
+/**
+Creates a QHostAddress from the specified <tt>ip6Addr</tt> address.
+
+*/
+
+
+$$QHostAddress.setAddress(org.qtjambi.qt.network.QIPv6Address)
+/**
+Sets the address of this QHostAddress to <tt>ip6Addr</tt>.
+
+*/
+
+
+$$QHttp.QHttp(java.lang.String, int)
+/**
+This is an overloaded constructor provided for convenince.
+
+*/
+
+
+$$QHttp.QHttp(java.lang.String, int, org.qtjambi.qt.core.QObject)
+/**
+This is an overloaded constructor provided for convenince.
+
+*/
+
+
+$$QHttp.QHttp(java.lang.String, org.qtjambi.qt.network.QHttp.ConnectionMode, int)
+/**
+This is an overloaded constructor provided for convenince.
+
+*/
+
+
+$$QHttp.QHttp(java.lang.String, org.qtjambi.qt.network.QHttp.ConnectionMode, int, org.qtjambi.qt.core.QObject)
+/**
+Constructs a QHttp object. Subsequent requests are done by
+connecting to the server <tt>hostName</tt> on port <tt>port</tt> using the
+connection mode <tt>mode</tt>.
+<p>
+If port is 0, it will use the default port for the <tt>mode</tt> used
+(80 for Http and 443 for Https).
+<p>
+The <tt>parent</tt> parameter is passed on to the QObject constructor.
+
+*/
+
+
+$$QHttp.setHost(java.lang.String, org.qtjambi.qt.network.QHttp.ConnectionMode, int)
+/**
+Sets the HTTP server that is used for requests to <tt>hostname</tt> on
+port <tt>port using the connection mode <tt>mode</tt>.
+<p>
+If port is 0, it will use the default port for the <tt>mode</tt> used
+(80 for Http and 443 fopr Https).
+<p>
+The function does not block and returns immediately. The request
+is scheduled, and its execution is performed asynchronously. The
+function returns a unique identifier which is passed by
+requestStarted() and requestFinished().
+<p>
+When the request is started the requestStarted() signal is
+emitted. When it is finished the requestFinished() signal is
+emitted.
+
+*/
+
+
+$$QHttp.setHost(java.lang.String, int)
+/**
+Sets the HTTP server that is used for requests to <tt>hostname</tt> on port
+<tt>port</tt>.
+<p>
+The function does not block and returns immediately. The request is scheduled,
+and its execution is performed asynchronously. The function returns a unique
+identifier which is passed by requestStarted() and requestFinished().
+<p>
+When the request is started the requestStarted() signal is emitted. When it is
+finished the requestFinished() signal is emitted.
+
+*/
+
+
+$$QTcpServer.listen(org.qtjambi.qt.network.QHostAddress, int)
+/**
+Tells the server to listen for incoming connections on address
+<tt>address</tt> and port <tt>port</tt>. If <tt>port</tt> is 0, a port is chosen
+automatically. If <tt>address</tt> is QHostAddress::Any, the server
+will listen on all network interfaces.
+<p>
+Returns true on success; otherwise returns false.
+
+*/
+
+
+$$QTcpServer.serverPort()
+/**
+Returns the server's port if the server is listening for connections;
+otherwise, returns 0.
+
+*/
+
+
+$$QNetworkProxy.QNetworkProxy(org.qtjambi.qt.network.QNetworkProxy.ProxyType, java.lang.String, int)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QNetworkProxy.QNetworkProxy(org.qtjambi.qt.network.QNetworkProxy.ProxyType, java.lang.String, int, java.lang.String)
+/**
+This is an overloaded constructor provided for convenience.
+
+*/
+
+
+$$QNetworkProxy.QNetworkProxy(org.qtjambi.qt.network.QNetworkProxy.ProxyType, java.lang.String, int, java.lang.String, java.lang.String)
+/**
+Constructs a QNetworkProxy with <tt>type</tt>, <tt>hostName</tt>,
+<tt>port</tt>,
+<tt>user</tt> and <tt>password</tt>.
+
+*/
+
+
+$$QNetworkProxy.setPort(int)
+/**
+Sets the port of the proxy host to be <tt>port</tt>.
+
+*/
+
+
+$$QNetworkProxy.port()
+/**
+Returns the port of this proxy.
+
+*/
+
+
+$$QUdpSocket.bind(org.qtjambi.qt.network.QHostAddress, int)
+/**
+Binds this socket to the address <tt>address</tt> and the port <tt>port</tt>.
+When bound, the signal readyRead() is emitted whenever a UDP
+datagram arrives on the specified address and port. This function
+is useful to write UDP servers.
+<p>
+On success, the functions returns true and the socket enters
+BoundState; otherwise it returns false.
+<p>
+The socket is bound using the DefaultForPlatform BindMode.
+
+*/
+
+
+$$QUdpSocket.bind(int)
+/**
+Binds to QHostAddress:Any on port <tt>port</tt>.
+
+*/
+
+
+$$QUdpSocket.bind(org.qtjambi.qt.network.QHostAddress, int, org.qtjambi.qt.network.QUdpSocket.BindMode)
+/**
+Binds to <tt>address</tt> on port <tt>port</tt>, using the BindMode
+<tt>mode</tt>.
+
+*/
+
+
+$$QUdpSocket.bind(int, org.qtjambi.qt.network.QUdpSocket.BindMode)
+/**
+Binds to QHostAddress:Any on port <tt>port</tt>, using the BindMode
+<tt>mode</tt>.
+
+*/
+
+
+$$QUdpSocket.writeDatagram(byte[], org.qtjambi.qt.network.QHostAddress, int)
+/**
+Sends the datagram at <tt>data</tt> of size <tt>size</tt> to the host
+address <tt>address</tt> at port <tt>port</tt>. Returns the number of
+bytes sent on success; otherwise returns -1.
+<p>
+Datagrams are always written as one block. The maximum size of a
+datagram is highly platform-dependent, but can be as low as 8192
+bytes. If the datagram is too large, this function will return -1
+and error() will return DatagramTooLargeError.
+<p>
+Sending datagrams larger than 512 bytes is in general disadvised,
+as even if they are sent successfully, they are likely to be
+fragmented by the IP layer before arriving at their final
+destination.
+<p>
+<b>warning</b>: Calling this function on a connected UDP socket may
+result in an error and no packet being sent. If you are using a
+connected socket, use write() to send datagrams.
+
+*/
+
+
+$$QUdpSocket.writeDatagram(org.qtjambi.qt.core.QByteArray, org.qtjambi.qt.network.QHostAddress, int)
+/**
+Sends the datagram <tt>datagram</tt> to the host address <tt>host</tt> and at
+port <tt>port</tt>.
+
+*/
+
+
+$$QAbstractSocket.connectToHost(java.lang.String, int, org.qtjambi.qt.core.QIODevice.OpenMode)
+/**
+Attempts to make a connection to <tt>host</tt> on the given <tt>port</tt>.
+<p>
+The socket is opened in the given <tt>mode</tt> and first enters
+HostLookupState, then performs a host name lookup of <tt>host</tt>.
+If the lookup succeeds, hostFound() is emitted and QAbstractSocket
+enters ConnectingState. It then attempts to connect to the address
+or addresses returned by the lookup. Finally, if a connection is
+established, QAbstractSocket enters ConnectedState and
+emits connected().
+<p>
+At any point, the socket can emit error() to signal that an error
+occurred.
+<p>
+<tt>host</tt> may be an IP address in string form (e.g.,
+"43.195.83.32"), or it may be a host name (e.g.,
+"www.trolltech.com"). QAbstractSocket will do a lookup only if
+required. <tt>port</tt> is in native byte order.
+
+*/
+
+
+$$QAbstractSocket.connectToHost(org.qtjambi.qt.network.QHostAddress, int, org.qtjambi.qt.core.QIODevice.OpenMode)
+/**
+Attempts to make a connection to <tt>address</tt> on port <tt>port</tt> with open mode
+<tt>mode</tt>.
+
+*/
+
+
+$$QAbstractSocket.connectToHostImplementation(java.lang.String, int, org.qtjambi.qt.core.QIODevice.OpenMode)
+/**
+Contains the implementation of connectToHost().
+<p>
+Attempts to make a connection to <tt>host</tt> on the given
+<tt>port</tt>. The socket is opened in the given <tt>mode</tt>.
+
+*/
+
+
+$$QAbstractSocket.localPort()
+/**
+Returns the host port number (in native byte order) of the local
+socket if available; otherwise returns 0.
+
+*/
+
+
+$$QAbstractSocket.peerPort()
+/**
+Returns the port of the connected peer if the socket is in
+ConnectedState; otherwise returns 0.
+
+*/
+
+
+$$QAbstractSocket.setLocalPort(int)
+/**
+Sets the local port of this QAbstractSocket to <tt>port</tt>.
+
+*/
+
+
+$$QAbstractSocket.setPeerPort(int)
+/**
+Sets the peer port of this QAbstractSocket to <tt>port</tt>.
+
+*/

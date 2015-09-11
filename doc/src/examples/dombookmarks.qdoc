@@ -1,0 +1,18 @@
+/*!
+    \page qtjambi-dombookmarks.html
+    \title DOM Bookmarks Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for DOM Bookmarks Example}{DomBookmarks.java}
+    \endlist
+
+    The DOM Bookmarks example provides a reader for XML Bookmark Exchange Language (XBEL)
+    files that uses Qt's DOM-based XML API to read and parse the files. The SAX Bookmarks
+    example provides an alternative way to read this type of file.
+
+    \image dombookmarks-example.png
+
+    See the \l{http://pyxml.sourceforge.net/topics/xbel/}{XML Bookmark Exchange Language
+    Resource Page} for more information about XBEL files.
+*/

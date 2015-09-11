@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.xmlpatterns" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
+    org.qtjambi.qt.Utilities.loadQtLibrary("QtXmlPatterns");
+    </inject-code>
+
+    <value-type name="QXmlName">
+      <inject-code>
+        <import-file name="typesystem/java/typesystem_xmlpatterns-java.java" quote-after-line="class QXmlName___" quote-before-line="}// class" />
+      </inject-code>
+    </value-type>
+
+    <object-type name="QXmlQuery">
+        <modify-function signature="evaluateTo(QString*)const">
+            <rename to="evaluateTo_private" />
+            <access modifier="private" />
+        </modify-function>
+
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_xmlpatterns-java.java" quote-after-line="class QXmlQuery___" quote-before-line="}// class" />
+        </inject-code>
+    </object-type>
+    
+    <object-type name="QAbstractXmlNodeModel" implements="java.lang.Cloneable">
+      <inject-code>
+        <import-file name="typesystem/java/typesystem_xmlpatterns-java.java" quote-after-line="class QAbstractXmlNodeModel___" quote-before-line="}// class" />
+      </inject-code>    
+    </object-type>
+
+    <object-type name="QSimpleXmlNodeModel" implements="java.lang.Cloneable">
+      <modify-function signature="namePool()const" access="private" rename="namePool_private" />
+      <inject-code>
+        <import-file name="typesystem/java/typesystem_xmlpatterns-java.java" quote-after-line="class QSimpleXmlNodeModel___" quote-before-line="}// class" />
+      </inject-code>
+    </object-type>
+</typesystem>

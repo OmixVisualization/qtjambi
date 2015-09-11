@@ -1,0 +1,264 @@
+--- qtbase/src/corelib/kernel/qobject.cpp	2015-06-29 23:04:58.000000000 +0200
++++ qtbase/src/corelib/kernel/qobject.cpp	2015-08-26 08:24:54.798285300 +0200
+@@ -2623,6 +2623,98 @@
+                  (method && *method) ? method+1 : "(null)");
+         return QMetaObject::Connection(0);
+     }
++	
++	/** recovered from Qt4 for QtJambi5 **/{
++        const void *cbdata[] = { sender, signal, receiver, method, &type};
++        if(QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata)){
++            QByteArray tmp_signal_name;
++
++            const QMetaObject *smeta = sender->metaObject();
++            ++signal; //skip code
++            QArgumentTypeArray signalTypes;
++            QByteArray signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
++            int signal_index = QMetaObjectPrivate::indexOfSignalRelative(
++                    &smeta, signalName, signalTypes.size(), signalTypes.constData());
++            if (signal_index < 0) {
++                // check for normalized signatures
++                tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
++                signal = tmp_signal_name.constData() + 1;
++
++                signalTypes.clear();
++                signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
++                signal_index = QMetaObjectPrivate::indexOfSignalRelative(
++                        &smeta, signalName, signalTypes.size(), signalTypes.constData());
++            }
++            if (signal_index >= 0) {
++                signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
++                signal_index += QMetaObjectPrivate::signalOffset(smeta);
++            }
++
++            QByteArray tmp_method_name;
++            ++method; // skip code
++
++            QArgumentTypeArray methodTypes;
++            QByteArray methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
++            const QMetaObject *rmeta = receiver->metaObject();
++            int method_index_relative = -1;
++
++            int membcode = extract_code(method);
++
++            switch (membcode) {
++            case QSLOT_CODE:
++                method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(
++                        &rmeta, methodName, methodTypes.size(), methodTypes.constData());
++                break;
++            case QSIGNAL_CODE:
++                method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(
++                        &rmeta, methodName, methodTypes.size(), methodTypes.constData());
++                break;
++            }
++            if (method_index_relative < 0) {
++                // check for normalized methods
++                tmp_method_name = QMetaObject::normalizedSignature(method);
++                method = tmp_method_name.constData();
++
++                methodTypes.clear();
++                methodName = QMetaObjectPrivate::decodeMethodSignature(method, methodTypes);
++                // rmeta may have been modified above
++                rmeta = receiver->metaObject();
++                switch (membcode) {
++                case QSLOT_CODE:
++                    method_index_relative = QMetaObjectPrivate::indexOfSlotRelative(
++                            &rmeta, methodName, methodTypes.size(), methodTypes.constData());
++                    break;
++                case QSIGNAL_CODE:
++                    method_index_relative = QMetaObjectPrivate::indexOfSignalRelative(
++                            &rmeta, methodName, methodTypes.size(), methodTypes.constData());
++                    break;
++                }
++            }
++
++            int *types = 0;
++            if (type == Qt::QueuedConnection) {
++                types = queuedConnectionTypes(signalTypes.constData(), signalTypes.size());
++            }
++
++            QObjectPrivate::StaticMetaCallFunction callFunction = rmeta ? rmeta->d.static_metacall : 0;
++
++            QMetaMethod signalMethod = QMetaObjectPrivate::signal(smeta, signal_index);
++            if (signalMethod.isValid())
++                const_cast<QObject*>(sender)->connectNotify(signalMethod);
++            QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
++            c->sender = const_cast<QObject*>(sender);
++            c->signal_index = signal_index;
++            c->receiver = const_cast<QObject*>(receiver);
++            c->method_relative = method_index_relative;
++            c->method_offset = rmeta->methodOffset();
++            c->connectionType = type;
++            c->isSlotObject = false;
++            c->argumentTypes.store(types);
++            c->nextConnectionList = 0;
++            c->callFunction = callFunction;
++            return QMetaObject::Connection(c.take());
++        }
++    }
+     QByteArray tmp_signal_name;
+ 
+     if (!check_signal_macro(sender, signal, "connect", "bind"))
+@@ -2764,6 +2856,40 @@
+                  method.methodSignature().constData() );
+         return QMetaObject::Connection(0);
+     }
++	
++    /** recovered from Qt4 for QtJambi5 **/{
++        QByteArray methodSignature;
++		if(method.isValid()){
++			methodSignature.reserve(qstrlen(method.methodSignature())+1);
++			methodSignature.append((char)(method.methodType() == QMetaMethod::Slot ? QSLOT_CODE
++										: method.methodType() == QMetaMethod::Signal ? QSIGNAL_CODE : 0  + '0'));
++			methodSignature.append(method.methodSignature());
++		}
++		QByteArray signalSignature;
++        signalSignature.reserve(qstrlen(signal.methodSignature())+1);
++        signalSignature.append((char)(signal.methodType() == QMetaMethod::Slot ? QSLOT_CODE
++                                    : signal.methodType() == QMetaMethod::Signal ? QSIGNAL_CODE : 0  + '0'));
++        signalSignature.append(signal.methodSignature());
++		const void *cbdata[] = { sender, signalSignature.constData(), receiver, methodSignature.constData(), &type};
++		if(QInternal::activateCallbacks(QInternal::ConnectCallback, (void **) cbdata)){
++                    QObjectPrivate::StaticMetaCallFunction callFunction = receiver && receiver->metaObject() ? receiver->metaObject()->d.static_metacall : 0;
++                        if (signal.isValid())
++                                const_cast<QObject*>(sender)->connectNotify(signal);
++
++                        QScopedPointer<QObjectPrivate::Connection> c(new QObjectPrivate::Connection);
++                        c->sender = const_cast<QObject*>(sender);
++                        c->signal_index = signal.isValid() ? signal.methodIndex() : -1;
++                        c->receiver = const_cast<QObject*>(receiver);
++                        c->method_relative = method.isValid() ? method.methodIndex() : -1;
++                        c->method_offset = receiver ? receiver->metaObject()->methodOffset() : 0;
++                        c->connectionType = type;
++                        c->isSlotObject = false;
++                        c->argumentTypes.store(0);
++                        c->nextConnectionList = 0;
++                        c->callFunction = callFunction;
++			return QMetaObject::Connection(c.take());
++        }
++    }
+ 
+     int signal_index;
+     int method_index;
+@@ -2890,6 +3016,39 @@
+         qWarning("QObject::disconnect: Unexpected null parameter");
+         return false;
+     }
++	
++    /** recovered from Qt4 for QtJambi5 **/{
++        const void *cbdata[] = { sender, signal, receiver, method };
++        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata)){
++
++            QByteArray tmp_signal_name;
++
++            const QMetaObject *smeta = sender->metaObject();
++            ++signal; //skip code
++            QArgumentTypeArray signalTypes;
++            QByteArray signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
++            int signal_index = QMetaObjectPrivate::indexOfSignalRelative(
++                    &smeta, signalName, signalTypes.size(), signalTypes.constData());
++            if (signal_index < 0) {
++                // check for normalized signatures
++                tmp_signal_name = QMetaObject::normalizedSignature(signal - 1);
++                signal = tmp_signal_name.constData() + 1;
++
++                signalTypes.clear();
++                signalName = QMetaObjectPrivate::decodeMethodSignature(signal, signalTypes);
++                signal_index = QMetaObjectPrivate::indexOfSignalRelative(
++                        &smeta, signalName, signalTypes.size(), signalTypes.constData());
++            }
++            if (signal_index >= 0) {
++                signal_index = QMetaObjectPrivate::originalClone(smeta, signal_index);
++                signal_index += QMetaObjectPrivate::signalOffset(smeta);
++            }
++
++            QMetaMethod signalMethod = QMetaObjectPrivate::signal(smeta, signal_index);
++            const_cast<QObject*>(sender)->disconnectNotify(signalMethod);
++            return true;
++        }
++    }
+ 
+     const char *signal_arg = signal;
+     QByteArray signal_name;
+@@ -3049,6 +3208,21 @@
+         signalSignature.append(signal.methodSignature());
+     }
+ 
++    /** recovered from Qt4 for QtJambi5 **/{
++        QByteArray methodSignature;
++        if (method.isValid()) {
++            methodSignature.reserve(method.methodSignature().size()+1);
++            methodSignature.append((char)(method.methodType()==QMetaMethod::Signal ? QSIGNAL_CODE + '0' : QSLOT_CODE + '0'));
++            methodSignature.append(method.methodSignature());
++        }
++        const void *cbdata[] = { sender, signalSignature.constData(), receiver, methodSignature.constData() };
++
++        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata)){
++            const_cast<QObject*>(sender)->disconnectNotify(signal);
++            return true;
++        }
++    }
++
+     int signal_index;
+     int method_index;
+     {
+@@ -3267,7 +3441,7 @@
+     c->callFunction = callFunction;
+ 
+     QObjectPrivate::get(s)->addConnection(signal_index, c.data());
+-
++    
+     locker.unlock();
+     QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
+     if (smethod.isValid())
+@@ -3378,7 +3552,11 @@
+     // prevent incoming connections changing the connectionLists while unlocked
+     ++connectionLists->inUse;
+ 
+-    bool success = false;
++	/** recovered from Qt4 for QtJambi5 **/
++	
++	QMetaMethod smethod = QMetaObjectPrivate::signal(smeta, signal_index);
++	bool success = false;
++
+     if (signal_index < 0) {
+         // remove from all connection lists
+         for (int sig_index = -1; sig_index < connectionLists->count(); ++sig_index) {
+@@ -4723,6 +4901,37 @@
+ {
+     QObjectPrivate::Connection *c = static_cast<QObjectPrivate::Connection *>(connection.d_ptr);
+ 
++    /** recovered from Qt4 for QtJambi5 **/
++    if(c && c->sender){
++        QMetaMethod signal;
++        QByteArray signalSignature;
++        if (c->signal_index>=0) {
++            const QMetaObject* smeta = c->sender->metaObject();
++            signal = smeta->method(c->signal_index);
++            if(signal.isValid()){
++                signalSignature.reserve(signal.methodSignature().size()+1);
++                signalSignature.append((char)(QSIGNAL_CODE + '0'));
++                signalSignature.append(signal.methodSignature());
++            }
++        }
++        QByteArray methodSignature;
++        if(c->receiver && c->method_relative>=0){
++            const QMetaObject* rmeta = c->receiver->metaObject();
++            QMetaMethod method = rmeta->method(c->method_offset + c->method_relative);
++            if (method.isValid()) {
++                methodSignature.reserve(method.methodSignature().size()+1);
++                methodSignature.append((char)(method.methodType()==QMetaMethod::Signal ? QSIGNAL_CODE + '0' : QSLOT_CODE + '0'));
++                methodSignature.append(method.methodSignature());
++            }
++        }
++        const void *cbdata[] = { c->sender, signalSignature.constData(), c->receiver, methodSignature.constData() };
++
++        if (QInternal::activateCallbacks(QInternal::DisconnectCallback, (void **) cbdata)){
++            c->sender->disconnectNotify(signal);
++            return true;
++        }
++    }
++
+     if (!c || !c->receiver)
+         return false;
+ 

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<typesystem>
+  <namespace-type name="QtMac"/>
+  <enum-type name="QMacToolBarItem::StandardItem"/>
+  <enum-type name="QMacPasteboardMime::QMacPasteboardMimeType"/>
+  <object-type name="QMacPasteboardMime">
+  </object-type>
+  <object-type name="QMacToolBar">
+	<modify-function signature="nativeToolbar() const" remove="all" />
+  </object-type>
+  <object-type name="QMacToolBarItem">
+	<modify-function signature="nativeToolbarItem() const" remove="all" />
+  </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'NSData*'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'CG*Ref*'"/>
+</typesystem>

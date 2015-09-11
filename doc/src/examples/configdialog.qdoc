@@ -1,0 +1,14 @@
+/*!
+    \page qtjambi-configdialog.html
+    \title Config Dialog Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Config Dialog Example}{ConfigDialog.java}
+    \endlist
+
+    The Config Dialog examples shows how a configuration dialog can be created by
+    using an icon view with a stacked widget.
+
+    \image configdialog-example.png
+*/

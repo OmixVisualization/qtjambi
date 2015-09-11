@@ -1,0 +1,179 @@
+/*!
+    \page qtjambi-examples.html
+    \title Qt Jambi Examples
+
+    The examples demonstrate Qt Jambi features in small,
+    self-contained programs.
+
+    In addition to the examples, Qt Jambi includes a small selection
+    of \l {Qt Jambi Demonstrations}{demos} that deliberately show off
+    Qt Jambi's features. You might want to look at these as well.
+
+    Examples marked with an asterisk (\raisedaster) are fully
+    documented. It is our goal to fully document all examples in a
+    future release.
+
+    You find the code for the examples under
+    \c{org/qtjambi/examples}. The code for the demos are in
+    \c{org/qtjambi/demos}.
+
+    Categories:
+
+    \tableofcontents
+
+    \section1 Tutorial
+
+    \list
+        \o \l{Qt Jambi Tutorial 1 - Hello World!}{Tutorial 1: Hello World!}\raisedaster
+        \o \l{Qt Jambi Tutorial 2 - Calling it Quits}{Tutorial 2: Calling it Quits}\raisedaster
+        \o \l{Qt Jambi Tutorial 3 - Family Values}{Tutorial 3: Family Values}\raisedaster
+        \o \l{Qt Jambi Tutorial 4 - Let There Be Widgets}{Tutorial 4: Let There Be Widgets}\raisedaster
+        \o \l{Qt Jambi Tutorial 5 - Building Blocks}{Tutorial 5: Building Blocks}\raisedaster
+        \o \l{Qt Jambi Tutorial 6 - Building Blocks Galore!}{Tutorial 6: Building Blocks Galore!}\raisedaster
+        \o \l{Qt Jambi Tutorial 7 - One Thing Leads to Another}{Tutorial 7: One Thing Leads to Another}\raisedaster
+    \endlist
+
+    \section1 Widget Examples
+
+    \list
+        \o \l{Analog Clock Example}{Analog Clock}\raisedaster
+        \omit \o \l{Calculator Example}{Calculator}\raisedaster \endomit
+        \o \l{Calendar Widget Example}{Calendar Widget}\raisedaster
+        \o \l{Code Editor Example}{Code Editor}\raisedaster
+        \o \l{Digital Clock Example}{Digital Clock}
+        \o \l{Icons Example}{Icons}\raisedaster
+        \o \l{Line Edits Example}{Line Edits}\raisedaster
+        \o \l{Scribble Example}{Scribble}
+        \o \l{Shaped Clock Example}{Shaped Clock}\raisedaster
+        \o \l{Sliders Example}{Sliders}\raisedaster
+        \o \l{Spin Boxes Example}{Spin Boxes}\raisedaster
+        \o \l{Styles Example}{Styles}
+        \o \l{Tablet Example}{Tablet}\raisedaster
+        \o \l{Tetrix Example}{Tetrix}\raisedaster
+        \o \l{Wiggly Example}{Wiggly}\raisedaster
+    \endlist
+
+    \section1 Dialog Examples
+
+    \list
+        \o \l{Config Dialog Example}{Config Example}\raisedaster
+        \o \l{Extension Example}{Extension}\raisedaster
+        \o \l{Find Files Example}{Find Files}\raisedaster
+    \endlist
+
+    \section1 Main Window Examples
+
+    \list
+        \o \l{Application Example}{Application}\raisedaster
+        \o \l{Menus Example}{Menus}\raisedaster
+    \endlist
+
+    \section1 Item View Examples
+
+    \list
+       \o \l{Color Editor Factory Example}{Color Editor Factory}
+       \o \l{Custom Sort/Filter Model Example}{Custom Sort/Filter Model}\raisedaster
+       \o \l{Item View Chart Example}{Item View Chart}\raisedaster
+       \o \l{Star Delegate Example}{Star Delegate}\raisedaster
+       \o \l{Tree Model Example}{Tree Model}
+    \endlist
+
+    \section1 Painting Examples
+
+    \list
+        \o \l{Path Stroking}{Path Stroke}
+        \o \l{Pixmap Filters Example}{Pixmap Filters}
+        \o \l{SVG Cards Example}{SVG Cards}\raisedaster
+    \endlist
+
+    \section1 Graphics View Examples
+
+    \list
+        \o \l{Colliding Mice Example}{Colliding Mice}\raisedaster
+        \o \l{Elastic Nodes Example}{Elastic Nodes}
+        \o \l{Pad Navigator Example}{Pad Navigator}
+    \endlist
+
+    \section1 Rich Text Examples
+
+    \list
+        \o \l{Order Form Example}{Order Form}\raisedaster
+        \o \l{Syntax Highlighter Example}{Syntax Highlighter}\raisedaster
+    \endlist
+
+    \section1 Phonon Examples
+
+    \list
+        \o \l{Music Player Example}{Music Player}\raisedaster
+    \endlist
+
+    \section1 Desktop Examples
+
+    \list
+        \o \l{Screenshot Example}{Screenshot}\raisedaster
+        \o \l{System Tray Icon Example}{System Tray Icon}\raisedaster
+    \endlist
+
+    \section1 Tool Examples
+
+    \list
+        \o \l{I18N Example}{I18N}
+        \o \l{Undo Framework Example}{Undo Framework}\raisedaster
+    \endlist
+
+    \section1 Thread Examples
+
+    \list
+        \o \l{Mandelbrot Example}{Mandelbrot}\raisedaster
+    \endlist
+
+    \section1 Network Examples
+
+    \list
+        \o \l{HTTP Example}{HTTP}
+    \endlist
+
+    \section1 Drag and Drop Examples
+
+    \list
+        \o \l{Draggable Icons Example}{Draggable Icons}\raisedaster
+        \o \l{Draggable Text Example}{DraggableText}
+        \o \l{Fridge Magnets Example}{Fridge Magnets}\raisedaster
+    \endlist
+
+    \section1 OpenGL Examples
+
+    \list
+        \o \l{2D Painting Example}{2D Painting}\raisedaster
+    \endlist
+
+    \section1 SQL Examples
+
+    \list
+        \o \l{Cached Table Example}{Cached Table}\raisedaster
+        \o \l{DOM Bookmarks Example}{DOM Bookmarks}
+    \endlist
+
+    \section1 WebKit Examples
+
+    \list
+        \o \l{Hello WebKit Example}{Hello WebKit}
+    \endlist
+
+    \section1 Qt Designer Examples
+
+    \list
+        \o \l{Calculator UI Example}{Calculator UI}\raisedaster
+        \o \l{Simple UI Example}{Simple UI}\raisedaster
+        \o \l{Custom Widget Example}{Custom Widget}\raisedaster
+    \endlist
+
+    \section1 Miscellaneous Examples
+
+    \list
+        \o \l{Qt Jambi Generator Example}{Generator}\raisedaster
+        \o \l{Resource System Example}{Resource System}\raisedaster
+        \o \l{Style Sheet Example}{Style Sheet}
+        \o \l{Chat Example}{Chat}
+    \endlist
+*/

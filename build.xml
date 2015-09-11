@@ -1,0 +1,235 @@
+<!--
+    TODO:
+    - ”ant all” should be ”ant full”.
+    - (new) ant all should build everything, only if it has not been built before.
+    - Tasks like ”ant library” should be meta tasks that pulls everything it needs,
+    and something like ant library-task should pull only stuff related to library.
+    Both should be documented.
+    - There should be direct way to export output of task to pastebin,
+    for example something like ant nc generator which sends the output to pastebin
+    and returns a link.
+    - Instead of version.properties there should be generic way to provide (default)
+    properties to Jambi, for example in form of file, or better, in qtjambi-deploy.
+    This can include stuff like debug flag and version.
+-->
+
+<project default="help" basedir="." name="qtjambi.main">
+
+    <property name="jambi.directory"               location="${basedir}"/>
+	<property name="timestamp.dir"               location="${basedir}/buildlogs"/>
+
+    <property file="build.properties"/>
+
+    <property name="sourceDir" location="build"/>
+    <property name="outputDir" location="build"/>
+    <property name="generatorDir" location="generator"/>
+
+    <path id="java.compile.classpath">
+        <fileset dir="${jardir}" includes="*.jar"/>
+    </path>
+
+    <!--
+        Import files containing tasks for the compilation.
+    -->
+
+    <import file="setenv.xml"/>
+    <import file="antfiles/bundle.xml"/>
+    <import file="antfiles/java.xml"/>
+    <import file="antfiles/clean.xml"/>
+    <import file="antfiles/generator.xml"/>
+    <import file="antfiles/qdoc3.xml"/>
+    <import file="build_autotests.xml" />
+
+    <!-- These properties used to be at the top of build.properties
+         but no one is expected to change them.
+         -->
+    <property name="java.srcdir"                   location="src/java"/>
+    <property name="java.outdir"                   location="build/java"/>
+    <property name="java.outsrcdir"                location="build/java-src"/>
+    <property name="jardir"                        location="jars"/>
+
+    <property name="qtjambi.builddir"              location="build/qmake-qtjambi"/>
+
+    <property name="generator.builddir"            location="build/qmake-generator"/>
+    <property name="generator.outputdir"           location="build/generator/out"/>
+    <property name="generator.xmlmerge.srcdir"     location="generator/typesystem/xml"/>
+    <property name="generator.xmlmerge.outputdir"  location="build/generator"/>
+
+    <property name="juic.builddir"                 location="build/qmake-juic"/>
+    <property name="juic.outputdir"                location="build/juic-out"/>
+
+
+    <!--
+        Initialization tasks. Note that the init.taskdef task depends on a jar
+        task, since ant-qtjambi.jar must be set in order for the
+        <qtjambi-initialize> task to be set at all.
+    -->
+
+    <target name="log">
+        <tstamp>
+            <format property="timestamp" pattern="yyyy-MM-dd_HH-mm-ss"/>
+        </tstamp>
+        <property name="build.log.dir" location="${basedir}/buildlogs"/>
+        <mkdir dir="${build.log.dir}"/>
+        <property name="build.log.filename" value="build_${timestamp}.log"/>
+        <property name="build.log.loglevel" value="info" />
+        <record name="${build.log.dir}/${build.log.filename}" loglevel="${build.log.loglevel}" append="false"/>
+        <echo message="Build logged to ${build.log.filename}"/>
+    </target>
+
+    <target name="init.taskdef" depends="log, jar.ant-qtjambi">
+        <taskdef resource="org/qtjambi/tools/ant/ant-qtjambi.xml">
+            <classpath>
+                <pathelement path="${jardir}/qtjambi-util.jar"/>
+                <pathelement path="${jardir}/nobundle/ant-qtjambi.jar"/>
+            </classpath>
+        </taskdef>
+    </target>
+
+    <target name="init" depends="log, init.taskdef">
+        <qtjambi-initialize verbose="true"/>
+        <!-- copy jogl to the jar dir. needed for compilation examples  -->
+		<copy file="${basedir}/jogl/jogl-all.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/jogl-all-natives-linux-amd64.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/jogl-all-natives-linux-i586.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/jogl-all-natives-macosx-universal.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/jogl-all-natives-windows-amd64.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/jogl-all-natives-windows-i586.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-natives-linux-amd64.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-natives-linux-i586.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-natives-macosx-universal.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-natives-windows-amd64.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-natives-windows-i586.jar" todir="${jardir}"/>
+		<copy file="${basedir}/jogl/gluegen-rt.jar" todir="${jardir}"/>
+    </target>
+
+    <target name="init.test" depends="log, init.taskdef"
+	description="Initializes the Qt Jambi unittest environment." >
+        <qtjambi-initialize verbose="true" test="true"/>
+    </target>
+
+    <target name="init.build" depends="log, setenv, init.taskdef, init"
+	description="Initializes the Qt Jambi build environment." >
+        <qtjambi-initialize-build verbose="true"/>
+        <!--<copy file="version.properties" todir="${java.srcdir}/qtjambi/"/>-->
+    </target>
+
+    <!--
+        END of initilization tasks
+    -->
+
+    <!--
+        Tools building
+    -->
+
+    <target name="tools.juic.qmake" depends="log, init.build">
+        <mkdir dir="${juic.builddir}"/>
+        <qmake dir="${juic.builddir}" pro="${basedir}/juic/juic.pro"
+                config="${qtjambi.configuration}"
+                qmakebinary="${tools.qt.qmake.abspath}"/>
+    </target>
+
+    <target name="tools.juic.make" depends="log, tools.juic.qmake">
+        <make dir="${juic.builddir}" target="${qtjambi.qmake.target.default}"/>
+    </target>
+
+    <macrodef name="dojuic">
+        <attribute name="module"/>
+        <sequential>
+            <mkdir dir="${juic.outputdir}/@{module}"/>
+            <juic juicDirectory="${juic.builddir}"
+                message="Running juic for @{module}..." alwaysupdate="true"
+                qtlibdirectory="${tools.qt.libdir}"
+                classpath="${java.srcdir}/@{module}"
+                outputdir="${juic.outputdir}/@{module}">
+                <include name="**/*.jui"/>
+            </juic>
+        </sequential>
+    </macrodef>
+
+    <!--
+        END of tools building
+    -->
+
+    <!-- TODO: move to better place -->
+    <target name="qtjambi.source" depends="log, generator.run">
+        <zip destfile="qtjambi-${qtjambi.version}-src.zip" basedir="java/src/qtjambi">
+        </zip>
+        <zip destfile="qtjambi-${qtjambi.version}-src.zip" basedir="${generator.outputdir}/java/qtjambi" update="true">
+        </zip>
+    </target>
+
+    <!--
+        TODO: the following two targets must go away
+        Move them to their real location or something
+    -->
+
+    <target name="library.java.bundle" depends="log, jar.qtjambi">
+        <copy file="${jardir}/qtjambi.jar"
+            tofile="qtjambi-${qtjambi.version}${qtjambi.configuration.dash}.jar"/>
+    </target>
+
+    <target name="library.designer.bundle" depends="log, jar.qtjambi-designer">
+        <copy file="${jardir}/qtjambi-designer.jar"
+            tofile="qtjambi-designer-${qtjambi.version}.jar"/>
+    </target>
+
+    <target name="examples.bundle" depends="log, jar.qtjambi-examples">
+        <copy file="${jardir}/qtjambi-examples.jar"
+            tofile="qtjambi-examples-${qtjambi.version}.jar"/>
+    </target>
+
+    <target name="help" description="log, Provides detailed help.">
+        <echo>
+Welcome to Qt Jambi help task.
+
+Please refer for all building related questions to our building
+documentation at http://qt-jambi.org/development/building/
+
+Full command listing with ant -projecthelp
+
+Quick howto:
+[edit build.properties to suit your system]
+ant all
+        </echo>
+    </target>
+
+    <!--
+        Root targets
+
+        Specifies the top targets, which does not actually do anything, but
+        provides consistent and easy to use interface for humans to use.
+    -->
+
+    <target name="generator.make" depends="log, init.build, tools.generator.make"
+        description="Compiles the generator."/>
+
+    <target name="generator" depends="log, generator.make, generator.run"
+        description="Compiles and runs the Qt Jambi Generator."/>
+
+    <target name="library.native" depends="log, library.native.bundle"
+        description="Compiles and bundles the Qt Jambi native libraries."/>
+
+    <target name="library.java" depends="log, library.java.bundle"
+        description="Compiles and bundles the Qt Jambi java libraries."/>
+
+    <target name="library.designer" depends="log, library.designer.bundle"
+        description="Compiles and bundles the Qt Jambi designer libraries."/>
+
+    <target name="library" depends="log, library.native, library.java, library.designer"
+        description="Compiles and bundles the Qt Jambi libraries.">
+        <!--<copy file="${jardir}/qtjambi-util.jar"
+            tofile="qtjambi-util-${qtjambi.version}.jar"/>-->
+    </target>
+
+    <target name="qdoc3" depends="qdoc3.make"
+        description="Compiles qdoc3 for doc generation scripts." />
+
+    <target name="examples" depends="log, examples.bundle"
+        description="Compiles and bundles the Qt Jambi examples."/>
+
+    <target name="all" depends="log, generator, library, examples"
+        description="Generates, builds and bundles the Qt Jambi libraries."/>
+
+</project>

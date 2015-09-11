@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="native">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../jars/qtjambi-native.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

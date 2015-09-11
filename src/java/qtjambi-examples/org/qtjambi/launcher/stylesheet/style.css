@@ -1,0 +1,43 @@
+QPushButton {
+  border-image : url(classpath:org/qtjambi/launcher/stylesheet/pushbutton_normal.png) 3 11 3 11;
+  border-width : 3 11 3 11;
+  padding : 2 2 3 2
+}
+
+QPushButton:pressed {
+  border-image : url(classpath:org/qtjambi/launcher/stylesheet/pushbutton_pressed.png) 3 11 3 11;
+  border-width : 3 11 3 11;
+  padding : 3 1 2 3
+}
+
+QGroupBox {
+  border-width :  2;
+  border-style : solid;
+  border-color : #a5cd39;
+  border-radius : 10;
+  padding-top : 10;
+  margin-top : 0.6em;
+  font : bold;
+  color : black;
+}
+
+QGroupBox QWidget {
+  font : normal;
+}
+
+QGroupBox QGroupBox {
+  font : bold;
+}
+
+QGroupBox::title {
+  subcontrol-position : top center;
+  subcontrol-origin : margin;
+  border-image : url(classpath:org/qtjambi/launcher/stylesheet/pushbutton_normal.png) 3 11 3 11;
+  border-width : 3 11 3 11;
+  padding : 2 2 3 2
+
+}
+
+QGroupBox[flat="true"] {
+  border : none
+}

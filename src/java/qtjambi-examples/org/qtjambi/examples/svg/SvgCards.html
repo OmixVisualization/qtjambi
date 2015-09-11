@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/svgcards.qdoc -->
+<head>
+  <title>SVG Cards Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">SVG Cards Example<br /><span class="subtitle"></span>
+</h1>
+<p>The SVG Cards example shows how to render SVG files using QSvgRenderer and the Graphics View framework.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/svgcards-example.png" /></p><p>The QSvgRenderer class is used to draw the contents of SVG files onto paint devices. It provides an API that supports basic features of SVG rendering, such as loading and rendering of static drawings, and more interactive features like animation.</p>
+<p>The Graphics View framework provides the QGraphicsScene class for managing and interacting with a large number of custom-made 2D graphical items derived from the QGraphicsItem class, and a QGraphicsView widget for visualizing the items, with support for zooming and rotation. The framework also provides the QGraphicsSvgItem class to render the contents of SVG files.</p>
+<p>The SVG Cards example displays a set of cards and lets the user move the cards and alter their stacking order. The example consists of several classes:</p>
+<ul>
+<li>The <tt>Card</tt> class represents the individual cards.</li>
+<li>The <tt>CardDeck</tt> class is used to create a set of cards.</li>
+<li>The <tt>CardBox</tt> class provide the application's message box, displaying information about the application's status and the user's interaction.</li>
+<li>The <tt>CardManager</tt> class controls the messages displayed in the message box.</li>
+<li>The <tt>SvgCards</tt> provides the main application window.</li>
+</ul>
+<p>We will take a look at the <tt>Card</tt> and <tt>CardDeck</tt> classes to see how to render the content of a SVG file onto an item, and we will take a look at the relevant parts of the <tt>SvgCards</tt> class to see how to implement a graphics view, i.e&#x2e;, how to create a scene with a corresponding view and how to put the items into the scene.</p>
+<a name="the-carddeck-class-implementation"></a>
+<h2>The CardDeck Class Implementation</h2>
+<p>The contents of a SVG file can be rendered onto an item by passing the file name to the QGraphicsSvgItem constructor or by setting a SVG renderer for it. In this example we use the latter approach, making the <tt>CardDeck</tt> class create the card items:</p>
+<pre>        private static class CardDeck extends QObject {
+            private QSvgRenderer renderer;
+            private String fileName;
+            private List&lt;Card&gt; cards;
+
+            public CardDeck(String file, QObject parent) {
+                super(parent);
+
+                fileName = file;
+                renderer = new QSvgRenderer(fileName, parent);
+                cards = new LinkedList&lt;Card&gt;();
+                for (int i = 0; i &lt; CARDS.length; ++i) {
+                    Card item = new Card(CARDS[i], renderer);
+                    cards.add(item);
+                }
+
+            }
+            ...
+        }</pre>
+<p>First we create the renderer, loading the contents of our file by passing the filename to the QSvgRenderer constructor, then we create the cards: For each card we pass an XML identifier that specifies the element to render, along with the renderer to the <tt>Card</tt> class's constructor.</p>
+<a name="the-card-class-implementation"></a>
+<h2>The Card Class Implementation</h2>
+<p>The <tt>Card</tt> class extends the QGraphicsSvgItem class:</p>
+<pre>        private static class Card extends QGraphicsSvgItem {
+            private double opacity = 1.0;
+            private CardManager manager;
+
+            public Card(String card, QSvgRenderer renderer) {
+                super();
+                setElementId(card);
+                setSharedRenderer(renderer);
+                setParent(renderer);
+            }</pre>
+<p>When constructing a card item, we start by calling the base class constructor to create a top-level item. Then we specify the XML element we want this item to render using QGraphicsSvgItem's setElementId() method.</p>
+<p>We also set the item's renderer using it as a shared renderer; in this example we use the same renderer for all our items. The benefit of using a shared renderer is that the SVG file is parsed only once. Note that the QSvgRenderer object that we pass to the setSharedRenderer() method has to exist for as long as this item is used.</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<thead><tr valign="top" class="qt-style"><th>Graphics Item Stacking Order</th></tr></thead>
+<tr valign="top" class="odd"><td>When moving the cards around in the view, we want the moving card to appear on top of the others. The Graphics View framework provides a concept of Z values to control the stacking order of the items. An item's Z value decides the stacking order of sibling (neighboring) items. An item of high Z-value will be drawn on top of an item with a lower Z-value if they share the same parent item.<pre>            public void mousePressEvent(QGraphicsSceneMouseEvent event) {
+                setZValue(10);
+                ...
+            }
+
+            public void mouseReleaseEvent(QGraphicsSceneMouseEvent event) {
+                setZValue(5);
+                ...
+            }
+            ...
+        }</pre>
+<p>We reimplement the mousePressEvent() and mouseReleaseEvent() methods inherited from QGraphicsItem, to receive the mouse press and release events for our item. Then, whenever the user press or release the left mouse-button over a card we alter its Z value using the QGraphicsItem.setZValue() method: When our card item receives a mouse press event, we set its Z value to 10 making it appear on top of all other cards; when the item receives a mouse release event the value is reduced to 5.</p>
+</td></tr>
+</table></p>
+<a name="the-svgcards-class-implementation"></a>
+<h2>The SvgCards Class Implementation</h2>
+<p>In this example, the view widget is also the main application window; the <tt>SvgCards</tt> class provides the widget by extending the QGraphicsView class. To implement the view we must first create and set up a scene, then we must add our card items:</p>
+<pre>    public class SvgCards extends QGraphicsView {
+        ...
+        public SvgCards() {
+            scene = new QGraphicsScene(this);
+            setScene(scene);</pre>
+<p>The view widget is used to visualize the contents of a QGraphicsScene object in a scrollable viewport. When a scene is set on a view, the QGraphicsScene.changed() signal is automatically connected to the view's updateScene() method, and the view's scrollbars are adjusted to fit the size of the scene.</p>
+<pre>            deck = new CardDeck(&quot;classpath:org/qtjambi/classpath:org/qtjambi/images/svg-cards.svg&quot;,
+                                this);</pre>
+<p>Once the scene is set up, we create a card deck. Remember that the <tt>CardDeck</tt> constructor creates a complete set of cards based on the given SVG file.</p>
+<pre>            ...
+            QApplication.invokeLater(new Runnable() {
+                        public void run() { loadCards(); } });
+        }</pre>
+<p>Finally, we load the cards into the application by calling the <tt>loadCards()</tt> method.</p>
+<pre>        public final void loadCards() {
+            if (cardsToLoad != 0 &amp;&amp; !closing) {
+                addCard(random.nextInt(50));
+                --cardsToLoad;
+                if (cardsToLoad != 0) {
+                    double percent = (totalCards - cardsToLoad)
+                                     / (double) totalCards * 100.0;
+                    manager.setOperation(&quot;Loading Cards : &quot; + (int) percent + &quot;% &quot;);
+                } else {
+                    manager.setOperation(&quot;Click on a Card&quot;);
+                }
+                viewport().update();
+                QApplication.invokeLater(new Runnable() {
+                    public void run() { loadCards(); } });
+            }
+        }</pre>
+<p>The <tt>loadCards()</tt> method is a recursive method, randomly spreading out the cards one by one. While loading the cards, the application's view is continuously updated to reflect the progress. Each card is added to the view using the <tt>addCard()</tt> convenience method:</p>
+<pre>        private final void addCard(int i) {
+            Card item = deck.cards().get(i);
+            while (item.scene() != null) {
+                item = deck.cards().get(random.nextInt(50));
+            }
+            ...
+            item.setPos(x, y);
+            item.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, true);
+            scene().addItem(item);
+        }</pre>
+<p>Note that it is the <tt>addCard()</tt> method that actually adds each card item to the view's scene using QGraphicsScene's addItem() method. But before we add the card to the scene, we set its position using the QGraphicsItem's setPos() method. The given position is interpreted in scene coordinates. We also set the item's ItemIsMovable flag to ensure that we can move the card around once all the cards are loaded into the application.</p>
+<p>This completes the walk-through documentation of this example. Please see the example code for implementation details.</p>
+</body>
+</html>

@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/chart.qdoc -->
+<head>
+  <title>Item View Chart Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Item View Chart Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Item View Chart example shows how to create a custom view for the model/view framework.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/chart-example.png" /></p><p>In this example, the items in a table model are represented as slices in a pie chart, relying on the flexibility of the model/view architecture to handle custom editing and selection features.</p>
+<p><b>Note that you only need to create a new view class if your data requires a specialized representation.</b> You should first consider using a standard QListView, QTableView, or QTreeView with a custom QItemDelegate subclass if you need to represent data in a special way.</p>
+<p>Many alternative representations of the same data, such as bar charts, could more easily be obtained using custom delegates with a QTableView.</p>
+<p>The example provides a custom QAbstractItemView class, <tt>PieView</tt>, that is displayed side-by-side with a QTableView in a main window provided by the <tt>ItemviewChart</tt> class, a subclass of QMainWindow.</p>
+<a name="itemviewchart-class-implementation"></a>
+<h2>ItemviewChart Class Implementation</h2>
+<p>The <tt>ItemviewChart</tt> class contains methods to handle the user interface and set up a model with data obtained from a file. It also contains the implementation of the <tt>PieView</tt> class (<a href="#pieview-class-implementation">shown later</a>).</p>
+<pre>    public class ItemviewChart extends QMainWindow {
+
+        private QAbstractItemModel model;</pre>
+<p>We define private variables for the model so that we can access and modify it as required.</p>
+<p>The constructor sets up the user interface, connecting actions used in the menus to slots in the class, constructs a model, and arranges the views in the window:</p>
+<pre>        public ItemviewChart() {
+            QMenu fileMenu = new QMenu(tr(&quot;&amp;File&quot;), this);
+
+            QAction openAction = new QAction(tr(&quot;&amp;Open...&quot;), this);
+            openAction.setShortcut(new QKeySequence(tr(&quot;Ctrl+O&quot;)));
+            openAction.triggered.connect(this, &quot;openFile()&quot;);
+            fileMenu.addAction(openAction);
+
+            QAction saveAction = new QAction(tr(&quot;&amp;Save As...&quot;), this);
+            saveAction.setShortcut(new QKeySequence(tr(&quot;Ctrl+S&quot;)));
+            saveAction.triggered.connect(this, &quot;saveFile()&quot;);
+            fileMenu.addAction(saveAction);
+
+            QAction quitAction = new QAction(tr(&quot;&amp;Quit&quot;), this);
+            quitAction.setShortcut(new QKeySequence(tr(&quot;Ctrl+Q&quot;)));
+            quitAction.triggered.connect(this, &quot;close()&quot;);
+            fileMenu.addAction(quitAction);
+
+            setupModel();
+            setupViews();
+
+            menuBar().addMenu(fileMenu);
+            statusBar();
+
+            openFile(&quot;classpath:org/qtjambi/examples/qtdata.cht&quot;);
+
+            setWindowTitle(tr(&quot;Chart&quot;));
+            setWindowIcon(new QIcon(&quot;classpath:org/qtjambi/classpath:org/qtjambi/images/qt-logo.png&quot;));
+            resize(750, 500);
+        }</pre>
+<p>The data in the <tt>qtdata.cht</tt> file is accessed from the classpath via the <a href="qtjambi-resourcesystem.html">resource system</a>.</p>
+<p>The <tt>setupModel()</tt> method provides an empty model with a reasonable number of rows and columns:</p>
+<pre>        private void setupModel() {
+            model = new QStandardItemModel(8, 2, this);
+            model.setHeaderData(0, Qt.Orientation.Horizontal, tr(&quot;Label&quot;));
+            model.setHeaderData(1, Qt.Orientation.Horizontal, tr(&quot;Quantity&quot;));
+        }</pre>
+<p>Since the data used with the example is arranged in the form of a two-column table with an arbitrary number of rows, it is useful to set the number of columns when the model is constructed. The number of rows defined here is a useful minimum value, allowing the user to experiment by adding additional data to small data sets.</p>
+<p>The <tt>setupViews()</tt> method arranges a table view alongside the custom pie view in a QSplitter widget, enabling the amount of space assigned to each to be adjusted by the user:</p>
+<pre>        private void setupViews() {
+            QSplitter splitter = new QSplitter();
+            QTableView table = new QTableView();
+            QAbstractItemView pieChart = new PieView(this);
+            splitter.addWidget(table);
+            splitter.addWidget(pieChart);
+            splitter.setStretchFactor(0, 0);
+            splitter.setStretchFactor(1, 1);
+
+            table.setModel(model);
+            pieChart.setModel(model);
+
+            QItemSelectionModel selectionModel = new QItemSelectionModel(model);
+            table.setSelectionModel(selectionModel);
+            pieChart.setSelectionModel(selectionModel);
+
+            setCentralWidget(splitter);
+        }</pre>
+<p>We construct a selection model for both views to share, before setting the splitter as the central widget for the main window.</p>
+<p>The <tt>openFile()</tt> and <tt>saveFile()</tt> methods are called when the user selects the respective <b>File|Open..&#x2e;</b> and <b>File|Save As..&#x2e;</b> menu items. <tt>openFile()</tt> reads and parses data in a simple format, and populates the model with items. <tt>saveFile()</tt> exports the contents of the model to a file in the same format.</p>
+<a name="pieview-class-overview"></a>
+<h2>PieView Class Overview</h2>
+<p>There are a number of different groups of methods in the <tt>PieView</tt> class. Some methods provide functionality defined in QAbstractItemView, and are required for the view to method correctly. These typically handle interaction between the view and its model, or indicate the mapping between model indexes and the visual location of items within the view.</p>
+<ul>
+<li>The dataChanged(), rowsInserted(), and rowsAboutToBeRemoved() methods are the couterparts of the signals with the same signatures in the QAbstractItemModel class. These handle changes to the model's data and underlying structure specified by model indexes.</li>
+<li>The edit() method is called whenever the user attempts to edit an item. Since the base class implements the basic mechanism to do this, we don't need to provide more than a simple reimplementation of this method.</li>
+</ul>
+<p>Each view class needs to provide implementations of methods that specify how it arranges items in a view. These relate model indexes to the positions of corresponding visible items and the regions they occupy.</p>
+<ul>
+<li>The indexAt() method is used to relate a position in the view to a model index. Since views manage their own item placement, this method must be implemented.</li>
+<li>visualRect() and visualRegionForSelection() relate model indexes to rectangles and regions specified in the viewport's coordinate system, so that visible items can be displayed.</li>
+<li>The isIndexHidden() method is used in certain types of view to support hidden items. We need to provide a default implementation even if he do not provide this feature.</li>
+<li><tt>itemRect()</tt> and <tt>itemRegion()</tt> relate model indexes to rectangles and regions specified in the view's coordinate system. These are private helper methods that make implementating other methods easier.</li>
+</ul>
+<p>Three methods are needed to control which part of the view is shown in the viewport:</p>
+<ul>
+<li>horizontalOffset() and verticalOffset() are used to indicate the horizontal and vertical displacements of the area in the view that is shown in the viewport. These can usually be related to values provided by the view's scroll bars.</li>
+<li>The scrollTo() method is used to navigate to a particular item in the view by scrolling the viewport. Although useful for many views, we only provide a minimal implementation of this method.</li>
+<li>The updateGeometries() method is called whenever the user scrolls the viewport.</li>
+</ul>
+<p>The view also needs to handle keyboard input to allow navigation between items, and provide support for selections.</p>
+<ul>
+<li>The moveCursor() method is called when the user presses a key corresponding to a standard action. It is up to the view to provide behavior that is appropriate for its visual representation of model data.</li>
+<li>setSelection() must be implemented to relate a rectangle in view coordinates to a range of model indexes, and adjust the underlying selection model according to the specified selection mode. The <tt>itemRect()</tt> and <tt>itemRegion()</tt> methods can be used to help implement this method.</li>
+</ul>
+<p>A selection of event handlers are reimplemented to provide support for item selection and painting:</p>
+<ul>
+<li>The mousePressEvent(), mouseMoveEvent(), and mouseReleaseEvent() methods handle item selection, but can also be used to provide support for drag and drop.</li>
+<li>We render the visible part of the view in the paintEvent() method.</li>
+<li>The resizeEvent() handler method is called whenever the view changes size. This method is reimplemented to ensure that the region shown in the viewport corresponds to the scroll bar positions.</li>
+</ul>
+<p>For convenience, we also implement a rows() method specific to this view that provides a convenient way to obtain the number of sibling of the item corresponding to a given model index.</p>
+<a name="pieview-class-implementation"></a>
+<h2>PieView Class Implementation</h2>
+<p>The <tt>PieView</tt> class is subclassed from QAbstractItemView rather than one of the standard view classes because it represents data obtained from a model in a way that is quite different from those views.</p>
+<p>To operate correctly, the view needs to record certain pieces of information about the data supplied by the model, including the sum of all values in the second column of the model and the number of valid items:</p>
+<pre>        private class PieView extends QAbstractItemView {
+
+            private int margin;
+            private int totalSize;
+            private int pieSize;
+            private int validItems;
+            private double totalValue;
+            private QPoint origin;
+            private QRubberBand rubberBand;</pre>
+<p>The constructor provides default values for these variables:</p>
+<pre>            public PieView(QWidget parent) {
+                super(parent);
+                horizontalScrollBar().setRange(0, 0);
+                verticalScrollBar().setRange(0, 0);
+
+                margin = 8;
+                totalSize = 300;
+                pieSize = totalSize - 2 * margin;
+                validItems = 0;
+                totalValue = 0.0;
+            }</pre>
+<p>We also set constant values for the total size of the view and its margin, calculating the pie chart's size from these values.</p>
+<a name="handling-changes-to-data"></a>
+<h3>Handling Changes to Data</h3>
+<p>When data in the model is changed, the <tt>dataChanged()</tt> slot is called:</p>
+<pre>            protected void dataChanged(final QModelIndex topLeft, final QModelIndex bottomRight) {
+                super.dataChanged(topLeft, bottomRight);
+
+                validItems = 0;
+                totalValue = 0.0;
+
+                for (int row = 0; row &lt; model().rowCount(rootIndex()); ++row) {
+
+                    QModelIndex index = model().index(row, 1, rootIndex());
+                    double value = toDouble(model().data(index));
+
+                    if (value &gt; 0.0) {
+                        totalValue += value;
+                        validItems++;
+                    }
+                }
+                viewport().update();
+            }</pre>
+<p>Since the view needs to know the sum of all values in the second column in order to correctly represent each individual item in the pie chart, it is useful to keep a running total of all values. Since we do not know the previous values of the items of data changed, we simply recalculate the total and number of valid items.</p>
+<p>The <tt>rowsInserted()</tt> and <tt>rowsAboutToBeRemoved()</tt> slots are able to modify the running total and update the number of valid items:</p>
+<pre>            protected void rowsInserted(final QModelIndex parent, int start, int end) {
+                for (int row = start; row &lt;= end; ++row) {
+
+                    QModelIndex index = model().index(row, 1, rootIndex());
+                    double value = toDouble(model().data(index));
+
+                    if (value &gt; 0.0) {
+                        totalValue += value;
+                        validItems++;
+                    }
+                }
+
+                super.rowsInserted(parent, start, end);
+            }
+
+            @Override
+            protected void rowsAboutToBeRemoved(final QModelIndex parent, int start, int end) {
+                for (int row = start; row &lt;= end; ++row) {
+
+                    QModelIndex index = model().index(row, 1, rootIndex());
+                    double value = toDouble(model().data(index));
+                    if (value &gt; 0.0) {
+                        totalValue -= value;
+                        validItems--;
+                    }
+                }
+
+                super.rowsAboutToBeRemoved(parent, start, end);
+            }</pre>
+<p>The <tt>edit()</tt> slot handles item editing:</p>
+<pre>            protected boolean edit(final QModelIndex index, EditTrigger trigger, QEvent event) {
+                return false;
+            }</pre>
+<p>We only allow the user to edit the labels for each item; these are stored in the first column of the model.</p>
+<a name="relating-model-indexes-to-the-view"></a>
+<h3>Relating Model Indexes to the View</h3>
+<p>When the user interacts with the view using the mouse cursor, the position of the cursor needs to be related to the relevant model index so that the appropriate editing or selection actions can be performed.</p>
+<p>Since custom views manage the geometries of the items they display, the <tt>indexAt()</tt> method must be implemented to perform this relation for each view, returning a model index corresponding to the item in which the given point lies, or an invalid model index if the point does not intersect with an item.</p>
+<pre>            public QModelIndex indexAt(final QPoint point) {
+                if (validItems == 0)
+                    return null;
+
+                int wx = point.x() + horizontalScrollBar().value();
+                int wy = point.y() + verticalScrollBar().value();</pre>
+<p>The initial conversion between viewport and view (contents) coordinates is straightforward for this view, requiring a simple translation based on the scroll offsets.</p>
+<p>Since the view displays a pie chart in the left half of its area and a key on the right, we need to handle the point differently depending on its location. We compare a point that lies within the pie chart area against each of the slices in the pie and, if it lies within a slice, we return the corresponding model index:</p>
+<pre>                if (wx &lt; totalSize) {
+                    double cx = wx - totalSize / 2;
+                    double cy = totalSize / 2 - wy;
+                    double d = Math.pow(Math.pow(cx, 2) + Math.pow(cy, 2), 0.5);
+
+                    if (d == 0 || d &gt; pieSize / 2)
+                        return null;
+
+                    double angle = (180 / Math.PI) * Math.acos(cx / d);
+                    if (cy &lt; 0)
+                        angle = 360 - angle;
+
+                    double startAngle = 0.0;
+
+                    for (int row = 0; row &lt; model().rowCount(rootIndex()); ++row) {
+
+                        QModelIndex index = model().index(row, 1, rootIndex());
+                        double value = toDouble(model().data(index));
+
+                        if (value &gt; 0.0) {
+                            double sliceAngle = 360 * value / totalValue;
+
+                            if (angle &gt;= startAngle &amp;&amp; angle &lt; (startAngle + sliceAngle))
+                                return model().index(row, 1, rootIndex());
+
+                            startAngle += sliceAngle;
+                        }
+                    }
+                }
+
+                return null;
+            }</pre>
+<p>If the point did not lie within any parts of the view that correspond to model indexes, null is returned.</p>
+<p>The <tt>itemRect()</tt> method is used to obtain rectangles defined in view coordinates that correspond to model indexes:</p>
+<pre>            QRect itemRect(final QModelIndex index) {
+                if (index == null)
+                    return new QRect();
+
+                if (index.column() != 1)
+                    return new QRect();
+
+                if (toDouble(model().data(index)) &gt; 0.0) {
+                    return new QRect(margin, margin, pieSize, pieSize);
+                }
+                return new QRect();
+            }</pre>
+<p>In this example, we only return useful information for the model indexes that are used to obtain information about the key labels in the right half of the view. For the pie chart, we simply return a QRect that covers the entire pie chart. We return a null QRect for invalid model indexes.</p>
+<p>For the <tt>itemRegion()</tt> implementation, we can provide more accurate information about the geometry of each slice in the pie chart that corresponds to the specified model index:</p>
+<pre>            QRegion itemRegion(final QModelIndex index) {
+                if (index == null)
+                    return null;
+                if (index.column() != 1)
+                    return null;
+                if (toDouble(model().data(index)) &lt;= 0.0)
+                    return null;</pre>
+<p>We are only interested in items in the second column in the model that contain positive double values, so we return null for all other model indexes.</p>
+<p>For each suitable model index, we use a QPainterPath to define the geometry of the item, and convert it to a filled polygon to construct a new QRegion object:</p>
+<pre>                double startAngle = 0.0;
+                for (int row = 0; row &lt; model().rowCount(rootIndex()); ++row) {
+
+                    QModelIndex sliceIndex = model().index(row, 1, rootIndex());
+                    double value = toDouble(model().data(sliceIndex));
+
+                    if (value &gt; 0.0) {
+                        double angle = 360 * value / totalValue;
+
+                        if (sliceIndex.equals(index)) {
+                            QPainterPath slicePath = new QPainterPath();
+                            slicePath.moveTo(totalSize / 2, totalSize / 2);
+                            slicePath.arcTo(margin, margin, margin + pieSize, margin + pieSize, startAngle, angle);
+                            slicePath.closeSubpath();
+
+                            return new QRegion(slicePath.toFillPolygon().toPolygon());
+                        }
+                        startAngle += angle;
+                    }
+                }
+
+                return null;
+            }</pre>
+<p>If the model index supplied was invalid, null is returned.</p>
+<p>The <tt>visualRect()</tt> method returns the rectangle that corresponds to a given model index in viewport coordinates, calling the <tt>itemRect()</tt> method to avoid duplicating effort:</p>
+<pre>            public QRect visualRect(final QModelIndex index) {
+                QRect rect = itemRect(index);
+                if (rect.isValid())
+                    return new QRect(rect.left() - horizontalScrollBar().value(), rect.top() - verticalScrollBar().value(), rect.width(), rect.height());
+                else
+                    return rect;
+            }</pre>
+<p>The <tt>visualRegionForSelection()</tt> method is similar to <tt>visualRect()</tt> but, where <tt>visualRect()</tt>, <tt>itemRect()</tt>, and <tt>itemRegion()</tt> are only used to obtain geometric information about individual items, this method is used to obtain regions that correspond to a number of selected items in viewport coordinates:</p>
+<pre>            protected QRegion visualRegionForSelection(final QItemSelection selection) {
+                int ranges = selection.size();
+
+                if (ranges == 0)
+                    return new QRegion(new QRect());
+
+                QRegion region = new QRegion();
+                for (int i = 0; i &lt; ranges; ++i) {
+                    QItemSelectionRange range = selection.at(i);
+                    for (int row = range.top(); row &lt;= range.bottom(); ++row) {
+                        for (int col = range.left(); col &lt;= range.right(); ++col) {
+                            QModelIndex index = model().index(row, col, rootIndex());
+                            region = region.united(new QRegion(visualRect(index)));
+                        }
+                    }
+                }
+                return region;
+            }</pre>
+<p>We start with an empty region, and cumulatively find its union with the region that corresponds to each selected item. The result we return is the union of all selected items.</p>
+<a name="scrolling-and-viewport-handling"></a>
+<h3>Scrolling and Viewport Handling</h3>
+<p>We need to ensure that the viewport only shows the part of the visible part of the view's contents, represented by the positions of the scroll bars if they are shown. To do this, we need to implement the <tt>horizontalOffset()</tt> and <tt>verticalOffset()</tt> methods to return the position of the top-left corner of the visible area relative to the top-left corner of the view's contents:</p>
+<pre>            protected int horizontalOffset() {
+                return horizontalScrollBar().value();
+            }
+
+            protected int verticalOffset() {
+                return verticalScrollBar().value();
+            }</pre>
+<p>Since the view does not contain scaled content, these methods simply return the corresponding scroll bar values.</p>
+<p>The <tt>scrollTo()</tt> method is used to navigate to the item that corresponds to a particular model index:</p>
+<pre>            public void scrollTo(final QModelIndex index, ScrollHint hint) {
+                QRect area = viewport().rect();
+                QRect rect = visualRect(index);
+
+                if (rect.left() &lt; area.left())
+                    horizontalScrollBar().setValue(
+                        horizontalScrollBar().value() + rect.left() - area.left());
+                else if (rect.right() &gt; area.right())
+                    horizontalScrollBar().setValue(
+                        horizontalScrollBar().value() + Math.min(
+                            rect.right() - area.right(), rect.left() - area.left()));
+
+                if (rect.top() &lt; area.top())
+                    verticalScrollBar().setValue(
+                        verticalScrollBar().value() + rect.top() - area.top());
+                else if (rect.bottom() &gt; area.bottom())
+                    verticalScrollBar().setValue(
+                        verticalScrollBar().value() + Math.min(
+                            rect.bottom() - area.bottom(), rect.top() - area.top()));
+
+                update();
+            }</pre>
+<p>We find the position of the item in viewport coordinates, and calculate the displacement from the top-left of the viewport. The result is used to provide new values for the horizontal and vertical scroll bars.</p>
+<p>The <tt>updateGeometries()</tt> method ensures that the scroll bars have the correct size when the size of the viewport changes:</p>
+<pre>            protected void updateGeometries() {
+                horizontalScrollBar().setPageStep(viewport().width());
+                horizontalScrollBar().setRange(0, Math.max(0, totalSize - viewport().width()));
+                verticalScrollBar().setPageStep(viewport().height());
+                verticalScrollBar().setRange(0, Math.max(0, totalSize - viewport().height()));
+            }</pre>
+<p>This method is called by the implementation of <tt>resizeEvent()</tt> handler method.</p>
+<a name="keyboard-navigation-and-selections"></a>
+<h3>Keyboard Navigation and Selections</h3>
+<p>In the moveCursor() method, we interpret standard keyboard actions entered by the user, and update the current model index to refer to the corresponding current item in the view.</p>
+<p>In this model, we only handle actions for the cursor keys:</p>
+<pre>            protected QModelIndex moveCursor(QAbstractItemView.CursorAction cursorAction, Qt.KeyboardModifiers modifiers) {
+                QModelIndex current = currentIndex();
+
+                switch (cursorAction) {
+                case MoveLeft:
+                case MoveUp:
+                    if (current.row() &gt; 0)
+                        current = model().index(current.row() - 1, current.column(), rootIndex());
+                    else
+                        current = model().index(0, current.column(), rootIndex());
+                    break;
+                case MoveRight:
+                case MoveDown:
+                    if (current.row() &lt; rows(current) - 1)
+                        current = model().index(current.row() + 1, current.column(), rootIndex());
+                    else
+                        current = model().index(rows(current) - 1, current.column(), rootIndex());
+                    break;
+                default:
+                    break;
+                }
+
+                viewport().update();
+                return current;
+            }</pre>
+<p>Here, we interpret the left and up cursor keys in the same way, setting the current model index to the index in the row above it in the model. Similarly, the right and down cursor keys cause the current model index to be set to the index in the row below it in the model. Although the view represents the items of data in the form of a pie chart, we do not allow the current index to &quot;wrap around&quot; from one end of the data set to the other.</p>
+<p>Selections of items are handled by the <tt>setSelection()</tt> method, which translates a QRect, given in viewport coordinates, to the corresponding QRect in view contents coordinates, and determines which items lie within this selection rectangle.</p>
+<p>First, we obtain model indexes from the model for each item of data, using <tt>itemRegion()</tt> to obtain a region for each item.</p>
+<pre>            protected void setSelection(final QRect rect, QItemSelectionModel.SelectionFlags command) {
+                QRect contentsRect = rect.translated(horizontalScrollBar().value(), verticalScrollBar().value()).normalized();
+
+                int rows = model().rowCount(rootIndex());
+                int columns = model().columnCount(rootIndex());
+                Vector&lt;QModelIndex&gt; indexes = new Vector&lt;QModelIndex&gt;();
+
+                for (int row = 0; row &lt; rows; ++row) {
+                    for (int column = 0; column &lt; columns; ++column) {
+                        QModelIndex index = model().index(row, column, rootIndex());
+                        QRegion region = itemRegion(index);
+
+                        if (region != null &amp;&amp; region.intersects(contentsRect))
+                            indexes.add(index);
+                    }
+                }</pre>
+<p>If an item's region intersects the selection rectangle, we add the model index to a vector of indexes.</p>
+<p>Once we have examined the regions of each item, we check whether any indexes were stored in the vector. If so, we construct a selection by extending the current selection to cover a range of indexes.</p>
+<pre>                if (indexes.size() &gt; 0) {
+                    int firstRow = indexes.elementAt(0).row();
+                    int lastRow = indexes.elementAt(0).row();
+                    int firstColumn = indexes.elementAt(0).column();
+                    int lastColumn = indexes.elementAt(0).column();
+
+                    for (int i = 1; i &lt; indexes.size(); ++i) {
+                        firstRow = Math.min(firstRow, indexes.elementAt(i).row());
+                        lastRow = Math.max(lastRow, indexes.elementAt(i).row());
+                        firstColumn = Math.min(firstColumn, indexes.elementAt(i).column());
+                        lastColumn = Math.max(lastColumn, indexes.elementAt(i).column());
+                    }
+
+                    QItemSelection selection = new QItemSelection(
+                        model().index(firstRow, firstColumn, rootIndex()),
+                        model().index(lastRow, lastColumn, rootIndex()));
+                    selectionModel().select(selection, command);
+                } else {
+                    QModelIndex noIndex = null;
+                    QItemSelection selection = new QItemSelection(noIndex, noIndex);
+                    selectionModel().select(selection, command);
+                }
+
+                update();
+            }</pre>
+<p>Note that we still apply a selection even if there are no model indexes to select; this ensures that selection commands such as Clear have an effect on the selection.</p>
+<a name="event-handler-functions"></a>
+<h3>Event Handler Functions</h3>
+<p>We reimplement mouse event handlers for the view to control the way items are selected in the view.</p>
+<p>In the <tt>mousePressEvent()</tt> method, we call the base class's method to ensure that various basic tasks are performed and, if necessary, we create a QRubberBand object that we will use to indicate the region the user has selected in the view:</p>
+<pre>            protected void mousePressEvent(QMouseEvent event) {
+                super.mousePressEvent(event);
+                origin = event.pos();
+                if (rubberBand == null)
+                    rubberBand = new QRubberBand(QRubberBand.Shape.Rectangle, this);
+                rubberBand.setRubberBandGeometry(new QRect(origin, new QSize()));
+                rubberBand.show();
+            }</pre>
+<p>We record the position of the mouse press in the instance's <tt>origin</tt> variable for later use. The rubber band initially has an invalid size; it will be resized if the user moves the mouse while the mouse button is held down.</p>
+<p>The <tt>mouseMoveEvent()</tt> implementation resizes the rubber band using the value previously stored in <tt>origin</tt>, taking care to normalize the newly-constructed rectangle first, and calls the base class's implementation of the method:</p>
+<pre>            protected void mouseMoveEvent(QMouseEvent event) {
+                QRect rect = new QRect(origin, event.pos()).normalized();
+                rubberBand.setRubberBandGeometry(rect);
+                super.mouseMoveEvent(event);
+
+                QModelIndex underMouseIndex = indexAt(event.pos());
+                if (underMouseIndex == null)
+                    setSelection(rect, selectionCommand(underMouseIndex, event));
+                viewport().update();
+            }</pre>
+<p>If the mouse is over an item in the view, we update the selection to include the corresponding model index. We also update the visible part of the view to show any changes.</p>
+<p>In the <tt>mouseReleaseEvent()</tt> method, we call the base class's implementation, hide the rubber band, and update the visible part of the view:</p>
+<pre>            protected void mouseReleaseEvent(QMouseEvent event) {
+                super.mouseReleaseEvent(event);
+                rubberBand.hide();
+                viewport().update();
+            }</pre>
+<p>Although the selection handling provided by these event handlers is quite simple, it demonstrates a basic level of functionality that can be used as a starting point for more complex views.</p>
+</body>
+</html>

@@ -1,0 +1,542 @@
+Note: moved to our website, http://qt-jambi.org/material/howto-document
+
+The documentation for the Qt/Java technology is not ready at the time
+of this release, but the Qt/Java API is almost identical to the Qt/C++
+API so it is possible to use the Qt/C++ documentation to develop
+Qt/Java source code. The purpose of this document is to point out the
+differences and explain how to deal with them. A complete
+documentation set for Qt/Java will be published for the final release.
+
+[section] Value types vs Object types
+
+Qt has the concept of value types. These are types which one does not
+have to allocate using the "new" operator and which are passed to
+functions seemingly "by value" or by "const &". Since value types are
+put on the stack they will be automatically deleted when the function
+goes out of scope. Examples of value types are: QRect, QStyleOptions
+and QPixmap. A complete list of the value types in Qt/Java is given
+below. Value types are automatically deleted by the Java garbage
+collector.
+
+Object types are classes which needs to be instantiated using the
+"new" operator and are passed to functions as pointers to the
+objects. Widgets, for instance, fall into this category. These types
+need to be explicity deleted in C++, either by calling the "delete"
+operator directly or by assigning the object a parent that will be
+delete by the object when the parent is deleted.
+
+These objects do not rely on garbage collection in Java. Consider a
+QWidget with a QPushButton inside it. After setting up the widget, the
+QPushButton goes out of scope in Java, but it is still referenced by
+the parent on the C++ side. In this case QPushButton will be deleted
+when the parent is deleted, but for the QWidget one must explictly
+call the function dispose() which will delete the widget on the C++
+side.
+
+Some object types are still garbage collected because this fits nicely
+with the way they are usually used.
+
+[section] Objects, Pointers and references
+
+Java has a simpler typesystem compared to that of C++, with only
+primitives and objects. Primitives are passed by value and objects are
+passed by reference. Qt/Java maps the signatures in Qt/C++ to those in
+Qt/Java according to the following table:
+
+Object Types    passed by pointer
+Value Types passed by value or const &
+Primitives  primitives
+
+If a type does not fit into this category, such as the signature
+
+QApplication::QApplication(const char **, int &)
+
+The arguments are converted into a QNativePointer in Java which is a C
+pointer structure that one can use to create and manipulate C pointers
+from Java. The QNativePointer based API can be difficult and dangerous 
+to use, so Qt/Java tries to minimize its presence in the public API,
+but adding convenience functions such as:
+
+QApplication(String args[])
+
+To help the Java programmer.
+
+[section] Implicit sharing and detaching
+
+In short, value types will behave slightly different when passed to a
+Java function as opposed to a Qt/C++ function, via the native interface.
+
+While in Java one might expect:
+
+QPen pen = new QPen(QColor.black, 10);
+painter.setPen(pen);
+pen.setWidth(1);
+
+to change the pen width from 10 to 1 for the painter that has a
+reference to the pen, this is indeed not the case as the pen is passed
+to the setPen function by value on the C++ side, causing a separate
+copy to be made of it, thus calling pen.setWidth(1) will only change
+the pen width of the local pen in Java.
+
+If the pen been passed to another Java function the behaviour would
+have been different.
+
+class Shape {
+    QPen pen;
+    void setPen(QPen pen) { this.pen = pen; }
+}
+
+...
+
+pen = new QPen(QColor.black, 10);
+shape.setPen(pen);
+pen.setWidth(1);
+
+In this case, we are passing the value type as a Java reference so
+both the shape and the local pen are the same object.
+
+
+[section] Ownership and Garbage collection
+
+Java has built in garbage collection for all objects. As a result of
+this any object this is no longer referenced by the virtual machine
+will be deleted. When an object is passed to a Qt/C++ function that
+takes ownership of the object, such as QEvent being passed to
+QApplication::postEvent(), the event object might no longer be
+reachable from the Virtual Machine and can be scheduled for deletion
+by the Garbage Collector.
+
+In these cases it is required to call the function
+QtObject.disableGarbageCollection() which will make sure that the
+virtual machine never deletes the object. It is important that this
+function is only used for functions that take ownership, otherwise the
+application will leak memory.
+
+The Qt/Java team has tried to identify the locations where this
+situation arises and added patched the Qt/Java library so it is not
+required to call the disableGarbageCollection function, so this is not
+required for postEvent() above, but not all places are covered.
+
+
+[section] Enums and QFlags
+
+Both enums and flags are mapped into Java as plain intergers. Although
+Java 1.5 provides enumerators as a language feature these enumerators
+are not suitable mapping for enums as they exist in C++, as enums in
+C++ can be treated as both bitmasks and integers while Java enums are
+special objects that fail to fit into these categories.
+
+
+[section] Operator overloading
+
+Operator overloading is not supported by the Java language so all
+operators in Qt/C++ are converted to normal functions which are given
+an "operator_" prefix to help identify them and to avoid name clashes
+with existing functions of that class. The operators are named
+according to names used in [The C++ Programming Language, Bjarne
+Stroustrup] and are as follows:
+
++   add
+-   subtract
+*   multiply
+/   divide
+%   modulo
+&   and
+|   or
+^   xor
+~   negate
+<<  shift_left
+>>  shift_right
+
+=   assign
++=  add_assign
+-=  subtract_assign
+*=  multiply_assign
+/=  divide_assign
+%=  modulo_assign
+&=  and_assign
+|=  or_assign
+^=  xor_assign
+<<= shift_left_assign
+>>= shift_right_assign
+
+&&  logical_and
+||  logical_or
+!   not
+
+++  increment
+--  decrement
+
+<   less
+>   greater
+<=  less_or_equal
+>=  greater_or_equal
+!=  not_equal
+==  equal
+
+[]  subscript
+->  pointer
+
+cast    cast_[ClassName]
+
+[section] TypeMapping
+
+Several Qt types have been converted to Java types because the Java
+types work better with the language or integrate better with the rest
+of the Java API's. When such a type is used the Qt/C++ API the
+corresponding Java type will be used in the Qt/Java API.
+
+QString -> java.lang.String
+QThread -> java.lang.Thread
+QList<T> -> java.util.List<T>
+QVector<T> -> java.util.List<T>
+QHash<T> -> java.util.HashMap<T>
+QMap<T> -> java.util.SortedMap<T>
+QPair<X, Y> -> org.qtjambi.qt.QPair<X, Y>
+
+[section] Table of valuetypes:
+
+QAbstractTextDocumentLayout::PaintContext
+QBasicTimer
+QBitArray
+QBitmap
+QBrush
+QByteArray
+QByteArrayMatcher
+QColor
+QColormap
+QConicalGradient
+QCursor
+QDate
+QDateTime
+QDir
+QFileInfo
+QFont
+QFontDatabase
+QFontInfo
+QFontMetrics
+QFontMetricsF
+QGradient
+QIcon
+QImage
+QImageTextKeyLang
+QInputMethodEvent::Attribute
+QItemSelection
+QItemSelectionRange
+QKeySequence
+QLine
+QLineF
+QLinearGradient
+QLocale
+QMatrix
+QMetaEnum
+QModelIndex
+QPainterPath
+QPainterPath::Element
+QPalette
+QPen
+QPersistentModelIndex
+QPicture
+QPixmap
+QPoint
+QPointF
+QPolygon
+QPolygonF
+QRadialGradient
+QRect
+QRectF
+QRegExp
+QRegion
+QSize
+QSizeF
+QSizePolicy
+QStringMatcher
+QStyleOption
+QStyleOptionButton
+QStyleOptionComboBox
+QStyleOptionComplex
+QStyleOptionDockWidget
+QStyleOptionFocusRect
+QStyleOptionFrame
+QStyleOptionFrameV2
+QStyleOptionGroupBox
+QStyleOptionHeader
+QStyleOptionMenuItem
+QStyleOptionProgressBar
+QStyleOptionProgressBarV2
+QStyleOptionRubberBand
+QStyleOptionSlider
+QStyleOptionSpinBox
+QStyleOptionTab
+QStyleOptionTabBarBase
+QStyleOptionTabV2
+QStyleOptionTabWidgetFrame
+QStyleOptionTitleBar
+QStyleOptionToolBar
+QStyleOptionToolBox
+QStyleOptionToolButton
+QStyleOptionViewItem
+QTableWidgetSelectionRange
+QTextBlock
+QTextBlock::iterator
+QTextBlockFormat
+QTextCharFormat
+QTextCursor
+QTextDocumentFragment
+QTextFormat
+QTextFragment
+QTextFrame::iterator
+QTextFrameFormat
+QTextImageFormat
+QTextInlineObject
+QTextLayout::FormatRange
+QTextLength
+QTextLine
+QTextListFormat
+QTextOption
+QTextTableCell
+QTextTableFormat
+QTime
+QTreeWidgetItemIterator
+QUrl
+QUuid
+
+[section] Table of Object types
+
+QAbstractButton
+QAbstractEventDispatcher
+QAbstractFileEngine
+QAbstractFileEngineHandler
+QAbstractItemDelegate
+QAbstractItemModel
+QAbstractItemView
+QAbstractListModel
+QAbstractPageSetupDialog
+QAbstractPrintDialog
+QAbstractProxyModel
+QAbstractScrollArea
+QAbstractSlider
+QAbstractSpinBox
+QAbstractTableModel
+QAbstractTextDocumentLayout
+QAbstractUndoItem
+QAccessible
+QAccessibleApplication
+QAccessibleBridge
+QAccessibleBridgeFactoryInterface
+QAccessibleBridgePlugin
+QAccessibleEvent
+QAccessibleFactoryInterface
+QAccessibleInterface
+QAccessibleObject
+QAccessiblePlugin
+QAccessibleWidget
+QAction
+QActionEvent
+QActionGroup
+QBoxLayout
+QBuffer
+QButtonGroup
+QCDEStyle
+QCheckBox
+QChildEvent
+QClipboard
+QClipboardEvent
+QCloseEvent
+QColorDialog
+QComboBox
+QCommonStyle
+QContextMenuEvent
+QCoreApplication
+QDateEdit
+QDateTimeEdit
+QDesktopWidget
+QDial
+QDialog
+QDirModel
+QDockWidget
+QDoubleSpinBox
+QDoubleValidator
+QDrag
+QDragEnterEvent
+QDragLeaveEvent
+QDragMoveEvent
+QDragResponseEvent
+QDropEvent
+QErrorMessage
+QEvent
+QEventLoop
+QFSFileEngine
+QFileDialog
+QFileIconProvider
+QFileOpenEvent
+QFocusEvent
+QFocusFrame
+QFontDialog
+QFrame
+QGridLayout
+QGroupBox
+QHBoxLayout
+QHeaderView
+QHelpEvent
+QHideEvent
+QHoverEvent
+QIODevice
+QIconDragEvent
+QIconEngine
+QIconEngineFactoryInterface
+QIconEnginePlugin
+QImageIOHandler
+QImageIOHandlerFactoryInterface
+QImageIOPlugin
+QImageReader
+QImageWriter
+QInputContext
+QInputContextFactory
+QInputContextFactoryInterface
+QInputContextPlugin
+QInputDialog
+QInputEvent
+QInputMethodEvent
+QIntValidator
+QItemDelegate
+QItemEditorCreatorBase
+QItemEditorFactory
+QItemSelectionModel
+QKeyEvent
+QLCDNumber
+QLabel
+QLayout
+QLibraryInfo
+QLineEdit
+QListView
+QListWidget
+QListWidgetItem
+QMainWindow
+QMenu
+QMenuBar
+QMessageBox
+QMetaClassInfo
+QMetaMethod
+QMetaProperty
+QMetaType
+QMimeData
+QMotifStyle
+QMouseEvent
+QMoveEvent
+QMovie
+QMutex
+QObject
+QPageSetupDialog
+QPaintEngine
+QPaintEngineState
+QPaintEvent
+QPainter
+QPainterPathPrivate
+QPainterPathStroker
+QPictureFormatInterface
+QPictureFormatPlugin
+QPictureIO
+QPixmapCache
+QPlastiqueStyle
+QPrintDialog
+QPrintEngine
+QProcess
+QProgressBar
+QProgressDialog
+QProxyModel
+QPushButton
+QRadioButton
+QReadWriteLock
+QRegExpValidator
+QResizeEvent
+QRubberBand
+QScrollArea
+QScrollBar
+QSemaphore
+QSessionManager
+QSettings
+QShortcut
+QShortcutEvent
+QShowEvent
+QSignalMapper
+QSizeGrip
+QSlider
+QSocketNotifier
+QSortFilterProxyModel
+QSound
+QSpacerItem
+QSpinBox
+QSplashScreen
+QSplitter
+QSplitterHandle
+QStackedLayout
+QStackedWidget
+QStandardItemModel
+QStatusBar
+QStatusTipEvent
+QStringListModel
+QStyle
+QStyleFactory
+QStyleFactoryInterface
+QStyleHintReturn
+QStyleHintReturnMask
+QStylePainter
+QStylePlugin
+QSyntaxHighlighter
+QTabBar
+QTabWidget
+QTableView
+QTableWidget
+QTableWidgetItem
+QTabletEvent
+QTextBlockGroup
+QTextBlockUserData
+QTextBrowser
+QTextCodec
+QTextCodec::ConverterState
+QTextCodecFactoryInterface
+QTextCodecPlugin
+QTextDecoder
+QTextDocument
+QTextEdit
+QTextEncoder
+QTextFrame
+QTextItem
+QTextLayout
+QTextList
+QTextObject
+QTextObjectInterface
+QTextStreamManipulator
+QTextTable
+QTimeEdit
+QTimer
+QTimerEvent
+QToolBar
+QToolBarChangeEvent
+QToolBox
+QToolButton
+QToolTip
+QTranslator
+QTreeView
+QTreeWidget
+QTreeWidgetItem
+QVBoxLayout
+QValidator
+QWaitCondition
+QWhatsThis
+QWhatsThisClickedEvent
+QWheelEvent
+QWidget
+QWidgetItem
+QWindowStateChangeEvent
+QWindowsStyle
+QWorkspace
+
+[section] Memory managed object types
+QApplication
+QDataStream
+QFile
+QPrinter
+QTemporaryFile
+QTextStream

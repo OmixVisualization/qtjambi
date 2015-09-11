@@ -1,0 +1,133 @@
+/*!
+    \page qtjambi-calculator.html
+    \title Calculator UI Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Calculator UI Example}{AdvancedCalculator.java}
+    \endlist
+
+    The Calculator UI Example shows how to use forms created with \QD
+    in an application.
+
+    \table
+    \row
+        \o \inlineimage calculator-simple-example.png
+        \o \inlineimage calculator-normal-example.png
+        \o \inlineimage calculator-dockable-example.png
+    \header
+        \o Simple
+        \o Normal
+        \o Dockable
+    \endtable
+
+    The example provides a calculator application that allows the user
+    to choose the preferred user interface among \gui Simple, \gui
+    Normal and \gui Dockable. The main application window is provided
+    by the \c Calculator class which extends the QMainWindow class.
+
+    \section1 Calculator Class Definition
+
+    In general, you only have to subclass QWidget to implement the UI
+    forms. The reason we have chosen to derive from QMainWindow (which
+    is a QWidget subclass) instead, is rooted in the dockable version
+    of our calculator. QWidget does not support dock widgets;
+    QMainWindow does.
+
+    \snippet AdvancedCalculator.java 0
+
+    In the \c Calculator class, we first provide a \c main() method
+    to create and show the main application window when the example is
+    run. While running the calculator, we will have to access the line
+    edit to accept input and the text browser to display the
+    calculations and results. For that reason, we declare
+    corresponding variables in the application wide scope. We also
+    have to provide methods that correspond to the application's
+    user interface. All of this is taken care of in the \c Calculator
+    class's constructor.
+
+    \section1 Calculator Class Constructor
+
+    In the constructor, we first define the various user interfaces
+    that the user can choose from, and the we use the QInputDialog
+    class to retrieve the user's preferred alternative:
+
+    \snippet AdvancedCalculator.java 1
+    \dots 8
+    \snippet AdvancedCalculator.java 2
+
+    The QInputDialog class provides a simple convenience dialog to get
+    a single value from the user. The input value can be a string, a
+    number or an item from a list. We use the static \l
+    {QInputDialog::getItem()}{QInputDialog.getItem()} convenience
+    method to let the user select one of our predefined alternatives
+    using a combobox.
+
+    \image calculator-selector.png
+
+    When pressing the dialog's \gui OK button, the \l
+    {QInputDialog::getItem()}{getItem()} method returns the text of
+    the current item; otherwise it returns \c null.
+
+    \snippet AdvancedCalculator.java 3
+    \snippet AdvancedCalculator.java 4
+    \snippet AdvancedCalculator.java 5
+
+    Once we know which user interface the user prefer, we can create
+    an object of the corresponding class. Note that you must run the
+    user interface compiler for Qt (juic) to generate the latter
+    class. For example, if the form created in \QD is saved as \c
+    CalculatorSimple.jui, running juic on the file will generate the
+    corresponding \c Ui_CalculatorSimple.java file that defines the
+    public \c Ui_CalculatorSimple class. The latter file must be
+    located in the same directory as the application executable to be
+    successfully loaded at runtime.
+
+    The generated class has a \c setupUI() method that we can use to
+    set up the preferred user interface. We pass \c this as the
+    argument to this method to use the \c Calculator widget itself
+    as the container for the user interface. With the user interface
+    in place, we can also establish the previously mentioned access to
+    the input line edit and output text browser.
+
+    \omit
+    Then we create the calculator functionality:
+
+    \skipto Function fun
+    \printuntil functions.put
+    \dots 8
+    \skipto /^\s\s\s\s\}/
+    \printuntil }
+
+    Each calculator operation is represented by a \c Function
+    object. The \c Function class is a convenience class providing the
+    functionality that is common for all operations. In addition, we
+    define a operation specific \c result() method for each object,
+    providing the operation's calculations. See the example code for
+    more details.
+    \endomit
+
+    \section1 Connecting to the User Interface
+
+    In addition to creating the user interface, \c setupUi()
+    automatically calls the QObject.connectSlotsByName() method,
+    connecting signals from widgets on the form to methods in our
+    code. To indicate which widgets and signals in the user interface
+    that should be connected to each method, we use a predefined
+    naming convention. For example:
+
+    \snippet AdvancedCalculator.java 6
+    \dots
+    \snippet AdvancedCalculator.java 7
+
+    The \c on_button_equal_clicked() method is called whenever the
+    button called "button_equal" in the user interface emits the \l
+    {QAbstractButton::clicked()}{QAbstractButton.clicked()} signal. By
+    providing similar methods for all the buttons in the user
+    interface we get a fully responsive calculator application.
+
+    Note that the \c Calculator class defines several other methods
+    used to perform the various calculations, but these are beyond the
+    scope of this documentation. Please see the example code for
+    implementation details.
+*/

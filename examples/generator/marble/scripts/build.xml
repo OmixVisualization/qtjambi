@@ -1,0 +1,154 @@
+<project default="all" basedir=".">
+
+    <property environment="env"/>
+
+    <property name="jambiDir" value="${env.JAMBIDIR}"/>
+    <property name="qtjambi.qtdir" value="${env.QTDIR}"/>
+    <property name="marbleDir" value="${env.MARBLEDIR}"/>
+
+    <property name="jambiLib" value="${jambiDir}/lib"/>
+    <property name="jardir" value="${jambiDir}/jars"/>
+
+    <property file="${jambiDir}/build.properties"/>
+    <property file="${jambiDir}/version.properties"/>
+
+    <tstamp/>
+
+    <target name="init.taskdef">
+        <taskdef resource="org/qtjambi/tools/ant/ant-qtjambi.xml">
+            <classpath>
+                <pathelement path="${jardir}/qtjambi-util.jar"/>
+                <pathelement path="${jardir}/nobundle/ant-qtjambi.jar"/>
+            </classpath>
+        </taskdef>
+        <taskdef resource="net/sf/antcontrib/antlib.xml"
+            classpath="${jambiDir}/extjars/ant-contrib.jar"/>
+    </target>
+
+    <target name="init" depends="init.taskdef">
+        <if>
+            <os family="windows"/>
+            <then>
+                <property name="qtjambi.libsubdir" value="bin"/>
+            </then>
+            <else>
+                <property name="qtjambi.libsubdir" value="lib"/>
+            </else>
+        </if>
+        <qtjambi-initialize verbose="true" configuration="${qtjambi.config}"/>
+
+        <mkdir dir="${basedir}/platform-output"/>
+        <mkdir dir="../target"/>
+    </target>
+
+    <property name="jambiLib" value="${jambiDir}/lib" />
+
+    <target name="help" description="Provides detailed help.">
+         <echo>Generates the marble jambi jar file</echo>
+    </target>
+
+    <target name="compile" depends="init">
+
+        <generator dir="${basedir}"
+           outputDirectory="${basedir}/.."
+           typesystem="${basedir}/typesystem.txt"
+           includepaths="${marbleDir}/src/lib"
+           header="${basedir}/generator_global.h"/> 
+
+
+        <qmake config="${qtjambi.configuration}"
+           dir="${basedir}/"
+           pro="${basedir}/marble.pro" />
+
+	<make dir="${basedir}" />
+
+       <javac destdir="${basedir}/platform-output"
+           debug="true">
+            <classpath >
+                <pathelement path="${jambiDir}/qtjambi-util-${qtjambi.version}.jar"/>
+                <pathelement path="${jambiDir}/qtjambi-${qtjambi.version}.jar"/>
+            </classpath>
+            <src path="${jambiDir}/java/src/qtjambi-util"/>
+            <src path="${basedir}/.."/>
+            <include name="org/qtjambi/marble/*.java"/>
+            <include name="org/qtjambi/qt/internal/*.java"/>
+       </javac>
+
+    </target>
+    <target name="package"
+        depends="init"
+        description="Creating .jar file with native libs...">
+
+        <qtjambi-platform-jar cacheKey="genex-${qtjambi.compiler}-${DSTAMP}-${TSTAMP}"
+                              outdir="${basedir}/platform-output">
+
+            <!-- Qt Libraries... -->
+            <library name="QtCore"    type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtGui"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtOpenGL"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtDBus"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtXmlPatterns"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtScript"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtNetwork"     type="qt" rootPath="${qtjambi.qtdir}" />
+            <library name="QtSvg"     type="qt" rootPath="${qtjambi.qtdir}" />
+
+            <!-- Qt Plugins... -->
+            <library name="qjpeg" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/imageformats" load="never"/>
+            <library name="qgif" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/imageformats" load="never"/>
+            <library name="qmng" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/imageformats" load="never"/>
+            <library name="qtiff" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/imageformats" load="never"/>
+            <library name="qsvg" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/imageformats" load="never"/>
+            <library name="qsvgicon" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/iconengines" load="never"/>
+            <library name="qcncodecs" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/codecs" load="never" />
+            <library name="qjpcodecs" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/codecs" load="never" />
+            <library name="qkrcodecs" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/codecs" load="never" />
+            <library name="qtwcodecs" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/codecs" load="never" />
+            <library name="qtaccessiblewidgets" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/accessible" load="never"/>
+            <library name="qsqlite" type="plugin" rootPath="${qtjambi.qtdir}" subdir="plugins/sqldrivers" load="never"
+                     if="${qtjambi.plugins.sqldrivers.sqlite}" />
+
+            <!-- Qt Jambi Libraries -->
+            <library name="qtjambi"                  type="qtjambi" rootPath="${jambiDir}" />
+            <library name="org_qtjambi_qt_core"    type="qtjambi" rootPath="${jambiDir}" />
+            <library name="org_qtjambi_qt_gui"     type="qtjambi" rootPath="${jambiDir}" />
+	    <library name="org_qtjambi_qt_opengl"  type="qtjambi" rootPath="${jambiDir}" />
+	    <library name="org_qtjambi_qt_xmlpatterns"  type="qtjambi" rootPath="${jambiDir}" />
+
+            <plugin path="plugins" />
+
+            <!-- Finally the mapborealis library  -->
+            <library name="org_qtjambi_marble" type="qtjambi" rootPath="${basedir}/.." />
+
+        </qtjambi-platform-jar>
+
+        <jar destfile="${basedir}/../target/marble-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version}.jar">
+            <fileset dir="${basedir}/platform-output" />
+            <manifest>
+                <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
+                <attribute name="Class-Path" value="qtjambi-${qtjambi.version}.jar" />
+            </manifest>
+        </jar>
+
+        <!-- delete dir="${basedir}/platform-output"/ -->
+
+    </target>
+
+    <target name="clean">
+      <delete dir="../com"/>
+      <delete dir="../cpp"/>
+      <delete>
+         <fileset dir="${basedir}">
+            <include name="**/*.o"/>
+            <include name="**/*.obj"/>
+            <include name="**/*.log"/>
+            <include name="**/*.cpp"/>
+         </fileset>
+      </delete>
+      <delete dir="../lib"/>
+      <delete dir="../target"/>
+    </target>
+
+    <target name="all"
+        depends="init, compile, package" />
+
+</project>

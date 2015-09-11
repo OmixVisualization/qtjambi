@@ -1,0 +1,15 @@
+/*!
+    \page qtjambi-scribble.html
+    \title Scribble Example
+
+    \bold {Code}:
+    \list
+        \o \l{Code for Scribble Example}{Scribble.java}
+    \endlist
+
+    The Scribble example shows how to reimplement some of QWidget's
+    event handlers to receive the events generated for the
+    application's widgets.
+
+    \image scribble-example.png
+*/

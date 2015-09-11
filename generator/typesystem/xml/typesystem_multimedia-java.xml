@@ -1,0 +1,303 @@
+<?xml version="1.0"?>
+<typesystem package="org.qtjambi.qt.multimedia" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+    <inject-code>
+		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
+        	}
+        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
+        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
+        	}
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
+        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
+            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
+		org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
+        org.qtjambi.qt.Utilities.loadQtLibrary("QtMultimedia");
+    </inject-code>
+<object-type name="QAbstractVideoSurface">
+</object-type>
+
+	<object-type name="QAudioInput">
+	<modify-function signature="QAudioInput(const QAudioFormat &amp;,QObject*)">
+            <modify-argument index="1">
+                <replace-default-expression with="new QAudioFormat()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QAudioInput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)">
+            <modify-argument index="2">
+                <replace-default-expression with="new QAudioFormat()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="notify()" rename="notifySignal">
+        </modify-function>
+	</object-type>
+
+	<object-type name="QAudioOutput">
+	<modify-function signature="QAudioOutput(const QAudioFormat &amp;,QObject*)">
+            <modify-argument index="1">
+                <replace-default-expression with="new QAudioFormat()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QAudioOutput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)">
+            <modify-argument index="2">
+                <replace-default-expression with="new QAudioFormat()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="notify()" rename="notifySignal">
+        </modify-function>
+	</object-type>
+
+	<value-type name="QAudioFormat">
+        <modify-function signature="operator=(const QAudioFormat)" remove="all"/>
+        <modify-function signature="operator==(const QAudioFormat)const" remove="all"/>
+        <modify-function signature="operator!=(const QAudioFormat)const" remove="all"/>
+	</value-type>
+	<value-type name="QVideoSurfaceFormat">
+        <modify-function signature="operator=(const QVideoSurfaceFormat)" remove="all"/>
+        <modify-function signature="operator==(const QVideoSurfaceFormat)const" remove="all"/>
+        <modify-function signature="operator!=(const QVideoSurfaceFormat)const" remove="all"/>
+		<modify-function signature="property(const char*) const">
+			<modify-argument index="1">
+				<replace-type modified-type="String" />
+                <conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="setProperty(const char *, const QVariant &amp;)">
+			<modify-argument index="1">
+				<replace-type modified-type="String" />
+                <conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+	</value-type>
+	<value-type name="QVideoFrame">
+        <modify-function signature="bits()const" rename="bits_private" access="private" />
+		<inject-code>
+		@QtBlockedSlot
+		private final byte[] bits(){
+			byte[] data = new byte[mappedBytes()];
+			org.qtjambi.qt.QNativePointer pointer = bits_private();
+			for (int i = 0; i &lt; data.length; i++) {
+				data[i] = pointer.byteAt(i);
+			}
+			return data;
+		}
+        </inject-code>
+    </value-type>
+    <object-type name="QMediaService">
+	<modify-function signature="requestControl(const char *)">
+		<modify-argument index="1">
+			<replace-type modified-type="String" />
+        		<conversion-rule class="native">
+			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			</conversion-rule>
+			<conversion-rule class="shell">
+			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			</conversion-rule>
+		</modify-argument>
+	</modify-function>
+	<inject-code>
+    @QtBlockedSlot
+    public native &lt;T extends org.qtjambi.qt.multimedia.QMediaControl> T requestControl(Class&lt;T> type);
+	</inject-code>
+    </object-type>
+	
+	<object-type name="QVideoEncoderSettingsControl">
+		<modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QVideoEncoderSettingsControl__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QCameraExposureControl">
+		<modify-function signature="supportedParameterRange(const QCameraExposureControl::ExposureParameter &amp;, bool *) const">
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraExposureControl__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QImageEncoderControl">
+		<modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const">
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QImageEncoderControl__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QCameraImageCapture">
+		<modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraImageCapture__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QAudioEncoderSettingsControl">
+		<modify-function signature="supportedSampleRates(const QAudioEncoderSettings &amp;, bool *) const">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QAudioEncoderSettingsControl__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QCameraExposure">
+		<modify-function signature="supportedApertures(bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="supportedIsoSensitivities(bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="supportedShutterSpeeds(bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraExposure__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+	
+    <object-type name="QMediaRecorder">
+		<modify-function signature="supportedAudioSampleRates(const QAudioEncoderSettings &amp;, bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const" access="private">
+			<modify-argument index="1">
+				<remove-default-expression/>
+			</modify-argument>
+			<modify-argument index="2">
+				<remove-default-expression/>
+			</modify-argument>
+		</modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaRecorder__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <value-type name="QCameraViewfinderSettings">
+    </value-type>
+    <object-type name="QMediaPlaylist">
+		<modify-function signature="load(const QNetworkRequest &amp;, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="load(const QUrl &amp;, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="save(const QUrl &amp;, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="save(QIODevice*, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+		<modify-function signature="load(QIODevice*, const char *)">
+			<modify-argument index="2">
+				<replace-type modified-type="java.lang.String" />
+				<conversion-rule class="native">
+				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				</conversion-rule>
+				<conversion-rule class="shell">
+				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				</conversion-rule>
+			</modify-argument>
+		</modify-function>
+    </object-type>
+    <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />
+</typesystem>

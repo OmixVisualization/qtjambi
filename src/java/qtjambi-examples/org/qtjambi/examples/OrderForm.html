@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!-- ../src/examples/orderform.qdoc -->
+<head>
+  <title>Order Form Example</title>
+    <style type="text/css">h3.fn,span.fn { margin-left: 1cm; text-indent: -1cm; }
+a:link { color: #004faf; text-decoration: none }
+a:visited { color: #672967; text-decoration: none }
+td.postheader { font-family: sans-serif }
+tr.address { font-family: sans-serif }
+body { color: black; }</style>
+</head>
+<body>
+<h1 class="title">Order Form Example<br /><span class="subtitle"></span>
+</h1>
+<p>The Order Form example shows how to generate rich text documents by combining a simple template with data input by the user in a dialog. Data is extracted from a <tt>DetailsDialog</tt> object and displayed on a QTextEdit with a QTextCursor, using various formats. Each form generated is added to a QTabWidget for easy access.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/orderform-example.png" /></p><a name="detailsdialog-class"></a>
+<h2>DetailsDialog Class</h2>
+<pre>        private static class DetailsDialog extends QDialog
+        {
+            private QLabel nameLabel;
+            private QLabel addressLabel;
+            private QCheckBox offersCheckBox;
+            private QLineEdit nameEdit;
+            private List&lt;String&gt; items;
+            private QTableWidget itemsTable;
+            private QTextEdit addressEdit;
+            private QDialogButtonBox buttonBox;</pre>
+<p>The <tt>DetailsDialog</tt> class is a subclass of QDialog, implementing a slot <tt>verify()</tt> to allow contents of the <tt>DetailsDialog</tt> to be verified later.</p>
+<p>The class defines three input widgets for the required fields, <tt>nameEdit</tt> and <tt>addressEdit</tt>. Also, a QCheckBox and a QDialogButtonBox are defined; the former to provide the user with the option to receive information on products and offers, and the latter to ensure that buttons used are arranged according to the user's native platform. In addition, a QTableWidget, <tt>itemsTable</tt>, is used to hold order details.</p>
+<p>The screenshot below shows the <tt>DetailsDialog</tt> we intend to create.</p>
+<p align="center"><img src="classpath:org/qtjambi/images/orderform-example-detailsdialog.png" /></p><p>The constructor of <tt>DetailsDialog</tt> accepts parameters <i>title</i> and <i>parent</i>. The class defines four <i>getter</i> functions: <tt>orderItems()</tt>, <tt>senderName()</tt>, <tt>senderAddress()</tt>, and <tt>sendOffers()</tt> to allow data to be accessed externally.</p>
+<p>The earlier defined fields and their labels are initialized. The label for <tt>offersCheckBox</tt> is set and the <tt>setupItemsTable()</tt> function is invoked to setup and populate <tt>itemsTable</tt>. The QDialogButtonBox object, <tt>buttonBox</tt>, is instantiated with <b>OK</b> and <b>Cancel</b> buttons. This <tt>buttonBox</tt>'s <tt>accepted()</tt> and <tt>rejected()</tt> signals are connected to the <tt>verify()</tt> and <tt>reject()</tt> slots in <tt>DetailsDialog</tt>.</p>
+<pre>            public DetailsDialog(String title, QWidget parent)
+            {
+                nameLabel = new QLabel(tr(&quot;Name:&quot;));
+                addressLabel = new QLabel(tr(&quot;Address:&quot;));
+                addressLabel.setAlignment(Qt.AlignmentFlag.createQFlags
+                            (Qt.AlignmentFlag.AlignLeft, Qt.AlignmentFlag.AlignTop));
+
+                nameEdit = new QLineEdit();
+                addressEdit = new QTextEdit();
+
+                offersCheckBox = new QCheckBox(tr(&quot;Send information about products and &quot;
+                                                  + &quot;special offers&quot;));
+
+                setupItemsTable();
+
+                buttonBox = new QDialogButtonBox(new QDialogButtonBox.StandardButtons(
+                                                 QDialogButtonBox.StandardButton.Ok,
+                                                 QDialogButtonBox.StandardButton.Cancel));
+
+                buttonBox.accepted.connect(this, &quot;verify()&quot;);
+                buttonBox.rejected.connect(this, &quot;reject()&quot;);</pre>
+<p>A QGridLayout is used to place all the objects on the <tt>DetailsDialog</tt>.</p>
+<pre>                QGridLayout mainLayout = new QGridLayout();
+                mainLayout.addWidget(nameLabel, 0, 0);
+                mainLayout.addWidget(nameEdit, 0, 1);
+                mainLayout.addWidget(addressLabel, 1, 0);
+                mainLayout.addWidget(addressEdit, 1, 1);
+                mainLayout.addWidget(itemsTable, 0, 2, 2, 1);
+                mainLayout.addWidget(offersCheckBox, 2, 1, 1, 2);
+                mainLayout.addWidget(buttonBox, 3, 0, 1, 3);
+                setLayout(mainLayout);
+
+                setWindowTitle(title);
+            }
+
+            public void verify()
+            {
+                if (!nameEdit.text().equals(&quot;&quot;) &amp;&amp;
+                    !addressEdit.toPlainText().equals(&quot;&quot;)) {
+                    accept();
+                    return;
+                }
+
+                QMessageBox.StandardButton answer;
+                answer = QMessageBox.warning(this, tr(&quot;Incomplete Form&quot;),
+                    tr(&quot;The form does not contain all the necessary information.\n&quot;
+                       + &quot;Do you want to discard it?&quot;),
+                    new QMessageBox.StandardButtons(QMessageBox.StandardButton.Yes,
+                                                    QMessageBox.StandardButton.No));
+
+                if (answer.equals(QMessageBox.StandardButton.Yes))
+                    reject();
+            }
+
+            public List&lt;QPair&lt;String, Integer&gt;&gt; orderItems()
+            {
+                List&lt;QPair&lt;String, Integer&gt;&gt; orderList = new Vector&lt;QPair&lt;String, Integer&gt;&gt;();
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    int quantity = Integer.parseInt(
+                        (String) itemsTable.item(row, 1).data(Qt.ItemDataRole.DisplayRole));
+
+                    orderList.add(new QPair&lt;String, Integer&gt;(itemsTable.item(row, 0).text(),
+                                  Math.max(0, quantity)));
+                }
+
+                return orderList;
+            }
+
+            public String senderName()
+            {
+                return nameEdit.text();
+            }
+
+            public String senderAddress()
+            {
+                return addressEdit.toPlainText();
+            }
+
+            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>setupItemsTable()</tt> function instantiates the QTableWidget object, <tt>itemsTable</tt>, and sets the number of rows based on the <tt>List&lt;String&gt;</tt> object, <tt>items</tt>, which holds the type of items ordered. The number of columns is set to 2, providing a &quot;name&quot; and &quot;quantity&quot; layout. A <tt>for</tt> loop is used to populate the <tt>itemsTable</tt> and the <tt>name</tt> item's flag is set to Qt::ItemIsEnabled or Qt::ItemIsSelectable. For demonstration purposes, the <tt>quantity</tt> item is set to a 1 and all items in the <tt>itemsTable</tt> have this value for quantity; but this can be modified by editing the contents of the cells at run time.</p>
+<pre>            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>orderItems()</tt> function extracts data from the <tt>itemsTable</tt> and returns it in the form of a <tt>List&lt;QPair&lt;QString,Integer&gt;&gt;</tt> where each QPair corresponds to an item and the quantity ordered.</p>
+<pre>            public List&lt;QPair&lt;String, Integer&gt;&gt; orderItems()
+            {
+                List&lt;QPair&lt;String, Integer&gt;&gt; orderList = new Vector&lt;QPair&lt;String, Integer&gt;&gt;();
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    int quantity = Integer.parseInt(
+                        (String) itemsTable.item(row, 1).data(Qt.ItemDataRole.DisplayRole));
+
+                    orderList.add(new QPair&lt;String, Integer&gt;(itemsTable.item(row, 0).text(),
+                                  Math.max(0, quantity)));
+                }
+
+                return orderList;
+            }
+
+            public String senderName()
+            {
+                return nameEdit.text();
+            }
+
+            public String senderAddress()
+            {
+                return addressEdit.toPlainText();
+            }
+
+            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>senderName()</tt> function is used to return the value of the QLineEdit used to store the name field for the order form.</p>
+<pre>            public String senderName()
+            {
+                return nameEdit.text();
+            }
+
+            public String senderAddress()
+            {
+                return addressEdit.toPlainText();
+            }
+
+            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>senderAddress()</tt> function is used to return the value of the QTextEdit containing the address for the order form.</p>
+<pre>            public String senderAddress()
+            {
+                return addressEdit.toPlainText();
+            }
+
+            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>sendOffers()</tt> function is used to return a <tt>true</tt> or <tt>false</tt> value that is used to determine if the customer in the order form wishes to receive more information on the company's offers and promotions.</p>
+<pre>            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<p>The <tt>verify()</tt> function is an additionally implemented slot used to verify the details entered by the user into the <tt>DetailsDialog</tt>. If the details entered are incomplete, a QMessageBox is displayed providing the user the option to discard the <tt>DetailsDialog</tt>. Otherwise, the details are accepted and the <tt>accept()</tt> function is invoked.</p>
+<pre>            public void verify()
+            {
+                if (!nameEdit.text().equals(&quot;&quot;) &amp;&amp;
+                    !addressEdit.toPlainText().equals(&quot;&quot;)) {
+                    accept();
+                    return;
+                }
+
+                QMessageBox.StandardButton answer;
+                answer = QMessageBox.warning(this, tr(&quot;Incomplete Form&quot;),
+                    tr(&quot;The form does not contain all the necessary information.\n&quot;
+                       + &quot;Do you want to discard it?&quot;),
+                    new QMessageBox.StandardButtons(QMessageBox.StandardButton.Yes,
+                                                    QMessageBox.StandardButton.No));
+
+                if (answer.equals(QMessageBox.StandardButton.Yes))
+                    reject();
+            }
+
+            public List&lt;QPair&lt;String, Integer&gt;&gt; orderItems()
+            {
+                List&lt;QPair&lt;String, Integer&gt;&gt; orderList = new Vector&lt;QPair&lt;String, Integer&gt;&gt;();
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    int quantity = Integer.parseInt(
+                        (String) itemsTable.item(row, 1).data(Qt.ItemDataRole.DisplayRole));
+
+                    orderList.add(new QPair&lt;String, Integer&gt;(itemsTable.item(row, 0).text(),
+                                  Math.max(0, quantity)));
+                }
+
+                return orderList;
+            }
+
+            public String senderName()
+            {
+                return nameEdit.text();
+            }
+
+            public String senderAddress()
+            {
+                return addressEdit.toPlainText();
+            }
+
+            public boolean sendOffers()
+            {
+                return offersCheckBox.isChecked();
+            }
+
+            private void setupItemsTable()
+            {
+                items = new Vector&lt;String&gt;();
+                items.add(tr(&quot;T-shirt&quot;));
+                items.add(tr(&quot;Badge&quot;));
+                items.add(tr(&quot;Reference book&quot;));
+                items.add(tr(&quot;Coffee cup&quot;));
+
+                itemsTable = new QTableWidget(items.size(), 2);
+
+                for (int row = 0; row &lt; items.size(); ++row) {
+                    QTableWidgetItem name = new QTableWidgetItem(items.get(row));
+                    name.setFlags(new Qt.ItemFlags(Qt.ItemFlag.ItemIsEnabled, Qt.ItemFlag.ItemIsSelectable));
+                    itemsTable.setItem(row, 0, name);
+                    QTableWidgetItem quantity = new QTableWidgetItem(&quot;1&quot;);
+                    itemsTable.setItem(row, 1, quantity);
+                }
+            }
+        }</pre>
+<a name="mainwindow-class"></a>
+<h2>MainWindow Class</h2>
+<p>The <tt>MainWindow</tt> class is a subclass of QMainWindow, implementing two slots - <tt>openDialog()</tt> and <tt>printFile()</tt>. It also contains a private instance of QTabWidget, <tt>letters</tt>. We will now review the implementation of the class.</p>
+<p>The <tt>MainWindow</tt> constructor sets up the <tt>fileMenu</tt> and the required actions, <tt>newAction</tt> and <tt>printAction</tt>. These actions' <tt>triggered()</tt> signals are connected to the additionally implemented openDialog() slot and the default close() slot. The QTabWidget, <tt>letters</tt>, is instantiated and set as the window's central widget.</p>
+<pre>        public OrderForm() {
+            QMenu fileMenu = new QMenu(tr(&quot;&amp;File&quot;), this);
+            QAction newAction = fileMenu.addAction(tr(&quot;&amp;New...&quot;));
+            newAction.setShortcut(tr(&quot;Ctrl+N&quot;));
+            printAction = new QAction(tr(&quot;&amp;Print...&quot;), this);
+            fileMenu.addAction(printAction);
+            printAction.setShortcut(tr(&quot;Ctrl+P&quot;));
+            printAction.setEnabled(false);
+            QAction quitAction = fileMenu.addAction(tr(&quot;E&amp;xit&quot;));
+            quitAction.setShortcut(tr(&quot;Ctrl+Q&quot;));
+            menuBar().addMenu(fileMenu);
+
+            letters = new QTabWidget();
+
+            newAction.triggered.connect(this, &quot;openDialog()&quot;);
+            printAction.triggered.connect(this, &quot;printFile()&quot;);
+            quitAction.triggered.connect(this, &quot;close()&quot;);
+
+            setCentralWidget(letters);
+            setWindowTitle(tr(&quot;Order Form&quot;));
+
+            createSample();
+        }</pre>
+<p>The <tt>createLetter()</tt> function creates a new QTabWidget with a QTextEdit, <tt>editor</tt>, as the parent. This function accepts four parameters that correspond to we obtained through <tt>DetailsDialog</tt>, in order to &quot;fill&quot; the <tt>editor</tt>.</p>
+<pre>        private void createLetter(String name, String address,
+                                  List&lt;QPair&lt;String, Integer&gt;&gt; orderItems,
+                                  boolean sendOffers) {
+            QTextEdit editor = new QTextEdit();
+            int tabIndex = letters.addTab(editor, name);
+            letters.setCurrentIndex(tabIndex);</pre>
+<p>We then obtain the cursor for the <tt>editor</tt> using QTextEdit::textCursor(). The <tt>cursor</tt> is then moved to the start of the document using QTextCursor::Start.</p>
+<pre>            QTextCursor cursor = new QTextCursor(editor.textCursor());
+            cursor.movePosition(QTextCursor.MoveOperation.Start);</pre>
+<p>Recall the structure of a Rich Text Document, where sequences of frames and tables are always separated by text blocks, some of which may contain no information.</p>
+<p>In the case of the Order Form Example, the document structure for this portion is described by the table below:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td rowspan=" 8">frame with <i>referenceFrameFormat</i></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>A company</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>321 City Street</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Industry Park</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Another country</tt></td></tr>
+</table></p>
+<p>This is accomplished with the following code:</p>
+<pre>            QTextFrame topFrame = cursor.currentFrame();
+            QTextFrameFormat topFrameFormat = topFrame.frameFormat();
+            topFrameFormat.setPadding(16);
+            topFrame.setFrameFormat(topFrameFormat);
+
+            QTextCharFormat textFormat = new QTextCharFormat();
+            QTextCharFormat boldFormat = new QTextCharFormat();
+            boldFormat.setFontWeight(QFont.Weight.Bold.value());
+
+            QTextFrameFormat referenceFrameFormat = new QTextFrameFormat();
+            referenceFrameFormat.setBorder(1);
+            referenceFrameFormat.setPadding(8);
+            referenceFrameFormat.setPosition(QTextFrameFormat.Position.FloatRight);
+            referenceFrameFormat.setWidth(new QTextLength(QTextLength.Type.PercentageLength, 40));
+            cursor.insertFrame(referenceFrameFormat);
+
+            cursor.insertText(&quot;A company&quot;, boldFormat);
+            cursor.insertBlock();
+            cursor.insertText(&quot;321 City Street&quot;);
+            cursor.insertBlock();
+            cursor.insertText(&quot;Industry Park&quot;);
+            cursor.insertBlock();
+            cursor.insertText(&quot;Another country&quot;);</pre>
+<p>Note that <tt>topFrame</tt> is the <tt>editor</tt>'s top-level frame and is not shown in the document structure.</p>
+<p>We then set the <tt>cursor</tt>'s position back to its last position in <tt>topFrame</tt> and fill in the customer's name (provided by the constructor) and address - using a <tt>foreach</tt> loop to traverse the QString, <tt>address</tt>.</p>
+<pre>            cursor.setPosition(topFrame.lastPosition());
+
+            cursor.insertText(name, textFormat);
+
+            for (String line : address.split(&quot;\n&quot;)) {
+                cursor.insertBlock();
+                cursor.insertText(line);
+            }</pre>
+<p>The <tt>cursor</tt> is now back in <tt>topFrame</tt> and the document structure for the above portion of code is:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td>block</td><td><tt>Donald</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>47338 Park Avenue</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>Big City</tt></td></tr>
+</table></p>
+<p>For spacing purposes, we invoke insertBlock() twice. The currentDate() is obtained and displayed. We use setWidth() to increase the width of <tt>bodyFrameFormat</tt> and we insert a new frame with that width.</p>
+<pre>            cursor.insertBlock();
+            cursor.insertBlock();
+
+            QDate date = QDate.currentDate();
+            cursor.insertText(tr(&quot;Date: &quot;) + date.toString(&quot;d MMMM yyyy&quot;),
+                    textFormat);
+            cursor.insertBlock();
+
+            QTextFrameFormat bodyFrameFormat = new QTextFrameFormat();
+            bodyFrameFormat.setWidth(new QTextLength(QTextLength.Type.PercentageLength, 100));
+            cursor.insertFrame(bodyFrameFormat);</pre>
+<p>The following code inserts standard text into the order form.</p>
+<pre>            cursor.insertText(tr(&quot;I would like to place an order for the following &quot;
+                    + &quot;items:&quot;), textFormat);
+            cursor.insertBlock();
+            cursor.insertBlock();</pre>
+<p>This part of the document structure now contains the date, a frame with <tt>bodyFrameFormat</tt>, as well as the standard text.</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>Date: 25 May 2007</tt></td></tr>
+<tr valign="top" class="even"><td>block</td></tr>
+<tr valign="top" class="odd"><td rowspan=" 4">frame with <i>bodyFrameFormat</i></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>I would like to place an order for the following items:</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td></tr>
+</table></p>
+<p>A QTextTableFormat object, <tt>orderTableFormat</tt>, is used to hold the type of item and the quantity ordered.</p>
+<pre>            QTextTableFormat orderTableFormat = new QTextTableFormat();
+            orderTableFormat.setAlignment(Qt.AlignmentFlag.AlignHCenter);
+            QTextTable orderTable = cursor.insertTable(1, 2, orderTableFormat);
+
+            QTextFrameFormat orderFrameFormat = cursor.currentFrame().frameFormat();
+            orderFrameFormat.setBorder(1);
+            cursor.currentFrame().setFrameFormat(orderFrameFormat);</pre>
+<p>We use cellAt() to set the headers for the <tt>orderTable</tt>.</p>
+<pre>            cursor = orderTable.cellAt(0, 0).firstCursorPosition();
+            cursor.insertText(tr(&quot;Product&quot;), boldFormat);</pre>
+<p>Then, we iterate through the List of QPair objects to populate <tt>orderTable</tt>.</p>
+<pre>            for (int i = 0; i &lt; orderItems.size(); ++i) {
+                QPair&lt;String, Integer&gt; item = orderItems.get(i);
+                int row = orderTable.rows();
+
+                orderTable.insertRows(row, 1);
+                cursor = orderTable.cellAt(row, 0).firstCursorPosition();
+                cursor.insertText(item.first, textFormat);
+                cursor = orderTable.cellAt(row, 1).firstCursorPosition();
+                cursor.insertText(&quot;&quot; + item.second, textFormat);
+            }</pre>
+<p>The resulting document structure for this section is:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td rowspan=" 11"><tt>orderTable</tt> with <i>orderTableFormat</i></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Product</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>Quantity</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>T-shirt</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>4</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Badge</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>3</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Reference book</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>2</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Coffee cup</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>5</tt></td></tr>
+</table></p>
+<p>The <tt>cursor</tt> is then moved back to <tt>topFrame</tt>'s lastPosition() and more standard text is inserted.</p>
+<pre>            cursor.setPosition(topFrame.lastPosition());
+
+            cursor.insertBlock();
+            cursor.insertText(tr(&quot;Please update my records to take account of the &quot;
+                    + &quot;following privacy information:&quot;));
+            cursor.insertBlock();</pre>
+<p>Another QTextTable is inserted, to display the customer's preference regarding offers.</p>
+<pre>            QTextTable offersTable = cursor.insertTable(2, 2);
+
+            cursor = offersTable.cellAt(0, 1).firstCursorPosition();
+            cursor.insertText(tr(&quot;I want to receive more information about your &quot;
+                    + &quot;company's products and special offers.&quot;), textFormat);
+            cursor = offersTable.cellAt(1, 1).firstCursorPosition();
+            cursor.insertText(tr(&quot;I do not want to receive any promotional information &quot;
+                    + &quot;from your company.&quot;), textFormat);
+
+            if (sendOffers)
+                cursor = offersTable.cellAt(0, 0).firstCursorPosition();
+            else
+                cursor = offersTable.cellAt(1, 0).firstCursorPosition();
+
+            cursor.insertText(&quot;X&quot;, boldFormat);</pre>
+<p>The document structure for this portion is:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Please update my...</tt></td></tr>
+<tr valign="top" class="odd"><td rowspan=" 5">block</td></tr>
+<tr valign="top" class="even"><td rowspan=" 4"><tt>offersTable</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>I want to receive...</tt></td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>I do not want to recieve...</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td><td><tt>X</tt></td></tr>
+</table></p>
+<p>The <tt>cursor</tt> is moved to insert &quot;Sincerely&quot; along with the customer's name. More blocks are inserted for spacing purposes. The <tt>printAction</tt> is enabled to indicate that an order form can now be printed.</p>
+<pre>            cursor.setPosition(topFrame.lastPosition());
+            cursor.insertBlock();
+            cursor.insertText(tr(&quot;Sincerely,&quot;), textFormat);
+            cursor.insertBlock();
+            cursor.insertBlock();
+            cursor.insertBlock();
+            cursor.insertText(name);
+
+            printAction.setEnabled(true);
+        }</pre>
+<p>The bottom portion of the document structure is:</p>
+<p><table align="center" cellpadding="2" cellspacing="1" border="0">
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td rowspan=" 5">block</td><td><tt>Sincerely,</tt></td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td></tr>
+<tr valign="top" class="odd"><td>block</td></tr>
+<tr valign="top" class="even"><td>block</td><td><tt>Donald</tt></td></tr>
+</table></p>
+<p>The <tt>createSample()</tt> function is used for illustration purposes, to create a sample order form.</p>
+<pre>        public void createSample()
+        {
+            DetailsDialog dialog =
+                new DetailsDialog(&quot;Dialog with default values&quot;, this);
+            createLetter(&quot;Mr. Smith&quot;, &quot;12 High Street\nSmall Town\nThis country&quot;,
+                         dialog.orderItems(), true);
+        }</pre>
+<p>The <tt>openDialog()</tt> function opens a <tt>DetailsDialog</tt> object. If the details in <tt>dialog</tt> are accepted, the <tt>createLetter()</tt> function is invoked using the parameters extracted from <tt>dialog</tt>.</p>
+<pre>        public void openDialog() {
+            DetailsDialog dialog =
+                    new DetailsDialog(tr(&quot;Enter Customer Details&quot;), this);
+
+            if (dialog.exec() == QDialog.DialogCode.Accepted.value())
+                createLetter(dialog.senderName(), dialog.senderAddress(),
+                        dialog.orderItems(), dialog.sendOffers());
+        }</pre>
+<p>In order to print out the order form, a <tt>printFile()</tt> function is included, as shown below:</p>
+<pre>        public void printFile() {
+            QTextEdit editor = (QTextEdit) letters.currentWidget();
+            QPrinter printer = new QPrinter();
+
+            QPrintDialog dialog = new QPrintDialog(printer, this);
+            dialog.setWindowTitle(tr(&quot;Print Document&quot;));
+            if (editor.textCursor().hasSelection())
+                dialog.addEnabledOption(
+                        QAbstractPrintDialog.PrintDialogOption.PrintSelection);
+
+            if (dialog.exec() != QDialog.DialogCode.Accepted.value())
+                return;
+
+            editor.print(printer);
+        }</pre>
+<p>This function also allows the user to print a selected area with QTextCursor::hasSelection(), instead of printing the entire document.</p>
+<a name="function"></a>
+<h2><tt>main()</tt> Function</h2>
+<p>The <tt>main()</tt> function instantiates <tt>MainWindow</tt> and sets its size to 640x480 pixels before invoking the <tt>show()</tt> function and <tt>createSample()</tt> function.</p>
+<pre>        public static void main(String args[])
+        {
+            QApplication.initialize(args);
+
+            OrderForm window = new OrderForm();
+            window.show();
+
+            QApplication.exec();
+        }</pre>
+</body>
+</html>

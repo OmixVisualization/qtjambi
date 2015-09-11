@@ -1,0 +1,132 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.sf.qtjambi</groupId>
+  <artifactId>qtjambi</artifactId>
+  <version>%QTJAMBI_VERSION%</version>
+  <packaging>jar</packaging>
+  <name>qtjambi</name>
+  <url>http://maven.apache.org</url>
+
+    <!-- OS and platform specific profiles for QtJambi binaries -->
+    <profiles>
+
+        <profile>
+            <id>linux-32</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>i386</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-base-linux32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-platform-linux32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>linux-64</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-base-linux64</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-platform-linux64</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <profile>
+            <id>win32</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>x86</arch>
+                    <!--   <version>5.1.2600</version> -->
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-base-win32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-platform-win32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+            </dependencies>
+        </profile>
+
+
+        <profile>
+            <id>win64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                    <!--   <version>5.1.2600</version> -->
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-base-win64</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-platform-win64</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+            </dependencies>
+        </profile>
+
+	<profile>
+            <id>mac32</id>
+            <activation>
+                <os>
+                    <name>Mac OS X</name>
+                    <family>mac</family>
+                    <arch>i386</arch>
+                    <!--   <version>5.1.2600</version> -->
+                </os>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-base-mac32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+                <dependency>
+                    <groupId>net.sf.qtjambi</groupId>
+                    <artifactId>qtjambi-platform-mac32</artifactId>
+                    <version>%QTJAMBI_VERSION%</version>
+                </dependency>
+            </dependencies>
+        </profile>
+
+    </profiles>  
+
+</project>
