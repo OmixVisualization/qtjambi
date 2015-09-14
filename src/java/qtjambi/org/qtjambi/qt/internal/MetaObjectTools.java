@@ -1576,7 +1576,17 @@ public class MetaObjectTools {
         return tp.value < QMetaType.Type.User.value ? tp : QMetaType.Type.UnknownType;
     }
     
-    public static native int registerMetaType(Class<?> clazz);
+    private static native int __qt_registerMetaType(Class<?> clazz);
+    
+    public static int registerMetaType(Class<?> clazz){
+    	String packageName = clazz.getName();
+        int idx = packageName.lastIndexOf('.');
+        if(idx>0){
+            packageName = packageName.substring(0, idx);
+        }
+        Utilities.initializePackage(packageName);
+        return __qt_registerMetaType(clazz);
+    }
     
     private static int aggregateParameterCount(List<?> list)
     {

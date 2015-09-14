@@ -59,7 +59,6 @@ namespace Qt{
     Q_ENUM(Orientation)
     Q_ENUM(DropAction)
     Q_ENUM(AlignmentFlag)
-    Q_ENUM(Orientation)
     Q_ENUM(DropAction)
     Q_ENUM(DockWidgetArea)
     Q_ENUM(ToolBarArea)

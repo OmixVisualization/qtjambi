@@ -596,7 +596,7 @@ void * constructHelper(void * where, const void *_pointer)
  * new implementation according to Qt5's meta object API
  */
 extern "C" Q_DECL_EXPORT int JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_MetaObjectTools_registerMetaType)
+QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_MetaObjectTools__1_1qt_1registerMetaType)
 (JNIEnv *env, jclass, jclass clazz)
 {
     QString javaName = qtjambi_class_name(env, clazz).replace('.', '/');
@@ -605,6 +605,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_MetaObjectTools_registerMet
 
     javaName = javaName.replace("/", "::");
     StaticCache *sc = StaticCache::instance();
+    sc->resolveEnum();
     sc->resolveQObject();
     sc->resolveQtJambiObject();
     sc->resolveQtJambiInternal();
@@ -634,23 +635,35 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_MetaObjectTools_registerMet
                     );
                 Q_ASSERT(id!=0);
             }
-            QMetaType::registerTypedef(javaName.toLatin1(), id);
-            return id;
+            return QMetaType::registerTypedef(javaName.toLatin1(), id);
         }else if(qtName==QLatin1String("JEnumWrapper")){
             int last = javaName.lastIndexOf('$');
             if(last>0){
                 javaName.replace(last, 1, "::");
             }
             int id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
-            QMetaType::registerTypedef(javaName.toLatin1(), id);
-            return id;
+            return QMetaType::registerTypedef(javaName.toLatin1(), id);
+        }else if(env->IsAssignableFrom(clazz, sc->Enum.class_ref)){
+            int last = javaName.lastIndexOf('$');
+            if(last>0){
+                javaName.replace(last, 1, "::");
+            }
+            int id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
+            if(!qtName.isEmpty()){
+                QMetaType::registerNormalizedTypedef(qtName.toLatin1(), id);
+            }
+            return QMetaType::registerTypedef(javaName.toLatin1(), id);
         }else{
             int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
-            QMetaType::registerTypedef(javaName.toLatin1(), id);
-            return id;
+            return QMetaType::registerTypedef(javaName.toLatin1(), id);
         }
     }else{
-        int id = QMetaType::type(javaName.toLatin1().constData());
+        QString typeName;
+        if(qtName.isEmpty())
+            typeName = javaName;
+        else
+            typeName = qtName;
+        int id = QMetaType::type(typeName.toLatin1());
         if(id==QMetaType::UnknownType){
             QMetaType::TypeFlags flags = QMetaType::MovableType;
             const QMetaObject *meta_object = 0;
@@ -660,16 +673,30 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_MetaObjectTools_registerMet
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
                 flags |= QMetaType::PointerToQObject;
             }
+            if(env->IsAssignableFrom(clazz, sc->Enum.class_ref)){
+                int last = javaName.lastIndexOf('$');
+                if(last>0){
+                    javaName.replace(last, 1, "::");
+                }
+                int id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
+                QMetaType::registerNormalizedTypedef(javaName.toLatin1(), id);
+                if(!qtName.isEmpty()){
+                    QMetaType::registerNormalizedTypedef(qtName.toLatin1(), id);
+                }
+                return id;
+            }
             id = QMetaType::registerType(
-                    javaName.toLatin1().constData(),
+                    typeName.toLatin1().constData(),
                     reinterpret_cast<QMetaType::Deleter>(deleteHelper),
-                    reinterpret_cast<QMetaType::Creator>(constructHelper),
+                    reinterpret_cast<QMetaType::Creator>(createHelper),
                     reinterpret_cast<QMetaType::Destructor>(destructHelper),
                     reinterpret_cast<QMetaType::Constructor>(constructHelper),
                     sizeof(void*),
                     flags,
                     meta_object
                 );
+            if(typeName!=javaName)
+                id = QMetaType::registerTypedef(javaName.toLatin1(), id);
             Q_ASSERT(id!=0);
         }
         return id;
@@ -712,6 +739,9 @@ int qtjambiQmlRegisterNormalizedMetaType(const QByteArray & normalizedTypeName, 
         }
         int id = qRegisterMetaType<JEnumWrapper>("JEnumWrapper");
         QMetaType::registerNormalizedTypedef(javaName.toLatin1(), id);
+        if(!qtName.isEmpty()){
+            QMetaType::registerNormalizedTypedef(qtName.toLatin1(), id);
+        }
         return id;
     }
     int id = QMetaType::type(qtName.toLatin1().constData());
@@ -722,7 +752,7 @@ int qtjambiQmlRegisterNormalizedMetaType(const QByteArray & normalizedTypeName, 
         const QMetaObject *meta_object = 0;
         return QMetaType::registerNormalizedType(normalizedTypeName,
                                         reinterpret_cast<QMetaType::Deleter>(deleteHelper),
-                                        reinterpret_cast<QMetaType::Creator>(constructHelper),
+                                        reinterpret_cast<QMetaType::Creator>(createHelper),
                                         reinterpret_cast<QMetaType::Destructor>(destructHelper),
                                         reinterpret_cast<QMetaType::Constructor>(constructHelper),
                                         sizeof(void*),
