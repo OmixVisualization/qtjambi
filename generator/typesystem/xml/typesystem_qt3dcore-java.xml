@@ -18,14 +18,23 @@
         org.qtjambi.qt.Utilities.loadQtLibrary("Qt3DCore");
     </inject-code>
 	<object-type name="Qt3D::QScenePropertyChange">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
+		<inject-code class="shell-declaration" position="end">
+public:
+    inline void __qt_propertyNameReset(QByteArray* pointer){
+        __qt_propertyName.reset(pointer);
+    }
+private:
+    QScopedPointer&lt;QByteArray&gt; __qt_propertyName;
+</inject-code>
 		<modify-function signature="propertyName()const">
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
-				</conversion-rule>
-				<conversion-rule class="shell">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -33,12 +42,17 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				const char * %out = Q_NULLPTR;
+				QByteArray* container = Q_NULLPTR;
+				if(%in){
+					container = new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1());
+					%out = container->constData();
+				}
 				</conversion-rule>
 			</modify-argument>
+			<inject-code class="native" position="end">
+				__qt_this->__qt_propertyNameReset(container);
+</inject-code>
 		</modify-function>
 	</object-type>
 	<object-type name="Qt3D::QCamera">

@@ -27,14 +27,23 @@
     </inject-code>
   
   <interface-type name="QDeclarativeExtensionInterface" java-name="QDeclarativeExtension">
+	<extra-includes>
+		<include file-name="QtCore/QScopedPointer" location="global"/>
+		<include file-name="QtCore/QByteArray" location="global"/>
+	</extra-includes>
     <modify-function signature="initializeEngine ( QDeclarativeEngine * , const char * )">
         <modify-argument index="2">
 		<replace-type modified-type="java.lang.String" />
 		<conversion-rule class="native">
-		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 		</conversion-rule>
 		<conversion-rule class="shell">
-		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 		</conversion-rule>
 		</modify-argument>
     </modify-function>
@@ -42,10 +51,15 @@
         <modify-argument index="1">
 		<replace-type modified-type="java.lang.String" />
 		<conversion-rule class="native">
-		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 		</conversion-rule>
 		<conversion-rule class="shell">
-		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 		</conversion-rule>
 		</modify-argument>
     </modify-function>
@@ -66,14 +80,23 @@
 	</modify-function>
   </object-type>
   <object-type name="QDeclarativeExtensionPlugin">
+	<extra-includes>
+		<include file-name="QtCore/QScopedPointer" location="global"/>
+		<include file-name="QtCore/QByteArray" location="global"/>
+	</extra-includes>
     <modify-function signature="initializeEngine ( QDeclarativeEngine * , const char * )">
         <modify-argument index="2">
 		<replace-type modified-type="java.lang.String" />
 		<conversion-rule class="native">
-		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 		</conversion-rule>
 		<conversion-rule class="shell">
-		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 		</conversion-rule>
 		</modify-argument>
     </modify-function>
@@ -81,21 +104,35 @@
         <modify-argument index="1">
 		<replace-type modified-type="java.lang.String" />
 		<conversion-rule class="native">
-		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 		</conversion-rule>
 		<conversion-rule class="shell">
-		jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+		jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 		</conversion-rule>
 		</modify-argument>
     </modify-function>
   </object-type>
   
   <object-type name="QDeclarativeListReference">
+	<extra-includes>
+		<include file-name="QtCore/QScopedPointer" location="global"/>
+		<include file-name="QtCore/QByteArray" location="global"/>
+	</extra-includes>
 	<modify-function signature="QDeclarativeListReference ( QObject *, const char *, QDeclarativeEngine * )">
         <modify-argument index="2">
 		<replace-type modified-type="java.lang.String" />
 		<conversion-rule class="native">
-		const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 		</conversion-rule>
 		</modify-argument>
     </modify-function>
@@ -258,14 +295,23 @@
   </object-type>
   
 	<object-type name="QDeclarativeProperty">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<modify-function signature="connectNotifySignal ( QObject *, const char *) const">
 			<modify-argument index="2">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -273,10 +319,7 @@
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
-				</conversion-rule>
-				<conversion-rule class="shell">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>

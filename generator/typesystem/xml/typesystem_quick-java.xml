@@ -116,6 +116,33 @@
 		<modify-field name="reserved" write="false" access="private"/>
     </value-type>
     <object-type name="QSGMaterialShader">
+		<extra-includes>
+			<include file-name="QtCore/QScopedArrayPointer" location="global"/>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
+		<inject-code class="shell-declaration" position="end">
+private:
+    class ByteArraysDeleter{
+    public:
+        static void cleanup(QByteArray** array);
+    };
+
+    QScopedPointer&lt;QByteArray&gt; __qt_vertexShader;
+    QScopedPointer&lt;QByteArray&gt; __qt_fragmentShader;
+    QScopedPointer&lt;QByteArray*, ByteArraysDeleter&gt; __qt_attributeNameByteArrays;
+    QScopedArrayPointer&lt;const char*&gt; __qt_attributeNames;
+</inject-code>
+		<inject-code class="shell" position="end">
+void QtJambiShell_QSGMaterialShader::ByteArraysDeleter::cleanup(QByteArray** array){
+    if(array){
+        for(int i=0; array[i]!=Q_NULLPTR; i++){
+            delete array[i];
+        }
+        delete[] array;
+    }
+}
+</inject-code>
 		<modify-function signature="attributeNames()const">
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String[]"/>
@@ -126,22 +153,26 @@
 			}
 			jobjectArray __java_return_array = __jni_env->NewObjectArray(size, __jni_env->FindClass("java/lang/String"), 0);
 			for(int i = 0; i &lt; size; i++){
-				jobject element = (jobject)__jni_env->NewStringUTF(%in[i]);
+				jobject element = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in[i]));
 				__jni_env->SetObjectArrayElement(__java_return_array, i, element);
 			}
 			jobject %out = (jobject)__java_return_array;
 				</conversion-rule>
-				<conversion-rule class="shell">
+				<conversion-rule class="shell">			
 			jobjectArray __java_return_array = (jobjectArray)%in;
             jsize __java_return_array_length = __jni_env->GetArrayLength(__java_return_array);
-            const char** __qt_return_array = new const char*[__java_return_array_length+1];
+			QtJambiShell_QSGMaterialShader* unconst_this = const_cast&lt;QtJambiShell_QSGMaterialShader*>(this);
+			unconst_this->__qt_attributeNameByteArrays.reset(new QByteArray*[__java_return_array_length+1]);
+			unconst_this->__qt_attributeNames.reset(new const char*[__java_return_array_length+1]);
             for(int i=0; i&lt;__java_return_array_length; i++){
-                jobject element = __jni_env->GetObjectArrayElement(__java_return_array, i);
-                __qt_return_array[__java_return_array_length] = __jni_env->GetStringUTFChars((jstring)element, NULL);
+                jstring element = (jstring)__jni_env->GetObjectArrayElement(__java_return_array, i);
+				unconst_this->__qt_attributeNameByteArrays.data()[i] = new QByteArray(qtjambi_to_qstring(__jni_env, element).toLatin1());
+				unconst_this->__qt_attributeNames[i] = __qt_attributeNameByteArrays.data()[i]->constData();
             }
-            __qt_return_array[__java_return_array_length] = 0;
+            unconst_this->__qt_attributeNameByteArrays.data()[__java_return_array_length] = Q_NULLPTR;
+			unconst_this->__qt_attributeNames[__java_return_array_length] = Q_NULLPTR;
             
-            const char*const * %out = (const char*const*)__qt_return_array;
+            const char*const * %out = (const char*const*)unconst_this->__qt_attributeNames.data();
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -149,10 +180,17 @@
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 				<conversion-rule class="shell">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				const char * %out = Q_NULLPTR;
+				QtJambiShell_QSGMaterialShader* unconst_this = const_cast&lt;QtJambiShell_QSGMaterialShader*>(this);
+				if(%in){
+					unconst_this->__qt_vertexShader.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = unconst_this->__qt_vertexShader->constData();
+				}else{
+					unconst_this->__qt_vertexShader.reset(Q_NULLPTR);
+				}
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -160,10 +198,17 @@
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 				<conversion-rule class="shell">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				const char * %out = Q_NULLPTR;
+				QtJambiShell_QSGMaterialShader* unconst_this = const_cast&lt;QtJambiShell_QSGMaterialShader*>(this);
+				if(%in){
+					unconst_this->__qt_fragmentShader.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = unconst_this->__qt_fragmentShader->constData();
+				}else{
+					unconst_this->__qt_fragmentShader.reset(Q_NULLPTR);
+				}
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>

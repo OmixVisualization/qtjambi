@@ -1529,6 +1529,194 @@ void StaticCache::resolveResolvedEntity_internal()
     Q_ASSERT(ResolvedEntity.inputSource);
 }
 
+void StaticCache::resolveByteBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!ByteBuffer.class_ref);
+
+    ByteBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/ByteBuffer"));
+    Q_ASSERT(ByteBuffer.class_ref);
+
+    ByteBuffer.asCharBuffer = env->GetMethodID(ByteBuffer.class_ref, "asCharBuffer", "()Ljava/nio/CharBuffer;");
+    Q_ASSERT(ByteBuffer.asCharBuffer);
+
+    ByteBuffer.asDoubleBuffer = env->GetMethodID(ByteBuffer.class_ref, "asDoubleBuffer", "()Ljava/nio/DoubleBuffer;");
+    Q_ASSERT(ByteBuffer.asDoubleBuffer);
+
+    ByteBuffer.asFloatBuffer = env->GetMethodID(ByteBuffer.class_ref, "asFloatBuffer", "()Ljava/nio/FloatBuffer;");
+    Q_ASSERT(ByteBuffer.asFloatBuffer);
+
+    ByteBuffer.asIntBuffer = env->GetMethodID(ByteBuffer.class_ref, "asIntBuffer", "()Ljava/nio/IntBuffer;");
+    Q_ASSERT(ByteBuffer.asIntBuffer);
+
+    ByteBuffer.asLongBuffer = env->GetMethodID(ByteBuffer.class_ref, "asLongBuffer", "()Ljava/nio/LongBuffer;");
+    Q_ASSERT(ByteBuffer.asLongBuffer);
+
+    ByteBuffer.asShortBuffer = env->GetMethodID(ByteBuffer.class_ref, "asShortBuffer", "()Ljava/nio/ShortBuffer;");
+    Q_ASSERT(ByteBuffer.asShortBuffer);
+
+    ByteBuffer.asReadOnlyBuffer = env->GetMethodID(ByteBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/ByteBuffer;");
+    Q_ASSERT(ByteBuffer.asReadOnlyBuffer);
+
+    ByteBuffer.get = env->GetMethodID(ByteBuffer.class_ref, "get", "(I)B");
+    Q_ASSERT(ByteBuffer.get);
+
+    ByteBuffer.put = env->GetMethodID(ByteBuffer.class_ref, "put", "(I,B)");
+    Q_ASSERT(ByteBuffer.put);
+}
+
+void StaticCache::resolveIntBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!IntBuffer.class_ref);
+
+    IntBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/IntBuffer"));
+    Q_ASSERT(IntBuffer.class_ref);
+
+    IntBuffer.asReadOnlyBuffer = env->GetMethodID(IntBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/IntBuffer;");
+    Q_ASSERT(IntBuffer.asReadOnlyBuffer);
+
+    IntBuffer.get = env->GetMethodID(IntBuffer.class_ref, "get", "(I)I");
+    Q_ASSERT(IntBuffer.get);
+
+    IntBuffer.put = env->GetMethodID(IntBuffer.class_ref, "put", "(I,I)");
+    Q_ASSERT(IntBuffer.put);
+}
+
+void StaticCache::resolveLongBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!LongBuffer.class_ref);
+
+    LongBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/LongBuffer"));
+    Q_ASSERT(LongBuffer.class_ref);
+
+    LongBuffer.asReadOnlyBuffer = env->GetMethodID(LongBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/LongBuffer;");
+    Q_ASSERT(LongBuffer.asReadOnlyBuffer);
+
+    LongBuffer.get = env->GetMethodID(LongBuffer.class_ref, "get", "(I)J");
+    Q_ASSERT(LongBuffer.get);
+
+    LongBuffer.put = env->GetMethodID(LongBuffer.class_ref, "put", "(I,J)");
+    Q_ASSERT(LongBuffer.put);
+}
+
+void StaticCache::resolveShortBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!ShortBuffer.class_ref);
+
+    ShortBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/ShortBuffer"));
+    Q_ASSERT(ShortBuffer.class_ref);
+
+    ShortBuffer.asReadOnlyBuffer = env->GetMethodID(ShortBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/ShortBuffer;");
+    Q_ASSERT(ShortBuffer.asReadOnlyBuffer);
+
+    ShortBuffer.get = env->GetMethodID(ShortBuffer.class_ref, "get", "(I)S");
+    Q_ASSERT(ShortBuffer.get);
+
+    ShortBuffer.put = env->GetMethodID(ShortBuffer.class_ref, "put", "(I,S)");
+    Q_ASSERT(ShortBuffer.put);
+}
+
+void StaticCache::resolveFloatBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!FloatBuffer.class_ref);
+
+    FloatBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/FloatBuffer"));
+    Q_ASSERT(FloatBuffer.class_ref);
+
+    FloatBuffer.asReadOnlyBuffer = env->GetMethodID(FloatBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/FloatBuffer;");
+    Q_ASSERT(FloatBuffer.asReadOnlyBuffer);
+
+    FloatBuffer.get = env->GetMethodID(FloatBuffer.class_ref, "get", "(I)F");
+    Q_ASSERT(FloatBuffer.get);
+
+    FloatBuffer.put = env->GetMethodID(FloatBuffer.class_ref, "put", "(I,F)");
+    Q_ASSERT(FloatBuffer.put);
+}
+
+void StaticCache::resolveDoubleBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!DoubleBuffer.class_ref);
+
+    DoubleBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/DoubleBuffer"));
+    Q_ASSERT(DoubleBuffer.class_ref);
+
+    DoubleBuffer.asReadOnlyBuffer = env->GetMethodID(DoubleBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/DoubleBuffer;");
+    Q_ASSERT(DoubleBuffer.asReadOnlyBuffer);
+
+    DoubleBuffer.get = env->GetMethodID(DoubleBuffer.class_ref, "get", "(I)D");
+    Q_ASSERT(DoubleBuffer.get);
+
+    DoubleBuffer.put = env->GetMethodID(DoubleBuffer.class_ref, "put", "(I,D)");
+    Q_ASSERT(DoubleBuffer.put);
+}
+
+void StaticCache::resolveCharBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!CharBuffer.class_ref);
+
+    CharBuffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/CharBuffer"));
+    Q_ASSERT(CharBuffer.class_ref);
+
+    CharBuffer.asReadOnlyBuffer = env->GetMethodID(CharBuffer.class_ref, "asReadOnlyBuffer", "()Ljava/nio/CharBuffer;");
+    Q_ASSERT(CharBuffer.asReadOnlyBuffer);
+
+    CharBuffer.get = env->GetMethodID(CharBuffer.class_ref, "get", "(I)C");
+    Q_ASSERT(CharBuffer.get);
+
+    CharBuffer.put = env->GetMethodID(CharBuffer.class_ref, "put", "(I,C)");
+    Q_ASSERT(CharBuffer.put);
+}
+
+void StaticCache::resolveBuffer_internal()
+{
+    JNIEnv *env = qtjambi_current_environment();
+
+    Q_ASSERT(!Buffer.class_ref);
+
+    Buffer.class_ref = ref_class(qtjambi_find_class(env, "java/nio/Buffer"));
+    Q_ASSERT(Buffer.class_ref);
+
+    Buffer.isDirect = env->GetMethodID(Buffer.class_ref, "isDirect", "()Z");
+    Q_ASSERT(Buffer.isDirect);
+
+    Buffer.isReadOnly = env->GetMethodID(Buffer.class_ref, "isReadOnly", "()Z");
+    Q_ASSERT(Buffer.isReadOnly);
+
+    Buffer.capacity = env->GetMethodID(Buffer.class_ref, "capacity", "()I");
+    Q_ASSERT(Buffer.capacity);
+
+    Buffer.limit = env->GetMethodID(Buffer.class_ref, "limit", "()I");
+    Q_ASSERT(Buffer.limit);
+
+    Buffer.position = env->GetMethodID(Buffer.class_ref, "position", "()I");
+    Q_ASSERT(Buffer.position);
+
+    Buffer.mark = env->GetMethodID(Buffer.class_ref, "mark", "()I");
+    Q_ASSERT(Buffer.mark);
+
+    Buffer.array = env->GetMethodID(Buffer.class_ref, "array", "()Ljava/lang/Object;");
+    Q_ASSERT(Buffer.array);
+
+    Buffer.hasArray = env->GetMethodID(Buffer.class_ref, "hasArray", "()Z");
+    Q_ASSERT(Buffer.hasArray);
+
+    Buffer.arrayOffset = env->GetMethodID(Buffer.class_ref, "arrayOffset", "()I");
+    Q_ASSERT(Buffer.arrayOffset);
+}
+
 #ifdef QTJAMBI_RETRO_JAVA
 void StaticCache::resolveRetroTranslatorHelper_internal()
 {

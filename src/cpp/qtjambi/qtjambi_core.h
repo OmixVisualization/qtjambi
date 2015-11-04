@@ -176,6 +176,21 @@ struct QTJAMBI_EXPORT JObjectWrapper
 };
 Q_DECLARE_METATYPE(JObjectWrapper)
 
+
+class QTJAMBI_EXPORT JBufferData
+{
+public:
+    JBufferData(JNIEnv *env, jobject buffer_object);
+
+    ~JBufferData();
+
+    void* data();
+private:
+    JNIEnv *m_env;
+    jobject m_buffer_object;
+    void* m_data;
+};
+
 inline void *qtjambi_from_jlong(jlong ptr)
 {
     if (ptr != 0) {

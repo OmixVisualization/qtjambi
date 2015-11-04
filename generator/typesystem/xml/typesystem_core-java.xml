@@ -2280,7 +2280,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
             </modify-argument>
         </modify-function>

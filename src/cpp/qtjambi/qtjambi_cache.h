@@ -298,6 +298,74 @@ struct QTJAMBI_EXPORT StaticCache
 
     struct {
         jclass class_ref;
+        jmethodID asCharBuffer;
+        jmethodID asDoubleBuffer;
+        jmethodID asFloatBuffer;
+        jmethodID asIntBuffer;
+        jmethodID asLongBuffer;
+        jmethodID asShortBuffer;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } ByteBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } IntBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } LongBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } ShortBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } FloatBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } DoubleBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID asReadOnlyBuffer;
+        jmethodID get;
+        jmethodID put;
+    } CharBuffer;
+
+    struct {
+        jclass class_ref;
+        jmethodID isDirect;
+        jmethodID isReadOnly;
+        jmethodID capacity;
+        jmethodID limit;
+        jmethodID position;
+        jmethodID mark;
+        jmethodID array;
+        jmethodID hasArray;
+        jmethodID arrayOffset;
+    } Buffer;
+
+    struct {
+        jclass class_ref;
         jfieldID inCppEmission;
         jmethodID connect;
         jmethodID connectSignalMethod;
@@ -527,6 +595,14 @@ struct QTJAMBI_EXPORT StaticCache
     DECLARE_RESOLVE_FUNCTIONS(QItemEditorCreatorBase);
     DECLARE_RESOLVE_FUNCTIONS(ResolvedEntity);
     DECLARE_RESOLVE_FUNCTIONS(MetaObjectTools);
+    DECLARE_RESOLVE_FUNCTIONS(ByteBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(IntBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(CharBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(LongBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(FloatBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(DoubleBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(ShortBuffer);
+    DECLARE_RESOLVE_FUNCTIONS(Buffer);
 
 public:
     static StaticCache *instance();
@@ -537,3 +613,4 @@ private:
 };
 
 #endif // QTJAMBI_CACHE_H
+

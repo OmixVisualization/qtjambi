@@ -44,10 +44,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -55,10 +60,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 			<replace-type modified-type="java.lang.String" />
 			<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			QScopedPointer&lt;QByteArray&gt; scopedPointer;
+			const char * %out = Q_NULLPTR;
+			if(%in){
+				scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+				%out = scopedPointer->constData();
+			}
 			</conversion-rule>
 			<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 			</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -66,10 +76,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 			<replace-type modified-type="java.lang.String" />
 			<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+			QScopedPointer&lt;QByteArray&gt; scopedPointer;
+			const char * %out = Q_NULLPTR;
+			if(%in){
+				scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+				%out = scopedPointer->constData();
+			}
 			</conversion-rule>
 			<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 			</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -82,10 +97,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 			<modify-argument index="4">
@@ -96,10 +116,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 			<modify-argument index="5">
@@ -110,10 +135,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 			<modify-argument index="3">
@@ -124,10 +154,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 			<modify-argument index="3">
@@ -138,10 +173,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 			<modify-argument index="3">
@@ -152,10 +192,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -163,10 +208,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -174,10 +224,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -185,10 +240,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -196,10 +256,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -207,10 +272,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -218,10 +288,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -229,10 +304,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -240,10 +320,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -251,10 +336,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -262,10 +352,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -273,10 +368,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -285,10 +385,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -297,10 +402,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -309,10 +419,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -321,10 +436,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -333,10 +453,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -345,10 +470,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -357,10 +487,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -369,10 +504,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -380,10 +520,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -391,10 +536,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -402,10 +552,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -413,10 +568,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -424,10 +584,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -435,10 +600,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -446,10 +616,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -457,10 +632,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -468,10 +648,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -479,10 +664,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -490,10 +680,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -501,10 +696,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -527,10 +727,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -538,10 +743,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -549,10 +759,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -560,10 +775,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -571,10 +791,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -582,10 +807,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -593,10 +823,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -604,10 +839,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -615,10 +855,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -626,10 +871,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -637,10 +887,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -648,10 +903,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -659,10 +919,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -670,10 +935,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -681,10 +951,15 @@ typedef qint32 qgl_GLsizeiptr;
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String" />
 				<conversion-rule class="native">
-				const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-				jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>

@@ -18,14 +18,23 @@
 			org.qtjambi.qt.Utilities.loadQtLibrary("QtQml");
 </inject-code>
 	<object-type name="QQmlExtensionPlugin">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<modify-function signature="initializeEngine ( QQmlEngine * , const char * )">
 			<modify-argument index="2">
 			<replace-type modified-type="java.lang.String" />
 			<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 			</conversion-rule>
 			<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 			</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -33,10 +42,15 @@
 			<modify-argument index="1">
 			<replace-type modified-type="java.lang.String" />
 			<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 			</conversion-rule>
 			<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 			</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -160,6 +174,10 @@
 		</modify-function>
 	</object-type>
 	<value-type name="QQmlListReference">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<inject-code class="java">
 			@QtBlockedSlot
 			public Class&lt;?> listElementType(){
@@ -173,20 +191,34 @@
 			<modify-argument index="2">
 			<replace-type modified-type="java.lang.String" />
 			<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 			</conversion-rule>
 			</modify-argument>
 		</modify-function>
 	</value-type>
 	<value-type name="QQmlProperty">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<modify-function signature="connectNotifySignal(QObject *, const char *) const">
 			<modify-argument index="2">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -194,23 +226,37 @@
 			<modify-argument index="0">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 				<conversion-rule class="shell">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
 	</value-type>
     <value-type name="QQmlExtensionPlugin">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<modify-function signature="initializeEngine(QQmlEngine *, const char *)">
 			<modify-argument index="2">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -218,10 +264,15 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -245,14 +296,23 @@
 		</inject-code>
     </namespace-type>
     <interface-type name="QQmlTypesExtensionInterface" java-name="QQmlTypesExtension">
+		<extra-includes>
+			<include file-name="QtCore/QScopedPointer" location="global"/>
+			<include file-name="QtCore/QByteArray" location="global"/>
+		</extra-includes>
 		<modify-function signature="registerTypes(const char *)">
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -262,10 +322,15 @@
 			<modify-argument index="1">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>
@@ -273,10 +338,15 @@
 			<modify-argument index="2">
 				<replace-type modified-type="java.lang.String"/>
 				<conversion-rule class="native">
-			const char * %out = __jni_env->GetStringUTFChars((jstring)%in, NULL);
+				QScopedPointer&lt;QByteArray&gt; scopedPointer;
+				const char * %out = Q_NULLPTR;
+				if(%in){
+					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
+					%out = scopedPointer->constData();
+				}
 				</conversion-rule>
 				<conversion-rule class="shell">
-			jobject %out = (jobject)__jni_env->NewStringUTF(%in);
+			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
 				</conversion-rule>
 			</modify-argument>
 		</modify-function>

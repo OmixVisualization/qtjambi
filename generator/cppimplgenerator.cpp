@@ -1755,6 +1755,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunc
         if (java_function->isConstructor()) {
             writeFinalConstructor(s, java_function, qt_object_name, java_object_name);
 
+            writeCodeInjections(s, java_function, java_function->implementingClass(), CodeSnip::End, TypeSystem::NativeCode);
             s << INDENT << "QTJAMBI_DEBUG_TRACE(\"(native) -> leaving: "
             << java_function_signature << "\");" << endl;
         } else {
@@ -1797,6 +1798,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunc
                 writeQtToJava(s, function_type, qt_return_value, java_return_value,
                               java_function, 0, EnumAsInts);
 
+                writeCodeInjections(s, java_function, java_function->implementingClass(), CodeSnip::End, TypeSystem::NativeCode);
                 s << INDENT << "QTJAMBI_DEBUG_TRACE(\"(native) -> leaving: "
                 << java_function_signature << "\");" << endl;
 
@@ -1806,6 +1808,7 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const AbstractMetaFunc
                 writeFunctionCall(s, qt_object_name, java_function, function_prefix, option,
                                   extra_param);
 
+                writeCodeInjections(s, java_function, java_function->implementingClass(), CodeSnip::End, TypeSystem::NativeCode);
                 s << INDENT << "QTJAMBI_DEBUG_TRACE(\"(native) -> leaving: "
                 << java_function_signature << "\");" << endl;
             }

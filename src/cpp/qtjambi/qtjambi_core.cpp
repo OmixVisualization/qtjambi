@@ -1081,6 +1081,149 @@ QString qtjambi_to_qstring(JNIEnv *env, jstring java_string)
     return result;
 }
 
+JBufferData::JBufferData(JNIEnv *env, jobject buffer_object) :
+    m_env(env),
+    m_buffer_object(buffer_object),
+    m_data(Q_NULLPTR){
+
+    if(m_buffer_object){
+        StaticCache *sc = StaticCache::instance();
+        sc->resolveBuffer();
+
+        jboolean isDirect = m_env->CallBooleanMethod(m_buffer_object, sc->Buffer.isDirect);
+        if(isDirect){
+            m_data = m_env->GetDirectBufferAddress(m_buffer_object);
+        }else{
+            sc->resolveByteBuffer();
+            sc->resolveIntBuffer();
+            sc->resolveCharBuffer();
+            sc->resolveShortBuffer();
+            sc->resolveLongBuffer();
+            sc->resolveDoubleBuffer();
+            sc->resolveFloatBuffer();
+
+            int position = m_env->CallIntMethod(m_buffer_object, sc->Buffer.position);
+            int limit = m_env->CallIntMethod(m_buffer_object, sc->Buffer.limit);
+            int length = limit - position;
+
+            if(m_env->IsInstanceOf(m_buffer_object, sc->ByteBuffer.class_ref)){
+                char* array = new char[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallByteMethod(m_buffer_object, sc->ByteBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->IntBuffer.class_ref)){
+                int* array = new int[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallIntMethod(m_buffer_object, sc->IntBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->ShortBuffer.class_ref)){
+                short* array = new short[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallShortMethod(m_buffer_object, sc->ShortBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->CharBuffer.class_ref)){
+                char* array = new char[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallCharMethod(m_buffer_object, sc->CharBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->LongBuffer.class_ref)){
+                long* array = new long[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallLongMethod(m_buffer_object, sc->LongBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->FloatBuffer.class_ref)){
+                float* array = new float[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallFloatMethod(m_buffer_object, sc->FloatBuffer.get, position + i);
+                }
+                m_data = array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->DoubleBuffer.class_ref)){
+                double* array = new double[length];
+                for(int i=0; i<length; i++){
+                    array[i] = m_env->CallDoubleMethod(m_buffer_object, sc->DoubleBuffer.get, position + i);
+                }
+                m_data = array;
+            }
+        }
+    }
+}
+
+JBufferData::~JBufferData(){
+    if(m_buffer_object){
+        StaticCache *sc = StaticCache::instance();
+        sc->resolveBuffer();
+        jboolean isDirect = m_env->CallBooleanMethod(m_buffer_object, sc->Buffer.isDirect);
+        jboolean isReadOnly = m_env->CallBooleanMethod(m_buffer_object, sc->Buffer.isReadOnly);
+        if(!isDirect && !isReadOnly){
+            sc->resolveByteBuffer();
+            sc->resolveIntBuffer();
+            sc->resolveCharBuffer();
+            sc->resolveShortBuffer();
+            sc->resolveLongBuffer();
+            sc->resolveDoubleBuffer();
+            sc->resolveFloatBuffer();
+
+            int position = m_env->CallIntMethod(m_buffer_object, sc->Buffer.position);
+            int limit = m_env->CallIntMethod(m_buffer_object, sc->Buffer.limit);
+            int length = limit - position;
+
+            if(m_env->IsInstanceOf(m_buffer_object, sc->ByteBuffer.class_ref)){
+                char* array = (char*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->ByteBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->IntBuffer.class_ref)){
+                int* array = (int*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->IntBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->ShortBuffer.class_ref)){
+                short* array = (short*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->ShortBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->CharBuffer.class_ref)){
+                char* array = (char*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->CharBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->LongBuffer.class_ref)){
+                long* array = (long*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->LongBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->FloatBuffer.class_ref)){
+                float* array = (float*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->FloatBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }else if(m_env->IsInstanceOf(m_buffer_object, sc->DoubleBuffer.class_ref)){
+                double* array = (double*)m_data;
+                for(int i=0; i<length; i++){
+                    m_env->CallVoidMethod(m_buffer_object, sc->DoubleBuffer.put, position + i, array[i]);
+                }
+                delete[] array;
+            }
+            m_data = Q_NULLPTR;
+        }
+    }
+}
+
+void* JBufferData::data(){
+    return m_data;
+}
+
 QtJambiFunctionTable *qtjambi_setup_vtable(JNIEnv *env,
                                          jobject object,
                                          int inconsistentCount,
