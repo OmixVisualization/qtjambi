@@ -3818,7 +3818,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjam
 				</conversion-rule>
             </modify-argument>
         </modify-function>
-		<modify-function signature="glGetUniformfv(GLint, GLint, GLfloat*)">
+		<modify-function signature="glGetUniformfv(GLuint, GLint, GLfloat*)">
             <modify-argument index="3">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3827,7 +3827,7 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjam
 				</conversion-rule>
             </modify-argument>
         </modify-function>
-		<modify-function signature="glGetUniformiv(GLint, GLint, GLint*)">
+		<modify-function signature="glGetUniformiv(GLuint, GLint, GLint*)">
             <modify-argument index="3">
                 <replace-type modified-type="java.nio.IntBuffer"/>
                 <conversion-rule class="native">

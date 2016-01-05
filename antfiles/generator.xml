@@ -33,8 +33,17 @@
 
     <target name="tools.generator.qmake" depends="init.build">
         <mkdir dir="${generator.builddir}"/>
+		<condition property="generator.configuration" value="debug" else="release">
+			<or>
+				<equals arg1="${qtjambi.configuration}" arg2="debug"/>
+				<and>
+					<equals arg1="${qtjambi.configuration}" arg2="debug_and_release"/>
+					<equals arg1="${generator.configuration}" arg2="debug"/>
+				</and>
+			</or>
+		</condition>
         <qmake dir="${generator.builddir}" pro="${basedir}/generator/generator.pro"
-                config="${qtjambi.configuration}"
+                config="${generator.configuration}"
                 qmakebinary="${tools.qt.qmake.abspath}"/>
     </target>
 

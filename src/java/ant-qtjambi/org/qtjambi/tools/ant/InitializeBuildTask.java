@@ -148,7 +148,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         }
 
         String QTDIR = System.getenv("QTDIR");   // used here
-        if(QTDIR != null)
+        if(QTDIR == null){
+			QTDIR = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
+		}
+		if(QTDIR != null)
             getProject().log(this, "QTDIR is set: " + prettyValue(QTDIR), Project.MSG_INFO);
         else if(OSInfo.isWindows() || OSInfo.isMacOS())
             getProject().log(this, "WARNING QTDIR is not set, yet this platform usually requires it to be set", Project.MSG_WARN);

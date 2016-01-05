@@ -879,12 +879,13 @@ TypeInfo Binder::qualifyType(const TypeInfo &type, const QStringList &context) c
             if (ClassModelItem klass = model_dynamic_cast<ClassModelItem> (scope)) {
                 foreach(QString base, klass->baseClasses()) {
                     QStringList ctx = context;
-                    ctx.removeLast();
-                    ctx.append(base);
+                    if(ctx.takeLast()!=base){
+						ctx.append(base);
 
-                    TypeInfo qualified = qualifyType(type, ctx);
-                    if (qualified != type)
-                        return qualified;
+						TypeInfo qualified = qualifyType(type, ctx);
+						if (qualified != type)
+							return qualified;
+					}
                 }
             }
 

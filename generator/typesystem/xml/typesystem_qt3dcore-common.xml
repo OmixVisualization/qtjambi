@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <typesystem>
 	<namespace-type name="Qt3D">
+		<modify-function signature="functorTypeId()" remove="all"/>
 		<modify-function signature="elementType(GLint)" remove="all"/>
 		<modify-function signature="tupleSizeFromType(GLint)" remove="all"/>
 		<modify-function signature="byteSizeFromType(GLint)" remove="all"/>
@@ -16,6 +17,8 @@
 	<rejection class="QFrameAllocator"/>
 	<rejection class="QHandle"/>
 	<rejection class="QHandleManager"/>
+	<rejection class="Qt3D::FunctorType"/>
+	<rejection class="Qt3D::QAbstractFunctor"/>
 	<enum-type name="Qt3D::ChangeFlag" flags="Qt3D::ChangeFlags"/>
 	<interface-type name="Qt3D::QSceneInterface" java-name="Qt3DScene">
 		<modify-function signature="addObservable(Qt3D::QObservableInterface*,Qt3D::QNodeId)">

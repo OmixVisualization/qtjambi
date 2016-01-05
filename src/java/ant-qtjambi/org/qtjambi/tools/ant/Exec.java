@@ -124,18 +124,23 @@ class Exec {
             }
         }
         
+		String key;
+		if(env.containsKey("Path")){
+			key = "Path";
+		}else if(env.containsKey("path")){
+			key = "path";
+		}else{
+			key = "PATH";
+		}
         if(path != null) {
-        	String key;
-        	if(env.containsKey("Path")){
-        		key = "Path";
-        	}else if(env.containsKey("path")){
-        		key = "path";
-        	}else{
-        		key = "PATH";
-        	}
         	prependEnvironmentWithPathSeparator(env, key, path);
         }
-
+		
+		{
+			s = AntUtil.getPropertyAsString(props, Constants.BINDIR);
+			if(s != null)
+				prependEnvironmentWithPathSeparator(env, key, s);
+		}
         if(!System.getenv().containsKey("QTDIR")){
 	        s = AntUtil.getPropertyAsString(props, Constants.BINDIR);
 	        if(s != null)

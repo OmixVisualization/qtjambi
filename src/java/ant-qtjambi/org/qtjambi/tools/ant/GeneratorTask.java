@@ -81,18 +81,20 @@ public class GeneratorTask extends Task {
     private List<String> searchPath() {
         List<String> pathList = new ArrayList<String>();
 
+		boolean generator_debug = "debug".equals(getProject().getProperty("generator.configuration"));
+		
         if(generatorDirectory != null) {
             File dirGeneratorDirectory = new File(generatorDirectory);
-            if(dirGeneratorDirectory.isDirectory()) {
+			if(dirGeneratorDirectory.isDirectory()) {
                 pathList.add(dirGeneratorDirectory.getAbsolutePath());
 
-                File dirRelease = new File(generatorDirectory, "release");
-                if(dirRelease.isDirectory())
-                    pathList.add(dirRelease.getAbsolutePath());
+                File dir1 = new File(generatorDirectory, generator_debug ? "debug" : "release");
+                if(dir1.isDirectory())
+                    pathList.add(dir1.getAbsolutePath());
 
-                File dirDebug = new File(generatorDirectory, "debug");
-                if(dirDebug.isDirectory())
-                    pathList.add(dirDebug.getAbsolutePath());
+                File dir2 = new File(generatorDirectory, generator_debug ? "release" : "debug");
+                if(dir2.isDirectory())
+                    pathList.add(dir2.getAbsolutePath());
             }
         }
 
@@ -106,13 +108,13 @@ public class GeneratorTask extends Task {
                     if(dirGeneratorDirectory.isDirectory()) {
                         pathList.add(dirGeneratorDirectory.getAbsolutePath());
 
-                        File dirRelease = new File(jambiDirectory, "release");
-                        if(dirRelease.isDirectory())
-                            pathList.add(dirRelease.getAbsolutePath());
+                        File dir1 = new File(jambiDirectory, generator_debug ? "debug" : "release");
+                        if(dir1.isDirectory())
+                            pathList.add(dir1.getAbsolutePath());
 
-                        File dirDebug = new File(jambiDirectory, "debug");
-                        if(dirDebug.isDirectory())
-                            pathList.add(dirDebug.getAbsolutePath());
+                        File dir2 = new File(jambiDirectory, generator_debug ? "release" : "debug");
+                        if(dir2.isDirectory())
+                            pathList.add(dir2.getAbsolutePath());
                     }
                 }
             }
