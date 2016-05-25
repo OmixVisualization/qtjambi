@@ -395,7 +395,13 @@
     </interface-type>
     
     <object-type name="QGraphicsObject" delete-in-main-thread="yes">
-        <modify-function signature="setGroup(QGraphicsItemGroup*)">
+        <modify-function signature="QGraphicsObject(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null &amp;&amp; %1.toGraphicsObject() == null) disableGarbageCollection();
+            </inject-code>
+        </modify-function>
+		<modify-function signature="setGroup(QGraphicsItemGroup*)">
             <modify-argument index="1">
                 <!-- Handled by injected code in QGraphicsItem -->
                 <reference-count action="ignore" />
@@ -640,7 +646,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (parentItem() == null)
+                if (%1.parentItem() == null &amp;&amp; (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
                 %1.reenableGarbageCollection();
             </inject-code>
         </modify-function>

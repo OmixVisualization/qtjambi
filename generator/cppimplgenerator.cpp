@@ -1410,10 +1410,26 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const AbstractMetaFunc
             s << INDENT << "} else {" << endl;  // if(__java_return_value_object)
             {
                 Indentation indent(INDENT);
-
+                s << INDENT << "QString __ownership_;" << endl;
+                s << INDENT << "if(m_link->ownership()==QtJambiLink::JavaOwnership) __ownership_=\"JavaOwnership\";" << endl;
+                s << INDENT << "else if(m_link->ownership()==QtJambiLink::CppOwnership) __ownership_=\"CppOwnership\";" << endl;
+                s << INDENT << "else if(m_link->ownership()==QtJambiLink::SplitOwnership) __ownership_=\"SplitOwnership\";" << endl;
+                s << INDENT << "else __ownership_=\"InvalidOwnership\";" << endl;
                 // FIXME: Use helper method
                 // Raise exception ?  Maybe this should be QtJambiNoNativeException
-                s << INDENT << "qtjambishell_throw_nullpointerexception(__jni_env, " << "\"" << implementor->name() << "::" << java_function_signature << "\"" << ");" << endl;
+#if 0
+                if(implementor->isQObject()){
+                    s << INDENT << "qtjambishell_throw_nullpointerexception(__jni_env, qPrintable(QString(" << "\"" << implementor->name() << "::" << java_function_signature << ": The java object has been deleted prior to the native object [class=\\\"%1\\\", objectName=\\\"%2\\\", createdByJava=%3, hasBeenFinalized=%4, deleteInMainThread=%5, ownership=%6].\").arg(metaObject()->className()).arg(objectName()).arg(m_link->createdByJava() ? \"true\" : \"false\").arg(m_link->hasBeenFinalized() ? \"true\" : \"false\").arg(m_link->deleteInMainThread() ? \"true\" : \"false\").arg(__ownership_))" << ");" << endl;
+                }else{
+                    s << INDENT << "qtjambishell_throw_nullpointerexception(__jni_env, qPrintable(QString(" << "\"" << implementor->name() << "::" << java_function_signature << ": The java object has been deleted prior to the native object [metaType=%4, createdByJava=%1, hasBeenFinalized=%2, deleteInMainThread=%3, ownership=%5].\").arg(m_link->createdByJava() ? \"true\" : \"false\").arg(m_link->hasBeenFinalized() ? \"true\" : \"false\").arg(m_link->deleteInMainThread() ? \"true\" : \"false\").arg(QMetaType::typeName(m_link->metaType())).arg(__ownership_))" << ");" << endl;
+                }
+#else
+                if(implementor->isQObject()){
+                    s << INDENT << "qWarning(qPrintable(QString(" << "\"" << implementor->name() << "::" << java_function_signature << ": The java object has been deleted prior to the native object [class=\\\"%1\\\", objectName=\\\"%2\\\", createdByJava=%3, hasBeenFinalized=%4, deleteInMainThread=%5, ownership=%6].\").arg(metaObject()->className()).arg(objectName()).arg(m_link->createdByJava() ? \"true\" : \"false\").arg(m_link->hasBeenFinalized() ? \"true\" : \"false\").arg(m_link->deleteInMainThread() ? \"true\" : \"false\").arg(__ownership_))" << ");" << endl;
+                }else{
+                    s << INDENT << "qWarning(qPrintable(QString(" << "\"" << implementor->name() << "::" << java_function_signature << ": The java object has been deleted prior to the native object [metaType=%4, createdByJava=%1, hasBeenFinalized=%2, deleteInMainThread=%3, ownership=%5].\").arg(m_link->createdByJava() ? \"true\" : \"false\").arg(m_link->hasBeenFinalized() ? \"true\" : \"false\").arg(m_link->deleteInMainThread() ? \"true\" : \"false\").arg(QMetaType::typeName(m_link->metaType())).arg(__ownership_))" << ");" << endl;
+                }
+#endif
                 if(function_type)
                     s << INDENT << "__qt_return_value = " << default_return_statement_qt(function_type, Generator::NoReturnStatement) << ";" << endl;
             }                
