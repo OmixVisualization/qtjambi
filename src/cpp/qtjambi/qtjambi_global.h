@@ -100,6 +100,6 @@ typedef void (*PtrDeleterFunction)(void *);
     #define snprintf _snprintf
 #endif
 
-QTJAMBI_EXPORT JNIEnv *qtjambi_current_environment();
+extern "C" QTJAMBI_EXPORT JNIEnv *qtjambi_current_environment();
 
 #endif // QTJAMBI_GLOBAL_H

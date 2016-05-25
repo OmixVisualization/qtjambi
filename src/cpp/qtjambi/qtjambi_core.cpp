@@ -2107,7 +2107,7 @@ bool qtjambi_initialize_vm(const QStringList & vm_parameters, const bool ignoreU
     }
 
     JavaVMInitArgs vm_args;
-    vm_args.version = JNI_VERSION_1_4;
+    vm_args.version = JNI_VERSION_1_8;
     if(ignoreUnrecognizedOptions){
         vm_args.ignoreUnrecognized = JNI_TRUE;
     }else{
@@ -2530,6 +2530,32 @@ static QStringList locate_vm()
 static QStringList locate_vm()
 {
     QStringList result;
+    if(vm_location_override.isEmpty()){
+        QProcess process;
+        process.start("/usr/libexec/java_home", QStringList() << "-v" << "1.8" << "-d64");
+        if (process.waitForFinished()){
+            QByteArray data = process.readAll();
+            vm_location_override = QString::fromUtf8(data.constData()).trimmed();
+            if(!vm_location_override.startsWith("/")){
+                vm_location_override = "";
+            }
+        }
+    }
+    if(vm_location_override.isEmpty()){
+        QFileInfo appletJava("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java");
+        if(appletJava.isFile() && appletJava.isExecutable()){
+            QProcess process;
+            process.start(appletJava.absoluteFilePath(), QStringList() << "-version");
+            if (process.waitForFinished()){
+                QString data = QString::fromUtf8(process.readAll().constData());
+                if(data.contains("java version \"1.8") && data.contains("64-Bit")){
+                    QDir dir = appletJava.absoluteDir();
+                    dir.cdUp();
+                    vm_location_override = dir.canonicalPath();
+                }
+            }
+        }
+    }
     if(!vm_location_override.isEmpty()){
         QStringList libs;
         libs << "Libraries/libjvm.dylib"
@@ -2540,9 +2566,7 @@ static QStringList locate_vm()
              << "../lib/client/libjvm.dylib"
              << "../lib/server/libjvm.dylib"
              << "jre/lib/client/libjvm.dylib"
-             << "jre/lib/server/libjvm.dylib"
-             << "JavaVM"
-             << "../JavaVM";
+             << "jre/lib/server/libjvm.dylib";
 
         for (int i=0; i<libs.size(); ++i) {
             QFileInfo fi(vm_location_override + "/" + libs.at(i));
