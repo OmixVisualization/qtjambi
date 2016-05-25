@@ -389,6 +389,22 @@ class QCoreApplication___ extends QCoreApplication {
             invokable.disposeLater();
         }
 
+		public static void invokeAndWaitOrInterrupt(Runnable runnable) throws InterruptedException{
+            // Specialcase invoke and wait for the case of running on the current thread...
+            if (Thread.currentThread() == instance().thread()) {
+                runnable.run();
+                return;
+            }
+
+            QSynchronousInvokable invokable = new QSynchronousInvokable(runnable);
+            QCoreApplication.postEvent(invokable, new QEvent(QSynchronousInvokable.SYNCHRONOUS_INVOKABLE_EVENT));
+            try {
+                invokable.waitForInvokedOrInterrupt();
+            }finally{
+				invokable.disposeLater();
+			}
+        }
+
 
         /**
          * Executes the task in the application's main thread after the
@@ -397,14 +413,20 @@ class QCoreApplication___ extends QCoreApplication {
          * @param timeout The time to wait, in milliseconds
          * @param task The task to perform...
          */
-        public static void invokeLater(int timeout, final Runnable task) {
-            QTimer.singleShot(timeout, new QObject() {
+        public static void invokeLater(final int timeout, final Runnable task) {
+			invokeAndWait(
+				new Runnable(){
+					public void run(){
+						QTimer.singleShot(timeout, new QObject(QCoreApplication.instance()) {
                 public void todo() {
                     task.run();
                     disposeLater();
                 }
             }
             , "todo()");
+        }
+				}
+			);
         }
 
 

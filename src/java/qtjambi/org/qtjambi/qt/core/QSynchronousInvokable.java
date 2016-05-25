@@ -73,8 +73,16 @@ class QSynchronousInvokable extends QObject {
             try {
                 wait();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                java.util.logging.Logger.getGlobal().logp(java.util.logging.Level.WARNING, this.getClass().getName(), "waitForInvoked()", "InterruptedException", e);
             }
+        }
+
+        invoked = false;
+    }
+	
+	synchronized void waitForInvokedOrInterrupt() throws InterruptedException {
+        while (!invoked) {
+            wait();
         }
 
         invoked = false;
