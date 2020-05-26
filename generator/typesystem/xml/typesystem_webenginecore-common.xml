@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtWebEngineCore">
+    <namespace-type name="QtWebEngineCore"/>
+    <rejection class="QWebEngineUrlScheme" enum-name="SpecialPort"/>
+    <enum-type name="QWebEngineUrlRequestInfo::NavigationType"/>
+    <enum-type name="QWebEngineUrlRequestInfo::ResourceType">
+        <reject-enum-value name="ResourceTypeLast" since="5.14.0"/>
+    </enum-type>
+    <enum-type name="QWebEngineUrlScheme::Flag" flags="QWebEngineUrlScheme::Flags"/>
+    <!--enum-type name="QWebEngineUrlScheme::SpecialPort"/-->
+    <enum-type name="QWebEngineUrlScheme::Syntax"/>
+
+    <object-type name="QWebEngineUrlRequestInfo">
+    </object-type>
+    <value-type name="QWebEngineQuotaRequest">
+    </value-type>
+    <object-type name="QWebEngineCookieStore">
+    </object-type>
+    <functional-type name="QWebEngineCookieStore::CookieFilter" using="std::function&lt;bool(const FilterRequest &amp;)>"/>
+    <rejection class="QWebEngineCookieStore::FilterRequest" field-name="_reservedFlag"/>
+    <rejection class="QWebEngineCookieStore::FilterRequest" field-name="_reservedType"/>
+    <value-type name="QWebEngineCookieStore::FilterRequest">
+    </value-type>
+    <object-type name="QWebEngineUrlRequestInterceptor">
+        <modify-function signature="interceptRequest(QWebEngineUrlRequestInfo&amp;)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+    </object-type>
+    <enum-type name="QWebEngineUrlRequestJob::Error"/>
+    <object-type name="QWebEngineUrlRequestJob"/>
+    <value-type name="QWebEngineUrlScheme">
+        <modify-function signature="operator=(QWebEngineUrlScheme)" rename="set">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <enum-type name="QWebEngineHttpRequest::Method"/>
+    <value-type name="QWebEngineHttpRequest">
+        <modify-function signature="operator=(QWebEngineHttpRequest)" rename="set">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QWebEngineRegisterProtocolHandlerRequest">
+    </value-type>
+    <object-type name="QWebEngineCallback" generate="no"/>
+    <object-type name="QWebEngineUrlSchemeHandler"/>
+    <object-type name="QWebEngineClientCertificateStore" pp-condition="QT_CONFIG(ssl)"/>
+    <object-type name="QWebEngineNotification"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateStore::QWebEngineClientCertificateStore', unmatched parameter type 'QtWebEngineCore::ClientCertificateStoreData*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineNotification::QWebEngineNotification', unmatched parameter type 'QSharedPointer&lt;QtWebEngineCore::UserNotificationController> const&amp;'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineRegisterProtocolHandlerRequest::QWebEngineRegisterProtocolHandlerRequest', unmatched parameter type 'QSharedPointer*" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QWebEngineUrlScheme::SpecialPort' does not have a type entry or is not an enum" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineUrlRequestJob::QWebEngineUrlRequestJob', unmatched parameter type 'QtWebEngineCore::URLRequestCustomJobDelegate*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineQuotaRequest::QWebEngineQuotaRequest', unmatched parameter type 'QSharedPointer*'" />
+</typesystem>
+

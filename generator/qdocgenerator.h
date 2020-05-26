@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,6 +41,9 @@
 #include "javagenerator.h"
 #include "metajava.h"
 
+QT_WARNING_DISABLE_CLANG("-Woverloaded-virtual")
+QT_WARNING_DISABLE_GCC("-Woverloaded-virtual")
+
 class QDocGenerator: public JavaGenerator {
     public:
         QDocGenerator();
@@ -49,7 +52,7 @@ class QDocGenerator: public JavaGenerator {
         virtual QString subDirectoryForClass(const AbstractMetaClass *java_class) const;
         virtual QString fileNameForClass(const AbstractMetaClass *java_class) const;
         virtual void write(QTextStream &s, const AbstractMetaClass *java_class);
-        virtual void write(QTextStream &s, const AbstractMetaEnumValue *java_enum_value);
+        virtual void write(QTextStream &s, const int size, const AbstractMetaEnumValue *java_enum_value);
         virtual void write(QTextStream &s, const AbstractMetaEnum *java_enum);
         virtual void writeOverload(QTextStream &s, const AbstractMetaFunction *java_function, int arg_count);
         virtual void write(QTextStream &s, const AbstractMetaFunction *java_function);

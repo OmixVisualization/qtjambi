@@ -73,6 +73,7 @@ static char const * const _S_token_names[] = {
     "compl",
     "concat",
     "const",
+    "constexpr",
     "const_cast",
     "continue",
     "decr",
@@ -131,6 +132,7 @@ static char const * const _S_token_names[] = {
     "static",
     "static_cast",
     "string_literal",
+    "rawstring_literal",
     "struct",
     "switch",
     "template",
@@ -155,9 +157,13 @@ static char const * const _S_token_names[] = {
     "Q_ENUMS",
     "Q_ENUM",
     "Q_INVOKABLE",
+    "Q_SCRIPTABLE",
     "Q_GADGET",
     "Q_DECLARE_METATYPE",
-    "nullptr"
+    "QT_REQUIRE_CONFIG",
+    "QTJAMBI_DEPRECATED",
+    "QTJAMBI_DEPRECATED_X",
+//    "nullptr"
 };
 
 static char _S_printable[][2] = {
@@ -269,7 +275,7 @@ char const *token_name(int token) {
     }
 
     Q_ASSERT(0);
-    return 0;
+    return nullptr;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

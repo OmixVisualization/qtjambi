@@ -60,8 +60,9 @@ scan_fun_ptr Lexer::s_scan_keyword_table[] = {
     &Lexer::scanKeyword10, &Lexer::scanKeyword11,
     &Lexer::scanKeyword12, &Lexer::scanKeyword13,
     &Lexer::scanKeyword14, &Lexer::scanKeyword0,
-    &Lexer::scanKeyword16, &Lexer::scanKeyword0,
-    &Lexer::scanKeyword18
+    &Lexer::scanKeyword16, &Lexer::scanKeyword17,
+    &Lexer::scanKeyword18, &Lexer::scanKeyword19,
+    &Lexer::scanKeyword20
 };
 
 void LocationManager::extract_line(int offset, int *line, QString *filename) const {
@@ -77,10 +78,10 @@ void LocationManager::extract_line(int offset, int *line, QString *filename) con
         ++cursor;
         char buffer[1024], *cp = buffer;
         do {
-            *cp++ = *cursor++;
+            *cp++ = char(*cursor++);
         } while (std::isdigit(*cursor));
         *cp = '\0';
-        int l = strtol(buffer, 0, 0);
+        int l = strtol(buffer, nullptr, 0);
 
         Q_ASSERT(std::isspace(*cursor));
         ++cursor;
@@ -90,7 +91,7 @@ void LocationManager::extract_line(int offset, int *line, QString *filename) con
 
         cp = buffer;
         while (*cursor && *cursor != '"') {
-            *cp++ = *cursor++;
+            *cp++ = char(*cursor++);
         }
         *cp = '\0';
         Q_ASSERT(*cursor == '"');
@@ -102,16 +103,24 @@ void LocationManager::extract_line(int offset, int *line, QString *filename) con
     }
 }
 
+void LocationManager::addRequiredFeature(std::size_t offset, QString feature){
+    int line;
+    int column;
+    QString filename;
+    positionAt(offset, &line, &column, &filename);
+    _M_requiredFeatures[filename] << feature;
+}
+
 void LocationManager::positionAt(std::size_t offset, int *line, int *column,
                                  QString *filename) const {
     int ppline, ppcolumn;
     line_table.positionAt(offset, &ppline, &ppcolumn);
 
     int base_line;
-    extract_line((int) line_table[ppline-1], &base_line, filename);
+    extract_line(int(line_table[size_t(ppline-1)]), &base_line, filename);
 
     int line2, column2;
-    location_table.positionAt((int) line_table[ppline-1], &line2, &column2);
+    location_table.positionAt(size_t(line_table[size_t(ppline-1)]), &line2, &column2);
 
     location_table.positionAt(offset, line, column);
     *line = base_line + *line - line2  - 1;
@@ -130,8 +139,8 @@ void Lexer::tokenize(const char *contents, std::size_t size) {
 
     index = 1;
 
-    cursor = (const unsigned char *) contents;
-    begin_buffer = (const unsigned char *) contents;
+    cursor = reinterpret_cast<const unsigned char*>(contents);
+    begin_buffer = reinterpret_cast<const unsigned char*>(contents);
     end_buffer = cursor + size;
 
     location_table.resize(1024);
@@ -146,19 +155,19 @@ void Lexer::tokenize(const char *contents, std::size_t size) {
         if (index == token_stream.size())
             token_stream.resize(token_stream.size() * 2);
 
-        Token *current_token = &token_stream[(int) index];
+        Token *current_token = &token_stream[index];
         current_token->text = reinterpret_cast<const char*>(begin_buffer);
-        current_token->position = cursor - begin_buffer;
+        current_token->position = size_t(cursor - begin_buffer);
         (this->*s_scan_table[*cursor])();
-        current_token->size = cursor - begin_buffer - current_token->position;
+        current_token->size = size_t(cursor - begin_buffer) - current_token->position;
     } while (cursor < end_buffer);
 
     if (index == token_stream.size())
         token_stream.resize(token_stream.size() * 2);
 
     Q_ASSERT(index < token_stream.size());
-    token_stream[(int) index].position = cursor - begin_buffer;
-    token_stream[(int) index].kind = Token_EOF;
+    token_stream[index].position = size_t(cursor - begin_buffer);
+    token_stream[index].kind = Token_EOF;
 }
 
 void Lexer::reportError(const QString& msg) {
@@ -192,6 +201,9 @@ void Lexer::initialize_scan_table() {
     }
 
     s_scan_table[int('L')] = &Lexer::scan_identifier_or_literal;
+    s_scan_table[int('u')] = &Lexer::scan_identifier_or_literal;
+    s_scan_table[int('U')] = &Lexer::scan_identifier_or_literal;
+    s_scan_table[int('R')] = &Lexer::scan_identifier_or_literal;
     s_scan_table[int('\n')] = &Lexer::scan_newline;
     s_scan_table[int('#')] = &Lexer::scan_preprocessor;
 
@@ -231,7 +243,7 @@ void Lexer::scan_preprocessor() {
     if (line_table.current_line == line_table.size())
         line_table.resize(line_table.current_line * 2);
 
-    line_table[(int) line_table.current_line++] = (cursor - begin_buffer);
+    line_table[line_table.current_line++] = size_t(cursor - begin_buffer);
 
     while (*cursor && *cursor != '\n')
         ++cursor;
@@ -258,10 +270,10 @@ void Lexer::scan_char_constant() {
 
     ++cursor;
 
-    token_stream[(int) index].extra.symbol =
-        control->findOrInsertName((const char*) begin, cursor - begin);
+    token_stream[index].extra.symbol =
+        control->findOrInsertName(reinterpret_cast<const char*>(begin), size_t(cursor - begin));
 
-    token_stream[(int) index++].kind = Token_char_literal;
+    token_stream[index++].kind = Token_char_literal;
 }
 
 void Lexer::scan_string_constant() {
@@ -282,17 +294,17 @@ void Lexer::scan_string_constant() {
 
     ++cursor;
 
-    token_stream[(int) index].extra.symbol =
-        control->findOrInsertName((const char*) begin, cursor - begin);
+    token_stream[index].extra.symbol =
+        control->findOrInsertName(reinterpret_cast<const char*>(begin), size_t(cursor - begin));
 
-    token_stream[(int) index++].kind = Token_string_literal;
+    token_stream[index++].kind = Token_string_literal;
 }
 
 void Lexer::scan_newline() {
     if (location_table.current_line == location_table.size())
         location_table.resize(location_table.current_line * 2);
 
-    location_table[(int) location_table.current_line++] = (cursor - begin_buffer);
+    location_table[location_table.current_line++] = size_t(cursor - begin_buffer);
     ++cursor;
 }
 
@@ -306,17 +318,48 @@ void Lexer::scan_white_spaces() {
 }
 
 void Lexer::scan_identifier_or_literal() {
-    switch (*(cursor + 1)) {
-        case '\'':
-            ++cursor;
-            scan_char_constant();
-            break;
+    switch (*(cursor)) {
+        case 'R':
+            if(*(cursor + 1)=='"' && *(cursor + 2)=='(') {
+                const unsigned char *begin = cursor;
+                ++cursor;//R
+                ++cursor;//"
+                ++cursor;//(
+                while (*cursor && *cursor != ')' && *(cursor + 1) != '"') {
+                    ++cursor;
+                }
 
-        case '\"':
-            ++cursor;
-            scan_string_constant();
-            break;
+                if (*cursor != ')' && *(cursor + 1) != '"')
+                    reportError("expected )\"");
 
+                ++cursor;//)
+                ++cursor;//"
+
+                token_stream[index].extra.symbol =
+                    control->findOrInsertName(reinterpret_cast<const char*>(begin), size_t(cursor - begin));
+
+                token_stream[index++].kind = Token_rawstring_literal;
+                break;
+            }
+        Q_FALLTHROUGH();
+        case 'u':
+            if(*(cursor + 1)=='8' && *(cursor + 2)=='\"'){
+                ++cursor;
+                ++cursor;
+                ++cursor;
+                scan_string_constant();
+                break;
+            }
+        Q_FALLTHROUGH();
+        case 'U':
+        case 'L':
+            if(*(cursor + 1)=='\"'){
+                ++cursor;
+                ++cursor;
+                scan_string_constant();
+                break;
+            }
+        Q_FALLTHROUGH();
         default:
             scan_identifier_or_keyword();
             break;
@@ -325,16 +368,16 @@ void Lexer::scan_identifier_or_literal() {
 
 void Lexer::scan_identifier_or_keyword() {
     const unsigned char *skip = cursor;
-    while (isalnum(*skip) || *skip == '_')
+    while (isalnum(*skip) || *skip == '_' || *skip == '$')
         ++skip;
 
-    int n = skip - cursor;
-    Token *current_token = &token_stream[(int) index];
-    (this->*s_scan_keyword_table[n < 19 ? n : 0])();
+    size_t n = size_t(skip - cursor);
+    Token *current_token = &token_stream[index];
+    (this->*s_scan_keyword_table[n < 21 ? n : 0])();
 
     if (current_token->kind == Token_identifier) {
         current_token->extra.symbol =
-            control->findOrInsertName((const char*) cursor, n);
+            control->findOrInsertName(reinterpret_cast<const char*>(cursor), n);
     }
 
     cursor = skip;
@@ -351,10 +394,10 @@ void Lexer::scan_int_constant() {
     while (isalnum(*cursor) || *cursor == '.')
         ++cursor;
 
-    token_stream[(int) index].extra.symbol =
-        control->findOrInsertName((const char*) begin, cursor - begin);
+    token_stream[index].extra.symbol =
+        control->findOrInsertName(reinterpret_cast<const char*>(begin), size_t(cursor - begin));
 
-    token_stream[(int) index++].kind = Token_number_literal;
+    token_stream[index++].kind = Token_number_literal;
 }
 
 void Lexer::scan_not() {
@@ -367,9 +410,9 @@ void Lexer::scan_not() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_not_eq;
+        token_stream[index++].kind = Token_not_eq;
     } else {
-        token_stream[(int) index++].kind = '!';
+        token_stream[index++].kind = '!';
     }
 }
 
@@ -383,9 +426,9 @@ void Lexer::scan_remainder() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else {
-        token_stream[(int) index++].kind = '%';
+        token_stream[index++].kind = '%';
     }
 }
 
@@ -399,23 +442,23 @@ void Lexer::scan_and() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else if (*cursor == '&') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_and;
+        token_stream[index++].kind = Token_and;
     } else {
-        token_stream[(int) index++].kind = '&';
+        token_stream[index++].kind = '&';
     }
 }
 
 void Lexer::scan_left_paren() {
     ++cursor;
-    token_stream[(int) index++].kind = '(';
+    token_stream[index++].kind = '(';
 }
 
 void Lexer::scan_right_paren() {
     ++cursor;
-    token_stream[(int) index++].kind = ')';
+    token_stream[index++].kind = ')';
 }
 
 void Lexer::scan_star() {
@@ -428,9 +471,9 @@ void Lexer::scan_star() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else {
-        token_stream[(int) index++].kind = '*';
+        token_stream[index++].kind = '*';
     }
 }
 
@@ -444,18 +487,18 @@ void Lexer::scan_plus() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else if (*cursor == '+') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_incr;
+        token_stream[index++].kind = Token_incr;
     } else {
-        token_stream[(int) index++].kind = '+';
+        token_stream[index++].kind = '+';
     }
 }
 
 void Lexer::scan_comma() {
     ++cursor;
-    token_stream[(int) index++].kind = ',';
+    token_stream[index++].kind = ',';
 }
 
 void Lexer::scan_minus() {
@@ -469,19 +512,19 @@ void Lexer::scan_minus() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else if (*cursor == '-') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_decr;
+        token_stream[index++].kind = Token_decr;
     } else if (*cursor == '>') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_arrow;
+        token_stream[index++].kind = Token_arrow;
         if (*cursor == '*') {
             ++cursor;
-            token_stream[(int) index++].kind = Token_ptrmem;
+            token_stream[index++].kind = Token_ptrmem;
         }
     } else {
-        token_stream[(int) index++].kind = '-';
+        token_stream[index++].kind = '-';
     }
 }
 
@@ -494,12 +537,12 @@ void Lexer::scan_dot() {
     ++cursor;
     if (*cursor == '.' && *(cursor + 1) == '.') {
         cursor += 2;
-        token_stream[(int) index++].kind = Token_ellipsis;
+        token_stream[index++].kind = Token_ellipsis;
     } else if (*cursor == '.' && *(cursor + 1) == '*') {
         cursor += 2;
-        token_stream[(int) index++].kind = Token_ptrmem;
+        token_stream[index++].kind = Token_ptrmem;
     } else
-        token_stream[(int) index++].kind = '.';
+        token_stream[index++].kind = '.';
 }
 
 void Lexer::scan_divide() {
@@ -512,9 +555,9 @@ void Lexer::scan_divide() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else {
-        token_stream[(int) index++].kind = '/';
+        token_stream[index++].kind = '/';
     }
 }
 
@@ -522,15 +565,15 @@ void Lexer::scan_colon() {
     ++cursor;
     if (*cursor == ':') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_scope;
+        token_stream[index++].kind = Token_scope;
     } else {
-        token_stream[(int) index++].kind = ':';
+        token_stream[index++].kind = ':';
     }
 }
 
 void Lexer::scan_semicolon() {
     ++cursor;
-    token_stream[(int) index++].kind = ';';
+    token_stream[index++].kind = ';';
 }
 
 void Lexer::scan_less() {
@@ -544,17 +587,17 @@ void Lexer::scan_less() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_leq;
+        token_stream[index++].kind = Token_leq;
     } else if (*cursor == '<') {
         ++cursor;
         if (*cursor == '=') {
             ++cursor;
-            token_stream[(int) index++].kind = Token_assign;
+            token_stream[index++].kind = Token_assign;
         } else {
-            token_stream[(int) index++].kind = Token_shift;
+            token_stream[index++].kind = Token_shift;
         }
     } else {
-        token_stream[(int) index++].kind = '<';
+        token_stream[index++].kind = '<';
     }
 }
 
@@ -567,9 +610,9 @@ void Lexer::scan_equal() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_eq;
+        token_stream[index++].kind = Token_eq;
     } else {
-        token_stream[(int) index++].kind = '=';
+        token_stream[index++].kind = '=';
     }
 }
 
@@ -584,33 +627,33 @@ void Lexer::scan_greater() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_geq;
+        token_stream[index++].kind = Token_geq;
     } else if (*cursor == '>') {
         ++cursor;
         if (*cursor == '=') {
             ++cursor;
-            token_stream[(int) index++].kind = Token_assign;
+            token_stream[index++].kind = Token_assign;
         } else {
-            token_stream[(int) index++].kind = Token_shift;
+            token_stream[index++].kind = '>';
         }
     } else {
-        token_stream[(int) index++].kind = '>';
+        token_stream[index++].kind = '>';
     }
 }
 
 void Lexer::scan_question() {
     ++cursor;
-    token_stream[(int) index++].kind = '?';
+    token_stream[index++].kind = '?';
 }
 
 void Lexer::scan_left_bracket() {
     ++cursor;
-    token_stream[(int) index++].kind = '[';
+    token_stream[index++].kind = '[';
 }
 
 void Lexer::scan_right_bracket() {
     ++cursor;
-    token_stream[(int) index++].kind = ']';
+    token_stream[index++].kind = ']';
 }
 
 void Lexer::scan_xor() {
@@ -622,15 +665,15 @@ void Lexer::scan_xor() {
 
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else {
-        token_stream[(int) index++].kind = '^';
+        token_stream[index++].kind = '^';
     }
 }
 
 void Lexer::scan_left_brace() {
     ++cursor;
-    token_stream[(int) index++].kind = '{';
+    token_stream[index++].kind = '{';
 }
 
 void Lexer::scan_or() {
@@ -642,33 +685,33 @@ void Lexer::scan_or() {
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_assign;
+        token_stream[index++].kind = Token_assign;
     } else if (*cursor == '|') {
         ++cursor;
-        token_stream[(int) index++].kind = Token_or;
+        token_stream[index++].kind = Token_or;
     } else {
-        token_stream[(int) index++].kind = '|';
+        token_stream[index++].kind = '|';
     }
 }
 
 void Lexer::scan_right_brace() {
     ++cursor;
-    token_stream[(int) index++].kind = '}';
+    token_stream[index++].kind = '}';
 }
 
 void Lexer::scan_tilde() {
     ++cursor;
-    token_stream[(int) index++].kind = '~';
+    token_stream[index++].kind = '~';
 }
 
 void Lexer::scan_EOF() {
     ++cursor;
-    token_stream[(int) index++].kind = Token_EOF;
+    token_stream[index++].kind = Token_EOF;
 }
 
 void Lexer::scan_invalid_input() {
     QString errmsg("invalid input: %1");
-    errmsg.arg(int(*cursor));
+    errmsg = errmsg.arg(int(*cursor));
     reportError(errmsg);
     ++cursor;
 }
@@ -698,7 +741,7 @@ void LocationTable::positionAt(std::size_t offset, int max_line,
     }
 
     *line = std::max(first, 1);
-    *column = (int)(offset - lines[*line - 1] - 1);
+    *column = int(offset - lines[*line - 1] - 1);
 
     if (*column < 0) {
         *column = 0;
@@ -706,34 +749,34 @@ void LocationTable::positionAt(std::size_t offset, int max_line,
 }
 
 void Lexer::scanKeyword0() {
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword2() {
     switch (*cursor) {
         case 'i':
             if (*(cursor + 1) == 'f') {
-                token_stream[(int) index++].kind = Token_if;
+                token_stream[index++].kind = Token_if;
                 return;
             }
             break;
 
         case 'd':
             if (*(cursor + 1) == 'o') {
-                token_stream[(int) index++].kind = Token_do;
+                token_stream[index++].kind = Token_do;
                 return;
             }
             break;
 
         case 'o':
             if (*(cursor + 1) == 'r') {
-                token_stream[(int) index++].kind = Token_or;
+                token_stream[index++].kind = Token_or;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword3() {
@@ -741,12 +784,12 @@ void Lexer::scanKeyword3() {
         case 'a':
             if (*(cursor + 1) == 'n' &&
                     *(cursor + 2) == 'd') {
-                token_stream[(int) index++].kind = Token_and;
+                token_stream[index++].kind = Token_and;
                 return;
             }
             if (*(cursor + 1) == 's' &&
                     *(cursor + 2) == 'm') {
-                token_stream[(int) index++].kind = Token_asm;
+                token_stream[index++].kind = Token_asm;
                 return;
             }
             break;
@@ -754,7 +797,7 @@ void Lexer::scanKeyword3() {
         case 'f':
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'r') {
-                token_stream[(int) index++].kind = Token_for;
+                token_stream[index++].kind = Token_for;
                 return;
             }
             break;
@@ -762,7 +805,7 @@ void Lexer::scanKeyword3() {
         case 'i':
             if (*(cursor + 1) == 'n' &&
                     *(cursor + 2) == 't') {
-                token_stream[(int) index++].kind = Token_int;
+                token_stream[index++].kind = Token_int;
                 return;
             }
             break;
@@ -770,12 +813,12 @@ void Lexer::scanKeyword3() {
         case 'n':
             if (*(cursor + 1) == 'e' &&
                     *(cursor + 2) == 'w') {
-                token_stream[(int) index++].kind = Token_new;
+                token_stream[index++].kind = Token_new;
                 return;
             }
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 't') {
-                token_stream[(int) index++].kind = Token_not;
+                token_stream[index++].kind = Token_not;
                 return;
             }
             break;
@@ -783,7 +826,7 @@ void Lexer::scanKeyword3() {
         case 't':
             if (*(cursor + 1) == 'r' &&
                     *(cursor + 2) == 'y') {
-                token_stream[(int) index++].kind = Token_try;
+                token_stream[index++].kind = Token_try;
                 return;
             }
             break;
@@ -791,13 +834,13 @@ void Lexer::scanKeyword3() {
         case 'x':
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'r') {
-                token_stream[(int) index++].kind = Token_xor;
+                token_stream[index++].kind = Token_xor;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword4() {
@@ -806,7 +849,7 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'u' &&
                     *(cursor + 2) == 't' &&
                     *(cursor + 3) == 'o') {
-                token_stream[(int) index++].kind = Token_auto;
+                token_stream[index++].kind = Token_auto;
                 return;
             }
             break;
@@ -815,13 +858,13 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'a' &&
                     *(cursor + 2) == 's' &&
                     *(cursor + 3) == 'e') {
-                token_stream[(int) index++].kind = Token_case;
+                token_stream[index++].kind = Token_case;
                 return;
             }
             if (*(cursor + 1) == 'h' &&
                     *(cursor + 2) == 'a' &&
                     *(cursor + 3) == 'r') {
-                token_stream[(int) index++].kind = Token_char;
+                token_stream[index++].kind = Token_char;
                 return;
             }
             break;
@@ -830,7 +873,7 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'o' &&
                     *(cursor + 3) == 'l') {
-                token_stream[(int) index++].kind = Token_bool;
+                token_stream[index++].kind = Token_bool;
                 return;
             }
             break;
@@ -839,19 +882,19 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'l' &&
                     *(cursor + 2) == 's' &&
                     *(cursor + 3) == 'e') {
-                token_stream[(int) index++].kind = Token_else;
+                token_stream[index++].kind = Token_else;
                 return;
             }
             if (*(cursor + 1) == 'm' &&
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 't') {
-                token_stream[(int) index++].kind = Token_emit;
+                token_stream[index++].kind = Token_emit;
                 return;
             }
             if (*(cursor + 1) == 'n' &&
                     *(cursor + 2) == 'u' &&
                     *(cursor + 3) == 'm') {
-                token_stream[(int) index++].kind = Token_enum;
+                token_stream[index++].kind = Token_enum;
                 return;
             }
             break;
@@ -860,7 +903,7 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 't' &&
                     *(cursor + 3) == 'o') {
-                token_stream[(int) index++].kind = Token_goto;
+                token_stream[index++].kind = Token_goto;
                 return;
             }
             break;
@@ -869,7 +912,7 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'n' &&
                     *(cursor + 3) == 'g') {
-                token_stream[(int) index++].kind = Token_long;
+                token_stream[index++].kind = Token_long;
                 return;
             }
             break;
@@ -878,7 +921,7 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'h' &&
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 's') {
-                token_stream[(int) index++].kind = Token_this;
+                token_stream[index++].kind = Token_this;
                 return;
             }
             break;
@@ -887,13 +930,13 @@ void Lexer::scanKeyword4() {
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 'd') {
-                token_stream[(int) index++].kind = Token_void;
+                token_stream[index++].kind = Token_void;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword5() {
@@ -903,28 +946,28 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 't' &&
                     *(cursor + 3) == 'c' &&
                     *(cursor + 4) == 'h') {
-                token_stream[(int) index++].kind = Token_catch;
+                token_stream[index++].kind = Token_catch;
                 return;
             }
             if (*(cursor + 1) == 'l' &&
                     *(cursor + 2) == 'a' &&
                     *(cursor + 3) == 's' &&
                     *(cursor + 4) == 's') {
-                token_stream[(int) index++].kind = Token_class;
+                token_stream[index++].kind = Token_class;
                 return;
             }
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'm' &&
                     *(cursor + 3) == 'p' &&
                     *(cursor + 4) == 'l') {
-                token_stream[(int) index++].kind = Token_compl;
+                token_stream[index++].kind = Token_compl;
                 return;
             }
             if (*(cursor + 1) == 'o' &&
                     *(cursor + 2) == 'n' &&
                     *(cursor + 3) == 's' &&
                     *(cursor + 4) == 't') {
-                token_stream[(int) index++].kind = Token_const;
+                token_stream[index++].kind = Token_const;
                 return;
             }
             break;
@@ -934,14 +977,14 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 't' &&
                     *(cursor + 3) == 'o' &&
                     *(cursor + 4) == 'r') {
-                token_stream[(int) index++].kind = Token_bitor;
+                token_stream[index++].kind = Token_bitor;
                 return;
             }
             if (*(cursor + 1) == 'r' &&
                     *(cursor + 2) == 'e' &&
                     *(cursor + 3) == 'a' &&
                     *(cursor + 4) == 'k') {
-                token_stream[(int) index++].kind = Token_break;
+                token_stream[index++].kind = Token_break;
                 return;
             }
             break;
@@ -951,7 +994,7 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 'o' &&
                     *(cursor + 3) == 'a' &&
                     *(cursor + 4) == 't') {
-                token_stream[(int) index++].kind = Token_float;
+                token_stream[index++].kind = Token_float;
                 return;
             }
             break;
@@ -961,7 +1004,7 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == '_' &&
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 'q') {
-                token_stream[(int) index++].kind = Token_or_eq;
+                token_stream[index++].kind = Token_or_eq;
                 return;
             }
             break;
@@ -971,14 +1014,14 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 'o' &&
                     *(cursor + 3) == 'r' &&
                     *(cursor + 4) == 't') {
-                token_stream[(int) index++].kind = Token_short;
+                token_stream[index++].kind = Token_short;
                 return;
             }
             if (*(cursor + 1) == 'l' &&
                     *(cursor + 2) == 'o' &&
                     *(cursor + 3) == 't' &&
                     *(cursor + 4) == 's') {
-                token_stream[(int) index++].kind = Token_slots;
+                token_stream[index++].kind = Token_slots;
                 return;
             }
             break;
@@ -988,14 +1031,14 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 'o' &&
                     *(cursor + 4) == 'n') {
-                token_stream[(int) index++].kind = Token_union;
+                token_stream[index++].kind = Token_union;
                 return;
             }
             if (*(cursor + 1) == 's' &&
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 'n' &&
                     *(cursor + 4) == 'g') {
-                token_stream[(int) index++].kind = Token_using;
+                token_stream[index++].kind = Token_using;
                 return;
             }
             break;
@@ -1005,7 +1048,7 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 'r' &&
                     *(cursor + 3) == 'o' &&
                     *(cursor + 4) == 'w') {
-                token_stream[(int) index++].kind = Token_throw;
+                token_stream[index++].kind = Token_throw;
                 return;
             }
             break;
@@ -1015,13 +1058,13 @@ void Lexer::scanKeyword5() {
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 'l' &&
                     *(cursor + 4) == 'e') {
-                token_stream[(int) index++].kind = Token_while;
+                token_stream[index++].kind = Token_while;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword6() {
@@ -1032,7 +1075,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == '_' &&
                     *(cursor + 4) == 'e' &&
                     *(cursor + 5) == 'q') {
-                token_stream[(int) index++].kind = Token_and_eq;
+                token_stream[index++].kind = Token_and_eq;
                 return;
             }
             break;
@@ -1043,7 +1086,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'a' &&
                     *(cursor + 4) == 'n' &&
                     *(cursor + 5) == 'd') {
-                token_stream[(int) index++].kind = Token_bitand;
+                token_stream[index++].kind = Token_bitand;
                 return;
             }
             break;
@@ -1054,7 +1097,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'o' &&
                     *(cursor + 4) == 'r' &&
                     *(cursor + 5) == 't') {
-                token_stream[(int) index++].kind = Token_export;
+                token_stream[index++].kind = Token_export;
                 return;
             }
             if (*(cursor + 1) == 'x' &&
@@ -1062,7 +1105,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 'r' &&
                     *(cursor + 5) == 'n') {
-                token_stream[(int) index++].kind = Token_extern;
+                token_stream[index++].kind = Token_extern;
                 return;
             }
             break;
@@ -1073,7 +1116,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 't' &&
                     *(cursor + 5) == 'e') {
-                token_stream[(int) index++].kind = Token_delete;
+                token_stream[index++].kind = Token_delete;
                 return;
             }
             if (*(cursor + 1) == 'o' &&
@@ -1081,7 +1124,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'b' &&
                     *(cursor + 4) == 'l' &&
                     *(cursor + 5) == 'e') {
-                token_stream[(int) index++].kind = Token_double;
+                token_stream[index++].kind = Token_double;
                 return;
             }
             break;
@@ -1092,7 +1135,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 'n' &&
                     *(cursor + 5) == 'd') {
-                token_stream[(int) index++].kind = Token_friend;
+                token_stream[index++].kind = Token_friend;
                 return;
             }
             break;
@@ -1103,7 +1146,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'i' &&
                     *(cursor + 4) == 'n' &&
                     *(cursor + 5) == 'e') {
-                token_stream[(int) index++].kind = Token_inline;
+                token_stream[index++].kind = Token_inline;
                 return;
             }
             break;
@@ -1114,7 +1157,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'C' &&
                     *(cursor + 4) == 'O' &&
                     *(cursor + 5) == 'P') {
-                token_stream[(int) index++].kind = Token_K_DCOP;
+                token_stream[index++].kind = Token_K_DCOP;
                 return;
             }
             break;
@@ -1125,7 +1168,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == '_' &&
                     *(cursor + 4) == 'e' &&
                     *(cursor + 5) == 'q') {
-                token_stream[(int) index++].kind = Token_not_eq;
+                token_stream[index++].kind = Token_not_eq;
                 return;
             }
             break;
@@ -1136,7 +1179,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'l' &&
                     *(cursor + 4) == 'i' &&
                     *(cursor + 5) == 'c') {
-                token_stream[(int) index++].kind = Token_public;
+                token_stream[index++].kind = Token_public;
                 return;
             }
             break;
@@ -1147,7 +1190,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'n' &&
                     *(cursor + 4) == 'e' &&
                     *(cursor + 5) == 'd') {
-                token_stream[(int) index++].kind = Token_signed;
+                token_stream[index++].kind = Token_signed;
                 return;
             }
             if (*(cursor + 1) == 'i' &&
@@ -1155,7 +1198,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 'o' &&
                     *(cursor + 5) == 'f') {
-                token_stream[(int) index++].kind = Token_sizeof;
+                token_stream[index++].kind = Token_sizeof;
                 return;
             }
             if (*(cursor + 1) == 't' &&
@@ -1163,7 +1206,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 't' &&
                     *(cursor + 4) == 'i' &&
                     *(cursor + 5) == 'c') {
-                token_stream[(int) index++].kind = Token_static;
+                token_stream[index++].kind = Token_static;
                 return;
             }
             if (*(cursor + 1) == 't' &&
@@ -1171,7 +1214,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'u' &&
                     *(cursor + 4) == 'c' &&
                     *(cursor + 5) == 't') {
-                token_stream[(int) index++].kind = Token_struct;
+                token_stream[index++].kind = Token_struct;
                 return;
             }
             if (*(cursor + 1) == 'w' &&
@@ -1179,7 +1222,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 't' &&
                     *(cursor + 4) == 'c' &&
                     *(cursor + 5) == 'h') {
-                token_stream[(int) index++].kind = Token_switch;
+                token_stream[index++].kind = Token_switch;
                 return;
             }
             break;
@@ -1190,7 +1233,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'u' &&
                     *(cursor + 4) == 'r' &&
                     *(cursor + 5) == 'n') {
-                token_stream[(int) index++].kind = Token_return;
+                token_stream[index++].kind = Token_return;
                 return;
             }
             break;
@@ -1201,7 +1244,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'e' &&
                     *(cursor + 4) == 'i' &&
                     *(cursor + 5) == 'd') {
-                token_stream[(int) index++].kind = Token_typeid;
+                token_stream[index++].kind = Token_typeid;
                 return;
             }
             break;
@@ -1212,7 +1255,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == '_' &&
                     *(cursor + 4) == 'e' &&
                     *(cursor + 5) == 'q') {
-                token_stream[(int) index++].kind = Token_xor_eq;
+                token_stream[index++].kind = Token_xor_eq;
                 return;
             }
             break;
@@ -1223,7 +1266,7 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'c' &&
                     *(cursor + 4) == 'o' &&
                     *(cursor + 5) == 'p') {
-                token_stream[(int) index++].kind = Token_k_dcop;
+                token_stream[index++].kind = Token_k_dcop;
                 return;
             }
             break;
@@ -1234,13 +1277,13 @@ void Lexer::scanKeyword6() {
                     *(cursor + 3) == 'N' &&
                     *(cursor + 4) == 'U' &&
                     *(cursor + 5) == 'M') {
-                token_stream[(int) index++].kind = Token_Q_ENUM;
+                token_stream[index++].kind = Token_Q_ENUM;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword7() {
@@ -1252,7 +1295,7 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'u' &&
                     *(cursor + 5) == 'l' &&
                     *(cursor + 6) == 't') {
-                token_stream[(int) index++].kind = Token_default;
+                token_stream[index++].kind = Token_default;
                 return;
             }
             break;
@@ -1264,11 +1307,11 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'b' &&
                     *(cursor + 5) == 'l' &&
                     *(cursor + 6) == 'e') {
-                token_stream[(int) index++].kind = Token_mutable;
+                token_stream[index++].kind = Token_mutable;
                 return;
             }
             break;
-
+/*
         case 'n':
             if (*(cursor + 1) == 'u' &&
                     *(cursor + 2) == 'l' &&
@@ -1276,11 +1319,11 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'p' &&
                     *(cursor + 5) == 't' &&
                     *(cursor + 6) == 'r') {
-                token_stream[(int) index++].kind = Token_nullptr;
+                token_stream[index++].kind = Token_nullptr;
                 return;
             }
             break;
-
+*/
         case 'p':
             if (*(cursor + 1) == 'r' &&
                     *(cursor + 2) == 'i' &&
@@ -1288,7 +1331,7 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'a' &&
                     *(cursor + 5) == 't' &&
                     *(cursor + 6) == 'e') {
-                token_stream[(int) index++].kind = Token_private;
+                token_stream[index++].kind = Token_private;
                 return;
             }
             break;
@@ -1299,7 +1342,7 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'a' &&
                     *(cursor + 5) == 'l' &&
                     *(cursor + 6) == 's') {
-                token_stream[(int) index++].kind = Token_signals;
+                token_stream[index++].kind = Token_signals;
                 return;
             }
             break;
@@ -1310,7 +1353,7 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'd' &&
                     *(cursor + 5) == 'e' &&
                     *(cursor + 6) == 'f') {
-                token_stream[(int) index++].kind = Token_typedef;
+                token_stream[index++].kind = Token_typedef;
                 return;
             }
             break;
@@ -1322,7 +1365,7 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'u' &&
                     *(cursor + 5) == 'a' &&
                     *(cursor + 6) == 'l') {
-                token_stream[(int) index++].kind = Token_virtual;
+                token_stream[index++].kind = Token_virtual;
                 return;
             }
             break;
@@ -1334,13 +1377,13 @@ void Lexer::scanKeyword7() {
                     *(cursor + 4) == 'U' &&
                     *(cursor + 5) == 'M' &&
                     *(cursor + 6) == 'S') {
-                token_stream[(int) index++].kind = Token_Q_ENUMS;
+                token_stream[index++].kind = Token_Q_ENUMS;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword8() {
@@ -1353,7 +1396,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'e' &&
                     *(cursor + 6) == 'o' &&
                     *(cursor + 7) == 'f') {
-                token_stream[(int) index++].kind = Token___typeof;
+                token_stream[index++].kind = Token___typeof;
                 return;
             }
             break;
@@ -1366,7 +1409,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'n' &&
                     *(cursor + 6) == 'u' &&
                     *(cursor + 7) == 'e') {
-                token_stream[(int) index++].kind = Token_continue;
+                token_stream[index++].kind = Token_continue;
                 return;
             }
             break;
@@ -1379,7 +1422,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'c' &&
                     *(cursor + 6) == 'i' &&
                     *(cursor + 7) == 't') {
-                token_stream[(int) index++].kind = Token_explicit;
+                token_stream[index++].kind = Token_explicit;
                 return;
             }
             break;
@@ -1392,7 +1435,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 't' &&
                     *(cursor + 6) == 'o' &&
                     *(cursor + 7) == 'r') {
-                token_stream[(int) index++].kind = Token_operator;
+                token_stream[index++].kind = Token_operator;
                 return;
             }
             break;
@@ -1405,7 +1448,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'E' &&
                     *(cursor + 6) == 'C' &&
                     *(cursor + 7) == 'T') {
-                token_stream[(int) index++].kind = Token_Q_OBJECT;
+                token_stream[index++].kind = Token_Q_OBJECT;
                 return;
             }
             if (*(cursor + 1) == '_' &&
@@ -1415,7 +1458,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'G' &&
                     *(cursor + 6) == 'E' &&
                     *(cursor + 7) == 'T') {
-                token_stream[(int) index++].kind = Token_Q_GADGET;
+                token_stream[index++].kind = Token_Q_GADGET;
                 return;
             }
             break;
@@ -1428,7 +1471,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 't' &&
                     *(cursor + 6) == 'e' &&
                     *(cursor + 7) == 'r') {
-                token_stream[(int) index++].kind = Token_register;
+                token_stream[index++].kind = Token_register;
                 return;
             }
             break;
@@ -1441,7 +1484,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'n' &&
                     *(cursor + 6) == 'e' &&
                     *(cursor + 7) == 'd') {
-                token_stream[(int) index++].kind = Token_unsigned;
+                token_stream[index++].kind = Token_unsigned;
                 return;
             }
             break;
@@ -1454,7 +1497,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'a' &&
                     *(cursor + 6) == 't' &&
                     *(cursor + 7) == 'e') {
-                token_stream[(int) index++].kind = Token_template;
+                token_stream[index++].kind = Token_template;
                 return;
             }
             if (*(cursor + 1) == 'y' &&
@@ -1464,7 +1507,7 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'a' &&
                     *(cursor + 6) == 'm' &&
                     *(cursor + 7) == 'e') {
-                token_stream[(int) index++].kind = Token_typename;
+                token_stream[index++].kind = Token_typename;
                 return;
             }
             break;
@@ -1477,17 +1520,30 @@ void Lexer::scanKeyword8() {
                     *(cursor + 5) == 'i' &&
                     *(cursor + 6) == 'l' &&
                     *(cursor + 7) == 'e') {
-                token_stream[(int) index++].kind = Token_volatile;
+                token_stream[index++].kind = Token_volatile;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword9() {
     switch (*cursor) {
+    case 'c':
+        if (*(cursor + 1) == 'o' &&
+                *(cursor + 2) == 'n' &&
+                *(cursor + 3) == 's' &&
+                *(cursor + 4) == 't' &&
+                *(cursor + 5) == 'e' &&
+                *(cursor + 6) == 'x' &&
+                *(cursor + 7) == 'p' &&
+                *(cursor + 8) == 'r') {
+            token_stream[index++].kind = Token_constexpr;
+            return;
+        }
+    break;
         case 'p':
             if (*(cursor + 1) == 'r' &&
                     *(cursor + 2) == 'o' &&
@@ -1497,7 +1553,7 @@ void Lexer::scanKeyword9() {
                     *(cursor + 6) == 't' &&
                     *(cursor + 7) == 'e' &&
                     *(cursor + 8) == 'd') {
-                token_stream[(int) index++].kind = Token_protected;
+                token_stream[index++].kind = Token_protected;
                 return;
             }
             break;
@@ -1511,12 +1567,25 @@ void Lexer::scanKeyword9() {
                     *(cursor + 6) == 'a' &&
                     *(cursor + 7) == 'c' &&
                     *(cursor + 8) == 'e') {
-                token_stream[(int) index++].kind = Token_namespace;
+                token_stream[index++].kind = Token_namespace;
                 return;
             }
             break;
+/*        case 'Q':
+           if (*(cursor + 1) == 'T' &&
+                   *(cursor + 2) == '_' &&
+                   *(cursor + 3) == 'Q' &&
+                   *(cursor + 4) == '_' &&
+                   *(cursor + 5) == 'E' &&
+                   *(cursor + 6) == 'N' &&
+                   *(cursor + 7) == 'U' &&
+                   *(cursor + 8) == 'M') {
+               token_stream[index++].kind = Token_Q_ENUM;
+               return;
+           }
+           break;*/
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword10() {
@@ -1531,7 +1600,7 @@ void Lexer::scanKeyword10() {
                     *(cursor + 7) == 'a' &&
                     *(cursor + 8) == 's' &&
                     *(cursor + 9) == 't') {
-                token_stream[(int) index++].kind = Token_const_cast;
+                token_stream[index++].kind = Token_const_cast;
                 return;
             }
             break;
@@ -1546,14 +1615,14 @@ void Lexer::scanKeyword10() {
                     *(cursor + 7) == 'R' &&
                     *(cursor + 8) == 'T' &&
                     *(cursor + 9) == 'Y') {
-                token_stream[(int) index++].kind = Token_Q_PROPERTY;
+                token_stream[index++].kind = Token_Q_PROPERTY;
                 return;
             }
 
             break;
     }
 
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword11() {
@@ -1569,7 +1638,7 @@ void Lexer::scanKeyword11() {
                     *(cursor + 8) == 'B' &&
                     *(cursor + 9) == 'L' &&
                     *(cursor + 10) == 'E') {
-                token_stream[(int) index++].kind = Token_Q_INVOKABLE;
+                token_stream[index++].kind = Token_Q_INVOKABLE;
                 return;
             }
             break;
@@ -1585,13 +1654,13 @@ void Lexer::scanKeyword11() {
                     *(cursor + 8) == 'a' &&
                     *(cursor + 9) == 's' &&
                     *(cursor + 10) == 't') {
-                token_stream[(int) index++].kind = Token_static_cast;
+                token_stream[index++].kind = Token_static_cast;
                 return;
             }
             break;
 
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword12() {
@@ -1608,13 +1677,28 @@ void Lexer::scanKeyword12() {
                     *(cursor + 9) == 'a' &&
                     *(cursor + 10) == 's' &&
                     *(cursor + 11) == 't') {
-                token_stream[(int) index++].kind = Token_dynamic_cast;
+                token_stream[index++].kind = Token_dynamic_cast;
                 return;
             }
             break;
-
+        case 'Q':
+            if (*(cursor + 1) == '_' &&
+                    *(cursor + 2) == 'S' &&
+                    *(cursor + 3) == 'C' &&
+                    *(cursor + 4) == 'R' &&
+                    *(cursor + 5) == 'I' &&
+                    *(cursor + 6) == 'P' &&
+                    *(cursor + 7) == 'T' &&
+                    *(cursor + 8) == 'A' &&
+                    *(cursor + 9) == 'B' &&
+                    *(cursor + 10) == 'L' &&
+                    *(cursor + 11) == 'E') {
+                token_stream[index++].kind = Token_Q_SCRIPTABLE;
+                return;
+            }
+            break;
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword13() {
@@ -1632,12 +1716,12 @@ void Lexer::scanKeyword13() {
                     *(cursor + 10) == 'e' &&
                     *(cursor + 11) == '_' &&
                     *(cursor + 12) == '_') {
-                token_stream[(int) index++].kind = Token___attribute__;
+                token_stream[index++].kind = Token___attribute__;
                 return;
             }
             break;
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword14() {
@@ -1656,12 +1740,12 @@ void Lexer::scanKeyword14() {
                     *(cursor + 11) == 'a' &&
                     *(cursor + 12) == 'l' &&
                     *(cursor + 13) == 's') {
-                token_stream[(int) index++].kind = Token_k_dcop_signals;
+                token_stream[index++].kind = Token_k_dcop_signals;
                 return;
             }
             break;
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword16() {
@@ -1682,13 +1766,40 @@ void Lexer::scanKeyword16() {
                     *(cursor + 13) == 'a' &&
                     *(cursor + 14) == 's' &&
                     *(cursor + 15) == 't') {
-                token_stream[(int) index++].kind = Token_reinterpret_cast;
+                token_stream[index++].kind = Token_reinterpret_cast;
                 return;
             }
             break;
     }
 
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
+}
+
+void Lexer::scanKeyword17() {
+    switch (*cursor) {
+        case 'Q':
+            if (*(cursor + 1) == 'T' &&
+                     *(cursor + 2) == '_' &&
+                     *(cursor + 3) == 'R' &&
+                     *(cursor + 4) == 'E' &&
+                     *(cursor + 5) == 'Q' &&
+                     *(cursor + 6) == 'U' &&
+                     *(cursor + 7) == 'I' &&
+                     *(cursor + 8) == 'R' &&
+                     *(cursor + 9) == 'E' &&
+                     *(cursor + 10) == '_' &&
+                     *(cursor + 11) == 'C' &&
+                     *(cursor + 12) == 'O' &&
+                     *(cursor + 13) == 'N' &&
+                     *(cursor + 14) == 'F' &&
+                     *(cursor + 15) == 'I' &&
+                     *(cursor + 16) == 'G') {
+                 token_stream[index++].kind = Token_QT_REQUIRE_CONFIG;
+                 return;
+            }
+            break;
+    }
+    token_stream[index++].kind = Token_identifier;
 }
 
 void Lexer::scanKeyword18() {
@@ -1711,12 +1822,68 @@ void Lexer::scanKeyword18() {
                      *(cursor + 15) == 'Y' &&
                      *(cursor + 16) == 'P' &&
                      *(cursor + 17) == 'E') {
-                 token_stream[(int) index++].kind = Token_Q_DECLARE_METATYPE;
+                 token_stream[index++].kind = Token_Q_DECLARE_METATYPE;
+                 return;
+            }
+            if (*(cursor + 1) == 'T' &&
+                     *(cursor + 2) == 'J' &&
+                     *(cursor + 3) == 'A' &&
+                     *(cursor + 4) == 'M' &&
+                     *(cursor + 5) == 'B' &&
+                     *(cursor + 6) == 'I' &&
+                     *(cursor + 7) == '_' &&
+                     *(cursor + 8) == 'D' &&
+                     *(cursor + 9) == 'E' &&
+                     *(cursor + 10) == 'P' &&
+                     *(cursor + 11) == 'R' &&
+                     *(cursor + 12) == 'E' &&
+                     *(cursor + 13) == 'C' &&
+                     *(cursor + 14) == 'A' &&
+                     *(cursor + 15) == 'T' &&
+                     *(cursor + 16) == 'E' &&
+                     *(cursor + 17) == 'D') {
+                 token_stream[index++].kind = Token_QTJAMBI_DEPRECATED;
                  return;
             }
             break;
     }
-    token_stream[(int) index++].kind = Token_identifier;
+    token_stream[index++].kind = Token_identifier;
+}
+
+
+void Lexer::scanKeyword19() {
+    token_stream[index++].kind = Token_identifier;
+}
+
+
+void Lexer::scanKeyword20() {
+    switch (*cursor) {
+        case 'Q':
+            if (*(cursor + 1) == 'T' &&
+                     *(cursor + 2) == 'J' &&
+                     *(cursor + 3) == 'A' &&
+                     *(cursor + 4) == 'M' &&
+                     *(cursor + 5) == 'B' &&
+                     *(cursor + 6) == 'I' &&
+                     *(cursor + 7) == '_' &&
+                     *(cursor + 8) == 'D' &&
+                     *(cursor + 9) == 'E' &&
+                     *(cursor + 10) == 'P' &&
+                     *(cursor + 11) == 'R' &&
+                     *(cursor + 12) == 'E' &&
+                     *(cursor + 13) == 'C' &&
+                     *(cursor + 14) == 'A' &&
+                     *(cursor + 15) == 'T' &&
+                     *(cursor + 16) == 'E' &&
+                     *(cursor + 17) == 'D' &&
+                     *(cursor + 18) == '_' &&
+                     *(cursor + 19) == 'X') {
+                 token_stream[index++].kind = Token_QTJAMBI_DEPRECATED_X;
+                 return;
+            }
+            break;
+    }
+    token_stream[index++].kind = Token_identifier;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

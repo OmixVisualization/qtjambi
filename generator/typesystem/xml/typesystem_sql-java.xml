@@ -1,25 +1,50 @@
 <?xml version="1.0"?>
-<typesystem package="org.qtjambi.qt.sql" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtSql");
-    </inject-code>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
 
-
-
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.sql" default-superclass="io.qt.QtObject">
     <value-type name="QSqlDatabase">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_sql-java.java" quote-after-line="class QSqlDatabase___" quote-before-line="}// class"/>
-        </inject-code>
         <modify-function signature="addDatabase(QSqlDriver*,QString)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -46,58 +71,47 @@
             </modify-argument>
         </modify-function>
         <modify-field name="defaultConnection">
-            <access modifier="private"/>
-            <rename to="defaultConnection_private"/>
+            <replace-type modified-type="java.lang.String"/>
         </modify-field>
 
     </value-type>
 
     <object-type name="QSqlTableModel">
-
-        <template name="sql.convert_sqlrecord_reference_to_java">
-            jobject %out = qtjambi_from_object(__jni_env, &amp;%in, "QSqlRecord", "org/qtjambi/qt/sql/", false);
-            Q_ASSERT(%out);
-        </template>
-
-        <template name="sql.convert_sqlrecord_reference_from_java">
-            QSqlRecord *__ptr_record = (QSqlRecord *) qtjambi_to_object(__jni_env, %in);
-
-            QSqlRecord dummy;
-            QSqlRecord &amp;%out = __ptr_record == 0 ? dummy : *__ptr_record;
-        </template>
-
         <modify-function signature="beforeInsert(QSqlRecord&amp;)">
-            <modify-argument index="1">
-                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+            <modify-argument index="1" invalidate-after-use="yes">
+                <no-null-pointer/>
+                <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
-                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                    QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
 
         <modify-function signature="beforeUpdate(int,QSqlRecord&amp;)">
-            <modify-argument index="2">
-                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+            <modify-argument index="2" invalidate-after-use="yes">
+                <no-null-pointer/>
+                <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
-                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                    QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
 
         <modify-function signature="primeInsert(int,QSqlRecord&amp;)">
-            <modify-argument index="2">
-                <replace-type modified-type="org.qtjambi.qt.sql.QSqlRecord"/>
+            <modify-argument index="2" invalidate-after-use="yes">
+                <no-null-pointer/>
+                <replace-type modified-type="io.qt.sql.QSqlRecord"/>
                 <conversion-rule class="shell">
-                    <insert-template name="sql.convert_sqlrecord_reference_to_java"/>
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, &amp;%in);
                 </conversion-rule>
                 <conversion-rule class="native">
-                    <insert-template name="sql.convert_sqlrecord_reference_from_java"/>
+                    QSqlRecord &amp;%out = qtjambi_cast&lt;QSqlRecord &amp;>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

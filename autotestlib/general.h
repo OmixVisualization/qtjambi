@@ -47,6 +47,7 @@
 
 #include <QtGui/QtGui>
 #include <QtWidgets/QtWidgets>
+#include <jni.h>
 
 class CalendarWidgetAccessor: public QCalendarWidget {
 public:
@@ -60,16 +61,88 @@ class General {
 public:
     static void callPaintCell(QCalendarWidget *w, QPainter *painter) {
         QPainter localPainter;
-        if (painter == 0)
+        if (!painter)
             painter = &localPainter;
 
         static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(painter);
     }
 
     static void callPaintCellNull(QCalendarWidget *w) {
-        static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(0);
+        static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(nullptr);
     }
 
+    static QList<bool> start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text){
+        QList<bool> _start_qtjambi_cast_test(jobject, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jstring text);
+        return _start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, jstring(text));
+    }
+};
+
+class FunctionalTest{
+public:
+	FunctionalTest() : m_last1(), m_last2() {}
+    virtual ~FunctionalTest(){}
+	
+	typedef std::function<int(int,bool)> TestFunction1;
+	virtual int convert(const TestFunction1& testFunction){
+        m_last1 = testFunction;
+        return testFunction ? testFunction(279, true) : -1000;
+	}
+	
+	virtual int convert(const TestFunction1& testFunction, int i, bool b){
+        m_last1 = testFunction;
+        return testFunction ? testFunction(i, b) : -1000;
+    }
+
+    virtual int convertWithLast1(int i, bool b){
+        return m_last1 ? m_last1(i, b) : -1000;
+    }
+
+    const TestFunction1& last1(){
+        return m_last1;
+    }
+
+    TestFunction1 anyTestFunction1(){
+        return [](int i, bool b)->int{return b ? i*2 : -100;};
+    }
+	
+	typedef std::function<QString(QObject*)> TestFunction2;
+	virtual QString convert(const TestFunction2& testFunction){
+        m_last2 = testFunction;
+        if(testFunction){
+            QObject o;
+            o.setObjectName("TestObject");
+            return testFunction(&o);
+        }
+        return "";
+	}
+	
+	virtual QString convert(const TestFunction2& testFunction, QObject* object){
+        m_last2 = testFunction;
+        return testFunction ? testFunction(object) : "";
+	}
+
+    virtual QString convertWithLast2(QObject* object){
+        return m_last2 ? m_last2(object) : "";
+    }
+	
+    const TestFunction2& last2() const{
+        return m_last2;
+    }
+
+    TestFunction2 anyTestFunction2(){
+        return [](QObject* o)->QString{return o->objectName();};
+    }
+	
+	int m_last_integer;
+	QString m_last_string;
+	QObject* m_last_object;
+protected:
+	int m_last_integer2;
+	QString m_last_string2;
+	QObject* m_last_object2;
+private:
+    TestFunction1 m_last1;
+    TestFunction2 m_last2;
 };
 
 #endif

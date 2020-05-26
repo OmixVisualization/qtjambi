@@ -124,7 +124,7 @@ namespace rpp {
                 std::size_t __h = 0;
 
                 for (std::size_t i = 0; i < __size; ++i)
-                    __h = (__h << 5) - __h + __ptr [i];
+                    __h = (__h << 5) - __h + std::size_t(__ptr [i]);
 
                 return __h;
             }

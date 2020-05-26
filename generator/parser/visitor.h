@@ -80,7 +80,8 @@ class Visitor {
         virtual void visitExceptionSpecification(ExceptionSpecificationAST *) {}
         virtual void visitExpressionOrDeclarationStatement(ExpressionOrDeclarationStatementAST *) {}
         virtual void visitExpressionStatement(ExpressionStatementAST *) {}
-        virtual void visitForStatement(ForStatementAST *) {}
+        virtual void visitClassicForStatement(ClassicForStatementAST *) {}
+        virtual void visitIteratorForStatement(IteratorForStatementAST *) {}
         virtual void visitFunctionCall(FunctionCallAST *) {}
         virtual void visitFunctionDefinition(FunctionDefinitionAST *) {}
         virtual void visitIfStatement(IfStatementAST *) {}
@@ -110,7 +111,9 @@ class Visitor {
         virtual void visitReturnStatement(ReturnStatementAST *) {}
         virtual void visitSimpleDeclaration(SimpleDeclarationAST *) {}
         virtual void visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *) {}
+        virtual void visitAutoTypeSpecifier(AutoTypeSpecifierAST *) {}
         virtual void visitSizeofExpression(SizeofExpressionAST *) {}
+        virtual void visitTypeidExpression(TypeidExpressionAST *) {}
         virtual void visitStringLiteral(StringLiteralAST *) {}
         virtual void visitSubscriptExpression(SubscriptExpressionAST *) {}
         virtual void visitSwitchStatement(SwitchStatementAST *) {}
@@ -127,6 +130,7 @@ class Visitor {
         virtual void visitUnaryExpression(UnaryExpressionAST *) {}
         virtual void visitUnqualifiedName(UnqualifiedNameAST *) {}
         virtual void visitUsing(UsingAST *) {}
+        virtual void visitUsingAs(UsingAsAST *) {}
         virtual void visitUsingDirective(UsingDirectiveAST *) {}
         virtual void visitWhileStatement(WhileStatementAST *) {}
         virtual void visitWinDeclSpec(WinDeclSpecAST *) {}
@@ -134,6 +138,8 @@ class Visitor {
         virtual void visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *) {}
         virtual void visitQEnums(QEnumsAST *) {}
         virtual void visitQEnum(QEnumAST *) {}
+        virtual void visitQGadget(QGadgetAST *) {}
+        virtual void visitQObject(QObjectAST *) {}
 
     private:
         typedef void (Visitor::*visitor_fun_ptr)(AST *);

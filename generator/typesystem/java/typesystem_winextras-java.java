@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,27 +37,23 @@
 // currently no specific implementation
 
 class QWinJumpListCategory__ extends QWinJumpListCategory{
-	void __add_to_reference_count(Object object){
-		__rcItems.add(object);
-	}
+    void __add_to_reference_count(Object object){
+        if(__rcItems==null)
+            __rcItems = new java.util.ArrayList<>();
+        __rcItems.add(object);
+    }
 }// class
 
 class QtWin__ {
-	public static class ColorizationColorInfo{
-		public ColorizationColorInfo(QColor colorizationColor, boolean opaqueBlend) {
-			super();
-			this.colorizationColor = colorizationColor;
-			this.opaqueBlend = opaqueBlend;
-		}
-		public final org.qtjambi.qt.gui.QColor colorizationColor;	
-		public final boolean opaqueBlend;
-	}
-
-	public static ColorizationColorInfo colorizationColor() {
-		org.qtjambi.qt.QNativePointer opaqueBlend = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-		QColor colorizationColor = colorizationColor(opaqueBlend);
-		return new ColorizationColorInfo(colorizationColor, opaqueBlend.booleanValue());
-	}
+    public static final class ColorizationColorInfo{
+        private ColorizationColorInfo(io.qt.gui.QColor colorizationColor, boolean opaqueBlend) {
+            super();
+            this.colorizationColor = colorizationColor;
+            this.opaqueBlend = opaqueBlend;
+        }
+        public final io.qt.gui.QColor colorizationColor;    
+        public final boolean opaqueBlend;
+    }
 }// class
 
 

@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -77,7 +77,7 @@ FileModelItem CodeModel::findFile(const QString &name) const {
     return _M_files.value(name);
 }
 
-QHash<QString, FileModelItem> CodeModel::fileMap() const {
+const QHash<QString, FileModelItem>& CodeModel::fileMap() const {
     return _M_files;
 }
 
@@ -120,7 +120,9 @@ TypeInfo TypeInfo::combine(const TypeInfo &__lhs, const TypeInfo &__rhs) {
 
     __result.setConstant(__result.isConstant() || __rhs.isConstant());
     __result.setVolatile(__result.isVolatile() || __rhs.isVolatile());
-    __result.setReference(__result.isReference() || __rhs.isReference());
+    if(__result.getReferenceType()!=TypeInfo::NoReference || __rhs.getReferenceType()!=TypeInfo::NoReference){
+        __result.setReferenceType(TypeInfo::Reference);
+    }
     __result.setIndirections(__result.indirections() + __rhs.indirections());
     __result.setArrayElements(__result.arrayElements() + __rhs.arrayElements());
 
@@ -129,7 +131,7 @@ TypeInfo TypeInfo::combine(const TypeInfo &__lhs, const TypeInfo &__rhs) {
 
 TypeInfo TypeInfo::resolveType(TypeInfo const &__type, CodeModelItem __scope) {
     CodeModel *__model = __scope->model();
-    Q_ASSERT(__model != 0);
+    Q_ASSERT(__model);
 
     CodeModelItem __item = __model->findItem(__type.qualifiedName(), __scope);
 
@@ -166,8 +168,10 @@ QString TypeInfo::toString() const {
             tmp += QLatin1Char('*');
         }
     }
-    if (isReference())
+    if (getReferenceType()==TypeInfo::Reference)
         tmp += QLatin1Char('&');
+    if (getReferenceType()==TypeInfo::RReference)
+        tmp += QLatin1String("&&");
 
     if (isFunctionPointer()) {
         tmp += QLatin1String(" (*)(");
@@ -180,7 +184,7 @@ QString TypeInfo::toString() const {
         tmp += QLatin1String(")");
     }
 
-    foreach(QString elt, arrayElements()) {
+    for(const QString& elt : arrayElements()) {
         tmp += QLatin1String("[");
         tmp += elt;
         tmp += QLatin1String("]");
@@ -189,7 +193,7 @@ QString TypeInfo::toString() const {
     return tmp;
 }
 
-bool TypeInfo::operator==(const TypeInfo &other) {
+bool TypeInfo::operator==(const TypeInfo &other) const {
     if (arrayElements().count() != other.arguments().count())
         return false;
 
@@ -243,7 +247,7 @@ QStringList _CodeModelItem::qualifiedName() const {
     return q;
 }
 
-QString _CodeModelItem::name() const {
+const QString& _CodeModelItem::name() const {
     return _M_name;
 }
 
@@ -251,7 +255,37 @@ void _CodeModelItem::setName(const QString &name) {
     _M_name = name;
 }
 
-QStringList _CodeModelItem::scope() const {
+bool _ClassModelItem::isDeclFinal() const {
+    return _M_declFinal;
+}
+
+void _ClassModelItem::setDeclFinal(bool declFinal) {
+    _M_declFinal = declFinal;
+}
+
+const QString& _ClassModelItem::declDeprecatedComment() const {
+    return _M_declDeprecatedComment;
+}
+
+void _ClassModelItem::setDeclDeprecatedComment(const QString& declDeprecatedComment) {
+    _M_declDeprecatedComment = declDeprecatedComment;
+    if(_M_declDeprecatedComment.startsWith("\"")){
+        _M_declDeprecatedComment = _M_declDeprecatedComment.mid(1);
+    }
+    if(_M_declDeprecatedComment.endsWith("\"")){
+        _M_declDeprecatedComment.chop(1);
+    }
+}
+
+bool _ClassModelItem::isDeclDeprecated() const {
+    return _M_declDeprecated;
+}
+
+void _ClassModelItem::setDeclDeprecated(bool declDeprecated) {
+    _M_declDeprecated = declDeprecated;
+}
+
+const QStringList& _CodeModelItem::scope() const {
     return _M_scope;
 }
 
@@ -259,12 +293,23 @@ void _CodeModelItem::setScope(const QStringList &scope) {
     _M_scope = scope;
 }
 
-QString _CodeModelItem::fileName() const {
+const QString& _CodeModelItem::fileName() const {
     return _M_fileName;
 }
 
 void _CodeModelItem::setFileName(const QString &fileName) {
     _M_fileName = fileName;
+}
+
+const QStringList& _CodeModelItem::requiredFeatures() const {
+    return _M_requiredFeatures;
+}
+
+void _CodeModelItem::setRequiredFeatures(const QStringList &features) {
+    for(const QString& feature : features){
+        if(!feature.isEmpty())
+            _M_requiredFeatures << feature;
+    }
 }
 
 FileModelItem _CodeModelItem::file() const {
@@ -292,7 +337,7 @@ void _CodeModelItem::setEndPosition(int line, int column) {
 }
 
 // ---------------------------------------------------------------------------
-QStringList _ClassModelItem::baseClasses() const {
+const QStringList& _ClassModelItem::baseClasses() const {
     return _M_baseClasses;
 }
 
@@ -300,7 +345,7 @@ void _ClassModelItem::setBaseClasses(const QStringList &baseClasses) {
     _M_baseClasses = baseClasses;
 }
 
-TemplateParameterList _ClassModelItem::templateParameters() const {
+const TemplateParameterList& _ClassModelItem::templateParameters() const {
     return _M_templateParameters;
 }
 
@@ -340,12 +385,16 @@ void _ClassModelItem::addPropertyDeclaration(const QString &propertyDeclaration)
 FunctionModelItem _ScopeModelItem::declaredFunction(FunctionModelItem item) {
     FunctionList function_list = findFunctions(item->name());
 
-    foreach(FunctionModelItem fun, function_list) {
+    for(const FunctionModelItem& fun : function_list) {
         if (fun->isSimilar(item))
             return fun;
     }
 
     return FunctionModelItem();
+}
+
+ScopeModelItem _ScopeModelItem::toScope() const {
+    return ScopeModelItem(const_cast<_ScopeModelItem*>(this));
 }
 
 ClassList _ScopeModelItem::classes() const {
@@ -358,6 +407,11 @@ TypeAliasList _ScopeModelItem::typeAliases() const {
 
 VariableList _ScopeModelItem::variables() const {
     return _M_variables.values();
+}
+
+NamespaceModelItem _ScopeModelItem::findNamespace(const QString &) const
+{
+    return NamespaceModelItem();
 }
 
 FunctionList _ScopeModelItem::functions() const {
@@ -501,7 +555,7 @@ NamespaceModelItem _NamespaceModelItem::findNamespace(const QString &name) const
 }
 
 // ---------------------------------------------------------------------------
-TypeInfo _ArgumentModelItem::type() const {
+const TypeInfo& _ArgumentModelItem::type() const {
     return _M_type;
 }
 
@@ -544,7 +598,7 @@ bool _FunctionModelItem::isSimilar(FunctionModelItem other) const {
     return true;
 }
 
-ArgumentList _FunctionModelItem::arguments() const {
+const ArgumentList& _FunctionModelItem::arguments() const {
     return _M_arguments;
 }
 
@@ -554,8 +608,8 @@ void _FunctionModelItem::addArgument(ArgumentModelItem item) {
      * Here, in code analysis, do not add the fake parameter but
      * define signal to be private.
      */
-    if(item.data()->type().toString()=="QPrivateSignal" && this->functionType()==CodeModel::Signal){
-        setAccessPolicy(CodeModel::Private);
+    if(this->functionType()==CodeModel::Signal && item.data()->type().toString()=="QPrivateSignal"){
+        setFunctionType(CodeModel::PrivateSignal);
     }else{
         _M_arguments.append(item);
     }
@@ -613,6 +667,14 @@ void _FunctionModelItem::setAbstract(bool isAbstract) {
     _M_isAbstract = isAbstract;
 }
 
+bool _FunctionModelItem::isDeclFinal() const {
+    return _M_isDeclFinal;
+}
+
+void _FunctionModelItem::setDeclFinal(bool isDeclFinal) {
+    _M_isDeclFinal = isDeclFinal;
+}
+
 // Qt
 bool _FunctionModelItem::isInvokable() const {
     return _M_isInvokable;
@@ -623,7 +685,7 @@ void _FunctionModelItem::setInvokable(bool isInvokable) {
 }
 
 // ---------------------------------------------------------------------------
-TypeInfo _TypeAliasModelItem::type() const {
+const TypeInfo& _TypeAliasModelItem::type() const {
     return _M_type;
 }
 
@@ -636,11 +698,19 @@ CodeModel::AccessPolicy _EnumModelItem::accessPolicy() const {
     return _M_accessPolicy;
 }
 
+const TypeInfo& _EnumModelItem::baseType() const {
+    return _M_baseType;
+}
+
+void _EnumModelItem::setBaseType(const TypeInfo &baseType) {
+    _M_baseType = baseType;
+}
+
 void _EnumModelItem::setAccessPolicy(CodeModel::AccessPolicy accessPolicy) {
     _M_accessPolicy = accessPolicy;
 }
 
-EnumeratorList _EnumModelItem::enumerators() const {
+const EnumeratorList& _EnumModelItem::enumerators() const {
     return _M_enumerators;
 }
 
@@ -653,7 +723,7 @@ void _EnumModelItem::removeEnumerator(EnumeratorModelItem item) {
 }
 
 // ---------------------------------------------------------------------------
-QString _EnumeratorModelItem::value() const {
+const QString& _EnumeratorModelItem::value() const {
     return _M_value;
 }
 
@@ -661,8 +731,30 @@ void _EnumeratorModelItem::setValue(const QString &value) {
     _M_value = value;
 }
 
+bool _EnumeratorModelItem::deprecated() const {
+    return _M_deprecated;
+}
+
+void _EnumeratorModelItem::setDeprecated(bool value){
+    _M_deprecated = value;
+}
+
+const QString& _EnumeratorModelItem::deprecatedComment() const {
+    return _M_deprecatedComment;
+}
+
+void _EnumeratorModelItem::setDeprecatedComment(const QString& value){
+    _M_deprecatedComment = value;
+    if(_M_deprecatedComment.startsWith("\"")){
+        _M_deprecatedComment = _M_deprecatedComment.mid(1);
+    }
+    if(_M_deprecatedComment.endsWith("\"")){
+        _M_deprecatedComment.chop(1);
+    }
+}
+
 // ---------------------------------------------------------------------------
-TypeInfo _TemplateParameterModelItem::type() const {
+const TypeInfo& _TemplateParameterModelItem::type() const {
     return _M_type;
 }
 
@@ -748,7 +840,7 @@ TemplateParameterModelItem _TemplateParameterModelItem::create(CodeModel *model)
 }
 
 // ---------------------------------------------------------------------------
-TypeInfo _MemberModelItem::type() const {
+const TypeInfo& _MemberModelItem::type() const {
     return _M_type;
 }
 
@@ -788,14 +880,6 @@ void _MemberModelItem::setVolatile(bool isVolatile) {
     _M_isVolatile = isVolatile;
 }
 
-bool _MemberModelItem::isAuto() const {
-    return _M_isAuto;
-}
-
-void _MemberModelItem::setAuto(bool isAuto) {
-    _M_isAuto = isAuto;
-}
-
 bool _MemberModelItem::isFriend() const {
     return _M_isFriend;
 }
@@ -826,6 +910,28 @@ bool _MemberModelItem::isMutable() const {
 
 void _MemberModelItem::setMutable(bool isMutable) {
     _M_isMutable = isMutable;
+}
+
+bool _MemberModelItem::isDeprecated() const {
+    return _M_isDeprecated;
+}
+
+void _MemberModelItem::setDeprecated(bool isDeprecated) {
+    _M_isDeprecated = isDeprecated;
+}
+
+const QString& _MemberModelItem::getDeprecatedComment() const {
+    return _M_deprecatedComment;
+}
+
+void _MemberModelItem::setDeprecatedComment(const QString& comment) {
+    _M_deprecatedComment = comment;
+    if(_M_deprecatedComment.startsWith("\"")){
+        _M_deprecatedComment = _M_deprecatedComment.mid(1);
+    }
+    if(_M_deprecatedComment.endsWith("\"")){
+        _M_deprecatedComment.chop(1);
+    }
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

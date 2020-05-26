@@ -53,29 +53,84 @@
 #include "default_visitor.h"
 #include "name_compiler.h"
 #include "type_compiler.h"
+#include "lexer.h"
+#include "binder.h"
 
 class TokenStream;
 class Binder;
 
 class ClassCompiler: protected DefaultVisitor {
     public:
-        ClassCompiler(Binder *binder);
-        virtual ~ClassCompiler();
+        ClassCompiler(Binder *binder): _M_binder(binder),
+                _M_token_stream(binder->tokenStream()),
+                name_cc(_M_binder),
+                type_cc(_M_binder) {
+        }
+
+        virtual ~ClassCompiler(){}
 
         inline QString name() const { return _M_name; }
         inline QStringList baseClasses() const { return _M_base_classes; }
 
-        void run(ClassSpecifierAST *node);
+        void run(ClassSpecifierAST *node){
+            name_cc.run(node->name);
+            _M_name = name_cc.name();
+            _M_base_classes.clear();
+
+            visit(node->base_clause);
+        }
 
     protected:
-        virtual void visitClassSpecifier(ClassSpecifierAST *node);
-        virtual void visitBaseSpecifier(BaseSpecifierAST *node);
+        virtual void visitBaseSpecifier(BaseSpecifierAST *node){
+            name_cc.run(node->name);
+            QString name = name_cc.name();
+            if (! name.isEmpty())
+                _M_base_classes.append(name);
+        }
 
     private:
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QString _M_name;
         QStringList _M_base_classes;
+        NameCompiler name_cc;
+        TypeCompiler type_cc;
+};
+
+class EnumCompiler: protected DefaultVisitor {
+    public:
+        EnumCompiler(Binder *binder): _M_binder(binder),
+                _M_token_stream(binder->tokenStream()),
+                name_cc(_M_binder),
+                type_cc(_M_binder) {
+        }
+
+        virtual ~EnumCompiler(){}
+
+        inline QString name() const { return _M_name; }
+        inline TypeInfo baseType() const { return _M_base_type; }
+
+
+        void run(EnumSpecifierAST *node){
+            name_cc.run(node->name);
+            _M_name = name_cc.name();
+            _M_base_type = TypeInfo();
+
+            if(node->base_type){
+                type_cc.run(node->base_type);
+                _M_base_type.setQualifiedName(type_cc.qualifiedName());
+                _M_base_type.setConstant(type_cc.isConstant());
+                _M_base_type.setVolatile(type_cc.isVolatile());
+            }
+        }
+
+    protected:
+
+    private:
+        Binder *_M_binder;
+        TokenStream *_M_token_stream;
+        QString _M_name;
+        TypeInfo _M_base_type;
         NameCompiler name_cc;
         TypeCompiler type_cc;
 };

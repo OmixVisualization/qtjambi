@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<typesystem package="io.qt.sensors" default-superclass="io.qt.QtObject">
+    <object-type name="QSensorGesture">
+        <inject-code>
+        public final Signal1&lt;String> detected = new Signal1&lt;>();
+        </inject-code>
+    </object-type>
+    <object-type name="QSensorManager">
+        <modify-function signature="registerBackend(const QByteArray &amp;, const QByteArray &amp;, QSensorBackendFactory *)">
+            <modify-argument index="3">
+                <reference-count action="ignore" />
+            </modify-argument>
+            <inject-code>
+                <argument-map index="1" meta-name="%1"/>
+                <argument-map index="2" meta-name="%2"/>
+                <argument-map index="3" meta-name="%3"/>
+                io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair&lt;>(%1, %2);
+                __rcBackends.put(key, %3);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="unregisterBackend(const QByteArray &amp;, const QByteArray &amp;)">
+            <inject-code>
+                <argument-map index="1" meta-name="%1"/>
+                <argument-map index="2" meta-name="%2"/>
+                io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray> key = new io.qt.core.QPair&lt;>(%1, %2);
+                __rcBackends.remove(key);
+            </inject-code>
+        </modify-function>
+        <inject-code>
+            private final static java.util.Map&lt;io.qt.core.QPair&lt;io.qt.core.QByteArray,io.qt.core.QByteArray>,QSensorBackendFactory> __rcBackends = java.util.Collections.synchronizedMap(new java.util.HashMap&lt;>());
+        </inject-code>
+    </object-type>
+    <interface-type name="QSensorBackendFactory">
+        <modify-function signature="createBackend(QSensor*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QSensor">
+        <modify-function signature="addFilter(QSensorFilter*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcFilters" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeFilter(QSensorFilter*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcFilters" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="reading()const" access="non-final">
+        </modify-function>
+    </object-type>
+    <interface-type name="QSensorFilter">
+        <modify-field name="m_sensor" write="no" read="yes" rename="sensor">
+            <reference-count action="set" variable-name="__rcSensor" />
+        </modify-field>
+        <modify-function signature="setSensor(QSensor*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSensor" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QSensorBackend">
+        <modify-function signature="setDataRates(const QSensor*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+</typesystem>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,92 +36,272 @@
 
 class __QQmlComponent extends QQmlComponent{
 
-	@QtBlockedSlot
-	public final void setData(String data, org.qtjambi.qt.core.QUrl baseUrl)    {
-		setData(new org.qtjambi.qt.core.QByteArray(data), baseUrl);
-	}
+    @io.qt.QtUninvokable
+    public final void setData(String data, io.qt.core.QUrl baseUrl)    {
+        setData(new io.qt.core.QByteArray(data), baseUrl);
+    }
 
-	@QtBlockedSlot
-	public final void setData(byte[] data, org.qtjambi.qt.core.QUrl baseUrl)    {
-		setData(new org.qtjambi.qt.core.QByteArray(data), baseUrl);
-	}
-	
-	@QtBlockedSlot
-	public <T extends org.qtjambi.qt.core.QObject> T create(Class<T> type)    {
-		return create(type, (org.qtjambi.qt.qml.QQmlContext)null);
-	}
+    @io.qt.QtUninvokable
+    public final void setData(byte[] data, io.qt.core.QUrl baseUrl)    {
+        setData(new io.qt.core.QByteArray(data), baseUrl);
+    }
+    
+    @io.qt.QtUninvokable
+    public <T extends io.qt.core.QObject> T create(Class<T> type)    {
+        return create(type, (io.qt.qml.QQmlContext)null);
+    }
 
-	@QtBlockedSlot
-	public <T extends org.qtjambi.qt.core.QObject> T create(Class<T> type, org.qtjambi.qt.qml.QQmlContext context)    {
-		String packageName = type.getName();
-		int idx = packageName.lastIndexOf('.');
-		if(idx>0){
-			packageName = packageName.substring(0, idx);
-		}
-		Utilities.initializePackage(packageName);
-		return type.cast(create(context));
-	}
+    @io.qt.QtUninvokable
+    public <T extends io.qt.core.QObject> T create(Class<T> type, io.qt.qml.QQmlContext context)    {
+        String packageName = type.getName();
+        int idx = packageName.lastIndexOf('.');
+        if(idx>0){
+            packageName = packageName.substring(0, idx);
+        }
+        io.qt.QtUtilities.initializePackage(packageName);
+        return type.cast(create(context));
+    }
+}// class
+
+class __QJSValue extends QJSValue{
+
+    @io.qt.QtUninvokable
+    public final void setProperty(java.lang.String name, String value)    {
+        setProperty(name, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(java.lang.String name, boolean value)    {
+        setProperty(name, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(java.lang.String name, double value)    {
+        setProperty(name, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(java.lang.String name, int value)    {
+        setProperty(name, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(java.lang.String name, QJSValue.SpecialValue value)    {
+        setProperty(name, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(int arrayIndex, String value)    {
+        setProperty(arrayIndex, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(int arrayIndex, boolean value)    {
+        setProperty(arrayIndex, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(int arrayIndex, double value)    {
+        setProperty(arrayIndex, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(int arrayIndex, int value)    {
+        setProperty(arrayIndex, new QJSValue(value));
+    }
+    
+    @io.qt.QtUninvokable
+    public final void setProperty(int arrayIndex, QJSValue.SpecialValue value)    {
+        setProperty(arrayIndex, new QJSValue(value));
+    }
+
 }// class
 
 class __QtQml extends QtQml{
 
-    private QtQml(){}
-
-    public static native int qmlRegisterType(Class<?> type);
+    public static native int qmlRegisterType(Class<? extends QObject> type);
     
     public static native int qmlRegisterTypeNotAvailable(String uri, int versionMajor, int versionMinor, String qmlName, String message);
     
-    public static native int qmlRegisterUncreatableType(Class<?> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
+    public static native int qmlRegisterUncreatableType(Class<? extends QObject> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
     
-    public static native int qmlRegisterUncreatableType(Class<?> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
+    public static native int qmlRegisterUncreatableType(Class<? extends QObject> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
     
-    public static native int qmlRegisterType(Class<?> type, String uri, int versionMajor, int versionMinor, String qmlName);
+    public static native int qmlRegisterType(Class<? extends QObject> type, String uri, int versionMajor, int versionMinor, String qmlName);
     
-    public static native int qmlRegisterType(Class<?> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor, String qmlName);
+    public static native int qmlRegisterType(Class<? extends QObject> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor, String qmlName);
     
-    public static native int qmlRegisterRevision(Class<?> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor);
+    public static native int qmlRegisterRevision(Class<? extends QObject> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor);
 
-    public static native int qmlRegisterExtendedType(Class<?> type, Class<?> extendedType);
+    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType);
 
-    public static native int qmlRegisterExtendedType(Class<?> type, Class<?> extendedType, String uri, int versionMajor, int versionMinor, String qmlName);
+    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType, String uri, int versionMajor, int versionMinor, String qmlName);
 
-    public static native int qmlRegisterInterface(Class<?> type, String typeName);
+    public static native int qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String typeName);
 
-    public static QObject qmlAttachedPropertiesObject(QObject obj){
-    	return qmlAttachedPropertiesObject(obj, true);
+    public static QObject qmlAttachedPropertiesObject(Class<? extends QObject> clazz, QObject obj){
+        return qmlAttachedPropertiesObject(clazz, obj, true);
     }
 
-    public static native QObject qmlAttachedPropertiesObject(QObject obj, boolean create);
+    public static native QObject qmlAttachedPropertiesObject(Class<? extends QObject> clazz, QObject obj, boolean create);
 
     public static native void qmlRegisterBaseTypes(String uri, int versionMajor, int versionMinor);
+    
+    public static native int qmlRegisterAnonymousType(Class<? extends QObject> type, String uri, int versionMajor);
 
     public static native int qmlRegisterType(QUrl url, String uri, int versionMajor, int versionMinor, String qmlName);
     
     public static native boolean qmlProtectModule(String uri, int majVersion);
 
-//  public static native int qmlRegisterSingletonType(String uri, int versionMajor, int versionMinor, String typeName, QJSValue (*callback)(QQmlEngine *, QJSEngine *));
+    public static native void qmlClearTypeRegistrations();
 
-//  public static native int qmlRegisterSingletonType(String uri, int versionMajor, int versionMinor, String typeName, QObject *(*callback)(QQmlEngine *, QJSEngine *));
+    public static native int qmlRegisterExtendedUncreatableType(Class<? extends QObject> type, Class<? extends QObject> extendedType, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
 
-//  public static native int qmlRegisterCustomType(Class<?> type, String uri, int versionMajor, int versionMinor, String qmlName, QQmlCustomParser parser);
+    public static native int qmlRegisterExtendedUncreatableType(Class<? extends QObject> type, Class<? extends QObject> extendedType, int metaObjectRevision, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
+
+    public static native void qmlRegisterModule(String uri, int versionMajor, int versionMinor);
+    
+    public static native int qmlRegisterSingletonType(String uri, int versionMajor, int versionMinor, String typeName, ValueCallback callback);
+
+    public static native int qmlRegisterSingletonType(Class<? extends QObject> type, String uri, int versionMajor, int versionMinor, String typeName, ObjectCallback callback);
+    
+    public static native int qmlRegisterSingletonType(QUrl url, String uri, int versionMajor, int versionMinor, String qmlName);
+    
+    public static int qmlRegisterSingletonInstance(QObject instance, String uri, int versionMajor, int versionMinor, String qmlName){
+        return qmlRegisterSingletonType(instance.getClass(), uri, versionMajor, versionMinor, qmlName, (e,v)->instance);
+    }
+
+    public static native int qmlRegisterUncreatableClass(Class<?> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
 
 }// class
 
+class QQmlProperty__{
+    
+    @io.qt.QtUninvokable
+    public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot0 slot){
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
+        if(!lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
+            if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
+                throw new io.qt.QBlockedSlotException(lamdaInfo.reflectiveMethod.toString());
+            }
+            io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(method==null)
+                throw new io.qt.QNoSuchSlotException(lamdaInfo.qobject, lamdaInfo.reflectiveMethod.getName());
+            return connectNotifySignal(lamdaInfo.qobject, method.methodIndex());
+        }
+        return false;
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot1<?> slot){
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
+        if(!lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
+            if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
+                throw new io.qt.QBlockedSlotException(lamdaInfo.reflectiveMethod.toString());
+            }
+            io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(method==null)
+                throw new io.qt.QNoSuchSlotException(lamdaInfo.qobject, lamdaInfo.reflectiveMethod.getName());
+            return connectNotifySignal(lamdaInfo.qobject, method.methodIndex());
+        }
+        return false;
+    }
+    
+}// class
+
 class QQmlExpression__{
-	public static class Result{
-    	public Result(boolean valueIsUndefined, Object value) {
-			super();
-			this.valueIsUndefined = valueIsUndefined;
-			this.value = value;
-		}
-		public final boolean valueIsUndefined;
-		public final java.lang.Object value;
+    public static class ValueIsUndefined extends RuntimeException{
+        private static final long serialVersionUID = 7719401165632826435L;
+        private ValueIsUndefined(String message) {
+            super(message);
+        }
     }
 
-    @QtBlockedSlot
-    public final Result evaluate() {
-    	org.qtjambi.qt.QNativePointer np = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-    	java.lang.Object value = evaluate(np);
-        return new Result(np.booleanValue(), value);
+}// class
+
+class QQmlPropertyValueSource__header__{
+
+public:
+    QQmlPropertyValueSource_shell(JNIEnv *__jni_env, jobject __jni_object, const QWeakPointer<QtJambiLink>& link);
+}// class
+
+class QQmlPropertyValueSource__native__{
+
+QQmlPropertyValueSource_shell::QQmlPropertyValueSource_shell(JNIEnv *__jni_env, jobject __jni_object, const QWeakPointer<QtJambiLink>& link)
+    : QQmlPropertyValueSource(),
+      m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, "QQmlPropertyValueSource")),
+      m_link(link)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("shell", "QQmlPropertyValueSource::QQmlPropertyValueSource(JNIEnv *__jni_env, jobject __jni_object, link)");
+#ifdef QT_DEBUG
+    if (m_vtable)
+        m_vtable->ref();
+#endif
+}
+}// class
+
+class QQmlParserStatus__header__{
+
+public:
+    QQmlParserStatus_shell(JNIEnv *__jni_env, jobject __jni_object, const QWeakPointer<QtJambiLink>& link);
+}// class
+
+class QQmlParserStatus__native__{
+
+QQmlParserStatus_shell::QQmlParserStatus_shell(JNIEnv *__jni_env, jobject __jni_object, const QWeakPointer<QtJambiLink>& link)
+    : QQmlParserStatus(),
+      m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, "QQmlParserStatus")),
+      m_link(link)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("shell", "QQmlParserStatus_shell::QQmlParserStatus_shell(JNIEnv *__jni_env, jobject __jni_object, link)");
+#ifdef QT_DEBUG
+    if (m_vtable)
+        m_vtable->ref();
+#endif
+}
+}// class
+
+class QQmlIncubationController__{
+public static class WhileFlag{
+    private final long flag;
+        public WhileFlag() {
+            this(true);
+        }
+        
+        public WhileFlag(boolean flag) {
+            long ptr = create(flag);
+            this.flag = ptr;
+            registerCleaner(this, ()->destroy(ptr));
+        }
+        
+        public void set(boolean flag) {
+        	set(this.flag, flag);
+        }
+        
+        private static native long create(boolean flag);
+        
+        private static native void destroy(long ptr);
+        
+        private static native void set(long ptr, boolean flag);
     }
+}// class
+
+class QQmlIncubationController_native__{
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_create)
+(JNIEnv *, jclass, jboolean flag)
+{
+    return jlong(new volatile bool(flag));
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_destroy)
+(JNIEnv *, jclass, jlong ptr)
+{
+    if(ptr) delete reinterpret_cast<volatile bool*>(ptr);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_set)
+(JNIEnv *, jclass, jlong ptr, jboolean flag)
+{
+    if(ptr) *reinterpret_cast<volatile bool*>(ptr) = flag;
+}
 }// class

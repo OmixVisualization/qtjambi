@@ -47,6 +47,9 @@
 
 #include <stdio.h>
 #include <QtCore>
+#include <QtWidgets>
+
+QT_WARNING_DISABLE_CLANG("-Winfinite-recursion")
 
 namespace NameSpace
 {
@@ -77,8 +80,16 @@ namespace NameSpace
     class ValueA
     {
     public:
-        ValueA() { x = 42; }
+        ValueA() : x(42) {
+        }
+        ValueA(const ValueA& v) : x(v.x){
+        }
+        const ValueA & operator=(const ValueA &a) {
+            x = a.x;
+            return *this;
+        }
         bool operator==(const ValueA &a) const { return a.x == x; }
+        bool operator<(const ValueA &a) const { return a.x < x; }
 
         int getX() const { return x; }
     private:
@@ -96,6 +107,7 @@ namespace NameSpace
             {
             public:
                 ObjectC(const QString &s) : m_fooBar(s) {}
+                virtual ~ObjectC(){}
                 ObjectC *fooBar(ObjectD *obj);
 
                 QString str() { return m_fooBar; }
@@ -107,14 +119,31 @@ namespace NameSpace
             class InterfaceA
             {
             public:
+                InterfaceA() : m_constructorParameter1(), m_constructorParameter2() {}
+                InterfaceA(int i) : m_constructorParameter1(i), m_constructorParameter2() {}
+                InterfaceA(const QString& s) : m_constructorParameter1(s), m_constructorParameter2() {}
+                InterfaceA(QGraphicsItem* g) : m_constructorParameter1(QVariant::fromValue<QGraphicsItem*>(g)), m_constructorParameter2() {}
+                InterfaceA(QObject* g) : m_constructorParameter1(QVariant::fromValue<QObject*>(g)), m_constructorParameter2() {}
+                InterfaceA(const QList<QObject*>& g, int i = 0) : m_constructorParameter1(QVariant::fromValue<QList<QObject*> >(g)), m_constructorParameter2(i) {}
+                virtual ~InterfaceA(){}
                 virtual ObjectD *fooBar2(ObjectC *) = 0;
                 virtual InterfaceA *fooBar(InterfaceA *) = 0;
+                void publicFinal(){}
+                const QVariant& constructorParameter1() const { return m_constructorParameter1; }
+                const QVariant& constructorParameter2() const { return m_constructorParameter2; }
+            protected:
+                virtual InterfaceA *protectedFooBar(InterfaceA *) = 0;
+                void protectedFinal(){}
+            private:
+                QVariant m_constructorParameter1;
+                QVariant m_constructorParameter2;
             };
 
-            class ObjectD: public ObjectC, InterfaceA
+            class ObjectD: public ObjectC, public InterfaceA
             {
             public:
                 ObjectD(const QString &s) : ObjectC(s) {}
+                virtual ~ObjectD(){}
 
                 ObjectD *fooBar2(ObjectC *obj)
                 {
@@ -122,6 +151,12 @@ namespace NameSpace
                 }
 
                 InterfaceA *fooBar(InterfaceA *obj)
+                {
+                    return obj->fooBar(fooBar(this));
+                }
+
+            protected:
+                InterfaceA *protectedFooBar(InterfaceA *obj)
                 {
                     return obj->fooBar(fooBar(this));
                 }
@@ -143,6 +178,10 @@ namespace NameSpace
 
 };
 
+inline uint qHash(const NameSpace::ValueA & v)
+{
+    return uint(v.getX());
+}
 
 
 inline NameSpace::NameSpace2::NameSpace3::ObjectC *NameSpace::NameSpace2::NameSpace3::ObjectC::fooBar(NameSpace::NameSpace2::NameSpace3::ObjectD *obj)

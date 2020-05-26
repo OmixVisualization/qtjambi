@@ -1,12 +1,20 @@
-TARGET = org_qtjambi_qt_xml
+QTJAMBILIB = QtJambiXml
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_xml/org_qtjambi_qt_xml.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 win32:CONFIG += precompile_header
 PRECOMPILED_HEADER = qtjambi_xml_pch.h
 
 # libQtXml.so.4.7.4 is only dependant on libQtCore.so.4 (ensures removal of 'Qt -= gui')
 QT = core xml
+
+HEADERS += \
+    qtjambi_xml_hashes.h \
+    qtjambi_xml_repository.h
+
+SOURCES += \
+    qtjambi_xml_repository.cpp

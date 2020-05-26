@@ -1,6 +1,6 @@
 --- qtbase/src/corelib/global/qnamespace.h	2015-06-29 23:04:58.000000000 +0200
 +++ qtbase/src/corelib/global/qnamespace.h	2015-08-17 23:06:30.106615800 +0200
-@@ -1767,8 +1767,17 @@
+@@ -1855,8 +1855,17 @@
          DockCount
      };
  

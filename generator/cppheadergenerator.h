@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,23 +50,24 @@ class CppHeaderGenerator : public CppGenerator {
         }
 
         virtual QString fileNameForClass(const AbstractMetaClass *cls) const;
+        virtual QString fileNameForFunctional(const AbstractMetaFunctional *cls) const;
 
         void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0);
-        void writeFunction(QTextStream &s, const AbstractMetaFunction *java_function, int options = 0);
+        void write(QTextStream &s, const AbstractMetaFunctional *java_functional, int nesting_level = 0);
+        void writeFunction(QTextStream &s, const AbstractMetaFunction *java_function, Option options = NoOption);
         void writePublicFunctionOverride(QTextStream &s, const AbstractMetaFunction *java_function);
         void writeVirtualFunctionOverride(QTextStream &s, const AbstractMetaFunction *java_function);
         void writeForwardDeclareSection(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeVariablesSection(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeForwardDeclareSection(QTextStream &s, const AbstractMetaFunctional *java_class);
+        void writeVariablesSection(QTextStream &s, const AbstractMetaClass *java_class, bool isInterface);
         void writeFieldAccessors(QTextStream &s, const AbstractMetaField *java_field);
-        void writeSignalWrapper(QTextStream &s, const AbstractMetaFunction *java_function);
-        void writeSignalWrappers(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeWrapperClass(QTextStream &s, const AbstractMetaClass *java_class);
         void writeInjectedCode(QTextStream &s, const AbstractMetaClass *java_class);
 
         bool shouldGenerate(const AbstractMetaClass *java_class) const {
             return (java_class->generateShellClass()
                     && CppGenerator::shouldGenerate(java_class))
-                   || (java_class->queryFunctions(AbstractMetaClass::Signals).size() > 0
+                   || (  !java_class->isFake()
+                       && java_class->queryFunctions(AbstractMetaClass::Signals).size() > 0
                        && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
         }
 };

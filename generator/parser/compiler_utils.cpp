@@ -62,9 +62,12 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
     typeInfo.setQualifiedName(type_cc.qualifiedName());
     typeInfo.setConstant(type_cc.isConstant());
     typeInfo.setVolatile(type_cc.isVolatile());
-    typeInfo.setReference(decl_cc.isReference());
+    typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
     typeInfo.setIndirections(decl_cc.indirection());
     typeInfo.setArrayElements(decl_cc.arrayElements());
+    typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+    typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+    typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
 
     return typeInfo;
 }

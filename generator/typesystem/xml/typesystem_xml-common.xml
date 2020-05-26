@@ -1,5 +1,49 @@
-<?xml-stylesheet type="text/xsl" href="merge.xsl"?>
-<typesystem>
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtXml">
     <rejection class="QXmlAttributes::Attribute" />
     <rejection class="QDomNode" field-name="impl" />
 
@@ -30,32 +74,6 @@
     <value-type name="QDomDocument">
         <modify-function signature="nodeType()const" remove="all"/>
         <modify-function signature="operator=(QDomDocument)" remove="all"/>
-
-        <!--bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 ); -->
-        <modify-function signature="setContent(QIODevice*, bool, QString*, int*, int*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcContent" />
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="setContent(QXmlInputSource*,QXmlReader*,QString*,int*,int*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcContent" />
-            </modify-argument>
-        </modify-function>
-                
-        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcContent" />
-            </modify-argument>
-        </modify-function>        
-
-        <modify-function signature="setContent(QIODevice*,QString*,int*,int*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcContent" />
-            </modify-argument>
-        </modify-function>
-
     </value-type>
 
     <value-type name="QDomDocumentFragment">
@@ -119,22 +137,21 @@
       <modify-function signature="value(const QLatin1String&amp;) const">
         <remove/>
       </modify-function>
+      <modify-function signature="operator=(const QXmlAttributes &amp;)" remove="all" since="5.12.0"/>
     </value-type>
 
     <value-type name="QXmlNamespaceSupport">
-        <custom-creator>
-            QXmlNamespaceSupport *clone = new QXmlNamespaceSupport;
+        <custom-constructor>
+            QXmlNamespaceSupport *clone = new(placement) QXmlNamespaceSupport;
             if(copy){
-				clone->setPrefix("", copy->uri(""));
+                clone->setPrefix("", copy->uri(""));
 
-				QStringList prefixes = copy->prefixes();
-				for (int i=0; i&lt;prefixes.size(); ++i)
-					clone->setPrefix(prefixes.at(i), copy->uri(prefixes.at(i)));
-			}
+                QStringList prefixes = copy->prefixes();
+                for (int i=0; i&lt;prefixes.size(); ++i)
+                    clone->setPrefix(prefixes.at(i), copy->uri(prefixes.at(i)));
+            }
             return clone;
-        </custom-creator>
-
-
+        </custom-constructor>
     </value-type>
 
     <value-type name="QDomElement">
@@ -170,6 +187,15 @@
     <interface-type name="QXmlLexicalHandler" />
 
     <object-type name="QXmlDefaultHandler">
+        <extra-includes>
+             <include file-name="qtjambi_xml_repository.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QXmlContentHandler" condition="false" />
+        <interface-polymorphy interface="QXmlErrorHandler" condition="false" />
+        <interface-polymorphy interface="QXmlDTDHandler" condition="false" />
+        <interface-polymorphy interface="QXmlEntityResolver" condition="false" />
+        <interface-polymorphy interface="QXmlLexicalHandler" condition="false" />
+        <interface-polymorphy interface="QXmlDeclHandler" condition="false" />
         <modify-function signature="setDocumentLocator(QXmlLocator*)">
             <modify-argument index="1">
                 <define-ownership class="shell" owner="cplusplus" />
@@ -189,37 +215,6 @@
 
         <modify-function signature="parse(const QXmlInputSource&amp;)" remove="all">
         </modify-function>
-
-        <modify-function signature="setContentHandler(QXmlContentHandler*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcContentHandler" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setDTDHandler(QXmlDTDHandler*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDTDHandler" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setDeclHandler(QXmlDeclHandler*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDeclHandler" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setEntityResolver(QXmlEntityResolver*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcEntityResolver" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setErrorHandler(QXmlErrorHandler*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcErrorHandler" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setLexicalHandler(QXmlLexicalHandler*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcLexicalHandler" />
-            </modify-argument>
-        </modify-function>
     </object-type>
 
     <object-type name="QXmlReader">
@@ -228,28 +223,5 @@
         </modify-function>
         <modify-function signature="parse(const QXmlInputSource&amp;)" remove="java">
         </modify-function>
-        <modify-function signature="setContentHandler(QXmlContentHandler*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setDTDHandler(QXmlDTDHandler*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setDeclHandler(QXmlDeclHandler*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setEntityResolver(QXmlEntityResolver*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setErrorHandler(QXmlErrorHandler*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setLexicalHandler(QXmlLexicalHandler*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
     </object-type>
-
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDomNodeList' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDomNamedNodeMap' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDomNode' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QDomImplementation' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
 </typesystem>

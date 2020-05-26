@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,7 +50,7 @@ class GeneratorSetJava : public GeneratorSet {
         QString usage();
         bool readParameters(const QMap<QString, QString> args);
 
-        void buildModel(const QString pp_file);
+        void buildModel(const QMap<QString, QString>& features, const QString pp_file);
         void dumpObjectTree();
 
         QString generate();
@@ -67,6 +67,7 @@ class GeneratorSetJava : public GeneratorSet {
         bool do_ui_convert;
         bool native_jump_table;
         bool qtjambi_debug_tools;
+        uint target_JDK_version;
 
         QString doc_dir;
         QString ui_file_name;

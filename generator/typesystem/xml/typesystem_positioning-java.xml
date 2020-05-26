@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.positioning" default-superclass="io.qt.QtObject">
+    <object-type name="QGeoAreaMonitorSource">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_positioning-java.java" quote-after-line="class QGeoAreaMonitorSource___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_positioning_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="requestUpdate(const QGeoAreaMonitorInfo &amp;, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="io.qt.core.QMetaObject$AbstractSignal"/>
+                <conversion-rule class="native">
+                QByteArray %out;
+                if(!%in)
+                    JavaException::raiseNullPointerException(%env, "Parameter 'signal' must not be null." QTJAMBI_STACKTRACEINFO);
+                if(jobject __java_this = qtjambi_java_object_reference(__this_nativeId, %env)) {
+                    jobject containingObject = Java::QtPositioning::QtJambiSignals$AbstractSignal.containingObject(%env, %in);
+                    if(!%env->IsSameObject(__java_this, containingObject)){
+                        JavaException::raiseIllegalArgumentException(%env, "Given signal has to be one of the instance's signals." QTJAMBI_STACKTRACEINFO);
+                    }
+                    jint signalIndex = Java::QtPositioning::QtJambiSignals$AbstractSignal.methodIndex(%env, %in);
+                    QMetaMethod metaSignal = __qt_this->metaObject()->method(signalIndex);
+                    if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)
+                        return false;
+                    %out = qFlagLocation(QByteArray("2").append(metaSignal.methodSignature()));
+                }
+                </conversion-rule>
+                <conversion-rule class="shell">
+                QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);
+                if(!metaSignal.isValid() || metaSignal.methodType()!=QMetaMethod::Signal)
+                    return false;
+                jobject __java_metaSignal = qtjambi_cast&lt;jobject>(%env, metaSignal);
+                if(!__java_metaSignal)
+                    return false;
+                jobject %out = Java::QtPositioning::QMetaMethod.toSignal(%env, __java_metaSignal, __java_this);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QNmeaPositionInfoSource">
+        <extra-includes>
+            <include file-name="qtjambi_positioning_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="parsePosInfoFromNmeaData(const char *, int, QGeoPositionInfo *, bool *)">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.positioning.QNmeaPositionInfoSource$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = nullptr;
+                    if(%in){
+                        %out = Java::QtPositioning::QNmeaPositionInfoSource$Result.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %3), %4);
+                    }
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    bool %out = false;
+                    if(%in){
+                        if(%3){
+                            jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result.info(%env, %in);
+                            *%3 = qtjambi_cast&lt;QGeoPositionInfo>(%env, __java_%3);
+                        }
+                        if(%4){
+                            *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result.hasFix(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                JBufferConstData %in_buffer(%env, %in);
+                const char* %out = %in_buffer;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jobject %out = %env->NewDirectByteBuffer(const_cast&lt;char*>(%in), %2);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="native">
+                QGeoPositionInfo %in;
+                QGeoPositionInfo* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_positioning-java.java" quote-after-line="class QNmeaPositionInfoSource___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+  <object-type name="QNmeaPositionInfoSource">
+        <modify-function signature="setDevice(QIODevice *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDevice"/>
+            </modify-argument>
+            <inject-code class="java" position="end">
+                if(device()!=__rcDevice){
+                    __rcDevice = null;
+                }
+            </inject-code>
+        </modify-function>
+  </object-type>
+</typesystem>

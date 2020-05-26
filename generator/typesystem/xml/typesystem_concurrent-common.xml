@@ -1,8 +1,53 @@
 <?xml version="1.0"?>
-<typesystem>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtConcurrent">
     <rejection class="QtConcurrent" enum-name="enum_1" />
     <rejection class="QtConcurrent" function-name="operator|" />
     <rejection class="QtConcurrent::BlockSizeManager" />
+    <rejection class="QtConcurrent::BlockSizeManagerV2" />
     <rejection class="QtConcurrent::ConstMemberFunctionWrapper" />
     <rejection class="QtConcurrent::Exception"/>
     <rejection class="QtConcurrent::FilterKernel"/>
@@ -148,10 +193,16 @@
     <rejection class="QtConcurrent::VoidStoredMemberFunctionPointerCall5"/>
     <rejection class="QtConcurrent::ThreadEngineBarrier" />
     <rejection class="QtConcurrent::internal" />
+    <rejection class="QtConcurrent::StoredFunctorCall" />
 
-    <namespace-type name="QtConcurrent" target-type="class" />
+    <namespace-type name="QtConcurrent" target-type="class">
+        <extra-includes>
+            <include file-name="QtConcurrent/QtConcurrent" location="global"/>
+        </extra-includes>
+    </namespace-type>
     <enum-type name="QtConcurrent::ReduceOption" flags="QtConcurrent::ReduceOptions" />
     <enum-type name="QtConcurrent::ThreadFunctionResult" />
+    <object-type name="QtConcurrent::MedianDouble" />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::selectIteration', unmatched parameter type 'T'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::advance', unmatched parameter type 'It&amp;'" />
@@ -200,4 +251,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::run', unmatched parameter type 'T'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFilter', unmatched parameter type 'Sequence&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::createFunctor', unmatched return type 'QtConcurrent::SelectMemberFunctor0&lt;T,Class&gt;::type'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::start', unmatched return type ''" />
 </typesystem>

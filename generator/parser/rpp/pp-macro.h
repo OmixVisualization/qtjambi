@@ -78,11 +78,11 @@ namespace rpp {
 #if defined (PP_WITH_MACRO_POSITION)
                 file(0),
 #endif
-                name(0),
-                definition(0),
+                name(nullptr),
+                definition(nullptr),
                 state(0),
                 lines(0),
-                next(0),
+                next(nullptr),
                 hash_code(0) {}
     };
 

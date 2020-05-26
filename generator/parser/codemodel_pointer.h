@@ -159,9 +159,9 @@ template <class T> class CodeModelPointer
 #endif
         inline CodeModelPointer(T *value = 0) : QAtomicPointer<T>(value) {}
 
-        inline T *data() { return (T *) *this; }
-        inline const T *data() const { return (const T *) *this; }
-        inline const T *constData() const { return (const T *) *this; }
+        inline T *data() { return *this; }
+        inline const T *data() const { return *this; }
+        inline const T *constData() const { return *this; }
 #endif
 };
 

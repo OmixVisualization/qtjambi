@@ -1,14 +1,25 @@
-TARGET = org_qtjambi_qt_multimedia
+QTJAMBILIB = QtJambiMultimedia
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/org_qtjambi_qt_multimedia/org_qtjambi_qt_multimedia.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-INCLUDEPATH += $$(QTDIR)/include/QtMultimediaWidgets
+QT = core gui multimedia
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-# libQtMultimedia.so.4.7.4 is only dependant on libQtCore.so.4 libQtGui.so.4
-QT = core gui multimedia
+macx:{
+    INCLUDEPATH += $$(QTDIR)/lib/QtMultimediaWidgets.framework/Headers/
+}
+INCLUDEPATH += $$(QTDIR)/include/QtMultimediaWidgets
+
+HEADERS += \
+    qtjambi_multimedia.h \
+    qtjambi_multimedia_repository.h
+
+SOURCES += \
+    qtjambi_multimedia.cpp \
+    qtjambi_multimedia_repository.cpp

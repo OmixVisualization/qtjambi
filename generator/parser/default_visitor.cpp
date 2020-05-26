@@ -138,6 +138,7 @@ void DefaultVisitor::visitElaboratedTypeSpecifier(ElaboratedTypeSpecifierAST *no
 
 void DefaultVisitor::visitEnumSpecifier(EnumSpecifierAST *node) {
     visit(node->name);
+    visit(node->base_type);
     visitNodes(this, node->enumerators);
 }
 
@@ -158,9 +159,15 @@ void DefaultVisitor::visitExpressionStatement(ExpressionStatementAST *node) {
     visit(node->expression);
 }
 
-void DefaultVisitor::visitForStatement(ForStatementAST *node) {
+void DefaultVisitor::visitClassicForStatement(ClassicForStatementAST *node) {
     visit(node->init_statement);
     visit(node->condition);
+    visit(node->expression);
+    visit(node->statement);
+}
+
+void DefaultVisitor::visitIteratorForStatement(IteratorForStatementAST *node) {
+    visit(node->declarator);
     visit(node->expression);
     visit(node->statement);
 }
@@ -311,9 +318,17 @@ void DefaultVisitor::visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node) {
     visit(node->expression);
 }
 
+void DefaultVisitor::visitAutoTypeSpecifier(AutoTypeSpecifierAST *) {
+    // nothing to do
+}
+
 void DefaultVisitor::visitSizeofExpression(SizeofExpressionAST *node) {
     visit(node->type_id);
     visit(node->expression);
+}
+
+void DefaultVisitor::visitTypeidExpression(TypeidExpressionAST *node) {
+    visit(node->type_id);
 }
 
 void DefaultVisitor::visitStringLiteral(StringLiteralAST *) {
@@ -369,6 +384,7 @@ void DefaultVisitor::visitTypeIdentification(TypeIdentificationAST *node) {
 void DefaultVisitor::visitTypeParameter(TypeParameterAST *node) {
     visit(node->name);
     visit(node->type_id);
+    visit(node->type_expression);
     visitNodes(this, node->template_parameters);
     visit(node->template_name);
 }
@@ -389,6 +405,12 @@ void DefaultVisitor::visitUnqualifiedName(UnqualifiedNameAST *node) {
 
 void DefaultVisitor::visitUsing(UsingAST *node) {
     visit(node->name);
+}
+
+void DefaultVisitor::visitUsingAs(UsingAsAST *node) {
+    visit(node->name);
+    visit(node->type_specifier);
+    visit(node->declarator);
 }
 
 void DefaultVisitor::visitUsingDirective(UsingDirectiveAST *node) {

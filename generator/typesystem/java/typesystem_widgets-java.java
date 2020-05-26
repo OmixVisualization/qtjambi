@@ -1,7 +1,7 @@
-/****************************************************************************
+    /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,213 +37,25 @@
 
 package generator;
 
-import org.qtjambi.qt.QNativePointer;
-import org.qtjambi.qt.QtBlockedSlot;
-import org.qtjambi.qt.Utilities;
-import org.qtjambi.qt.internal.QtJambiObject.QPrivateConstructor;
-import org.qtjambi.qt.core.QCoreApplication;
-import org.qtjambi.qt.core.QPoint;
-import org.qtjambi.qt.core.QPointF;
-import org.qtjambi.qt.gui.*;
-
-class QTreeWidgetItemIterator___ extends QTreeWidgetItemIterator {
-        @QtBlockedSlot
-        public final void next(int i) {
-            operator_add_assign(i);
-        }
-
-        @QtBlockedSlot
-        public final void previous(int i) {
-            operator_subtract_assign(i);
-        }
-
-        @QtBlockedSlot
-        public final void next() {
-            operator_increment();
-        }
-
-        @QtBlockedSlot
-        public final void previous() {
-            operator_decrement();
-        }
-
-        @QtBlockedSlot
-        public final QTreeWidgetItem current() {
-            return operator_multiply();
-        }
-}// class
-
-class QLineEdit___ extends QLineEdit {
-
-        /**
-            The TextMargins class represents the margins of
-            the text in a QLineEdit.<p>It consists of four
-            public integers, giving the top, bottom,
-            left, and right margins.
-        */
-        public static final class TextMargins {
-                /** The top margin of the QLineEdit. */
-                public final int top;
-                /** The bottom margin of the QLineEdit */
-                public final int bottom;
-                /** The left margin of the QLineEdit. */
-                public final int left;
-                /** The right margin of the QLineEdit. */
-                public final int right;
-
-                private TextMargins(int left, int top, int right, int bottom) {
-                    this.left = left;
-                    this.top = top;
-                    this.right = right;
-                    this.bottom = bottom;
-                }
-        }
-
-        public final TextMargins getTextMargins() {
-            QNativePointer left = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer top = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer right = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer bottom = new QNativePointer(QNativePointer.Type.Int);
-
-            getTextMargins_private(left, top, right, bottom);
-
-            return new TextMargins(left.intValue(), top.intValue(), right.intValue(),
-                                   bottom.intValue());
-        }
-}// class
-
-class QWizardPage___ extends QWizardPage {
-
-        protected final void registerField(String name, QWidget widget) {
-            registerField(name, widget, (org.qtjambi.qt.QNativePointer) null, (org.qtjambi.qt.QNativePointer) null);
-        }
-
-        protected final void registerField(String name, QWidget widget, String property) {
-            registerField(name, widget, QNativePointer.createCharPointer(property), null);
-        }
-
-        /**
-         * Creates a field called <code>name</code> associated with the given
-         * property of the given widget. From then on, that property becomes
-         * accessible using <code>field()</code> and <code>setField()</code>.
-         * Fields are global to the entire wizard and make it easy for any single
-         * page to access information stored by another page, without having to put
-         * all the logic in <code>QWizard</code> or having the pages know
-         * explicitly about each other. If name ends with an asterisk (*), the field
-         * is a mandatory field. When a page has mandatory fields, the Next and/or
-         * Finish buttons are enabled only when all mandatory fields are filled.
-         * This requires a <code>changedSignal</code> to be specified, to tell
-         * QWizard to recheck the value stored by the mandatory field.
-         *
-         * QWizard knows the most common Qt widgets. For these (or their
-         * subclasses), you don't need to specify a <code>property</code> or a
-         * <code>changedSignal</code>. The table below lists these widgets:
-         *
-         * <code>QAbstractButton</code> (for which the relevant property is the
-         * <code>checked</code> property), <code>QAbstractSlider</code> (the
-         * <code>value</code> property), <code>QComboBox</code> (<code>currentIndex</code>
-         * property), <code>QDateTimeEdit</code>(<code>dateTime</code>
-         * property), <code>QLineEdit</code>(<code>text</code> property),
-         * <code>QListWidget</code>(<code>currentRow</code> property), or
-         * <code>QSpinBox</code>(<code>value</code> property).
-         *
-         * @param name
-         *            The name which will be used to access the field. Names ending
-         *            with an asterisk signify mandatory fields.
-         * @param widget
-         *            The widget whose property will be accessed using this field.
-         * @param property
-         *            The name of the property associated with the field.
-         * @param changedSignal
-         *            The name of a signal which is emitted when the associated
-         *            property's value changes.
-         *
-         * @see org.qtjambi.qt.gui.QWizardPage#field
-         * @see org.qtjambi.qt.gui.QWizardPage#setField
-         */
-        protected final void registerField(String name, QWidget widget, String property, String changedSignal) {
-            String signalSignature = org.qtjambi.qt.internal.MetaObjectTools.cppSignalSignature(widget, changedSignal);
-            if (signalSignature.length() == 0)
-                throw new QNoSuchSignalException("Signal '" + changedSignal
-                                                 + "' does not exist or has argument types that cannot be converted to Qt Jambi or java.lang types.");
-            registerField(name, widget, org.qtjambi.qt.QNativePointer.createCharPointer(property), org.qtjambi.qt.QNativePointer
-                          .createCharPointer(org.qtjambi.qt.internal.QtJambiInternal.SignalPrefix + signalSignature));
-        }
-
-}// class
-
-class QFontDialog___ extends QFontDialog {
-
-        public static final class Result {
-                public Result(QFont font, boolean ok) {
-                    this.font = font;
-                    this.ok = ok;
-                }
-
-                public QFont font;
-                public boolean ok;
-        }
-
-        public static Result getFont(QFont initial, QWidget parent, String title, FontDialogOptions options) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            QFont returned = getFont(np, initial, parent, title, options);
-            return new Result(returned, np.booleanValue());
-        }
-
-        public static Result getFont(QFont initial, QWidget parent, String caption) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            QFont returned = getFont(np, initial, parent, caption);
-            return new Result(returned, np.booleanValue());
-        }
-
-        public static Result getFont(QWidget parent) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            QFont returned = getFont(np, parent);
-            return new Result(returned, np.booleanValue());
-        }
-
-        public static Result getFont() {
-            return getFont((QWidget) null);
-        }
-
-        public static Result getFont(QFont initial, QWidget parent) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            QFont returned = getFont(np, initial, parent);
-            return new Result(returned, np.booleanValue());
-        }
-
-        public static Result getFont(QFont initial) {
-            return getFont(initial , (QWidget) null);
-        }
-
-}// class
+import io.qt.*;
+import io.qt.QtUtilities;
+import io.qt.internal.QtJambiObject.QPrivateConstructor;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QPoint;
+import io.qt.core.QPointF;
+import io.qt.gui.*;
 
 class QMenu___ extends QMenu {
-
-        protected final void initStyleOption(org.qtjambi.qt.widgets.QStyleOptionMenuItem option, QAction action) {
-            initStyleOption(option.nativePointer(), action);
-        }
-
+        public native void setAsOSXDockMenu();
 }// class
 
-class QMenuBar___ extends QMenuBar {
-
-        protected final void initStyleOption(org.qtjambi.qt.widgets.QStyleOptionMenuItem option, QAction action) {
-            initStyleOption(option.nativePointer(), action);
-        }
-
-}// class
-
-class QShortcut___ extends QShortcut {
-
-        public QShortcut(QKeySequence key, QWidget parent) {
-            this(key, parent, null, null, org.qtjambi.qt.core.Qt.ShortcutContext.WindowShortcut);
-        }
-
-        public QShortcut(QKeySequence key, QWidget parent, org.qtjambi.qt.core.Qt.ShortcutContext context) {
-            this(key, parent, null, null, context);
-        }
-
+class QShortcut__{
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, java.lang.String member, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, member, (java.lang.String)null, context);
+    }
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, (java.lang.String)null, (java.lang.String)null, context);
+    }
 }// class
 
 class QAbstractButton___ extends QAbstractButton {
@@ -277,45 +89,33 @@ class QAbstractButton___ extends QAbstractButton {
 
 }// class
 
-class QStyle___ extends QStyle {
-
-        @QtBlockedSlot
-        public final int combinedLayoutSpacing(QSizePolicy.ControlTypes controls1, QSizePolicy.ControlTypes controls2,
-                                               org.qtjambi.qt.core.Qt.Orientation orientation, QStyleOption option, QWidget widget) {
-            return combinedLayoutSpacing(controls1, controls2, orientation, option == null ? null : option.nativePointer(), widget);
+class QLayout___ extends QLayout {
+    @io.qt.QtUninvokable
+    public final void addWidget(io.qt.widgets.QWidget w){
+        if(this instanceof QStackedLayout) {
+            ((QStackedLayout)this).stackWidget(w);
+        }else {
+            __qt_addWidget(w);
         }
-
-        @QtBlockedSlot
-        public final int combinedLayoutSpacing(QSizePolicy.ControlTypes controls1, QSizePolicy.ControlTypes controls2,
-                                               org.qtjambi.qt.core.Qt.Orientation orientation, QStyleOption option) {
-            return combinedLayoutSpacing(controls1, controls2, orientation, option, null);
-        }
-
-        @QtBlockedSlot
-        public final int combinedLayoutSpacing(QSizePolicy.ControlTypes controls1, QSizePolicy.ControlTypes controls2,
-                                               org.qtjambi.qt.core.Qt.Orientation orientation) {
-            return combinedLayoutSpacing(controls1, controls2, orientation, null);
-        }
-
+    }
 }// class
 
-class QLayout___ extends QLayout {
-
+class QBoxLayout___ extends QBoxLayout {
 }// class
 
 class QGridLayout___ extends QGridLayout {
-
-        public final org.qtjambi.qt.gui.QTableArea getItemPosition(int index) {
-            QNativePointer row = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer column = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer rowSpan = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer columnSpan = new QNativePointer(QNativePointer.Type.Int);
-
-            getItemPosition(index, row, column, rowSpan, columnSpan);
-
-            return new org.qtjambi.qt.gui.QTableArea(row.intValue(), column.intValue(), rowSpan.intValue(), columnSpan.intValue());
+    public static final class ItemInfo{
+        private ItemInfo(int row, int column, int rowSpan, int columnSpan){
+            this.row = row;
+            this.column = column;
+            this.rowSpan = rowSpan;
+            this.columnSpan = columnSpan;
         }
-
+        public final int row;
+        public final int column;
+        public final int rowSpan;
+        public final int columnSpan;
+    }
 }// class
 
 class QWidget___ extends QWidget {
@@ -326,25 +126,303 @@ class QWidget___ extends QWidget {
 
 }// class
 
-class QFileDialog___ extends QFileDialog {
-
-        public static class Filter {
-                public Filter(String filter) {
-                    this.filter = filter;
-                }
-
-                public String filter;
-                public String selectedFilter = "";
-        };
-
+class QColorDialog__java_{
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedColorSlot) {
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedColorSlot);
+        if(lamdaInfo!=null) {
+            if(lamdaInfo.isStatic) {
+                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.qobject==null) {
+                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(metaMethod==null) {
+                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+        }
+        throw new IllegalArgumentException("Slot cannot be detected.");
+    }
+    
+    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
 }// class
 
-class QTabBar___ extends QTabBar {
+class QColorDialog__native_{
 
-        public final void initStyleOption(QStyleOptionTab option, int tabIndex) {
-            initStyleOption(option.nativePointer(), tabIndex);
+// QColorDialog::open(QObject * receiver, const char * member)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QColorDialog_open)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID objectId, jobject metaMethod)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QColorDialog::open(QObject * receiver, const char * member)")
+    try{
+#if QT_CONFIG(colordialog)
+        QColorDialog *__qt_this = qtjambi_object_from_nativeId<QColorDialog>(__this_nativeId);
+        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
+        QByteArray signature;
+        if(method.methodType()==QMetaMethod::Signal){
+            signature += "2";
+        }else{
+            signature += "1";
+        }
+        signature += method.methodSignature();
+        __qt_this->open(object, signature);
+#else
+        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(options0)
+        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif // QT_CONFIG(colordialog)
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+}// class
+
+class QFontDialog__java_ extends QFontDialog {
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QFont> selectedFontSlot) {
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedFontSlot);
+        if(lamdaInfo!=null) {
+            if(lamdaInfo.isStatic) {
+                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.qobject==null) {
+                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(metaMethod==null) {
+                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+        }
+        throw new IllegalArgumentException("Slot cannot be detected.");
+    }
+    
+    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+}// class
+
+class QFontDialog__native_ extends QFontDialog {
+// QFontDialog::open(QObject * receiver, const char * member)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFontDialog_open)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID objectId, jobject metaMethod)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFontDialog::open(QObject * receiver, const char * member)")
+    try{
+#if QT_CONFIG(fontdialog)
+        QFontDialog *__qt_this = qtjambi_object_from_nativeId<QFontDialog>(__this_nativeId);
+        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
+        QByteArray signature;
+        if(method.methodType()==QMetaMethod::Signal){
+            signature += "2";
+        }else{
+            signature += "1";
+        }
+        signature += method.methodSignature();
+        __qt_this->open(object, signature);
+#else
+        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(options0)
+        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif // QT_CONFIG(colordialog)
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+}// class
+
+class QFileDialog__java_ extends QFileDialog {
+    public static final class Result<R> {
+        public Result(R result, String selectedFilter) {
+            this.result = result;
+            this.selectedFilter = selectedFilter;
         }
 
+        public final R result;
+        public final String selectedFilter;
+    }
+    
+    public static io.qt.core.QUrl getExistingDirectoryUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+        return getExistingDirectoryUrl(parent, caption, dir, new io.qt.widgets.QFileDialog.Options(options), supportedSchemes);
+    }
+    
+    public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getOpenFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+        return getOpenFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
+    }
+    
+    public static io.qt.widgets.QFileDialog.Result<java.util.List<io.qt.core.QUrl>> getOpenFileUrls(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+        return getOpenFileUrls(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
+    }
+    
+    public static io.qt.widgets.QFileDialog.Result<io.qt.core.QUrl> getSaveFileUrl(io.qt.widgets.QWidget parent, java.lang.String caption, io.qt.core.QUrl dir, java.lang.String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.Option... options){
+        return getSaveFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
+    }
+    
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
+        if(lamdaInfo!=null) {
+            if(lamdaInfo.isStatic) {
+                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.qobject==null) {
+                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.reflectiveMethod.getParameterCount()!=1) {
+                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
+            }
+            Class<?> type = lamdaInfo.reflectiveMethod.getParameterTypes()[0];
+            if(fileMode()==FileMode.ExistingFiles) {
+                if(!java.util.Collection.class.isAssignableFrom(type)) {
+                    throw new IllegalArgumentException("Method does not take a single StringList argument: "+lamdaInfo.reflectiveMethod);
+                }
+                java.lang.reflect.Type genericType = lamdaInfo.reflectiveMethod.getGenericParameterTypes()[0];
+                if(genericType instanceof java.lang.reflect.ParameterizedType) {
+                    java.lang.reflect.Type[] arguments = ((java.lang.reflect.ParameterizedType) genericType).getActualTypeArguments();
+                    if(arguments.length!=1 || arguments[0]!=String.class)
+                        throw new IllegalArgumentException("Method does not take a single StringList argument: "+lamdaInfo.reflectiveMethod);
+                }
+            }else{
+                if(type!=String.class)
+                    throw new IllegalArgumentException("Method does not take a single String argument: "+lamdaInfo.reflectiveMethod);
+            }
+            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(metaMethod==null) {
+                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+        }
+        throw new IllegalArgumentException("Slot cannot be detected.");
+    }
+    
+    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+}// class
+
+class QFileDialog__native_{
+
+// QFileDialog::open(QObject * receiver, const char * member)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFileDialog_open)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID objectId, jobject metaMethod)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFileDialog::open(QObject * receiver, const char * member)")
+    try{
+#if QT_CONFIG(filedialog)
+        QFileDialog *__qt_this = qtjambi_object_from_nativeId<QFileDialog>(__this_nativeId);
+        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
+        QByteArray signature;
+        if(method.methodType()==QMetaMethod::Signal){
+            signature += "2";
+        }else{
+            signature += "1";
+        }
+        signature += method.methodSignature();
+        __qt_this->open(object, signature);
+#else
+        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(options0)
+        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif // QT_CONFIG(colordialog)
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+}// class
+
+class QInputDialog__java_ extends QInputDialog {
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Slot0 selectedSlot) {
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
+        if(lamdaInfo!=null) {
+            if(lamdaInfo.isStatic) {
+                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.qobject==null) {
+                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.reflectiveMethod.getParameterCount()!=0) {
+                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
+            }
+            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(metaMethod==null) {
+                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+        }
+        throw new IllegalArgumentException("Slot cannot be detected.");
+    }
+    
+    @io.qt.QtUninvokable
+    public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
+        io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
+        if(lamdaInfo!=null) {
+            if(lamdaInfo.isStatic) {
+                throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.qobject==null) {
+                throw new IllegalArgumentException("Cannot use non-QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            if(lamdaInfo.reflectiveMethod.getParameterCount()!=1) {
+                throw new IllegalArgumentException("Method does not take a single argument: "+lamdaInfo.reflectiveMethod);
+            }
+            Class<?> type = lamdaInfo.reflectiveMethod.getParameterTypes()[0];
+            if(type!=String.class && type!=Integer.class && type!=Double.class)
+                throw new IllegalArgumentException("Method does not take a single String, Integer or Double argument: "+lamdaInfo.reflectiveMethod);
+            io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
+            if(metaMethod==null) {
+                throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
+            }
+            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+        }
+        throw new IllegalArgumentException("Slot cannot be detected.");
+    }
+    
+    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+}// class
+
+class QInputDialog__native_{
+
+// QInputDialog::open(QObject * receiver, const char * member)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QInputDialog_open)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID objectId, jobject metaMethod)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QInputDialog::open(QObject * receiver, const char * member)")
+    try{
+#if QT_CONFIG(filedialog)
+        QInputDialog *__qt_this = qtjambi_object_from_nativeId<QInputDialog>(__this_nativeId);
+        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
+        QByteArray signature;
+        if(method.methodType()==QMetaMethod::Signal){
+            signature += "2";
+        }else{
+            signature += "1";
+        }
+        signature += method.methodSignature();
+        __qt_this->open(object, signature);
+#else
+        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(options0)
+        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
+#endif // QT_CONFIG(colordialog)
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
 }// class
 
 class QAbstractScrollArea___ extends QAbstractScrollArea {
@@ -356,26 +434,15 @@ class QAbstractScrollArea___ extends QAbstractScrollArea {
 }// class
 
 class QSplitter___ extends QSplitter {
+        public static final class Range {
+            private Range(int min, int max) {
+                minimum = min;
+                maximum = max;
+            }
 
-        public static class Range {
-                public Range(int min, int max) {
-                    minimum = min;
-                    maximum = max;
-                }
-
-                public int minimum;
-                public int maximum;
+            public final int minimum;
+            public final int maximum;
         }
-
-        public final Range getRange(int index) {
-            QNativePointer min = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer max = new QNativePointer(QNativePointer.Type.Int);
-
-            getRange(index, min, max);
-
-            return new Range(min.intValue(), max.intValue());
-        }
-
 }// class
 
 class QAction___ extends QAction {
@@ -417,166 +484,59 @@ class QAction___ extends QAction {
 
 class QApplication___ extends QApplication {
 
-        public static void initialize(String args[]) {
-            if (m_instance != null)
-                throw new RuntimeException("QApplication can only be initialized once");
-
-            org.qtjambi.qt.internal.HelperFunctions.setAsMainThread();
-
-            List<String> paths = Utilities.unpackPlugins();
-            if (paths != null) {
-                Collections.reverse(paths);  // Qt prepends but our list is in highest priority first order
-                for (String p : paths)
-                    addLibraryPath(p);
-            }
-            org.qtjambi.qt.internal.QtJambiInternal.setupDefaultPluginPath();
-            m_instance = new QApplication(args);
-            m_instance.aboutToQuit.connect(m_instance, "disposeOfMyself()");
+        public static QApplication initialize(String args[]) {
+            return io.qt.core.QCoreApplication.initialize(null, args, QApplication::new);
         }
 
-        public static void initialize(String applicationName, String args[]) {
-            if (m_instance != null)
-                throw new RuntimeException("QApplication can only be initialized once");
-
-            org.qtjambi.qt.internal.HelperFunctions.setAsMainThread();
-
-            List<String> paths = Utilities.unpackPlugins();
-            if (paths != null) {
-                Collections.reverse(paths);  // Qt prepends but our list is in highest priority first order
-                for (String p : paths)
-                    addLibraryPath(p);
-            }
-            org.qtjambi.qt.internal.QtJambiInternal.setupDefaultPluginPath();
-            m_instance = new QApplication(applicationName, args);
-            m_instance.aboutToQuit.connect(m_instance, "disposeOfMyself()");
+        public static QApplication initialize(String applicationName, String args[]) {
+            return io.qt.core.QCoreApplication.initialize(applicationName, args, QApplication::new);
         }
 
         public static void shutdown() {
-            org.qtjambi.qt.core.QCoreApplication.shutdown();
-        }
-
-        public static void aboutQtJambi() {
-            org.qtjambi.qt.QtJambiGuiInternal.aboutQtJambi();
+            io.qt.core.QCoreApplication.shutdown();
         }
         
-        /**
-         *
-         * @see #execStatic()
-         */
-        public int exec() {
-            return exec_internal();
-        }
-
-        /**
-         *
-         * @see #exec()
-         */
-        public static int execStatic() {
-            if (m_instance == null)
+        public static int exec() {
+            io.qt.core.QCoreApplication instance = io.qt.core.QCoreApplication.instance();
+            if (instance == null)
                 throw new RuntimeException("QApplication has not been initialized with QApplication.initialize()");
-            return exec_internal();
+            else if(instance.thread()!=io.qt.core.QThread.currentThread())
+                throw new RuntimeException("exec() must be called from the main thread.");
+            else if(io.qt.internal.QtJambiInternal.countEventLoops(instance.thread())>0)
+                throw new RuntimeException("The event loop is already running.");
+            else if(instance instanceof QApplication)
+                return exec_internal();
+            else if(instance instanceof io.qt.gui.QGuiApplication)
+                return io.qt.gui.QGuiApplication.exec();
+            else
+                return io.qt.core.QCoreApplication.exec();
         }
-
+        
         public static QApplication instance() {
-            if (m_instance instanceof QApplication)
-                return (QApplication) m_instance;
+            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+            if (app instanceof QApplication)
+                return (QApplication) app;
             return null;
         }
-
-        public QApplication(String args[]) {
-            this(argc(args), argv(args));
-        }
-
-        public QApplication(String applicationName, String args[]) {
-            this(argc(args), argv(applicationName, args));
-        }
-
-        public static void setFont(QFont font) {
-            setFont(font, null);
-        }
-
-        public static void setPalette(QPalette palette) {
-            setPalette(palette, null);
-        }
-
 }// class
 
 class QFormLayout___ extends QFormLayout {
-        /**
-         * Retrieves the row and role (column) of the item at the specified index.
-         * If index is out of bounds, -1 is returned in place of the row.
-         *
-         * @param index The index of the item for which to retrieve the position.
-         * @return A pair of an int (row of item) and an ItemRole (role of the item.)
-         **/
-        @QtBlockedSlot
-        public final org.qtjambi.qt.QPair<Integer, ItemRole> getItemPosition(int index) {
-            org.qtjambi.qt.QNativePointer row = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-            org.qtjambi.qt.QNativePointer role = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-
-            getItemPosition(index, row, role);
-
-            return new org.qtjambi.qt.QPair<Integer, ItemRole>(row.intValue(), ItemRole.resolve(role.intValue()));
+    public static final class ItemInfo{
+        private ItemInfo(int row, ItemRole role){
+            this.row = row;
+            this.role = role;
         }
-
-        /**
-         * Retrieves the row and role (column) of the specified child layout.
-         * If the layout is not in the form layout, -1 is returned in place of the row.
-         *
-         * @param layout The layout for which to retrieve the position.
-         * @return A pair of an int (row of item) and an ItemRole (role of the item.)
-         */
-        @QtBlockedSlot
-        public final org.qtjambi.qt.QPair<Integer, ItemRole> getLayoutPosition(QLayout layout) {
-            org.qtjambi.qt.QNativePointer row = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-            org.qtjambi.qt.QNativePointer role = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-
-            getLayoutPosition(layout, row, role);
-
-            return new org.qtjambi.qt.QPair<Integer, ItemRole>(row.intValue(), ItemRole.resolve(role.intValue()));
-        }
-
-        /**
-         * Retrieves the row and role (column) of the specified widget in the layout.
-         * If the widget is not in the form layout, -1 is returned in place of the row.
-         *
-         * @param widget The widget for which to retrieve the position.
-         * @return A pair of an int (row of item) and an ItemRole (role of the item.)
-         */
-        @QtBlockedSlot
-        public final org.qtjambi.qt.QPair<Integer, ItemRole> getWidgetPosition(QWidget widget) {
-            org.qtjambi.qt.QNativePointer row = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-            org.qtjambi.qt.QNativePointer role = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Int);
-
-            getWidgetPosition(widget, row, role);
-
-            return new org.qtjambi.qt.QPair<Integer, ItemRole>(row.intValue(), ItemRole.resolve(role.intValue()));
-        }
-
-        /**
-         * Sets the item in the given row for the given role to item, extending the layout with empty rows if necessary.
-         * If the cell is already occupied, the item is not inserted and a IllegalArgumentException is thrown.
-         */
-        @QtBlockedSlot
-        public final void setItem(int row, ItemRole role, QLayoutItem item) {
-            if (itemAt(row, role) == null)
-                setItem_private(row, role, item);
-            else
-                throw new IllegalArgumentException("Cell in form layout is already occupied");
-        }
-
+        public final int row;
+        public final ItemRole role;
+    }
 }// class
 
 class Subclass_of_QGraphicsLayoutItem___ extends QGraphicsLayoutItem {
-        @QtBlockedSlot
-        public final org.qtjambi.qt.core.QMarginsF contentsMargins() {
-            QNativePointer left = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer top = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer right = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer bottom = new QNativePointer(QNativePointer.Type.Double);
-
-            getContentsMargins(left, top, right, bottom);
-            return new org.qtjambi.qt.core.QMarginsF(left.doubleValue(), top.doubleValue(), right.doubleValue(), bottom.doubleValue());
+        @io.qt.QtUninvokable
+        public final io.qt.core.QMarginsF contentsMargins() {
+            double[] mrg = {0.0, 0.0, 0.0, 0.0};
+            getContentsMargins(mrg);
+            return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);
         }
 }// class
 
@@ -587,15 +547,11 @@ class QGraphicsWidget___ extends QGraphicsWidget {
          *
          * @returns An object containing the margins in left, right, top and bottom coordinates.
          */
-        @QtBlockedSlot
-        public final org.qtjambi.qt.core.QMarginsF windowFrameMargins() {
-            QNativePointer left = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer top = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer right = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer bottom = new QNativePointer(QNativePointer.Type.Double);
-
-            getWindowFrameMargins(left, top, right, bottom);
-            return new org.qtjambi.qt.core.QMarginsF(left.doubleValue(), top.doubleValue(), right.doubleValue(), bottom.doubleValue());
+        @io.qt.QtUninvokable
+        public final io.qt.core.QMarginsF windowFrameMargins() {
+            double[] mrg = {0.0, 0.0, 0.0, 0.0};
+            getWindowFrameMargins(mrg);
+            return new io.qt.core.QMarginsF(mrg[0], mrg[1], mrg[2], mrg[3]);
         }
 }// class
 
@@ -643,19 +599,18 @@ class QListWidget___ extends QListWidget {
         }
 }// class
 
-
 class QGraphicsScene___ extends QGraphicsScene {
         /**
          * Equivalent to addEllipse(rect, null, null)
          */
-        public final QGraphicsEllipseItem addEllipse(org.qtjambi.qt.core.QRectF rect) {
+        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect) {
             return addEllipse(rect, null);
         }
 
         /**
          * Equivalent to addEllipse(rect, pen, null)
          */
-        public final QGraphicsEllipseItem addEllipse(org.qtjambi.qt.core.QRectF rect, QPen pen) {
+        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect, QPen pen) {
             return addEllipse(rect, pen, null);
         }
 
@@ -677,7 +632,7 @@ class QGraphicsScene___ extends QGraphicsScene {
          * @param brush The brush for the resulting QGraphicsEllipseItem.
          * @return The resulting item.
          */
-        public final QGraphicsEllipseItem addEllipse(org.qtjambi.qt.core.QRectF rect, QPen pen, QBrush brush) {
+        public final QGraphicsEllipseItem addEllipse(io.qt.core.QRectF rect, QPen pen, QBrush brush) {
             return addEllipse(rect.x(), rect.y(), rect.width(), rect.height(), pen, brush);
         }
 
@@ -894,14 +849,14 @@ class QGraphicsScene___ extends QGraphicsScene {
         /**
          * Equivalent to addRect(rect, null, null)
          */
-        public final QGraphicsRectItem addRect(org.qtjambi.qt.core.QRectF rect) {
+        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect) {
             return addRect(rect, null);
         }
 
         /**
          * Equivalent to addRect(rect, pen, null)
          */
-        public final QGraphicsRectItem addRect(org.qtjambi.qt.core.QRectF rect, QPen pen) {
+        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect, QPen pen) {
             return addRect(rect, pen, null);
         }
 
@@ -924,7 +879,7 @@ class QGraphicsScene___ extends QGraphicsScene {
          * @param brush The brush with which to draw the rectangle.
          * @return The resulting item.
          */
-        public final QGraphicsRectItem addRect(org.qtjambi.qt.core.QRectF rect, QPen pen, QBrush brush) {
+        public final QGraphicsRectItem addRect(io.qt.core.QRectF rect, QPen pen, QBrush brush) {
             return addRect(rect.x(), rect.y(), rect.width(), rect.height(), pen, brush);
         }
 
@@ -1036,185 +991,17 @@ class QGraphicsScene___ extends QGraphicsScene {
 
 }// class
 
-
-class QInputDialog___{
-
-    public static final Integer getInt(QWidget parent, String title, String label, int value, int min, int max, int step, org.qtjambi.qt.core.Qt.WindowFlags flags)
-    {
-        QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
-
-        int result = getInt_private(parent, title, label, value, min, max, step, ok, flags);
-
-        return ok.booleanValue() ? result : null;
-
+class QGraphicsItem___{
+    public static final class BlockedByModalPanelInfo{
+        private BlockedByModalPanelInfo(boolean isBlockedByModalPanel,
+                QGraphicsItem modalPanel) {
+            super();
+            this.isBlockedByModalPanel = isBlockedByModalPanel;
+            this.modalPanel = modalPanel;
+        }
+        public final boolean isBlockedByModalPanel;
+        public final QGraphicsItem modalPanel;
     }
-
-    public static final Integer getInt(QWidget parent, String title, String label, int value, int min, int max, int step, org.qtjambi.qt.core.Qt.WindowType[] f)
-    {
-        QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
-
-        int result = getInt_private(parent, title, label, value, min, max, step, ok, f);
-
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static final Integer getInt(QWidget parent, String title, String label, int value, int min, int max, int step)
-    {
-        return getInt(parent, title, label, value, min, max, step, new org.qtjambi.qt.core.Qt.WindowFlags(0));
-    }
-
-    public static final Integer getInt(QWidget parent, String title, String label, int value, int min, int max)
-    {
-        return getInt(parent, title, label, value, min, max, 1);
-    }
-
-    public static final Integer getInt(QWidget parent, String title, String label, int value)
-    {
-        return getInt(parent, title, label, value, (int) -2147483647, (int) 2147483647);
-    }
-
-    public static final Integer getInt(QWidget parent, String title, String label)
-    {
-        return getInt(parent, title, label, 0);
-    }
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value, double minValue, double maxValue) {
-        return getDouble(parent, title, label, value, minValue, maxValue, 1);
-    }
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value, double minValue) {
-        return getDouble(parent, title, label, value, minValue, (double)2147483647);
-    }
-
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value) {
-        return getDouble(parent, title, label, value, (double)-2147483647);
-    }
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label) {
-        return getDouble(parent, title, label, 0.0);
-    }
-    
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value, double minValue, double maxValue, int decimals, org.qtjambi.qt.core.Qt.WindowFlags f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        Double result = getDouble_internal(parent, title, label, value, minValue, maxValue, decimals, ok, f);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value, double minValue, double maxValue, int decimals, org.qtjambi.qt.core.Qt.WindowType ... f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        Double result = getDouble_internal(parent, title, label, value, minValue, maxValue, decimals, ok, f);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static Double getDouble(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, double value, double minValue, double maxValue, int decimals) {
-        return getDouble(parent, title, label, value, minValue, maxValue, decimals, org.qtjambi.qt.core.Qt.WindowType.Widget);
-    }
-
-    public static java.lang.String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current) {
-        return getItem(parent, title, label, list, current, true);
-    }
-
-    public static java.lang.String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list) {
-        return getItem(parent, title, label, list, 0);
-    }
-
-    public static java.lang.String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo) {
-        return getText(parent, title, label, echo, "");
-    }
-
-    public static java.lang.String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label) {
-        return getText(parent, title, label, org.qtjambi.qt.widgets.QLineEdit.EchoMode.Normal);
-    }
-
-    public static java.lang.String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label) {
-        return getMultiLineText(parent, title, label, "");
-    }
-    
-    public static String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current, boolean editable, org.qtjambi.qt.core.Qt.WindowFlags f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getItem_internal(parent, title, label, list, current, editable, ok, f);
-        return ok.booleanValue() ? result : null;
-    }
-    
-    public static String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current, boolean editable, org.qtjambi.qt.core.Qt.WindowType ... f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getItem_internal(parent, title, label, list, current, editable, ok, new org.qtjambi.qt.core.Qt.WindowFlags(f));
-        return ok.booleanValue() ? result : null;
-    }
-    
-    public static String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current, boolean editable, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHint ... inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getItem_internal(parent, title, label, list, current, editable, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current, boolean editable, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHints inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getItem_internal(parent, title, label, list, current, editable, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getItem(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.util.List<java.lang.String> list, int current, boolean editable) {
-        return getItem(parent, title, label, list, current, editable, org.qtjambi.qt.core.Qt.WindowType.Widget);
-    }
-    
-    public static String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getText_internal(parent, title, label, echo, text, ok, f);
-        return ok.booleanValue() ? result : null;
-    }
-    
-    public static String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo, java.lang.String text, org.qtjambi.qt.core.Qt.WindowType ... f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getText_internal(parent, title, label, echo, text, ok, new org.qtjambi.qt.core.Qt.WindowFlags(f));
-        return ok.booleanValue() ? result : null;    	
-    }
-
-    public static String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHints inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getText_internal(parent, title, label, echo, text, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHint ... inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getText_internal(parent, title, label, echo, text, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, org.qtjambi.qt.widgets.QLineEdit.EchoMode echo, java.lang.String text) {
-        return getText(parent, title, label, echo, text, org.qtjambi.qt.core.Qt.WindowType.Widget);
-    }
-    
-    public static String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getMultiLineText_internal(parent, title, label, text, ok, f);
-        return ok.booleanValue() ? result : null;
-    }
-    
-    public static String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.lang.String text, org.qtjambi.qt.core.Qt.WindowType ... f) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getMultiLineText_internal(parent, title, label, text, ok, new org.qtjambi.qt.core.Qt.WindowFlags(f));
-        return ok.booleanValue() ? result : null;    	
-    }
-
-    public static String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHints inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getMultiLineText_internal(parent, title, label, text, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.lang.String text, org.qtjambi.qt.core.Qt.WindowFlags f, org.qtjambi.qt.core.Qt.InputMethodHint ... inputMethodHints) {
-        org.qtjambi.qt.QNativePointer ok = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-        String result = getMultiLineText_internal(parent, title, label, text, ok, f, inputMethodHints);
-        return ok.booleanValue() ? result : null;
-    }
-
-    public static String getMultiLineText(org.qtjambi.qt.widgets.QWidget parent, java.lang.String title, java.lang.String label, java.lang.String text) {
-        return getMultiLineText(parent, title, label, text, org.qtjambi.qt.core.Qt.WindowType.Widget);
-    }
-
 }// class
 
 

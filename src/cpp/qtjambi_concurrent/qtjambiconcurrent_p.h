@@ -48,19 +48,17 @@
 #ifndef QT_NO_CONCURRENT
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <QList>
 #include <QFutureWatcher>
 
 class FutureSequenceCleanUp: public QFutureWatcher<void> {
-    Q_OBJECT
 public:
     FutureSequenceCleanUp(QList<JObjectWrapper> *sequence);
     ~FutureSequenceCleanUp();
 
-private slots:
-    void cleanUp();
-
 private:
+    void cleanUp();
     QList<JObjectWrapper> *m_sequence;
 };
 

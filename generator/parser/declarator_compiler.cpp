@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -56,7 +56,7 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
     _M_parameters.clear();
     _M_array.clear();
     _M_function = false;
-    _M_reference = false;
+    _M_reference_type = DeclaratorCompiler::NoReference;
     _M_variadics = false;
     _M_indirection.clear();
 
@@ -67,11 +67,11 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
         while (decl && decl->sub_declarator)
             decl = decl->sub_declarator;
 
-        Q_ASSERT(decl != 0);
+        Q_ASSERT(decl);
 
         name_cc.run(decl->id);
         _M_id = name_cc.name();
-        _M_function = (node->parameter_declaration_clause != 0);
+        _M_function = (node->parameter_declaration_clause != nullptr);
         if (node->parameter_declaration_clause && node->parameter_declaration_clause->ellipsis)
             _M_variadics = true;
 
@@ -85,11 +85,11 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
             do {
                 QString elt;
                 if (ExpressionAST *expr = it->element) {
-                    const Token &start_token = _M_token_stream->token((int) expr->start_token);
-                    const Token &end_token = _M_token_stream->token((int) expr->end_token);
+                    const Token &start_token = _M_token_stream->token(expr->start_token);
+                    const Token &end_token = _M_token_stream->token(expr->end_token);
 
                     elt += QString::fromUtf8(&start_token.text[start_token.position],
-                                             (int)(end_token.position - start_token.position)).trimmed();
+                                             int(end_token.position - start_token.position)).trimmed();
                 }
 
                 _M_array.append(elt);
@@ -101,14 +101,17 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
 }
 
 void DeclaratorCompiler::visitPtrOperator(PtrOperatorAST *node) {
-    std::size_t op =  _M_token_stream->kind(node->op);
+    int op =  _M_token_stream->kind(node->op);
 
     switch (op) {
+        case Token_and:
+            _M_reference_type = DeclaratorCompiler::RReference;
+            break;
         case '&':
-            _M_reference = true;
+            _M_reference_type = DeclaratorCompiler::Reference;
             break;
         case '*':
-            _M_indirection << (node->cv!=0);
+            _M_indirection << (node->cv!=nullptr);
             break;
         default:
             break;
@@ -131,10 +134,10 @@ void DeclaratorCompiler::visitParameterDeclaration(ParameterDeclarationAST *node
 
     p.name = decl_cc.id();
     p.type = CompilerUtils::typeDescription(node->type_specifier, node->declarator, _M_binder);
-    if (node->expression != 0) {
-        const Token &start = _M_token_stream->token((int) node->expression->start_token);
-        const Token &end = _M_token_stream->token((int) node->expression->end_token);
-        int length = (int)(end.position - start.position);
+    if (node->expression != nullptr) {
+        const Token &start = _M_token_stream->token(node->expression->start_token);
+        const Token &end = _M_token_stream->token(node->expression->end_token);
+        int length = int(end.position - start.position);
 
         p.defaultValueExpression = QString();
         QString source = QString::fromUtf8(&start.text[start.position], length).trimmed();

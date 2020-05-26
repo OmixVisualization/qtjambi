@@ -42,6 +42,11 @@
 **
 ****************************************************************************/
 
+#if defined __cplusplus
+
 #include <qtjambi/qtjambi_core.h>
 #include <qobject.h>
 #include <QtXml/QtXml>
+
+#endif //defined __cplusplus
+

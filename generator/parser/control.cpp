@@ -48,20 +48,20 @@
 #include "lexer.h"
 
 Control::Control()
-        : current_context(0),
+        : current_context(nullptr),
         _M_skipFunctionBody(false),
-        _M_lexer(0),
-        _M_parser(0) {
+        _M_lexer(nullptr),
+        _M_parser(nullptr) {
     pushContext();
 
     declareTypedef(findOrInsertName("__builtin_va_list",
-                                    strlen("__builtin_va_list")), 0);
+                                    strlen("__builtin_va_list")), nullptr);
 }
 
 Control::~Control() {
     popContext();
 
-    Q_ASSERT(current_context == 0);
+    Q_ASSERT(current_context == nullptr);
 }
 
 Lexer *Control::changeLexer(Lexer *lexer) {
@@ -77,7 +77,7 @@ Parser *Control::changeParser(Parser *parser) {
 }
 
 Type *Control::lookupType(const NameSymbol *name) const {
-    Q_ASSERT(current_context != 0);
+    Q_ASSERT(current_context != nullptr);
 
     return current_context->resolve(name);
 }
@@ -86,7 +86,7 @@ void Control::declare(const NameSymbol *name, Type *type) {
     //printf("*** Declare:");
     //printSymbol(name);
     //putchar('\n');
-    Q_ASSERT(current_context != 0);
+    Q_ASSERT(current_context != nullptr);
 
     current_context->bind(name, type);
 }
@@ -100,7 +100,7 @@ void Control::pushContext() {
 
 void Control::popContext() {
     // printf("-Context\n");
-    Q_ASSERT(current_context != 0);
+    Q_ASSERT(current_context != nullptr);
 
     Context *old_context = current_context;
     current_context = current_context->parent;

@@ -42,6 +42,8 @@
 **
 ****************************************************************************/
 
+#if defined __cplusplus
+
 #include "typesystem/typesystem.h"
 #include "metajava.h"
 #include "generator.h"
@@ -53,3 +55,5 @@
 #include "metajavabuilder.h"
 #include "classlistgenerator.h"
 #include "qdocgenerator.h"
+
+#endif

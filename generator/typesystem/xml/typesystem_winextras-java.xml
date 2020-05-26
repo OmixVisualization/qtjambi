@@ -1,54 +1,89 @@
-<typesystem package="org.qtjambi.qt.winextras" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-            if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtWinExtras");
-    </inject-code>
-	<namespace-type name="QtWin">
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.winextras" default-superclass="io.qt.QtObject">
+    <namespace-type name="QtWin">
         <extra-includes>
-            <include file-name="org.qtjambi.qt.gui.QColor" location="java"/>
+            <include file-name="qtjambi_winextras_repository.h" location="local"/>
         </extra-includes>
-		<modify-function signature="colorizationColor(bool *)" access="private">
-			<modify-argument index="1">
-				<remove-default-expression />
-			</modify-argument>
-		</modify-function>
-		<inject-code>
-			<import-file name="typesystem/java/typesystem_winextras-java.java" quote-after-line="class QtWin__" quote-before-line="}// class"/>
-		</inject-code>
-	  </namespace-type>
+        <modify-function signature="colorizationColor(bool *)">
+            <modify-argument index="1">
+                <remove-argument />
+                <conversion-rule class="native">
+                    bool ok = false;
+                    bool *%out = &amp;ok;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.winextras.QtWin$ColorizationColorInfo"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtWinExtras::QtWin$ColorizationColorInfo.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(ok));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_winextras-java.java" quote-after-line="class QtWin__" quote-before-line="}// class"/>
+        </inject-code>
+      </namespace-type>
   <object-type name="QWinJumpList">
         <modify-function signature="addCategory(const QString &amp;, const QList&lt;QWinJumpListItem *&gt;)">
             <modify-argument index="2">
                 <replace-default-expression with="new java.util.ArrayList&lt;QWinJumpListItem&gt;()"/>
             </modify-argument>
-			<inject-code class="java" position="end">
-				<argument-map index="2" meta-name="%2"/>
-				if(__qt_return_value!=null){
-					for(QWinJumpListItem item : %2){
-						__qt_return_value.__add_to_reference_count(item);
-					}
-				}
-			</inject-code>
+            <inject-code class="java" position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if(__qt_return_value!=null){
+                    for(QWinJumpListItem item : %2){
+                        __qt_return_value.__add_to_reference_count(item);
+                    }
+                }
+            </inject-code>
         </modify-function>
   </object-type>
   <object-type name="QWinJumpListCategory">
-	<inject-code>
+    <inject-code>
         <import-file name="typesystem/java/typesystem_winextras-java.java" quote-after-line="class QWinJumpListCategory__" quote-before-line="}// class"/>
     </inject-code>
-	</object-type>
+    </object-type>
 </typesystem>

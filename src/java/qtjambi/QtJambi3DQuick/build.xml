@@ -1,0 +1,27 @@
+<project default="build">
+    <property name="module-name" value="qtjambi-qt3dquick"/>
+    <property name="qtjambi-module-name" value="QtJambi3DQuick"/>
+    <path id="qtjambi.modulepath">
+        <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar qtjambi-qml-${qtjambi.jar.version}.jar qtjambi-qt3dcore-${qtjambi.jar.version}.jar"/>
+    </path>
+    <target name="build">
+        <condition property="build.module" value="true">
+            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+        </condition>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl" if="build.module">
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createjar2">
+            <property name="module" value="${module-name}"/>
+            <property name="sourcedir" value="${generator.outputdir}/java/${qtjambi-module-name}"/>
+            <property name="sourcedir2" value="${java.srcdir}/qtjambi/${qtjambi-module-name}"/>
+            <property name="jar.excludes" value=""/>
+            <property name="module.excludes" value=""/>
+        </ant>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createsrcjar2">
+            <property name="module" value="${module-name}"/>
+            <property name="sourcedir" value="${generator.outputdir}/java/${qtjambi-module-name}"/>
+            <property name="sourcedir2" value="${java.srcdir}/qtjambi/${qtjambi-module-name}"/>
+        </ant>
+    </target>
+</project>

@@ -1,9 +1,10 @@
-TARGET = org_qtjambi_qt_multimedia_widgets
+QTJAMBILIB = QtJambiMultimediaWidgets
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/org_qtjambi_qt_multimedia_widgets/org_qtjambi_qt_multimedia_widgets.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # libQtMultimedia.so.4.7.4 is only dependant on libQtCore.so.4 libQtGui.so.4
 QT = core gui widgets multimedia multimediawidgets

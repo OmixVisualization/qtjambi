@@ -56,19 +56,20 @@
 
 class PreprocessorPrivate {
     public:
+        PreprocessorPrivate(const std::function<void(std::string,std::string)>& featureRegistry);
         QByteArray result;
         rpp::pp_environment env;
         QStringList includePaths;
 
         void initPP(rpp::pp &proc) {
-            foreach(QString path, includePaths)
+            for(const QString& path : includePaths)
                 proc.push_include_path(::toStdString(path));
         }
 };
 
 class Preprocessor {
     public:
-        Preprocessor();
+        Preprocessor(const std::function<void(std::string,std::string)>& featureRegistry);
         ~Preprocessor();
 
         void processFile(const QString &fileName);

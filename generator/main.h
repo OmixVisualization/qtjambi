@@ -52,7 +52,7 @@
 #include <QDebug>
 
 struct Preprocess {
-    static bool preprocess(const QString &sourceFile, const QString &targetFile, const QString &phononinclude = QString(),
+    static bool preprocess(const QString &sourceFile, const QString &targetFile, const std::function<void(std::string,std::string)>& featureRegistry, const QString &phononinclude = QString(),
         const QStringList &includePathList = QStringList(), const QStringList &inputDirectoryList = QStringList(), int verbose = 0);
 };
 

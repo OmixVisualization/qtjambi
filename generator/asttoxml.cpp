@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,7 +46,7 @@
 #include <QTextCodec>
 #include <QFile>
 
-void astToXML(QString name) {
+void astToXML(const QString& name) {
     QFile file(name);
 
     if (!file.open(QFile::ReadOnly))
@@ -61,14 +61,19 @@ void astToXML(QString name) {
     Parser p(&control);
     pool __pool;
 
-    TranslationUnitAST *ast = p.parse(contents, contents.size(), &__pool);
+    ReportHandler::setContext("Parser");
+
+    TranslationUnitAST *ast = p.parse(contents, size_t(contents.size()), &__pool);
+    for(const Control::ErrorMessage& message : control.errorMessages()){
+        ReportHandler::warning(QString("%4 (in %1, line %2, column %3)").arg(message.fileName()).arg(QString::number(message.line())).arg(QString::number(message.column())).arg(message.message()));
+    }
 
     CodeModel model;
     Binder binder(&model, p.location());
     FileModelItem dom = binder.run(ast);
 
-    QFile outputFile;
-    if (!outputFile.open(stdout, QIODevice::WriteOnly)) {
+    QFile outputFile(name+".xml");
+    if (!outputFile.open(QIODevice::WriteOnly)) {
         return;
     }
 
@@ -78,48 +83,46 @@ void astToXML(QString name) {
     s.writeStartElement("code");
 
     QHash<QString, NamespaceModelItem> namespaceMap = dom->namespaceMap();
-    foreach(NamespaceModelItem item, namespaceMap.values()) {
+    for(const NamespaceModelItem& item : namespaceMap.values()) {
         writeOutNamespace(s, item);
     }
 
     QHash<QString, ClassModelItem> typeMap = dom->classMap();
-    foreach(ClassModelItem item, typeMap.values()) {
+    for(const ClassModelItem& item : typeMap.values()) {
         writeOutClass(s, item);
     }
     s.writeEndElement();
 }
 
-QLatin1String propDecls[] = {
-    QLatin1String("READ"), QLatin1String("WRITE"), QLatin1String("RESET"), QLatin1String("DESIGNABLE")
-};
-
-
-void writeOutNamespace(QXmlStreamWriter &s, NamespaceModelItem &item) {
+void writeOutNamespace(QXmlStreamWriter &s, const NamespaceModelItem &item) {
     s.writeStartElement("namespace");
     s.writeAttribute("name", item->name());
 
     QHash<QString, NamespaceModelItem> namespaceMap = item->namespaceMap();
-    foreach(NamespaceModelItem item, namespaceMap.values()) {
+    for(const NamespaceModelItem& item : namespaceMap.values()) {
         writeOutNamespace(s, item);
     }
 
     QHash<QString, ClassModelItem> typeMap = item->classMap();
-    foreach(ClassModelItem item, typeMap.values()) {
+    for(const ClassModelItem& item : typeMap.values()) {
         writeOutClass(s, item);
     }
 
     QHash<QString, EnumModelItem> enumMap = item->enumMap();
-    foreach(EnumModelItem item, enumMap.values()) {
+    for(const EnumModelItem& item : enumMap.values()) {
         writeOutEnum(s, item);
     }
 
     s.writeEndElement();
 }
 
-void writeOutEnum(QXmlStreamWriter &s, EnumModelItem &item) {
+void writeOutEnum(QXmlStreamWriter &s, const EnumModelItem &item) {
     QString qualified_name = item->qualifiedName().join("::");
-    s.writeStartElement("enum");
-
+    if (item->isScopedEnum()) {
+        s.writeStartElement("scoped-enum");
+    }else{
+        s.writeStartElement("enum");
+    }
     if (item->isAnonymous()) {
         s.writeEmptyElement("anonymous");
     } else {
@@ -140,7 +143,7 @@ void writeOutEnum(QXmlStreamWriter &s, EnumModelItem &item) {
     }
     s.writeEndElement();
 
-    EnumeratorList enumList = item->enumerators();
+    const EnumeratorList& enumList = item->enumerators();
     for (int i = 0; i < enumList.size() ; i++) {
         s.writeStartElement("enumerator");
         if (!enumList[i]->value().isEmpty()) {
@@ -152,11 +155,11 @@ void writeOutEnum(QXmlStreamWriter &s, EnumModelItem &item) {
     s.writeEndElement();
 }
 
-void writeOutFunction(QXmlStreamWriter &s, const QString &classname, FunctionModelItem &item) {
+void writeOutFunction(QXmlStreamWriter &s, const QString &classname, const FunctionModelItem &item) {
     QString name = item.constData()->name();
     bool noPrintReturn = false;
 
-    if (item->functionType() == CodeModel::Signal) {
+    if (item->functionType() == CodeModel::Signal || item->functionType() == CodeModel::PrivateSignal) {
         s.writeStartElement("signal");
     } else if (item->functionType() == CodeModel::Slot) {
         s.writeStartElement("slot");
@@ -195,15 +198,23 @@ void writeOutFunction(QXmlStreamWriter &s, const QString &classname, FunctionMod
         s.writeEmptyElement("virtual");
     }
 
+    if (item->isDeclFinal()) {
+        s.writeEmptyElement("isDeclaredFinal");
+    }
+
+    if (item->isDeprecated()) {
+        s.writeEmptyElement("isDeprecated");
+    }
+
     if (item->isStatic()) {
         s.writeEmptyElement("static");
     }
 
     s.writeEndElement();
 
-    ArgumentList arguments = item->arguments();
+    const ArgumentList& arguments = item->arguments();
     s.writeStartElement("arguments");
-    foreach (const CodeModelPointer<_ArgumentModelItem> arg, arguments) {
+    for(const CodeModelPointer<_ArgumentModelItem>& arg : arguments) {
         s.writeStartElement("argument");
 
         if (arg->defaultValue())
@@ -223,28 +234,89 @@ void writeOutFunction(QXmlStreamWriter &s, const QString &classname, FunctionMod
     s.writeEndElement();
 }
 
-void writeType(QXmlStreamWriter &s, const TypeInfo &t) {
-    s.writeAttribute("type",  t.qualifiedName().join("::"));
-    s.writeAttribute("indirections", QString("%1").arg(t.indirections().size()) );
-    s.writeAttribute("isReference", t.isReference() ? "true" : "false");
-    s.writeAttribute("isConstant", t.isConstant() ? "true" : "false");
-    s.writeAttribute("isFunctionPointer", t.isFunctionPointer() ? "true" : "false");
+void writeOutVariable(QXmlStreamWriter &s, const VariableModelItem &item) {
+    const QString& name = item->name();
 
-    s.writeStartElement("arguments");
-    foreach (const TypeInfo tt, t.arguments()) {
-        writeType(s, tt);
+    s.writeStartElement("variable");
+
+    s.writeAttribute("name", name);
+
+    s.writeStartElement("accessPolicy");
+    switch (item->accessPolicy()) {
+        case CodeModel::Public:
+            s.writeAttribute("value","public");
+            break;
+        case CodeModel::Private:
+            s.writeAttribute("value","private");
+            break;
+        case CodeModel::Protected:
+            s.writeAttribute("value","protected");
+            break;
     }
+    s.writeEndElement();
+
+    s.writeStartElement("modifiers");
+    if (item->isConstant()) {
+        s.writeEmptyElement("const");
+    }
+
+    if (item->isExtern()) {
+        s.writeEmptyElement("extern");
+    }
+
+    if (item->isFriend()) {
+        s.writeEmptyElement("friend");
+    }
+
+    if (item->isMutable()) {
+        s.writeEmptyElement("mutable");
+    }
+
+    if (item->isRegister()) {
+        s.writeEmptyElement("register");
+    }
+
+    if (item->isVolatile()) {
+        s.writeEmptyElement("volatile");
+    }
+
+    if (item->isStatic()) {
+        s.writeEmptyElement("static");
+    }
+
+    s.writeEndElement();
+
+    s.writeStartElement("type");
+    writeType(s, item->type());
+    s.writeEndElement();
+
     s.writeEndElement();
 }
 
-void writeOutClass(QXmlStreamWriter &s, ClassModelItem &item) {
+void writeType(QXmlStreamWriter &s, const TypeInfo &t) {
+    s.writeAttribute("type",  t.qualifiedName().join("::"));
+    s.writeAttribute("indirections", QString("%1").arg(t.indirections().size()) );
+    s.writeAttribute("referenceType", t.getReferenceType()==TypeInfo::Reference ? "Reference" : (t.getReferenceType()==TypeInfo::RReference ? "RValueReference" : "None"));
+    s.writeAttribute("isConstant", t.isConstant() ? "true" : "false");
+    s.writeAttribute("isFunctionPointer", t.isFunctionPointer() ? "true" : "false");
+
+    if(!t.arguments().isEmpty()){
+        s.writeStartElement("arguments");
+        for(const TypeInfo& tt : t.arguments()) {
+            writeType(s, tt);
+        }
+        s.writeEndElement();
+    }
+}
+
+void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
     QString qualified_name = item->name();
     s.writeStartElement("class");
     s.writeAttribute("name", qualified_name);
 
     QStringList bases = item.constData()->baseClasses();
     s.writeStartElement("inherits");
-    foreach (const QString &c, bases) {
+    for(const QString &c : bases) {
         s.writeStartElement("class");
         s.writeAttribute("name", c);
         s.writeEndElement();
@@ -252,22 +324,27 @@ void writeOutClass(QXmlStreamWriter &s, ClassModelItem &item) {
     s.writeEndElement();
 
     QHash<QString, EnumModelItem> enumMap = item->enumMap();
-    foreach(EnumModelItem item, enumMap.values()) {
+    for(const EnumModelItem& item : enumMap.values()) {
         writeOutEnum(s, item);
     }
 
     QHash<QString, FunctionModelItem> functionMap = item->functionMap();
-    foreach(FunctionModelItem item, functionMap.values()) {
+    for(const FunctionModelItem& item : functionMap.values()) {
         writeOutFunction(s, qualified_name, item);
     }
 
+    QHash<QString, VariableModelItem> variableMap = item->variableMap();
+    for(const VariableModelItem& item : variableMap.values()) {
+        writeOutVariable(s, item);
+    }
+
     QHash<QString, ClassModelItem> typeMap = item->classMap();
-    foreach(ClassModelItem item, typeMap.values()) {
+    for(const ClassModelItem& item : typeMap.values()) {
         writeOutClass(s, item);
     }
 
     QStringList propDecls = item.constData()->propertyDeclarations();
-    foreach(const QString &p, propDecls) {
+    for(const QString &p : propDecls) {
         writeOutProperty(s, p);
     }
 
@@ -276,6 +353,10 @@ void writeOutClass(QXmlStreamWriter &s, ClassModelItem &item) {
 
 void writeOutProperty(QXmlStreamWriter &s, const QString &p) {
     QStringList l = p.split(QLatin1String(" "));
+
+    static QLatin1String propDecls[] = {
+        QLatin1String("READ"), QLatin1String("WRITE"), QLatin1String("RESET"), QLatin1String("DESIGNABLE")
+    };
 
     s.writeStartElement("property");
     s.writeAttribute("name", l.at(1));

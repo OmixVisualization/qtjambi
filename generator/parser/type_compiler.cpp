@@ -84,6 +84,7 @@ void TypeCompiler::visitClassSpecifier(ClassSpecifierAST *node) {
 
 void TypeCompiler::visitEnumSpecifier(EnumSpecifierAST *node) {
     visit(node->name);
+    visit(node->base_type);
 }
 
 void TypeCompiler::visitElaboratedTypeSpecifier(ElaboratedTypeSpecifierAST *node) {
@@ -110,16 +111,27 @@ void TypeCompiler::visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node) {
     visit(node->name);
 }
 
+void TypeCompiler::visitAutoTypeSpecifier(AutoTypeSpecifierAST *) {
+    _M_type += QLatin1String("auto");
+}
+
 void TypeCompiler::visitName(NameAST *node) {
     NameCompiler name_cc(_M_binder);
     name_cc.run(node);
-    _M_type = name_cc.qualifiedName();
+    _M_type = QStringList();
+    if(node->global){
+        _M_type << "";
+    }
+    _M_type << name_cc.qualifiedName();
+    _M_functionalReturnType = name_cc.functionalReturnType();
+    _M_functionalArgumentTypes = name_cc.functionalArgumentTypes();
+    _M_functionalArgumentNames = name_cc.functionalArgumentNames();
 }
 
 QStringList TypeCompiler::cvString() const {
     QStringList lst;
 
-    foreach(int q, cv()) {
+    for(int q : cv()) {
         if (q == Token_const)
             lst.append(QLatin1String("const"));
         else if (q == Token_volatile)

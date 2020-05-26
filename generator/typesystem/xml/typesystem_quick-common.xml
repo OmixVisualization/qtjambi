@@ -1,6 +1,57 @@
 <?xml version="1.0"?>
-<typesystem>
-	<rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtQuick">
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
+    <rejection class="QQuickWindow" enum-name="NativeObjectType"/>
+    <rejection class="QQuickWindow" function-name="createTextureFromNativeObject"/>
+    <rejection class="QSGMaterialRhiShader::RenderState" function-name="rhi"/>
+    <rejection class="QSGMaterialRhiShader::RenderState" function-name="resourceUpdateBatch"/>
+    <rejection class="QSGTexture" function-name="updateRhiTexture"/>
+    <rejection class="QSGTexture" function-name="setWorkResourceUpdateBatch"/>
+    <rejection class="QSGMaterialRhiShader" function-name="setShader"/>
+    <rejection class="PtrShaderCreateFunc"/>
     <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
     <enum-type name="QQuickItem::ItemChange"/>
     <enum-type name="QQuickItem::TransformOrigin"/>
@@ -11,24 +62,54 @@
     <enum-type name="QQuickWindow::CreateTextureOption" flags="QQuickWindow::CreateTextureOptions"/>
     <enum-type name="QSGNode::DirtyStateBit" flags="QSGNode::DirtyState"/>
     <enum-type name="QSGNode::Flag" flags="QSGNode::Flags"/>
-    <enum-type name="QSGNode::NodeType"/>
+    <enum-type name="QSGNode::NodeType" generate="no"/>
     <enum-type name="QSGGeometry::DataPattern"/>
+    <enum-type name="QSGGeometry::Type"/>
+    <enum-type name="QSGGeometry::DrawingMode"/>
+    <enum-type name="QSGGeometry::AttributeType"/>
     <enum-type name="QSGMaterial::Flag" flags="QSGMaterial::Flags"/>
     <enum-type name="QSGTexture::Filtering"/>
     <enum-type name="QSGTexture::WrapMode"/>
+    <enum-type name="QSGTexture::AnisotropyLevel" since="5.9.0"/>
     <enum-type name="QSGMaterialShader::RenderState::DirtyState" flags="QSGMaterialShader::RenderState::DirtyStates"/>
     <enum-type name="QSGSimpleTextureNode::TextureCoordinatesTransformFlag" flags="QSGSimpleTextureNode::TextureCoordinatesTransformMode"/>
     <enum-type name="QQuickWindow::SceneGraphError"/>
-	<enum-type name="QQuickWindow::RenderStage"/>
+    <enum-type name="QQuickWindow::RenderStage"/>
+    <enum-type name="QQuickWindow::TextRenderType" since="5.10.0" />
+    <!--enum-type name="QQuickWindow::NativeObjectType" since="5.14.0"/--><!--rejected above-->
+    <enum-type name="QSGRendererInterface::GraphicsApi" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::Resource" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::ShaderType" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::ShaderCompilationType" flags="QSGRendererInterface::ShaderCompilationTypes" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::ShaderSourceType" flags="QSGRendererInterface::ShaderSourceTypes" since="5.8.0" />
 
-	<object-type name="QQuickRenderControl">
+    <interface-type name="QSGRendererInterface" java-name="QSGRenderer" since="5.8.0">
+        <extra-includes>
+            <include file-name="QtCore/QTextCodec" location="global"/>
+        </extra-includes>
+        <modify-function signature="getResource(QQuickWindow *, QSGRendererInterface::Resource) const" remove="java"/>
+        <modify-function signature="getResource(QQuickWindow *, const char *) const" remove="java">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="shell">
+        jobject %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                </conversion-rule>
+                <conversion-rule class="native">
+        QByteArray b1 = qtjambi_to_qstring(%env, (jstring) %in).toUtf8();
+        const char* %out = b1.data();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QQuickRenderControl">
     </object-type>
-	<object-type name="QQuickItem">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-		<modify-function signature="antialiasing()const" access="non-final"/>
-		<modify-function signature="setAntialiasing(bool)" access="non-final"/>
+    <object-type name="QSGContextPlugin">
+    </object-type>
+    <object-type name="QQuickItem">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+        <interface-polymorphy interface="QQmlParserStatus" condition="false" />
         <modify-function signature="childMouseEventFilter(QQuickItem*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
@@ -87,12 +168,14 @@
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
         <modify-function signature="updatePaintNode(QSGNode*,QQuickItem::UpdatePaintNodeData*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="1" invalidate-after-use="yes">
+                <define-ownership class="java" owner="invalidate"/>
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QQuickPaintedItem">
-	<modify-function signature="antialiasing()const" remove="all"/>
+        <modify-function signature="antialiasing()const" rename="paintAntialiasing"/>
+        <modify-function signature="setAntialiasing(bool)" rename="setPaintAntialiasing"/>
         <modify-function signature="paint( QPainter *)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
@@ -100,33 +183,129 @@
     <object-type name="QQuickTextDocument">
     </object-type>
     <object-type name="QQuickFramebufferObject">
+        <modify-function signature="createRenderer()const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QQuickFramebufferObject::Renderer">
+        <modify-function signature="createFramebufferObject(const QSize &amp;)" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QQuickTextureFactory">
+        <modify-function signature="createTexture(QQuickWindow*)const">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QQuickView">
-		<modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
-			<modify-argument index="2">
-				<reference-count action="set" variable-name="__rcQmlComponent" />
-			</modify-argument>
-			<modify-argument index="3">
-				<define-ownership class="java" owner="cplusplus"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="QQuickView(const QUrl &amp;, QWindow *)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+        <modify-function signature="setSource(const QUrl &amp;)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+        <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
+            <modify-argument index="2">
+                <reference-count action="set" variable-name="__rcQmlComponent" />
+            </modify-argument>
+            <modify-argument index="3">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QQuickWindow">
-		<modify-function signature="setRenderTarget(QOpenGLFramebufferObject*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
+        <modify-function signature="setRenderTarget(QOpenGLFramebufferObject*)" thread-affine="no">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRenderTarget(uint, const QSize &amp;)" thread-affine="no">
+        </modify-function>
+        <modify-function signature="rendererInterface() const" thread-affine="no">
+        </modify-function>
+        <modify-function signature="createImageNode()const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRectangleNode()const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createNinePatchNode()const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createTextureFromImage(QImage)const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createTextureFromImage(QImage,QFlags&lt;QQuickWindow::CreateTextureOption>)const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createTextureFromId(uint,QSize,QFlags&lt;QQuickWindow::CreateTextureOption>)const" thread-affine="no">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
+    <value-type name="QQuickWindow::GraphicsStateInfo" since="5.14.0">
+    </value-type>
     <object-type name="QSGNode" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QSGNode::BasicNodeType">
+        <modify-function signature="QSGNode(QSGNode::NodeType)" remove="all"/>
+        <modify-function signature="type()const" remove="all"/>
     </object-type>
-    <object-type name="QSGBasicGeometryNode" force-abstract="yes">
-		<modify-function signature="geometry() const" remove="all"/>
-		<modify-function signature="matrix() const" remove="all"/>
+    <object-type name="QSGBasicGeometryNode" force-abstract="yes" polymorphic-id-expression="typeid(*%1)==typeid(QSGBasicGeometryNode)">
+        <modify-function signature="QSGBasicGeometryNode(QSGNode::NodeType)" remove="all"/>
+        <modify-function signature="geometry() const" remove="all"/>
+        <modify-function signature="matrix() const">
+            <modify-argument index="return">
+                <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
+                <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRendererMatrix(const QMatrix4x4 *)">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
+                <reference-count action="set" variable-name="__rcRendererMatrix" />
+                <conversion-rule class="native">
+                QMatrix4x4* %out = qtjambi_cast&lt;QMatrix4x4*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRendererClipList(const QSGClipNode*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcRendererClipList" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QSGClipNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::ClipNodeType">
     </object-type>
@@ -134,49 +313,147 @@
     </object-type>
     <object-type name="QSGOpacityNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::OpacityNodeType">
     </object-type>
+    <object-type name="QSGNinePatchNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGNinePatchNode)" since="5.8.0">
+        <modify-function signature="setTexture(QSGTexture*)">
+            <modify-argument index="1">
+            <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QSGImageNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGImageNode)" since="5.8.0">
+        <modify-function signature="setTexture(QSGTexture*)">
+            <modify-argument index="1">
+            <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QSGImageNode::TextureCoordinatesTransformFlag" flags="QSGImageNode::TextureCoordinatesTransformMode" since="5.8.0">
+    </enum-type>
+    <object-type name="QSGRectangleNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGRectangleNode)" since="5.8.0">
+    </object-type>
+    <object-type name="QSGSimpleRectNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGSimpleRectNode)">
+    </object-type>
     <object-type name="QSGSimpleTextureNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::GeometryNodeType">
-		<modify-function signature="setTexture(QSGTexture*)">
-			<modify-argument index="1">
+        <modify-function signature="setTexture(QSGTexture*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
-			<inject-code class="java" position="end">
-				if (texture != null &amp;&amp; ownsTexture()) {
-					texture.disableGarbageCollection();
-				}
-			</inject-code>
-		</modify-function>
-		<modify-function signature="setOwnsTexture(bool)">
-			<inject-code class="java" position="end">
-				if (texture() != null) {
-					if(owns){
-						texture().disableGarbageCollection();
-					}else{
-						texture().setJavaOwnership();
-					}
-				}
-			</inject-code>
-		</modify-function>
+            <inject-code class="java" position="end">
+                if (texture != null &amp;&amp; ownsTexture()) {
+                    io.qt.internal.QtJambiInternal.setCppOwnership(texture);
+                }
+            </inject-code>
+        </modify-function>
+        <modify-function signature="setOwnsTexture(bool)">
+            <inject-code class="java" position="end">
+                if (texture() != null) {
+                    if(owns){
+                        io.qt.internal.QtJambiInternal.setCppOwnership(texture());
+                    }else{
+                        io.qt.internal.QtJambiInternal.setJavaOwnership(texture());
+                    }
+                }
+            </inject-code>
+        </modify-function>
     </object-type>
     <object-type name="QSGTransformNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::TransformNodeType">
+    </object-type>
+    <object-type name="QSGRenderNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::RenderNodeType">
+        <modify-function signature="flags() const" rename="renderingFlags"/>
+        <modify-function signature="matrix() const">
+            <modify-argument index="return">
+                <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
+                <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                QMatrix4x4* %out = qtjambi_cast&lt;QMatrix4x4*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="render(const QSGRenderNode::RenderState*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+    </object-type>
+    <object-type name="QSGRenderNode::RenderState">
+        <modify-function signature="projectionMatrix() const">
+            <modify-argument index="return">
+                <replace-type modified-type="io.qt.gui.QMatrix4x4"/>
+                <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                QMatrix4x4* %out = qtjambi_cast&lt;QMatrix4x4*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="clipRegion() const">
+            <modify-argument index="return">
+                <replace-type modified-type="io.qt.gui.QRegion"/>
+                <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                QRegion* %out = qtjambi_cast&lt;QRegion*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="get(const char *) const" remove="java">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="shell">
+                jobject %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                </conversion-rule>
+                <conversion-rule class="native">
+                QByteArray b1 = qtjambi_to_qstring(%env, jstring(%in)).toUtf8();
+                const char* %out = b1.data();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QSGRenderNode::StateFlag" flags="QSGRenderNode::StateFlags" since="5.8.0">
+    </enum-type>
+    <enum-type name="QSGRenderNode::RenderingFlag" flags="QSGRenderNode::RenderingFlags" since="5.8.0">
+    </enum-type>
+    <object-type name="QSGRootNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::RootNodeType">
+    </object-type>
+    <object-type name="QSGRootNode::RenderState">
     </object-type>
     <object-type name="QSGDynamicTexture">
     </object-type>
     <object-type name="QSGFlatColorMaterial">
+        <modify-function signature="createShader() const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QSGGeometry">
-	<modify-function signature="indexData() const" remove="all"/>
-	<modify-function signature="indexDataAsUInt() const" remove="all"/>
-	<modify-function signature="indexDataAsUShort() const" remove="all"/>
-	<modify-function signature="indexDataAsUInt()" remove="all"/>
-	<modify-function signature="indexDataAsUShort()" remove="all"/>
-	<modify-function signature="vertexData() const" remove="all"/>
-	<modify-function signature="vertexDataAsPoint2D() const" remove="all"/>
-	<modify-function signature="vertexDataAsColoredPoint2D() const" remove="all"/>
-	<modify-function signature="vertexDataAsTexturedPoint2D() const" remove="all"/>
+    <modify-function signature="indexData() const" remove="all"/>
+    <modify-function signature="indexDataAsUInt() const" remove="all"/>
+    <modify-function signature="indexDataAsUShort() const" remove="all"/>
+    <modify-function signature="indexDataAsUInt()" remove="all"/>
+    <modify-function signature="indexDataAsUShort()" remove="all"/>
+    <modify-function signature="vertexData() const" remove="all"/>
+    <modify-function signature="vertexDataAsPoint2D()" remove="all"/>
+    <modify-function signature="vertexDataAsPoint2D() const" remove="all"/>
+    <modify-function signature="vertexDataAsColoredPoint2D()" remove="all"/>
+    <modify-function signature="vertexDataAsColoredPoint2D() const" remove="all"/>
+    <modify-function signature="vertexDataAsTexturedPoint2D()" remove="all"/>
+    <modify-function signature="vertexDataAsTexturedPoint2D() const" remove="all"/>
     </object-type>
     <object-type name="QSGMaterial">
         <modify-function signature="compare(const QSGMaterial*)const">
             <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="createShader() const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QSGMaterialShader">
@@ -186,11 +463,18 @@
         </modify-function>
     </object-type>
     <object-type name="QSGOpaqueTextureMaterial">
-		<modify-function signature="setTexture(QSGTexture*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
+        <modify-function signature="createShader() const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setTexture(QSGTexture*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <!--object-type name="QSGSimpleMaterialShader">
     </object-type-->
@@ -199,8 +483,22 @@
     <object-type name="QSGTexture">
     </object-type>
     <object-type name="QSGTextureMaterial">
+        <modify-function signature="createShader() const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QSGVertexColorMaterial">
+        <modify-function signature="createShader() const" no-except="yes">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QQuickTransform">
     </object-type>
@@ -209,80 +507,150 @@
 
     <value-type name="QSGGeometry::Attribute">
     </value-type>
-    <value-type name="QSGGeometry::AttributeSet">
-    </value-type>
+    <object-type name="QSGGeometry::AttributeSet">
+    </object-type>
     <value-type name="QSGGeometry::ColoredPoint2D">
     </value-type>
-    <value-type name="QQuickItem::ItemChangeData">
-		<custom-creator>
-			if(copy)
-				return new QQuickItem::ItemChangeData(*copy);
-			else
-				return Q_NULLPTR;
-		</custom-creator>
-		<modify-function signature="setWindow(QQuickWindow*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setItem(QQuickItem*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
+    <value-type name="QQuickItem::ItemChangeData" generate="no">
+        <custom-constructor>
+            if(copy)
+                return new(placement) QQuickItem::ItemChangeData(*copy);
+            else
+                return new(placement) QQuickItem::ItemChangeData(false);
+        </custom-constructor>
+        <modify-field name="window" read="true" write="false"/>
+        <modify-field name="item" read="true" write="false"/>
+        <modify-field name="boolValue" read="true" write="false" rename="booleanValue"/>
+        <modify-field name="realValue" read="true" write="false" rename="doubleValue"/>
     </value-type>
     <value-type name="QSGGeometry::Point2D">
     </value-type>
     <object-type name="QQuickImageProvider">
+        <interface-polymorphy interface="QQmlImageProviderBase" condition="false" />
     </object-type>
-    <value-type name="QQuickItem::UpdatePaintNodeData">
-		<custom-creator>
-			if(copy)
-				return new QQuickItem::UpdatePaintNodeData(*copy);
-			else
-				return Q_NULLPTR;
-		</custom-creator>
-		<modify-function signature="setTransformNode(QSGTransformNode*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
-    </value-type>
+    <object-type name="QQuickAsyncImageProvider">
+    </object-type>
+    <object-type name="QQuickImageResponse">
+    </object-type>
+    <object-type name="QQuickItem::UpdatePaintNodeData">
+        <extra-includes>
+            <include file-name="QtQuick/QSGTransformNode" location="global"/>
+        </extra-includes>
+        <modify-field name="transformNode" read="true" write="true">
+            <reference-count action="ignore"/>
+        </modify-field>
+    </object-type>
     <value-type name="QSGMaterialShader::RenderState">
     </value-type>
     <object-type name="QSGMaterialType">
     </object-type>
     <value-type name="QSGGeometry::TexturedPoint2D">
     </value-type>
-	
-	<object-type name="QQuickItemGrabResult">
+    
+    <object-type name="QQuickItemGrabResult">
+        <modify-function signature="saveToFile(const QString &amp;)" remove="all" since="5.9.0"/>
     </object-type>
-	
-	<object-type name="QSGAbstractRenderer">
+    
+    <object-type name="QSGAbstractRenderer">
         <modify-function signature="nodeChanged(QSGNode*,QFlags&lt;QSGNode::DirtyStateBit&gt;)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
+        <modify-function signature="setRootNode(QSGRootNode*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcRootNode"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
-	<enum-type name="QSGAbstractRenderer::ClearModeBit" flags="QSGAbstractRenderer::ClearMode"/>
-	
-	<object-type name="QSGEngine">
+    
+    <enum-type name="QSGAbstractRenderer::ClearModeBit" flags="QSGAbstractRenderer::ClearMode"/>
+    <enum-type name="QSGAbstractRenderer::MatrixTransformFlag" flags="QSGAbstractRenderer::MatrixTransformFlags" since="5.14.0"/>
+    
+    <object-type name="QSGEngine">
+        <modify-function signature="createImageNode()const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRectangleNode()const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createNinePatchNode()const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRenderer()const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createTextureFromImage(QImage,QFlags&lt;QSGEngine::CreateTextureOption>)const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createTextureFromId(uint,QSize,QFlags&lt;QSGEngine::CreateTextureOption>)const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
-	<enum-type name="QSGEngine::CreateTextureOption" flags="QSGEngine::CreateTextureOptions"/>
-	
-	<rejection class="QSGSimpleMaterial"/>
-	<rejection class="QSGSimpleMaterialShader"/>
-	<object-type name="QSGSimpleRectNode">
+    
+    <enum-type name="QSGEngine::CreateTextureOption" flags="QSGEngine::CreateTextureOptions"/>
+    
+    <rejection class="QSGSimpleMaterial"/>
+    <rejection class="QSGSimpleMaterialComparableMaterial"/>
+    <rejection class="QSGSimpleMaterialShader"/>
+    <object-type name="QSGTextureProvider">
     </object-type>
-	<object-type name="QSGTextureProvider">
+    <object-type name="QSGNodeVisitor">
+        <modify-function signature="enterClipNode(QSGClipNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="enterGeometryNode(QSGGeometryNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="enterOpacityNode(QSGOpacityNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="enterTransformNode(QSGTransformNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="leaveClipNode(QSGClipNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="leaveGeometryNode(QSGGeometryNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="leaveOpacityNode(QSGOpacityNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="leaveTransformNode(QSGTransformNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="visitChildren(QSGNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
+        <modify-function signature="visitNode(QSGNode*)">
+            <modify-argument invalidate-after-use="yes" index="1" />
+        </modify-function>
     </object-type>
-	
+    <object-type name="QSGMaterialRhiShader" since="5.14.0">
+    </object-type>
+    <enum-type name="QSGMaterialRhiShader::Flag" flags="QSGMaterialRhiShader::Flags" since="5.14.0"/>
+    <enum-type name="QSGMaterialRhiShader::Stage" since="5.14.0"/>
+    <value-type name="QSGMaterialRhiShader::RenderState" since="5.14.0">
+        <modify-function signature="uniformData()" remove="all"/>
+    </value-type>
+    <value-type name="QSGMaterialRhiShader::GraphicsPipelineState" since="5.14.0">
+    </value-type>
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::BlendFactor" since="5.14.0"/>
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialRhiShader::GraphicsPipelineState::ColorMask" since="5.14.0"/>
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::CullMode" since="5.14.0"/>
+    
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />
-	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setTransformNode(QSGTransformNode*)' for function modification in 'QQuickItem::UpdatePaintNodeData' not found. Possible candidates:*"/>
-	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setWindow(QQuickWindow*)' for function modification in 'QQuickItem::ItemChangeData' not found. Possible candidates:*"/>
-	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setItem(QQuickItem*)' for function modification in 'QQuickItem::ItemChangeData' not found. Possible candidates:*"/>
-	<suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'itemTransform(QQuickItem*,bool*)const' for function modification in 'QQuickFramebufferObject' not found. Possible candidates:*"/>
 </typesystem>

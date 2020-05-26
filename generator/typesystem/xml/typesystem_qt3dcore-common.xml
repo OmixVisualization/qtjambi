@@ -1,203 +1,452 @@
 <?xml version="1.0"?>
-<typesystem>
-	<namespace-type name="Qt3D">
-		<modify-function signature="functorTypeId()" remove="all"/>
-		<modify-function signature="elementType(GLint)" remove="all"/>
-		<modify-function signature="tupleSizeFromType(GLint)" remove="all"/>
-		<modify-function signature="byteSizeFromType(GLint)" remove="all"/>
-		<modify-function signature="intersects(Qt3D::Sphere,Qt3D::Sphere)" remove="all"/>
-		<modify-function signature="intersects(Qt3D::QAxisAlignedBoundingBox,Qt3D::QAxisAlignedBoundingBox)" remove="all"/>
-		<modify-function signature="operator ==(Qt3D::QOpenGLFilter,Qt3D::QOpenGLFilter)" remove="all"/>
-		<modify-function signature="operator !=(Qt3D::QOpenGLFilter,Qt3D::QOpenGLFilter)" remove="all"/>
-		<modify-function signature="qHash(Qt3D::QNodeId, unsigned int)" remove="all"/>
-		<modify-function signature="operator &lt;&lt;(QDataStream&amp;,const Qt3D::QRay3D&amp;)" remove="all"/>
-		<modify-function signature="operator &gt;&gt;(QDataStream&amp;,Qt3D::QRay3D&amp;)" remove="all"/>
-	</namespace-type>
-	<rejection class="QAspectThread"/>
-	<rejection class="QFrameAllocator"/>
-	<rejection class="QHandle"/>
-	<rejection class="QHandleManager"/>
-	<rejection class="Qt3D::FunctorType"/>
-	<rejection class="Qt3D::QAbstractFunctor"/>
-	<enum-type name="Qt3D::ChangeFlag" flags="Qt3D::ChangeFlags"/>
-	<interface-type name="Qt3D::QSceneInterface" java-name="Qt3DScene">
-		<modify-function signature="addObservable(Qt3D::QObservableInterface*,Qt3D::QNodeId)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="add" variable-name="__rcObservables" declare-variable="org.qtjambi.qt3d.core.Qt3DScene"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="removeObservable(Qt3D::QObservableInterface*,Qt3D::QNodeId)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="remove" variable-name="__rcObservables" declare-variable="org.qtjambi.qt3d.core.Qt3DScene"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="nodeIdFromObservable(Qt3D::QObservableInterface*)const">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="ignore"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setArbiter(Qt3D::QLockableObserverInterface*)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="set" variable-name="__rcArbiter" declare-variable="org.qtjambi.qt3d.core.Qt3DScene"/>
-			</modify-argument>
-		</modify-function>
-	</interface-type>
-	<interface-type name="Qt3D::QObservableInterface" java-name="QObservable">
-		<modify-function signature="setArbiter(Qt3D::QLockableObserverInterface*)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="set" variable-name="__rcArbiter" declare-variable="org.qtjambi.qt3d.core.QObservable"/>
-			</modify-argument>
-		</modify-function>
-	</interface-type>
-	<interface-type name="Qt3D::QLockableObserverInterface" java-name="QLockableObserver">
-	</interface-type>
-	<interface-type name="Qt3D::QObserverInterface" java-name="QObserver">
-	</interface-type>
-	<interface-type name="Qt3D::QAspectJobProviderInterface" java-name="QAspectJobProvider">
-	</interface-type>
-	<interface-type name="Qt3D::QSceneObserverInterface" java-name="QSceneObserver">
-	</interface-type>
-	<interface-type name="Qt3D::QBackendNodeFactory" java-name="QBackendNodeFactory">
-	</interface-type>
-	<value-type name="Qt3D::QNodeId" java-name="QNodeId">
-	</value-type>
-	<object-type name="Qt3D::QNode" java-name="QNode">
-		<modify-function signature="event(QEvent *)" remove="all"/>
-	</object-type>
-	<object-type name="Qt3D::QComponent" java-name="QComponent">
-	</object-type>
-	<object-type name="Qt3D::QEntity" java-name="QEntity">
-		<modify-function signature="addComponent(Qt3D::QComponent*)">
-			<modify-argument index="1">
-				<define-ownership class="java" owner="cplusplus"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="removeComponent(Qt3D::QComponent*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<enum-type name="Qt3D::QSceneChange::Priority"/>
-	<enum-type name="Qt3D::QSceneChange::ObservableType"/>
-	<object-type name="Qt3D::QSceneChange" java-name="QSceneChange">
-	</object-type>
-	<enum-type name="Qt3D::QBackendNode::Mode"/>
-	<object-type name="Qt3D::QBackendNode" java-name="QBackendNode">
-		<modify-function signature="setFactory(const Qt3D::QBackendNodeFactory*)">
-			<modify-argument index="1">
-				<reference-count action="set" variable-name="__rcBackendNodeFactory" />
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setPeer(Qt3D::QNode*)">
-			<modify-argument index="1">
-				<reference-count action="set" variable-name="__rcPeer" />
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<interface-type name="Qt3D::QBackendNodeFunctor" java-name="QBackendNodeFunctor">
-		<modify-function signature="create(Qt3D::QNode*,const Qt3D::QBackendNodeFactory*)const">
-			<modify-argument index="2" invalidate-after-use="yes" />
-		</modify-function>
-	</interface-type>
-	<object-type name="Qt3D::QBackendScenePropertyChange" java-name="QBackendScenePropertyChange">
-	</object-type>
-	<value-type name="Qt3D::QRay3D" java-name="QRay3D">
-	</value-type>
-	<object-type name="Qt3D::QScene" java-name="QScene">
-		<modify-function signature="addObservable(Qt3D::QObservableInterface*,Qt3D::QNodeId)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="add" variable-name="__rcObservables"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="addObservable(Qt3D::QNode*)">
-			<modify-argument index="1">
-				<reference-count action="add" variable-name="__rcObservables"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="removeObservable(Qt3D::QObservableInterface*,Qt3D::QNodeId)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="remove" variable-name="__rcObservables"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="removeObservable(Qt3D::QNode*)">
-			<modify-argument index="1">
-				<reference-count action="remove" variable-name="__rcObservables"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setArbiter(Qt3D::QLockableObserverInterface*)">
-			<modify-argument index="1" invalidate-after-use="yes">
-				<reference-count action="set" variable-name="__rcArbiter"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<object-type name="Qt3D::QAspectEngine" java-name="QAspectEngine">
-		<modify-function signature="setRootEntity(Qt3D::QEntity*)">
-			<modify-argument index="1">
-				<define-ownership class="java" owner="cplusplus"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<value-type name="Qt3D::QAspectFactory" java-name="QAspectFactory">
-		<modify-function signature="operator=(const Qt3D::QAspectFactory &amp;)" remove="all"/>
-		<modify-function signature="functionHelper(QObject *)" remove="all"/>
-	</value-type>
-	<object-type name="Qt3D::QScenePropertyChange" java-name="QScenePropertyChange">
-	</object-type>
-	<enum-type name="Qt3D::QAbstractAspect::AspectType"/>
-	<object-type name="Qt3D::QAbstractAspect" java-name="QAbstractAspect">
-		<modify-function signature="registerBackendType(const QSharedPointer&lt;Qt3D::QBackendNodeFunctor&gt; &amp;)" remove="all"/>
-	</object-type>
-	<value-type name="Qt3D::QAxisAlignedBoundingBox" java-name="QAxisAlignedBoundingBox">
-	</value-type>
-	<enum-type name="Qt3D::QCamera::CameraTranslationOption"/>
-	<object-type name="Qt3D::QCamera" java-name="QCamera">
-	</object-type>
-	<enum-type name="Qt3D::QCameraLens::ProjectionType"/>
-	<object-type name="Qt3D::QCameraLens" java-name="QCameraLens">
-	</object-type>
-	<object-type name="Qt3D::QAbstractAttribute" java-name="QAbstractAttribute">
-	</object-type>
-	<object-type name="Qt3D::QAbstractBuffer" java-name="QAbstractBuffer">
-	</object-type>
-	<object-type name="Qt3D::QAspectJob" java-name="QAspectJob">
-	</object-type>
-	<object-type name="Qt3D::QNodeVisitor" java-name="QNodeVisitor">
-	</object-type>
-	<enum-type name="Qt3D::QServiceLocator::ServiceType" extensible="true"/>
-	<object-type name="Qt3D::QServiceLocator" java-name="QServiceLocator">
-		<modify-function signature="service(int)">
-			<instantiate-template argument="Qt3D::QAbstractServiceProvider"/>
-		</modify-function>
-	</object-type>
-	<object-type name="Qt3D::QOpenGLInformationService" java-name="QOpenGLInformationService">
-	</object-type>
-	<object-type name="Qt3D::QAbstractServiceProvider" java-name="QAbstractServiceProvider">
-	</object-type>
-	<object-type name="Qt3D::QSystemInformationService" java-name="QSystemInformationService">
-	</object-type>
-	<object-type name="Qt3D::QAbstractTransform" java-name="QAbstractTransform">
-	</object-type>
-	<object-type name="Qt3D::QLookAtTransform" java-name="QLookAtTransform">
-	</object-type>
-	<object-type name="Qt3D::QMatrixTransform" java-name="QMatrixTransform">
-	</object-type>
-	<object-type name="Qt3D::QRotateTransform" java-name="QRotateTransform">
-	</object-type>
-	<object-type name="Qt3D::QScaleTransform" java-name="QScaleTransform">
-	</object-type>
-	<object-type name="Qt3D::QTranslateTransform" java-name="QTranslateTransform">
-	</object-type>
-	<object-type name="Qt3D::QTransform" java-name="QTransform">
-		<modify-function signature="addTransform(Qt3D::QAbstractTransform*)">
-			<modify-argument index="1">
-				<reference-count action="add" variable-name="__rcTransform"/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="removeTransform(Qt3D::QAbstractTransform*)">
-			<modify-argument index="1">
-				<reference-count action="remove" variable-name="__rcTransform"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="Qt3DCore">
+    <namespace-type name="Qt3DCore">
+        <modify-function signature="functorTypeId()" remove="all"/>
+        <modify-function signature="elementType(GLint)" remove="all"/>
+        <modify-function signature="tupleSizeFromType(GLint)" remove="all"/>
+        <modify-function signature="byteSizeFromType(GLint)" remove="all"/>
+        <modify-function signature="intersects(Qt3DCore::Sphere,Qt3DCore::Sphere)" remove="all"/>
+        <modify-function signature="intersects(Qt3DCore::QAxisAlignedBoundingBox,Qt3DCore::QAxisAlignedBoundingBox)" remove="all"/>
+        <modify-function signature="operator ==(Qt3DCore::QOpenGLFilter,Qt3DCore::QOpenGLFilter)" remove="all"/>
+        <modify-function signature="operator !=(Qt3DCore::QOpenGLFilter,Qt3DCore::QOpenGLFilter)" remove="all"/>
+        <modify-function signature="qHash(Qt3DCore::QNodeId, unsigned int)" remove="all"/>
+        <modify-function signature="operator &lt;&lt;(QDataStream&amp;,const Qt3DCore::QRay3D&amp;)" remove="all"/>
+        <modify-function signature="operator &gt;&gt;(QDataStream&amp;,Qt3DCore::QRay3D&amp;)" remove="all"/>
+        <!--modify-function signature="operator|(Qt3DCore::QSceneChange::DeliveryFlags::enum_type,Qt3DCore::QSceneChange::DeliveryFlags::enum_type)" remove="all"/>
+        <modify-function signature="operator|(Qt3DCore::QSceneChange::DeliveryFlags::enum_type,Qt3DCore::QFlags&lt;QSceneChange::DeliveryFlags::enum_type>)" remove="all"/-->
+    </namespace-type>
+    <rejection class="Qt3DCore::QNodeCreatedChange"/>
+    <rejection class="Qt3DCore" function-name="operator|"/>
+    <rejection class="Qt3DCore::QScenePropertyChange" function-name="operatornew"/>
+    <rejection class="Qt3DCore::QScenePropertyChange" function-name="operatordelete"/>
+    <rejection class="QAspectThread"/>
+    <rejection class="QFrameAllocator"/>
+    <rejection class="QHandle"/>
+    <rejection class="QHandleManager"/>
+    <rejection class="Qt3DCore::FunctorType"/>
+    <enum-type name="Qt3DCore::ChangeFlag" flags="Qt3DCore::ChangeFlags"/>
+    <enum-type name="Qt3DCore::QNode::PropertyTrackingMode" since="5.9.0"/>
+    <interface-type name="Qt3DCore::QSceneInterface" java-name="Qt3DCoreScene">
+        <modify-function signature="addObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="add" variable-name="__rcObservables" declare-variable="io.qt.qt3d.core.Qt3DScene"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="remove" variable-name="__rcObservables" declare-variable="io.qt.qt3d.core.Qt3DScene"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="nodeIdFromObservable(Qt3DCore::QObservableInterface*)const">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setArbiter(Qt3DCore::QLockableObserverInterface*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcArbiter" declare-variable="io.qt.qt3d.core.Qt3DScene"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <!--interface-type name="Qt3DCore::QObservableInterface" java-name="QObservable">
+        <modify-function signature="setArbiter(Qt3DCore::QLockableObserverInterface*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcArbiter" declare-variable="io.qt.qt3d.core.QObservable"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="Qt3DCore::QLockableObserverInterface" java-name="QLockableObserver">
+    </interface-type>
+    <interface-type name="Qt3DCore::QObserverInterface" java-name="QObserver">
+    </interface-type>
+    <interface-type name="Qt3DCore::QSceneObserverInterface" java-name="QSceneObserver">
+    </interface-type-->
+    <interface-type name="Qt3DCore::QBackendNodeFactory" java-name="QBackendNodeFactory">
+        <modify-function signature="createBackendNode(const QSharedPointer&lt;Qt3DCore::QNodeCreatedChangeBase>&amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="Qt3DCore::QAspectJobProviderInterface" java-name="QAspectJobProvider">
+    </interface-type>
+    <value-type name="Qt3DCore::QNodeId" java-name="QNodeId">
+        <modify-function signature="operator bool() const" remove="all"/>
+    </value-type>
+    <object-type name="Qt3DCore::QNode" java-name="QNode">
+        <modify-function signature="event(QEvent *)" remove="all" until="5.6"/>
+        <modify-function signature="doClone() const" remove="all"/>
+        <modify-function signature="setParent(Qt3DCore::QNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendCommand(const QString &amp;, const QVariant &amp;, unsigned int)" since="5.10.0">
+            <modify-argument index="3">
+                <replace-default-expression with="0"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendCommand(const QString &amp;, const QVariant &amp;, unsigned long long)" since="5.10.0">
+            <modify-argument index="3">
+                <replace-default-expression with="0"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QAbstractSkeleton" java-name="QAbstractSkeleton" since="5.10.0">
+    </object-type>
+    <object-type name="Qt3DCore::QArmature" java-name="QArmature" since="5.10.0">
+        <modify-function signature="setSkeleton(Qt3DCore::QAbstractSkeleton*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QJoint" java-name="QJoint" since="5.10.0">
+        <modify-function signature="addChildJoint(Qt3DCore::QJoint *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeChildJoint(Qt3DCore::QJoint *)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QComponent" java-name="QComponent">
+        <modify-function signature="addedToEntity(Qt3DCore::QEntity*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removedFromEntity(Qt3DCore::QEntity*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QEntity" java-name="QEntity">
+        <modify-function signature="addComponent(Qt3DCore::QComponent*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeComponent(Qt3DCore::QComponent*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QAbstractCameraController" java-name="QAbstractCameraController" since="5.10.0">
+        <modify-function signature="setCamera(Qt3DRender::QCamera*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="Qt3DCore::QSceneChange::Priority" until="5.6"/>
+    <enum-type name="Qt3DCore::QSceneChange::ObservableType" until="5.6"/>
+    <enum-type name="Qt3DCore::QSceneChange::DeliveryFlag" flags="Qt3DCore::QSceneChange::DeliveryFlags"/>
+    <object-type name="Qt3DCore::QSceneChange" java-name="QSceneChange" polymorphic-base="yes" 
+        polymorphic-id-expression="%1-&gt;type() != Qt3DCore::NodeCreated 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::NodeDeleted 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyUpdated 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyValueAdded 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyValueRemoved 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::ComponentAdded 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::ComponentRemoved 
+                        &amp;&amp; %1-&gt;type() != Qt3DCore::CommandRequested">
+    </object-type>
+    <object-type name="Qt3DCore::QNodeCommand" java-name="QNodeCommand" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::CommandRequested">
+    </object-type>
+    <enum-type name="Qt3DCore::QBackendNode::Mode"/>
+    <object-type name="Qt3DCore::QBackendNode" java-name="QBackendNode">
+        <modify-function signature="setFactory(const Qt3DCore::QBackendNodeFactory*)" until="5.6">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcBackendNodeFactory" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPeer(Qt3DCore::QNode*)" until="5.6">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcPeer" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendCommand(const QString &amp;, const QVariant &amp;, unsigned int)" since="5.10.0">
+            <modify-argument index="3">
+                <replace-default-expression with="0"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendCommand(const QString &amp;, const QVariant &amp;, unsigned long long)" since="5.10.0">
+            <modify-argument index="3">
+                <replace-default-expression with="0"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QBackendScenePropertyChange" java-name="QBackendScenePropertyChange">
+    </object-type>
+    <value-type name="Qt3DCore::QRay3D" java-name="QRay3D">
+    </value-type>
+    <object-type name="Qt3DCore::QScene" java-name="QScene">
+        <modify-function signature="addObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="add" variable-name="__rcObservables"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addObservable(Qt3DCore::QNode*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcObservables"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeObservable(Qt3DCore::QObservableInterface*,Qt3DCore::QNodeId)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="remove" variable-name="__rcObservables"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeObservable(Qt3DCore::QNode*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcObservables"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setArbiter(Qt3DCore::QLockableObserverInterface*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcArbiter"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QAspectEngine" java-name="QAspectEngine">
+        <modify-function signature="setRootEntity(QSharedPointer&lt;Qt3DCore::QEntity>)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="registerAspect(Qt3DCore::QAbstractAspect *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="unregisterAspect(Qt3DCore::QAbstractAspect *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="Qt3DCore::QAspectEngine::RunMode" since="5.14.0"/>
+    <value-type name="Qt3DCore::QAspectFactory" java-name="QAspectFactory">
+        <modify-function signature="operator=(const Qt3DCore::QAspectFactory &amp;)" remove="all"/>
+        <modify-function signature="functionHelper(QObject *)" remove="all"/>
+    </value-type>
+    <object-type name="Qt3DCore::QScenePropertyChange" java-name="QScenePropertyChange">
+    </object-type>
+    <enum-type name="Qt3DCore::QAbstractAspect::AspectType" until="5.6"/>
+    <object-type name="Qt3DCore::QAbstractAspect" java-name="QAbstractAspect">
+        <extra-includes>
+        <include file-name="Qt3DCore/QBackendNodeMapper" location="global"/>
+        </extra-includes>
+        <modify-function signature="registerBackendType(const QSharedPointer&lt;Qt3DCore::QBackendNodeFunctor&gt; &amp;)" remove="all" until="5.6"/>
+        <modify-function signature="registerBackendType(const QSharedPointer&lt;Qt3DCore::QBackendNodeMapper&gt; &amp;)" remove="all" since="5.7.0"/>
+        <modify-function signature="unregisterBackendType()" remove="all" since="5.9.0"/>
+    </object-type>
+    <value-type name="Qt3DCore::QAxisAlignedBoundingBox" java-name="QAxisAlignedBoundingBox">
+    </value-type>
+    <enum-type name="Qt3DCore::QCameraLens::ProjectionType" until="5.6"/>
+    <object-type name="Qt3DCore::QCameraLens" java-name="QCameraLens" until="5.6">
+    </object-type>
+    <object-type name="Qt3DCore::QAbstractBuffer" java-name="QAbstractBuffer">
+    </object-type>
+    <object-type name="Qt3DCore::QAspectJob" java-name="QAspectJob">
+    </object-type>
+    <object-type name="Qt3DCore::QNodeVisitor" java-name="QNodeVisitor">
+    </object-type>
+    <!--enum-type name="Qt3DCore::QServiceLocator::ServiceType" extensible="true"/>
+    <object-type name="Qt3DCore::QServiceLocator" java-name="QServiceLocator">
+        <modify-function signature="service(int)">
+            <instantiate-template argument="Qt3DCore::QAbstractServiceProvider"/>
+        </modify-function>
+    </object-type-->
+    <object-type name="Qt3DCore::QOpenGLInformationService" java-name="QOpenGLInformationService">
+    </object-type>
+    <object-type name="Qt3DCore::QAbstractServiceProvider" java-name="QAbstractServiceProvider">
+    </object-type>
+    <object-type name="Qt3DCore::QSystemInformationService" java-name="QSystemInformationService">
+    </object-type>
+    <object-type name="Qt3DCore::QAbstractTransform" java-name="QAbstractTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QLookAtTransform" java-name="QLookAtTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QMatrixTransform" java-name="QMatrixTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QRotateTransform" java-name="QRotateTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QScaleTransform" java-name="QScaleTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QTranslateTransform" java-name="QTranslateTransform">
+    </object-type>
+    <object-type name="Qt3DCore::QComponentAddedChange" java-name="QComponentAddedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::ComponentAdded" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QComponentRemovedChange" java-name="QComponentRemovedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::ComponentRemoved" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QDynamicPropertyUpdatedChange" java-name="QDynamicPropertyUpdatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QDynamicPropertyUpdatedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QNodeCreatedChangeBase" java-name="QNodeCreatedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeCreated" since="5.7.0">
+    </object-type>
+    <!--object-type name="Qt3DCore::QNodeCreatedChange" java-name="QNodeCreatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyUpdatedChangeBase)" since="5.7.0">
+    </object-type-->
+    <value-type name="Qt3DCore::QNodeIdTypePair" java-name="QNodeIdTypePair" since="5.8.0"/>
+    <object-type name="Qt3DCore::QNodeDestroyedChange" java-name="QNodeDestroyedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeDeleted" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyNodeAddedChange" java-name="QPropertyNodeAddedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyNodeAddedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyNodeRemovedChange" java-name="QPropertyNodeRemovedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyNodeRemovedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyUpdatedChange" java-name="QPropertyUpdatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyUpdatedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyUpdatedChangeBase" java-name="QPropertyUpdatedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyUpdated" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyValueAddedChange" java-name="QPropertyValueAddedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyValueAddedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyValueAddedChangeBase" java-name="QPropertyValueAddedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyValueAdded" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyValueRemovedChange" java-name="QPropertyValueRemovedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyValueRemovedChange)" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QPropertyValueRemovedChangeBase" java-name="QPropertyValueRemovedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyValueRemoved" since="5.7.0">
+    </object-type>
+    <object-type name="Qt3DCore::QStaticPropertyUpdatedChangeBase" java-name="QStaticPropertyUpdatedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyUpdatedChangeBase)" since="5.7.0">
+        <modify-function signature="propertyName() const">
+            <modify-argument index="return">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPropertyName(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                QByteArray string1(qtjambi_to_qstring(%env, (jstring)%in).toUtf8());
+                const char* %out = string1.constData();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QStaticPropertyValueAddedChangeBase" java-name="QStaticPropertyValueAddedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyValueAddedChangeBase)" since="5.7.0">
+        <modify-function signature="propertyName() const">
+            <modify-argument index="return">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPropertyName(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                QByteArray string1(qtjambi_to_qstring(%env, (jstring)%in).toUtf8());
+                const char* %out = string1.constData();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QStaticPropertyValueRemovedChangeBase" java-name="QStaticPropertyValueRemovedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyValueRemovedChangeBase)" since="5.7.0">
+        <modify-function signature="propertyName() const">
+            <modify-argument index="return">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                jstring %out = qtjambi_from_qstring(%env, QLatin1String(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPropertyName(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                QByteArray string1(qtjambi_to_qstring(%env, (jstring)%in).toUtf8());
+                const char* %out = string1.constData();
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QBackendNodeMapper" java-name="QBackendNodeMapper" since="5.7.0">
+        <modify-function signature="create(const QSharedPointer&lt;Qt3DCore::QNodeCreatedChangeBase>&amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::QSkeleton" java-name="QSkeleton" since="5.10.0">
+        <modify-function signature="setRootJoint(Qt3DCore::QJoint*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="Qt3DCore::QSkeletonLoader::Status" since="5.10.0"/>
+    <object-type name="Qt3DCore::QSkeletonLoader" java-name="QSkeletonLoader" since="5.10.0">
+    </object-type>
+    <object-type name="Qt3DCore::QTransform" java-name="QTransform">
+        <!--modify-function signature="addTransform(Qt3DCore::QAbstractTransform*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcTransform"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeTransform(Qt3DCore::QAbstractTransform*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcTransform"/>
+            </modify-argument>
+        </modify-function-->
+    </object-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::operator&lt;&lt;', unmatched return type 'QDebug'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::operator|', unmatched return type 'QIncompatibleFlag'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::operator|', unmatched return type 'QFlags&lt;ChangeFlags::enum_type&gt;'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'doClone()const' for function modification in '*' not found.*"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '*' for function modification in 'Qt3DCore' not found.*"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractSkeleton' set to non-final, as it is extended by other classes" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'sendCommand*' for function modification in 'Qt3DCore::QNode' not found. Possible candidates: *" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'sendCommand*' for function modification in 'Qt3DCore::QBackendNode' not found. Possible candidates: *" />
 </typesystem>

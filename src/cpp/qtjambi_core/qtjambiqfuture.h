@@ -39,12 +39,14 @@
 
 #ifndef QT_NO_QFUTURE
 
-struct JObjectWrapper;
-
 #include <QtCore/QVariant>
 #include <QtCore/qfuture.h>
 #include <QtCore/qfuturewatcher.h>
 #include <QtCore/qfuturesynchronizer.h>
+#include <QtCore/QThreadStorage>
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_jobjectwrapper.h>
+#endif //def QT_JAMBI_RUN
 
 typedef QFutureWatcher<void> QtJambiVoidFutureWatcher;
 typedef QFuture<void> QtJambiVoidFuture;
@@ -53,6 +55,87 @@ typedef QFuture<JObjectWrapper> QtJambiFuture;
 typedef QFutureWatcher<JObjectWrapper> QtJambiFutureWatcher;
 typedef QFutureSynchronizer<JObjectWrapper> QtJambiFutureSynchronizer;
 typedef QFutureIterator<JObjectWrapper> QtJambiFutureIterator;
+typedef QThreadStorage<JObjectWrapper> QtJambiThreadStorage;
+
+namespace QtJambiStringUtil{
+
+inline QString join(const QStringList& stringList, const QString &sep)
+{return stringList.join(sep);}
+
+inline QString join(const QStringList& stringList, QChar sep)
+{return stringList.join(sep);}
+
+#ifdef QT_JAMBI_RUN
+enum SplitBehavior { KeepEmptyParts, SkipEmptyParts };
+#else
+typedef QString::SplitBehavior SplitBehavior;
+#endif
+
+#ifndef QT_JAMBI_RUN
+#define Q_STRING_PREFIX(e) QString::e
+#else
+#define Q_STRING_PREFIX(e) e
+#endif
+
+inline QStringList split(const QString& string, const QString &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
+{ return string.split(sep, behavior, cs); }
+
+inline QStringList split(const QString& string, QChar sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
+{ return string.split(sep, behavior, cs); }
+#ifndef QT_NO_REGEXP
+inline QStringList split(const QString& string, const QRegExp &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts))
+{ return string.split(sep, behavior); }
+#endif
+#if QT_CONFIG(regularexpression)
+inline QStringList split(const QString& string, const QRegularExpression &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts))
+{ return string.split(sep, behavior); }
+#endif
+
+inline QString repeated(const QString& string, int times)
+{ return string.repeated(times); }
+
+#ifdef QT_JAMBI_RUN
+enum SectionFlag {
+    SectionDefault             = 0x00,
+    SectionSkipEmpty           = 0x01,
+    SectionIncludeLeadingSep   = 0x02,
+    SectionIncludeTrailingSep  = 0x04,
+    SectionCaseInsensitiveSeps = 0x08
+};
+Q_DECLARE_FLAGS(SectionFlags, SectionFlag)
+#else
+typedef QString::SectionFlag SectionFlag;
+typedef QString::SectionFlags SectionFlags;
+#endif
+
+inline QString section(const QString& string, QChar sep, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
+{ return string.section(sep, start, end, flags); }
+
+inline QString section(const QString& string, const QString &in_sep, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
+{ return string.section(in_sep, start, end, flags); }
+#ifndef QT_NO_REGEXP
+inline QString section(const QString& string, const QRegExp &reg, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
+{ return string.section(reg, start, end, flags); }
+#endif
+#if QT_CONFIG(regularexpression)
+inline QString section(const QString& string, const QRegularExpression &re, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
+{ return string.section(re, start, end, flags); }
+#endif
+inline QString left(const QString& string, int n)
+{ return string.left(n); }
+
+inline QString right(const QString& string, int n)
+{ return string.right(n); }
+
+inline QString mid(const QString& string, int position, int n = -1)
+{ return string.mid(position, n); }
+
+inline QString chopped(const QString& string, int n)
+{ return string.chopped(n); }
+
+};
+
+#undef Q_STRING_PREFIX
 
 #endif // QT_NO_QFUTURE
 

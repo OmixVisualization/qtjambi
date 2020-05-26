@@ -34,6 +34,10 @@
 **
 ****************************************************************************/
 
+#if defined __cplusplus
+
 #include <qtjambi/qtjambi_core.h>
 #include <qobject.h>
 #include <QtNetwork/QtNetwork>
+
+#endif //defined __cplusplus

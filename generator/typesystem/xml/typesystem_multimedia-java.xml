@@ -1,29 +1,53 @@
 <?xml version="1.0"?>
-<typesystem package="org.qtjambi.qt.multimedia" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
-		org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtMultimedia");
-    </inject-code>
-<object-type name="QAbstractVideoSurface">
-</object-type>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
 
-	<object-type name="QAudioInput">
-	<modify-function signature="QAudioInput(const QAudioFormat &amp;,QObject*)">
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.multimedia" default-superclass="io.qt.QtObject">
+    <object-type name="QAbstractVideoSurface">
+    </object-type>
+    <object-type name="QAudioInput">
+    <modify-function signature="QAudioInput(const QAudioFormat &amp;,QObject*)">
             <modify-argument index="1">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
@@ -35,10 +59,42 @@
         </modify-function>
         <modify-function signature="notify()" rename="notifySignal">
         </modify-function>
-	</object-type>
+    </object-type>
+    
+    <value-type name="QAudioBuffer">
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="data() const" rename="toByteArray">
+            <modify-argument index="0">
+                <replace-type modified-type="byte[]"/>
+                <conversion-rule class="native">
+                    jbyteArray %out = %env->NewByteArray(__qt_this->byteCount());
+                    %env->SetByteArrayRegion(%out, 0, __qt_this->byteCount(), reinterpret_cast&lt;const jbyte *>(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="constData() const">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    jobject %out = %env->NewDirectByteBuffer(const_cast&lt;void*>(%in), __qt_this->byteCount());
+                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env, %out);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="data()">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->byteCount());
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </value-type>
 
-	<object-type name="QAudioOutput">
-	<modify-function signature="QAudioOutput(const QAudioFormat &amp;,QObject*)">
+    <object-type name="QAudioOutput">
+    <modify-function signature="QAudioOutput(const QAudioFormat &amp;,QObject*)">
             <modify-argument index="1">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
@@ -50,304 +106,747 @@
         </modify-function>
         <modify-function signature="notify()" rename="notifySignal">
         </modify-function>
-	</object-type>
+    </object-type>
 
-	<value-type name="QAudioFormat">
+    <value-type name="QAudioFormat">
         <modify-function signature="operator=(const QAudioFormat)" remove="all"/>
         <modify-function signature="operator==(const QAudioFormat)const" remove="all"/>
         <modify-function signature="operator!=(const QAudioFormat)const" remove="all"/>
-	</value-type>
-	<value-type name="QVideoSurfaceFormat">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
+    </value-type>
+    <value-type name="QVideoSurfaceFormat">
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
         </extra-includes>
         <modify-function signature="operator=(const QVideoSurfaceFormat)" remove="all"/>
         <modify-function signature="operator==(const QVideoSurfaceFormat)const" remove="all"/>
         <modify-function signature="operator!=(const QVideoSurfaceFormat)const" remove="all"/>
-		<modify-function signature="property(const char*) const">
-			<modify-argument index="1">
-				<replace-type modified-type="String" />
+        <modify-function signature="property(const char*) const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setProperty(const char *, const QVariant &amp;)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QVideoFrame">
+        <modify-function signature="bits() const">
+            <modify-argument index="0">
+                <replace-type modified-type="byte[]"/>
                 <conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setProperty(const char *, const QVariant &amp;)">
-			<modify-argument index="1">
-				<replace-type modified-type="String" />
-                <conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</value-type>
-	<value-type name="QVideoFrame">
-        <modify-function signature="bits()const" rename="bits_private" access="private" />
-		<inject-code>
-		@QtBlockedSlot
-		private final byte[] bits(){
-			byte[] data = new byte[mappedBytes()];
-			org.qtjambi.qt.QNativePointer pointer = bits_private();
-			for (int i = 0; i &lt; data.length; i++) {
-				data[i] = pointer.byteAt(i);
-			}
-			return data;
-		}
-        </inject-code>
+                    jbyteArray %out = %env->NewByteArray(__qt_this->mappedBytes());
+                    %env->SetByteArrayRegion(%out, 0, __qt_this->mappedBytes(), reinterpret_cast&lt;const jbyte *>(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </value-type>
     <object-type name="QMediaService">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaService___" quote-before-line="}// class"/>
+        </inject-code>
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
         </extra-includes>
-		<modify-function signature="requestControl(const char *)">
-			<modify-argument index="1">
-				<replace-type modified-type="String" />
-					<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<inject-code>
-		@QtBlockedSlot
-		public native &lt;T extends org.qtjambi.qt.multimedia.QMediaControl> T requestControl(Class&lt;T> type);
-		</inject-code>
-    </object-type>
-	
-	<object-type name="QVideoEncoderSettingsControl">
-		<modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QVideoEncoderSettingsControl__" quote-before-line="}// class"/>
+        <modify-function signature="requestControl(const char *)">
+            <modify-argument index="0">
+                <replace-type modified-type="&lt;T extends io.qt.multimedia.QMediaControl> T" modified-jni-type="io.qt.multimedia.QMediaControl" />
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_qobject(%env, %in, jclass(%1));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QMediaControl* %out = qtjambi_cast&lt;QMediaControl*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;T>" />
+                <conversion-rule class="native">
+                    const char* %out = mediaControlIID(%env, jclass(%in));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jclass %out = classByMediaControlIID(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <!--inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaService_java__" quote-before-line="}// class"/>
         </inject-code>
+        <inject-code class="native">
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaService_native__" quote-before-line="}// class"/>
+        </inject-code-->
     </object-type>
-	
+    
+    <object-type name="QVideoEncoderSettingsControl">
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;java.lang.Double>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;double> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;QSize> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    
     <object-type name="QCameraExposureControl">
-		<modify-function signature="supportedParameterRange(const QCameraExposureControl::ExposureParameter &amp;, bool *) const">
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraExposureControl__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedParameterRange(const QCameraExposureControl::ExposureParameter &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Object>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;QVariant> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;QVariant>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
+    
     <object-type name="QImageEncoderControl">
-		<modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const">
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QImageEncoderControl__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;QSize> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
+    
     <object-type name="QCameraImageCapture">
-		<modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraImageCapture__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedResolutions(const QImageEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;QSize> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
+    
     <object-type name="QAudioEncoderSettingsControl">
-		<modify-function signature="supportedSampleRates(const QAudioEncoderSettings &amp;, bool *) const">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QAudioEncoderSettingsControl__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedSampleRates(const QAudioEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;int> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
+    
     <object-type name="QCameraExposure">
-		<modify-function signature="supportedApertures(bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="supportedIsoSensitivities(bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="supportedShutterSpeeds(bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCameraExposure__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedApertures(bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;double> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
+                        if(%1){
+                            *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="supportedIsoSensitivities(bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;int> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
+                        if(%1){
+                            *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="supportedShutterSpeeds(bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;double> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
+                        if(%1){
+                            *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
-	
+    
     <object-type name="QMediaRecorder">
-		<modify-function signature="supportedAudioSampleRates(const QAudioEncoderSettings &amp;, bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-			<modify-argument index="2">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaRecorder__" quote-before-line="}// class"/>
-        </inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="supportedAudioSampleRates(const QAudioEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;int> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;double> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                                         %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    QList&lt;QSize> %out;
+                    if(%in){
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        if(__tmp_%in)
+                            %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
+                        if(%2){
+                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                        }
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                bool %in = false;
+                bool* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <value-type name="QCameraViewfinderSettings">
     </value-type>
     <object-type name="QMediaPlaylist">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<modify-function signature="load(const QNetworkRequest &amp;, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String" />
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="load(const QUrl &amp;, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String" />
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="save(const QUrl &amp;, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String" />
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="save(QIODevice*, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String" />
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="load(QIODevice*, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String" />
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-				jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="load(const QNetworkRequest &amp;, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="load(const QUrl &amp;, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="save(const QUrl &amp;, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="save(QIODevice*, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="load(QIODevice*, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QAbstractVideoBuffer">
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QAbstractVideoBuffer__" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="map(QAbstractVideoBuffer::MapMode, int*, int*)">
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %in = 0;
+                int* %out = &amp;%in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %in = 0;
+                int* %out = &amp;%in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QAbstractVideoBuffer$MapResult" />
+                <conversion-rule class="native">
+                jobject buffer = %env->NewDirectByteBuffer(%in, %2);
+                jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(%3), false);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                uchar* %out = nullptr;
+                if(%in){
+                    jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.data(%env, %in);
+                    if(%3){
+                        *%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult.bytesPerLine(%env, %in));
+                    }
+                    if(%2){
+                        *%2 = int(%env->GetDirectBufferCapacity(data));
+                    }
+                    %out = reinterpret_cast&lt;uchar*>(%env->GetDirectBufferAddress(data));
+                }else{
+                    if(%2){
+                        *%2 = 0;
+                    }
+                    if(%3){
+                        *%3 = 0;
+                    }
+                }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="mapPlanes(QAbstractVideoBuffer::MapMode, int *, Array, Array)">
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %in = 0;
+                int* %out = &amp;%in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %out[4];
+                %out[0] = 0;
+                %out[1] = 0;
+                %out[2] = 0;
+                %out[3] = 0;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument/>
+                <conversion-rule class="native">
+                uchar* %out[4];
+                %out[0] = nullptr;
+                %out[1] = nullptr;
+                %out[2] = nullptr;
+                %out[3] = nullptr;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QAbstractVideoBuffer$MapResult[]" />
+                <conversion-rule class="native">
+                jobjectArray %out = nullptr;
+                if(%in>0){
+                    if(%in>4)
+                        %in = 4;
+                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newArray(%env, jsize(%in));
+                    for(int i=0; i&lt;%in; ++i){
+                        jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
+                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(__qt_%3[i]), false);
+                        %env->SetObjectArrayElement(%out, jsize(i), element);
+                        qtjambi_throw_java_exception(%env)
+                    }
+                }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-field name="m_type" rename="handleType" read="false"/>
+    </object-type>
+    <object-type name="QAbstractPlanarVideoBuffer">
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="map(QAbstractVideoBuffer::MapMode, int *, Array, Array)" rename="mapPlanesImpl">
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %in = 0;
+                int* %out = &amp;%in;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="native">
+                int %out[4];
+                %out[0] = 0;
+                %out[1] = 0;
+                %out[2] = 0;
+                %out[3] = 0;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument/>
+                <conversion-rule class="native">
+                uchar* %out[4];
+                %out[0] = nullptr;
+                %out[1] = nullptr;
+                %out[2] = nullptr;
+                %out[3] = nullptr;
+                </conversion-rule>
+                <conversion-rule class="shell">
+                //
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.multimedia.QAbstractVideoBuffer$MapResult[]" />
+                <conversion-rule class="native">
+                jobjectArray %out = nullptr;
+                if(%in>0){
+                    if(%in>4)
+                        %in = 4;
+                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newArray(%env, jsize(%in));
+                    for(int i=0; i&lt;%in; ++i){
+                        jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
+                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(__qt_%3[i]), false);
+                        %env->SetObjectArrayElement(%out, jsize(i), element);
+                        qtjambi_throw_java_exception(%env)
+                    }
+                }
+                </conversion-rule>
+                <conversion-rule class="shell">
+                int %out = 0;
+                %3[0] = 0;
+                %3[1] = 0;
+                %3[2] = 0;
+                %3[3] = 0;
+                %4[0] = nullptr;
+                %4[1] = nullptr;
+                %4[2] = nullptr;
+                %4[3] = nullptr;
+                if(%in){
+                    %out = qMin(4, int(%env->GetArrayLength(%in)));
+                    for(int i=0; i&lt;%out; ++i){
+                        jobject element = %env->GetObjectArrayElement(%in, jsize(i));
+                        if(!element){
+                            %out = i;
+                            break;
+                        }
+                        jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.data(%env, element);
+                        if(!data){
+                            %out = i;
+                            break;
+                        }
+                        %3[i] = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult.bytesPerLine(%env, element));
+                        if(%2){
+                            int capacity = int(%env->GetDirectBufferCapacity(data));
+                            if(capacity&lt;=0){
+                                %out = 0;
+                                %3[0] = 0;
+                                %3[1] = 0;
+                                %3[2] = 0;
+                                %3[3] = 0;
+                                %4[0] = nullptr;
+                                %4[1] = nullptr;
+                                %4[2] = nullptr;
+                                %4[3] = nullptr;
+                                break;
+                            }
+                            if(i>0){
+                                *%2 = qMin(*%2, capacity);
+                            }else{
+                                *%2 = capacity;
+                            }
+                        }
+                        %4[i] = reinterpret_cast&lt;uchar*>(%env->GetDirectBufferAddress(data));
+                    }
+                }else{
+                    if(%2){
+                        *%2 = 0;
+                    }
+                }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QVideoFilterRunnable">
+        <extra-includes>
+            <include file-name="qtjambi_multimedia_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="run(QVideoFrame *, const QVideoSurfaceFormat &amp;, QFlags&lt;QVideoFilterRunnable::RunFlag>)">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.multimedia.QVideoFrame" />
+                <no-null-pointer/>
+                <conversion-rule class="native">
+                QVideoFrame* %out = &amp;qtjambi_cast&lt;QVideoFrame&amp;>(%env, %scope, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QMediaServiceProviderFactoryInterface">
+        <inject-code class="interface">
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaServiceProviderFactoryInterface_java__" quote-before-line="}// class"/>
+        </inject-code>
+    </interface-type>
+    <object-type name="QAudioProbe">
+        <modify-function signature="setSource(QMediaObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSource" condition="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSource(QMediaRecorder*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSource" condition="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QVideoProbe">
+        <modify-function signature="setSource(QMediaObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSource" condition="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSource(QMediaRecorder*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSource" condition="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />

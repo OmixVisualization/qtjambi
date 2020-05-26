@@ -1,9 +1,13 @@
-TARGET = org_qtjambi_qt_script
+QTJAMBILIB = QtJambiScript
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/org_qtjambi_qt_script/org_qtjambi_qt_script.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # libQtScript.so.4.7.4 is only dependant on libQtCore.so.4 (ensures removal of 'Qt -= gui')
 QT = core script
+
+HEADERS += \
+    qtjambi_script_hashes.h

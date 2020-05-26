@@ -82,7 +82,7 @@ template <class _Tp> class rxx_allocator {
         pointer address(reference __val) { return &__val; }
         const_pointer address(const_reference __val) const { return &__val; }
 
-        pointer allocate(size_type __n, const void* = 0) {
+        pointer allocate(size_type __n, const void* = nullptr) {
             const size_type bytes = __n * sizeof(_Tp);
 
             if (_M_current_block == 0
@@ -109,7 +109,7 @@ template <class _Tp> class rxx_allocator {
             return p;
         }
 
-        void deallocate(pointer __p, size_type __n) {}
+        void deallocate(pointer, size_type) {}
 
         size_type max_size() const { return size_type(-1) / sizeof(_Tp); }
 
@@ -121,7 +121,7 @@ template <class _Tp> class rxx_allocator {
             typedef rxx_allocator<_Tp1> other;
         };
 
-        template <class _Tp1> rxx_allocator(const rxx_allocator<_Tp1> &__o) {}
+        template <class _Tp1> rxx_allocator(const rxx_allocator<_Tp1> &) {}
 
     private:
         size_type _M_block_index;

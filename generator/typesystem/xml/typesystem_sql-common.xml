@@ -1,13 +1,66 @@
 <?xml version="1.0"?>
-<typesystem>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtSql">
   <rejection class="QSqlDriverCreator" />
-  <rejection class="QSqlDriverPlugin" />
-  <rejection class="QSqlDriverFactoryInterface" />
+  <rejection class="QSqlRelationalDelegate" />
+  <rejection class="QSqlError::Unused" />
 
   <namespace-type name="QSql">
-     <include file-name="qsql.h" location="global" />
+     <include file-name="qtsqlglobal.h" location="global" />
   </namespace-type>
 
+  <object-type name="QSqlDriverPlugin">
+        <modify-function signature="create(QString)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <interface-type name="QSqlDriverFactoryInterface" />
   <value-type name="QSqlDatabase">
     <extra-includes>
         <include file-name="QSqlQuery" location="global" />
@@ -61,14 +114,19 @@
         <include file-name="QStringList" location="global" />
         <include file-name="QSize" location="global" />
     </extra-includes>
-    <modify-function signature="notification(const QString &amp;, QSqlDriver::NotificationSource, const QVariant &amp;)" rename="notificationFromSource"/>
+        <modify-function signature="createResult()const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
   </object-type>
 
   <object-type name="QSqlQueryModel">
     <modify-function signature="indexInQuery(QModelIndex)const" access="non-final"/>
     <modify-function signature="setQuery(QSqlQuery)" access="non-final"/>
-	<modify-function signature="record()const" access="non-final"/>
-	<modify-function signature="record(int)const" access="non-final"/>
+    <modify-function signature="record()const" access="non-final"/>
+    <modify-function signature="record(int)const" access="non-final"/>
     <extra-includes>
         <include file-name="QSqlError" location="global" />
         <include file-name="QSqlQuery" location="global" />
@@ -107,6 +165,12 @@
     <extra-includes>
         <include file-name="QSqlDriver" location="global" />
     </extra-includes>
+        <modify-function signature="createObject()const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
   </object-type>
 
   <enum-type name="QSql::Location" />
@@ -125,9 +189,6 @@
   <enum-type name="QSqlTableModel::EditStrategy" />
   <enum-type name="QSqlDriver::NotificationSource" />
   <enum-type name="QSqlRelationalTableModel::JoinMode" /><!-- since 4.8 -->
-
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSqlField' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSqlRecord' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
 
   <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />

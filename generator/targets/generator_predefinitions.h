@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,6 @@
 #define QT_NO_STL
 
 #undef QT_NO_OPENGL
-#undef QT_OPENGL_ES_2
 
 #define GL_ACCUM                          0x0100
 #define GL_LOAD                           0x0101
@@ -1124,19 +1123,55 @@
 #define GL_LOGIC_OP GL_INDEX_LOGIC_OP
 #define GL_TEXTURE_COMPONENTS GL_TEXTURE_INTERNAL_FORMAT
 
-#define QTJAMBI_GENERATOR_RUN
+#define GL_APICALL
+
+#define QT_BUILD_QMAKE
+#include <QtCore/qsysinfo.h>
+#undef QT_BUILD_QMAKE
+
+typedef void* GLsync;
+
+#define qt_getEnumName(ENUM) qt_getEnumName(ENUM) { return #ENUM; }\
+Q_ENUM(ENUM)\
+inline const char *qt_getEnumName(ENUM,bool)
 
 // first include the qglobal.h header that defines qreal.
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
+#undef qt_getEnumName
+#define QT_CONFIG(a) 1
+#undef QT_REQUIRE_CONFIG
+//#define QT_REQUIRE_CONFIG(a) QT_REQUIRE_CONFIG(a)
 // then override the previous typedef with qtjambireal.
 // the qtjambireal type is referred in the typesystem.
 typedef qtjambireal qreal;
 
-#ifdef QT_NO_SSL
-// unfortunately the folowing header files 
-// miss the QT_NO_SSL check. therefore, we
-// have to manually exclude them.
-#define QSSLELLIPTICCURVE_H
-#define QSSLPRESHAREDKEYAUTHENTICATOR_H
-#endif
+#include <QtCore/qcompilerdetection.h>
 
+#include <QtCore/qstringliteral.h>
+#define QStringLiteral QString
+
+// this is a trick to allow creating Java type of QVector::const_iterator
+template <typename T>
+class QVector__const_iterator{
+public:
+		inline ~const_iterator(){}
+        inline const T &operator*() const { return true; }
+        inline const_iterator &operator++() { return *this; }
+        inline const_iterator &operator--() { return *this; }
+		inline bool operator==(const const_iterator &o) const Q_DECL_NOTHROW { return false; }
+private:
+		inline const_iterator(){}
+};
+
+#undef Q_NULLPTR
+
+#define Q_NAMESPACE
+#define Q_ENUM_NS(enm)
+
+//qtjambi preprocessor does not understand properly
+#define GL_APIENTRY
+
+#undef Q_STATIC_ASSERT
+#undef Q_STATIC_ASSERT_X
+//#undef QT_REQUIRE_CONFIG

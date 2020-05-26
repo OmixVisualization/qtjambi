@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -73,8 +73,10 @@ class QtJambiVariant: private QVariant
 
     static int unregisterHandler()
         {
-            setHandler(lastHandler);
-            lastHandler = 0;
+            if(lastHandler){
+                setHandler(lastHandler);
+            }
+            lastHandler = nullptr;
             return 1;
         }
 
@@ -83,8 +85,8 @@ class QtJambiVariant: private QVariant
     static const QVariant::Handler qt_custom_variant_handler;
 
     static void setHandler(const Handler *handler) {
-        Q_UNUSED(handler)
-        QVariantPrivate::registerHandler(3, handler);
+        if(handler)
+            QVariantPrivate::registerHandler(3, handler);
     }
 
     static const QVariant::Handler *lastHandler;

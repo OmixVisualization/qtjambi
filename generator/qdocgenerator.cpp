@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -54,10 +54,10 @@ QString QDocGenerator::fileNameForClass(const AbstractMetaClass *) const {
 }
 
 void QDocGenerator::generate() {
-    QDir dir(outputDirectory() + "/" + subDirectoryForClass(0));
+    QDir dir(outputDirectory() + "/" + subDirectoryForClass(nullptr));
     dir.mkpath(dir.absolutePath());
 
-    QFile f(dir.absoluteFilePath(fileNameForClass(0)));
+    QFile f(dir.absoluteFilePath(fileNameForClass(nullptr)));
     if (!f.open(QIODevice::WriteOnly)) {
         ReportHandler::warning(QString("failed to open file '%1' for writing")
                                .arg(f.fileName()));
@@ -68,7 +68,7 @@ void QDocGenerator::generate() {
     s << "<japi>" << endl;
 
     AbstractMetaClassList clazzes = classes();
-    foreach(AbstractMetaClass *cls, clazzes) {
+    for(AbstractMetaClass *cls : clazzes) {
         if (shouldGenerate(cls)) {
             write(s, cls);
         }
@@ -85,7 +85,7 @@ static QString numericEntity(int ch) {
 
 static QString protect(const QByteArray& str) {
     QString result;
-    int len = (int) str.length();
+    int len = int(str.length());
     for (int k = 0; k < len; k++) {
         switch (str[k]) {
             case '\"':
@@ -104,8 +104,8 @@ static QString protect(const QByteArray& str) {
                 result += QString("&apos;");
                 break;
             default:
-                if ((uchar) str[k] < 0x20 && str[k] != '\n')
-                    result += numericEntity((uchar) str[k]);
+                if (uchar(str[k]) < 0x20 && str[k] != '\n')
+                    result += numericEntity(uchar(str[k]));
                 else
                     result += str[k];
         }
@@ -115,7 +115,7 @@ static QString protect(const QByteArray& str) {
 
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaFunction *java_function) {
-    AbstractMetaArgumentList arguments = java_function->arguments();
+    const AbstractMetaArgumentList& arguments = java_function->arguments();
     int argument_count = arguments.size();
 
     int overload_count = 0;
@@ -158,7 +158,7 @@ void QDocGenerator::writeOverload(QTextStream &s,
 
     FunctionModificationList mods = java_function->modifications(java_function->implementingClass());
     QList<ArgumentModification> argumentMods;
-    foreach(const FunctionModification &m, mods) {
+    for(const FunctionModification &m : mods) {
         if (!m.association.isEmpty())
             s << "        association=\"" << m.association << "\"" << endl;
         if (m.modifiers & Modification::AccessModifierMask)
@@ -177,11 +177,17 @@ void QDocGenerator::writeOverload(QTextStream &s,
         argumentMods << m.argument_mods;
     }
 
-    AbstractMetaArgumentList arguments = java_function->arguments();
+    const AbstractMetaArgumentList& arguments = java_function->arguments();
     bool wroteOwnershipStolen = false;
-    foreach(AbstractMetaArgument *argument, arguments) {
-        if (java_function->disabledGarbageCollection(java_function->implementingClass(),
-                argument->argumentIndex() + 1)) {
+    for(AbstractMetaArgument *argument : arguments) {
+        OwnershipRule ownership = java_function->ownership(java_function->implementingClass(), TypeSystem::TargetLangCode, argument->argumentIndex() + 1);
+        if (ownership.ownership!=TypeSystem::CppOwnership) {
+            ownership = java_function->ownership(java_function->implementingClass(), TypeSystem::ShellCode, argument->argumentIndex() + 1);
+        }
+        if (ownership.ownership!=TypeSystem::CppOwnership) {
+            ownership = java_function->ownership(java_function->implementingClass(), TypeSystem::NativeCode, argument->argumentIndex() + 1);
+        }
+        if (ownership.ownership==TypeSystem::CppOwnership) {
             if (!wroteOwnershipStolen) {
                 s << endl << "    steals-ownership-of=\"";
                 wroteOwnershipStolen = true;
@@ -198,7 +204,7 @@ void QDocGenerator::writeOverload(QTextStream &s,
 
     if (argumentMods.size()) {
 
-        foreach(const ArgumentModification &m, argumentMods) {
+        for(const ArgumentModification &m : argumentMods) {
             s << "    <argument index=\"" << m.index << "\"" << endl;
             if (m.removed_default_expression)
                 s << "              remove-default-expression=\"yes\"" << endl;
@@ -221,14 +227,34 @@ void QDocGenerator::writeOverload(QTextStream &s,
     s << "</method>" << endl;
 }
 
-void QDocGenerator::write(QTextStream &s, const AbstractMetaEnumValue *java_enum_value) {
+void QDocGenerator::write(QTextStream &s, const int size, const AbstractMetaEnumValue *java_enum_value) {
     s << "<enum-value java=\"" << protect(java_enum_value->name().toUtf8()) << "\"" << endl
-    << "            cpp=\"" << protect(java_enum_value->name().toUtf8()) << "\"" << endl
-    << "            value=\"" << java_enum_value->value() << "\"/>" << endl;
+    << "              cpp=\"" << protect(java_enum_value->cppName().toUtf8()) << "\"" << endl
+    << "              value=\"";
+    switch(size){
+    case 8:
+        s << java_enum_value->value().value<qint8>();
+        break;
+    case 16:
+        s << java_enum_value->value().value<qint16>();
+        break;
+    case 32:
+        s << java_enum_value->value().value<qint32>();
+        break;
+    case 64:
+        s << java_enum_value->value().value<qint64>();
+        break;
+    default:
+        s << java_enum_value->value().value<qint32>();
+        break;
+    }
+    s << "\"/>" << endl;
 }
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaEnum *java_enum) {
+    int size = int(java_enum->typeEntry()->size());
     s << "<enum java=\"" << protect(java_enum->name().toUtf8()) << "\"" << endl
+    << "      bitsize=\"" << QString::number(size) << "\"" << endl
     << "      cpp=\"" << protect(java_enum->name().toUtf8()) << "\"" << endl;
 
     if (java_enum->typeEntry()->flags()) {
@@ -238,8 +264,8 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaEnum *java_enum) {
 
     s << "      >" << endl;
     AbstractMetaEnumValueList values = java_enum->values();
-    foreach(AbstractMetaEnumValue *value, values) {
-        write(s, value);
+    for(AbstractMetaEnumValue *value : values) {
+        write(s, size, value);
     }
     s << "</enum>" << endl;
 }
@@ -296,25 +322,25 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
 
     // Write signals
     AbstractMetaFunctionList sigs = java_class->queryFunctions(AbstractMetaClass::Signals);
-    foreach(AbstractMetaFunction *f, sigs) {
+    for(AbstractMetaFunction *f : sigs) {
         writeSignal(s, f);
     }
 
     // Write functions
     AbstractMetaFunctionList functions = java_class->functionsInTargetLang();
-    foreach(AbstractMetaFunction *f, functions) {
+    for(AbstractMetaFunction *f : functions) {
         write(s, f);
     }
 
     // Write enums
     AbstractMetaEnumList enums = java_class->enums();
-    foreach(AbstractMetaEnum *e, enums) {
+    for(AbstractMetaEnum *e : enums) {
         write(s, e);
     }
 
     // Write setters and getters
     AbstractMetaFieldList fields = java_class->fields();
-    foreach(AbstractMetaField *f, fields) {
+    for(AbstractMetaField *f : fields) {
         write(s, f);
     }
 

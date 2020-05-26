@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,7 +48,13 @@ class TypeParser {
 
     public:
         struct Info {
-            Info() : is_reference(false), is_constant(false), is_busted(false), indirections() { }
+            enum ReferenceType{
+                NoReference,
+                Reference,
+                RReference
+            };
+
+            Info() : reference_type(NoReference), is_constant(false), is_volatile(false), is_busted(false), indirections() { }
 
             QStringList qualified_name;
             /**
@@ -56,8 +62,9 @@ class TypeParser {
              */
             QStringList arrays;
             QList<Info> template_instantiations;
-            uint is_reference : 1;
+            ReferenceType reference_type;
             uint is_constant : 1;
+            uint is_volatile : 1;
             /**
              * If the type is not supported / valid
              */

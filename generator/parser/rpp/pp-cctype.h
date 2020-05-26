@@ -51,16 +51,16 @@
 namespace rpp {
 
     inline bool pp_isalpha(int __ch)
-    { return std::isalpha((unsigned char) __ch) != 0; }
+    { return std::isalpha(static_cast<unsigned char>(__ch)) != 0; }
 
     inline bool pp_isalnum(int __ch)
-    { return std::isalnum((unsigned char) __ch) != 0; }
+    { return std::isalnum(static_cast<unsigned char>(__ch)) != 0; }
 
     inline bool pp_isdigit(int __ch)
-    { return std::isdigit((unsigned char) __ch) != 0; }
+    { return std::isdigit(static_cast<unsigned char>(__ch)) != 0; }
 
     inline bool pp_isspace(int __ch)
-    { return std::isspace((unsigned char) __ch) != 0; }
+    { return std::isspace(static_cast<unsigned char>(__ch)) != 0; }
 
 } // namespace rpp
 

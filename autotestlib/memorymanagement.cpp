@@ -45,7 +45,7 @@
 #include "memorymanagement.h"
 
 // PolymorphicObjectType
-PolymorphicObjectType *PolymorphicObjectType::m_lastInstance = 0;
+PolymorphicObjectType *PolymorphicObjectType::m_lastInstance = nullptr;
 PolymorphicObjectType::PolymorphicObjectType()
 {
     m_lastInstance = this;
@@ -54,7 +54,7 @@ PolymorphicObjectType::PolymorphicObjectType()
 PolymorphicObjectType::~PolymorphicObjectType()
 {
     if (this == m_lastInstance)
-        m_lastInstance = 0;
+        m_lastInstance = nullptr;
 }
 
 void PolymorphicObjectType::deleteLastInstance()
@@ -67,11 +67,57 @@ PolymorphicObjectType *PolymorphicObjectType::newInstance()
     return new PolymorphicObjectType;
 }
 
+QSharedPointer<PolymorphicObjectType> PolymorphicObjectType::newSharedInstance()
+{
+    return QSharedPointer<PolymorphicObjectType>(newInstance());
+}
 
+QSharedPointer<PolymorphicObjectType> PolymorphicObjectType::asSharedPointer(PolymorphicObjectType* ptr)
+{
+    return QSharedPointer<PolymorphicObjectType>(ptr);
+}
+
+// PolymorphicOwnedObjectType
+PolymorphicOwnedObjectType *PolymorphicOwnedObjectType::m_lastInstance = nullptr;
+PolymorphicOwnedObjectType::PolymorphicOwnedObjectType()
+{
+    m_lastInstance = this;
+}
+
+PolymorphicOwnedObjectType::~PolymorphicOwnedObjectType()
+{
+    if (this == m_lastInstance)
+        m_lastInstance = nullptr;
+}
+
+void PolymorphicOwnedObjectType::deleteLastInstance()
+{
+    delete m_lastInstance;
+}
+
+PolymorphicOwnedObjectType *PolymorphicOwnedObjectType::newInstance()
+{
+    return new PolymorphicOwnedObjectType;
+}
+
+QSharedPointer<PolymorphicOwnedObjectType> PolymorphicOwnedObjectType::newSharedInstance()
+{
+    return QSharedPointer<PolymorphicOwnedObjectType>(newInstance());
+}
+
+QSharedPointer<PolymorphicOwnedObjectType> PolymorphicOwnedObjectType::asSharedPointer(PolymorphicOwnedObjectType* ptr)
+{
+    return QSharedPointer<PolymorphicOwnedObjectType>(ptr);
+}
+
+QObject *PolymorphicOwnedObjectType::owner() const
+{
+    return QCoreApplication::instance();
+}
 
 
 // NonPolymorphicObjectType
-NonPolymorphicObjectType *NonPolymorphicObjectType::m_lastInstance = 0;
+NonPolymorphicObjectType *NonPolymorphicObjectType::m_lastInstance = nullptr;
 NonPolymorphicObjectType::NonPolymorphicObjectType()
 {
     m_lastInstance = this;
@@ -80,7 +126,7 @@ NonPolymorphicObjectType::NonPolymorphicObjectType()
 NonPolymorphicObjectType::~NonPolymorphicObjectType()
 {
     if (this == m_lastInstance)
-        m_lastInstance = 0;
+        m_lastInstance = nullptr;
 }
 
 void NonPolymorphicObjectType::deleteLastInstance()
@@ -93,11 +139,60 @@ NonPolymorphicObjectType *NonPolymorphicObjectType::newInstance()
     return new NonPolymorphicObjectType;
 }
 
+QSharedPointer<NonPolymorphicObjectType> NonPolymorphicObjectType::newSharedInstance()
+{
+    return QSharedPointer<NonPolymorphicObjectType>(newInstance());
+}
+
+QSharedPointer<NonPolymorphicObjectType> NonPolymorphicObjectType::asSharedPointer(NonPolymorphicObjectType* ptr)
+{
+    return QSharedPointer<NonPolymorphicObjectType>(ptr);
+}
+
+
+// NonPolymorphicOwnedObjectType
+NonPolymorphicOwnedObjectType *NonPolymorphicOwnedObjectType::m_lastInstance = nullptr;
+NonPolymorphicOwnedObjectType::NonPolymorphicOwnedObjectType()
+{
+    m_lastInstance = this;
+}
+
+NonPolymorphicOwnedObjectType::~NonPolymorphicOwnedObjectType()
+{
+    if (this == m_lastInstance)
+        m_lastInstance = nullptr;
+}
+
+void NonPolymorphicOwnedObjectType::deleteLastInstance()
+{
+    delete m_lastInstance;
+}
+
+NonPolymorphicOwnedObjectType *NonPolymorphicOwnedObjectType::newInstance()
+{
+    return new NonPolymorphicOwnedObjectType;
+}
+
+QObject *NonPolymorphicOwnedObjectType::owner() const
+{
+    return QCoreApplication::instance();
+}
+
+QSharedPointer<NonPolymorphicOwnedObjectType> NonPolymorphicOwnedObjectType::newSharedInstance()
+{
+    return QSharedPointer<NonPolymorphicOwnedObjectType>(newInstance());
+}
+
+QSharedPointer<NonPolymorphicOwnedObjectType> NonPolymorphicOwnedObjectType::asSharedPointer(NonPolymorphicOwnedObjectType* ptr)
+{
+    return QSharedPointer<NonPolymorphicOwnedObjectType>(ptr);
+}
+
 
 
 
 // ValueType
-ValueType *ValueType::m_lastInstance = 0;
+ValueType *ValueType::m_lastInstance = nullptr;
 ValueType::ValueType()
 {
     m_lastInstance = this;
@@ -106,7 +201,7 @@ ValueType::ValueType()
 ValueType::~ValueType()
 {
     if (this == m_lastInstance)
-        m_lastInstance = 0;
+        m_lastInstance = nullptr;
 }
 
 void ValueType::deleteLastInstance()
@@ -121,7 +216,7 @@ ValueType *ValueType::newInstance()
 
 
 // QObjectType
-QObjectType *QObjectType::m_lastInstance = 0;
+QObjectType *QObjectType::m_lastInstance = nullptr;
 QObjectType::QObjectType()
 {
     m_lastInstance = this;
@@ -130,7 +225,7 @@ QObjectType::QObjectType()
 QObjectType::~QObjectType()
 {
     if (this == m_lastInstance)
-        m_lastInstance = 0;
+        m_lastInstance = nullptr;
 }
 
 void QObjectType::deleteLastInstance()
@@ -141,4 +236,14 @@ void QObjectType::deleteLastInstance()
 QObjectType *QObjectType::newInstance()
 {
     return new QObjectType;
+}
+
+QSharedPointer<QObjectType> QObjectType::newSharedInstance()
+{
+    return QSharedPointer<QObjectType>(newInstance());
+}
+
+QSharedPointer<QObjectType> QObjectType::asSharedPointer(QObjectType* ptr)
+{
+    return QSharedPointer<QObjectType>(ptr);
 }

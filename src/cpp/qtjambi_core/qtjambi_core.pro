@@ -1,21 +1,32 @@
-TARGET = org_qtjambi_qt_core
+QTJAMBILIB = QtJambiCore
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_core/org_qtjambi_qt_core.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-HEADERS += qtjambiqfuture.h qtjambi_core_qhashes.h
-SOURCES += qtjambiqfuture.cpp
+HEADERS += qtjambiqfuture.h \
+    qtjambi_biginteger.h \
+    qtjambi_core_qhashes.h \
+    qtjambi_core_repository.h
 
-DEPENDPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION
-DEPENDPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/QtCore
-DEPENDPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/QtCore/private
-DEPENDPATH += $$PWD
+SOURCES +=\
+    QHash_shell.cpp \
+    QIterator_shell.cpp \
+    QVector_shell.cpp \
+    QSet_shell.cpp \
+    QMap_shell.cpp \
+    QLinkedList_shell.cpp \
+    QList_shell.cpp \
+    containers.cpp \
+    qtjambi_biginteger.cpp \
+    qtjambi_core_repository.cpp \
+    qtjambi_core_util.cpp
 
-INCLUDEPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION
-INCLUDEPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/QtCore
+macx:{
+    INCLUDEPATH += $$(QTDIR)/lib/QtCore.framework/Headers/$$QT_VERSION/QtCore/private
+}
 INCLUDEPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/QtCore/private
-INCLUDEPATH += $$PWD
 
-QT = core
+QT = core core-private

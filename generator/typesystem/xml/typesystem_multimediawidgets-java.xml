@@ -1,24 +1,7 @@
 <?xml version="1.0"?>
-<typesystem package="org.qtjambi.qt.multimedia.widgets" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGL");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtMultimedia");
+<typesystem package="io.qt.multimedia.widgets" default-superclass="io.qt.QtObject">
+    <inject-code position="3">
+        if(io.qt.QtUtilities.isAvailableQtLibrary("OpenGL"))
+            io.qt.QtUtilities.loadQtLibrary("OpenGL");
     </inject-code>
 </typesystem>

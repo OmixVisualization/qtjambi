@@ -45,7 +45,7 @@
 #ifndef ABSTRACTCLASS_H
 #define ABSTRACTCLASS_H
 
-#include <QtCore/QString>
+#include <QtCore/QtCore>
 
 class AbstractClass
 {
@@ -59,8 +59,26 @@ public:
     QString getS() { return s; }
     void setS(QString str) { s = str; }
 
+    virtual bool setReferenceCountTest(QObject* object) = 0;
+
+    QT_DEPRECATED_X("This is a test description for deprecated declaration.")
+    void deprecatedMethod(){}
 private:
     QString s;
+};
+
+class AbstractSubclass: public AbstractClass
+{
+public:
+    virtual void abstractFunction(const QString &something)
+    {
+        setS(something);
+    }
+
+    virtual AbstractClass *getAbstractClass()
+    {
+        return 0;
+    }
 };
 
 class NonAbstractSubclass: public AbstractClass
@@ -75,6 +93,7 @@ public:
     {
         return 0;
     }
+    bool setReferenceCountTest(QObject* object) {Q_UNUSED(object) return false;}
 };
 
 class AnotherNonAbstractSubclass: public AbstractClass
@@ -89,6 +108,7 @@ public:
     {
         cls->abstractFunction(something);
     }
+    bool setReferenceCountTest(QObject* object) {Q_UNUSED(object) return false;}
 
 private:
     virtual void abstractFunction(const QString &something)

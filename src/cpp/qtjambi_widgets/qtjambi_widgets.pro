@@ -1,20 +1,26 @@
-TARGET = org_qtjambi_qt_widgets
+QTJAMBILIB = QtJambiWidgets
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 
 SOURCES += \
-    qguisignalmapper.cpp \
-    qtjambiitemeditorcreator.cpp
+    qtjambi_widgets_repository.cpp \
+    qtjambiitemeditorcreator.cpp \
+    qwidgetutils.cpp \
+    signalmapper.cpp \
+    qtjambi_widgets_core.cpp
 
 HEADERS += \
-    qguisignalmapper.h 
+    qtjambi_widgets_core.h \
+    qtjambi_widgets_repository.h \
+    qwidgetutils.h
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_widgets/org_qtjambi_qt_widgets.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # Some classes (such as QLine) need access to <qtjambi_core_qhashes.h>
-INCLUDEPATH += $$PWD/../qtjambi_core
+INCLUDEPATH += $$PWD/../qtjambi_core $$PWD/../qtjambi_gui
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD

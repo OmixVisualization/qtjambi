@@ -50,6 +50,7 @@
 #include "symbol.h"
 
 #include <QtCore/QString>
+#include <QtCore/QMap>
 #include <cstdlib>
 #include <cassert>
 
@@ -58,6 +59,7 @@ class Lexer;
 class Control;
 
 typedef void (Lexer::*scan_fun_ptr)();
+char const *token_name(int token);
 
 class Token {
     public:
@@ -79,7 +81,7 @@ class LocationTable {
 
     public:
         inline LocationTable(std::size_t size = 1024)
-                : lines(0),
+                : lines(nullptr),
                 line_count(0),
                 current_line(0) {
             resize(size);
@@ -99,11 +101,11 @@ class LocationTable {
         }
 
         void positionAt(std::size_t offset, int *line, int *column) const
-        { positionAt(offset, (int) current_line, line, column); }
+        { positionAt(offset, int(current_line), line, column); }
 
         void positionAt(std::size_t offset, int max_line, int *line, int *column) const;
 
-        inline std::size_t &operator[](int index)
+        inline std::size_t &operator[](std::size_t index)
         { return lines[index]; }
 
     private:
@@ -121,7 +123,7 @@ class TokenStream {
 
     public:
         inline TokenStream(std::size_t size = 1024)
-                : tokens(0),
+                : tokens(nullptr),
                 index(0),
                 token_count(0) {
             resize(size);
@@ -136,12 +138,12 @@ class TokenStream {
         inline std::size_t cursor() const
         { return index; }
 
-        inline void rewind(int i)
+        inline void rewind(std::size_t i)
         { index = i; }
 
         void resize(std::size_t size) {
             Q_ASSERT(size > 0);
-            tokens = (Token*) ::realloc(tokens, sizeof(Token) * size);
+            tokens = reinterpret_cast<Token*>(::realloc(tokens, sizeof(Token) * size));
             token_count = size;
         }
 
@@ -163,10 +165,10 @@ class TokenStream {
         inline std::size_t matchingBrace(std::size_t i) const
         { return tokens[i].extra.right_brace; }
 
-        inline Token &operator[](int index)
+        inline Token &operator[](std::size_t index)
         { return tokens[index]; }
 
-        inline const Token &token(int index) const
+        inline const Token &token(std::size_t index) const
         { return tokens[index]; }
 
     private:
@@ -188,16 +190,23 @@ class LocationManager {
                         LocationTable &__line_table):
                 token_stream(__token_stream),
                 location_table(__location_table),
-                line_table(__line_table) {}
+                line_table(__line_table),
+                _M_requiredFeatures() {}
 
         void positionAt(std::size_t offset, int *line, int *column,
                         QString *filename) const;
 
+        void addRequiredFeature(std::size_t offset, QString feature);
+
         void extract_line(int offset, int *line, QString *filename) const;
+
+        const QMap<QString,QStringList>& requiredFeatures() const { return _M_requiredFeatures; }
 
         TokenStream &token_stream;
         LocationTable &location_table;
         LocationTable &line_table;
+    private:
+        QMap<QString,QStringList> _M_requiredFeatures;
 };
 
 class Lexer {
@@ -246,7 +255,10 @@ class Lexer {
         void scanKeyword13();
         void scanKeyword14();
         void scanKeyword16();
+        void scanKeyword17();
         void scanKeyword18();
+        void scanKeyword19();
+        void scanKeyword20();
 
         // operators
         void scan_not();

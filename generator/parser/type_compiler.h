@@ -48,6 +48,7 @@
 #define TYPE_COMPILER_H
 
 #include "default_visitor.h"
+#include <codemodel.h>
 
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -60,8 +61,8 @@ class TypeCompiler: protected DefaultVisitor {
     public:
         TypeCompiler(Binder *binder);
 
-        inline QStringList qualifiedName() const { return _M_type; }
-        inline QList<int> cv() const { return _M_cv; }
+        inline const QStringList& qualifiedName() const { return _M_type; }
+        inline const QList<int>& cv() const { return _M_cv; }
 
         bool isConstant() const;
         bool isVolatile() const;
@@ -69,12 +70,16 @@ class TypeCompiler: protected DefaultVisitor {
         QStringList cvString() const;
 
         void run(TypeSpecifierAST *node);
+        const TypeInfo& functionalReturnType() const { return _M_functionalReturnType; }
+        const QList<TypeInfo>& functionalArgumentTypes() const { return _M_functionalArgumentTypes; }
+        const QList<QString>& functionalArgumentNames() const { return _M_functionalArgumentNames; }
 
     protected:
         virtual void visitClassSpecifier(ClassSpecifierAST *node);
         virtual void visitEnumSpecifier(EnumSpecifierAST *node);
         virtual void visitElaboratedTypeSpecifier(ElaboratedTypeSpecifierAST *node);
         virtual void visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node);
+        virtual void visitAutoTypeSpecifier(AutoTypeSpecifierAST *node);
 
         virtual void visitName(NameAST *node);
 
@@ -82,6 +87,9 @@ class TypeCompiler: protected DefaultVisitor {
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QStringList _M_type;
+        TypeInfo _M_functionalReturnType;
+        QList<TypeInfo> _M_functionalArgumentTypes;
+        QList<QString> _M_functionalArgumentNames;
         QList<int> _M_cv;
 };
 

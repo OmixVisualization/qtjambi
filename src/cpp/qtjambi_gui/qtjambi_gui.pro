@@ -1,25 +1,30 @@
-TARGET = org_qtjambi_qt_gui
+QTJAMBILIB = QtJambiGui
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 
 SOURCES += \
-    qtreemodel.cpp \
-#    qtjambi_platformspecificfunctions.cpp \
+    qtjambi_gui.cpp \
+    qtjambi_gui_repository.cpp \
     qtmatrixes.cpp \
 
 HEADERS += \
+    qtjambi_gui.h \
     qtmatrixes.h \
-    qtreemodel.h \
-    qtjambitextobjectinterface.h \
-#    qtjambi_platformspecificfunctions.h \
+    qtjambi_gui_repository.h \
     qtjambi_gui_qhashes.h
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_gui/org_qtjambi_qt_gui.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # because qtjambishell_QActionEvent.cpp refers to qaction.h
+macx:{
+    INCLUDEPATH += $$(QTDIR)/lib/QtWidgets.framework/Headers
+    INCLUDEPATH += $$(QTDIR)/include
+}
 INCLUDEPATH += $$(QTDIR)/include/QtWidgets
+INCLUDEPATH += $$(QTDIR)/include/QtPlatformHeaders
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 

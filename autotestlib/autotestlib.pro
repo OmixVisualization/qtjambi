@@ -1,6 +1,6 @@
-TARGET = org_qtjambi_autotests_generated
+TARGET = io_qt_autotests_generated
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 # Messing with this config setting is what messes up building for Linux and debug_and_release for windows/macosx.
 # So before reinstating this section explain why it is required and the purpose.
@@ -17,12 +17,9 @@ greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
 #}
 
 include(../src/cpp/qtjambi/qtjambi_include.pri)
-include(../build/tests/autotest-generator/cpp/org_qtjambi_autotests_generated/org_qtjambi_autotests_generated.pri)
+include(../build/tests/autotest-generator/cpp/io_qt_autotests_generated/generated.pri)
 
-INCLUDEPATH += ./cpp/org_qtjambi_autotests_generated
-INCLUDEPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/
-INCLUDEPATH += $$(QTDIR)/include/QtGui/$$QT_VERSION/
-INCLUDEPATH += $$(QTDIR)/include/QtWidgets/$$QT_VERSION/
+INCLUDEPATH += ./cpp/io_qt_autotests_generated
 
 HEADERS += \
     abstractclass.h \
@@ -43,19 +40,23 @@ HEADERS += \
     memorymanagement.h \
     flagsandenumtest.h \
     propertyandmethodcalltest.h \
-    sharedpointertest.h
+    sharedpointertest.h \
+    settingstest.h \
+    multisignaltest.h
 
 
 SOURCES += \
     destruction.cpp \
     global.cpp \
     injectedcode.cpp \
+    interfaces.cpp \
     testdialog.cpp \
-    qtjambiunittesttools.cpp \
     memorymanagement.cpp \
     flagsandenumtest.cpp \
     propertyandmethodcalltest.cpp \
-    sharedpointertest.cpp
+    sharedpointertest.cpp \
+    settingstest.cpp \
+    multisignaltest.cpp
 
 win32 {
     PRECOMPILED_HEADER = global.h
@@ -67,5 +68,5 @@ linux-g++* | freebsd-g++* {
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
 }
 
-QT += sql xml network widgets
+QT += sql xml network widgets qml quick
 CONFIG += warn_on

@@ -34,46 +34,54 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QtCore>
+
+#if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
+
 #include "qtjambidebugtools_p.h"
 
-#if defined(QTJAMBI_DEBUG_TOOLS)
-
-#include "qtjambi_global.h"
 #include "qtjambi_core.h"
 
-#include <QMutex>
-#include <QHash>
+    QByteArray qtjambi_to_qbytearray(JNIEnv *env, jstring java_string);
 
     // ---- TOOLS
-    typedef QHash<QString, int> CountsForName;
+    typedef QHash<QByteArray, int> CountsForName;
+    typedef QReadWriteLock CountsForNameLock;
+    Q_GLOBAL_STATIC(CountsForNameLock, gCountsForNameLock)
 
-    // Looks like (at least from JDK5 build 1.5.0_22-b03) the JVM is allowed
-    // to run finalizers from two threads at once.  Maybe this is only when
-    // we call Runtime#runFinalization(); or maybe the matter is unspecified.
-    typedef QMutex CountsForNameLock;
-
-    static int sum_of(const CountsForName &countsForName)
+    static int sum_of(const CountsForName *countsForName)
     {
         int sum = 0;
-        foreach (int value, countsForName.values())
-            sum += value;
+        if(countsForName){
+            for(int value : countsForName->values())
+                sum += value;
+        }
         return sum;
     }
 
-    static void reset(CountsForName &countsForName, const QString &className)
+    static void increase(CountsForName *countsForName, const QByteArray&className)
     {
-        if (className.isEmpty())
-            countsForName.clear();
-        else
-            countsForName[className] = 0;
+        if(countsForName && !className.isEmpty()){
+            (*countsForName)[className]++;
+        }
     }
 
-    static int count(const CountsForName &countsForName, const QString &className)
+    static void reset(CountsForName *countsForName, const QByteArray&className)
+    {
+        if(countsForName){
+            if (className.isEmpty())
+                countsForName->clear();
+            else
+                (*countsForName)[className] = 0;
+        }
+    }
+
+    static int count(const CountsForName *countsForName, const QByteArray&className)
     {
         if (className.isEmpty())
             return sum_of(countsForName);
         else
-            return countsForName.value(className, 0);
+            return countsForName->value(className, 0);
     }
 
     // ---- MACROS
@@ -81,60 +89,115 @@
     \
     Q_GLOBAL_STATIC(CountsForName, g_##NAME) \
     \
-    Q_GLOBAL_STATIC(CountsForNameLock, l_##NAME) \
-    \
-    static void qtjambi_reset_##NAME(const QString &className) \
+    static void qtjambi_reset_##NAME(const char*className) \
     { \
-        (*l_##NAME()).lock(); \
-        reset(*g_##NAME(), className); \
-        (*l_##NAME()).unlock(); \
+        QWriteLocker locker(gCountsForNameLock());\
+        Q_UNUSED(locker)\
+        reset(g_##NAME(), className); \
     } \
     \
-    static int qtjambi_##NAME(const QString &className) \
+    static int qtjambi_##NAME(const char*className) \
     { \
-        int counter; \
-        (*l_##NAME()).lock(); \
-        counter = count(*g_##NAME(), className); \
-        (*l_##NAME()).unlock(); \
-        return counter; \
+        QReadLocker locker(gCountsForNameLock());\
+        Q_UNUSED(locker)\
+        return count(g_##NAME(), className); \
     } \
     \
-    void qtjambi_increase_##NAME(const QString &className) \
+    void qtjambi_increase_##NAME##_enabled(const char*className) \
     { \
-        (*l_##NAME()).lock(); \
-        (*g_##NAME())[className] ++; \
-        (*l_##NAME()).unlock(); \
+        QWriteLocker locker(gCountsForNameLock());\
+        Q_UNUSED(locker)\
+        increase(g_##NAME(), className);\
+    } \
+    \
+    void qtjambi_increase_##NAME##_disabled(const char*){} \
+    \
+    QtJambiMemoryDebugTool::Increaser QtJambiMemoryDebugTool::increase_##NAME##_fct = qtjambi_increase_##NAME##_disabled;\
+    \
+    void QtJambiMemoryDebugTool::increase_##NAME(const char*className) \
+    { \
+        increase_##NAME##_fct(className);\
     } \
     \
     extern "C" Q_DECL_EXPORT void JNICALL \
-    QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_QtJambiDebugTools_reset_1##NAME ) \
+    QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiDebugTools_reset_1##NAME ) \
     (JNIEnv *env, \
     jclass, \
     jstring className)\
     { \
-        qtjambi_reset_##NAME(qtjambi_to_qstring(env, className)); \
+        qtjambi_reset_##NAME(qtjambi_to_qbytearray(env, className)); \
     } \
     \
-    extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_internal_QtJambiDebugTools_##NAME) \
+    extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiDebugTools_##NAME) \
     (JNIEnv *env, jclass, \
     jstring className) \
     { \
-        return qtjambi_##NAME(qtjambi_to_qstring(env, className)); \
+        return qtjambi_##NAME(qtjambi_to_qbytearray(env, className)); \
     }
 
+#define ENABLE_COUNTER(NAME) \
+    increase_##NAME##_fct = qtjambi_increase_##NAME##_enabled;
+#define DISABLE_COUNTER(NAME) \
+    increase_##NAME##_fct = qtjambi_increase_##NAME##_disabled;
 
     // ---- IMPLEMENTATIONS
 
-    COUNTER_IMPLEMENTATION(finalizedCount)
+    COUNTER_IMPLEMENTATION(cleanCallerCount)
     COUNTER_IMPLEMENTATION(userDataDestroyedCount)
     COUNTER_IMPLEMENTATION(destructorFunctionCalledCount)
     COUNTER_IMPLEMENTATION(shellDestructorCalledCount)
+    COUNTER_IMPLEMENTATION(shellDestroyedCount)
     COUNTER_IMPLEMENTATION(objectInvalidatedCount)
     COUNTER_IMPLEMENTATION(disposeCalledCount)
     COUNTER_IMPLEMENTATION(linkDestroyedCount)
     COUNTER_IMPLEMENTATION(linkConstructedCount)
+    COUNTER_IMPLEMENTATION(pointerContainerDestroyedCount)
 
-#else // QTJAMBI_DEBUG_TOOLS
-#  error "Don't include this file without QTJAMBI_DEBUG_TOOLS defined"
+    void QtJambiMemoryDebugTool::enable()
+    {
+        ENABLE_COUNTER(cleanCallerCount)
+        ENABLE_COUNTER(userDataDestroyedCount)
+        ENABLE_COUNTER(destructorFunctionCalledCount)
+        ENABLE_COUNTER(shellDestructorCalledCount)
+        ENABLE_COUNTER(shellDestroyedCount)
+        ENABLE_COUNTER(objectInvalidatedCount)
+        ENABLE_COUNTER(disposeCalledCount)
+        ENABLE_COUNTER(linkDestroyedCount)
+        ENABLE_COUNTER(linkConstructedCount)
+        ENABLE_COUNTER(pointerContainerDestroyedCount)
+    }
+
+    void QtJambiMemoryDebugTool::disable()
+    {
+        DISABLE_COUNTER(cleanCallerCount)
+        DISABLE_COUNTER(userDataDestroyedCount)
+        DISABLE_COUNTER(destructorFunctionCalledCount)
+        DISABLE_COUNTER(shellDestructorCalledCount)
+        DISABLE_COUNTER(shellDestroyedCount)
+        DISABLE_COUNTER(objectInvalidatedCount)
+        DISABLE_COUNTER(disposeCalledCount)
+        DISABLE_COUNTER(linkDestroyedCount)
+        DISABLE_COUNTER(linkConstructedCount)
+        DISABLE_COUNTER(pointerContainerDestroyedCount)
+    }
+
+    extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiDebugTools_enableCounters) (JNIEnv *, jclass)
+    {
+        QtJambiMemoryDebugTool::enable();
+    }
+
+    extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiDebugTools_disableCounters) (JNIEnv *, jclass)
+    {
+        QtJambiMemoryDebugTool::disable();
+    }
+
 #endif
 
+
+void qtjambi_increase_destructorFunctionCalledCount(const char*className){
+#if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
+    QtJambiMemoryDebugTool::increase_destructorFunctionCalledCount(className);
+#else
+    Q_UNUSED(className)
+#endif
+}

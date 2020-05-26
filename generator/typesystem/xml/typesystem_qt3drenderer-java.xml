@@ -1,40 +1,119 @@
-<typesystem package="org.qtjambi.qt3d.renderer" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-            if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
-        org.qtjambi.qt.Utilities.loadQtLibrary("Qt3DCore");
-        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtOpenGLExtensions"))
-            org.qtjambi.qt.Utilities.loadQtLibrary("QtOpenGLExtensions");         // load if exists
-		org.qtjambi.qt.Utilities.loadQtLibrary("Qt3DRenderer");
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.qt3d.render" default-superclass="io.qt.QtObject">
+    <inject-code position="2">
+    io.qt.QtUtilities.initializePackage("io.qt.concurrent");
     </inject-code>
-	<object-type name="Qt3D::QMaterial">
-		<modify-function signature="setTextureParameter(QString,Qt3D::QAbstractTextureProvider*)">
-			<modify-argument index="2">
-				<reference-count action="put" variable-name="__rcTextureParameters" key-argument="1"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<object-type name="Qt3D::QSortCriterion">
-		<modify-function signature="setSort(Qt3D::QSortCriterion::SortType &amp;)">
-			<modify-argument index="1">
-				<replace-type modified-type="SortType"/>
-				<conversion-rule class="native">
-			Qt3D::QSortCriterion::SortType %out = (Qt3D::QSortCriterion::SortType)qtjambi_to_enum(__jni_env, %in);
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</object-type>
+    <object-type name="Qt3DRender::QMaterial">
+        <modify-function signature="setTextureParameter(QString,Qt3DRender::QAbstractTextureProvider*)" until="5.6">
+            <modify-argument index="2">
+                <reference-count action="put" variable-name="__rcTextureParameters" key-argument="1"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DRender::QBuffer">
+        <modify-function signature="QBuffer(Qt3DRender::QBuffer::BufferType, Qt3DCore::QNode *)">
+            <modify-argument index="1">
+                <replace-default-expression with="BufferType.VertexBuffer"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DRender::QClearBuffers" java-name="QClearBuffers">
+        <modify-function signature="setColorBuffer(Qt3DRender::QRenderTargetOutput *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcColorBuffer"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DRender::QRenderSurfaceSelector" java-name="QRenderSurfaceSelector">
+        <modify-function signature="setSurface(QObject *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSurfaceObject"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DRender::QGeometry" java-name="QGeometry">
+        <modify-function signature="addAttribute(Qt3DRender::QAttribute *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAttribute(Qt3DRender::QAttribute *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setBoundingVolumePositionAttribute(Qt3DRender::QAttribute *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcBoundingVolumePositionAttribute"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DRender::QGeometryRenderer" java-name="QGeometryRenderer">
+        <modify-function signature="setGeometry(Qt3DRender::QGeometry *)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="Qt3DRender::QTextureDataUpdate" java-name="QTextureDataUpdate">
+        <modify-function signature="setData(const QSharedPointer&lt;Qt3DRender::QTextureImageData> &amp;)">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.qt3d.render.QTextureImageData"/>
+                <conversion-rule class="native">
+                    QSharedPointer&lt;Qt3DRender::QTextureImageData> %out = qtjambi_cast&lt;QSharedPointer&lt;Qt3DRender::QTextureImageData>>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="data()const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.qt3d.render.QTextureImageData"/>
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </value-type>
 </typesystem>

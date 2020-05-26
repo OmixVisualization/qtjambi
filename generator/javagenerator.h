@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,28 +51,35 @@ class JavaGenerator : public Generator {
     public:
         JavaGenerator();
 
-        static QString translateType(const AbstractMetaType *java_type, const AbstractMetaClass *context, Option option = NoOption);
+        QString translateType(const AbstractMetaType *java_type, const AbstractMetaClass *context, Option option = NoOption);
+
+        virtual void generateFake(const AbstractMetaClass *java_class) override;
 
         void writeInjectedCode(QTextStream &s,
                                const AbstractMetaFunction *java_function,
                                CodeSnip::Position position);
-        static void writeArgument(QTextStream &s,
+        bool hasCodeInjections(const AbstractMetaFunction *java_function,
+                               const QSet<CodeSnip::Position>& positions);
+        void writeArgument(QTextStream &s,
                                   const AbstractMetaFunction *java_function,
                                   const AbstractMetaArgument *java_argument,
                                   uint options = 0);
-        static QString argumentString(const AbstractMetaFunction *java_function,
+        QString argumentString(const AbstractMetaFunction *java_function,
                                       const AbstractMetaArgument *java_argument,
                                       uint options = 0);
+        void writeFunctional(QTextStream &s, const AbstractMetaFunctional *java_functional);
         void writeEnum(QTextStream &s, const AbstractMetaEnum *java_enum);
-        void writeIntegerEnum(QTextStream &s, const AbstractMetaEnum *java_enum);
+        void writeIntegerEnum(QTextStream &s, const uint size, const AbstractMetaEnum *java_enum);
         void writeSignal(QTextStream &s, const AbstractMetaFunction *java_function);
+        void writeMultiSignal(QTextStream &s, const AbstractMetaFunctionList& signalList);
         void writeFunction(QTextStream &s, const AbstractMetaFunction *java_function,
                            uint included_attributes = 0, uint excluded_attributes = 0);
         void writeFieldAccessors(QTextStream &s, const AbstractMetaField *field);
-        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0);
+        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0) override;
+        void write(QTextStream &s, const AbstractMetaFunctional *java_class, int nesting_level = 0) override;
 
         void writeFunctionOverloads(QTextStream &s, const AbstractMetaFunction *java_function,
-                                    uint included_attributes, uint excluded_attributes);
+                                    uint included_attributes, uint excluded_attributes, const QString& alternativeFunctionName = QString());
         void writeEnumOverload(QTextStream &s, const AbstractMetaFunction *java_function,
                                uint include_attributes, uint exclude_attributes);
         void writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class);
@@ -85,50 +92,76 @@ class JavaGenerator : public Generator {
         void writeFunctionArguments(QTextStream &s, const AbstractMetaFunction *java_function,
                                     int count = -1, uint options = 0);
         void writeJavaCallThroughContents(QTextStream &s, const AbstractMetaFunction *java_function, uint attributes = 0);
-        void writeOwnershipForContainer(QTextStream &s, TypeSystem::Ownership ownership, AbstractMetaArgument *arg);
+        void writeOwnershipForContainer(QTextStream &s, TypeSystem::Ownership ownership, AbstractMetaArgument *arg, const AbstractMetaFunction *java_function);
         void writeOwnershipForContainer(QTextStream &s, TypeSystem::Ownership ownership, AbstractMetaType *type,
-                                        const QString &arg_name);
+                                        const QString &arg_name, const AbstractMetaFunction *java_function);
         void writePrivateNativeFunction(QTextStream &s, const AbstractMetaFunction *java_function);
         void writeJavaLangObjectOverrideFunctions(QTextStream &s, const AbstractMetaClass *cls);
-        void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, const QString &argumentName, const AbstractMetaArgumentList& arguments);
+        void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, int argumentIndex, const AbstractMetaFunction *java_function, const QString &thisName = QLatin1String("this"));
         void retrieveModifications(const AbstractMetaFunction *f, const AbstractMetaClass *java_class,
                                    uint *exclude_attributes, uint *include_attributes) const;
         QString functionSignature(const AbstractMetaFunction *java_function,
                                   uint included_attributes,
                                   uint excluded_attributes,
                                   Option option = NoOption,
-                                  int arg_count = -1);
+                                  int arg_count = -1,
+                                  const QString& alternativeFunctionName = QString());
         void setupForFunction(const AbstractMetaFunction *java_function,
                               uint *included_attributes, uint *excluded_attributes) const;
 
-        virtual QString subDirectoryForClass(const AbstractMetaClass *java_class) const
-        { return subDirectoryForPackage(java_class->package()); }
+        QString subDirectoryForClass(const AbstractMetaClass *java_class) const override;
 
-        virtual QString fileNameForClass(const AbstractMetaClass *java_class) const;
+        QString subDirectoryForFunctional(const AbstractMetaFunctional * java_class) const override;
+
+        virtual QString fileNameForClass(const AbstractMetaClass *java_class) const override;
 
         bool isComparable(const AbstractMetaClass *cls) const;
+
+        const AbstractMetaType * getIterableType(const AbstractMetaClass *cls) const;
 
 #if 0
         void write1_dot_5_enum(QTextStream &s, const AbstractMetaEnum *java_enum);
 #endif
 
-        bool shouldGenerate(const AbstractMetaClass *java_class) const {
-            return java_class->enclosingClass()==0 // do not generate if enclosed class (in this case create static embedded class)
-                   && !java_class->typeEntry()->isContainer() && !java_class->typeEntry()->isVariant()
-                   && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang);
+        virtual bool shouldGenerate(const AbstractMetaClass *java_class) const override {
+            return java_class->enclosingClass()==nullptr // do not generate if enclosed class (in this case create static embedded class)
+                    && !java_class->typeEntry()->isContainer()&& !java_class->typeEntry()->isIterator()
+                    && !java_class->isFake() && !java_class->typeEntry()->isVariant()
+                    && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang);
         }
+
+        bool shouldGenerate(const AbstractMetaFunctional *) const override { return false; }
 
         QString documentationDirectory() const { return m_doc_directory; }
         void setDocumentationDirectory(const QString &docDir) { m_doc_directory = docDir; }
 
         bool documentationEnabled() const { return m_docs_enabled; }
         void setDocumentationEnabled(bool e) { m_docs_enabled = e; }
-        void generate();
+        void generate() override;
+
+        void writeIteratorFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeAbstractMapFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeAbstractMultiMapFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeAbstractListFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeMapFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeMultiMapFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeMultiHashFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeHashFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeCollectionFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeListFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeLinkedListFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeSetFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeQueueFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeStackFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeVectorFunctions(QTextStream &s, const AbstractMetaClass *java_class);
 
         inline bool nativeJumpTable() const { return m_native_jump_table; }
         inline void setNativeJumpTable(bool n) { m_native_jump_table = n; }
 
-        /*virtual*/ QString resolveOutputDirectory() const { return javaOutputDirectory(); }
+        inline uint targetJDKVersion() const { return target_JDK_version; }
+        inline void setTargetJDKVersion(uint v) { target_JDK_version = v; }
+
+        /*virtual*/ QString resolveOutputDirectory() const override { return javaOutputDirectory(); }
 
         QString javaOutputDirectory() const {
             if (!m_java_out_dir.isNull())
@@ -145,8 +178,10 @@ class JavaGenerator : public Generator {
         void setLogOutputDirectory(const QString &logOutDir) { m_log_out_dir = logOutDir; }
 
     private:
+        void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool *first);
         QString subDirectoryForPackage(const QString &package) const { return QString(package).replace(".", "/"); }
         void writeInstantiatedType(QTextStream &s, const AbstractMetaType *abstractMetaType, bool forceBoxed) const;
+        void write(QTextStream &s, const AbstractMetaEnum *global_enum);
 
     protected:
         QString m_package_name;
@@ -156,9 +191,14 @@ class JavaGenerator : public Generator {
         DocParser *m_doc_parser;
         bool m_docs_enabled;
         bool m_native_jump_table;
+        uint target_JDK_version;
         QList<const AbstractMetaFunction *> m_nativepointer_functions;
         QList<const AbstractMetaFunction *> m_resettable_object_functions;
         QList<const AbstractMetaFunction *> m_reference_count_candidate_functions;
+        QList<const AbstractMetaFunction *> m_factory_functions;
+        QList<const AbstractMetaFunction *> m_inconsistent_functions;
+private:
+        bool m_current_class_needs_internal_import;
 };
 
 #endif // JAVAGENERATOR_H

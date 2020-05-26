@@ -1,37 +1,89 @@
 <?xml version="1.0"?>
-<typesystem>
-	<namespace-type name="Qt3D::Quick" java-name="Qt3DQuick" generate="no"/>
-	<enum-type name="Qt3D::Quick::QQmlAspectEngine::Status"/>
-	<object-type name="Qt3D::Quick::QQmlAspectEngine" java-name="QQmlAspectEngine">
-	</object-type>
-	<object-type name="Qt3D::Quick::Quick3DConfiguration" java-name="Quick3DConfiguration">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-		<modify-function signature="setControlledCamera(Qt3D::QCamera*)">
-			<modify-argument index="1">
-				<reference-count action="set" variable-name="__rcControlledCamera"/>
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<object-type name="Qt3D::Quick::Quick3DEntity" java-name="Quick3DEntity">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-	</object-type>
-	<object-type name="Qt3D::Quick::Quick3DEntityLoader" java-name="Quick3DEntityLoader">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-	</object-type>
-	<object-type name="Qt3D::Quick::Quick3DNode" java-name="Quick3DNode">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-	</object-type>
-	<object-type name="Qt3D::Quick::Quick3DTransform" java-name="Quick3DTransform">
-		<extra-includes>
-			<include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
-		</extra-includes>
-	</object-type>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="Qt3DQuick">
+    <namespace-type name="Qt3DCore::Quick" java-name="Qt3DQuick" generate="no"/>
+    <enum-type name="Qt3DCore::Quick::QQmlAspectEngine::Status"/>
+    <object-type name="Qt3DCore::Quick::QQmlAspectEngine" java-name="QQmlAspectEngine">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="setSource(const QUrl &amp;)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::Quick::Quick3DConfiguration" java-name="Quick3DConfiguration">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="setControlledCamera(Qt3DRender::QCamera*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcControlledCamera"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DCore::Quick::Quick3DEntity" java-name="Quick3DEntity">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+    </object-type>
+    <object-type name="Qt3DCore::Quick::Quick3DEntityLoader" java-name="Quick3DEntityLoader">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+    </object-type>
+    <object-type name="Qt3DCore::Quick::Quick3DNode" java-name="Quick3DNode">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+    </object-type>
+    <object-type name="Qt3DCore::Quick::Quick3DTransform" java-name="Quick3DTransform">
+        <extra-includes>
+            <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
+        </extra-includes>
+    </object-type>
 </typesystem>

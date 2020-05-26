@@ -72,7 +72,11 @@
 #include "memorymanagement.h"
 #include "flagsandenumtest.h"
 #include "propertyandmethodcalltest.h"
+#include "settingstest.h"
+#include "multisignaltest.h"
 
+#ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
+#endif
 
 #endif

@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtLocation">
+    <namespace-type name="QLocation" target-type="class">
+        <extra-includes>
+            <include file-name="QtLocation/QLocation" location="global"/>
+        </extra-includes>
+    </namespace-type>
+  <enum-type name="QLocation::Visibility" flags="QLocation::VisibilityScope"/>
+  <enum-type name="QGeoCodeReply::Error"/>
+  <object-type name="QGeoCodeReply">
+  </object-type>
+  <enum-type name="QGeoRouteReply::Error"/>
+  <object-type name="QGeoRouteReply">
+  </object-type>
+  <enum-type name="QGeoServiceProvider::Error"/>
+  <enum-type name="QGeoServiceProvider::GeocodingFeature" flags="QGeoServiceProvider::GeocodingFeatures"/>
+  <enum-type name="QGeoServiceProvider::MappingFeature" flags="QGeoServiceProvider::MappingFeatures"/>
+  <enum-type name="QGeoServiceProvider::NavigationFeature" flags="QGeoServiceProvider::NavigationFeatures"/>
+  <enum-type name="QGeoServiceProvider::PlacesFeature" flags="QGeoServiceProvider::PlacesFeatures"/>
+  <enum-type name="QGeoServiceProvider::RoutingFeature" flags="QGeoServiceProvider::RoutingFeatures"/>
+  <object-type name="QGeoServiceProvider">
+        <modify-function signature="setQmlEngine(QQmlEngine *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcQmlEngine"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <enum-type name="QPlaceReply::Error"/>
+  <enum-type name="QPlaceReply::Type"/>
+  <enum-type name="QPlaceIdReply::OperationType"/>
+  <object-type name="QPlaceReply">
+  </object-type>
+  <object-type name="QPlaceIdReply">
+  </object-type>
+  <object-type name="QPlaceMatchReply">
+  </object-type>
+  <object-type name="QPlaceContentReply">
+  </object-type>
+  <object-type name="QPlaceDetailsReply">
+  </object-type>
+  <object-type name="QPlaceSearchReply">
+  </object-type>
+  <object-type name="QPlaceManager">
+  </object-type>
+  <object-type name="QGeoJson">
+  </object-type>
+  <object-type name="QGeoCodingManager">
+  </object-type>
+  <object-type name="QGeoCodingManagerEngine">
+  </object-type>
+  <object-type name="QGeoRoutingManager">
+  </object-type>
+  <object-type name="QGeoRoutingManagerEngine">
+  </object-type>
+  <interface-type name="QGeoServiceProviderFactory">
+  </interface-type>
+  <interface-type name="QGeoServiceProviderFactoryV2">
+        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="typeid(*%1) == typeid(QGeoServiceProviderFactoryV2)" />
+  </interface-type>
+  <interface-type name="QGeoServiceProviderFactoryV3">
+        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="typeid(*%1) == typeid(QGeoServiceProviderFactoryV3)" />
+        <modify-function signature="setQmlEngine(QQmlEngine *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcQmlEngine"/>
+            </modify-argument>
+        </modify-function>
+  </interface-type>
+  <object-type name="QPlaceManagerEngine">
+  </object-type>
+  <object-type name="QPlaceSearchSuggestionReply">
+  </object-type>
+  <value-type name="QGeoRoute">
+    <modify-function signature="operator=(const QGeoRoute &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QGeoRouteLeg">
+  </value-type>
+  <value-type name="QPlace">
+    <modify-function signature="operator=(const QPlace &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceIcon">
+    <modify-function signature="operator=(const QPlaceIcon &amp;)" remove="all"/>
+  </value-type>
+  <enum-type name="QGeoManeuver::InstructionDirection"/>
+  <value-type name="QGeoManeuver">
+    <modify-function signature="operator=(const QGeoManeuver &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceAttribute">
+    <modify-function signature="operator=(const QPlaceAttribute &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceCategory">
+    <modify-function signature="operator=(const QPlaceCategory &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceContactDetail">
+    <modify-function signature="operator=(const QPlaceContactDetail &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceMatchRequest">
+    <modify-function signature="operator=(const QPlaceMatchRequest &amp;)" remove="all"/>
+  </value-type>
+  <enum-type name="QPlaceSearchResult::SearchResultType"/>
+  <value-type name="QPlaceSearchResult" polymorphic-base="yes" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceSearchResult)">
+    <modify-function signature="operator=(const QPlaceSearchResult &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceResult" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceResult)">
+  </value-type>
+  <enum-type name="QPlaceContent::Type"/>
+  <value-type name="QPlaceContent" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::NoType || %1-&gt;type() == QPlaceContent::CustomType">
+    <modify-function signature="operator=(const QPlaceContent &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceEditorial" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::EditorialType">
+  </value-type>
+  <value-type name="QPlaceImage" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::ImageType">
+  </value-type>
+  <value-type name="QPlaceReview" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::ReviewType">
+  </value-type>
+  <value-type name="QPlaceContentRequest">
+    <modify-function signature="operator=(const QPlaceContentRequest &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceProposedSearchResult" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceProposedSearchResult)">
+  </value-type>
+  <value-type name="QPlaceRatings">
+    <modify-function signature="operator=(const QPlaceRatings &amp;)" remove="all"/>
+  </value-type>
+  <enum-type name="QPlaceSearchRequest::RelevanceHint"/>
+  <value-type name="QPlaceSearchRequest">
+    <modify-function signature="operator=(const QPlaceSearchRequest &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceSupplier">
+    <modify-function signature="operator=(const QPlaceSupplier &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QPlaceUser">
+    <modify-function signature="operator=(const QPlaceUser &amp;)" remove="all"/>
+  </value-type>
+  <enum-type name="QGeoRouteRequest::FeatureType" flags="QGeoRouteRequest::FeatureTypes"/>
+  <enum-type name="QGeoRouteRequest::FeatureWeight" flags="QGeoRouteRequest::FeatureWeights"/>
+  <enum-type name="QGeoRouteRequest::ManeuverDetail" flags="QGeoRouteRequest::ManeuverDetails"/>
+  <enum-type name="QGeoRouteRequest::RouteOptimization" flags="QGeoRouteRequest::RouteOptimizations"/>
+  <enum-type name="QGeoRouteRequest::SegmentDetail" flags="QGeoRouteRequest::SegmentDetails"/>
+  <enum-type name="QGeoRouteRequest::TravelMode" flags="QGeoRouteRequest::TravelModes"/>
+  <value-type name="QGeoRouteRequest">
+    <modify-function signature="operator=(const QGeoRouteRequest &amp;)" remove="all"/>
+  </value-type>
+  <value-type name="QGeoRouteSegment">
+    <modify-function signature="operator=(const QGeoRouteSegment &amp;)" remove="all"/>
+  </value-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::d', unmatched return type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::const_d', unmatched return type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRoute::QGeoRoute', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::d', unmatched return type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteSegment::QGeoRouteSegment', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoRouteLeg::QGeoRouteLeg', unmatched parameter type 'QExplicitlySharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::d', unmatched return type 'QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QPlace::QPlace', unmatched parameter type 'QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QGeoManeuver::QGeoManeuver', unmatched parameter type 'QSharedDataPointer*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'QGeoMappingManager*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'QNavigationManager*'" />
+</typesystem>

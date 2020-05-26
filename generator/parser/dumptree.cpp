@@ -50,7 +50,7 @@
 #include <QtCore/qdebug.h>
 
 static char const * const names[] = {
-    0,
+    nullptr,
     "AccessSpecifier",
     "AsmDefinition",
     "BaseClause",

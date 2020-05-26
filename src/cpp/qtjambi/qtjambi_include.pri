@@ -1,16 +1,16 @@
 include(qtjambi_base.pri)
 
-greaterThan(QT_MAJOR_VERSION, 4): win32*:{
+win32*:{
 	CONFIG(debug, debug|release) {
-		QTJAMBI_LIB_NAME = qtjambi_debuglib$$QT_MAJOR_VERSION
+                QTJAMBI_LIB_NAME = QtJambi_debug$$QT_MAJOR_VERSION
 	}else{
-		QTJAMBI_LIB_NAME = qtjambi$$QT_MAJOR_VERSION
+                QTJAMBI_LIB_NAME = QtJambi$$QT_MAJOR_VERSION
 	}
 }else{
 	CONFIG(debug, debug|release) {
-		QTJAMBI_LIB_NAME = qtjambi_debuglib
+                QTJAMBI_LIB_NAME = QtJambi_debug
 	}else{
-		QTJAMBI_LIB_NAME = qtjambi
+                QTJAMBI_LIB_NAME = QtJambi
 	}
 }
 
@@ -26,3 +26,4 @@ QTJAMBI_CPP = ../../../build/generator/out/cpp/
 win32-msvc* {
     CONFIG += embed_manifest_dll force_embed_manifest
 }
+

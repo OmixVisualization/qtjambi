@@ -138,8 +138,10 @@ namespace rpp {
                             state = IN_COMMENT;
                         else if (*p_first == '/')
                             state = IN_CXX_COMMENT;
-                        else
-                            return p_first;
+                        else{
+                            //++lines;
+                            return p_first-1;
+                        }
                         break;
 
                     case IN_COMMENT:
@@ -344,8 +346,13 @@ namespace rpp {
                     first = skip_char_literal(first, last);
                     lines += skip_char_literal.lines;
                 } else if (*first == '/') { // skips comments
-                    first = skip_comment_or_divop(first, last);
+                    _InputIterator _first = skip_comment_or_divop(first, last);
                     lines += skip_comment_or_divop.lines;
+                    if(first==_first){
+                        ++first;
+                    }else{
+                        first = _first;
+                    }
                 } else if (pp_isalpha(*first) || *first == '_') { // skips identifier
                     first = skip_identifier(first, last);
                     lines += skip_identifier.lines;

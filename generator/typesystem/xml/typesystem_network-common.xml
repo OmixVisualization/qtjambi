@@ -1,5 +1,49 @@
 <?xml version="1.0"?>
-<typesystem>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtNetwork">
     <namespace-type name="QSsl">
         <include file-name="qssl.h" location="global" />
     </namespace-type>
@@ -24,7 +68,7 @@
     <enum-type name="QHttp::State" />
     <enum-type name="QHttp::ConnectionMode" /-->
     <enum-type name="QHttpMultiPart::ContentType" /><!-- since 4.8 -->
-    <enum-type name="QNetworkInterface::InterfaceFlag" flags="QNetworkInterface::InterfaceFlags" />
+    <enum-type name="QNetworkInterface::InterfaceFlag" flags="QNetworkInterface::InterfaceFlags"/>
     <enum-type name="QNetworkProxy::ProxyType" />
     <!--enum-type name="QUrlInfo::PermissionSpec" /-->
     <enum-type name="QHostInfo::HostInfoError" />
@@ -45,6 +89,7 @@
     <enum-type name="QNetworkAccessManager::NetworkAccessibility"/>
     <enum-type name="QNetworkRequest::LoadControl"/>
     <enum-type name="QNetworkRequest::Priority"/>
+    <enum-type name="QNetworkRequest::RedirectPolicy" since="5.9.0"/>
     <enum-type name="QNetworkConfiguration::BearerType"/>
     <enum-type name="QNetworkConfiguration::Purpose"/>
     <enum-type name="QNetworkConfiguration::StateFlag" flags="QNetworkConfiguration::StateFlags"/>
@@ -55,8 +100,20 @@
     <enum-type name="QNetworkSession::UsagePolicy" flags="QNetworkSession::UsagePolicies" />
     <enum-type name="QDnsLookup::Error"/>
     <enum-type name="QDnsLookup::Type"/>
+    <enum-type name="QNetworkAddressEntry::DnsEligibilityStatus"/>
+    <enum-type name="QNetworkInterface::InterfaceType">
+        <reject-enum-value name="Ieee80211"/>
+    </enum-type>
+    <enum-type name="QHostAddress::ConversionModeFlag" flags="QHostAddress::ConversionMode" since="5.8.0" />
+    <enum-type name="QHstsPolicy::PolicyFlag" flags="QHstsPolicy::PolicyFlags" since="5.9.0" />
 
-    <object-type name="QAbstractNetworkCache" />
+    <object-type name="QAbstractNetworkCache">
+        <modify-function signature="insert(QIODevice*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" /> <!-- function only has effect on devices retrieved using prepare() -->
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QNetworkDiskCache">
         <modify-function signature="insert(QIODevice*)">
             <modify-argument index="1">
@@ -90,26 +147,27 @@
         <modify-function signature="closeConnection()" remove="all"/>
     </object-type-->
     <object-type name="QTcpServer">
-		<modify-function signature="addPendingConnection(QTcpSocket*)">
-			<modify-argument index="1">
+        <modify-function signature="addPendingConnection(QTcpSocket*)">
+            <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
-			</modify-argument>
-		</modify-function>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QTcpSocket" />
     <object-type name="QUdpSocket" />
     <object-type name="QHttpPart">
-		<modify-function signature="operator=(const QHttpPart &amp;)" rename="set">
+        <modify-function signature="operator=(const QHttpPart &amp;)" rename="set">
+            <modify-argument index="0" replace-value="this"/>
             <modify-argument index="1">
                 <reference-count action="ignore" />
             </modify-argument>
-		</modify-function>
-		<modify-function signature="setBodyDevice(QIODevice*)">
+        </modify-function>
+        <modify-function signature="setBodyDevice(QIODevice*)">
             <modify-argument index="1">
                 <reference-count action="ignore" />
             </modify-argument>
-		</modify-function>
-	</object-type><!-- since 4.8 -->
+        </modify-function>
+    </object-type><!-- since 4.8 -->
     <object-type name="QHttpMultiPart" /><!-- since 4.8 -->
 
     <!--object-type name="QHttpHeader">
@@ -117,10 +175,13 @@
     </object-type-->
     <object-type name="QLocalServer" />
     <object-type name="QLocalSocket" />
-    <object-type name="QClassPathNetworkAccessManager"/>
-	<object-type name="QSchemaNetworkAccessManager"/>
-	<object-type name="QNetworkAccessManager">
-		<modify-function signature="setCookieJar(QNetworkCookieJar*)">
+    <object-type name="QBearerEnginePlugin" />
+    <object-type name="QNetworkAccessManager">
+        <modify-function signature="encrypted(QNetworkReply *)" pp-condition="!defined(QT_NO_SSL)"/>
+        <modify-function signature="sslErrors(QNetworkReply *, const QList&lt;QSslError> &amp;)" pp-condition="!defined(QT_NO_SSL)"/>
+        <modify-function signature="preSharedKeyAuthenticationRequired(QNetworkReply *,QSslPreSharedKeyAuthenticator*)" pp-condition="!defined(QT_NO_SSL)"/>
+        <modify-function signature="connectToHostEncrypted(const QString &amp;, unsigned short, const QSslConfiguration &amp;)" pp-condition="!defined(QT_NO_SSL)"/>
+        <modify-function signature="setCookieJar(QNetworkCookieJar*)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus" />
             </modify-argument>
@@ -135,14 +196,22 @@
                 <define-ownership class="java" owner="cplusplus" />
             </modify-argument>
         </modify-function>
+        <modify-function signature="createRequest(QNetworkAccessManager::Operation, const QNetworkRequest&amp;, QIODevice*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java"/>
+                <define-ownership class="shell" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QNetworkCookieJar" />
+    <object-type name="QNetworkCookieJar">
+        <extra-includes>
+            <include file-name="qtjambi_network/qtjambi_network.h" location="global"/>
+        </extra-includes>
+    </object-type>
     <object-type name="QNetworkReply">
-		<modify-function signature="sslConfigurationImplementation(QSslConfiguration &amp;) const" remove="all"/>
-		<modify-function signature="setSslConfigurationImplementation(const QSslConfiguration &amp;)" remove="all"/>
-		<modify-function signature="ignoreSslErrorsImplementation(const QList&lt;QSslError&gt; &amp;)" remove="all"/>
-	</object-type>
-	
+        <modify-function signature="encrypted()" pp-condition="!defined(QT_NO_SSL)"/>
+    </object-type>
+    
     <value-type name="QHostAddress">
         <modify-function signature="QHostAddress(unsigned char*)" remove="all"/>
         <modify-function signature="QHostAddress(const unsigned char*)" remove="all"/>
@@ -150,11 +219,15 @@
         <modify-function signature="setAddress(const unsigned char*)" remove="all"/>
         <modify-function signature="operator=(QString)" remove="all"/>
         <modify-function signature="operator=(QHostAddress)" remove="all"/>
+        <modify-function signature="operator=(const QHostAddress &amp;)" remove="all"/>
+        <modify-function signature="operator=(QHostAddress::SpecialAddress)" remove="all"/>
     </value-type>
 
     <value-type name="QHostInfo">
-            <modify-function signature="operator=(QHostInfo)" remove="all"/>
-            <modify-function signature="lookupHost(QString,QObject*,const char*)" access="private" />
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="operator=(QHostInfo)" remove="all"/>
     </value-type>
 
     <!--value-type name="QHttpRequestHeader">
@@ -191,7 +264,12 @@
     </value-type>
 
     <value-type name="QAuthenticator">
-        <modify-function signature="operator=(QAuthenticator)" remove="all"/>
+        <modify-function signature="operator=(QAuthenticator)" rename="set">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <replace-type modified-type="void" />
+            </modify-argument>
+        </modify-function>
     </value-type>
 
     <value-type name="QNetworkCookie">
@@ -200,11 +278,11 @@
 
     <value-type name="QNetworkRequest">
         <modify-function signature="operator=(QNetworkRequest)" remove="all" />
-		<modify-function signature="setOriginatingObject(QObject*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
+        <modify-function signature="setOriginatingObject(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
     </value-type>
 
 
@@ -213,29 +291,44 @@
     <enum-type name="QSslSocket::SslMode" />
     <enum-type name="QSslSocket::PeerVerifyMode" />
     <enum-type name="QSslConfiguration::NextProtocolNegotiationStatus" />
+    <enum-type name="QSslDiffieHellmanParameters::Error" />
 
-    <value-type name="QSslCipher" />
-	<value-type name="QSslPreSharedKeyAuthenticator">
-		<modify-function signature="operator=(QSslPreSharedKeyAuthenticator)" remove="all" />
-		<modify-function signature="operator=(const QSslPreSharedKeyAuthenticator &amp;)" remove="all" />
-		<!--modify-function signature="swap(QSslPreSharedKeyAuthenticator &amp;)" remove="all" /-->
-	</value-type>
-	<value-type name="QSslEllipticCurve">
-		<!--modify-function signature="isValid() const" remove="all" /-->
-	</value-type>
+    <value-type name="QSslCipher" pp-condition="!defined(QT_NO_SSL)"/>
+    <value-type name="QSslPreSharedKeyAuthenticator" pp-condition="!defined(QT_NO_SSL)">
+        <modify-function signature="operator=(QSslPreSharedKeyAuthenticator)" rename="set">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <replace-type modified-type="void" />
+            </modify-argument>
+        </modify-function>
+        <!--modify-function signature="swap(QSslPreSharedKeyAuthenticator &amp;)" remove="all" /-->
+    </value-type>
+    <value-type name="QSslEllipticCurve" pp-condition="!defined(QT_NO_SSL)">
+        <!--modify-function signature="isValid() const" remove="all" /-->
+    </value-type>
 <!--
 -->
-    <value-type name="QSslError" />
-    <value-type name="QSslKey" />
-    <value-type name="QSslCertificate" />
-    <value-type name="QSslCertificateExtension" />
-    <value-type name="QSslConfiguration" />
+    <value-type name="QSslError" pp-condition="!defined(QT_NO_SSL)" />
+    <value-type name="QSslKey" pp-condition="!defined(QT_NO_SSL)" />
+    <value-type name="QSslCertificate" pp-condition="!defined(QT_NO_SSL)" />
+    <value-type name="QSslCertificateExtension" pp-condition="!defined(QT_NO_SSL)">
+        <modify-function signature="operator=(QSslCertificateExtension)" remove="all" />
+    </value-type>
+    <value-type name="QSslConfiguration" pp-condition="!defined(QT_NO_SSL)">
+        <modify-function signature="dtlsCookieVerificationEnabled() const" pp-condition="QT_CONFIG(dtls)"/>
+        <modify-function signature="setDtlsCookieVerificationEnabled(bool)" pp-condition="QT_CONFIG(dtls)"/>
+        <modify-function signature="defaultDtlsConfiguration()" pp-condition="QT_CONFIG(dtls)"/>
+        <modify-function signature="setDefaultDtlsConfiguration(const QSslConfiguration &amp;)" pp-condition="QT_CONFIG(dtls)"/>
+    </value-type>
+    <value-type name="QSslDiffieHellmanParameters" pp-condition="!defined(QT_NO_SSL)">
+        <modify-function signature="operator=(QSslDiffieHellmanParameters)" remove="all" />
+    </value-type>
+    <object-type name="QSslSocket" pp-condition="!defined(QT_NO_SSL)" />
     <value-type name="QNetworkConfiguration">
         <modify-function signature="operator=(QNetworkConfiguration)" remove="all" />
     </value-type>
 
     <object-type name="QNetworkConfigurationManager" />
-    <object-type name="QSslSocket" />
 
     <object-type name="QNetworkSession">
         <modify-function signature="interface()const" rename="getInterface"/>
@@ -245,56 +338,90 @@
         <modify-function signature="QDnsLookup(QDnsLookup::Type, QString const&amp;, QHostAddress const&amp;, QObject*)" remove="all"/><!-- not sure why this function does not link -->
     </object-type>
     <value-type name="QDnsDomainNameRecord">
-		<modify-function signature="operator=(const QDnsDomainNameRecord&amp;)" remove="all"/>
-	</value-type>
+        <modify-function signature="operator=(const QDnsDomainNameRecord&amp;)" remove="all"/>
+    </value-type>
     <value-type name="QDnsHostAddressRecord">
-		<modify-function signature="operator=(const QDnsHostAddressRecord&amp;)" remove="all"/>
-	</value-type>
+        <modify-function signature="operator=(const QDnsHostAddressRecord&amp;)" remove="all"/>
+    </value-type>
     <value-type name="QDnsMailExchangeRecord">
-		<modify-function signature="operator=(const QDnsMailExchangeRecord&amp;)" remove="all"/>
-	</value-type>
+        <modify-function signature="operator=(const QDnsMailExchangeRecord&amp;)" remove="all"/>
+    </value-type>
     <value-type name="QDnsServiceRecord">
-		<modify-function signature="operator=(const QDnsServiceRecord&amp;)" remove="all"/>
-	</value-type>
+        <modify-function signature="operator=(const QDnsServiceRecord&amp;)" remove="all"/>
+    </value-type>
     <value-type name="QDnsTextRecord">
-		<modify-function signature="operator=(const QDnsTextRecord&amp;)" remove="all"/>
-	</value-type>
+        <modify-function signature="operator=(const QDnsTextRecord&amp;)" remove="all"/>
+    </value-type>
+    <value-type name="QNetworkDatagram">
+        <modify-function signature="operator=(const QNetworkDatagram&amp;)" remove="all"/>
+    </value-type>
+    <value-type name="QHstsPolicy" since="5.9.0">
+        <modify-function signature="operator=(const QHstsPolicy&amp;)" remove="all"/>
+    </value-type>
+    <value-type name="QOcspResponse" since="5.13.0">
+        <modify-function signature="operator=(const QOcspResponse&amp;)" remove="all"/>
+    </value-type>
+    <enum-type name="QDtlsError" since="5.12.0"/>
+    <enum-type name="QOcspCertificateStatus" since="5.12.0"/>
+    <enum-type name="QOcspRevocationReason" since="5.12.0"/>
+    <enum-type name="QDtls::HandshakeState" since="5.12.0"/>
+    <object-type name="QDtls" since="5.12.0">
+        <modify-function signature="handleTimeout(QUdpSocket *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="abortHandshake(QUdpSocket *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="doHandshake(QUdpSocket *, const QByteArray &amp;)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="shutdown(QUdpSocket *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="writeDatagramEncrypted(QUdpSocket *, const QByteArray &amp;)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QDtlsClientVerifier::GeneratorParameters" since="5.12.0">
+    </value-type>
+    <value-type name="QDtls::GeneratorParameters" since="5.12.0" generate="false" java-name="QDtlsClientVerifier.GeneratorParameters">
+    </value-type>
+    <object-type name="QDtlsClientVerifier" since="5.12.0">
+        <modify-function signature="verifyClient(QUdpSocket *, const QByteArray &amp;, const QHostAddress &amp;, unsigned short)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QHttp2Configuration" since="5.14.0">
+        <modify-function signature="operator=(const QHttp2Configuration &amp;)" remove="all"/>
+    </value-type>
 
     <!--object-type name="QNetworkAccessBackend"/>
     <object-type name="QNetworkAccessBackendFactory"/-->
 
     <suppress-warning text="*unmatched parameter type 'sockaddr const*" />
-
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QHttpPart' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." /><!-- since 4.8 -->
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QUrlInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkCacheMetaData' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkProxyQuery' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkAddressEntry' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkCookie' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkProxy' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkRequest' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QAuthenticator' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSslKey' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSslError' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSslCertificate' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScriptContextInfo' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSslCipher' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QStaticText' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSslConfiguration' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QNetworkConfiguration' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSqlError' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QHostAddress' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-
     <!-- For people building without SSL support -->
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.network.QSslSocket' for enum 'SslMode' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSslSocket' for enum 'SslMode' is not declared" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslError' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslCipher' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslKey' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.network.QSslError' for enum 'SslError' is not declared" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSslError' for enum 'SslError' is not declared" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslCertificate' is specified in typesystem, but not defined. This could potentially lead to compilation errors." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.network.QSslSocket' for enum 'PeerVerifyMode' is not declared"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'org.qtjambi.qt.network.QSslCertificate' for enum 'SubjectInfo' is not declared"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSslSocket' for enum 'PeerVerifyMode' is not declared"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSslCertificate' for enum 'SubjectInfo' is not declared"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslConfiguration' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslSocket' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSsl*' for enum '*' is not declared"/>
 
 </typesystem>

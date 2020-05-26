@@ -2,12 +2,12 @@
 #include "rpp/pp-macro-expander.h"
 
 std::string const *rpp::pp_macro_expander::resolve_formal(pp_fast_string const *name) {
-    assert(name != 0);
+    assert(name != nullptr);
 
     if (! frame)
-        return 0;
+        return nullptr;
 
-    assert(frame->expanding_macro != 0);
+    assert(frame->expanding_macro != nullptr);
 
     std::vector<pp_fast_string const *> const formals = frame->expanding_macro->formals;
     for (std::size_t index = 0; index < formals.size(); ++index) {
@@ -23,5 +23,5 @@ std::string const *rpp::pp_macro_expander::resolve_formal(pp_fast_string const *
             assert(0);  // internal error?
     }
 
-    return 0;
+    return nullptr;
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,26 +34,4 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-
-class QPrinter___ extends QPrinter {
-
-        /**
-         * Returns the page margins for this printer.
-         * The unit of the returned margins are specified with the unit parameter.
-         * This function was introduced in Qt 4.4.
-         *
-         * @param unit Specifies the unit of the returned margins.
-         * @return The page margins for this printer.
-         */
-        public final org.qtjambi.qt.core.QMarginsF getPageMargins(QPrinter.Unit unit) {
-            QNativePointer left = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer top = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer right = new QNativePointer(QNativePointer.Type.Double);
-            QNativePointer bottom = new QNativePointer(QNativePointer.Type.Double);
-
-            getPageMargins(left, top, right, bottom, unit);
-            return new org.qtjambi.qt.core.QMarginsF(left.doubleValue(), top.doubleValue(), right.doubleValue(), bottom.doubleValue());
-        }
-}// class
-
 

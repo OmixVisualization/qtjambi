@@ -1,355 +1,353 @@
 <?xml version="1.0"?>
-<typesystem package="org.qtjambi.qt.qml" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-<inject-code>
-			if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-					org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-				}
-				if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-					org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-				}
-				if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-					org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-				}
-			org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-			org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
-			if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtV8")){
-			org.qtjambi.qt.Utilities.loadQtLibrary("QtV8");
-			}
-			org.qtjambi.qt.Utilities.loadQtLibrary("QtQml");
-</inject-code>
-	<object-type name="QQmlExtensionPlugin">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<modify-function signature="initializeEngine ( QQmlEngine * , const char * )">
-			<modify-argument index="2">
-			<replace-type modified-type="java.lang.String" />
-			<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-			</conversion-rule>
-			<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-			</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="registerTypes ( const char * )">
-			<modify-argument index="1">
-			<replace-type modified-type="java.lang.String" />
-			<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-			</conversion-rule>
-			<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-			</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</object-type>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.qml" default-superclass="io.qt.QtObject">
+    <inject-code class="metainfo" position="1">
+    void initialize_meta_info_QQmlListProperty();
+    </inject-code>
+    <inject-code class="metainfo">
+    initialize_meta_info_QQmlListProperty();
+    </inject-code>
+    <object-type name="QQmlExtensionPlugin">
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="initializeEngine ( QQmlEngine * , const char * )">
+            <modify-argument index="2">
+            <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="registerTypes ( const char * )">
+            <modify-argument index="1">
+            <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
 
     <value-type name="QJSValue">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QJSValue" quote-before-line="}// class"/>
+        </inject-code>
       <modify-function signature="call(const QList&lt;QJSValue&gt; &amp;)">
-		  <modify-argument index="1">
-			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
-			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
-		  </modify-argument>
+          <modify-argument index="1">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+          </modify-argument>
       </modify-function>
       <modify-function signature="callWithInstance(const QJSValue &amp;, const QList&lt;QJSValue&gt; &amp;)">
-		  <modify-argument index="2">
-			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
-			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
-		  </modify-argument>
+          <modify-argument index="2">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+          </modify-argument>
       </modify-function>
       <modify-function signature="callAsConstructor(const QList&lt;QJSValue&gt; &amp;)">
-		   <modify-argument index="1">
-			<replace-type modified-type="java.util.List&lt;QJSValue&gt;" />
-			<replace-default-expression with="new java.util.ArrayList&lt;QJSValue&gt;()" />
-		   </modify-argument>
+           <modify-argument index="1">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+           </modify-argument>
       </modify-function>
   </value-type>
   <value-type name="QQmlScriptString">
-  <modify-function signature="numberLiteral( bool * ) const" access="private" rename="__numberLiteral"/>
-  <modify-function signature="booleanLiteral( bool * ) const" access="private" rename="__booleanLiteral"/>
-  <inject-code>
-    @QtBlockedSlot
-    public final Double numberLiteral()  {
-		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-		double result = __numberLiteral(pointer);
-	if(pointer.booleanValue()){
-		return result;
-	}else{
-	        return null;
-	}
-    }
-    @QtBlockedSlot
-    public final Boolean booleanLiteral()  {
-		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-		boolean result = __booleanLiteral(pointer);
-	if(pointer.booleanValue()){
-		return result;
-	}else{
-	        return null;
-	}
-    }
-  </inject-code>
+    <modify-function signature="numberLiteral( bool * ) const">
+        <modify-argument index="0">
+            <replace-type modified-type="java.lang.Double"/>
+            <conversion-rule class="native">
+                jobject %out = ok ? qtjambi_from_double(%env, %in) : nullptr;
+            </conversion-rule>
+        </modify-argument>
+        <modify-argument index="1">
+            <remove-argument/>
+            <conversion-rule class="native">
+                bool ok(false);
+                bool* %out = &amp;ok;
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="booleanLiteral( bool * ) const">
+            <modify-argument index="0">
+                <replace-type modified-type="java.lang.Boolean"/>
+                <conversion-rule class="native">
+                    jobject %out = ok ? qtjambi_from_boolean(%env, %in) : nullptr;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    bool ok(false);
+                    bool* %out = &amp;ok;
+                </conversion-rule>
+            </modify-argument>
+    </modify-function>
   </value-type>
 
     <object-type name="QQmlEngine">
-		<modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
-        	<modify-argument index="1">
-			<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
-			<conversion-rule class="shell">
-			jobject %out = qtjambi_arraylist_new(__jni_env, %in.size());
-			QList&lt;QQmlError > ::const_iterator endIter = %in.constEnd();
-			for (QList&lt;QQmlError > ::const_iterator iter = %in.constBegin(); iter != endIter; ++iter) {
-						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
-						QTJAMBI_EXCEPTION_CHECK(__jni_env);
-						qtjambi_collection_add(__jni_env, %out, jtmp);
-			}
-			QTJAMBI_EXCEPTION_CHECK(__jni_env);
-			</conversion-rule>
-			<conversion-rule class="native">
-			QList&lt;QQmlError > %out;
-			if (warnings0 != 0) {
-				jobjectArray jarray = qtjambi_collection_toArray(__jni_env, %in);
-				jsize __qt__size = __jni_env->GetArrayLength(jarray);
-				for (int i=0; i&lt;__qt__size; ++i) {
-					jobject jtmp = __jni_env->GetObjectArrayElement(jarray, i);
-					QTJAMBI_EXCEPTION_CHECK(__jni_env);
-					%out &lt;&lt; *(QQmlError*)qtjambi_to_object(__jni_env, jtmp);
-				}
-			}
-			QTJAMBI_EXCEPTION_CHECK(__jni_env);
-			</conversion-rule>
-		</modify-argument>
-	    </modify-function>
-	<modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
-		<modify-argument index="3">
-			<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
-			<conversion-rule class="native">
-			QList&lt;QQmlError > errorList;
-			QList&lt;QQmlError >* %out = &amp;errorList;
-			</conversion-rule>
-		</modify-argument>
-		<modify-argument index="0">
-			<conversion-rule class="native">
-			jboolean %out = (jboolean) %in;
-			QList&lt;QQmlError > ::const_iterator endIter = errorList.constEnd();
-			for (QList&lt;QQmlError > ::const_iterator iter = errorList.constBegin(); iter != endIter; ++iter) {
-						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
-						QTJAMBI_EXCEPTION_CHECK(__jni_env);
-						qtjambi_collection_add(__jni_env, errors2, jtmp);
-			}
-		    	</conversion-rule>
-		</modify-argument>
-	    </modify-function>
+        <modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
+            <modify-argument index="1">
+            <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="native">
+                QList&lt;QQmlError>  %out = qtjambi_cast&lt;QList&lt;QQmlError>>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+        </modify-function>
+    <modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
+        <modify-argument index="3">
+            <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
+        </modify-argument>
+        </modify-function>
     </object-type>
-	<object-type name="QQmlComponent">
-		<inject-code>
-			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QQmlComponent" quote-before-line="}// class"/>
-		</inject-code>	
-		<modify-function signature="errors () const">
-			<modify-argument index="return">
-				<replace-type modified-type="java.util.List&lt;QQmlError&gt;" />
-				<conversion-rule class="native">
-				jobject %out = qtjambi_arraylist_new(__jni_env, %in.size());
-				QList&lt;QQmlError > ::const_iterator endIter = %in.constEnd();
-				for (QList&lt;QQmlError > ::const_iterator iter = %in.constBegin(); iter != endIter; ++iter) {
-						jobject jtmp = qtjambi_from_object(__jni_env, new QQmlError(*iter), "QQmlError", "org/qtjambi/qt/qml/", true);
-						QTJAMBI_EXCEPTION_CHECK(__jni_env);
-						qtjambi_collection_add(__jni_env, %out, jtmp);
-				}
-				QTJAMBI_EXCEPTION_CHECK(__jni_env);
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</object-type>
-	<value-type name="QQmlListReference">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<inject-code class="java">
-			@QtBlockedSlot
-			public Class&lt;?> listElementType(){
-				return __qt_listElementType(nativeId());
-			}
-			
-			@QtBlockedSlot
-			private native Class&lt;?> __qt_listElementType(long __this_nativeId);
-		</inject-code>
-		<modify-function signature="QQmlListReference ( QObject *, const char *, QQmlEngine * )">
-			<modify-argument index="2">
-			<replace-type modified-type="java.lang.String" />
-			<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-			</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</value-type>
-	<value-type name="QQmlProperty">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<modify-function signature="connectNotifySignal(QObject *, const char *) const">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="propertyTypeName() const">
-			<modify-argument index="0">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-				<conversion-rule class="shell">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</value-type>
+    <object-type name="QQmlComponent">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+        </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QQmlComponent" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="create(QQmlContext *)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+        <modify-function signature="createWithInitialProperties(QMap&lt;QString,QVariant>,QQmlContext*)" since="5.14.0">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+        <modify-function signature="create(QQmlIncubator &amp;, QQmlContext *, QQmlContext *)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+    </object-type>
+    <object-type name="QQmlIncubator">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="forceCompletion()">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+        <modify-function signature="object() const">
+            <modify-argument index="0">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QQmlIncubationController">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+            <include file-name="qtjambi_qml_repository.h" location="local"/>
+        </extra-includes>
+        <inject-code class="interface">
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController__" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="native">
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController_native__" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="incubateWhile(bool *, int)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
+                <no-null-pointer/>
+                <conversion-rule class="native">
+                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag.flag(%env, %in);
+                    volatile bool* %out = reinterpret_cast&lt;volatile bool* >(ptr);
+                </conversion-rule>
+                <reference-count action="set" variable-name="__rcWhileFlag"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="incubateFor(int)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+    </interface-type>
+    <object-type name="QQmlApplicationEngine">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="objectCreated(QObject*, const QUrl&amp;)">
+            <inject-code class="signal" position="beginning">
+                try{
+                    qtjambi_throw_java_exception(%env);
+                }catch(const JavaException&amp; exn){
+                    qtjambi_push_blocked_exception(%env, exn);
+                }
+            </inject-code>
+        </modify-function>
+        <modify-function signature="loadData(const QByteArray &amp;, const QUrl &amp;)">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        </modify-function>
+    </object-type>
+    <value-type name="QQmlListReference">
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="QQmlListReference ( QObject *, const char *, QQmlEngine * )">
+            <modify-argument index="2">
+            <replace-type modified-type="java.lang.String" />
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QQmlProperty">
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="connectNotifySignal(QObject *, int) const" access="private"/>
+        <modify-function signature="connectNotifySignal(QObject *, const char *) const">
+            <inject-code class="java" position="beginning">
+                slot = io.qt.internal.MetaObjectTools.cppSlotSignature(dest, slot);
+            </inject-code>    
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="propertyTypeName() const">
+            <modify-argument index="0">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlProperty__" quote-before-line="}// class"/>
+        </inject-code>
+    </value-type>
     <value-type name="QQmlExtensionPlugin">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<modify-function signature="initializeEngine(QQmlEngine *, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="registerTypes(const char *)">
-			<modify-argument index="1">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-	</value-type>
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="initializeEngine(QQmlEngine *, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="registerTypes(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
     <object-type name="QQmlExpression">
-		<modify-function signature="evaluate(bool *)" access="private">
-			<modify-argument index="1">
-				<remove-default-expression/>
-			</modify-argument>
-		</modify-function>
-		<inject-code>
-			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlExpression__" quote-before-line="}// class"/>
-		</inject-code>
+        <extra-includes>
+            <include file-name="qtjambi_qml_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="evaluate(bool *)" throws="ValueIsUndefined">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    bool valueIsUndefined = false;
+                    bool* %out = &amp;valueIsUndefined;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    if(valueIsUndefined){
+                        Java::QtQml::QQmlExpression$ValueIsUndefined.throwNew(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
+                        return nullptr;
+                    }
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlExpression__" quote-before-line="}// class"/>
+        </inject-code>
     </object-type>
     <namespace-type name="QtQml">
         <extra-includes>
-            <include file-name="org.qtjambi.qt.core.*" location="java"/>
+            <include file-name="io.qt.core.*" location="java"/>
         </extra-includes>
-		<inject-code>
-			<import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml" quote-before-line="}// class"/>
-		</inject-code>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml" quote-before-line="}// class"/>
+        </inject-code>
     </namespace-type>
-    <interface-type name="QQmlTypesExtensionInterface" java-name="QQmlTypesExtension">
-		<extra-includes>
-			<include file-name="QtCore/QScopedPointer" location="global"/>
-			<include file-name="QtCore/QByteArray" location="global"/>
-		</extra-includes>
-		<modify-function signature="registerTypes(const char *)">
-			<modify-argument index="1">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
+    <interface-type name="QQmlTypesExtensionInterface">
+        <extra-includes>
+            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="QtCore/QByteArray" location="global"/>
+        </extra-includes>
+        <modify-function signature="registerTypes(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
     </interface-type>
-    <interface-type name="QQmlExtensionInterface" java-name="QQmlExtension">
-		<modify-function signature="registerTypes(const char *)">
-			<modify-argument index="1">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="initializeEngine(QQmlEngine *, const char *)">
-			<modify-argument index="2">
-				<replace-type modified-type="java.lang.String"/>
-				<conversion-rule class="native">
-				QScopedPointer&lt;QByteArray&gt; scopedPointer;
-				const char * %out = Q_NULLPTR;
-				if(%in){
-					scopedPointer.reset(new QByteArray(qtjambi_to_qstring(__jni_env, (jstring)%in).toLatin1()));
-					%out = scopedPointer->constData();
-				}
-				</conversion-rule>
-				<conversion-rule class="shell">
-			jobject %out = (jobject)qtjambi_from_qstring(__jni_env, QLatin1String(%in));
-				</conversion-rule>
-			</modify-argument>
-		</modify-function>
+    <interface-type name="QQmlExtensionInterface">
+        <modify-function signature="registerTypes(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="initializeEngine(QQmlEngine *, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
     </interface-type>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,7 @@
 
 class AbstractMetaClass;
 class AbstractMetaFunction;
+class AbstractMetaFunctional;
 class AbstractMetaEnum;
 class AbstractMetaEnumValue;
 class QDomDocument;
@@ -53,6 +54,7 @@ class DocParser {
         ~DocParser();
 
         QString documentation(const AbstractMetaClass *meta_class) const;
+        QString documentation(const AbstractMetaFunctional *meta_class) const;
         QString documentation(const AbstractMetaEnum *meta_enum) const;
         QString documentation(const AbstractMetaEnumValue *meta_enum) const;
         QString documentationForFunction(const QString &signature) const;

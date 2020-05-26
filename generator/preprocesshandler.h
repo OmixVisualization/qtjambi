@@ -13,7 +13,7 @@
 class PreprocessHandler {
 
     public:
-        PreprocessHandler(QString sourceFile, QString targetFile, const QString &phononInclude,
+        PreprocessHandler(QString sourceFile, QString targetFile, const std::function<void(std::string,std::string)> &featureRegistry, const QString &phononInclude,
             const QStringList &includePathList, const QStringList &inputDirectoryList, int verbose);
 
         bool handler();
@@ -43,18 +43,22 @@ class PreprocessHandler {
 
         bool dumpCheck(int kind) const;
         void dump(int kind) const;
+
+    public:
         void undefine(const QString &name) {
             rpp::pp_fast_string fs_name(::toStdString(name));
             env.unbind(&fs_name);
         }
         void define(const QString &name, const QString &value) {
-            rpp::pp_fast_string fs_name(::toStdString(name));
-            rpp::pp_fast_string fs_value(::toStdString(value));
+            rpp::pp_fast_string* fs_name = new rpp::pp_fast_string(::toStdString(name));
+            rpp::pp_fast_string* fs_value = new rpp::pp_fast_string(::toStdString(value));
             rpp::pp_macro macro;
-            macro.name = &fs_name;
-            macro.definition = &fs_value;
+            macro.name = fs_name;
+            macro.definition = fs_value;
             env.bind(macro.name, macro);
         }
+
+    private:
         void setDebugMode(int or_value, int and_value) {
             verbose |= or_value;
             verbose &= and_value;

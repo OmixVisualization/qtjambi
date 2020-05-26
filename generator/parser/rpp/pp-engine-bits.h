@@ -52,6 +52,7 @@
 
 #include <QFile>
 #include <QDebug>
+#include <QString>
 
 #include <sys/stat.h>
 
@@ -63,8 +64,18 @@
 #include "pp-environment.h"
 #include "pp-scanner.h"
 
+typedef void (*MsgHandler)(const std::string &s);
 class QByteArray;
+
 namespace rpp {
+
+    class MessageUtil{
+    public:
+        static void installMessageHandler(MsgHandler handler);
+        static void message(const std::string &message);
+    private:
+        static MsgHandler _m_messageHandler;
+    };
 
     enum PP_DIRECTIVE_TYPE {
         PP_UNKNOWN_DIRECTIVE,
@@ -189,7 +200,7 @@ namespace rpp {
                 pp_fast_string tmp(protection.c_str(), protection.size());
 
                 if (find_header_protection(first, last, &protection)
-                        && env.resolve(&tmp) != 0) {
+                        && env.resolve(&tmp) != nullptr) {
                     std::cerr << "** DEBUG found header protection:" << protection << std::endl;
                     return;
                 }
@@ -251,7 +262,7 @@ namespace rpp {
             void file(std::string const &filename, _OutputIterator __result) {
                 qDebug() << "Reading file:" << filename.c_str();
                 FILE *fp = std::fopen(filename.c_str(), "rb");
-                if (fp != 0) {
+                if (fp != nullptr) {
                     std::string was = env.current_file;
                     env.current_file = filename;
                     file(fp, __result);
@@ -267,7 +278,7 @@ namespace rpp {
              */
             template <typename _OutputIterator>
             void file(FILE *fp, _OutputIterator result) {
-                assert(fp != 0);
+                assert(fp != nullptr);
 
 #if defined (HAVE_MMAP)
                 struct stat st;
@@ -290,25 +301,14 @@ namespace rpp {
 
                 QByteArray data = file.readAll();
                 if (data.isEmpty()) {
-                    std::cout << "pp-engine-bits.h[file(FILE*, _OutputIterator)]: Failed to read the file" << std::endl;
-                    exit(1);
+                    //std::cout << "pp-engine-bits.h[file(FILE*, _OutputIterator)]: Failed to read the file" << std::endl;
+                    //exit(1);
                 }
                 file.close();
                 std::fclose(fp);
-                this->operator()((const char *)data.constData(), (const char *)(data.constData() + data.size()), result);
-                /*
-                 * NOTE: the code is commented out for it seems to have some problems...
-                 * Too lazy to fix it, so now there is Qt based solution for it
-                 * The Qt solution also does more ... secure checks ... maybe? Whatever.
-                std::string buffer;
-                while ( !std::feof ( fp ) ) {
-                    char tmp[1024];
-                    int read = ( int ) std::fread ( tmp, sizeof ( char ), 1023, fp );
-                    tmp[read] = '\0';
-                    buffer += tmp;
+                if (!data.isEmpty()) {
+                    this->operator()(data.constData(), (data.constData() + data.size()), result);
                 }
-                std::fclose ( fp );
-                this->operator () ( buffer.c_str(), buffer.c_str() + buffer.size(), result );*/
 #endif
             }
 
@@ -510,7 +510,7 @@ namespace rpp {
                 PP_HOOK_ON_FILE_INCLUDED(env.current_file, fp ? filepath : filename, fp);
 #endif
 
-                if (fp != 0) {
+                if (fp != nullptr) {
                     std::string old_file = env.current_file;
                     env.current_file = filepath;
                     int __saved_lines = env.current_line;
@@ -527,9 +527,64 @@ namespace rpp {
                     // sync the buffer
                     _PP_internal::output_line(env.current_file, env.current_line, result);
                 } else {
-                    if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0) {
-                        std::cerr << "*** WARNING " << env.current_file << ":" << env.current_line << "  " <<
-                            (quote != '>' ? '"' : '<') << filename << (quote != '>' ? '"' : '>') << ": No such file or directory" << std::endl;
+#ifdef PP_OS_WIN
+                std::replace(filename.begin(), filename.end(), '\\', '/');
+#endif
+                    static QList<QByteArray> ignoredFiles = QList<QByteArray>()
+                            << "type_traits"
+                            << "cstddef"
+                            << "utility"
+                            << "assert.h"
+                            << "stddef.h"
+                            << "algorithm"
+                            << "initializer_list"
+                            << "new"
+                            << "string.h"
+                            << "stdarg.h"
+                            << "string"
+                            << "iterator"
+                            << "list"
+                            << "stdlib.h"
+                            << "limits.h"
+                            << "vector"
+                            << "map"
+                            << "stdio.h"
+                            << "limits"
+                            << "exception"
+                            << "cmath"
+                            << "random"
+                            << "future"
+                            << "ctype.h"
+                            << "GLES2/gl2.h"
+                            << "AppKit/NSOpenGL.h"
+                            << "X11/Xlib.h"
+                            << "GL/glx.h"
+                            << "GL/gl.h"
+                            << "wingdi.h"
+                            << "float.h"
+                            << "set"
+                            << "numeric"
+                            << "functional"
+                            << "windows.h"
+                            << "xcb/xcb.h"
+                            << "CoreFoundation/CoreFoundation.h"
+                            << "qplatformdefs.h"
+                            << "QtMacExtras/QtMacExtrasDepends"
+                            << "QtX11Extras/QtX11ExtrasDepends"
+                            << "QtWinExtras/QtWinExtrasDepends"
+                            << "time.h"
+                            << "inttypes.h"
+                            << "typeinfo"
+                            << "memory"
+                            << "mutex";
+                    if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0 && !ignoredFiles.contains(QByteArray(filename.c_str()))) {
+                        QString message = QString("%1:%2  %3%4%5: No such file or directory")
+                                .arg(env.current_file.c_str())
+                                .arg(QString::number(env.current_line))
+                                .arg(quote != '>' ? '"' : '<')
+                                .arg(filename.c_str())
+                                .arg(quote != '>' ? '"' : '>');
+                        rpp::MessageUtil::message(message.toStdString());
                     }
                 }
 
@@ -592,6 +647,8 @@ namespace rpp {
                     if (*__first == '/') {
                         __first = skip_comment_or_divop(__first, __last);
                         env.current_line += skip_comment_or_divop.lines;
+                        if(__first == __last || *__first == '\n')
+                            break;
                     }
 
                     if (*__first == '\\') {
@@ -601,7 +658,7 @@ namespace rpp {
                         if (__begin != __last && *__begin == '\n') {
                             ++macro.lines;
                             __first = skip_blanks(++__begin, __last);
-                            definition += ' ';
+                            definition += '\n';
                             continue;
                         }
                     }
@@ -629,7 +686,10 @@ namespace rpp {
 
                 while (first != last && *first != '\n') {
                     if (*first == '/') {
+                        _InputIterator tmp = first;
                         first = skip_comment_or_divop(first, last);
+                        if(tmp==first)
+                            ++first;
                         env.current_line += skip_comment_or_divop.lines;
                     } else if (*first == '"') {
                         first = skip_string_literal(first, last);
@@ -682,7 +742,7 @@ namespace rpp {
                             break;
                         }
 
-                        result->set_long(env.resolve(token_text->c_str(), token_text->size()) != 0);
+                        result->set_long(env.resolve(token_text->c_str(), token_text->size()) != nullptr);
 
                         next_token(__first, __last, &token);    // skip '('
 
@@ -1066,7 +1126,7 @@ namespace rpp {
                     char __buffer [256];
                     std::copy(__first, end_macro_name, __buffer);
 
-                    bool value = env.resolve(__buffer, __size) != 0;
+                    bool value = env.resolve(__buffer, __size) != nullptr;
 
                     __first = end_macro_name;
 
@@ -1221,10 +1281,10 @@ namespace rpp {
                             std::string __str(__first, __last);
                             char ch = __str [__str.size() - 1];
                             if (ch == 'u' || ch == 'U') {
-                                token_uvalue = strtoul(__str.c_str(), 0, 0);
+                                token_uvalue = strtoul(__str.c_str(), nullptr, 0);
                                 *kind = TOKEN_UNUMBER;
                             } else {
-                                token_value = strtol(__str.c_str(), 0, 0);
+                                token_value = strtol(__str.c_str(), nullptr, 0);
                                 *kind = TOKEN_NUMBER;
                             }
                             __first = end;

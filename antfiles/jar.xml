@@ -61,7 +61,7 @@
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${jardir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
-        <javac source="1.7" target="1.7" debug="true" deprecation="true"
+        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
                 includeantruntime="true"
                 excludes="${module.excludes}"
@@ -78,7 +78,7 @@
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
         <mkdir dir="${jardir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
-        <javac source="1.7" target="1.7" debug="true" deprecation="true"
+        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
                 includeantruntime="true"
                 excludes="${module.excludes}"
@@ -88,7 +88,6 @@
             <src path="${sourcedir}"/>
             <src path="${sourcedir2}"/>
             <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-            <exclude name="org/qtjambi/qt/xml/QXmlStream*.java" if="qtjambi.config.ismacosx"/>
             <classpath refid="java.compile.classpath"/>
         </javac>
     </target>
@@ -98,7 +97,7 @@
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${jardir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
-        <javac source="1.7" target="1.7" debug="true" deprecation="true"
+        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
                 includeantruntime="true"
                 excludes="${module.excludes}"
@@ -109,7 +108,6 @@
             <src path="${sourcedir2}"/>
             <src path="${sourcedir3}"/>
             <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-            <exclude name="org/qtjambi/qt/xml/QXmlStream*.java" if="qtjambi.config.ismacosx"/>
             <classpath refid="java.compile.classpath"/>
         </javac>
     </target>
@@ -197,18 +195,15 @@
                 <!-- FIXME: Chicken and Egg problem with ANT building, we need the -->
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
                 <attribute name="Bundle-Description"      value="QtJambi Util Bundle"/>
-                <attribute name="Bundle-DocURL"           value="http://www.qt-jambi.org/go/osgi/DocURL/org.qtjambi.qt.util;version=${qtjambi.version.bundle}"/>
                 <!-- TODO: qtjambi.png -->
                 <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Examples Demos and Launcher Bundle"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
-                <attribute name="Bundle-SymbolicName"     value="org.qtjambi.qt.util;singleton:=true"/>
-                <attribute name="Bundle-UpdateLocation"   value="http://www.qt-jambi.org/go/osgi/UpdateLocation/org.qtjambi.qt.util;version=${qtjambi.version.bundle}"/>
-                <attribute name="Bundle-Vendor"           value="www.qt-jambi.org"/>
+                <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.util;singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
-                <attribute name="Export-Package"          value="org.qtjambi.qt.osinfo"/>
+                <attribute name="Export-Package"          value="io.qt.qtjambi.osinfo"/>
             </manifest>
         </jar>
     </target>
@@ -232,9 +227,8 @@
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"        value="org.qtjambi.qt.examples.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
+<!--                <attribute name="Bundle-Activator"        value="io.qt.qtjambi.examples.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
                 <attribute name="Bundle-Description"      value="QtJambi Examples Demos and Launcher Bundle"/>
-                <attribute name="Bundle-DocURL"           value="http://www.qt-jambi.org/go/osgi/DocURL/org.qtjambi.qt.examples;version=${qtjambi.version.bundle}"/>
                 <!-- TODO: qtjambi.png -->
                 <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
@@ -242,14 +236,13 @@
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Examples Demos and Launcher Bundle"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
-                <attribute name="Bundle-SymbolicName"     value="org.qtjambi.qt.examples;singleton:=true"/>
-                <attribute name="Bundle-UpdateLocation"   value="http://www.qt-jambi.org/go/osgi/UpdateLocation/org.qtjambi.qt.examples;version=${qtjambi.version.bundle}"/>
+                <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.examples;singleton:=true"/>
                 <attribute name="Bundle-Vendor"           value="www.qt-jambi.org"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
-<!-- FIXME: Import-Package org.qtjambi.qt,org.qtjambi.extensions,org.qtjambi.extensions.signalhandler,org.qtjambi.images,org.qtjambi.qt.core,org.qtjambi.qt.gui,org.qtjambi.qt.help,org.qtjambi.qt.multimedia,org.qtjambi.qt.network,org.qtjambi.qt.opengl,org.qtjambi.qt.osinfo,org.qtjambi.qt.phonon,org.qtjambi.qt.script,org.qtjambi.qt.scripttools,org.qtjambi.qt.sql,org.qtjambi.qt.svg,org.qtjambi.qt.test,org.qtjambi.qt.webkit,org.qtjambi.qt.xml,org.qtjambi.qt.xmlpatterns -->
-<!-- FIXME: versioned packages org.qtjambi.qt;version=&quot;[${qt.version.major}.${qt.version.minor},${qt.version.major}.${qt.version.minor.next})&quot; -->
-<!-- FIXME: Need to move org.qtjambi.qt.internal.RetroTranslatorHelper out of internal package -->
-                <attribute name="Import-Package"          value="org.qtjambi.qt,org.qtjambi.qt.core,org.qtjambi.qt.gui,org.qtjambi.qt.xml,org.qtjambi.qt.qtjambi.util"/>
+<!-- FIXME: Import-Package io.qt.qtjambi,org.qtjambi.extensions,org.qtjambi.extensions.signalhandler,org.qtjambi.images,io.qt.qtjambi.core,io.qt.qtjambi.gui,io.qt.qtjambi.help,io.qt.qtjambi.multimedia,io.qt.qtjambi.network,io.qt.qtjambi.opengl,io.qt.qtjambi.osinfo,io.qt.qtjambi.phonon,io.qt.qtjambi.script,io.qt.qtjambi.scripttools,io.qt.qtjambi.sql,io.qt.qtjambi.svg,io.qt.qtjambi.test,io.qt.qtjambi.webkit,io.qt.qtjambi.xml,io.qt.qtjambi.xmlpatterns -->
+<!-- FIXME: versioned packages io.qt.qtjambi;version=&quot;[${qt.version.major}.${qt.version.minor},${qt.version.major}.${qt.version.minor.next})&quot; -->
+<!-- FIXME: Need to move io.qt.qtjambi.internal.RetroTranslatorHelper out of internal package -->
+                <attribute name="Import-Package"          value="io.qt.qtjambi,io.qt.qtjambi.core,io.qt.qtjambi.gui,io.qt.qtjambi.xml,io.qt.qtjambi.qtjambi.util"/>
 <!-- FIXME: org.qtjambi.demos.* etc... -->
                 <attribute name="Export-Package"          value="org.qtjambi.demos,org.qtjambi.examples,org.qtjambi.images,org.qtjambi.launcher"/>
             </manifest>
@@ -276,9 +269,8 @@
         <jar destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"       value="org.qtjambi.qt.designer.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
+<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.designer.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
                 <attribute name="Bundle-Description"      value="QtJambi Designer Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
-                <attribute name="Bundle-DocURL"           value="http://www.qt-jambi.org/go/osgi/DocURL/org.qtjambi.tools.designer.${qtjambi.osname}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
                 <!-- TODO: qtjambi.png -->
                 <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
@@ -287,18 +279,13 @@
                 <attribute name="Bundle-Name"             value="QtJambi Designer Bundle"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
                 <attribute name="Bundle-SymbolicName"     value="org.qtjambi.tools.designer.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
-                <attribute name="Bundle-UpdateLocation"   value="http://www.qt-jambi.org/go/osgi/UpdateLocation/org.qtjambi.tools.designer.${qtjambi.osname}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
-                <attribute name="Bundle-Vendor"           value="www.qt-jambi.org"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
-<!-- FIXME: org.qtjambi.qt.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=&quot;[${qt.version.major}.${qt.version.minor},${qt.version.major}.${qt.version.minor.next})&quot;"/> -->
-                <attribute name="Import-Package"          value="org.qtjambi.qt,org.qtjambi.qt.core,org.qtjambi.qt.gui,org.qtjambi.qt.qtjambi.util,org.qtjambi.qt.xml"/>
-                <attribute name="Export-Package"          value="org.qtjambi.tools.designer"/>
                 <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
                 <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
                 <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
             </manifest>
             <fileset dir="${java.outdir}/${module}">
-                <include name="org/qtjambi/tools/designer/**"/>
+                <include name="io/qt/tools/designer/**"/>
             </fileset>
         </jar>
     </target>
@@ -312,21 +299,20 @@
                 <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
             </manifest>
             <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class"/>
-            <fileset dir="${generator.outputdir}/java" includes="org/qtjambi/tools/designer/**"/>
+            <fileset dir="${generator.outputdir}/java" includes="io/qt/tools/designer/**"/>
         </jar>
     </target>
 
     <!-- Same as "makejar" target but uses compile2 to process 2 sourcedirs -->
-    <target name="makejar.qtjambi" depends="compile2, copy-resources">
+    <target name="makejar.qtjambi" depends="compile3, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"       value="org.qtjambi.qt.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
+<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
                 <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
-                <attribute name="Bundle-DocURL"           value="http://www.qt-jambi.org/go/osgi/DocURL/org.qtjambi.qt.${qtjambi.osname}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
                 <!-- TODO: qtjambi.png -->
                 <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
@@ -334,20 +320,16 @@
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
-                <attribute name="Bundle-SymbolicName"     value="org.qtjambi.qt.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
-                <attribute name="Bundle-UpdateLocation"   value="http://www.qt-jambi.org/go/osgi/UpdateLocation/org.qtjambi.qt.${qtjambi.osname}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
-                <attribute name="Bundle-Vendor"           value="www.qt-jambi.org"/>
+                <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
-                <attribute name="Require-Bundle"          value="org.qtjambi.qt.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
-                <attribute name="Import-Package"          value="org.qtjambi.qt.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
-                <attribute name="Export-Package"          value="org.qtjambi.qt,org.qtjambi.extensions,org.qtjambi.extensions.signalhandler,org.qtjambi.qt.core,org.qtjambi.qt.designer,org.qtjambi.qt.gui,org.qtjambi.qt.help,org.qtjambi.qt.images,org.qtjambi.qt.multimedia,org.qtjambi.qt.network,org.qtjambi.qt.opengl,org.qtjambi.qt.osinfo,org.qtjambi.qt.phonon,org.qtjambi.qt.script,org.qtjambi.qt.scripttools,org.qtjambi.qt.sql,org.qtjambi.qt.svg,org.qtjambi.qt.test,org.qtjambi.qt.webkit,org.qtjambi.qt.xml,org.qtjambi.qt.xmlpatterns,org.qtjambi.qt.qtjambi.util"/>
+                <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
                 <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
                 <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
                 <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
                 <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
             </manifest>
-            <fileset dir="${java.outdir}/${module}" excludes="org/qtjambi/tools/**"/>
+            <fileset dir="${java.outdir}/${module}" excludes="io/qt/tools/**"/>
         </jar>
     </target>
 
@@ -360,7 +342,7 @@
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
             </manifest>
             <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class"/>
-            <fileset dir="${generator.outputdir}/java" excludes="org/qtjambi/tools/**"/>
+            <fileset dir="${generator.outputdir}/java" excludes="io/qt/tools/**"/>
         </jar>
     </target>
 

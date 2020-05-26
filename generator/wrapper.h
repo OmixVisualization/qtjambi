@@ -34,6 +34,8 @@ class DefineUndefine {
         bool m_set;
 };
 
+class TypeDatabase;
+
 /**
  * Class that parses and initializes actual generator.
  * Name of this class ought to be Generator, but until someone
@@ -46,18 +48,21 @@ class Wrapper {
 
         static QString include_directory;
         static bool qtjambi_debug_tools;
-        static bool isTargetPlatformArmCpu;
         void setDefineUndefineStage(int stage) { defineUndefineStageCurrent = stage; }
 
         int runJambiGenerator();
 
-
+        static const QList< DefineUndefine >& getDefineUndefineStageOneList();
     private:
-        void displayHelp(GeneratorSet* arg1);
+        Q_NORETURN void displayHelp(GeneratorSet* arg1);
         void modifyCppDefine(const QString &arg, bool f_set);
         QMap<QString, QString> parseArguments(int argc, char *argv[]);
         void assignVariables();
         void handleArguments();
+
+        void analyzeDependencies(TypeDatabase* typeDatabase);
+
+        static bool defined(QString name);
 
         QString default_file;
         QString default_system;
@@ -70,9 +75,9 @@ class Wrapper {
         QMap< QString, QString > args;
         QStringList includePathsList;
         QStringList inputDirectoryList;
-        int defineUndefineStageCurrent;
-        QList< DefineUndefine > defineUndefineStageOneList;
-        QList< DefineUndefine > defineUndefineStageTwoList;
+        static int defineUndefineStageCurrent;
+        static QList< DefineUndefine > defineUndefineStageOneList;
+        static QList< DefineUndefine > defineUndefineStageTwoList;
         int debugCppMode;
 };
 

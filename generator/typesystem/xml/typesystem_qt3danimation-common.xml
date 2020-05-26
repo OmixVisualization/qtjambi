@@ -1,0 +1,373 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="Qt3DAnimation">
+    <rejection class="Qt3DAnimation::QClipBlendNodeCreatedChange"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="rbegin"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="rend"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="cbegin"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="cend"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="crbegin"/>
+    <rejection class="Qt3DAnimation::QChannelComponent" function-name="crend"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="rbegin"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="rend"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="cbegin"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="cend"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="crbegin"/>
+    <rejection class="Qt3DAnimation::QChannel" function-name="crend"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="rbegin"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="rend"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="cbegin"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="cend"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="crbegin"/>
+    <rejection class="Qt3DAnimation::QAnimationClipData" function-name="crend"/>
+    <namespace-type name="Qt3DAnimation" generate="no" since="5.10.0"/>
+    <!--rejection class="Qt3DAnimation::QAbstractCameraController::InputState"/-->
+    <enum-type name="Qt3DAnimation::QAbstractAnimation::AnimationType" />
+    <object-type name="Qt3DAnimation::QAbstractAnimation" java-name="QAbstractAnimation" since="5.11.0"/>
+    <object-type name="Qt3DAnimation::QAbstractAnimationClip" java-name="QAbstractAnimationClip" since="5.11.0"/>
+    <object-type name="Qt3DAnimation::QAbstractChannelMapping" java-name="QAbstractChannelMapping" since="5.11.0"/>
+    <enum-type name="Qt3DAnimation::QAbstractClipAnimator::Loops" force-integer="yes"/>
+    <object-type name="Qt3DAnimation::QAbstractClipAnimator" java-name="QAbstractClipAnimator" since="5.11.0">
+        <modify-function signature="setChannelMapper(Qt3DAnimation::QChannelMapper *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setClock(Qt3DAnimation::QClock *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QAbstractClipBlendNode" java-name="QAbstractClipBlendNode" since="5.11.0"/>
+    <object-type name="Qt3DAnimation::QAdditiveClipBlend" java-name="QAdditiveClipBlend" since="5.11.0">
+        <modify-function signature="setBaseClip(Qt3DAnimation::QAbstractClipBlendNode *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAdditiveClip(Qt3DAnimation::QAbstractClipBlendNode *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="additiveClipChanged(Qt3DAnimation::QAbstractClipBlendNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QAnimationAspect" java-name="QAnimationAspect" since="5.11.0"/>
+    <object-type name="Qt3DAnimation::QAnimationCallback" java-name="QAnimationCallback" since="5.11.0"/>
+    <enum-type name="Qt3DAnimation::QAnimationCallback::Flag" flags="Qt3DAnimation::QAnimationCallback::Flags" />
+    <object-type name="Qt3DAnimation::QAnimationClip" java-name="QAnimationClip" since="5.11.0"/>
+    <value-type name="Qt3DAnimation::QAnimationClipData" java-name="QAnimationClipData" since="5.11.0">
+        <inject-code>
+        </inject-code>
+        <modify-function signature="begin() const" access="protected"/>
+        <modify-function signature="end() const" access="protected"/>
+        <modify-function signature="operator=(const Qt3DAnimation::QAnimationClipData &amp;)" remove="all"/>
+    </value-type>
+    <iterator-type name="Qt3DAnimation::QAnimationClipData::const_iterator" java-name="Iterator" pointer="yes">
+        <modify-function signature="operator++()" access="protected"/>
+        <modify-function signature="operator--()" access="protected"/>
+        <modify-function signature="operator*()" access="protected"/>
+    </iterator-type>
+    <object-type name="Qt3DAnimation::QAnimationClipLoader" java-name="QAnimationClipLoader" since="5.11.0">
+    </object-type>
+    <enum-type name="Qt3DAnimation::QAnimationClipLoader::Status" />
+    <object-type name="Qt3DAnimation::QAnimationController" java-name="QAnimationController" since="5.11.0">
+        <modify-function signature="setEntity(Qt3DCore::QEntity *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAnimationGroups(const QVector&lt;Qt3DAnimation::QAnimationGroup *>&amp;)">
+            <inject-code position="end">
+                if(__rcAnimationGroup!=null){
+                    __rcAnimationGroup.clear();
+                }else{
+                    __rcAnimationGroup = new java.util.ArrayList&lt;>();
+                }
+                __rcAnimationGroup.addAll(animationGroups);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addAnimationGroup(Qt3DAnimation::QAnimationGroup*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcAnimationGroup"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAnimationGroup(Qt3DAnimation::QAnimationGroup*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcAnimationGroup"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QAnimationGroup" java-name="QAnimationGroup" since="5.11.0">
+        <modify-function signature="setAnimations(const QVector&lt;Qt3DAnimation::QAbstractAnimation *>&amp;)">
+            <inject-code position="end">
+                if(__rcAnimation!=null){
+                    __rcAnimation.clear();
+                }else{
+                    __rcAnimation = new java.util.ArrayList&lt;>();
+                }
+                __rcAnimation.addAll(animations);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addAnimation(Qt3DAnimation::QAbstractAnimation*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcAnimation"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAnimation(Qt3DAnimation::QAbstractAnimation*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcAnimation"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QBlendedClipAnimator" java-name="QBlendedClipAnimator" since="5.11.0">
+        <modify-function signature="setBlendTree(Qt3DAnimation::QAbstractClipBlendNode *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QCallbackMapping" java-name="QCallbackMapping" since="5.11.0">
+        <modify-function signature="setCallback(int,Qt3DAnimation::QAnimationCallback*,QFlags&lt;Qt3DAnimation::QAnimationCallback::Flag>)">
+            <modify-argument index="2">
+                <reference-count action="set" variable-name="__rcCallback"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="Qt3DAnimation::QChannel" java-name="QChannel" since="5.11.0">
+        <modify-function signature="begin() const" access="protected"/>
+        <modify-function signature="end() const" access="protected"/>
+        <modify-function signature="operator=(const Qt3DAnimation::QChannel &amp;)" remove="all"/>
+    </value-type>
+    <iterator-type name="Qt3DAnimation::QChannel::const_iterator" java-name="Iterator" pointer="yes">
+        <modify-function signature="operator++()" access="protected"/>
+        <modify-function signature="operator--()" access="protected"/>
+        <modify-function signature="operator*()" access="protected"/>
+    </iterator-type>
+    <value-type name="Qt3DAnimation::QChannelComponent" java-name="QChannelComponent" since="5.11.0">
+        <modify-function signature="begin() const" access="protected"/>
+        <modify-function signature="end() const" access="protected"/>
+        <modify-function signature="operator=(const Qt3DAnimation::QChannelComponent &amp;)" remove="all"/>
+        <modify-function signature="insertKeyFrame(int,Qt3DAnimation::QKeyFrame)">
+            <modify-argument index="2">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <iterator-type name="Qt3DAnimation::QChannelComponent::const_iterator" java-name="Iterator" pointer="yes">
+        <modify-function signature="operator++()" access="protected"/>
+        <modify-function signature="operator--()" access="protected"/>
+        <modify-function signature="operator*()" access="protected"/>
+    </iterator-type>
+    <object-type name="Qt3DAnimation::QChannelMapper" java-name="QChannelMapper" since="5.11.0">
+        <modify-function signature="addMapping(Qt3DAnimation::QAbstractChannelMapping*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeMapping(Qt3DAnimation::QAbstractChannelMapping*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QChannelMapping" java-name="QChannelMapping" since="5.11.0">
+        <modify-function signature="setTarget(Qt3DCore::QNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QClipAnimator" java-name="QClipAnimator" since="5.11.0">
+        <modify-function signature="setClip(Qt3DAnimation::QAbstractAnimationClip*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QClipBlendNodeCreatedChangeBase" java-name="QClipBlendNodeCreatedChange" since="5.11.0" polymorphic-id-expression="typeid(*%1) == typeid(Qt3DAnimation::QClipBlendNodeCreatedChangeBase)">
+    </object-type>
+    <object-type name="Qt3DAnimation::QClipBlendValue" java-name="QClipBlendValue" since="5.11.0">
+        <modify-function signature="setClip(Qt3DAnimation::QAbstractAnimationClip*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QClock" java-name="QClock" since="5.11.0"/>
+    <object-type name="Qt3DAnimation::QKeyFrame" java-name="QKeyFrame" since="5.11.0"/>
+    <enum-type name="Qt3DAnimation::QKeyFrame::InterpolationType" />
+    <enum-type name="Qt3DAnimation::QKeyframeAnimation::RepeatMode" />
+    <object-type name="Qt3DAnimation::QKeyframeAnimation" java-name="QKeyframeAnimation" since="5.11.0">
+        <modify-function signature="setKeyframes(const QVector&lt;Qt3DCore::QTransform*>&amp;)">
+            <inject-code position="end">
+                if(__rcKeyframe!=null){
+                    __rcKeyframe.clear();
+                }else{
+                    __rcKeyframe = new java.util.ArrayList&lt;>();
+                }
+                __rcKeyframe.addAll(keyframes);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addKeyframe(Qt3DCore::QTransform*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcKeyframe"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeKeyframe(Qt3DCore::QTransform*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcKeyframe"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setTarget(Qt3DCore::QTransform*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcTarget"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QLerpClipBlend" java-name="QLerpClipBlend" since="5.11.0">
+        <modify-function signature="setStartClip(Qt3DAnimation::QAbstractClipBlendNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setEndClip(Qt3DAnimation::QAbstractClipBlendNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="Qt3DAnimation::QMorphingAnimation::Method" />
+    <object-type name="Qt3DAnimation::QMorphingAnimation" java-name="QMorphingAnimation" since="5.11.0">
+        <modify-function signature="setMorphTargets(const QVector&lt;Qt3DAnimation::QMorphTarget*>&amp;)">
+            <inject-code position="end">
+                if(__rcMorphTarget!=null){
+                    __rcMorphTarget.clear();
+                }else{
+                    __rcMorphTarget = new java.util.ArrayList&lt;>();
+                }
+                __rcMorphTarget.addAll(targets);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addMorphTarget(Qt3DAnimation::QMorphTarget*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcMorphTarget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeMorphTarget(Qt3DAnimation::QMorphTarget*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcMorphTarget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setTarget(Qt3DRender::QGeometryRenderer*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcTarget"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QMorphTarget" java-name="QMorphTarget" since="5.11.0">
+        <modify-function signature="setAttributes(const QVector&lt;Qt3DRender::QAttribute*>&amp;)">
+            <inject-code position="end">
+                if(__rcAttribute!=null){
+                    __rcAttribute.clear();
+                }else{
+                    __rcAttribute = new java.util.ArrayList&lt;>();
+                }
+                __rcAttribute.addAll(attributes);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addAttribute(Qt3DRender::QAttribute*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcAttribute"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAttribute(Qt3DRender::QAttribute*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcAttribute"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QSkeletonMapping" java-name="QSkeletonMapping" since="5.11.0">
+        <modify-function signature="setSkeleton(Qt3DCore::QAbstractSkeleton *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DAnimation::QVertexBlendAnimation" java-name="QVertexBlendAnimation" since="5.11.0">
+        <modify-function signature="setMorphTargets(const QVector&lt;Qt3DAnimation::QMorphTarget*>&amp;)">
+            <inject-code position="end">
+                if(__rcMorphTarget!=null){
+                    __rcMorphTarget.clear();
+                }else{
+                    __rcMorphTarget = new java.util.ArrayList&lt;>();
+                }
+                __rcMorphTarget.addAll(targets);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addMorphTarget(Qt3DAnimation::QMorphTarget*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcMorphTarget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeMorphTarget(Qt3DAnimation::QMorphTarget*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcMorphTarget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setTarget(Qt3DRender::QGeometryRenderer*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcTarget"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractChannelMapping' set to non-final, as it is extended by other classes" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractAnimationClip' set to non-final, as it is extended by other classes" />
+</typesystem>

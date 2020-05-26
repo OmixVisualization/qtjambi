@@ -1,5 +1,49 @@
 <?xml version="1.0"?>
-<typesystem>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtWidgets">
 
     <rejection class="*" function-name="d_func"/>
 
@@ -13,11 +57,6 @@
     <rejection class="QWindowsMobileStyle" />
     <rejection class="QAbstractUndoItem"/>
     <rejection class="QItemEditorCreator"/>
-    <rejection class="QLibrary"/>
-    <rejection class="QLinkedList"/>
-    <rejection class="QLinkedListData"/>
-    <rejection class="QLinkedListIterator"/>
-    <rejection class="QLinkedListNode"/>
     <rejection class="QMimeSource"/>
     <rejection class="QUpdateLaterEvent"/>
     <rejection class="QVFbHeader"/>
@@ -28,16 +67,15 @@
     <rejection class="QWSEmbedWidget"/>
     <rejection class="JObject_key" />
     <rejection class="QWidgetItemV2" />
+    <rejection class="QTreeWidgetItem" function-name="treeModel"/>
     <rejection class="QAbstractItemDelegate" function-name="operator="/>
     <rejection class="QApplication" function-name="compressEvent"/>
-    <rejection class="QPictureIO" function-name="defineIOHandler"/>
     <rejection class="QWidget" function-name="create"/>
     <rejection class="QWidget" function-name="find"/>
     <rejection class="QWidget" function-name="handle"/>
     <rejection class="QWidget" function-name="styleChange"/>
     <rejection class="QWidget" function-name="internalWinId"/>
     <rejection class="QActionGroup" function-name="selected"/>
-    <rejection class="QWidgetItem" field-name="wid" />
     <rejection class="QGraphicsEffect" function-name="source"/>
   <rejection class="QPlatformFontDatabase" function-name="fallbacksForFamily"/>
   <rejection class="QPlatformWindowFormat" function-name="setSharedContext"/>
@@ -55,6 +93,69 @@
     <rejection class="QGraphicsEllipseItem" enum-name="enum_1"/>
     <rejection class="QGraphicsProxyWidget" enum-name="enum_1" />
     <rejection class="QGraphicsWidget" enum-name="enum_1" />
+    <rejection class="QSizePolicy::Bits"/>
+    <rejection class="QAccessibleWidget" function-name="interface_cast"/>
+    <rejection class="QAccessibleWidget" function-name="tr"/>
+    <rejection class="QAccessibleWidget" function-name="trUtf8"/>
+    
+    <rejection class="QStyleHintReturn" enum-name="StyleOptionType"/>
+    <rejection class="QStyleHintReturn" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleHintReturnVariant" enum-name="StyleOptionType"/>
+    <rejection class="QStyleHintReturnVariant" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleHintReturnMask" enum-name="StyleOptionType"/>
+    <rejection class="QStyleHintReturnMask" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOption" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOption" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionButton" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionButton" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionComboBox" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionComboBox" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionComplex" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionComplex" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionDockWidget" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionDockWidget" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionFocusRect" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionFocusRect" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionFrame" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionFrame" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionGraphicsItem" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionGraphicsItem" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionGroupBox" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionGroupBox" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionHeader" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionHeader" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionMenuItem" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionMenuItem" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionProgressBar" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionProgressBar" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionRubberBand" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionRubberBand" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionSizeGrip" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionSizeGrip" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionSlider" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionSlider" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionSpinBox" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionSpinBox" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionTab" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionTab" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionTabBarBase" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionTabBarBase" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionTabWidgetFrame" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionTabWidgetFrame" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionTitleBar" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionTitleBar" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionToolBar" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionToolBar" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionToolBox" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionToolBox" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionToolButton" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionToolButton" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionViewItem" enum-name="StyleOptionType"/>
+    <rejection class="QStyleOptionViewItem" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOption" enum-name="OptionType"/>
+    <rejection class="QListWidgetItem" enum-name="ItemType"/>
+    <rejection class="QTableWidgetItem" enum-name="ItemType"/>
+    <rejection class="QTreeWidgetItem" enum-name="ItemType"/>
 
     <enum-type name="QTabBar::SelectionBehavior" />
     <enum-type name="QTabBar::ButtonPosition" />
@@ -76,6 +177,7 @@
     <enum-type name="QAbstractSlider::SliderChange"/>
     <enum-type name="QAbstractSpinBox::ButtonSymbols"/>
     <enum-type name="QAbstractSpinBox::CorrectionMode"/>
+    <enum-type name="QAbstractSpinBox::StepType"/>
     <enum-type name="QAbstractSpinBox::StepEnabledFlag" flags="QAbstractSpinBox::StepEnabled"/>
     <enum-type name="QDirModel::Roles"/>
     <enum-type name="QGraphicsItem::CacheMode" />
@@ -117,7 +219,7 @@
     <enum-type name="QFrame::Shadow" extensible="yes"/>
     <enum-type name="QFrame::Shape"/>
     <enum-type name="QFrame::StyleMask"/>
-    <enum-type name="QGraphicsItem::Extension"/>
+    <enum-type name="QGraphicsItem::Extension" extensible="yes"/>
     <enum-type name="QGraphicsItem::GraphicsItemChange"/>
     <enum-type name="QGraphicsItem::GraphicsItemFlag" flags="QGraphicsItem::GraphicsItemFlags"/>
     <enum-type name="QGraphicsPixmapItem::ShapeMode"/>
@@ -137,7 +239,6 @@
     <enum-type name="QListView::Movement"/>
     <enum-type name="QListView::ResizeMode"/>
     <enum-type name="QListView::ViewMode"/>
-    <enum-type name="QListWidgetItem::ItemType"/>
     <enum-type name="QMainWindow::DockOption" flags="QMainWindow::DockOptions"/>
     <enum-type name="QMessageBox::ButtonRole"/>
     <enum-type name="QMessageBox::Icon"/>
@@ -156,94 +257,38 @@
         <reject-enum-value name="PM_MDIMinimizedWidth"/>
     </enum-type>
     <enum-type name="QStyle::PrimitiveElement" extensible="yes">
-        <reject-enum-value name="PE_IndicatorItemViewItemCheck" />
-        <reject-enum-value name="PE_FrameStatusBarItem" />
+        <reject-enum-value name="PE_IndicatorViewItemCheck" />
+        <reject-enum-value name="PE_FrameStatusBar" />
+        <reject-enum-value name="PE_IndicatorTabTearLeft" since="5.7.0" />
     </enum-type>
     <enum-type name="QStyle::StandardPixmap" extensible="yes"/>
     <enum-type name="QStyle::StateFlag" flags="QStyle::State"/>
     <enum-type name="QStyle::SubElement" extensible="yes">
-        <reject-enum-value name="SE_ItemViewItemCheckIndicator" />
+        <reject-enum-value name="SE_ViewItemCheckIndicator" />
+        <reject-enum-value name="SE_TabBarTearIndicatorLeft" since="5.7.0" />
     </enum-type>
     <enum-type name="QStyleHintReturn::HintReturnType"/>
-    <enum-type name="QStyleHintReturn::StyleOptionType"/>
-    <enum-type name="QStyleHintReturn::StyleOptionVersion"/>
-    <enum-type name="QStyleHintReturnVariant::StyleOptionType"/>
-    <enum-type name="QStyleHintReturnVariant::StyleOptionVersion"/>
-
-    <enum-type name="QStyleHintReturnMask::StyleOptionType"/>
-    <enum-type name="QStyleHintReturnMask::StyleOptionVersion"/>
-    <enum-type name="QStyleOption::StyleOptionType"/>
-    <enum-type name="QStyleOption::OptionType" extensible="yes"/>
-    <enum-type name="QStyleOption::StyleOptionVersion"/>
     <enum-type name="QStyleOptionButton::ButtonFeature" flags="QStyleOptionButton::ButtonFeatures"/>
-    <enum-type name="QStyleOptionButton::StyleOptionType"/>
-    <enum-type name="QStyleOptionButton::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionComboBox::StyleOptionType"/>
-    <enum-type name="QStyleOptionComboBox::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionComplex::StyleOptionType"/>
-    <enum-type name="QStyleOptionComplex::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionDockWidget::StyleOptionType"/>
-    <enum-type name="QStyleOptionDockWidget::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionFocusRect::StyleOptionType"/>
-    <enum-type name="QStyleOptionFocusRect::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionFrame::StyleOptionType"/>
-    <enum-type name="QStyleOptionFrame::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionGraphicsItem::StyleOptionType"/>
-    <enum-type name="QStyleOptionGraphicsItem::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionGroupBox::StyleOptionType"/>
-    <enum-type name="QStyleOptionGroupBox::StyleOptionVersion"/>
     <enum-type name="QStyleOptionHeader::SectionPosition"/>
     <enum-type name="QStyleOptionHeader::SelectedPosition"/>
     <enum-type name="QStyleOptionHeader::SortIndicator"/>
-    <enum-type name="QStyleOptionHeader::StyleOptionType"/>
-    <enum-type name="QStyleOptionHeader::StyleOptionVersion"/>
     <enum-type name="QStyleOptionMenuItem::CheckType"/>
     <enum-type name="QStyleOptionMenuItem::MenuItemType"/>
-    <enum-type name="QStyleOptionMenuItem::StyleOptionType"/>
-    <enum-type name="QStyleOptionMenuItem::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionProgressBar::StyleOptionType"/>
-    <enum-type name="QStyleOptionProgressBar::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionRubberBand::StyleOptionType"/>
-    <enum-type name="QStyleOptionRubberBand::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionSizeGrip::StyleOptionType"/>
-    <enum-type name="QStyleOptionSizeGrip::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionSlider::StyleOptionType"/>
-    <enum-type name="QStyleOptionSlider::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionSpinBox::StyleOptionType"/>
-    <enum-type name="QStyleOptionSpinBox::StyleOptionVersion"/>
     <enum-type name="QStyleOptionTab::CornerWidget" flags="QStyleOptionTab::CornerWidgets"/>
     <enum-type name="QStyleOptionTab::SelectedPosition"/>
-    <enum-type name="QStyleOptionTab::StyleOptionType"/>
-    <enum-type name="QStyleOptionTab::StyleOptionVersion"/>
     <enum-type name="QStyleOptionTab::TabPosition"/>
-    <enum-type name="QStyleOptionTabBarBase::StyleOptionType"/>
-    <enum-type name="QStyleOptionTabBarBase::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionTabWidgetFrame::StyleOptionType"/>
-    <enum-type name="QStyleOptionTabWidgetFrame::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionTitleBar::StyleOptionType"/>
-    <enum-type name="QStyleOptionTitleBar::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionToolBar::StyleOptionType"/>
-    <enum-type name="QStyleOptionToolBar::StyleOptionVersion"/>
     <enum-type name="QStyleOptionToolBar::ToolBarFeature" flags="QStyleOptionToolBar::ToolBarFeatures"/>
     <enum-type name="QStyleOptionToolBar::ToolBarPosition"/>
-    <enum-type name="QStyleOptionToolBox::StyleOptionType"/>
-    <enum-type name="QStyleOptionToolBox::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionToolButton::StyleOptionType"/>
-    <enum-type name="QStyleOptionToolButton::StyleOptionVersion"/>
     <enum-type name="QStyleOptionToolButton::ToolButtonFeature" flags="QStyleOptionToolButton::ToolButtonFeatures">
         <reject-enum-value name="MenuButtonPopup"/>
     </enum-type>
     <enum-type name="QStyleOptionViewItem::Position"/>
-    <enum-type name="QStyleOptionViewItem::StyleOptionType"/>
-    <enum-type name="QStyleOptionViewItem::StyleOptionVersion"/>
     <enum-type name="QSystemTrayIcon::ActivationReason"/>
     <enum-type name="QSystemTrayIcon::MessageIcon"/>
     <enum-type name="QTabBar::Shape"/>
     <enum-type name="QTabWidget::TabPosition"/>
     <enum-type name="QTabWidget::TabShape"/>
-    <enum-type name="QTableWidgetItem::ItemType"/>
     <enum-type name="QToolButton::ToolButtonPopupMode"/>
-    <enum-type name="QTreeWidgetItem::ItemType"/>
     <enum-type name="QTreeWidgetItemIterator::IteratorFlag" flags="QTreeWidgetItemIterator::IteratorFlags"/>
     <enum-type name="QWidget::RenderFlag" flags="QWidget::RenderFlags"/>
     <enum-type name="QGraphicsScene::SceneLayer" flags="QGraphicsScene::SceneLayers"/>
@@ -326,121 +371,253 @@
     <value-type name="QTileRules" />
 
     <value-type name="QStyleOption" delete-in-main-thread="yes" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type == QStyleOption::SO_Default">
-        <modify-function signature="operator=(QStyleOption)" remove="all"/>
- 		<modify-function signature="setStyleObject(QObject*)">
-			<modify-argument index="1">
-                <reference-count action="ignore"/>
+        <modify-field name="type" read="false" write="false"/>
+        <modify-field name="version" read="false" write="false"/>
+        <modify-field name="styleObject" read="true" write="true">
+            <reference-count action="set" variable-name="__rcStyleObject" />
+        </modify-field>
+        <modify-function signature="QStyleOption(int, int)">
+            <modify-argument index="1">
+                <remove-argument/>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator=(const QStyleOption &amp;)" rename="set">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
             </modify-argument>
         </modify-function>
         <!--<modify-function signature="init(const QWidget*)" remove="all"/>--> <!--### Obsolete in 4.3-->
     </value-type>
-    <value-type name="QStyleOptionGraphicsItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionGraphicsItem::Type &amp;&amp; %1-&gt;version == QStyleOptionGraphicsItem::Version"/>
-    <value-type name="QStyleOptionSizeGrip" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSizeGrip::Type &amp;&amp; %1-&gt;version == QStyleOptionSizeGrip::Version"/>
-    <value-type name="QStyleOptionButton" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionButton::Type &amp;&amp; %1-&gt;version == QStyleOptionButton::Version"/>
-    <value-type name="QStyleOptionComboBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionComboBox::Type &amp;&amp; %1-&gt;version == QStyleOptionComboBox::Version"/>
-    <value-type name="QStyleOptionComplex" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionComplex::Type &amp;&amp; %1-&gt;version == QStyleOptionComplex::Version"/>
-    <value-type name="QStyleOptionDockWidget" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionDockWidget::Type &amp;&amp; %1-&gt;version == QStyleOptionDockWidget::Version"/>
-    <value-type name="QStyleOptionFocusRect" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFocusRect::Type &amp;&amp; %1-&gt;version == QStyleOptionFocusRect::Version"/>
-    <value-type name="QStyleOptionFrame" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFrame::Type &amp;&amp; %1-&gt;version == QStyleOptionFrame::Version"/>
-
-    <value-type name="QStyleOptionGroupBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionGroupBox::Type &amp;&amp; %1-&gt;version == QStyleOptionGroupBox::Version"/>
-    <value-type name="QStyleOptionHeader" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionHeader::Type &amp;&amp; %1-&gt;version == QStyleOptionHeader::Version"/>
-    <value-type name="QStyleOptionMenuItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionMenuItem::Type &amp;&amp; %1-&gt;version == QStyleOptionMenuItem::Version"/>
-    <value-type name="QStyleOptionProgressBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionProgressBar::Type &amp;&amp; %1-&gt;version == QStyleOptionProgressBar::Version"/>
-
-    <value-type name="QStyleOptionRubberBand" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionRubberBand::Type &amp;&amp; %1-&gt;version == QStyleOptionRubberBand::Version"/>
-    <value-type name="QStyleOptionSlider" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSlider::Type &amp;&amp; %1-&gt;version == QStyleOptionSlider::Version"/>
-    <value-type name="QStyleOptionSpinBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSpinBox::Type &amp;&amp; %1-&gt;version == QStyleOptionSpinBox::Version"/>
-    <value-type name="QStyleOptionTab" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTab::Type &amp;&amp; %1-&gt;version == QStyleOptionTab::Version"/>
-    <value-type name="QStyleOptionTabBarBase" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabBarBase::Type &amp;&amp; %1-&gt;version == QStyleOptionTabBarBase::Version"/>
-    <value-type name="QStyleOptionTabWidgetFrame" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabWidgetFrame::Type &amp;&amp; %1-&gt;version == QStyleOptionTabWidgetFrame::Version"/>
-    <value-type name="QStyleOptionTitleBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTitleBar::Type &amp;&amp; %1-&gt;version == QStyleOptionTitleBar::Version"/>
-    <value-type name="QStyleOptionToolBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolBar::Type &amp;&amp; %1-&gt;version == QStyleOptionToolBar::Version"/>
-    <value-type name="QStyleOptionToolBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolBox::Type &amp;&amp; %1-&gt;version == QStyleOptionToolBox::Version"/>
-    <value-type name="QStyleOptionToolButton" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolButton::Type &amp;&amp; %1-&gt;version == QStyleOptionToolButton::Version"/>
-    <value-type name="QStyleOptionViewItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionViewItem::Type &amp;&amp; %1-&gt;version == QStyleOptionViewItem::Version"/>
-
-<!-- in Qt5 the QStyleOption*V2..4 types are just typedefs for QStyleOption*, pehaps for compatibility purpose. So we skip these types. -->
-
-<!--
-    <enum-type name="QStyleOptionTabBarBaseV2::StyleOptionVersion" />
-    <enum-type name="QStyleOptionFrameV2::FrameFeature" flags="QStyleOptionFrameV2::FrameFeatures"/>
-    <enum-type name="QStyleOptionFrameV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionDockWidgetV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionProgressBarV2::StyleOptionType"/>
-    <enum-type name="QStyleOptionProgressBarV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionTabV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionViewItemV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionViewItemV2::ViewItemFeature" flags="QStyleOptionViewItemV2::ViewItemFeatures"/>
-    <enum-type name="QStyleOptionToolBoxV2::SelectedPosition"/>
-    <enum-type name="QStyleOptionToolBoxV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionToolBoxV2::TabPosition"/>
-    <enum-type name="QStyleOptionViewItemV3::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionTabWidgetFrameV2::StyleOptionVersion"/>
-    <enum-type name="QStyleOptionTabV3::StyleOptionVersion" />
-    <enum-type name="QStyleOptionFrameV3::StyleOptionVersion" />
-    <enum-type name="QStyleOptionViewItemV4::StyleOptionVersion" />
-    <enum-type name="QStyleOptionViewItemV4::ViewItemPosition" />
-
-    <value-type name="QStyleOptionDockWidgetV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionDockWidgetV2::Type &amp;&amp; %1-&gt;version == QStyleOptionDockWidgetV2::Version">
-        <modify-function signature="operator=(QStyleOptionDockWidget)" remove="all"/>
+    <value-type name="QStyleOptionComplex" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionComplex::Type">
+        <modify-function signature="QStyleOptionComplex(int, int)">
+            <modify-argument index="1">
+                <remove-argument/>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator=(const QStyleOptionComplex &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-    <value-type name="QStyleOptionFrameV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFrameV2::Type &amp;&amp; %1-&gt;version == QStyleOptionFrameV2::Version">
-        <modify-function signature="operator=(QStyleOptionFrame)" remove="all"/>
+    <value-type name="QStyleOptionGraphicsItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionGraphicsItem::Type">
+        <modify-function signature="QStyleOptionGraphicsItem(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionGraphicsItem &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-    <value-type name="QStyleOptionFrameV3" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFrameV3::Type &amp;&amp; %1-&gt;version == QStyleOptionFrameV3::Version">
-        <modify-function signature="operator=(QStyleOptionFrame)" remove="all"/>
+    <value-type name="QStyleOptionSizeGrip" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSizeGrip::Type">
+        <modify-function signature="QStyleOptionSizeGrip(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionSizeGrip &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-
-    <value-type name="QStyleOptionProgressBarV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionProgressBarV2::Type &amp;&amp; %1-&gt;version == QStyleOptionProgressBarV2::Version">
-        <modify-function signature="operator=(QStyleOptionProgressBar)" remove="all"/>
+    <value-type name="QStyleOptionButton" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionButton::Type">
+        <modify-function signature="QStyleOptionButton(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionButton &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-
-    <value-type name="QStyleOptionTabV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabV2::Type &amp;&amp; %1-&gt;version == QStyleOptionTabV2::Version">
-        <modify-function signature="operator=(const QStyleOptionTab &amp;)" remove="all"/>
+    <value-type name="QStyleOptionComboBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionComboBox::Type">
+        <modify-function signature="QStyleOptionComboBox(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionComboBox &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-    <value-type name="QStyleOptionTabV3" delete-in-main-thread="yes"  polymorphic-id-expression="%1-&gt;type == QStyleOptionTabV3::Type &amp;&amp; %1-&gt;version == QStyleOptionTabV3::Version">
-        <modify-function signature="operator=(QStyleOptionTab)" remove="all" />
+    <value-type name="QStyleOptionDockWidget" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionDockWidget::Type">
+        <modify-function signature="QStyleOptionDockWidget(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionDockWidget &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-    <value-type name="QStyleOptionTabBarBaseV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabBarBaseV2::Type &amp;&amp; %1-&gt;version == QStyleOptionTabBarBaseV2::Version">
-        <modify-function signature="operator=(QStyleOptionTabBarBase)" remove="all" />
+    <value-type name="QStyleOptionFocusRect" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFocusRect::Type">
+        <modify-function signature="QStyleOptionFocusRect(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionFocusRect &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
-    <value-type name="QStyleOptionTabWidgetFrameV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabWidgetFrameV2::Type &amp;&amp; %1-&gt;version == QStyleOptionTabWidgetFrameV2::Version">
-		<modify-function signature="operator=(QStyleOptionTabWidgetFrame)" remove="all" />
-	</value-type>
-    <value-type name="QStyleOptionToolBoxV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolBoxV2::Type &amp;&amp; %1-&gt;version == QStyleOptionToolBoxV2::Version">
-        <modify-function signature="operator=(QStyleOptionToolBox)" remove="all"/>
-    </value-type>
-    <value-type name="QStyleOptionViewItemV2" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionViewItemV2::Type &amp;&amp; %1-&gt;version == QStyleOptionViewItemV2::Version">
-        <modify-function signature="operator=(QStyleOptionViewItem)" remove="all"/>
-    </value-type>
-    <value-type name="QStyleOptionViewItemV3" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionViewItemV3::Type &amp;&amp; %1-&gt;version == QStyleOptionViewItemV3::Version">
-        <modify-function signature="operator=(QStyleOptionViewItem)" remove="all"/>
-    </value-type>
-    <value-type name="QStyleOptionViewItemV4" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionViewItemV4::Type &amp;&amp; %1-&gt;version == QStyleOptionViewItemV4::Version">
-        <modify-function signature="operator=(QStyleOptionViewItem)" remove="all" />
+    <value-type name="QStyleOptionFrame" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionFrame::Type">
+        <modify-function signature="QStyleOptionFrame(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionFrame &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
     </value-type>
 
--->
+    <value-type name="QStyleOptionGroupBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionGroupBox::Type">
+        <modify-function signature="QStyleOptionGroupBox(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionGroupBox &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionHeader" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionHeader::Type">
+        <modify-function signature="QStyleOptionHeader(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionHeader &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionMenuItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionMenuItem::Type">
+        <modify-function signature="QStyleOptionMenuItem(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionMenuItem &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionProgressBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionProgressBar::Type">
+        <modify-function signature="QStyleOptionProgressBar(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionProgressBar &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+
+    <value-type name="QStyleOptionRubberBand" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionRubberBand::Type">
+        <modify-function signature="QStyleOptionRubberBand(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionRubberBand &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionSlider" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSlider::Type">
+        <modify-function signature="QStyleOptionSlider(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionSlider &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionSpinBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionSpinBox::Type">
+        <modify-function signature="QStyleOptionSpinBox(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionSpinBox &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionTab" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTab::Type">
+        <modify-function signature="QStyleOptionTab(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionTab &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionTabBarBase" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabBarBase::Type">
+        <modify-function signature="QStyleOptionTabBarBase(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionTabBarBase &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionTabWidgetFrame" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTabWidgetFrame::Type">
+        <modify-function signature="QStyleOptionTabWidgetFrame(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionTabWidgetFrame &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionTitleBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTitleBar::Type">
+        <modify-function signature="QStyleOptionTitleBar(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionTitleBar &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionToolBar" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolBar::Type">
+        <modify-function signature="QStyleOptionToolBar(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionToolBar &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionToolBox" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolBox::Type">
+        <modify-function signature="QStyleOptionToolBox(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionToolBox &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionToolButton" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionToolButton::Type">
+        <modify-function signature="QStyleOptionToolButton(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionToolButton &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionViewItem" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionViewItem::Type">
+        <modify-function signature="QStyleOptionViewItem(int)" remove="all"/>
+        <modify-function signature="operator=(const QStyleOptionViewItem &amp;)" rename="set" since="5.12.0">
+            <modify-argument index="0">
+                <replace-type modified-type="void"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
     <value-type name="QSizePolicy"/>
-    <value-type name="QTableWidgetSelectionRange"/>
+    <value-type name="QTableWidgetSelectionRange">
+        <modify-function signature="QTableWidgetSelectionRange(const QTableWidgetSelectionRange &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QTableWidgetSelectionRange &amp;)" remove="all" since="5.14.0"/>
+    </value-type>
     <value-type name="QColormap" delete-in-main-thread="yes">
         <modify-function signature="operator=(QColormap)" remove="all"/>
         <extra-includes>
             <include file-name="QColor" location="global"/>
         </extra-includes>
-        <custom-creator>
-		if(copy)
-			return new QColormap(*copy);
-		else
-			return new QColormap(QColormap::instance());
-        </custom-creator>
+        <custom-constructor>
+            if(copy)
+                return new(placement) QColormap(*copy);
+            else
+                return new(placement) QColormap(QColormap::instance());
+        </custom-constructor>
     </value-type>
 
-    <interface-type name="QLayoutItem"/>
+    <interface-type name="QLayoutItem">
+        <modify-field name="align" read="false" write="false"/>
+    </interface-type>
+    <object-type name="QSpacerItem">
+        <interface-polymorphy interface="QLayoutItem" condition="%1->spacerItem()" />
+    </object-type>
+    <object-type name="QWidgetItem">
+        <interface-polymorphy interface="QLayoutItem" condition="%1->widget()" />
+    </object-type>
 
-    <interface-type name="QGraphicsItem" delete-in-main-thread="yes">
+    <interface-type name="QGraphicsItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
         <modify-function signature="toGraphicsObject() const" remove="all" />
+        <modify-function signature="type() const" remove="all" />
 
         <modify-function signature="paint(QPainter*,const QStyleOptionGraphicsItem*,QWidget*)">
             <modify-argument index="1" invalidate-after-use="yes" />
@@ -529,32 +706,30 @@
         </modify-function>
         <modify-function signature="resetMatrix()" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setGraphicsEffect(QGraphicsEffect*)">
-			<modify-argument index="1">
+            <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcGraphicsEffect"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </interface-type>
 
-    <object-type name="QAbstractGraphicsShapeItem" delete-in-main-thread="yes">
+    <object-type name="QAbstractGraphicsShapeItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
         <modify-function signature="QAbstractGraphicsShapeItem(QGraphicsItem*)">
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) disableGarbageCollection();
+                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="resetMatrix()" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setGraphicsEffect(QGraphicsEffect*)">
-			<modify-argument index="1">
-                <reference-count action="set" variable-name="__rcGraphicsEffect"/>
-            </modify-argument>
-        </modify-function>
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
@@ -573,28 +748,24 @@
         <modify-function signature="selectionCommand(QModelIndex,const QEvent*)const">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
-
     </object-type>
 
     <object-type name="QAbstractSlider"/>
     <object-type name="QActionGroup" />
+    <enum-type name="QActionGroup::ExclusionPolicy" since="5.14.0"/>
     <object-type name="QCheckBox">
-        <modify-function signature="initStyleOption(QStyleOptionButton*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
     <!--object-type name="QCDEStyle">
         <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type-->
     <!--object-type name="QCleanlooksStyle">
         <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type-->
     <object-type name="QCommonStyle">
-	<modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const" remove="all"/>
     </object-type>
     <object-type name="QDataWidgetMapper">
         <modify-function signature="addMapping(QWidget*,int)">
@@ -623,7 +794,11 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QDateEdit"/>
+    <object-type name="QDateEdit">
+         <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+         </extra-includes>
+    </object-type>
     <object-type name="QDialog">
         <modify-function signature="setExtension(QWidget*)" remove="all"/>
         <modify-function signature="exec()" access="non-final"/>
@@ -663,10 +838,10 @@
         <modify-function signature="setDefaultProperty(const char *, const char *, const char *)" remove="all"/>
         <modify-function signature="setSideWidget(QWidget*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="addPage(QWizardPage*)">
+        <modify-function signature="addPage(QWizardPage*)">
             <modify-argument index="1">
                 <no-null-pointer/>
                 <reference-count action="ignore"/>
@@ -686,17 +861,6 @@
 
     </object-type>
     <object-type name="QWizardPage">
-        <!-- ### Reduced functionality due to meta object having missing information -->
-        <modify-function signature="registerField(const QString &amp;, QWidget *, const char *, const char *)">
-            <access modifier="private"/>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
     </object-type>
     <object-type name="QFocusFrame">
         <modify-function signature="setWidget(QWidget*)">
@@ -715,7 +879,13 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QGraphicsEllipseItem" delete-in-main-thread="yes"/>
+    <object-type name="QGraphicsEllipseItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsEllipseItem::Type)" />
+    </object-type>
     <object-type name="QGraphicsItemAnimation" >
         <modify-function signature="setItem(QGraphicsItem*)">
             <modify-argument index="1">
@@ -728,47 +898,82 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsItemGroup" delete-in-main-thread="yes">
+    <object-type name="QGraphicsItemGroup" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsItemGroup::Type)" />
         <modify-function signature="resetMatrix()" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setGraphicsEffect(QGraphicsEffect*)">
-			<modify-argument index="1">
-                <reference-count action="set" variable-name="__rcGraphicsEffect"/>
-            </modify-argument>
-        </modify-function>
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsLineItem" delete-in-main-thread="yes">
+    <object-type name="QGraphicsLineItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsLineItem::Type)" />
         <modify-function signature="resetMatrix()" remove="all"/> <!--### Obsolete in 4.3-->
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsPathItem" delete-in-main-thread="yes">
-		<!--<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+    <object-type name="QGraphicsPathItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPathItem::Type)" />
+        <!--<modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>-->
-	</object-type>
+    </object-type>
 
-    <object-type name="QGraphicsPixmapItem" delete-in-main-thread="yes">
+    <object-type name="QGraphicsPixmapItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPixmapItem::Type)" />
+        <modify-function signature="type() const" remove="all" />
         <modify-function signature="resetMatrix()" remove="all"/> <!--### Obsolete in 4.3-->
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsPolygonItem" delete-in-main-thread="yes"/>
-    <object-type name="QGraphicsRectItem" delete-in-main-thread="yes"/>
-    <object-type name="QGraphicsSimpleTextItem" delete-in-main-thread="yes"/>
-    <object-type name="QHBoxLayout"/>
+    <object-type name="QGraphicsPolygonItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPolygonItem::Type)" />
+    </object-type>
+    <object-type name="QGraphicsRectItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsRectItem::Type)" />
+    </object-type>
+    <object-type name="QGraphicsSimpleTextItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSimpleTextItem::Type)" />
+    </object-type>
+    <object-type name="QHBoxLayout">
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
+    </object-type>
     <object-type name="QHeaderView">
         <modify-function signature="paintSection(QPainter*,QRect,int)const">
             <modify-argument index="1" invalidate-after-use="yes" />
@@ -780,6 +985,12 @@
         </modify-function>
     </object-type>
     <object-type name="QItemDelegate">
+        <modify-function signature="createEditor(QWidget *,const QStyleOptionViewItem &amp;, const QModelIndex &amp;)const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="doLayout(QStyleOptionViewItem,QRect*,QRect*,QRect*,bool)const">
             <remove/>
         </modify-function>
@@ -820,8 +1031,21 @@
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
-    <object-type name="QItemEditorCreatorBase"/>
+    <interface-type name="QItemEditorCreatorBase">
+        <modify-function signature="createWidget(QWidget *)const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
     <object-type name="QItemEditorFactory">
+        <modify-function signature="createEditor(int,QWidget *)const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="registerEditor(int, QItemEditorCreatorBase *)">
             <modify-argument index="2">
                 <define-ownership class="java" owner="cplusplus" />
@@ -835,6 +1059,12 @@
     </object-type>
     <object-type name="QListView"/>
     <object-type name="QColumnView">
+        <modify-function signature="createColumn(const QModelIndex&amp;)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setPreviewWidget(QWidget*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -921,7 +1151,12 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-
+        <modify-function signature="createPopupMenu()">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QMdiArea">
         <modify-function signature="addSubWindow(QWidget*,QFlags&lt;Qt::WindowType&gt;)">
@@ -967,6 +1202,7 @@
         </modify-function>
     </object-type>
     <object-type name="QMenu">
+        <modify-function signature="setAsDockMenu()" remove="all"/>
         <modify-function signature="addAction(QAction *)" remove="all"/>
         <modify-function signature="addMenu(QMenu*)">
             <modify-argument index="1">
@@ -978,13 +1214,13 @@
                 <reference-count action="add" variable-name="__rcMenus"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="insertSection(QAction*,QIcon,QString)">
-			<modify-argument index="1">
+        <modify-function signature="insertSection(QAction*,QIcon,QString)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
- 		<modify-function signature="insertSection(QAction*,QString)">
-			<modify-argument index="1">
+         <modify-function signature="insertSection(QAction*,QString)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
@@ -1006,10 +1242,6 @@
         <modify-function signature="setNoReplayFor(QWidget*)">
             <remove/>
         </modify-function>
-        <modify-function signature="initStyleOption(QStyleOptionMenuItem*,const QAction*)const">
-            <access modifier="private"/>
-        </modify-function>
-
         <modify-function signature="addAction(QString,const QObject*,const char*,QKeySequence)">
             <remove/>
         </modify-function>
@@ -1024,11 +1256,6 @@
         <modify-function signature="addAction(QString,const QObject*,const char*)">
             <remove/>
         </modify-function>
-
-        <modify-function signature="initStyleOption(QStyleOptionMenuItem*,const QAction*)const">
-            <access modifier="private"/>
-        </modify-function>
-
         <modify-function signature="addMenu(QMenu*)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcMenus"/>
@@ -1065,68 +1292,23 @@
     <!--object-type name="QMotifStyle">
         <modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption*, const QWidget*)const" remove="all"/>
         <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type-->
-
-    <object-type name="QPictureIO">
-        <modify-function signature="QPictureIO(QIODevice*,const char*)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDevice"/>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="setIODevice(QIODevice*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDevice"/>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="QPictureIO(QString,const char*)">
-            <access modifier="private"/>
-        </modify-function>
-
-        <modify-function signature="format()const">
-            <access modifier="private"/>
-            <rename to="format_private"/>
-        </modify-function>
-
-        <modify-function signature="parameters()const">
-            <access modifier="private"/>
-            <rename to="parameters_private"/>
-        </modify-function>
-
-        <modify-function signature="setFormat(const char*)">
-            <access modifier="private"/>
-        </modify-function>
-
-        <modify-function signature="setParameters(const char*)">
-            <access modifier="private"/>
-        </modify-function>
-
-    </object-type>
 
 <!--### Obsolete in 4.3-->
     <!--object-type name="QPlastiqueStyle">
         <modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption*, const QWidget*)const" remove="all"/>
         <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
         <modify-function signature="layoutSpacingImplementation(QSizePolicy::ControlType, QSizePolicy::ControlType, Qt::Orientation, const QStyleOption *, const QWidget *) const" virtual-slot="yes" />
     </object-type-->
     <object-type name="QProgressBar">
-        <modify-function signature="initStyleOption(QStyleOptionProgressBar*)const">
-            <access modifier="private"/>
-        </modify-function>
         <modify-function signature="textDirection()const" remove="all"/>
         <modify-function signature="invertedAppearance()const" remove="all"/>
     </object-type>
     <object-type name="QPushButton">
-        <modify-function signature="initStyleOption(QStyleOptionButton*)const">
-            <access modifier="private"/>
-        </modify-function>
-
         <modify-function signature="setMenu(QMenu*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcMenu"/>
@@ -1144,18 +1326,6 @@
         </modify-function>
     </object-type>
     <object-type name="QShortcut">
-        <modify-function signature="QShortcut(QKeySequence,QWidget*,const char*,const char*,Qt::ShortcutContext)">
-            <access modifier="private"/>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
     </object-type>
     <object-type name="QSizeGrip">
         <modify-function signature="eventFilter(QObject*,QEvent*)">
@@ -1163,7 +1333,6 @@
         </modify-function>
     </object-type>
     <!--object-type name="QSound"/-->
-    <object-type name="QSpacerItem"/>
     <object-type name="QStatusBar">
         <modify-function signature="addPermanentWidget(QWidget *, int)">
             <modify-argument index="1">
@@ -1191,11 +1360,24 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QStyleFactory"/>
-    <object-type name="QStyleHintReturn"/>
+    <object-type name="QStyleFactory">
+        <modify-function signature="create(QString)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+   </object-type>
+   <object-type name="QStyleHintReturn">
+        <modify-function signature="QStyleHintReturn(int, int)">
+            <modify-argument index="1">
+                <replace-default-expression with="1"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QStyleHintReturnVariant"/>
     <object-type name="QStyleHintReturnMask"/>
-    <object-type name="QStylePainter" delete-in-main-thread="yes"/>
+    <object-type name="QStylePainter"/>
     <object-type name="QSystemTrayIcon">
         <modify-function signature="setContextMenu(QMenu*)">
             <modify-argument index="1">
@@ -1229,11 +1411,15 @@
         <modify-function signature="sortByColumn(int)" remove="all"/> <!--### Obsolete in 4.3-->
     </object-type>
 
-    <value-type name="QTextEdit::ExtraSelection" delete-in-main-thread="yes">
+    <value-type name="QTextEdit::ExtraSelection">
         <include file-name="QTextEdit" location="global"/>
     </value-type>
 
-    <object-type name="QTimeEdit"/>
+    <object-type name="QTimeEdit">
+         <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+         </extra-includes>
+    </object-type>
     <object-type name="QToolBox">
         <modify-function signature="addItem(QWidget*,QString)">
             <modify-argument index="1">
@@ -1262,10 +1448,6 @@
         </modify-function>
     </object-type>
     <object-type name="QToolButton">
-        <modify-function signature="initStyleOption(QStyleOptionToolButton*)const">
-            <access modifier="private"/>
-        </modify-function>
-
         <modify-function signature="setDefaultAction(QAction *)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcDefaultAction"/>
@@ -1311,6 +1493,18 @@
         </modify-function>
     </object-type>
     <object-type name="QUndoGroup">
+        <modify-function signature="createUndoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRedoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="addStack(QUndoStack*)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcStacks"/>
@@ -1328,7 +1522,20 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QUndoStack"/>
+    <object-type name="QUndoStack">
+        <modify-function signature="createUndoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRedoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
 
     <object-type name="QUndoView">
         <modify-function signature="setGroup(QUndoGroup *)">
@@ -1352,24 +1559,33 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QVBoxLayout"/>
-    <object-type name="QWhatsThis"/>
+    <object-type name="QVBoxLayout">
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
+    </object-type>
+    <object-type name="QWhatsThis">
+        <modify-function signature="createAction(QObject *)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QWidgetAction">
         <modify-function signature="createWidget(QWidget*)">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="eventFilter(QObject*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
-    <object-type name="QWidgetItem" />
  <!--### Obsolete in Qt5-->
     <!--object-type name="QWindowsStyle">
         <modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption*, const QWidget*)const" remove="all"/>
         <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-			<modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type-->
 
@@ -1394,16 +1610,16 @@
         <modify-function signature="ignore()" remove="all" />
         <modify-function signature="isAccepted()const" remove="all" />
         <modify-function signature="setAccepted(bool)" remove="all" />
-		<modify-function signature="setWidget(QWidget*)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
-		<modify-function signature="setAccepted(QGesture*,bool)">
-			<modify-argument index="1">
-				<reference-count action="ignore" />
-			</modify-argument>
-		</modify-function>
+        <modify-function signature="setWidget(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAccepted(QGesture*,bool)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QGraphicsSceneContextMenuEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneContextMenu"/>
     <object-type name="QGraphicsSceneDragDropEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneDragEnter || %1-&gt;type() == QEvent::GraphicsSceneDragLeave || %1-&gt;type() == QEvent::GraphicsSceneDragMove || %1-&gt;type() == QEvent::GraphicsSceneDrop">
@@ -1414,7 +1630,7 @@
             <remove/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneEvent">
+    <object-type name="QGraphicsSceneEvent" polymorphic-id-expression="typeid(*%1) == typeid(QGraphicsSceneEvent)">
         <modify-function signature="setWidget(QWidget *)">
             <remove/>
         </modify-function>
@@ -1440,22 +1656,6 @@
     </object-type-->
 
     <object-type name="QStyle">
-        <!--modify-function signature="layoutSpacingImplementation(QSizePolicy::ControlType, QSizePolicy::ControlType, Qt::Orientation, const QStyleOption *, const QWidget *) const" virtual-slot="yes">
-			<modify-argument index="4" invalidate-after-use="yes" />
-        </modify-function-->
-
-        <modify-function signature="drawComplexControl(QStyle::ComplexControl,const QStyleOptionComplex*,QPainter*,const QWidget*)const">
-            <modify-argument index="3" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="drawControl(QStyle::ControlElement,const QStyleOption*,QPainter*,const QWidget*)const">
-            <modify-argument index="3" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="drawPrimitive(QStyle::PrimitiveElement,const QStyleOption*,QPainter*,const QWidget*)const">
-            <modify-argument index="3" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="styleHint(QStyle::StyleHint,const QStyleOption*,const QWidget*,QStyleHintReturn*)const">
-            <modify-argument index="4" invalidate-after-use="yes" />
-        </modify-function>
         <modify-function signature="drawItemPixmap(QPainter*,QRect,int,QPixmap)const">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
@@ -1468,49 +1668,31 @@
     <object-type name="QColorDialog">
         <modify-function signature="getColor(const QColor &amp;, QWidget *,QString,QFlags&lt;QColorDialog::ColorDialogOption>)">
         <modify-argument index="1">
-            <replace-default-expression with="new org.qtjambi.qt.gui.QColor(org.qtjambi.qt.core.Qt.GlobalColor.white)"/>
+            <replace-default-expression with="new io.qt.gui.QColor(io.qt.core.Qt.GlobalColor.white)"/>
         </modify-argument>
-        </modify-function>
-        <modify-function signature="getRgba(uint,bool*,QWidget*)">
-            <rename to="getRgba_internal"/>
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression />
-            </modify-argument>
         </modify-function>
     </object-type>
 
     <object-type name="QLayout">
-        <modify-function signature="addItem(QLayoutItem*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-
+        <interface-polymorphy interface="QLayoutItem" condition="%1->layout()" />
         <modify-function signature="setSpacing(int)" rename="setWidgetSpacing"/>
         <modify-function signature="spacing()const" rename="widgetSpacing"/>
-        <modify-function signature="addWidget(QWidget *)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <reference-count variable-name="__rcWidgets" action="add" access="protected"/>
-                <!-- A Layout never owns the QWidget* but retains a reference to it -->
-            </modify-argument>
-        </modify-function>
         <modify-function signature="addChildWidget(QWidget *)">
             <modify-argument index="1">
                 <no-null-pointer/>
-                <reference-count variable-name="__rcWidgets" action="add" access="protected"/>
+                <reference-count variable-name="__rcLayoutedObjects" action="add" condition="%1.parent()==null"/>
                 <!-- A Layout never owns the QWidget* but retains a reference to it -->
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="itemAt(int) const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="invalidate"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="removeWidget(QWidget *)">
             <modify-argument index="1">
                 <no-null-pointer/>
-                <reference-count variable-name="__rcWidgets" action="remove" access="protected"/>
+                <reference-count variable-name="__rcLayoutedObjects" action="remove"/>
                 <!-- A Layout never owns the QWidget* but retains a reference to it -->
             </modify-argument>
         </modify-function>
@@ -1530,37 +1712,21 @@
                 <reference-count action="set" variable-name="__rcMenuBar"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getContentsMargins(int*,int*,int*,int*)const">
-            <remove/>
-        </modify-function>
-
         <modify-function signature="margin()const" remove="all"/> <!--### Obsolete in 4.3-->
         <!-- <modify-function signature="setMargin(int)" remove="all"/> --> <!--### Obsolete in 4.3-->
     </object-type>
 
     <object-type name="QStackedLayout">
-        <modify-function signature="addItem(QLayoutItem *)">
-            <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
         <modify-function signature="itemAt(int) const">
             <modify-argument index="return">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addWidget(QWidget *)">
-            <!-- This would mask the QLayout superclass addWidget(Widget) method -->
-            <rename to="addStackedWidget"/>
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <reference-count action="add" declare-variable="QLayout" variable-name="__rcWidgets"/>
+                <define-ownership class="shell" owner="invalidate"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="insertWidget(int,QWidget*)">
             <modify-argument index="2">
                 <no-null-pointer/>
-                <reference-count action="add" declare-variable="QLayout" variable-name="__rcWidgets"/>
+                <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%2.parent()==null"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setCurrentWidget(QWidget*)">
@@ -1572,50 +1738,49 @@
     </object-type>
 
     <object-type name="QBoxLayout">
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
         <modify-function signature="addWidget(QWidget *, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
+            <modify-argument index="2">
+                <remove-default-expression/>
             </modify-argument>
         </modify-function>
         <modify-function signature="addItem(QLayoutItem *)">
-            <modify-argument index="1">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <no-null-pointer/>
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="insertLayout(int, QLayout *, int)">
             <modify-argument index="2">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertItem(int, QLayoutItem *)">
-            <modify-argument index="2">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="addSpacerItem(QSpacerItem*)">
-            <modify-argument index="1">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <no-null-pointer/>
                 <define-ownership class="java" owner="cplusplus" />
             </modify-argument>
         </modify-function>
         <modify-function signature="insertSpacerItem(int,QSpacerItem*)">
-            <modify-argument index="2">
+            <modify-argument index="2" invalidate-after-use="yes">
+                <no-null-pointer/>
                 <define-ownership class="java" owner="cplusplus" />
             </modify-argument>
         </modify-function>
 
         <modify-function signature="addLayout(QLayout *, int)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="addWidget(QWidget*,int,QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
-                <reference-count declare-variable="QLayout" action="add" variable-name="__rcWidgets"/>
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="insertWidget(int,QWidget*,int,QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="2">
-                <reference-count declare-variable="QLayout" action="add" variable-name="__rcWidgets"/>
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%2.parent()==null"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setStretchFactor(QWidget*,int)">
@@ -1628,48 +1793,48 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="itemAt(int) const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="invalidate"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
 
     <object-type name="QGridLayout">
-        <modify-function signature="addWidget(QWidget *)" remove="all"/>
-        <modify-function signature="addItem(QLayoutItem *)">
-            <modify-argument index="1">
-                <!-- FIXME: Maybe we should have a use/inherit ownership rule from base-class -->
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addItem(QLayoutItem *, int, int, int, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
-            <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
         <modify-function signature="addLayout(QLayout *, int, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="addLayout(QLayout *, int, int, int, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
             <modify-function signature="addWidget(QWidget*,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)">
                 <modify-argument index="1">
-                    <reference-count declare-variable="QLayout" action="add" variable-name="__rcWidgets"/>
+                    <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
                 </modify-argument>
             </modify-function>
             <modify-function signature="addWidget(QWidget*,int,int,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)">
                 <modify-argument index="1">
-                    <reference-count declare-variable="QLayout" action="add" variable-name="__rcWidgets"/>
+                    <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
                 </modify-argument>
             </modify-function>
-            <modify-function signature="addWidget(QWidget*)">
-                <modify-argument index="1">
-                    <reference-count declare-variable="QLayout" action="add" variable-name="__rcWidgets"/>
-                </modify-argument>
-            </modify-function>
-        <modify-function signature="getItemPosition(int,int*,int*,int*,int*)const">
-            <access modifier="private"/>
+        <modify-function signature="itemAt(int) const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="invalidate"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QFormLayout">
+        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <modify-function signature="itemAt(int) const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="invalidate"/>
+            </modify-argument>
         </modify-function>
     </object-type>
 
@@ -1677,6 +1842,7 @@
         <extra-includes>
         <include file-name="QPainterPath" location="global"/>
         <include file-name="QVarLengthArray" location="global"/>
+        <include file-name="qtjambi_core/qtjambi_core_qhashes.h" location="global"/>
         </extra-includes>
         <modify-function signature="fitInView(const QGraphicsItem *, Qt::AspectRatioMode)">
             <modify-argument index="1">
@@ -1701,168 +1867,15 @@
         <modify-function signature="drawForeground(QPainter*,QRectF)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-        <modify-function signature="drawItems(QPainter*,int,QGraphicsItem**,const QStyleOptionGraphicsItem*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-            <modify-argument index="2">
-                <remove-argument/>
-                <conversion-rule class="shell">
-                    // nothing
-                </conversion-rule>
-                <conversion-rule class="native">
-                    <insert-template name="core.get_array_length">
-                        <replace from="%ARRAY" to="%3"/>
-                    </insert-template>
-                    int __length = %out;
-                </conversion-rule>
-            </modify-argument>
-
-            <modify-argument index="3">
-                <replace-type modified-type="org.qtjambi.qt.widgets.QGraphicsItemInterface[]"/>
-                <conversion-rule class="shell">
-                    <insert-template name="gui.convert_graphicsitem_array_to_java">
-                        <replace from="%LENGTH" to="%2"/>
-                    </insert-template>
-                    jobjectArray graphicsItemArrayHolder = %out;
-                </conversion-rule>
-                <conversion-rule class="native">
-                    <insert-template name="gui.convert_graphicsitem_array_from_java"/>
-                </conversion-rule>
-            </modify-argument>
-
-            <modify-argument index="4">
-                <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOptionGraphicsItem[]"/>
-                <conversion-rule class="shell">
-                    <insert-template name="gui.convert_styleoptiongraphicsitem_array_to_java">
-                        <replace from="%LENGTH" to="%2"/>
-                    </insert-template>
-                    jobjectArray styleOptionArrayHolder = %out;
-                </conversion-rule>
-                <conversion-rule class="native">
-                    <insert-template name="gui.convert_styleoptiongraphicsitem_array_from_java"/>
-                </conversion-rule>
-            </modify-argument>
-
-            <modify-argument index="return">
-                <conversion-rule class="shell">
-                    qtjambi_invalidate_array(__jni_env, styleOptionArrayHolder);
-                    qtjambi_invalidate_array(__jni_env, graphicsItemArrayHolder);
-                </conversion-rule>
-            </modify-argument>
-
-        </modify-function>
     </object-type>
 
     <object-type name="QInputDialog">
-        <modify-function signature="getInt(QWidget*,const QString &amp;,const QString &amp;,int,int,int,int,bool*,QFlags&lt;Qt::WindowType&gt;)">
-            <rename to="getInt_private" />
-            <access modifier="private" />
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="8">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="9">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
-
-        <!-- This API is double even on ARM -->
-        <modify-function signature="getDouble(QWidget *, const QString &amp;, const QString &amp;, double, double, double, int, bool *, QFlags&lt;Qt::WindowType&gt;)">
-            <rename to="getDouble_internal"/>
-            <access modifier="private"/>
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="8">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="9">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="getItem(QWidget*,QString,QString,QStringList&lt;QString>,int,bool,bool*,QFlags&lt;Qt::WindowType>,QFlags&lt;Qt::InputMethodHint>)">
-            <rename to="getItem_internal"/>
-            <access modifier="private"/>
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="8">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="9">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="getText(QWidget *, const QString &amp;, const QString &amp;, QLineEdit::EchoMode, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)">
-            <rename to="getText_internal"/>
-            <access modifier="private"/>
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="8">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
-		
-		<modify-function signature="getMultiLineText(QWidget *, const QString &amp;, const QString &amp;, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)">
-            <rename to="getMultiLineText_internal"/>
-            <access modifier="private"/>
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
     </object-type>
 
 
-    <object-type name="QGraphicsScene">
+    <object-type name="QGraphicsScene" is-value-owner="yes">
         <extra-includes>
+            <include file-name="qtjambi_core/qtjambi_core_qhashes.h" location="global"/>
             <include file-name="QVarLengthArray" location="global"/>
         </extra-includes>
 
@@ -1938,7 +1951,7 @@
             </modify-argument>
         </modify-function>
 
-		<modify-function signature="setActivePanel(QGraphicsItem*)">
+        <modify-function signature="setActivePanel(QGraphicsItem*)">
         <modify-argument index="1">
             <define-ownership class="java" owner="cplusplus"/>
         </modify-argument>
@@ -2001,6 +2014,12 @@
                 <reference-count action="set" variable-name="__rcFocusItem"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="createItemGroup(const QList&lt;QGraphicsItem *> &amp;)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
 
 
@@ -2027,6 +2046,10 @@
             <modify-argument index="1">
                 <reference-count action="ignore" />
             </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1.treeWidget() == null) setDefaultOwnership(this);
+            </inject-code>
         </modify-function>
         <modify-function signature="mimeData(const QList&lt;QTreeWidgetItem*&gt;)const">
             <modify-argument index="1" invalidate-after-use="yes"/>
@@ -2122,11 +2145,12 @@
         </modify-function>
         <modify-function signature="setModel(QAbstractItemModel*)">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count declare-variable="QAbstractItemView" action="set" variable-name="__rcItemModel"/>
             </modify-argument>
         </modify-function>
 
         <modify-function signature="items(const QMimeData*)const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="indexFromItem(QTreeWidgetItem *, int) const" remove="all"  since="5.7.0"/>
     </object-type>
 
     <object-type name="QAbstractItemDelegate">
@@ -2156,65 +2180,105 @@
         </modify-function>
 
         <modify-function signature="elidedText(QFontMetrics, int, Qt::TextElideMode, QString)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="createEditor(QWidget *, const QStyleOptionViewItem &amp;, const QModelIndex &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
 
-    <object-type name="QTableWidgetItem" delete-in-main-thread="yes">
+    <object-type name="QTableWidgetItem" delete-in-owner-thread="yes" owner="%1->tableWidget()">
         <modify-function signature="operator=(const QTableWidgetItem&amp;)" remove="all"/>
         <modify-function signature="clone() const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
-
-        <modify-function signature="backgroundColor()const" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setBackgroundColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setTextColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="textColor()const" remove="all"/> <!--### Obsolete in 4.3-->
-
-        <modify-function signature="operator&lt;(QTableWidgetItem)const" rename="hasLessTextThan">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="read(QDataStream&amp;)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="write(QDataStream&amp;)const">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-
-    </object-type>
-
-    <object-type name="QListWidgetItem" delete-in-main-thread="yes">
-
-        <modify-function signature="operator&lt;(QListWidgetItem)const" rename="hasLessTextThan">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="read(QDataStream&amp;)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="write(QDataStream&amp;)const">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-
-
-        <modify-function signature="operator=(const QListWidgetItem&amp;)" remove="all"/>
-        <modify-function signature="QListWidgetItem(QListWidget *, int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+        <modify-function signature="QTableWidgetItem(const QTableWidgetItem &amp;)" remove="all"/>
+        <modify-function signature="QTableWidgetItem(const QIcon &amp;, const QString &amp;, int)">
+            <modify-argument index="3"> 
+                <remove-argument/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="QListWidgetItem(const QString &amp;, QListWidget *, int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+        <modify-function signature="QTableWidgetItem(const QString &amp;, int)">
+            <modify-argument index="2">
+                <remove-argument/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="QListWidgetItem(const QIcon &amp;, const QString &amp;, QListWidget *, int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+        <modify-function signature="QTableWidgetItem(int)">
+            <modify-argument index="1">
+                <remove-argument/>
             </modify-argument>
         </modify-function>
         <modify-function signature="clone() const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="backgroundColor()const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="setBackgroundColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="setTextColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="textColor()const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="type()const" remove="all"/>
+
+        <modify-function signature="operator&lt;(QTableWidgetItem)const" access="private">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="read(QDataStream&amp;)" access="protected">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="write(QDataStream&amp;)const" access="protected">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+
+    </object-type>
+
+    <object-type name="QListWidgetItem" delete-in-owner-thread="yes" owner="%1->listWidget()">
+        <modify-function signature="operator&lt;(QListWidgetItem)const" access="private">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="read(QDataStream&amp;)" access="protected">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="write(QDataStream&amp;)const" access="protected">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="operator=(const QListWidgetItem&amp;)" remove="all"/>
+        <modify-function signature="QListWidgetItem(const QListWidgetItem &amp;)" remove="all"/>
+        <modify-function signature="QListWidgetItem(QListWidget *, int)">
+            <modify-argument index="2">
+                <remove-argument/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QListWidgetItem(const QString &amp;, QListWidget *, int)">
+            <modify-argument index="3">
+                <remove-argument/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QListWidgetItem(const QIcon &amp;, const QString &amp;, QListWidget *, int)">
+            <modify-argument index="4">
+                <remove-argument/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="3" meta-name="%3"/>
+                if (%3 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="clone() const">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
 
@@ -2222,108 +2286,94 @@
         <modify-function signature="setBackgroundColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setTextColor(QColor)" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="textColor()const" remove="all"/> <!--### Obsolete in 4.3-->
-    </object-type>
-
-    <object-type name="QGraphicsTextItem"> <!-- a QObject so main-thread delete redundant -->
-        <extra-includes>
-        <include file-name="QTextCursor" location="global"/>
-        </extra-includes>
-        <modify-function signature="QGraphicsTextItem(QGraphicsItem*)">
-            <inject-code position="end">
-                <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) disableGarbageCollection();
-            </inject-code>
-        </modify-function>
-        <modify-function signature="QGraphicsTextItem(const QString &amp;,QGraphicsItem*)">
-            <inject-code position="end">
-                <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) disableGarbageCollection();
-            </inject-code>
-        </modify-function>
-        <modify-function signature="setDocument(QTextDocument*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDocument"/>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-
-    <object-type name="QCompleter">
-        <modify-function signature="activated(const QModelIndex &amp;)">
-            <rename to="activatedIndex"/>
-        </modify-function>
-        <modify-function signature="highlighted(const QModelIndex &amp;)">
-            <rename to="highlightedIndex"/>
-        </modify-function>
-        <modify-function signature="setModel(QAbstractItemModel *)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcModel"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setPopup(QAbstractItemView *)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setWidget(QWidget *)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcWidget"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="eventFilter(QObject*,QEvent*)">
-            <modify-argument index="2" invalidate-after-use="yes" />
-        </modify-function>
+        <modify-function signature="type()const" remove="all"/>
     </object-type>
 
 
-    <object-type name="QTreeWidgetItem" delete-in-main-thread="yes">
+    <object-type name="QTreeWidgetItem" delete-in-owner-thread="yes" owner="%1->treeWidget() ? %1->treeWidget()->model() : nullptr">
 
-        <modify-function signature="operator&lt;(QTreeWidgetItem)const" rename="hasLessTextThan">
+        <modify-function signature="operator&lt;(QTreeWidgetItem)const" access="private">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-        <modify-function signature="read(QDataStream&amp;)">
+        <modify-function signature="read(QDataStream&amp;)" access="protected">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-        <modify-function signature="write(QDataStream&amp;)const">
+        <modify-function signature="write(QDataStream&amp;)const" access="protected">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
+
+        <modify-function signature="operator=(const QTreeWidgetItem&amp;)" remove="all"/>
+        <modify-function signature="type()const" remove="all"/>
 
         <modify-function signature="QTreeWidgetItem(const QTreeWidgetItem &amp;)" remove="all"/>
-        <modify-function signature="operator=(const QTreeWidgetItem&amp;)" remove="all"/>
-
         <modify-function signature="QTreeWidgetItem(QTreeWidget *,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="2">
+                <remove-argument/>
             </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidget *,const QStringList&lt;QString&gt; &amp;,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="3">
+                <remove-argument/>
             </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidget *,QTreeWidgetItem *,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="3">
+                <remove-argument/>
             </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidgetItem *,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="2">
+                <remove-argument/>
             </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidgetItem *,const QStringList&lt;QString&gt; &amp;,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="3">
+                <remove-argument/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QTreeWidgetItem(const QStringList&lt;QString&gt; &amp;,int)">
+            <modify-argument index="2">
+                <remove-argument/>
             </modify-argument>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidgetItem *,QTreeWidgetItem *,int)">
-            <modify-argument index="this">
-                <define-ownership class="java" owner="cplusplus"/>
+            <modify-argument index="3">
+                <remove-argument/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QTreeWidgetItem(int)">
+            <modify-argument index="1">
+                <remove-argument/>
             </modify-argument>
         </modify-function>
         <modify-function signature="clone() const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="addChild(QTreeWidgetItem *)">
@@ -2366,6 +2416,58 @@
         <modify-function signature="setBackgroundColor(int, QColor)" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setTextColor(int, QColor)" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="textColor(int)const" remove="all"/> <!--### Obsolete in 4.3-->
+    </object-type>
+
+    <object-type name="QGraphicsTextItem"> <!-- a QObject so main-thread delete redundant -->
+        <extra-includes>
+        <include file-name="QTextCursor" location="global"/>
+        </extra-includes>
+        <modify-function signature="QGraphicsTextItem(QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsTextItem(const QString &amp;,QGraphicsItem*)">
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="setDocument(QTextDocument*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDocument"/>
+            </modify-argument>
+        </modify-function>
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsTextItem::Type)" />
+    </object-type>
+
+    <object-type name="QCompleter">
+        <!--modify-function signature="activated(const QModelIndex &amp;)">
+            <rename to="activatedIndex"/>
+        </modify-function>
+        <modify-function signature="highlighted(const QModelIndex &amp;)">
+            <rename to="highlightedIndex"/>
+        </modify-function-->
+        <modify-function signature="setModel(QAbstractItemModel *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPopup(QAbstractItemView *)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setWidget(QWidget *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcWidget"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="eventFilter(QObject*,QEvent*)">
+            <modify-argument index="2" invalidate-after-use="yes" />
+        </modify-function>
     </object-type>
 
     <object-type name="QListWidget">
@@ -2424,20 +2526,34 @@
         </modify-function>
         <modify-function signature="setModel(QAbstractItemModel*)">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count declare-variable="QAbstractItemView" action="set" variable-name="__rcItemModel"/>
             </modify-argument>
+        </modify-function>
+        <modify-function signature="setSelectionModel(QItemSelectionModel *)">
+            <modify-argument index="1">
+                <reference-count declare-variable="QAbstractItemView" action="set" variable-name="__rcItemSelectionModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="indexFromItem(QListWidgetItem *)const" remove="all" since="5.11.0">
         </modify-function>
     </object-type>
 
-	<object-type name="QOpenGLWidget">
-	</object-type>
-	
-	<object-type name="QWidget">
+    <object-type name="QOpenGLWidget">
+    </object-type>
+    
+    <object-type name="QWidget">
         <extra-includes>
             <include file-name="QIcon" location="global"/>
             <include file-name="QMessageBox" location="global"/>
         </extra-includes>
-
+        <modify-function signature="createWindowContainer(QWindow *, QWidget *, QFlags&lt;Qt::WindowType>)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="devType() const" remove="all" />
+        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::Widget" />
         <modify-function signature="nativeEvent(const QByteArray &amp;, void *, long *)" remove="all"/>
         <modify-function signature="actionEvent(QActionEvent*)">
             <modify-argument index="1" invalidate-after-use="yes" />
@@ -2519,45 +2635,44 @@
         </modify-function>
 
         <modify-function signature="setGraphicsEffect(QGraphicsEffect*)">
-			<modify-argument index="1">
+            <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcGraphicsEffect"/>
             </modify-argument>
         </modify-function>
 
         <inject-code class="native">
-            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowTitle)
+            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowTitle)
             (JNIEnv *__jni_env,
                 jclass,
-                jlong __this_nativeId,
+                QtJambiNativeID __this_nativeId,
                 jobject title0)
             {
-                QTJAMBI_DEBUG_TRACE("(native) entering: QMessageBox::setWindowTitle(const QString &amp; title)");
-                QString __qt_title0 =  qtjambi_to_qstring(__jni_env, (jstring) title0);
-                QTJAMBI_EXCEPTION_CHECK(__jni_env);
-                QMessageBox *__qt_this = (QMessageBox *) qtjambi_from_jlong(__this_nativeId);
-                QTJAMBI_EXCEPTION_CHECK(__jni_env);
-                Q_ASSERT(__qt_this);
-                __qt_this-&gt;setWindowTitle((const QString&amp; )__qt_title0);
-                QTJAMBI_DEBUG_TRACE("(native) -&gt; leaving: QMessageBox::setWindowTitle(const QString &amp; title)");
+                QTJAMBI_DEBUG_METHOD_PRINT("native", "QMessageBox::setWindowTitle(const QString &amp; title)");
+                try{
+                    QMessageBox *__qt_this = qtjambi_object_from_nativeId&lt;QMessageBox>(__this_nativeId);
+                    qtjambi_check_resource(__jni_env, __qt_this);
+                    __qt_this-&gt;setWindowTitle(qtjambi_to_qstring(__jni_env, jstring(title0)));
+                }catch(const JavaException&amp; exn){
+                    exn.raiseInJava(__jni_env);
+                }
             }
         </inject-code>
 
         <inject-code class="native">
-            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowModality)
-            (JNIEnv *__jni_env,
+            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowModality)
+            (JNIEnv * __jni_env,
                 jclass,
-                jlong __this_nativeId,
+                QtJambiNativeID __this_nativeId,
                 jint windowModality0)
             {
-                Q_UNUSED(__jni_env);
-                QTJAMBI_DEBUG_TRACE("(native) entering: QMessageBox::setWindowModality(Qt::WindowModality modality)");
-                Qt::WindowModality __qt_windowModality0 = (Qt::WindowModality) windowModality0;
-                QTJAMBI_EXCEPTION_CHECK(__jni_env);
-                QMessageBox *__qt_this = (QMessageBox *) qtjambi_from_jlong(__this_nativeId);
-                QTJAMBI_EXCEPTION_CHECK(__jni_env);
-                Q_ASSERT(__qt_this);
-                __qt_this-&gt;setWindowModality((Qt::WindowModality )__qt_windowModality0);
-                QTJAMBI_DEBUG_TRACE("(native) -&gt; leaving: QMessageBox::setWindowModality(Qt::WindowModality modality)");
+                QTJAMBI_DEBUG_METHOD_PRINT("native", "QMessageBox::setWindowModality(Qt::WindowModality modality)");
+                try{
+                    QMessageBox *__qt_this = qtjambi_object_from_nativeId&lt;QMessageBox>(__this_nativeId);
+                    qtjambi_check_resource(__jni_env, __qt_this);
+                    __qt_this-&gt;setWindowModality(Qt::WindowModality(windowModality0));
+                }catch(const JavaException&amp; exn){
+                    exn.raiseInJava(__jni_env);
+                }
             }
         </inject-code>
 
@@ -2614,10 +2729,6 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getContentsMargins(int*,int*,int*,int*)const">
-            <access modifier="private"/>
-        </modify-function>
-
         <modify-function signature="addAction(QAction *)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcActions"/>
@@ -2662,8 +2773,8 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="setCheckBox(QCheckBox*)">
-			<modify-argument index="1">
+        <modify-function signature="setCheckBox(QCheckBox*)">
+            <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
@@ -2699,9 +2810,9 @@
     </object-type>
 
     <object-type name="QAbstractSpinBox">
-        <modify-function signature="initStyleOption(QStyleOptionSpinBox*)const">
-            <access modifier="private"/>
-        </modify-function>
+        <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
         <modify-function signature="setLineEdit(QLineEdit*)">
             <modify-argument index="1">
                 <!-- Safe to ignore because the spinbox reparents the line edit -->
@@ -2723,7 +2834,7 @@
                 <reference-count action="set" variable-name="__rcModel"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="match(QModelIndex, int, QVariant, int, QFlags&lt;Qt::MatchFlag&gt;) const">
+        <modify-function signature="match(QModelIndex, int, QVariant, int, QFlags&lt;Qt::MatchFlag&gt;) const">
             <modify-argument index="5">
                 <remove-default-expression/>
             </modify-argument>
@@ -2769,20 +2880,18 @@
     </object-type>
 
     <object-type name="QDateTimeEdit">
-        <modify-function signature="initStyleOption(QStyleOptionSpinBox*)const" access="private" rename="initDateTimeEditStyleOption"/>
+         <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+         </extra-includes>
         <modify-function signature="setCalendarWidget(QCalendarWidget*)">
             <modify-argument index="1">
                 <!-- Safe to ignore because widget is reparented -->
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-
     </object-type>
 
     <object-type name="QSlider">
-        <modify-function signature="initStyleOption(QStyleOptionSlider*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
 
     <object-type name="QProgressDialog">
@@ -2808,11 +2917,6 @@
     </object-type>
 
     <object-type name="QLabel">
-        <modify-function signature="picture()const">
-            <access modifier="private"/>
-            <rename to="picture_private"/>
-        </modify-function>
-
         <modify-function signature="setBuddy(QWidget *)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcBuddy"/>
@@ -2823,170 +2927,22 @@
                 <reference-count action="set" variable-name="__rcMovie"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="pixmap()const">
-            <access modifier="private"/>
-            <rename to="pixmap_private"/>
-        </modify-function>
     </object-type>
-
+    <functional-type name="QFileDialog::FileContentHandler" using="std::function&lt;void(const QString &amp;, const QByteArray &amp;)>"/>
     <object-type name="QFileDialog">
         <extra-includes>
             <include file-name="QUrl" location="global"/>
         </extra-includes>
-
-        <modify-function signature="getOpenFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="getOpenFileNames(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="getSaveFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-		
-		<modify-function signature="getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-		
-		<modify-function signature="getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-		
-		<modify-function signature="getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="6">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="7">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
         <modify-function signature="setIconProvider(QFileIconProvider*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcIconProvider"/>
             </modify-argument>
         </modify-function>
-
         <modify-function signature="setItemDelegate(QAbstractItemDelegate*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcItemDelegate"/>
             </modify-argument>
         </modify-function>
-
         <modify-function signature="setProxyModel(QAbstractProxyModel*)">
             <modify-argument index="1">
                 <!-- Reparented -->
@@ -3002,9 +2958,6 @@
         <extra-includes>
             <include file-name="QIcon" location="global"/>
         </extra-includes>
-        <modify-function signature="initStyleOption(QStyleOptionTab*,int)const">
-            <access modifier="private"/>
-        </modify-function>
         <modify-function signature="setTabButton(int,QTabBar::ButtonPosition,QWidget*)">
             <modify-argument index="3">
                 <reference-count action="ignore" />
@@ -3013,15 +2966,9 @@
     </object-type>
 
     <object-type name="QRadioButton">
-        <modify-function signature="initStyleOption(QStyleOptionButton*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
 
     <object-type name="QScrollBar">
-        <modify-function signature="initStyleOption(QStyleOptionSlider*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
 
     <object-type name="QAbstractScrollArea">
@@ -3070,9 +3017,6 @@
     </object-type>
 
     <object-type name="QRubberBand">
-        <modify-function signature="initStyleOption(QStyleOptionRubberBand*)const">
-            <access modifier="private"/>
-        </modify-function>
         <modify-function signature="move(int,int)" rename="moveRubberBand"/>
         <modify-function signature="move(const QPoint &amp;)" rename="moveRubberBand"/>
         <modify-function signature="resize(int,int)" rename="resizeRubberBand"/>
@@ -3145,15 +3089,18 @@
         </modify-function>
         <modify-function signature="setModel(QAbstractItemModel*)">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count declare-variable="QAbstractItemView" action="set" variable-name="__rcItemModel"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="indexFromItem(QTableWidgetItem *) const" remove="all"  since="5.11.0"/>
     </object-type>
 
     <object-type name="QSplitter">
-
-        <modify-function signature="getRange(int,int*,int*)const">
-            <access modifier="private"/>
+        <modify-function signature="createHandle()">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="addWidget(QWidget *)">
             <modify-argument index="1">
@@ -3168,9 +3115,6 @@
     </object-type>
 
     <object-type name="QGroupBox">
-        <modify-function signature="initStyleOption(QStyleOptionGroupBox*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
 
     <object-type name="QStackedWidget">
@@ -3200,14 +3144,15 @@
     </object-type>
 
     <object-type name="QDial">
-        <modify-function signature="initStyleOption(QStyleOptionSlider*)const">
-            <access modifier="private"/>
-        </modify-function>
     </object-type>
 
     <object-type name="QLineEdit">
-        <modify-function signature="initStyleOption(QStyleOptionFrame*)const">
-            <access modifier="private"/>
+        <modify-function signature="getTextMargins(int*,int*,int*,int*)const" remove="all"/>
+        <modify-function signature="createStandardContextMenu()">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="setCompleter(QCompleter *)">
             <modify-argument index="1">
@@ -3219,7 +3164,7 @@
                 <reference-count action="set" variable-name="__rcValidator"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="addAction(QAction *, QLineEdit::ActionPosition)" remove="all"/>
+        <modify-function signature="addAction(QAction *, QLineEdit::ActionPosition)" remove="all"/>
     </object-type>
 
     <object-type name="QLCDNumber" />
@@ -3242,7 +3187,7 @@
     <object-type name="QSplashScreen">
         <modify-function signature="showMessage(const QString &amp;, int, const QColor &amp;)">
         <modify-argument index="3">
-            <replace-default-expression with="new org.qtjambi.qt.gui.QColor(org.qtjambi.qt.core.Qt.GlobalColor.black)"/>
+            <replace-default-expression with="new io.qt.gui.QColor(io.qt.core.Qt.GlobalColor.black)"/>
         </modify-argument>
         </modify-function>
         <modify-function signature="repaint()" remove="all"/>
@@ -3273,25 +3218,31 @@
     </object-type>
 
     <object-type name="QSpinBox">
-        <modify-function signature="valueChanged(const QString &amp;)">
+        <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
+        <!--modify-function signature="valueChanged(const QString &amp;)">
             <rename to="valueStringChanged"/>
-        </modify-function>
+        </modify-function-->
     </object-type>
 
     <object-type name="QTextBrowser">
-        <modify-function signature="highlighted(const QString &amp;)">
+        <!--modify-function signature="highlighted(const QString &amp;)">
             <rename to="highlightedString"/>
-        </modify-function>
+        </modify-function-->
     </object-type>
 
     <object-type name="QDoubleSpinBox">
-        <modify-function signature="valueChanged(const QString &amp;)">
+        <extra-includes>
+             <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
+        <!--modify-function signature="valueChanged(const QString &amp;)">
             <rename to="valueStringChanged"/>
-        </modify-function>
+        </modify-function-->
     </object-type>
 
     <object-type name="QButtonGroup">
-        <modify-function signature="buttonClicked(int)">
+        <!--modify-function signature="buttonClicked(int)">
             <rename to="buttonIdClicked"/>
         </modify-function>
         <modify-function signature="buttonPressed(int)">
@@ -3302,7 +3253,7 @@
         </modify-function>
         <modify-function signature="buttonToggled(int,bool)">
             <rename to="buttonIdToggled"/>
-        </modify-function>
+        </modify-function-->
         <modify-function signature="addButton(QAbstractButton *, int)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcButtons"/>
@@ -3324,9 +3275,6 @@
 
     <object-type name="QToolBar">
         <modify-function signature="addAction(QAction *)" remove="all"/>
-        <modify-function signature="initStyleOption(QStyleOptionToolBar*)const">
-            <access modifier="private"/>
-        </modify-function>
         <modify-function signature="addAction(QIcon,QString,const QObject*,const char*)">
             <remove/>
         </modify-function>
@@ -3354,12 +3302,12 @@
     </object-type>
 
     <object-type name="QComboBox">
-	<!--modify-function signature="findData ( const QVariant &amp;, int, Qt::MatchFlags ) const">
+    <!--modify-function signature="findData ( const QVariant &amp;, int, Qt::MatchFlags ) const">
         <modify-argument index="3">
             <remove-default-expression/>
         </modify-argument>
     </modify-function>
-	<modify-function signature="findText ( const QString &amp;, int, Qt::MatchFlags ) const">
+    <modify-function signature="findText ( const QString &amp;, int, Qt::MatchFlags ) const">
         <modify-argument index="3">
             <remove-default-expression/>
         </modify-argument>
@@ -3376,7 +3324,7 @@
         </modify-function>
         <modify-function signature="setItemDelegate(QAbstractItemDelegate *)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <reference-count variable-name="__rcItemDelegate" action="set"/>
                 <no-null-pointer/>
             </modify-argument>
         </modify-function>
@@ -3400,7 +3348,7 @@
                 <reference-count action="set" variable-name="__rcModel"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="activated(int)">&gt;
+        <!--modify-function signature="activated(int)">&gt;
             <rename to="activatedIndex"/>
         </modify-function>
         <modify-function signature="currentIndexChanged(const QString &amp;)">
@@ -3408,7 +3356,7 @@
         </modify-function>
         <modify-function signature="highlighted(int)">
             <rename to="highlightedIndex"/>
-        </modify-function>
+        </modify-function-->
 
         <modify-function signature="autoCompletion()const" remove="all"/> <!--### Obsolete in 4.3-->
         <modify-function signature="autoCompletionCaseSensitivity()const" remove="all"/> <!--### Obsolete in 4.3-->
@@ -3420,6 +3368,24 @@
         <extra-includes>
             <include file-name="QTextCursor" location="global"/>
         </extra-includes>
+        <modify-function signature="createMimeDataFromSelection()const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createStandardContextMenu()">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createStandardContextMenu(QPoint)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setDocument(QTextDocument*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcDocument"/>
@@ -3450,36 +3416,6 @@
         <include file-name="QIcon" location="global"/>
         <include file-name="QLocale" location="global"/>
         </extra-includes>
-
-        <modify-function signature="QApplication(int &amp;, char  **, int)">
-            <access modifier="private"/>
-            <modify-argument index="3">
-                <remove-argument/><!-- since 4.8, we want this to call the
-                other C++ constructor, so the default value for the 3rd
-                argument is provided via the default C++ argument -->
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="font(const char*)">
-            <remove/>
-        </modify-function>
-        <modify-function signature="setFont(QFont,const char*)">
-            <access modifier="private"/>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="palette(const char*)">
-            <remove/>
-        </modify-function>
-        <modify-function signature="setPalette(QPalette,const char*)">
-            <access modifier="private"/>
-            <modify-argument index="2">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-
         <!--modify-function signature="setInputContext(QInputContext*)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -3495,10 +3431,10 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-	<modify-function signature="topLevelAt(const QPoint &amp;)">
+    <modify-function signature="topLevelAt(const QPoint &amp;)">
             <rename to="topLevelWidgetAt"/>
         </modify-function>
-	<modify-function signature="topLevelAt(int,int)">
+    <modify-function signature="topLevelAt(int,int)">
             <rename to="topLevelWidgetAt"/>
         </modify-function>
     </object-type>
@@ -3514,102 +3450,16 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QFormLayout">
-        <modify-function signature="addRow(QWidget*,QWidget*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addRow(QLayout*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addRow(QWidget*,QLayout*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="addRow(QWidget*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addRow(QString,QLayout*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addRow(QString,QWidget*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QLayout*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QWidget*,QLayout*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QWidget*,QWidget*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QWidget*)">
-            <modify-argument index="2">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QString,QLayout*)">
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="insertRow(int,QString,QWidget*)">
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setLayout(int,QFormLayout::ItemRole,QLayout*)">
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setWidget(int,QFormLayout::ItemRole,QWidget*)">
-            <modify-argument index="3">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setItem(int,QFormLayout::ItemRole,QLayoutItem*)" access="private" rename="setItem_private">
-            <modify-argument index="3">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="addItem(QLayoutItem*)">
-            <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QGraphicsGridLayout" delete-in-main-thread="yes">
+    <enum-type name="QFileSystemModel::Option" flags="QFileSystemModel::Options" since="5.14.0"/>
+    <value-type name="QFormLayout::TakeRowResult">
+        <modify-field name="labelItem" read="true" write="false"/>
+        <modify-field name="fieldItem" read="true" write="false"/>
+    </value-type>
+    <object-type name="QGraphicsGridLayout" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsLayoutItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsGridLayout)" />
         <modify-function signature="addItem(QGraphicsLayoutItem*,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -3631,56 +3481,42 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsLayout" delete-in-main-thread="yes">
-
+    <object-type name="QGraphicsLayout" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsLayoutItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QGraphicsLayoutItem" condition="%1->isLayout()" />
+        <modify-function signature="widgetEvent(QEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
         <modify-function signature="addChildLayoutItem(QGraphicsLayoutItem*)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="widgetEvent(QEvent*)">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="setParentLayoutItem(QGraphicsLayoutItem*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcParentLayoutItem" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setGraphicsItem(QGraphicsItem*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcItem" />
-            </modify-argument>
-        </modify-function>
     </object-type>
   
-  <interface-type name="QGraphicsLayoutItem" 
-					delete-in-main-thread="yes">
-					<!--
-					polymorphic-base="yes" 
-					polymorphic-id-expression="!%1->isLayout()) {&#x000a;&#x0009;
-						*class_name = &quot;QGraphicsWidget&quot;;&#x000a;&#x0009;
-						*package    = &quot;org/qtjambi/qt/gui/&quot;;&#x000a;&#x0009;
-						return true;&#x000a;
-					}else if(%1->isLayout()"
-					-->
-        <modify-function signature="setParentLayoutItem(QGraphicsLayoutItem*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcParentLayoutItem" />
-            </modify-argument>
-        </modify-function>
+  <interface-type name="QGraphicsLayoutItem" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsLayoutItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
         <modify-function signature="setGraphicsItem(QGraphicsItem*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcItem" />
             </modify-argument>
         </modify-function>
     </interface-type>
-    <object-type name="QGraphicsLinearLayout" delete-in-main-thread="yes">
+    <object-type name="QGraphicsLinearLayout" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsLayoutItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsLayoutItem)" />
         <modify-function signature="addItem(QGraphicsLayoutItem *)">
             <modify-argument index="1">
-				<!-- This does mot match the actual c++ behavior. 
-					By adding items to the layout the layout object takes ownership of the item.
-					See typesystem_gui.java.xml
-				<reference-count action="add" variable-name="__rcItems" />   -->
+                <!-- This does mot match the actual c++ behavior. 
+                    By adding items to the layout the layout object takes ownership of the item.
+                    See typesystem_gui.java.xml
+                <reference-count action="add" variable-name="__rcItems" />   -->
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
@@ -3705,45 +3541,54 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsAnchorLayout">
-		<modify-function signature="addAnchor(QGraphicsLayoutItem *, Qt::AnchorPoint, QGraphicsLayoutItem *, Qt::AnchorPoint)">
+    <object-type name="QGraphicsAnchorLayout" delete-in-owner-thread="yes" owner="__owner_function_QGraphicsLayoutItem(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsAnchorLayout)" />
+        <modify-function signature="addAnchor(QGraphicsLayoutItem *, Qt::AnchorPoint, QGraphicsLayoutItem *, Qt::AnchorPoint)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
-			<modify-argument index="3">
+            <modify-argument index="3">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="addAnchors(QGraphicsLayoutItem *, QGraphicsLayoutItem *, QFlags&lt;Qt::Orientation&gt;)">
+        <modify-function signature="addAnchors(QGraphicsLayoutItem *, QGraphicsLayoutItem *, QFlags&lt;Qt::Orientation&gt;)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
-			<modify-argument index="2">
+            <modify-argument index="2">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-		<modify-function signature="addCornerAnchors(QGraphicsLayoutItem*,Qt::Corner,QGraphicsLayoutItem*,Qt::Corner)">
+        <modify-function signature="addCornerAnchors(QGraphicsLayoutItem*,Qt::Corner,QGraphicsLayoutItem*,Qt::Corner)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
-			<modify-argument index="3">
+            <modify-argument index="3">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-	</object-type>
+    </object-type>
     <object-type name="QGraphicsProxyWidget"> <!-- a QObject so main-thread delete redundant -->
+        <modify-function signature="type() const" remove="all" />
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsProxyWidget::Type)" />
         <modify-function signature="eventFilter(QObject*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="createProxyForChildWidget(QWidget*)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QGraphicsWidget">  <!-- a QObject so main-thread delete redundant -->
         <!-- Duplicate function to QObject::children() to override accidental shadowing which is not present in Jambi -->
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsWidget::Type)" />
+        <interface-polymorphy interface="QGraphicsLayoutItem" condition="%1->graphicsItem() &amp;&amp; %1->graphicsItem()->type()==int(QGraphicsWidget::Type)" />
         <modify-function signature="children()const" remove="all" />
-        <modify-function signature="setLayout(QGraphicsLayout*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcLayout" />
-            </modify-argument>
-        </modify-function>
         <modify-function signature="addAction(QAction*)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcActions" />
@@ -3819,6 +3664,24 @@
     </object-type>
     <object-type name="QPlainTextDocumentLayout" />
     <object-type name="QPlainTextEdit">
+        <modify-function signature="createMimeDataFromSelection()const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createStandardContextMenu()">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createStandardContextMenu(QPoint)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setDocument(QTextDocument*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcDocument" />
@@ -3831,6 +3694,12 @@
         </modify-function>
     </object-type>
     <object-type name="QStyledItemDelegate">
+        <modify-function signature="createEditor(QWidget *,QStyleOptionViewItem,QModelIndex)const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setItemEditorFactory(QItemEditorFactory*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcItemEditorFactory" />
@@ -3854,7 +3723,14 @@
     <!--interface-type name="QStyleFactoryInterface" java-name="QAbstractStyleFactory" /-->
 
     <object-type name="QPictureFormatPlugin" />
-    <object-type name="QStylePlugin" />
+    <object-type name="QStylePlugin">
+        <modify-function signature="create(QString)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QGesture" />
     <object-type name="QGraphicsAnchor" />
 
@@ -3864,18 +3740,17 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QGraphicsObject">
+    <object-type name="QGraphicsObject" is-value-owner="yes">
+        <extra-includes>
+            <include file-name="qtjambi_widgets_repository.h" location="local"/>
+        </extra-includes>
         <!-- Duplicate function to QObject::children() to override accidental shadowing which is not present in Jambi -->
+        <interface-polymorphy interface="QGraphicsItem" condition="%1->toGraphicsObject()!=nullptr" />
         <modify-function signature="children()const" remove="all" />
-        <modify-function signature="setGraphicsEffect(QGraphicsEffect*)">
-			<modify-argument index="1">
-                <reference-count action="set" variable-name="__rcGraphicsEffect"/>
-            </modify-argument>
-        </modify-function>
-		<modify-function signature="parentItem() const" access="non-final"/>
+        <modify-function signature="parentItem() const" access="non-final"/>
         <modify-function signature="hasFocus() const" access="non-final"/>
-		<modify-function signature="setFocusProxy(QGraphicsItem*)">
-			<modify-argument index="1">
+        <modify-function signature="setFocusProxy(QGraphicsItem*)">
+            <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
@@ -3888,9 +3763,9 @@
     <object-type name="QPanGesture" />
     <object-type name="QPinchGesture" />
     <object-type name="QProxyStyle">
-		<modify-function signature="setBaseStyle(QStyle*)">
-			<modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+        <modify-function signature="setBaseStyle(QStyle*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -3903,6 +3778,12 @@
     <object-type name="QGraphicsDropShadowEffect"/>
 
     <object-type name="QGestureRecognizer">
+        <modify-function signature="create(QObject*)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="recognize(QGesture*,QObject*,QEvent*)">
             <modify-argument index="3" invalidate-after-use="yes" />
         </modify-function>
@@ -3910,32 +3791,27 @@
     <!-- is causing problems with MSVC 2008 -->
     <!-- <object-type name="QS60Style"/> -->
     <rejection class="QS60Style"/>
-    <value-type name="QTreeWidgetItemIterator" delete-in-main-thread="yes">
-        <custom-creator>
-		if(copy)
-			return new QTreeWidgetItemIterator(*copy);
-		else
-			return Q_NULLPTR;
-        </custom-creator>
+    <object-type name="QTreeWidgetItemIterator" delete-in-owner-thread="yes" owner="__owner_function_QTreeWidgetItemIterator(%1)">
+        <extra-includes>
+            <include file-name="qwidgetutils.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="QTreeWidgetItemIterator(QTreeWidgetItemIterator)" remove="all"/>
         <modify-function signature="operator=(QTreeWidgetItemIterator)" remove="all"/>
         <modify-function signature="operator++(int)" remove="all"/>
         <modify-function signature="operator--(int)" remove="all"/>
-        <modify-function signature="operator+=(int)" access="private"/>
-        <modify-function signature="operator-=(int)" access="private"/>
-        <modify-function signature="operator++()" access="private"/>
-        <modify-function signature="operator--()" access="private"/>
-        <modify-function signature="operator*()const" access="private"/>
-    </value-type>
-
-    <object-type name="QGuiSignalMapper"/>
+        <modify-function signature="operator+=(int)" remove="all"/>
+        <modify-function signature="operator-=(int)" remove="all"/>
+        <modify-function signature="operator--()" remove="all"/>
+    </object-type>
 
     <!-- It is necessary to reject the virtual destructor to avoid generating shell. -->
     <rejection class="QScroller" function-name="~QScroller"/>
     <object-type name="QScroller">
-	<modify-function signature="scroller(const QObject *)" remove="all"/>
+    <modify-function signature="scroller(const QObject *)" remove="all"/>
     </object-type>
-	
-	<object-type name="QAccessibleWidget">
+    
+    <object-type name="QAccessibleWidget" polymorphic-id-expression="typeid(*%1) == typeid(QAccessibleWidget)">
+        <interface-polymorphy interface="QAccessibleActionInterface" condition="typeid(*reinterpret_cast&lt;QAccessibleActionInterface*>(%1))==typeid(QAccessibleWidget)" />
     </object-type>
 
     <enum-type name="QScroller::Input"/>
@@ -3951,17 +3827,6 @@
     <enum-type name="QScrollerProperties::ScrollMetric"/>
 
     <!-- Inefficient hash codes -->
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QElapsedTimer' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QItemSelection' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QSizePolicy' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QGradient' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMargins' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVector4D' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QQuaternion' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVector2D' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QVector3D' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QScrollerProperties' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."/>
-
         <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'eventFilter(QObject * receiver, QEvent * event)' in 'QPanGesture'" />
         <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'event(QEvent * event)' in 'QPanGesture'" />
         <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'eventFilter(QObject * receiver, QEvent * event)' in 'QSwipeGesture'" />
@@ -3987,15 +3852,14 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unhandled enum value: ~FlagMask in QMessageBox::StandardButton"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unmatched enum ~FlagMask"/>
     <suppress-warning text="WARNING(MetaInfoGenerator) :: class 'QGraphicsSceneEvent' inherits from polymorphic class 'QEvent', but has no polymorphic id set"/>
-    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcMenus' in 'org.qtjambi.qt.widgets.QMenu' but not both"/>
-    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcMenus' in 'org.qtjambi.qt.widgets.QMenuBar' but not both"/>
+    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcMenus' in 'io.qt.widgets.QMenu' but not both"/>
+    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcMenus' in 'io.qt.widgets.QMenuBar' but not both"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Rejected enum has no alternative...: QPalette::NColorRoles" />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'QtSharedPointer' does not have a type entry" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QGraphicsEffect' passed as value. Resulting code will not compile." />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Object type 'QGraphicsObject' passed as value. Resulting code will not compile." />
 
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QMatrix*' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass 'QGenericMatrix*' of * is not known" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QGenericMatrix*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QPlatformMenu*'"/>
@@ -4012,4 +3876,8 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'ignore()' for function modification in 'QGestureEvent' not found. Possible candidates:*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'isAccepted()const' for function modification in 'QGestureEvent' not found. Possible candidates:*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setAccepted(bool)' for function modification in 'QGestureEvent' not found. Possible candidates:*"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setAsDockMenu()' for function modification in 'QMenu' not found. Possible candidates:*"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QSizePolicy::QSizePolicy', unmatched parameter type 'Bits'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTableWidgetItem::tableModel', unmatched return type 'QTableModel*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QListWidgetItem::listModel', unmatched return type 'QListModel*'"/>
 </typesystem>

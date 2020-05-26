@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,11 +39,14 @@
 #define TYPESYSTEM_H_
 
 #include <QHash>
+#include <QMap>
 #include <QString>
 
 class TemplateEntry;
+class TemplateTypeEntry;
 
 typedef QHash<QString, TemplateEntry *> TemplateEntryHash;
+typedef QHash<QString, TemplateTypeEntry *> TemplateTypeEntryHash;
 
 class TemplateInstance {
     public:
@@ -55,14 +58,20 @@ class TemplateInstance {
         }
 
         QString expandCode() const;
+        bool hasCode() const;
 
         QString name() const {
             return m_name;
         }
 
+        void setIndent(const QString& indent){
+            m_indent = indent;
+        }
+
     private:
         const QString m_name;
         QHash<QString, QString> replaceRules;
+        QString m_indent;
 };
 
 namespace TypeSystem {
@@ -77,6 +86,7 @@ namespace TypeSystem {
         Constructors        = 0x0040,
         Interface           = 0x0080,
         Signal              = 0x0100,
+        MetaInfo            = 0x0200,
 
         // masks
         All                 = TargetLangCode
@@ -87,7 +97,8 @@ namespace TypeSystem {
         | Constructors
         | Interface
         | DestructorFunction
-        | Signal,
+        | Signal
+        | MetaInfo,
 
         JavaAndNativeCode   = TargetLangCode | NativeCode,
         TargetLangAndNativeCode   = TargetLangCode | NativeCode
@@ -97,7 +108,9 @@ namespace TypeSystem {
         InvalidOwnership,
         DefaultOwnership,
         TargetLangOwnership,
-        CppOwnership
+        CppOwnership,
+        IgnoreOwnership,
+        Invalidate
     };
 };
 
@@ -108,17 +121,25 @@ struct Include {
         TargetLangImport
     };
 
-    Include() : type(IncludePath) { }
-    Include(IncludeType t, const QString &nam) : type(t), name(nam) { }
+    Include() : type(IncludePath), name(), inherited(false), suppressed(false) { }
+    Include(IncludeType t, const QString &nam, bool _inherited = false, bool _suppressed = false) : type(t), name(nam), inherited(_inherited), suppressed(_suppressed) { }
+    Include(IncludeType t, const QString &nam, const QMap<QString,QString>& _requiredFeatures, bool _inherited = false, bool _suppressed = false) : type(t), name(nam), requiredFeatures(_requiredFeatures), inherited(_inherited), suppressed(_suppressed) { }
 
-    bool isValid() { return !name.isEmpty(); }
-
-    IncludeType type;
-    QString name;
+    bool isValid() const { return !name.isEmpty(); }
 
     QString toString() const;
 
     bool operator<(const Include &other) const { return name < other.name; }
+    IncludeType type;
+    QString name;
+    QMap<QString,QString> requiredFeatures;
+    bool inherited;
+    bool suppressed;
+};
+
+struct OwnershipRule {
+    TypeSystem::Ownership ownership;
+    QString condition;
 };
 
 struct ReferenceCount {
@@ -136,7 +157,7 @@ struct ReferenceCount {
 
         ActionsMask = 0xff,
 
-        Padding     = 0xffffffff
+        Padding     = 0xfffffff
     };
 
     enum Flag { // 0x100 - 0xf00
@@ -158,7 +179,7 @@ struct ReferenceCount {
 
     Action action;
     QString variableName;
-    QString conditional;
+    QString condition;
     QString declareVariable;
 
 uint threadSafe : 1;
@@ -177,4 +198,5 @@ struct TypeRejection {
 };
 
 QString fixCppTypeName(const QString &name);
+
 #endif

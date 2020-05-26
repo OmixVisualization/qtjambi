@@ -36,85 +36,55 @@
 
 package generator;
 
-import org.qtjambi.qt.*;
-import org.qtjambi.qt.xml.*;
+import io.qt.*;
+import io.qt.xml.*;
 
 class QDomDocument___ extends QDomDocument {
-
-        public class Result {
-                private Result(boolean success, QNativePointer errorMessage, QNativePointer errorLine, QNativePointer errorColumn) {
-                    this.success = success;
-                    this.errorMessage = errorMessage.stringValue();
-                    this.errorLine = errorLine.intValue();
-                    this.errorColumn = errorColumn.intValue();
-                }
-
-                public boolean success;
-                public String errorMessage;
-                public int errorLine;
-                public int errorColumn;
-
+    public static final class Result {
+        private Result(boolean success, String errorMessage, int errorLine, int errorColumn) {
+            this.success = success;
+            this.errorMessage = errorMessage;
+            this.errorLine = errorLine;
+            this.errorColumn = errorColumn;
         }
 
-        public final Result setContent(QXmlInputSource source, boolean namespaceProcessing) {
-            QNativePointer errorStr = new QNativePointer(QNativePointer.Type.String);
-            QNativePointer errorLine = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer errorColumn = new QNativePointer(QNativePointer.Type.Int);
-
-            boolean success = setContent(source, namespaceProcessing, errorStr, errorLine, errorColumn);
-
-            return new Result(success, errorStr, errorLine, errorColumn);
-        }
-
+        public final boolean success;
+        public final String errorMessage;
+        public final int errorLine;
+        public final int errorColumn;
+    }
 }// class
 
 class QXmlNamespaceSupport___ extends QXmlNamespaceSupport {
-
-        public static class ProcessedName {
-                public ProcessedName(String nsuri, String localName) {
-                    this.nsuri = nsuri;
-                    this.localName = localName;
-                }
-
-                public String nsuri;
-                public String localName;
+    public static final class ProcessedName {
+        private ProcessedName(String nsuri, String localName) {
+            this.nsuri = nsuri;
+            this.localName = localName;
         }
 
-        public final ProcessedName processName(String qname, boolean isAttribute) {
-            QNativePointer nsUri = new QNativePointer(QNativePointer.Type.String);
-            QNativePointer localName = new QNativePointer(QNativePointer.Type.String);
-            processName(qname, isAttribute, nsUri, localName);
+        public final String nsuri;
+        public final String localName;
+    }
 
-            return new ProcessedName(nsUri.stringValue(), localName.stringValue());
+    public static final class SplitName {
+        private SplitName(String prefix, String localname) {
+            this.prefix = prefix;
+            this.localname = localname;
         }
 
-        public static class SplitName {
-                public SplitName(String prefix, String localname) {
-                    this.prefix = prefix;
-                    this.localname = localname;
-                }
-
-                public String prefix;
-                public String localname;
-        }
-
-        public final SplitName splitName(String qname) {
-            QNativePointer prefix = new QNativePointer(QNativePointer.Type.String);
-            QNativePointer localName = new QNativePointer(QNativePointer.Type.String);
-            splitName(qname, prefix, localName);
-
-            return new SplitName(prefix.stringValue(), localName.stringValue());
-        }
-
+        public final String prefix;
+        public final String localname;
+    }
 }// class
 
 interface QXmlEntityResolver___ extends QXmlEntityResolver {
 
-    public static class ResolvedEntity {
+    public static final class ResolvedEntity {
 
-            public boolean error;
-            public QXmlInputSource inputSource;
+            public final @io.qt.internal.NativeAccess boolean error;
+            public final @io.qt.internal.NativeAccess QXmlInputSource inputSource;
 
+            @io.qt.internal.NativeAccess
             public ResolvedEntity(boolean error, QXmlInputSource inputSource) {
 
                 this.error = error;
@@ -124,6 +94,25 @@ interface QXmlEntityResolver___ extends QXmlEntityResolver {
 
     }
 
+}// class
+
+class QXmlReader_parse___{
+    JNIEnv *__jni_env = qtjambi_current_environment();
+    jmethodID method_id = __shell_javaMethod(10);
+    if(__jni_env && method_id) {
+        bool  __qt_return_value = false;
+        QTJAMBI_JNI_LOCAL_FRAME(__jni_env, 300)
+        if(jobject __java_this = __shell()->getJavaObjectLocalRef(__jni_env)){
+            jobject __java_input0 = qtjambi_cast<jobject>(__jni_env, &input0);
+            QTJAMBI_INVALIDATE_AFTER_USE(__jni_env, __java_input0)
+            jboolean __java_return_value = __jni_env->CallBooleanMethod(__java_this, method_id, __java_input0);
+            qtjambi_throw_java_exception(__jni_env)
+            __qt_return_value = bool(__java_return_value);
+        } else {
+            __shell()->warnForMethod("QXmlReader::parse(const QXmlInputSource& input)");
+        }
+        return __qt_return_value;
+    }
 }// class
 
 

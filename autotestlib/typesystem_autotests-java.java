@@ -44,33 +44,29 @@
 
 package generator;
 
-import org.qtjambi.qt.*;
-import org.qtjambi.qt.internal.QtJambiObject.QPrivateConstructor;
-import org.qtjambi.qt.core.*;
+import io.qt.*;
+import io.qt.internal.QtJambiObject.QPrivateConstructor;
+import io.qt.core.*;
 
 class QObjectType___ extends QObjectType {
-        @Override
-        @org.qtjambi.qt.QtBlockedSlot
-        protected void finalize() {
-            try {
-                if(Utils.isDebugLevel(3)) {
-                    String className = getClass().getName();
-                    String shortClassName = className;
-                    int i = shortClassName.lastIndexOf('.');
-                    if(i > 0)
-                        shortClassName = shortClassName.substring(i + 1);
-                    Utils.println(3, shortClassName + ".dtor(" + className + "@" + System.identityHashCode(this) + ") thread=" + Thread.currentThread().getId());
-                }
-            } finally {
-                super.finalize();
-            }
+        if(Utils.isDebugLevel(3)) {
+            Class<?> cls = this.getClass();
+            int hash = System.identityHashCode(this);
+            destroyed.connect(()->{
+                String className = cls.getName();
+                String shortClassName = className;
+                int i = shortClassName.lastIndexOf('.');
+                if(i > 0)
+                    shortClassName = shortClassName.substring(i + 1);
+                Utils.println(3, shortClassName + ".dtor(" + className + "@" + hash + ") thread=" + Thread.currentThread().getId());
+            });
         }
 }// class
 
 class SharedPointerTest___ extends SharedPointerTest {
 	@QtBlockedSlot
-	public final org.qtjambi.qt.widgets.QGraphicsItemInterface createSharedObject2()    {
-		org.qtjambi.qt.widgets.QGraphicsItemInterface item = privateCreateSharedObject2();
+	public final io.qt.widgets.QGraphicsItemInterface createSharedObject2()    {
+		io.qt.widgets.QGraphicsItemInterface item = privateCreateSharedObject2();
 		if(item.toGraphicsObject()!=null){
 			item = item.toGraphicsObject();
 		}

@@ -54,6 +54,7 @@
 #endif
 #include <QtXml/QtXml>
 #include <QtNetwork/QtNetwork>
+#include <qtjambi/qtjambi_repository.h>
 
 class SpinBoxHandler
 {
@@ -335,7 +336,7 @@ public:
     }
 
     bool read(QImage *image) {
-        bool bf = image != 0 ? image->load("classpath:org/qtjambi/examples/images/cheese.png") : true;
+        bool bf = image != 0 ? image->load("classpath:io/qt/autotests/svgcards-example.png") : true;
         return bf;
     }
 };
@@ -381,20 +382,29 @@ public:
     mutable QString myName;
 };
 
-/*
-class AccessibleTableInterfaceSubclass: public QAccessibleTableInterface
+
+class AccessibleTextInterfaceSubclass: public QAccessibleTextInterface
 {
 public:
-    virtual int selectedColumns(int maxColumns, QList<int> *columns);
-    virtual int selectedRows(int maxRows, QList<int> *rows);
-    virtual void cellAtIndex(int index, int *row, int *column, int *rowSpan,
-                             int *columnSpan, bool *isSelected);
+    virtual void selection(int selectionIndex, int *startOffset, int *endOffset) const;
+    virtual QString attributes(int offset, int *startOffset, int *endOffset) const;
+    virtual QString textBeforeOffset(int offset, QAccessible::TextBoundaryType boundaryType,
+                                     int *startOffset, int *endOffset) const;
+    virtual QString textAfterOffset(int offset, QAccessible::TextBoundaryType boundaryType,
+                                    int *startOffset, int *endOffset) const;
+    virtual QString textAtOffset(int offset, QAccessible::TextBoundaryType boundaryType,
+                                 int *startOffset, int *endOffset) const;
 
-    static void callCellAtIndex(AccessibleTableInterfaceSubclass *obj, int index, int *row, int *col, int *rowSpan, int *columnSpan, bool *isSelected);
-    static QList<int> callSelectedRows(AccessibleTableInterfaceSubclass *obj, int maxRows, QList<int> rows);
-    static QList<int> callSelectedColumns(AccessibleTableInterfaceSubclass *obj, int maxColumns, QList<int> columns);
+    static void callSelection(AccessibleTextInterfaceSubclass *obj, int selectionIndex, int *startOffset, int *endOffset);
+    static QString callAttributes(AccessibleTextInterfaceSubclass *obj, int offset, int *startOffset, int *endOffset);
+    static QString callTextBeforeOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                                     int *startOffset, int *endOffset);
+    static QString callTextAfterOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                                    int *startOffset, int *endOffset);
+    static QString callTextAtOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                                 int *startOffset, int *endOffset);
 };
-*/
+
 
 class AbstractSocketSubclass: public QAbstractSocket
 {
@@ -483,5 +493,28 @@ public:
         return ptr;
     }
 };
+
+namespace Java{
+class QtXml
+{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlEntityResolver$ResolvedEntity,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(error)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(inputSource))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlNamespaceSupport$ProcessedName,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlNamespaceSupport$SplitName,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+private:
+    QtXml() = delete;
+};
+class QtWidgets
+{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtWidgets,QGraphicsItem$BlockedByModalPanelInfo,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+private:
+    QtWidgets() = delete;
+};
+}
 
 #endif

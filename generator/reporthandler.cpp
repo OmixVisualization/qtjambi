@@ -51,6 +51,9 @@ QString ReportHandler::m_context;
 ReportHandler::DebugLevel ReportHandler::m_debug_level = NoDebug;
 QSet<QString> ReportHandler::m_reported_warnings;
 
+const QSet<QString>& ReportHandler::reportedWarnings(){
+    return m_reported_warnings;
+}
 
 void ReportHandler::warning(const QString &text) {
     QString warningText = QString("WARNING(%1) :: %2").arg(m_context).arg(text);

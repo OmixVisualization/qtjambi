@@ -1,9 +1,10 @@
-TARGET = org_qtjambi_qt_network
+QTJAMBILIB = QtJambiNetwork
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_network/org_qtjambi_qt_network.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 win32:CONFIG += precompile_header
 PRECOMPILED_HEADER = qtjambi_network_pch.h
@@ -15,10 +16,8 @@ DEPENDPATH += $$PWD
 QT = core network
 
 HEADERS += \
-    qschemanetworkaccessmanager.h \
-    qclasspathaccessmanager.h \
-    qnetworkreplyclasspathimpl_p.h
+    qtjambi_network.h \
+    qtjambi_network_repository.h
 
 SOURCES += \
-    qschemanetworkaccessmanager.cpp \
-    qclasspathaccessmanager.cpp
+    qtjambi_network_repository.cpp

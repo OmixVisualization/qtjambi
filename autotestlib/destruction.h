@@ -45,7 +45,18 @@
 #ifndef DESTRUCTION_H
 #define DESTRUCTION_H
 
-#include <QtCore/QObject>
+#include <QtCore>
+
+class DestroyCounter: public QObject
+{
+public:
+    DestroyCounter() : m_destroyed(0) { }
+    virtual ~DestroyCounter() { }
+    void increaseDestroyedCount() { m_destroyed++; }
+    int destroyedCount() { return m_destroyed; }
+private:
+    int m_destroyed;
+};
 
 class OrdinarySuperclass
 {
@@ -57,18 +68,19 @@ public:
 class OrdinaryDestroyed: public OrdinarySuperclass
 {
 public:
-    OrdinaryDestroyed()
+    OrdinaryDestroyed(DestroyCounter* destroyCounter): m_destroyCounter(destroyCounter)
     {
         // nanana
     }
 
     virtual ~OrdinaryDestroyed()
     {
-        increaseDestroyedCount();
+        if(m_destroyCounter)
+            m_destroyCounter->increaseDestroyedCount();
     }
 
-    virtual OrdinaryDestroyed *virtualGetObjectJavaOwnership() { return new OrdinaryDestroyed(); }
-    virtual OrdinaryDestroyed *virtualGetObjectCppOwnership() { return new OrdinaryDestroyed(); }
+    virtual OrdinaryDestroyed *virtualGetObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+    virtual OrdinaryDestroyed *virtualGetObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
     virtual void virtualSetDefaultOwnership(OrdinaryDestroyed *) { }
 
     static void deleteFromCpp(OrdinaryDestroyed *destroyed)
@@ -81,18 +93,14 @@ public:
         delete destroyed;
     }
 
-    static void setDestroyedCount(int count) { m_destroyed = count; }
-    static void increaseDestroyedCount() { m_destroyed++; }
-    static int destroyedCount() { return m_destroyed; }
-
-    static OrdinaryDestroyed *callGetObjectJavaOwnership(OrdinaryDestroyed *_this)
+    static OrdinaryDestroyed *callGetObjectJavaOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
     {
-        return _this->virtualGetObjectJavaOwnership();
+        return _this->virtualGetObjectJavaOwnership(destroyCounter);
     }
 
-    static OrdinaryDestroyed *callGetObjectCppOwnership(OrdinaryDestroyed *_this)
+    static OrdinaryDestroyed *callGetObjectCppOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
     {
-        return _this->virtualGetObjectCppOwnership();
+        return _this->virtualGetObjectCppOwnership(destroyCounter);
     }
 
     static void callSetDefaultOwnership(OrdinaryDestroyed *_this, OrdinaryDestroyed *obj)
@@ -101,24 +109,32 @@ public:
     }
 
     // Set in type system
-    static OrdinaryDestroyed *getObjectJavaOwnership() { return new OrdinaryDestroyed(); }
+    static OrdinaryDestroyed *getObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
 
     // Default ownership
-    static OrdinaryDestroyed *getObjectSplitOwnership() { return new OrdinaryDestroyed(); }
+    static OrdinaryDestroyed *getObjectSplitOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
 
     // Set in type system
-    static OrdinaryDestroyed *getObjectCppOwnership() { return new OrdinaryDestroyed(); }
+    static OrdinaryDestroyed *getObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
     static void setDefaultOwnership(OrdinaryDestroyed *) { }
 
-
+    static QObject *getGlobalQObjectSplitOwnership() {
+        static QObject * object = new QObject();
+        return object;
+    }
 private:
-    static int m_destroyed;
+    QPointer<DestroyCounter> m_destroyCounter;
 };
 
 class QObjectDestroyed: public QObject
 {
 public:
-    QObjectDestroyed(QObject *parent = 0)  : QObject(parent) { }
+    QObjectDestroyed(DestroyCounter* destroyCounter, QObject *parent = 0)  : QObject(parent), m_destroyCounter(destroyCounter) { }
+
+    ~QObjectDestroyed(){
+        if(m_destroyCounter)
+            m_destroyCounter->increaseDestroyedCount();
+    }
 
     static void deleteFromCpp(QObjectDestroyed *destroyed)
     {
@@ -129,6 +145,9 @@ public:
     {
         delete destroyed;
     }
+
+private:
+    QPointer<DestroyCounter> m_destroyCounter;
 };
 
 #endif

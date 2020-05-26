@@ -64,7 +64,7 @@ class InnerNode;
 class Node
 {
  public:
-    enum Type { 
+    enum Type : qint8 {
         Namespace, 
         Class, 
         Fake, 
@@ -85,7 +85,7 @@ class Node
 #endif
     };
 
-    enum SubType { 
+    enum SubType : qint8 {
         NoSubType,
         Example, 
         HeaderFile, 
@@ -104,9 +104,9 @@ class Node
 #endif
     };
     
-    enum Access { Public, Protected, Private };
+    enum Access : qint8 { Public, Protected, Private };
     
-    enum Status { 
+    enum Status : qint8 {
         Compat, 
         Obsolete, 
         Deprecated, 
@@ -116,14 +116,14 @@ class Node
         Internal 
     }; // don't reorder thisw enum
     
-    enum ThreadSafeness { 
+    enum ThreadSafeness : qint8 {
         UnspecifiedSafeness, 
         NonReentrant, 
         Reentrant, 
         ThreadSafe 
     };
     
-    enum LinkType { 
+    enum LinkType : qint8 {
         StartLink, 
         NextLink, 
         PreviousLink,
@@ -138,7 +138,7 @@ class Node
         AppendixLink */ 
     };
 
-    enum PageType {
+    enum PageType : qint8 {
         NoPageType,
         ApiPage,
         ArticlePage,
@@ -188,7 +188,7 @@ class Node
     PageType pageType() const { return pageTyp; }
     virtual void addPageKeywords(const QString& ) { }
 
-    void clearRelated() { rel = 0; }
+    void clearRelated() { rel = nullptr; }
 
     virtual QString fileBase() const;
     QUuid guid() const;
@@ -207,11 +207,11 @@ class Node
     PageType pageTyp;
     Status sta;
 #else
-    Type typ : 4;
-    Access acc : 2;
-    ThreadSafeness saf : 2;
-    PageType pageTyp : 4;
-    Status sta : 3;
+    Type typ;
+    Access acc;
+    ThreadSafeness saf;
+    PageType pageTyp;
+    Status sta;
 #endif
     InnerNode* par;
     InnerNode* rel;
@@ -581,7 +581,7 @@ class PropertyNode;
 class FunctionNode : public LeafNode
 {
  public:
-    enum Metaness { 
+    enum Metaness : qint8 {
         Plain, 
         Signal, 
         Slot,
@@ -590,7 +590,7 @@ class FunctionNode : public LeafNode
         MacroWithParams,
         MacroWithoutParams, 
         Native };
-    enum Virtualness { NonVirtual, ImpureVirtual, PureVirtual };
+    enum Virtualness : qint8 { NonVirtual, ImpureVirtual, PureVirtual };
 
     FunctionNode(InnerNode* parent, const QString &name);
     FunctionNode(Type type, InnerNode* parent, const QString &name, bool attached);
@@ -652,8 +652,8 @@ class FunctionNode : public LeafNode
     Metaness    met;
     Virtualness vir;
 #else
-    Metaness met : 4;
-    Virtualness vir : 2;
+    Metaness met;
+    Virtualness vir;
 #endif
     bool con : 1;
     bool sta : 1;
@@ -692,7 +692,7 @@ class PropertyNode : public LeafNode
     const QString &dataType() const { return dt; }
     QString qualifiedDataType() const;
     NodeList functions() const;
-    NodeList functions(FunctionRole role) const { return funcs[(int)role]; }
+    NodeList functions(FunctionRole role) const { return funcs[role]; }
     NodeList getters() const { return functions(Getter); }
     NodeList setters() const { return functions(Setter); }
     NodeList resetters() const { return functions(Resetter); }
@@ -741,13 +741,13 @@ inline void FunctionNode::setParameters(const QList<Parameter> &parameters)
 
 inline void PropertyNode::addFunction(FunctionNode* function, FunctionRole role)
 {
-    funcs[(int)role].append(function);
+    funcs[role].append(function);
     function->setAssociatedProperty(this);
 }
 
 inline void PropertyNode::addSignal(FunctionNode* function, FunctionRole role)
 {
-    funcs[(int)role].append(function);
+    funcs[role].append(function);
 }
 
 inline NodeList PropertyNode::functions() const

@@ -20,7 +20,7 @@
         TODO: refactor. Names are horrible, atleast
     -->
 
-    <target name="jar.ant-qtjambi" depends="jar.qtjambi-util"
+    <target name="jar.ant-qtjambi"
         description="Creates a .jar file containing all the Qt Jambi ant tasks.">
         <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true">
             <property name="module" value="ant-qtjambi"/>
@@ -33,85 +33,29 @@
         </ant>
     </target>
 
-    <target name="jar.qtjambi-util">
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makejar.qtjambi-util">
-            <property name="module" value="qtjambi-util"/>
-            <property name="jar.excludes" value=""/>
-            <property name="sourcedir" value="${java.srcdir}/qtjambi-util"/>
+    <target name="jar.qtjambi" depends="init.build, javac.excludes">
+        <ant antfile="${basedir}/src/java/qtjambi/modules.xml" inheritrefs="true" target="build">
         </ant>
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makesrcjar.qtjambi-util">
-            <property name="module" value="qtjambi-util"/>
-            <property name="jar.excludes" value=""/>
-        </ant>
-    </target>
-
-    <target name="jar.qtjambi" depends="init.build, javac.excludes, jar.qtjambi-util">
-        <qtjambi-version-properties/>
-        <!-- 1. This is a fix for adding the OsInfo class to the the main jar-->
-        <!--
-            2. Copy version.properties to generated dir for packaging.
-            TODO: version.properties shouldn’t be copied in first place.
-        -->
-        <echo message="${java.outdir}"/>
-        <copy todir="${java.outdir}/qtjambi">
-            <fileset dir="${java.outdir}/qtjambi-util">
-                <include name="**/*"/>
-            </fileset>
-        </copy>
-        <copy todir="${java.outdir}/qtjambi/org/qtjambi/qt">
-            <fileset dir=".">
-                <include name="version.properties" />
-            </fileset>
-        </copy>
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makejar.qtjambi">
-            <property name="module" value="qtjambi"/>
-            <property name="jar.excludes" value="${javac.excludes} org/qtjambi/tools/**"/>
-            <property name="module.excludes" value="${javac.excludes}"/>
-            <property name="sourcedir" value="${java.srcdir}/qtjambi"/>
-            <property name="sourcedir2" value="${generator.outputdir}/java"/>
-        </ant>
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makesrcjar.qtjambi">
-            <property name="module" value="qtjambi"/>
-            <property name="jar.excludes" value="${javac.excludes} org/qtjambi/tools/**"/>
-            <property name="module.excludes" value="${javac.excludes}"/>
-        </ant>
-	<if>
-	        <istrue value="${qtjambi.qt3d.any.true}"/>
-		<then>
-			<ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makejar.qtjambi-qt3d">
-			    <property name="module" value="qtjambi"/>
-			    <property name="jar.excludes" value="${javac.excludes} org/qtjambi/tools/**"/>
-			    <property name="module.excludes" value="${javac.excludes}"/>
-			    <property name="sourcedir" value="${java.srcdir}/qtjambi"/>
-			    <property name="sourcedir2" value="${generator.outputdir}/java"/>
-			</ant>
-			<ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makesrcjar.qtjambi-qt3d">
-			    <property name="module" value="qtjambi"/>
-			    <property name="jar.excludes" value="${javac.excludes} org/qtjambi/tools/**"/>
-			    <property name="module.excludes" value="${javac.excludes}"/>
-			</ant>
-		</then>
-	</if>
     </target>
 
     <target name="jar.qtjambi-designer" depends="init.build, jar.qtjambi">
         <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makejar.qtjambi-designer">
             <property name="module" value="qtjambi-designer"/>
-            <!-- Keep org/qtjambi/qt/designer/**, Still see org/qtjambi/qt/ directory in JAR but can't inhibit it
-               - tried org/qtjambi/qt,org/qtjambi/qt/,org/qtjambi/qt/*
+            <!-- Keep io/qt/designer/**, Still see io/qt/ directory in JAR but can't inhibit it
+               - tried io/qt/qt,io/qt/,io/qt/*
               -->
-            <property name="jar.excludes" value="org/qtjambi/qt/core/**,org/qtjambi/qt/dbus/**,org/qtjambi/qt/declarative/**,org/qtjambi/qt/gui/**,org/qtjambi/qt/help/**,org/qtjambi/qt/images/**,org/qtjambi/qt/multimedia/**,org/qtjambi/qt/network/**,org/qtjambi/qt/opengl/**,org/qtjambi/qt/phonon/**,org/qtjambi/qt/script/**,org/qtjambi/qt/scripttools/**,org/qtjambi/qt/sql/**,org/qtjambi/qt/svg/**,org/qtjambi/qt/test/**,org/qtjambi/qt/webkit/**,org/qtjambi/qt/xml/**,org/qtjambi/qt/xmlpatterns/**,org/qtjambi/qt/qt3dquick/**,org/qtjambi/qt/qt3d/**"/>
-            <property name="module.excludes" value="org/qtjambi/qt/core/**,org/qtjambi/qt/dbus/**,org/qtjambi/qt/declarative/**,org/qtjambi/qt/gui/**,org/qtjambi/qt/help/**,org/qtjambi/qt/images/**,org/qtjambi/qt/multimedia/**,org/qtjambi/qt/network/**,org/qtjambi/qt/opengl/**,org/qtjambi/qt/phonon/**,org/qtjambi/qt/script/**,org/qtjambi/qt/scripttools/**,org/qtjambi/qt/sql/**,org/qtjambi/qt/svg/**,org/qtjambi/qt/test/**,org/qtjambi/qt/webkit/**,org/qtjambi/qt/xml/**,org/qtjambi/qt/xmlpatterns/**,org/qtjambi/qt/qt3dquick/**,org/qtjambi/qt/qt3d/**"/>
+            <property name="jar.excludes" value="io/qt/core/**,io/qt/dbus/**,io/qt/declarative/**,io/qt/gui/**,io/qt/help/**,io/qt/images/**,io/qt/multimedia/**,io/qt/network/**,io/qt/opengl/**,io/qt/phonon/**,io/qt/script/**,io/qt/scripttools/**,io/qt/sql/**,io/qt/svg/**,io/qt/test/**,io/qt/webkit/**,io/qt/xml/**,io/qt/xmlpatterns/**,io/qt/qt3dquick/**,io/qt/qt3d/**"/>
+            <property name="module.excludes" value="module-info.java,io/qt/core/**,io/qt/dbus/**,io/qt/declarative/**,io/qt/gui/**,io/qt/help/**,io/qt/images/**,io/qt/multimedia/**,io/qt/network/**,io/qt/opengl/**,io/qt/phonon/**,io/qt/script/**,io/qt/scripttools/**,io/qt/sql/**,io/qt/svg/**,io/qt/test/**,io/qt/webkit/**,io/qt/xml/**,io/qt/xmlpatterns/**,io/qt/qt3dquick/**,io/qt/qt3d/**"/>
             <property name="sourcedir" value="${java.srcdir}/qtjambi-designer"/>
             <property name="sourcedir2" value="${generator.outputdir}/java"/><!-- duped with jar.qtjambi -->
         </ant>
         <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makesrcjar.qtjambi-designer">
             <property name="module" value="qtjambi-designer"/>
-            <!-- Keep org/qtjambi/qt/designer/**, Still see org/qtjambi/qt/ directory in JAR but can't inhibit it
-               - tried org/qtjambi/qt,org/qtjambi/qt/,org/qtjambi/qt/*
+            <!-- Keep io/qt/designer/**, Still see io/qt/ directory in JAR but can't inhibit it
+               - tried io/qt/qt,io/qt/,io/qt/*
               -->
-            <property name="jar.excludes" value="org/qtjambi/qt/core/**,org/qtjambi/qt/dbus/**,org/qtjambi/qt/declarative/**,org/qtjambi/qt/gui/**,org/qtjambi/qt/help/**,org/qtjambi/qt/images/**,org/qtjambi/qt/multimedia/**,org/qtjambi/qt/network/**,org/qtjambi/qt/opengl/**,org/qtjambi/qt/phonon/**,org/qtjambi/qt/script/**,org/qtjambi/qt/scripttools/**,org/qtjambi/qt/sql/**,org/qtjambi/qt/svg/**,org/qtjambi/qt/test/**,org/qtjambi/qt/webkit/**,org/qtjambi/qt/xml/**,org/qtjambi/qt/xmlpatterns/**,org/qtjambi/qt/qt3dquick/**,org/qtjambi/qt/qt3d/**"/>
-            <property name="module.excludes" value="org/qtjambi/qt/core/**,org/qtjambi/qt/dbus/**,org/qtjambi/qt/declarative/**,org/qtjambi/qt/gui/**,org/qtjambi/qt/help/**,org/qtjambi/qt/images/**,org/qtjambi/qt/multimedia/**,org/qtjambi/qt/network/**,org/qtjambi/qt/opengl/**,org/qtjambi/qt/phonon/**,org/qtjambi/qt/script/**,org/qtjambi/qt/scripttools/**,org/qtjambi/qt/sql/**,org/qtjambi/qt/svg/**,org/qtjambi/qt/test/**,org/qtjambi/qt/webkit/**,org/qtjambi/qt/xml/**,org/qtjambi/qt/xmlpatterns/**,org/qtjambi/qt/qt3dquick/**,org/qtjambi/qt/qt3d/**"/>
+            <property name="jar.excludes" value="module-info.java,io/qt/core/**,io/qt/dbus/**,io/qt/declarative/**,io/qt/gui/**,io/qt/help/**,io/qt/images/**,io/qt/multimedia/**,io/qt/network/**,io/qt/opengl/**,io/qt/phonon/**,io/qt/script/**,io/qt/scripttools/**,io/qt/sql/**,io/qt/svg/**,io/qt/test/**,io/qt/webkit/**,io/qt/xml/**,io/qt/xmlpatterns/**,io/qt/qt3dquick/**,io/qt/qt3d/**"/>
+            <property name="module.excludes" value="io/qt/core/**,io/qt/dbus/**,io/qt/declarative/**,io/qt/gui/**,io/qt/help/**,io/qt/images/**,io/qt/multimedia/**,io/qt/network/**,io/qt/opengl/**,io/qt/phonon/**,io/qt/script/**,io/qt/scripttools/**,io/qt/sql/**,io/qt/svg/**,io/qt/test/**,io/qt/webkit/**,io/qt/xml/**,io/qt/xmlpatterns/**,io/qt/qt3dquick/**,io/qt/qt3d/**"/>
         </ant>
     </target>
 
@@ -120,48 +64,83 @@
     </target>
 
     <target name="javac.excludes" depends="init.build">
-        <!-- Phonon API only seems emitted since Qt 4.6.x -->
-        <condition property="qtjambi.phonon.api.true">
-            <available file="${generator.outputdir}/java/org/qtjambi/qt/phonon" type="dir"/>
-        </condition>
-
         <!-- exclude java classes, which were not build, depending on qtjambi config -->
-        <condition property="javac.opengl.excludes" value="**/opengl/**/*.java">
+        <condition property="javac.opengl.excludes" value="**/opengl/**/*.java," else="">
             <isfalse value="${qtjambi.opengl.any.true}"/>
         </condition>
-        <condition property="javac.xmlpatterns.excludes" value="**/xmlpatterns/**/*.java">
+        <condition property="javac.xmlpatterns.excludes" value="**/xmlpatterns/**/*.java," else="">
             <isfalse value="${qtjambi.xmlpatterns.any.true}"/>
         </condition>
-        <condition property="javac.phonon.excludes" value="**/phonon/**/*.java">
-            <isfalse value="${qtjambi.phonon.api.true}"/>
+        <condition property="javac.serialbus.excludes" value="**/serialbus/**/*.java," else="">
+            <isfalse value="${qtjambi.serialbus.any.true}"/>
         </condition>
-        <condition property="javac.webkit.excludes" value="**/webkit/**/*.java">
+        <condition property="javac.webkit.excludes" value="**/webkit/**/*.java," else="">
             <isfalse value="${qtjambi.webkit.any.true}"/>
         </condition>
-        <condition property="javac.sql.excludes" value="**/sql/**/*.java">
+        <condition property="javac.sql.excludes" value="**/sql/**/*.java," else="">
             <isfalse value="${qtjambi.sql.any.true}"/>
         </condition>
-        <condition property="javac.svg.excludes" value="**/svg/**/*.java">
+        <condition property="javac.svg.excludes" value="**/svg/**/*.java," else="">
             <isfalse value="${qtjambi.svg.any.true}"/>
         </condition>
-        <condition property="javac.declarative.excludes" value="**/qml/**/*.java">
+        <condition property="javac.websockets.excludes" value="**/websockets/**/*.java," else="">
+            <isfalse value="${qtjambi.websockets.any.true}"/>
+        </condition>
+        <condition property="javac.webchannel.excludes" value="**/webchannel/**/*.java," else="">
+            <isfalse value="${qtjambi.webchannel.any.true}"/>
+        </condition>
+        <condition property="javac.webengine.excludes" value="**/webengine/**/*.java," else="">
+            <isfalse value="${qtjambi.webengine.any.true}"/>
+        </condition>
+        <condition property="javac.qml.excludes" value="**/qml/**/*.java," else="">
+            <isfalse value="${qtjambi.qml.any.true}"/>
+        </condition>
+        <condition property="javac.quick.excludes" value="**/quick/**/*.java," else="">
+            <isfalse value="${qtjambi.quick.any.true}"/>
+        </condition>
+        <condition property="javac.declarative.excludes" value="**/declarative/**/*.java,**/demos/qml/webbrowser/Main.java,**/demos/qml/flickr/Main.java,**/QDeclarativeListProperty.java," else="">
             <isfalse value="${qtjambi.declarative.any.true}"/>
         </condition>
-        <condition property="javac.qt3d.excludes" value="**/qt3d/**/*.java">
-            <isfalse value="${qtjambi.qt3d.any.true}"/>
+        <condition property="javac.qt3dcore.excludes" value="**/qt3d/core/**/*.java" else="">
+            <isfalse value="${qtjambi.qt3dcore.any.true}"/>
         </condition>
-        <condition property="javac.extra.excludes" value="org/qtjambi/examples/Styles.java">
+        <condition property="javac.qt3drender.excludes" value="**/qt3d/render/**/*.java" else="">
+            <isfalse value="${qtjambi.qt3drender.any.true}"/>
+        </condition>
+        <condition property="javac.qt3dlogic.excludes" value="**/qt3d/logic/**/*.java" else="">
+            <isfalse value="${qtjambi.qt3dlogic.any.true}"/>
+        </condition>
+        <condition property="javac.qt3dinput.excludes" value="**/qt3d/input/**/*.java" else="">
+            <isfalse value="${qtjambi.qt3dinput.any.true}"/>
+        </condition>
+        <condition property="javac.qt3dexamples.excludes" value="**/demos/qt3d/**/*.java" else="">
+            <or>
+				<isfalse value="${qtjambi.qt3dcore.any.true}"/>
+				<isfalse value="${qtjambi.qt3drender.any.true}"/>
+				<isfalse value="${qtjambi.qt3dinput.any.true}"/>
+			</or>
+        </condition>
+        <condition property="javac.extra.excludes" value="io/qt/examples/Styles.java," else="">
             <istrue value="${qt.feature.QT_NO_STYLE_MOTIF}"/><!-- Styles.java needs QMotifStyle -->
         </condition>
         <property name="javac.excludes" value="${javac.opengl.excludes}
-                                               ${javac.xmlpatterns.excludes}
-											   ${javac.qt3d.excludes}
-                                               ${javac.phonon.excludes}
-                                               ${javac.webkit.excludes}
-                                               ${javac.sql.excludes}
-                                               ${javac.svg.excludes}
-                                               ${javac.declarative.excludes}
-                                               ${javac.extra.excludes}"/>
+${javac.xmlpatterns.excludes}
+${javac.qt3dcore.excludes}
+${javac.qt3dinput.excludes}
+${javac.qt3drender.excludes}
+${javac.qt3dlogic.excludes}
+${javac.qt3dexamples.excludes}
+${javac.serialbus.excludes}
+${javac.webkit.excludes}
+${javac.sql.excludes}
+${javac.svg.excludes}
+${javac.webengine.excludes}
+${javac.webchannel.excludes}
+${javac.websockets.excludes}
+${javac.qml.excludes}
+${javac.quick.excludes}
+${javac.declarative.excludes}
+${javac.extra.excludes}"/>
     </target>
 
     <target name="jar.qtjambi-examples" depends="init.build, javac.excludes, jar.qtjambi-examples.juic">

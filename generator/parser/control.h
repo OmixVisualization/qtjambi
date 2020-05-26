@@ -69,7 +69,7 @@ struct Context {
         else if (parent)
             return parent->resolve(name);
 
-        return 0;
+        return nullptr;
     }
 
     typedef QHash<const NameSymbol*, Type*> symbol_table_t;

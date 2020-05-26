@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,10 +35,9 @@
 **
 ****************************************************************************/
 
-
-#include "qtjambilink.h"
 #include "qtjambi_core.h"
 #include "qtjambitypemanager_p.h"
+#include "qtjambi_repository.h"
 
 #include <QtCore/QVariant>
 #include <QtCore/QPoint>
@@ -58,40 +57,56 @@
 #include <QtCore/QChar>
 #include <QtCore/QBitArray>
 #include <QtCore/QByteArray>
+#include <QtCore/QDataStream>
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1convert)
-    (JNIEnv *env, jclass, jint type, jobject object)
+static inline void setOk(JNIEnv *env, jbooleanArray ok, bool isOk)
 {
-    QVariant v = qtjambi_to_qvariant(env, object);
-    if (v.convert(QVariant::Type(type)))
-        return qtjambi_from_qvariant(env, v);
-    else
-        return 0;
-}
-
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1canConvert)
-    (JNIEnv *env, jclass, jobject obj, jint type)
-{
-    QVariant v = qtjambi_to_qvariant(env, obj);
-    return v.canConvert(QVariant::Type(type));
-}
-
-static inline void setOk(JNIEnv *env, jobjectArray ok, bool isOk)
-{
-    if (!env->IsSameObject(ok, 0) && env->GetArrayLength(ok)) {
-        StaticCache *sc = StaticCache::instance();
-        sc->resolveBoolean();
-        jfieldID fieldId = isOk ? sc->Boolean.field_TRUE : sc->Boolean.field_FALSE;
-        jobject boolObject = env->GetStaticObjectField(sc->Boolean.class_ref, fieldId);
-        env->SetObjectArrayElement(ok, 0, boolObject);
+    if (!env->IsSameObject(ok, nullptr) && env->GetArrayLength(ok)) {
+        jboolean* array = env->GetBooleanArrayElements(ok, nullptr);
+        array[0] = isOk;
+        env->ReleaseBooleanArrayElements(ok, array, 0);
+        qtjambi_throw_java_exception(env)
     }
 }
 
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant_convert)
+    (JNIEnv *env, jclass, jobject object, jint type, jbooleanArray ok)
+{
+    QVariant v = qtjambi_to_qvariant(env, object);
+    if(v.userType()==int(type)){
+        setOk(env, ok, true);
+        return object;
+    }else if (v.convert(int(type))){
+        setOk(env, ok, true);
+        return qtjambi_from_qvariant(env, v);
+    }else{
+        setOk(env, ok, false);
+        return nullptr;
+    }
+}
+
+QVariant qtjambi_to_qvariant(JNIEnv *env, jobject java_object, bool convert);
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant_canConvert)
+    (JNIEnv *env, jclass, jobject obj, jint type)
+{
+    QVariant v = qtjambi_to_qvariant(env, obj, false);
+    return v.userType()==int(type) || v.canConvert(int(type));
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant_type)
+    (JNIEnv *env, jclass, jobject obj)
+{
+    QVariant v = qtjambi_to_qvariant(env, obj, false);
+    return jint(v.userType());
+}
+
 extern "C" Q_DECL_EXPORT jdouble JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toDouble)
-    (JNIEnv *env, jclass, jobject object, jobjectArray ok)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toDouble)
+    (JNIEnv *env, jclass, jobject object, jbooleanArray ok)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
     bool isOk = false;
@@ -100,9 +115,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toDouble)
     return returned;
 }
 
+extern "C" Q_DECL_EXPORT jfloat JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toFloat)
+    (JNIEnv *env, jclass, jobject object, jbooleanArray ok)
+{
+    QVariant v = qtjambi_to_qvariant(env, object);
+    bool isOk = false;
+    float returned = v.toFloat(&isOk);
+    setOk(env, ok, isOk);
+    return returned;
+}
+
 extern "C" Q_DECL_EXPORT jint JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toInt)
-    (JNIEnv *env, jclass, jobject object, jobjectArray ok)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toInt)
+    (JNIEnv *env, jclass, jobject object, jbooleanArray ok)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
     bool isOk = false;
@@ -112,8 +138,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toInt)
 }
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toLong)
-    (JNIEnv *env, jclass, jobject object, jobjectArray ok)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toLong)
+    (JNIEnv *env, jclass, jobject object, jbooleanArray ok)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
     bool isOk = false;
@@ -123,7 +149,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toLong)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toString)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toString)
     (JNIEnv *env, jclass, jobject object)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
@@ -131,7 +157,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toString)
 }
 
 extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toBoolean)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toBoolean)
     (JNIEnv *env, jclass, jobject object)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
@@ -139,10 +165,118 @@ QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toBoolean)
 }
 
 extern "C" Q_DECL_EXPORT jchar JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_QVariant__1_1qt_1toChar)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toChar)
     (JNIEnv *env, jclass, jobject object)
 {
     QVariant v = qtjambi_to_qvariant(env, object);
     QChar c = v.toChar();
     return c.unicode();
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1saveObject)
+    (JNIEnv *env, jclass, QtJambiNativeID stream_nativeId, jobject variant, jbooleanArray ok)
+{
+    QDataStream *__qt_stream = qtjambi_object_from_nativeId<QDataStream>(stream_nativeId);
+    QVariant v = qtjambi_to_qvariant(env, variant);
+
+    quint32 typeId = quint32(v.type());
+    bool fakeUserType = false;
+    if (__qt_stream->version() < QDataStream::Qt_5_0) {
+        if (typeId == QMetaType::User) {
+            typeId = 127; // QVariant::UserType had this value in Qt4
+        } else if (typeId >= 128 - 97 && typeId <= QVariant::LastCoreType) {
+            // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
+            // by moving all ids down by 97.
+            typeId += 97;
+        } else if (typeId == QMetaType::QSizePolicy) {
+            typeId = 75;
+        } else if (typeId >= QMetaType::QKeySequence && typeId <= QMetaType::QQuaternion) {
+            // and as a result these types received lower ids too
+            typeId +=1;
+        } else if (typeId == QMetaType::QPolygonF) {
+            // This existed in Qt 4 only as a custom type
+            typeId = 127;
+            fakeUserType = true;
+        }
+    }
+    *__qt_stream << typeId;
+    if (__qt_stream->version() >= QDataStream::Qt_4_2)
+        *__qt_stream << qint8(v.data_ptr().is_null);
+    if (v.type() >= QVariant::UserType || fakeUserType) {
+        *__qt_stream << QMetaType::typeName(v.userType());
+    }
+
+    bool isOk = false;
+    if(!v.isValid()){
+        if (__qt_stream->version() < QDataStream::Qt_5_0)
+            *__qt_stream << QString();
+        return;
+    }else if(v.type()==QVariant::UserType){
+        isOk = QMetaType::save(*__qt_stream, v.userType(), v.data());
+    }else{
+        isOk = QMetaType::save(*__qt_stream, v.type(), v.data());
+    }
+    setOk(env, ok, isOk);
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1loadObject)
+    (JNIEnv *env, jclass, QtJambiNativeID stream_nativeId, jbooleanArray ok)
+{
+    QDataStream *__qt_stream = qtjambi_object_from_nativeId<QDataStream>(stream_nativeId);
+    bool isOk = false;
+    quint32 typeId;
+    *__qt_stream >> typeId;
+    if (__qt_stream->version() < QDataStream::Qt_5_0) {
+        if (typeId == 127 /* QVariant::UserType */) {
+            typeId = QMetaType::User;
+        } else if (typeId >= 128 && typeId != QVariant::UserType) {
+            // In Qt4 id == 128 was FirstExtCoreType. In Qt5 ExtCoreTypes set was merged to CoreTypes
+            // by moving all ids down by 97.
+            typeId -= 97;
+        } else if (typeId == 75 /* QSizePolicy */) {
+            typeId = QMetaType::QSizePolicy;
+        } else if (typeId > 75 && typeId <= 86) {
+            // and as a result these types received lower ids too
+            // QKeySequence QPen QTextLength QTextFormat QMatrix QTransform QMatrix4x4 QVector2D QVector3D QVector4D QQuaternion
+            typeId -=1;
+        }
+    }
+
+    qint8 is_null = false;
+    if (__qt_stream->version() >= QDataStream::Qt_4_2)
+        *__qt_stream >> is_null;
+    if (typeId == QVariant::UserType) {
+        QByteArray name;
+        *__qt_stream >> name;
+        typeId = quint32(QMetaType::type(name.constData()));
+        if (typeId == QMetaType::UnknownType) {
+            __qt_stream->setStatus(QDataStream::ReadCorruptData);
+            setOk(env, ok, false);
+            return nullptr;
+        }
+    }
+    QVariant v(int(typeId), nullptr);
+    v.data_ptr().is_null = uint(is_null);
+
+    if (!v.isValid()) {
+        if (__qt_stream->version() < QDataStream::Qt_5_0) {
+        // Since we wrote something, we should read something
+            QString x;
+            *__qt_stream >> x;
+        }
+        v.data_ptr().is_null = true;
+        setOk(env, ok, true);
+        return nullptr;
+    }
+
+    // const cast is safe since we operate on a newly constructed variant
+    isOk = QMetaType::load(*__qt_stream, int(typeId), const_cast<void *>(v.constData()));
+    if (!isOk) {
+        __qt_stream->setStatus(QDataStream::ReadCorruptData);
+    }
+    setOk(env, ok, isOk);
+    v.data_ptr().is_null = !isOk;
+    return qtjambi_from_qvariant(env, v);
 }

@@ -44,15 +44,15 @@ bool FileOut::dummy = false;
 bool FileOut::diff = false;
 
 #ifdef Q_OS_LINUX
-const char* colorDelete = "\033[31m";
-const char* colorAdd = "\033[32m";
-const char* colorInfo = "\033[36m";
-const char* colorReset = "\033[0m";
+static const char* colorDelete = "\033[31m";
+static const char* colorAdd = "\033[32m";
+static const char* colorInfo = "\033[36m";
+static const char* colorReset = "\033[0m";
 #else
-const char* colorDelete = "";
-const char* colorAdd = "";
-const char* colorInfo = "";
-const char* colorReset = "";
+static const char* colorDelete = "";
+static const char* colorAdd = "";
+static const char* colorInfo = "";
+static const char* colorReset = "";
 #endif
 
 FileOut::FileOut(QString n):
@@ -64,7 +64,7 @@ static int* lcsLength(QList<QByteArray> a, QList<QByteArray> b) {
     const int height = a.size() + 1;
     const int width = b.size() + 1;
 
-    int *res = new int[width * height];
+    int *res = new int[size_t(width * height)];
 
     for (int row = 0; row < height; row++) {
         res[width * row] = 0;
@@ -128,7 +128,7 @@ struct Unit {
 };
 
 static QList<Unit*> *unitAppend(QList<Unit*> *res, Type type, int pos) {
-    if (res == 0) {
+    if (!res) {
         res = new QList<Unit*>;
         res->append(new Unit(type, pos));
         return res;
@@ -153,11 +153,11 @@ static QList<Unit*> *diffHelper(int *lcs, QList<QByteArray> a, QList<QByteArray>
             return unitAppend(diffHelper(lcs, a, b, row, col - 1), Add, col - 1);
         } else if ((row > 0) && ((col == 0) ||
                                  lcs[width * row + col-1] < lcs[width * (row-1) + col])) {
-            return unitAppend(diffHelper(lcs, a, b, row - 1, col), Delete, row - 1);;
+            return unitAppend(diffHelper(lcs, a, b, row - 1, col), Delete, row - 1);
         }
     }
     delete lcs;
-    return 0;
+    return nullptr;
 }
 
 static void diff(QList<QByteArray> a, QList<QByteArray> b) {

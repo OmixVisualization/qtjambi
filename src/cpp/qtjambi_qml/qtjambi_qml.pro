@@ -1,14 +1,23 @@
-TARGET = org_qtjambi_qt_qml
+QTJAMBILIB = QtJambiQml
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_qml/org_qtjambi_qt_qml.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-INCLUDEPATH += $$PWD
-DEPENDPATH += $$PWD
+HEADERS += qmlregistry.h qqmllistproperty.h \
+    qmlcreateparentfunction.h \
+    qmlattachedpropertiesfunction.h \
+    qmlcreatorfunction.h \
+    qtjambi_qml_repository.h
+SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
+    qmlcreatorfunction.cpp \
+    qmlcreateparentfunction.cpp \
+    qmlattachedpropertiesfunction.cpp \
+    qtjambi_qml_repository.cpp
 
-HEADERS += org_qtjambi_qt_qml_QQmlListProperty.h qmlregistry.h qqmllistproperty.h qtjambishell_QQmlListProperty.h
-SOURCES += qmlregistry.cpp qqmllistproperty.cpp qtjambishell_QQmlListProperty.cpp
+QT += core gui qml core-private
 
-QT += core gui qml
+msvc:QMAKE_CXXFLAGS += /bigobj
+

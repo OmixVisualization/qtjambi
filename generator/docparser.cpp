@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,7 +47,7 @@
 
 DocParser::DocParser(const QString &name)
         : m_doc_file(name),
-        m_dom(0) {
+        m_dom(nullptr) {
     build();
 }
 
@@ -56,6 +56,22 @@ DocParser::~DocParser() {
 }
 
 QString DocParser::documentation(const AbstractMetaClass *meta_class) const {
+    if (!m_dom)
+        return QString();
+
+    QDomElement root_node = m_dom->documentElement();
+
+    QString class_name = root_node.attribute("name");
+    QString doc = root_node.attribute("doc");
+
+    if (class_name != meta_class->name()) {
+        ReportHandler::warning("Documentelement file contains unexpected class: " + class_name + ", file=" + m_doc_file);
+    }
+
+    return doc;
+}
+
+QString DocParser::documentation(const AbstractMetaFunctional *meta_class) const {
     if (!m_dom)
         return QString();
 
@@ -81,7 +97,7 @@ QString DocParser::documentationForFunction(const QString &signature, const QStr
     for (int i = 0; i < functions.size(); ++i) {
         QDomNode node = functions.item(i);
 
-        QDomElement *e = (QDomElement *) & node;
+        QDomElement *e = reinterpret_cast<QDomElement *>(&node);
 
         Q_ASSERT(e->isElement());
 
@@ -111,7 +127,7 @@ QString DocParser::documentation(const AbstractMetaEnum *java_enum) const {
 
     for (int i = 0; i < enums.size(); ++i) {
         QDomNode node = enums.item(i);
-        QDomElement *e = (QDomElement *) & node;
+        QDomElement *e = reinterpret_cast<QDomElement *>(&node);
 
         Q_ASSERT(e->isElement());
 
@@ -133,13 +149,13 @@ QString DocParser::documentation(const AbstractMetaEnumValue *java_enum_value) c
 
     for (int i = 0; i < enums.size(); ++i) {
         QDomNode node = enums.item(i);
-        QDomElement *e = (QDomElement *) & node;
+        QDomElement *e = reinterpret_cast<QDomElement *>(&node);
         Q_ASSERT(e->isElement());
 
         QDomNodeList enumValues = e->elementsByTagName("enum-value");
         for (int j = 0; j < enumValues.size(); ++j) {
             QDomNode node = enumValues.item(j);
-            QDomElement *ev = (QDomElement *) & node;
+            QDomElement *ev = reinterpret_cast<QDomElement *>(&node);
             if (ev->attribute("name") == java_enum_value->name()) {
                 return ev->attribute("doc");
             }
@@ -175,7 +191,7 @@ void DocParser::build() {
                                .arg(column));
 
         delete m_dom;
-        m_dom = 0;
+        m_dom = nullptr;
         qDebug() << "Reading document file from" << m_doc_file << "failed.";
 
         return;

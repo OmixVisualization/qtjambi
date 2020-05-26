@@ -49,6 +49,7 @@
 
 #include "default_visitor.h"
 #include <QtCore/QStringList>
+#include <codemodel.h>
 
 class TokenStream;
 class Binder;
@@ -61,19 +62,25 @@ class NameCompiler: protected DefaultVisitor {
         void run(UnqualifiedNameAST *node) { internal_run(node); }
 
         QString name() const { return _M_name.join("::"); }
-        QStringList qualifiedName() const { return _M_name; }
+        const QStringList& qualifiedName() const { return _M_name; }
+        const TypeInfo& functionalReturnType() const { return _M_functionalReturnType; }
+        const QList<TypeInfo>& functionalArgumentTypes() const { return _M_functionalArgumentTypes; }
+        const QList<QString>& functionalArgumentNames() const { return _M_functionalArgumentNames; }
 
     protected:
         virtual void visitUnqualifiedName(UnqualifiedNameAST *node);
         virtual void visitTemplateArgument(TemplateArgumentAST *node);
 
         QString internal_run(AST *node);
-        QString decode_operator(std::size_t index) const;
+        QString decode_operator(std::size_t index, bool op2) const;
 
     private:
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QStringList _M_name;
+        TypeInfo _M_functionalReturnType;
+        QList<TypeInfo> _M_functionalArgumentTypes;
+        QList<QString> _M_functionalArgumentNames;
 };
 
 #endif // NAME_COMPILER_H

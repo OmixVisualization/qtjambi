@@ -42,16 +42,18 @@
 #include "preprocesshandler.h"
 #include "wrapper.h"
 
-PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile, const QString &phononInclude,
+PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile, const std::function<void(std::string,std::string)> &featureRegistry, const QString &phononInclude,
     const QStringList &includePathList, const QStringList &inputDirectoryList, int verbose) :
+        env(featureRegistry),
         preprocess(env),
         verbose(verbose),
-        ppconfig(":/trolltech/generator/parser/rpp/pp-qt-configuration"),
+        ppconfig(":/io/qt/generator/parser/rpp/pp-qt-configuration"),
         sourceFile(sourceFile),
         targetFile(targetFile),
         phononInclude(phononInclude),
         includePathList(includePathList),
-        inputDirectoryList(inputDirectoryList) {
+        inputDirectoryList(inputDirectoryList)
+{
     //empty space for useless comments
     preprocess.verbose = verbose;
 }
@@ -103,7 +105,7 @@ bool PreprocessHandler::handler() {
 // FIXME: Restore normal debug mode, showing DEFINE/UNDEF/INCLUDE(summary/verbose)
     QStringList includes = setIncludes();
 
-    foreach(QString include, includes)
+    for(const QString& include : includes)
         preprocess.push_include_path(toStdString(QDir::toNativeSeparators(include)));
 // FIXME: Dump defines set
 
@@ -137,7 +139,7 @@ void PreprocessHandler::writeTargetFile(QString sourceFile, QString targetFile, 
     if (!f.open(QIODevice::Append | QIODevice::Text)) {
         std::fprintf(stderr, "Failed to write preprocessed file: %s\n", qPrintable(targetFile));
     }
-    f.write(result.c_str(), result.length());
+    f.write(result.c_str(), qint64(result.length()));
 }
 
 QStringList PreprocessHandler::setIncludes() {

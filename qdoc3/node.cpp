@@ -301,7 +301,7 @@ QString Node::ditaXmlHref()
     }
     if (!href.endsWith(".xml"))
         href += ".xml";
-    return href + "#" + guid();
+    return href + "#" + guid().toString();
 }
 
 /*!

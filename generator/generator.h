@@ -56,48 +56,60 @@
 class Generator : public QObject {
         Q_OBJECT
 
-        Q_PROPERTY(QString outputDirectory READ outputDirectory WRITE setOutputDirectory);
+        Q_PROPERTY(QString outputDirectory READ outputDirectory WRITE setOutputDirectory)
 
     public:
-        enum Option {
-            NoOption                        = 0x00000000,
-            BoxedPrimitive                  = 0x00000001,
-            ExcludeConst                    = 0x00000002,
-            ExcludeReference                = 0x00000004,
-            UseNativeIds                    = 0x00000008,
+        enum Option : qint64{
+            NoOption                        = 0x000000000,
+            BoxedPrimitive                  = 0x000000001,
+            ExcludeConst                    = 0x000000002,
+            ExcludeReference                = 0x000000004,
+            UseNativeIds                    = 0x000000008,
 
-            EnumAsInts                      = 0x00000010,
-            SkipName                        = 0x00000020,
-            NoCasts                         = 0x00000040,
-            SkipReturnType                  = 0x00000080,
-            OriginalName                    = 0x00000100,
-            ShowStatic                      = 0x00000200,
-            UnderscoreSpaces                = 0x00000400,
-            ForceEnumCast                   = 0x00000800,
-            ArrayAsPointer                  = 0x00001000,
-            VirtualCall                     = 0x00002000,
-            SkipTemplateParameters          = 0x00004000,
-            SkipAttributes                  = 0x00008000,
-            OriginalTypeDescription         = 0x00010000,
-            SkipRemovedArguments            = 0x00020000,
-            IncludeDefaultExpression        = 0x00040000,
-            NoReturnStatement               = 0x00080000,
-            NoBlockedSlot                   = 0x00100000,
-            NormalizeAndFixTypeSignature    = 0x00200000,
-            SuperCall                       = 0x00400000,
-            GlobalRefJObject                = 0x00800000,
+            EnumAsInts                      = 0x000000010,
+            SkipName                        = 0x000000020,
+            NoCasts                         = 0x000000040,
+            SkipReturnType                  = 0x000000080,
+            OriginalName                    = 0x000000100,
+            ShowStatic                      = 0x000000200,
+            UnderscoreSpaces                = 0x000000400,
+            ForceEnumCast                   = 0x000000800,
+            ArrayAsPointer                  = 0x000001000,
+            VirtualCall                     = 0x000002000,
+            SkipTemplateParameters          = 0x000004000,
+            SkipAttributes                  = 0x000008000,
+            OriginalTypeDescription         = 0x000010000,
+            SkipRemovedArguments            = 0x000020000,
+            IncludeDefaultExpression        = 0x000040000,
+            NoReturnStatement               = 0x000080000,
+            NoBlockedSlot                   = 0x000100000,
+            NormalizeAndFixTypeSignature    = 0x000200000,
+            SuperCall                       = 0x000400000,
+            GlobalRefJObject                = 0x000800000,
+            DefaultFunction                 = 0x001000000,
+            InitializerListAsArray          = 0x002000000,
+            CollectionAsCollection          = 0x004000000,
+            NoQCollectionContainers         = 0x008000000,
 
-            ForceValueType                  = ExcludeReference | ExcludeConst
+            NoTmpVariable                   = 0x010000000,
+            DirectReturn                    = 0x020000000,
+            ForceConstReference             = 0x040000000,
+            ShowOverride                    = 0x080000000,
+            OptionalScope                   = 0x100000000,
+            SkipArray                       = 0x200000000,
+            EnumFromInt                     = 0x400000000,
+
+            ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };
 
         Generator();
 
         void setClasses(const AbstractMetaClassList &classes) { m_classes = classes; }
-        AbstractMetaClassList classes() const { return m_classes; }
+        const AbstractMetaClassList& classes() const { return m_classes; }
 
         virtual QString resolveOutputDirectory() const { return outputDirectory(); }
 
-        QString outputDirectory() const { return m_out_dir; }
+        const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
         virtual void generate();
         void printClasses();
@@ -106,14 +118,22 @@ class Generator : public QObject {
         int numGeneratedAndWritten() { return m_num_generated_written; }
 
         virtual bool shouldGenerate(const AbstractMetaClass *) const { return true; }
+        virtual bool shouldGenerate(const AbstractMetaFunctional *) const { return true; }
         virtual QString subDirectoryForClass(const AbstractMetaClass *java_class) const;
+        virtual QString subDirectoryForFunctional(const AbstractMetaFunctional *java_class) const;
         virtual QString fileNameForClass(const AbstractMetaClass *java_class) const;
+        virtual QString fileNameForFunctional(const AbstractMetaFunctional *java_class) const;
         virtual void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0);
+        virtual void write(QTextStream &s, const AbstractMetaFunctional *java_class, int nesting_level = 0);
+        virtual void generateFake(const AbstractMetaClass *java_class);
 
         bool hasDefaultConstructor(const AbstractMetaType *type);
+        bool hasPublicDefaultConstructor(const AbstractMetaType *type);
+        bool hasPublicAssignmentOperator(const AbstractMetaType *type);
 
 
     protected:
+        void writeInclude(QTextStream &s, const Include &inc, QSet<QString> &dedupe);
         void verifyDirectoryFor(const QFile &file);
 
         AbstractMetaClassList m_classes;
@@ -133,8 +153,15 @@ class Indentor {
         const QString &string() const {
             return m_string;
         }
+        const QString &end() const {
+            return m_end;
+        }
+        void setEnd(const QString & end){
+            m_end = end;
+        }
     private:
         QString m_string;
+        QString m_end;
 };
 
 class Indentation {
@@ -154,9 +181,36 @@ class Indentation {
         Indentor &indentor;
 };
 
+class IndentationReset {
+    public:
+        IndentationReset(Indentor &indentor):
+                indentor(indentor) {
+            indent = indentor.indent;
+            indentor.indent = 0;
+        }
+        ~IndentationReset() {
+            indentor.indent = indent;
+        }
+        const QString &string() const {
+            return indentor.string();
+        }
+
+    private:
+        Indentor &indentor;
+        int indent;
+};
+
+#define INDENTATION(INDENT)\
+    Indentation indent(INDENT);\
+    Q_UNUSED(indent)
+#define INDENTATIONRESET(INDENT)\
+    IndentationReset indentReset(INDENT);\
+    Q_UNUSED(indentReset)
+
 inline QTextStream &operator <<(QTextStream &s, const Indentor &indentor) {
     for (int i = 0; i < indentor.indent; ++i)
         s << indentor.string();
+    s << indentor.end();
     return s;
 }
 

@@ -82,7 +82,8 @@ struct ExceptionSpecificationAST;
 struct ExpressionAST;
 struct ExpressionOrDeclarationStatementAST;
 struct ExpressionStatementAST;
-struct ForStatementAST;
+struct ClassicForStatementAST;
+struct IteratorForStatementAST;
 struct FunctionCallAST;
 struct FunctionDefinitionAST;
 struct IfStatementAST;
@@ -113,6 +114,7 @@ struct ReturnStatementAST;
 struct SimpleDeclarationAST;
 struct SimpleTypeSpecifierAST;
 struct SizeofExpressionAST;
+struct TypeidExpressionAST;
 struct StatementAST;
 struct StringLiteralAST;
 struct SubscriptExpressionAST;
@@ -131,12 +133,19 @@ struct TypedefAST;
 struct UnaryExpressionAST;
 struct UnqualifiedNameAST;
 struct UsingAST;
+struct UsingAsAST;
 struct UsingDirectiveAST;
 struct WhileStatementAST;
 struct WinDeclSpecAST;
 struct QPropertyAST;
 struct QEnumsAST;
 struct QEnumAST;
+struct QGadgetAST;
+struct QObjectAST;
+struct QDeclFinalAST;
+struct DeclDefaultAST;
+struct DeclDeleteAST;
+struct AutoTypeSpecifierAST;
 
 struct AST {
     enum NODE_KIND {
@@ -165,7 +174,8 @@ struct AST {
         Kind_ExceptionSpecification,
         Kind_ExpressionOrDeclarationStatement,
         Kind_ExpressionStatement,
-        Kind_ForStatement,
+        Kind_ClassicForStatement,
+        Kind_IteratorForStatement,
         Kind_FunctionCall,
         Kind_FunctionDefinition,
         Kind_IfStatement,
@@ -195,7 +205,9 @@ struct AST {
         Kind_ReturnStatement,
         Kind_SimpleDeclaration,
         Kind_SimpleTypeSpecifier,
+        Kind_AutoTypeSpecifier,
         Kind_SizeofExpression,
+        Kind_TypeidExpression,
         Kind_StringLiteral,
         Kind_SubscriptExpression,
         Kind_SwitchStatement,
@@ -212,6 +224,7 @@ struct AST {
         Kind_UnaryExpression,
         Kind_UnqualifiedName,
         Kind_Using,
+        Kind_UsingAs,
         Kind_UsingDirective,
         Kind_WhileStatement,
         Kind_WinDeclSpec,
@@ -220,6 +233,10 @@ struct AST {
         Kind_QEnumsAST,
         Kind_QEnumAST,
         Kind_QGadget,
+        Kind_QObject,
+        Kind_DeclDefaultAST,
+        Kind_DeclDeleteAST,
+        Kind_QDeclFinalAST,
 
         NODE_KIND_COUNT
     };
@@ -234,6 +251,11 @@ struct AST {
 
 struct TypeSpecifierAST: public AST {
     const ListNode<std::size_t> *cv;
+
+    TypeSpecifierAST * auto_type_specifier = nullptr;
+    ExpressionAST *auto_type_expression = nullptr;
+
+    std::size_t ellipsis;
 };
 
 struct StatementAST: public AST {
@@ -275,6 +297,7 @@ struct BinaryExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(BinaryExpression)
 
     std::size_t op;
+    bool op2;
     ExpressionAST *left_expression;
     ExpressionAST *right_expression;
 };
@@ -301,11 +324,15 @@ struct ClassSpecifierAST: public TypeSpecifierAST {
     NameAST *name;
     BaseClauseAST *base_clause;
     const ListNode<DeclarationAST*> *member_specs;
+    bool is_final;
+    bool is_deprecated;
+    StringLiteralAST *deprecationComment;
 };
 
 struct ForwardDeclarationSpecifierAST: public TypeSpecifierAST {
     DECLARE_AST_NODE(ForwardDeclarationSpecifier)
 
+    bool isEnum;
     std::size_t class_key;
     NameAST *name;
     BaseClauseAST *base_clause;
@@ -360,11 +387,13 @@ struct DeclaratorAST: public AST {
 
     const ListNode<PtrOperatorAST*> *ptr_ops;
     DeclaratorAST *sub_declarator;
+    std::size_t ellipsis;
     NameAST *id;
     ExpressionAST *bit_expression;
     const ListNode<ExpressionAST*> *array_dimensions;
     ParameterDeclarationClauseAST *parameter_declaration_clause;
     const ListNode<std::size_t> *fun_cv;
+    QDeclFinalAST *decl_final;
     ExceptionSpecificationAST *exception_spec;
 };
 
@@ -396,6 +425,10 @@ struct EnumSpecifierAST: public TypeSpecifierAST {
     DECLARE_AST_NODE(EnumSpecifier)
 
     NameAST *name;
+    bool isScoped;
+    bool isDeprecated;
+    StringLiteralAST *deprecationComment;
+    TypeSpecifierAST *base_type;
     const ListNode<EnumeratorAST*> *enumerators;
 };
 
@@ -404,6 +437,8 @@ struct EnumeratorAST: public AST {
 
     std::size_t id;
     ExpressionAST *expression;
+    bool isDeprecated;
+    StringLiteralAST *deprecationComment;
 };
 
 struct ExceptionSpecificationAST: public AST {
@@ -432,6 +467,18 @@ struct FunctionCallAST: public ExpressionAST {
     ExpressionAST *arguments;
 };
 
+struct QDeclFinalAST : public AST {
+    DECLARE_AST_NODE(QDeclFinalAST)
+};
+
+struct DeclDeleteAST : public ExpressionAST {
+    DECLARE_AST_NODE(DeclDeleteAST)
+};
+
+struct DeclDefaultAST : public ExpressionAST {
+    DECLARE_AST_NODE(DeclDefaultAST)
+};
+
 struct FunctionDefinitionAST: public DeclarationAST {
     DECLARE_AST_NODE(FunctionDefinition)
 
@@ -441,15 +488,27 @@ struct FunctionDefinitionAST: public DeclarationAST {
     InitDeclaratorAST *init_declarator;
     StatementAST *function_body;
     WinDeclSpecAST *win_decl_specifiers;
+    StringLiteralAST *deprecationComment;
 };
 
-struct ForStatementAST: public StatementAST {
-    DECLARE_AST_NODE(ForStatement)
+struct AbstractForStatementAST: public StatementAST {
+    StatementAST *statement;
+};
+
+struct ClassicForStatementAST: public AbstractForStatementAST {
+    DECLARE_AST_NODE(ClassicForStatement)
 
     StatementAST *init_statement;
     ConditionAST *condition;
     ExpressionAST *expression;
-    StatementAST *statement;
+};
+
+struct IteratorForStatementAST: public AbstractForStatementAST {
+    DECLARE_AST_NODE(IteratorForStatement)
+
+    TypeSpecifierAST *type_specifier;
+    DeclaratorAST *declarator;
+    ExpressionAST *expression;
 };
 
 struct IfStatementAST: public StatementAST {
@@ -570,6 +629,7 @@ struct OperatorAST: public AST {
     DECLARE_AST_NODE(Operator)
 
     std::size_t op;
+    bool op2;
     std::size_t open;
     std::size_t close;
 };
@@ -577,6 +637,7 @@ struct OperatorAST: public AST {
 struct OperatorFunctionIdAST: public AST {
     DECLARE_AST_NODE(OperatorFunctionId)
 
+    std::size_t type_name;
     OperatorAST *op;
     TypeSpecifierAST *type_specifier;
     const ListNode<PtrOperatorAST*> *ptr_ops;
@@ -641,6 +702,7 @@ struct SimpleDeclarationAST: public DeclarationAST {
     TypeSpecifierAST *type_specifier;
     const ListNode<InitDeclaratorAST*> *init_declarators;
     WinDeclSpecAST *win_decl_specifiers;
+    StringLiteralAST *deprecationComment;
 };
 
 struct SimpleTypeSpecifierAST: public TypeSpecifierAST {
@@ -653,12 +715,28 @@ struct SimpleTypeSpecifierAST: public TypeSpecifierAST {
     NameAST *name;
 };
 
+struct AutoTypeSpecifierAST: public TypeSpecifierAST {
+    DECLARE_AST_NODE(AutoTypeSpecifier)
+
+    TypeSpecifierAST *type_specifier;
+    ExpressionAST *type_expression;
+};
+
 struct SizeofExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(SizeofExpression)
 
     std::size_t sizeof_token;
+    std::size_t ellipsis_token;
     TypeIdAST *type_id;
     ExpressionAST *expression;
+};
+
+struct TypeidExpressionAST: public ExpressionAST {
+    DECLARE_AST_NODE(TypeidExpression)
+
+    std::size_t typeid_token;
+    TypeIdAST *type_id;
+    const ListNode<ExpressionAST*> *sub_expressions;
 };
 
 struct StringLiteralAST: public AST {
@@ -740,8 +818,10 @@ struct TypeParameterAST: public AST {
     std::size_t type;
     NameAST *name;
     TypeIdAST *type_id;
+    ExpressionAST *type_expression;
     const ListNode<TemplateParameterAST*> *template_parameters;
     NameAST *template_name;
+    std::size_t ellipsis;
 };
 
 struct TypedefAST: public DeclarationAST {
@@ -774,8 +854,20 @@ struct UsingAST: public DeclarationAST {
     NameAST *name;
 };
 
+struct UsingAsAST: public DeclarationAST {
+    DECLARE_AST_NODE(UsingAs)
+    NameAST *name;
+    TypeSpecifierAST* type_specifier;
+    DeclaratorAST *declarator;
+    ParameterDeclarationClauseAST *parameters;
+};
+
 struct QGadgetAST: public DeclarationAST {
     DECLARE_AST_NODE(QGadget)
+};
+
+struct QObjectAST: public DeclarationAST {
+    DECLARE_AST_NODE(QObject)
 };
 
 struct UsingDirectiveAST: public DeclarationAST {

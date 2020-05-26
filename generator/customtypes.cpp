@@ -42,21 +42,3 @@
 #include <QtCore/QTextStream>
 
 
-void QModelIndexTypeEntry::generateCppJavaToQt(QTextStream &s,
-        const AbstractMetaType *,
-        const QString &env_name,
-        const QString &qt_name,
-        const QString &java_name) const {
-    s << "QModelIndex " << qt_name << " = qtjambi_to_QModelIndex(" << env_name << ", "
-    << java_name << ")";
-}
-
-
-void QModelIndexTypeEntry::generateCppQtToJava(QTextStream &s,
-        const AbstractMetaType *,
-        const QString &env_name,
-        const QString &qt_name,
-        const QString &java_name) const {
-    s << "jobject " << java_name << " = qtjambi_from_QModelIndex(" << env_name << ", "
-    << qt_name << ")";
-}

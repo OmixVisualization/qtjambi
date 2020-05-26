@@ -34,12 +34,44 @@
 
 #include "codesnip.h"
 
+void CodeSnipAbstract::addTemplateInstance(TemplateInstance *ti) {
+    if(!codeList.isEmpty()){
+        CodeSnipFragment* codeFragment = codeList.last();
+        if(!codeFragment->m_instance
+                && !codeFragment->m_code.isEmpty()){
+            QStringList lines = codeFragment->m_code.split("\n");
+            if(!lines.isEmpty()){
+                if(!lines.last().isEmpty()
+                        && lines.last().trimmed().isEmpty()){
+                    ti->setIndent(lines.takeLast());
+                    codeFragment->m_code = lines.join("\n")+"\n";
+                }
+            }
+        }
+    }
+    codeList.append(new CodeSnipFragment(ti));
+}
+
+void CodeSnipAbstract::addCode(const QString &code) {
+    if(codeList.isEmpty() && code.trimmed().isEmpty())
+        return;
+    codeList.append(new CodeSnipFragment(code));
+}
+
 QString CodeSnipAbstract::code() const {
     QString res;
-    foreach(CodeSnipFragment *codeFrag, codeList) {
+    for(CodeSnipFragment *codeFrag : codeList) {
         res.append(codeFrag->code());
     }
     return res;
+}
+
+bool CodeSnipAbstract::hasCode() const {
+    for(CodeSnipFragment *codeFrag : codeList) {
+        if(codeFrag->hasCode())
+            return true;
+    }
+    return false;
 }
 
 QString CodeSnipFragment::code() const {
@@ -47,4 +79,11 @@ QString CodeSnipFragment::code() const {
         return m_instance->expandCode();
     else
         return m_code;
+}
+
+bool CodeSnipFragment::hasCode() const {
+    if (m_instance)
+        return m_instance->hasCode();
+    else
+        return !m_code.isEmpty();
 }

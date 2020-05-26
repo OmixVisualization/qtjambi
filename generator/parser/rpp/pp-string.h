@@ -83,7 +83,7 @@ namespace rpp {
 
                 int __r = traits_type::compare(_M_begin, __other._M_begin, __len);
                 if (!__r)
-                    __r = (int)(__size - __osize);
+                    __r = int(__size - __osize);
 
                 return __r;
             }

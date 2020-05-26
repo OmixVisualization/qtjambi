@@ -58,7 +58,7 @@ struct NameSymbol {
     std::size_t count;
 
     inline QString as_string() const {
-        return QString::fromUtf8(data, (int) count);
+        return QString::fromUtf8(data, int(count));
     }
 
     inline bool operator == (const NameSymbol &other) const {
@@ -81,7 +81,7 @@ inline uint qHash(const NameSymbol &r) {
     uint hash_value = 0;
 
     for (std::size_t i = 0; i < r.count; ++i)
-        hash_value = (hash_value << 5) - hash_value + r.data[i];
+        hash_value = (hash_value << 5) - hash_value + uint(r.data[i]);
 
     return hash_value;
 }
@@ -90,7 +90,7 @@ inline uint qHash(const QPair<const char*, std::size_t> &r) {
     uint hash_value = 0;
 
     for (std::size_t i = 0; i < r.second; ++i)
-        hash_value = (hash_value << 5) - hash_value + r.first[i];
+        hash_value = (hash_value << 5) - hash_value + uint(r.first[i]);
 
     return hash_value;
 }
@@ -120,7 +120,7 @@ class NameTable {
         }
 
         inline std::size_t count() const {
-            return _M_storage.size();
+            return std::size_t(_M_storage.size());
         }
 
     private:

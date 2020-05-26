@@ -37,24 +37,37 @@
 #ifndef QTJAMBI_DEBUG_TOOLS_H
 #define QTJAMBI_DEBUG_TOOLS_H
 
-#if defined(QTJAMBI_DEBUG_TOOLS)
+#if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
 
 #include "qtjambi_global.h"
 
 #define QTJAMBI_COUNTER_DECLARATIONS(NAME) \
-    void QTJAMBI_EXPORT qtjambi_increase_##NAME(const QString &className)
+    public: static void increase_##NAME(const char*className);\
+    private: static Increaser increase_##NAME##_fct;
 
-    QTJAMBI_COUNTER_DECLARATIONS(finalizedCount);
-    QTJAMBI_COUNTER_DECLARATIONS(userDataDestroyedCount);
-    QTJAMBI_COUNTER_DECLARATIONS(destructorFunctionCalledCount);
-    QTJAMBI_COUNTER_DECLARATIONS(shellDestructorCalledCount);
-    QTJAMBI_COUNTER_DECLARATIONS(objectInvalidatedCount);
-    QTJAMBI_COUNTER_DECLARATIONS(disposeCalledCount);
-    QTJAMBI_COUNTER_DECLARATIONS(linkDestroyedCount);
-    QTJAMBI_COUNTER_DECLARATIONS(linkConstructedCount);
+class QtJambiMemoryDebugTool{
+private:
+    typedef void(*Increaser)(const char*className);
+    QtJambiMemoryDebugTool() = delete;
+    ~QtJambiMemoryDebugTool() = delete;
 
-#else
-#  error "Don't include this file without QTJAMBI_DEBUG_TOOLS defined"
+    QTJAMBI_COUNTER_DECLARATIONS(cleanCallerCount)
+    QTJAMBI_COUNTER_DECLARATIONS(userDataDestroyedCount)
+    QTJAMBI_COUNTER_DECLARATIONS(destructorFunctionCalledCount)
+    QTJAMBI_COUNTER_DECLARATIONS(pointerContainerDestroyedCount)
+    QTJAMBI_COUNTER_DECLARATIONS(shellDestructorCalledCount)
+    QTJAMBI_COUNTER_DECLARATIONS(objectInvalidatedCount)
+    QTJAMBI_COUNTER_DECLARATIONS(disposeCalledCount)
+    QTJAMBI_COUNTER_DECLARATIONS(linkDestroyedCount)
+    QTJAMBI_COUNTER_DECLARATIONS(linkConstructedCount)
+    QTJAMBI_COUNTER_DECLARATIONS(shellDestroyedCount)
+
+    public: static void enable();
+    public: static void disable();
+};
+
 #endif
+
+QTJAMBI_EXPORT void qtjambi_increase_destructorFunctionCalledCount(const char*className);
 
 #endif

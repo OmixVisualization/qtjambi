@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -122,7 +122,7 @@ void UiConverter::traverseCustomWidgetFile(const QString &customWidgetFile) {
             QString className = attributes.value("class").toString();
 
             int pos = className.lastIndexOf(".");
-            m_custom_widgets.insertMulti(className.mid(pos + 1), CustomWidget(className, 0));
+            m_custom_widgets.insertMulti(className.mid(pos + 1), CustomWidget(className, nullptr));
         }
     }
 
@@ -142,7 +142,7 @@ void UiConverter::traverseCustomWidgets(const QString &customWidgetFiles) {
 #endif
 
     QStringList customWidgets = customWidgetFiles.split(separator);
-    foreach(QString customWidget, customWidgets)
+    for(const QString & customWidget : customWidgets)
         traverseCustomWidgetFile(customWidget);
 }
 
@@ -295,7 +295,7 @@ void UiConverter::fixWidgetNode(QDomElement el, QDomDocument *) {
 
     if (!customWidgetName.isEmpty())
         el.setAttribute(QLatin1String("class"), customWidgetName);
-    else if (javaClass->package() != QLatin1String("org.qtjambi.qt.widgets"))
+    else if (javaClass->package() != QLatin1String("io.qt.widgets"))
         el.setAttribute(QLatin1String("class"), javaClass->fullName());
 
     m_named_widgets.insert(el.attribute(QLatin1String("name")), javaClass);
@@ -326,7 +326,7 @@ QString UiConverter::translateEnumValue(const QString &cppEnumValue) {
 
     AbstractMetaEnumValueList enumValues = javaEnum->values();
     AbstractMetaEnumValue *enumValue = enumValues.find(names.at(1));
-    int value = enumValue->value();
+    QVariant value = enumValue->value();
 
     if (javaEnum->typeEntry()->isEnumValueRejected(enumValue->name())) {
         for (int i = 0; i < enumValues.size(); ++i) {
@@ -344,8 +344,7 @@ QString UiConverter::translateEnumValue(const QString &cppEnumValue) {
 const AbstractMetaFunction *UiConverter::findFunction(AbstractMetaClass *javaClass,
         const QString &signature,
         SearchType type) {
-    AbstractMetaFunctionList senderFunctions = javaClass->functions();
-    foreach(const AbstractMetaFunction *f, senderFunctions) {
+    for(const AbstractMetaFunction *f : javaClass->functions()) {
         if (type == SignalSearch && !f->isSignal())
             continue;
 

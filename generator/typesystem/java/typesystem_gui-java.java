@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,57 +37,28 @@
 
 package generator;
 
-import org.qtjambi.qt.QNativePointer;
-import org.qtjambi.qt.QtBlockedSlot;
-import org.qtjambi.qt.Utilities;
-import org.qtjambi.qt.internal.QtJambiObject.QPrivateConstructor;
-import org.qtjambi.qt.core.QCoreApplication;
-import org.qtjambi.qt.core.QPoint;
-import org.qtjambi.qt.core.QPointF;
-import org.qtjambi.qt.gui.*;
+import io.qt.*;
+import io.qt.internal.QtJambiObject.QPrivateConstructor;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QPoint;
+import io.qt.core.QPointF;
+import io.qt.gui.*;
 
 class QAbstractTextDocumentLayout___ extends QAbstractTextDocumentLayout {
-
-        // Injected methods
-        public final QTextObjectInterface handlerForObject(int objectType) {
-            org.qtjambi.qt.GeneratorUtilities.threadCheck(this);
-            if (nativeId() == 0)
-                throw new QNoNativeResourcesException("Function call on incomplete object of type: " + getClass().getName());
-            return __qt_handlerForObject(nativeId(), objectType);
-        }
-        native QTextObjectInterface __qt_handlerForObject(long __this__nativeId, int objectType);
-
-        /**
-         * Registers the given component as a handler for items of the given objectType.
-         * Note: registerHandler() has to be called once for each object type. This means that there is only one handler for multiple replacement characters of the same object type.
-         *
-         * @param objectType The type for which to register a handler.
-         * @param component The handler for the given type.
-         **/
-        @SuppressWarnings("deprecated")
-        public final void registerHandler(int objectType, QTextObjectInterface component) {
-            registerHandler(objectType, (org.qtjambi.qt.core.QObject) component);
-        }
-
-}// class
-
-class QBitmap___ extends QBitmap {
-
-        public QBitmap(String fileName, String format) {
-            this(fileName, format == null ? null : org.qtjambi.qt.QNativePointer.createCharPointer(format));
-        }
-
-        public QBitmap(String fileName) {
-            this(fileName, (String) null);
-        }
-
-        public static QBitmap fromData(org.qtjambi.qt.core.QSize size, byte bits[], QImage.Format monoFormat) {
-            return fromData(size, org.qtjambi.qt.internal.QtJambiInternal.byteArrayToNativePointer(bits), monoFormat);
-        }
-
-        public static QBitmap fromData(org.qtjambi.qt.core.QSize size, byte bits[]) {
-            return fromData(size, bits, QImage.Format.Format_MonoLSB);
-        }
+    /**
+     * Registers the given component as a handler for items of the given objectType.
+     * Note: registerHandler() has to be called once for each object type. This means that there is only one handler for multiple replacement characters of the same object type.
+     *
+     * @param objectType The type for which to register a handler.
+     * @param component The handler for the given type.
+     **/
+    public final <Handler extends io.qt.core.QObject & QTextObjectInterface> void registerHandler(int objectType, Handler component) {
+        _registerHandler(objectType, component);
+    }
+    
+    public final <Handler extends io.qt.core.QObject & QTextObjectInterface> void unregisterHandler(int objectType, Handler component) {
+        _unregisterHandler(objectType, component);
+    }
 }// class
 
 class QBrush___ extends QBrush {
@@ -97,25 +68,15 @@ class QBrush___ extends QBrush {
 
 class QClipboard___ extends QClipboard {
 
-        public static class Text {
-                public String text;
-                public String subtype;
+        public final static class Text {
+            private Text(String text, String subtype) {
+                super();
+                this.text = text;
+                this.subtype = subtype;
+            }
+            public final String text;
+            public final String subtype;
         }
-
-        public final Text text(String subtype, Mode mode) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.String);
-            np.setStringValue(subtype != null ? subtype : "");
-
-            Text returned = new Text();
-            returned.text = text(np, mode);
-            returned.subtype = np.stringValue();
-            return returned;
-        }
-
-        public final Text text(String subtype) {
-            return text(subtype, Mode.Clipboard);
-        }
-
 }// class
 
 class QColor___ extends QColor {
@@ -124,13 +85,13 @@ class QColor___ extends QColor {
 
 class QDesktopServices___ extends QDesktopServices {
 
-        private static java.util.Hashtable<String, InternalUrlHandler> __rcUrlHandlers = new java.util.Hashtable<String, InternalUrlHandler>();
+        private static java.util.TreeMap<String, io.qt.core.QObject> __rcUrlHandlers = new java.util.TreeMap<String, io.qt.core.QObject>();
 
         public static interface UrlHandler {
-            public void handleUrl(org.qtjambi.qt.core.QUrl url);
+            public void handleUrl(io.qt.core.QUrl url);
         }
 
-        private static class InternalUrlHandler extends org.qtjambi.qt.core.QObject {
+        private static class InternalUrlHandler extends io.qt.core.QObject {
 
                 private UrlHandler urlHandler;
 
@@ -138,192 +99,143 @@ class QDesktopServices___ extends QDesktopServices {
                     this.urlHandler = urlHandler;
                 }
 
-                private void handleUrl(org.qtjambi.qt.core.QUrl url) {
+                @io.qt.internal.NativeAccess
+                public void handleUrl(io.qt.core.QUrl url) {
                     urlHandler.handleUrl(url);
                 }
 
         }
-
+        
         public static void setUrlHandler(String scheme, UrlHandler urlHandler) {
-            InternalUrlHandler receiver = urlHandler != null ? new InternalUrlHandler(urlHandler) : null;
-
-            if (receiver == null)
-                __rcUrlHandlers.remove(scheme);
-            else
-                __rcUrlHandlers.put(scheme, receiver);
-            setUrlHandler(scheme, receiver, QNativePointer.createCharPointer("handleUrl"));
+            if(urlHandler instanceof io.qt.core.QObject) {
+                __rcUrlHandlers.put(scheme, (io.qt.core.QObject)urlHandler);
+                setUrlHandler(scheme, (io.qt.core.QObject)urlHandler);
+            }else {
+                InternalUrlHandler receiver = urlHandler != null ? new InternalUrlHandler(urlHandler) : null;
+        
+                if (receiver == null)
+                    __rcUrlHandlers.remove(scheme);
+                else
+                    __rcUrlHandlers.put(scheme, receiver);
+                setUrlHandler(scheme, receiver);
+            }
         }
 
 }// class
 
 class QGuiApplication___ extends QGuiApplication {
 
-        public static void initialize(String args[]) {
-            if (m_instance != null)
-                throw new RuntimeException("QGuiApplication can only be initialized once");
-
-            org.qtjambi.qt.internal.HelperFunctions.setAsMainThread();
-
-            List<String> paths = Utilities.unpackPlugins();
-            if (paths != null) {
-                Collections.reverse(paths);  // Qt prepends but our list is in highest priority first order
-                for (String p : paths)
-                    addLibraryPath(p);
-            }
-            org.qtjambi.qt.internal.QtJambiInternal.setupDefaultPluginPath();
-            m_instance = new QGuiApplication(args);
-            m_instance.aboutToQuit.connect(m_instance, "disposeOfMyself()");
+        public static QGuiApplication initialize(String args[]) {
+            return io.qt.core.QCoreApplication.initialize(null, args, QGuiApplication::new);
         }
 
-        public static void initialize(String applicationName, String args[]) {
-            if (m_instance != null)
-                throw new RuntimeException("QGuiApplication can only be initialized once");
-
-            org.qtjambi.qt.internal.HelperFunctions.setAsMainThread();
-
-            List<String> paths = Utilities.unpackPlugins();
-            if (paths != null) {
-                Collections.reverse(paths);  // Qt prepends but our list is in highest priority first order
-                for (String p : paths)
-                    addLibraryPath(p);
-            }
-            org.qtjambi.qt.internal.QtJambiInternal.setupDefaultPluginPath();
-            m_instance = new QGuiApplication(applicationName, args);
-            m_instance.aboutToQuit.connect(m_instance, "disposeOfMyself()");
+        public static QGuiApplication initialize(String applicationName, String args[]) {
+            return io.qt.core.QCoreApplication.initialize(applicationName, args, QGuiApplication::new);
         }
 
         public static void shutdown() {
-            org.qtjambi.qt.core.QCoreApplication.shutdown();
+            io.qt.core.QCoreApplication.shutdown();
         }
         
-        /**
-         *
-         * @see #execStatic()
-         */
-        public int exec() {
-            return exec_internal();
-        }
-
-        /**
-         *
-         * @see #exec()
-         */
-        public static int execStatic() {
-            if (m_instance == null)
+        public static int exec() {
+            io.qt.core.QCoreApplication instance = io.qt.core.QCoreApplication.instance();
+            if (instance == null)
                 throw new RuntimeException("QGuiApplication has not been initialized with QGuiApplication.initialize()");
-            return exec_internal();
+            else if(instance.thread()!=io.qt.core.QThread.currentThread())
+                throw new RuntimeException("exec() must be called from the main thread.");
+            else if(io.qt.internal.QtJambiInternal.countEventLoops(instance.thread())>0)
+                throw new RuntimeException("The event loop is already running.");
+            else if(instance instanceof io.qt.widgets.QApplication)
+                return io.qt.widgets.QApplication.exec();
+            else if(instance instanceof io.qt.gui.QGuiApplication)
+                return exec_internal();
+            else
+                return io.qt.core.QCoreApplication.exec();
         }
-
+        
         public static QGuiApplication instance() {
-            if (m_instance instanceof QGuiApplication)
-                return (QGuiApplication) m_instance;
+            io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
+            if (app instanceof QGuiApplication)
+                return (QGuiApplication) app;
             return null;
         }
-
-        public QGuiApplication(String args[]) {
-            this(argc(args), argv(args));
-        }
-
-        public QGuiApplication(String applicationName, String args[]) {
-            this(argc(args), argv(applicationName, args));
-        }
-
-        public static QCursor overrideCursor() {
-            QNativePointer np = overrideCursor_private();
-            return np == null ? null : QCursor.fromNativePointer(np);
-        }
-
 }// class
 
 class QImage___ extends QImage {
-        public QImage(String xpm[]) {
-            this(org.qtjambi.qt.QNativePointer.createCharPointerPointer(xpm));
-        }
-
-        public final byte[] copyOfBytes() {
-            QNativePointer bits = bits();
-            byte bytes[] = new byte[byteCount()];
-            for (int i = 0; i < bytes.length; ++i)
-                bytes[i] = bits.byteAt(i);
-            return bytes;
-        }
-
         public QImage(byte data[], int width, int height, Format format) {
-            this(org.qtjambi.qt.internal.QtJambiInternal.byteArrayToNativePointer(data), width, height, format);
+            __qt_QImage_new(this, data, width, height, format);
         }
 
-        public QImage(String fileName, String format) {
-            this(fileName, format == null ? null : QNativePointer.createCharPointer(format));
+        private static native void __qt_QImage_new(Object instance, byte data[], int width, int height, Format format);
+        
+        public QImage(java.nio.Buffer data, int width, int height, Format format) {
+            __qt_QImage_new(this, data, width, height, format);
         }
 
-        public QImage(String fileName) {
-            this(fileName, (String) null);
-        }
-
-	private QImage(org.qtjambi.qt.QNativePointer data, int width, int height, org.qtjambi.qt.gui.QImage.Format format) {
-		super((QPrivateConstructor)null);
-		__qt_QImage_nativepointer_int_int_Format(data, width, height, format.value());
-		org.qtjambi.qt.GeneratorUtilities.countExpense(org.qtjambi.qt.gui.QImage.class, height()*bytesPerLine(), 67108864);
-	}
-
-	native void __qt_QImage_nativepointer_int_int_Format(org.qtjambi.qt.QNativePointer data, int width, int height, int format);
+        private static native void __qt_QImage_new(Object instance, java.nio.Buffer data, int width, int height, Format format);
 }// class
 
 class QImage::JNI{
 
-// QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_gui_QImage__1_1qt_1QImage_1nativepointer_1int_1int_1Format__Lorg_qtjambi_qt_QNativePointer_2III)
-(JNIEnv *env,
- jobject java_object,
- jobject data,
- jint width,
- jint height,
- jint format)
+void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments){
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    jobject data = arguments[0].l;
+    jint width = arguments[1].i;
+    jint height = arguments[2].i;
+    jobject format = arguments[3].l;
+    JByteArrayPointer* qt_data = new JByteArrayPointer(env, jbyteArray(data), false);
+    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, QImage::Format(qtjambi_to_enum(env, format)), [](void* ptr){ delete reinterpret_cast<JByteArrayPointer*>(ptr); }, qt_data);
+
+}
+
+void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments){
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    jobject data = arguments[0].l;
+    jint width = arguments[1].i;
+    jint height = arguments[2].i;
+    jobject format = arguments[3].l;
+    JBufferConstData* qt_data = new JBufferConstData(env, data);
+    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, QImage::Format(qtjambi_to_enum(env, format)), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage__1_1qt_1QImage_1new__Ljava_lang_Object_2_3BIILio_qt_gui_QImage_00024Format_2)
+(JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
-    QTJAMBI_DEBUG_TRACE("(native) entering: QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)");
-    uchar*  qt_data = (uchar* ) qtjambi_to_cpointer(env, data, 1);
-    QTJAMBI_EXCEPTION_CHECK(env);
-    QImage::Format __qt_format = (QImage::Format) format;
-    QTJAMBI_EXCEPTION_CHECK(env);
-    QtJambiShell_QImage *qt_this = new QtJambiShell_QImage((uchar* )qt_data, (int )width, (int )height, (QImage::Format )__qt_format);
-    QtJambiLink *qt_java_link = qtjambi_construct_object(env, java_object, qt_this, "QImage");
-    if (!qt_java_link) {
-        qWarning("object construction failed for type: QImage");
-        return;
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    try{
+        jvalue arguments[4];
+        arguments[0].l = data;
+        arguments[1].i = width;
+        arguments[2].i = height;
+        arguments[3].l = format;
+        qtjambi_initialize_native_object(env, __jni_class, java_object, &__qt_create_new_QImage_7, sizeof(QImage_shell), typeid(QImage), true, false, nullptr, nullptr, arguments);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
     }
-    qt_java_link->setJavaOwnership(env, java_object);
-    qt_this->m_link = qt_java_link;
-    qt_this->m_link->setCreatedByJava(true);
-    qt_this->m_vtable = qtjambi_setup_vtable(env, 
-                        java_object, 
-                        0, 0, 0, // no inconsistent functions
-                        qtjambi_method_count, 
-                        qtjambi_method_names, 
-                        qtjambi_method_signatures
-                        );
-    QTJAMBI_DEBUG_TRACE("(native) -> leaving: QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)");
-
 }
 
-QtJambiShell_QImage::QtJambiShell_QImage(uchar*  data, int  width, int  height, QImage::Format  format): QImage(data, width, height, format),
-      m_vtable(0),
-      m_link(0)
+// QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage__1_1qt_1QImage_1new__Ljava_lang_Object_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2)
+(JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
-    QTJAMBI_DEBUG_TRACE("(shell) entering: QtJambiShell_QImage::QtJambiShell_QImage::QtJambiShell_QImage(uchar*  data, int  width, int  height, QImage::Format  format)");
-    QTJAMBI_DEBUG_TRACE("(shell) leaving: QtJambiShell_QImage::QtJambiShell_QImage::QtJambiShell_QImage(uchar*  data, int  width, int  height, QImage::Format  format)");
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    try{
+        jvalue arguments[4];
+        arguments[0].l = data;
+        arguments[1].i = width;
+        arguments[2].i = height;
+        arguments[3].l = format;
+        qtjambi_initialize_native_object(env, __jni_class, java_object, &__qt_create_new_QImage_8, sizeof(QImage_shell), typeid(QImage), true, false, nullptr, nullptr, arguments);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
 }
-
-}// class
-
-class QImage::Shell{
-
-    QtJambiShell_QImage(uchar*  data, int  width, int  height, QImage::Format  format);
 
 }// class
 
 class QKeySequence___ extends QKeySequence {
 
-        @QtBlockedSlot
+        @io.qt.QtUninvokable
         public final int at(int i) {
             return operator_subscript(i);
         }
@@ -336,6 +248,10 @@ class QPainter___ extends QPainter {
             setBrush(new QBrush(color));
         }
 
+        public final void setBrush(io.qt.core.Qt.GlobalColor color) {
+            setBrush(new QBrush(new QColor(color)));
+        }
+
         public final void setBrush(QGradient gradient) {
             setBrush(new QBrush(gradient));
         }
@@ -344,71 +260,60 @@ class QPainter___ extends QPainter {
             setBrush(new QBrush(pm));
         }
 
-        public static QPaintDeviceInterface redirected(QPaintDeviceInterface device, org.qtjambi.qt.core.QPoint offset) {
-            return redirected(device, offset == null ? null : offset.nativePointer());
+        private static java.util.Map<QPaintDevice,QPaintDevice> __rcRedirections = new java.util.HashMap<>();
+
+        private static void beginPaint(QPaintDevice paintedWidget){
+            __paintedDevices.put(paintedWidget, java.util.Collections.emptyList());
         }
-
-/*        public QPainter(QPaintDeviceInterface device) {
-            this();
-            begin(widget);
+        
+        private static void endPaint(QPaintDevice paintedWidget){
+            java.util.List<QPainter> painters = __paintedDevices.remove(paintedWidget);
+            if(painters!=null){
+                for(QPainter painter : painters){
+                    if(!painter.isDisposed() && painter.isActive()){
+                        painter.end();
+                        painter.dispose();
+                    }
+                }
+            }
         }
-
-        public boolean begin(QPaintDeviceInterface device) { // can't be final because of QStylePainter
-            return org.qtjambi.qt.QtJambiGuiInternal.beginPaint(device, this);
+        
+        private void initialize(QPaintDevice device, boolean inConstructor){
+            if(device instanceof io.qt.widgets.QWidget || device instanceof QPaintDeviceWindow){
+                java.util.List<QPainter> painters = __paintedDevices.get(device);
+                if(painters==null){
+                    if(inConstructor)
+                        throw new QPaintingOutsidePaintEventException();
+                }else if(painters.size()==0){
+                    io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
+                    painters = java.util.Collections.singletonList(this);
+                    __paintedDevices.put(device, painters);
+                }else{
+                    io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
+                    if(painters.size()==1){
+                        painters = new java.util.LinkedList<>(painters);
+                        __paintedDevices.put(device, painters);
+                    }
+                    painters.add(this);
+                }
+            }else if(device instanceof io.qt.core.QObject){
+                io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
+            }
         }
-*/
-        private static java.util.Stack<QPaintDeviceInterface> __rcRedirections = new java.util.Stack<QPaintDeviceInterface>();
-
-}// class
-
-class QPicture___ extends QPicture {
-
-        public final boolean load(QIODevice dev) {
-            return load(dev, (QNativePointer) null);
-        }
-
-        public final boolean load(String fileName) {
-            return load(fileName, (org.qtjambi.qt.QNativePointer) null);
-        }
-
-        public final boolean save(QIODevice dev) {
-            return save(dev, (org.qtjambi.qt.QNativePointer) null);
-        }
-
-        public final boolean save(String fileName) {
-            return save(fileName, (org.qtjambi.qt.QNativePointer) null);
-        }
-
-        public final byte[] data() {
-            QNativePointer npData = data_private();
-            if (npData == null)
-                return null;
-            byte returned[] = new byte[size()];
-            for (int i = 0; i < returned.length; ++i)
-                returned[i] = npData.byteAt(i);
-            return returned;
-        }
-
-}// class
-
-class QRegion___ extends QRegion {
-
-        public void setRects(org.qtjambi.qt.core.QRect[] rects) {
-            setRects(org.qtjambi.qt.core.QRect.nativePointerArray(rects), rects.length);
-        }
-
+        
+        private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
 }// class
 
 class QPen___ extends QPen {
-        public QPen(QColor color, double width, org.qtjambi.qt.core.Qt.PenStyle s, org.qtjambi.qt.core.Qt.PenCapStyle c, org.qtjambi.qt.core.Qt.PenJoinStyle j) {
+        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s, io.qt.core.Qt.PenCapStyle c, io.qt.core.Qt.PenJoinStyle j) {
             this(new QBrush(color), width, s, c, j);
         }
 
-        public QPen(QColor color, double width, org.qtjambi.qt.core.Qt.PenStyle s, org.qtjambi.qt.core.Qt.PenCapStyle c) {
+        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s, io.qt.core.Qt.PenCapStyle c) {
             this(new QBrush(color), width, s, c);
         }
 
-        public QPen(QColor color, double width, org.qtjambi.qt.core.Qt.PenStyle s) {
+        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s) {
             this(new QBrush(color), width, s);
         }
 
@@ -416,35 +321,22 @@ class QPen___ extends QPen {
             this(new QBrush(color), width);
         }
 
-//        public static final QPen NoPen = new QPen(org.qtjambi.qt.core.Qt.PenStyle.NoPen);
+//        public static final QPen NoPen = new QPen(io.qt.core.Qt.PenStyle.NoPen);
 }// class
 
 class QPixmap___ extends QPixmap {
-
-        public QPixmap(String xpm[]) {
-            this(org.qtjambi.qt.QNativePointer.createCharPointerPointer(xpm));
+        /*initialize*/{
+            if(QGuiApplication.instance()==null) {
+                throw new IllegalStateException("Must initialize QGuiApplication before creating QPixmap.");
+            }
         }
-		
-		@QtBlockedSlot
-		public final QRegion scroll(int dx, int dy, int x, int y, int width, int height) {
-			QRegion region = new QRegion();
-			scroll(dx, dy, x, y, width, height, region.nativePointer());
-			return region;
-		}
-		
-		@QtBlockedSlot
-		public final QRegion scroll(int dx, int dy, org.qtjambi.qt.core.QRect rect) {
-			QRegion region = new QRegion();
-			scroll(dx, dy, rect, region.nativePointer());
-			return region;
-		}
 }// class
 
 class QPixmapFilter___ extends QPixmapFilter {
         public final void setConvolutionKernel(double[] kernel, int rows, int columns) {
             int length = rows * columns;
 
-            QNativePointer kernelPtr = new QNativePointer(QNativePointer.Type.double, length);
+            io.qt.QNativePointer kernelPtr = new io.qt.QNativePointer(io.qt.QNativePointer.Type.double, length);
             for (int i = 0; i < length; ++i)
                 kernelPtr.setdoubleAt(i, kernel[i]);
 
@@ -452,503 +344,75 @@ class QPixmapFilter___ extends QPixmapFilter {
         }
 }// class
 
-class QPixmapCache___ extends QPixmapCache {
-
-        public static QPixmap find(String key) {
-			QPixmap pixmap = new QPixmap();
-			if(find(key, pixmap.nativePointer())){
-				return pixmap;
-			}else{
-				return null;
-			}
-        }
-
-		public static QPixmap find(org.qtjambi.qt.gui.QPixmapCache.Key key) {
-			QPixmap pixmap = new QPixmap();
-			if(find(key, pixmap.nativePointer())){
-				return pixmap;
-			}else{
-				return null;
-			}
-		}
-		
-}// class
-
 class QTextCursor___ extends QTextCursor {
-        public final QTableArea selectedTableCells() {
-            QNativePointer firstRow = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer numRows = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer firstColumn = new QNativePointer(QNativePointer.Type.Int);
-            QNativePointer numColumns = new QNativePointer(QNativePointer.Type.Int);
-
-            selectedTableCells(firstRow, numRows, firstColumn, numColumns);
-
-            return new QTableArea(firstRow.intValue(), firstColumn.intValue(), numRows.intValue(), numColumns.intValue());
+    public final static class SelectedTableCells {
+        private SelectedTableCells(int firstRow, int numRows, int firstColumn, int numColumns) {
+            this.firstRow = firstRow;
+            this.numRows = numRows;
+            this.firstColumn = firstColumn;
+            this.numColumns = numColumns;
         }
-
+        public final int firstRow;
+        public final int numRows;
+        public final int firstColumn;
+        public final int numColumns;
+    }
 }// class
 
-class QTextLine___ extends QTextLine {
+class QTextBlock___ extends QTextBlock {
 
-        public final void draw(QPainter painter, org.qtjambi.qt.core.QPointF position) {
-            draw(painter, position, null);
+    @Override
+    public java.util.Iterator<QTextFragment> iterator(){
+    return new java.util.Iterator<QTextFragment>() {
+        
+        iterator it = begin();
+        
+        @Override
+        public QTextFragment next() {
+            QTextFragment next = it.fragment();
+            it.next();
+            return next;
         }
-
-}// class
-
-class QTextFrame_iterator___ extends QTextFrame_iterator {
-
-        @QtBlockedSlot
-        public final void next() {
-            operator_increment();
+        
+        @Override
+        public boolean hasNext() {
+            return !it.atEnd();
         }
-
-        @QtBlockedSlot
-        public final void previous() {
-            operator_decrement();
-        }
-
-}// class
-
-class QTextBlock_iterator___ extends QTextBlock_iterator {
-
-        @QtBlockedSlot
-        public final void next() {
-            operator_increment();
-        }
-
-        @QtBlockedSlot
-        public final void previous() {
-            operator_decrement();
-        }
-
-}// class
-
-class QTextDocument___ extends QTextDocument {
-
-        public final void redo(QTextCursor cursor) {
-            redo(cursor.nativePointer());
-        }
-
-        public final void undo(QTextCursor cursor) {
-            undo(cursor.nativePointer());
-        }
+    };
+}
 
 }// class
 
 class QPolygon___ extends QPolygon {
-
-        private native void add_private(long nid, int x, int y);
-
-        @QtBlockedSlot
-        public final QPolygon add(int x, int y) {
-            add_private(nativeId(), x, y);
-            return this;
-        }
-
-        @QtBlockedSlot
-        public final QPolygon add(QPoint pt) {
-            add_private(nativeId(), pt.x(), pt.y());
-            return this;
-        }
-
-        @QtBlockedSlot
-        public final QPolygon add(QPolygon p) {
-            int size = p.size();
-            long nid = nativeId();
-            for (int i = 0; i < size; ++i) {
-                QPoint pt = p.at(i);
-                add_private(nid, pt.x(), pt.y());
-            }
-            return this;
+        @io.qt.QtUninvokable
+        public final void append(int x, int y) {
+            append(new QPoint(x, y));
         }
 }// class
 
 class QPolygonF___ extends QPolygonF {
-        private native void add_private(long nid, double x, double y);
-
-        @QtBlockedSlot
-        public final QPolygonF add(double x, double y) {
-            add_private(nativeId(), x, y);
-            return this;
-        }
-
-        @QtBlockedSlot
-        public final QPolygonF add(QPointF pt) {
-            add_private(nativeId(), pt.x(), pt.y());
-            return this;
-        }
-
-        @QtBlockedSlot
-        public final QPolygonF add(QPolygonF p) {
-            int size = p.size();
-            long nid = nativeId();
-            for (int i = 0; i < size; ++i) {
-                QPointF pt = p.at(i);
-                add_private(nid, pt.x(), pt.y());
-            }
-            return this;
-        }
-}// class
-
-class QTransform___ extends QTransform {
-
-        public final QTransform multiply(double d) {
-            operator_multiply_assign(d);
-            return this;
-        }
-
-        public final QTransform multiply(QTransform matrix) {
-            operator_multiply_assign(matrix);
-            return this;
-        }
-
-        public final QTransform add(double d) {
-            operator_add_assign(d);
-            return this;
-        }
-
-        public final QTransform divide(double d) {
-            operator_divide_assign(d);
-            return this;
-        }
-
-        public final QTransform subtract(double d) {
-            operator_subtract_assign(d);
-            return this;
-        }
-
-        /**
-         * Returns an inverted copy of this transformation.
-         *
-         * @return The inverse of the transformation.
-         * @throws IllegalArgumentException
-         *             If this transformation is not invertible.
-         */
-        public final QTransform inverted() {
-            QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
-            QTransform returned = inverted(ok);
-            if (!ok.booleanValue())
-                throw new IllegalArgumentException("Transformation is not invertible");
-            return returned;
-        }
-
-        /**
-         * Creates a transformation mapping one arbitrary quad into another.
-         *
-         * @return The transformation.
-         * @throws IllegalArgumentException
-         *             If this transformation is not possible.
-         */
-        public static final QTransform quadToQuad(QPolygonF from, QPolygonF to) {
-            QTransform res = new QTransform();
-            QNativePointer resPointer = res.nativePointer();
-            if (quadToQuadPrivate(from, to, resPointer)) {
-                return res;
-            } else
-                throw new IllegalArgumentException("Transformation is not possible");
-        }
-
-        /**
-         * Creates a transformation that maps a quad to a unit square.
-         *
-         * @return The transformation.
-         * @throws IllegalArgumentException If this transformation is not possible.
-         */
-        public static final QTransform quadToSquare(QPolygonF quad) {
-            QTransform res = new QTransform();
-            QNativePointer resPointer = res.nativePointer();
-            if (quadToSquarePrivate(quad, resPointer)) {
-                return res;
-            } else
-                throw new IllegalArgumentException("Transformation is not possible");
-        }
-
-        /**
-         * Creates a transformation that maps a unit square to a the given quad.
-         *
-         * @return The transformation.
-         * @throws IllegalArgumentException
-         *             If this transformation is not possible.
-         */
-        public static final QTransform squareToQuad(QPolygonF quad) {
-            QTransform res = new QTransform();
-            QNativePointer resPointer = res.nativePointer();
-            if (squareToQuadPrivate(quad, resPointer)) {
-                return res;
-            } else
-                throw new IllegalArgumentException("Transformation is not possible");
+        @io.qt.QtUninvokable
+        public final void append(double x, double y) {
+            append(new QPointF(x, y));
         }
 }// class
 
 class QValidator___ extends QValidator {
 
         public static class QValidationData {
+                @io.qt.internal.NativeAccess
                 public QValidationData(String input, int pos) {
                     string = input;
                     position = pos;
                 }
 
-                public String string;
-                public int position;
+                public @io.qt.internal.NativeAccess String string;
+                public @io.qt.internal.NativeAccess int position;
         }
 
 }// class
 
 class QOpenGLShaderProgram___ extends QGLColormap {
-		
-		@QtBlockedSlot
-		public final void setAttributeValue(java.lang.String name, float[] values, int columns, int rows)    {
-			this.setAttributeValue_GLfloat(name, floatsToNativePointer(values), columns, rows);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, float[] values, int tupleSize) {
-			setAttributeArray(location, values, tupleSize, (int)0);
-		}
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, float[] values, int tupleSize, int stride) {
-			setAttributeArray_GLfloat(location, floatsToNativePointer(values), tupleSize, stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, float[] values, int tupleSize) {
-			setAttributeArray(name, values, tupleSize, (int)0);
-		}
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, float[] values, int tupleSize, int stride) {
-			setAttributeArray_GLfloat(name, floatsToNativePointer(values), tupleSize, stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector2D[] values)    {
-			this.setAttributeArray(location, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector2D[] values, int stride)    {
-			setAttributeArray_QVector2D(location, arrayToNativePointer(values), stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector2D[] values)    {
-			this.setAttributeArray(name, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector2D[] values, int stride)    {
-			setAttributeArray_QVector2D(name, arrayToNativePointer(values), stride);
-		}
-    
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector3D[] values)    {
-			this.setAttributeArray(location, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector3D[] values, int stride)    {
-			setAttributeArray_QVector3D(location, arrayToNativePointer(values), stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector4D[] values)    {
-			this.setAttributeArray(location, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(int location, org.qtjambi.qt.gui.QVector4D[] values, int stride)    {
-			setAttributeArray_QVector4D(location, arrayToNativePointer(values), stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector3D[] values)    {
-			this.setAttributeArray(name, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector3D[] values, int stride)    {
-			setAttributeArray_QVector3D(name, arrayToNativePointer(values), stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector4D[] values)    {
-			this.setAttributeArray(name, values, 0);
-		}
-		
-		@QtBlockedSlot
-		public final void setAttributeArray(java.lang.String name, org.qtjambi.qt.gui.QVector4D[] values, int stride)    {
-			setAttributeArray_QVector4D(name, arrayToNativePointer(values), stride);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, float[] values, int count, int tupleSize)    {
-			this.setUniformValueArray_GLfloat(location, this.floatsToNativePointer(values), count, tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, float[] values, int count, int tupleSize)    {
-			this.setUniformValueArray_GLfloat(name, this.floatsToNativePointer(values), count, tupleSize);
-		}
-    
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, int[] values, int tupleSize)    {
-			this.setUniformValueArray_int(location, org.qtjambi.qt.internal.QtJambiInternal.intArrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, int[] values, int tupleSize)    {
-			this.setUniformValueArray_int(name, org.qtjambi.qt.internal.QtJambiInternal.intArrayToNativePointer(values), tupleSize);
-		}
-		
-/*		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix2x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x2(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix2x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x2(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix2x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x3(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix2x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x3(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix2x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x4(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix2x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix2x4(name, arrayToNativePointer(values), tupleSize);
-		}
-    
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix3x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x2(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix3x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x2(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix3x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x3(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix3x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x3(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix3x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x4(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix3x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix3x4(name, arrayToNativePointer(values), tupleSize);
-		}
-    
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix4x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x2(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix4x2[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x2(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix4x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x3(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix4x3[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x3(name, arrayToNativePointer(values), tupleSize);
-		}
-*/		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QMatrix4x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x4(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QMatrix4x4[] values, int tupleSize)    {
-			this.setUniformValueArray_QMatrix4x4(name, arrayToNativePointer(values), tupleSize);
-		}
-    
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QVector2D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector2D(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QVector2D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector2D(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QVector3D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector3D(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QVector3D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector3D(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(int location, org.qtjambi.qt.gui.QVector4D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector4D(location, arrayToNativePointer(values), tupleSize);
-		}
-		
-		@QtBlockedSlot
-		public final void setUniformValueArray(String name, org.qtjambi.qt.gui.QVector4D[] values, int tupleSize)    {
-			this.setUniformValueArray_QVector4D(name, arrayToNativePointer(values), tupleSize);
-		}
-		
-		private org.qtjambi.qt.QNativePointer floatsToNativePointer(float[] values){
-			org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float, values.length);
-			for (int i = 0; i < values.length; i++) {
-				pointer.setFloatAt(i, values[i]);
-			}
-			return pointer;
-		}
-		
-		private <T extends org.qtjambi.qt.internal.QtJambiObject> org.qtjambi.qt.QNativePointer arrayToNativePointer(T[] values){
-			org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Pointer, values.length);
-			for (int i = 0; i < values.length; i++) {
-				pointer.setPointerAt(i, values[i].nativePointer());
-			}
-			return pointer;
-		}
-		
-}// class
-
-class QAccessibleTableInterface___ extends QAccessibleTableInterface {
-
-        public static class CellAtIndex extends QTableArea {
-                public CellAtIndex(int row, int column, int rowSpan, int columnSpan, boolean isSelected) {
-                    super(row, column, rowSpan, columnSpan);
-                    this.isSelected = isSelected;
-                }
-
-                public boolean isSelected;
-        }
-
 }// class
 
 class QAccessibleInterface___ extends QAccessibleInterface {
@@ -974,101 +438,164 @@ class QMatrix___ extends QMatrix {
          *             If this matrix is not invertible.
          */
         public final QMatrix inverted() {
-            QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
+            io.qt.QNativePointer ok = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
             QMatrix returned = inverted(ok);
             if (!ok.booleanValue())
                 throw new IllegalArgumentException("Matrix is not invertible");
             return returned;
         }
 
-        @QtBlockedSlot
+        @io.qt.QtUninvokable
         public final QMatrix multiply(QMatrix other) {
             operator_multiply_assign(other);
             return this;
         }
 
-        @QtBlockedSlot
+        @io.qt.QtUninvokable
         public final QMatrix multiplied(QMatrix other) {
             return operator_multiply(other);
         }
-}// class
-
-class QMatrix4x4___ extends QMatrix4x4 {
-	@QtBlockedSlot
-	public final org.qtjambi.qt.gui.QMatrix4x4 inverted() {
-		org.qtjambi.qt.QNativePointer pointer = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Boolean);
-		pointer.setBooleanValue(false);
-		QMatrix4x4 result = inverted(pointer);
-		if(!pointer.booleanValue()){
-			result = null;
-		}
-		return result;
-	}
 }// class
 
 class QPaintDeviceWindow___ extends QPaintDeviceWindow {
 }// class
 
 class QQuaternion___ extends QQuaternion {
-	public static class Axes{
-		public Axes(QVector3D xAxis, QVector3D yAxis, QVector3D zAxis) {
-			super();
-			this.xAxis = xAxis;
-			this.yAxis = yAxis;
-			this.zAxis = zAxis;
-		}
-		public final QVector3D xAxis;
-		public final QVector3D yAxis;
-		public final QVector3D zAxis;
-	}
-	
-	public static class AxisAndAngle{
-		public AxisAndAngle(QVector3D axis, float angle) {
-			super();
-			this.axis = axis;
-			this.angle = angle;
-		}
-		public final QVector3D axis;
-		public final float angle;
-	}
-	
-	public static class EulerAngles{
-		public EulerAngles(float pitch, float yaw, float roll) {
-			super();
-			this.pitch = pitch;
-			this.yaw = yaw;
-			this.roll = roll;
-		}
-		public final float pitch;
-		public final float yaw;
-		public final float roll;
-	}
-	
-	@QtBlockedSlot
-	public final Axes getAxes(){
-		QVector3D xAxis = new QVector3D();
-		QVector3D yAxis = new QVector3D();
-		QVector3D zAxis = new QVector3D();
-		getAxes(xAxis.nativePointer(), yAxis.nativePointer(), zAxis.nativePointer());
-		return new Axes(xAxis, yAxis, zAxis);
-	}
-	
-	@QtBlockedSlot
-	public final AxisAndAngle getAxisAndAngle()    {
-		QVector3D axis = new QVector3D();
-		org.qtjambi.qt.QNativePointer angle = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float);
-		getAxisAndAngle(axis.nativePointer(), angle);
-		return new AxisAndAngle(axis, angle.floatValue());
-	}
-	
-	@QtBlockedSlot
-	public final EulerAngles getEulerAngles()    {
-		org.qtjambi.qt.QNativePointer pitch = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float);
-		org.qtjambi.qt.QNativePointer yaw = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float);
-		org.qtjambi.qt.QNativePointer roll = new org.qtjambi.qt.QNativePointer(org.qtjambi.qt.QNativePointer.Type.Float);
-		getEulerAngles(pitch, yaw, roll);
-		return new EulerAngles(pitch.floatValue(), yaw.floatValue(), roll.floatValue());
-	}
+    public static class Axes{
+        private Axes(QVector3D xAxis, QVector3D yAxis, QVector3D zAxis) {
+            super();
+            this.xAxis = xAxis;
+            this.yAxis = yAxis;
+            this.zAxis = zAxis;
+        }
+        public final QVector3D xAxis;
+        public final QVector3D yAxis;
+        public final QVector3D zAxis;
+    }
+    
+    public static class AxisAndAngle{
+        private AxisAndAngle(QVector3D axis, float angle) {
+            super();
+            this.axis = axis;
+            this.angle = angle;
+        }
+        public final QVector3D axis;
+        public final float angle;
+    }
+    
+    public static class EulerAngles{
+        private EulerAngles(float pitch, float yaw, float roll) {
+            super();
+            this.pitch = pitch;
+            this.yaw = yaw;
+            this.roll = roll;
+        }
+        public final float pitch;
+        public final float yaw;
+        public final float roll;
+    }
+}// class
+
+class QOpenGLExtraFunctions___ extends QOpenGLExtraFunctions {
+
+}// class
+
+class QOpenGLFunctions_ES2___{
+}// class
+
+class QGradient_java__{
+    @io.qt.QtUninvokable
+    public static QGradient create(io.qt.gui.QGradient.Preset preset){
+        return create(preset.value());
+    }
+
+    @io.qt.QtUninvokable
+    private native static QGradient create(int preset);
+}// class
+
+
+class QGradient_native__{
+
+// QGradient::QGradient(QGradient::Preset arg__1)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QGradient_create)
+(JNIEnv *__jni_env, jclass, int preset)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QGradient::QGradient(QGradient::Preset arg__1)");
+    try{
+        return qtjambi_cast<jobject>(__jni_env, QGradient(QGradient::Preset(preset)));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+}// class
+
+class QOpenGLContext_java__{
+
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(Class<T> type){
+        return __qt_QOpenGLContext_versionFunctions(checkedNativeId(this), java.util.Objects.requireNonNull(type));
+    }
+    @io.qt.QtUninvokable
+    private native <T extends io.qt.gui.QAbstractOpenGLFunctions> T __qt_QOpenGLContext_versionFunctions(long __this__nativeId, Class<T> type);
+
+}// class
+
+
+class QOpenGLContext_native__{
+
+// QOpenGLContext::versionFunctions<T>() const
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QOpenGLContext__1_1qt_1QOpenGLContext_1versionFunctions)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ jclass type)
+{
+    jobject __java_return_value = nullptr;
+    try{
+        const QOpenGLContext *__qt_this = qtjambi_object_from_nativeId<QOpenGLContext>(__this_nativeId);
+        Q_ASSERT(__qt_this);
+        QAbstractOpenGLFunctions* __qt_return_value = nullptr;
+        QString className = qtjambi_class_name(__jni_env, type);
+        if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
+            __qt_return_value = __qt_this->versionFunctions();
+        }else if(className.startsWith("io.qt.gui.QOpenGLFunctions_")){
+            className = className.mid(27);
+            int idx = className.indexOf('_');
+            if(idx>0){
+                bool ok = false;
+                int majorVersion = className.left(idx).toInt(&ok);
+                if(ok){
+                    className = className.mid(idx+1);
+                    QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
+                    if(className.endsWith("_Core")){
+                        className = className.chopped(5);
+                        profile = QSurfaceFormat::CoreProfile;
+                    }else if(className.endsWith("_Compatibility")){
+                        className = className.chopped(14);
+                        profile = QSurfaceFormat::CompatibilityProfile;
+                    }
+                    ok = false;
+                    int minorVersion = className.toInt(&ok);
+                    if(ok){
+                        QOpenGLVersionProfile version;
+                        version.setProfile(profile);
+                        version.setVersion(majorVersion, minorVersion);
+                        __qt_return_value = __qt_this->versionFunctions(version);
+                    }
+                }
+            }
+        }
+        __java_return_value = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
+        if(!__jni_env->IsInstanceOf(__java_return_value, type)){
+            __java_return_value = nullptr;
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return __java_return_value;
+}
 }// class
 
 

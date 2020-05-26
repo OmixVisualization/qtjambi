@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,6 +46,8 @@
 #include <QtCore/QSet>
 #include "typesystem/typedatabase.h"
 
+struct Operator;
+
 class AbstractMetaBuilder {
     public:
         enum RejectReason {
@@ -60,7 +62,8 @@ class AbstractMetaBuilder {
         AbstractMetaBuilder();
         virtual ~AbstractMetaBuilder() {}
 
-        AbstractMetaClassList classes() const { return m_meta_classes; }
+        const AbstractMetaClassList& classes() const { return m_meta_classes; }
+        const AbstractMetaFunctionalList& functionals() const { return m_meta_functionals; }
         AbstractMetaClassList classesTopologicalSorted() const;
 
         FileModelItem model() const { return m_dom; }
@@ -71,25 +74,29 @@ class AbstractMetaBuilder {
         void pushScope(ScopeModelItem item) { m_scopes << item; }
         ScopeModelItem currentScope() const { return m_scopes.last(); }
 
-        QString fileName() const { return m_file_name; }
+        const QString& fileName() const { return m_file_name; }
         void setFileName(const QString &fileName) { m_file_name = fileName; }
 
         void dumpLog();
 
         bool build();
 
-        void figureOutEnumValuesForClass(AbstractMetaClass *meta_class, QSet<AbstractMetaClass *> *classes);
-        int figureOutEnumValue(const QString &name, int value, AbstractMetaEnum *meta_enum, AbstractMetaFunction *meta_function = 0);
+        void figureOutEnumValuesForClass(AbstractMetaClass *meta_class, QSet<AbstractMetaClass *> *classes, QSet<AbstractMetaClass *> *repeatClasses, QSet<QString> *warnings = nullptr);
+        QVariant figureOutEnumValue(const uint size, const QString &name, QVariant value, AbstractMetaClass *global, AbstractMetaEnum *meta_enum, AbstractMetaFunction *meta_function = nullptr, QSet<QString> *warnings = nullptr);
         void figureOutEnumValues();
         void figureOutDefaultEnumArguments();
+        void figureOutFunctionsInNamespace(const NamespaceModelItem &item);
 
         void addAbstractMetaClass(AbstractMetaClass *cls);
+        void addAbstractMetaFunctional(AbstractMetaFunctional *cls);
         AbstractMetaClass *traverseTypeAlias(TypeAliasModelItem item);
+        AbstractMetaFunctional *traverseFunctional(TypeAliasModelItem item);
         AbstractMetaClass *traverseClass(ClassModelItem item);
         bool setupInheritance(AbstractMetaClass *meta_class);
         bool setupTemplateInstantiations(AbstractMetaClass *meta_class);
         AbstractMetaClass *traverseNamespace(NamespaceModelItem item);
         AbstractMetaEnum *traverseEnum(EnumModelItem item, AbstractMetaClass *enclosing, const QSet<QString> &enumsDeclarations);
+        AbstractMetaClass * instantiateIterator(IteratorTypeEntry *iteratorTypeEntry, AbstractMetaClass *subclass, const QList<const AbstractMetaType *>& template_types, const QMap<const TypeEntry *,const AbstractMetaType *>& template_types_by_name);
         void traverseEnums(ScopeModelItem item, AbstractMetaClass *parent, const QStringList &enumsDeclarations);
         void traverseFunctions(ScopeModelItem item, AbstractMetaClass *parent);
         void traverseFields(ScopeModelItem item, AbstractMetaClass *parent);
@@ -103,11 +110,12 @@ class AbstractMetaBuilder {
 
         void parseQ_Property(AbstractMetaClass *meta_class, const QStringList &declarations);
         void setupEquals(AbstractMetaClass *meta_class);
+        void setupBeginEnd(AbstractMetaClass *meta_class);
         void setupComparable(AbstractMetaClass *meta_class);
         void setupClonable(AbstractMetaClass *cls);
         void setupFunctionDefaults(AbstractMetaFunction *meta_function, AbstractMetaClass *meta_class);
 
-        QString translateDefaultValue(ArgumentModelItem item, AbstractMetaType *type,
+        QString translateDefaultValue(const QString& defaultValueExpression, AbstractMetaType *type,
                                       AbstractMetaFunction *fnc, AbstractMetaClass *,
                                       int argument_index);
         AbstractMetaType *translateType(const TypeInfo& type_info, bool* ok, const QString &contextString = QString(),
@@ -115,10 +123,10 @@ class AbstractMetaBuilder {
 
         static void decideUsagePattern(AbstractMetaType *type);
 
-        bool inheritTemplate(AbstractMetaClass *subclass,
+        bool inheritHiddenBaseType(AbstractMetaClass *subclass,
                              const AbstractMetaClass *template_class,
                              const TypeParser::Info &info);
-        AbstractMetaType *inheritTemplateType(const QList<AbstractMetaType *> &template_types, AbstractMetaType *meta_type, bool *ok = 0);
+        AbstractMetaType *inheritTemplateType(const QList<const AbstractMetaType *> &template_types, const AbstractMetaType *meta_type, bool *ok = nullptr);
 
         bool isQObject(const QString &qualified_name);
         bool isEnum(const QStringList &qualified_name);
@@ -126,13 +134,15 @@ class AbstractMetaBuilder {
         void fixQObjectForScope(TypeDatabase *types,
                                 NamespaceModelItem item);
 
-        QString outputDirectory() const { return m_out_dir; }
+        const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
+        void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
         virtual AbstractMetaClass *createMetaClass() = 0;
         virtual AbstractMetaEnum *createMetaEnum() = 0;
+        virtual AbstractMetaFunctional *createMetaFunctional() = 0;
         virtual AbstractMetaEnumValue *createMetaEnumValue() = 0;
         virtual AbstractMetaField *createMetaField() = 0;
         virtual AbstractMetaFunction *createMetaFunction() = 0;
@@ -140,21 +150,33 @@ class AbstractMetaBuilder {
         virtual AbstractMetaType *createMetaType() = 0;
 
     private:
+        TypeInfo analyzeTypeInfo(AbstractMetaClass *cls, QString strg);
+        AbstractMetaFunctional * findFunctional(AbstractMetaClass *cls, const FunctionalTypeEntry * fentry);
+        void fixMissingIterator();
         void sortLists();
+        Operator findOperator(const uint size, QString *s,
+                              AbstractMetaClass *global,
+                              AbstractMetaEnum *meta_enum,
+                              AbstractMetaFunction *meta_function, QSet<QString> *warnings = nullptr);
+
+        QString rename_operator(const QString &oper);
 
         QString m_file_name;
         QString m_out_dir;
 
         AbstractMetaClassList m_meta_classes;
+        AbstractMetaFunctionalList m_meta_functionals;
         AbstractMetaClassList m_templates;
+        AbstractMetaClassList m_template_iterators;
         FileModelItem m_dom;
 
         QSet<const TypeEntry *> m_used_types;
 
-        QMap<QString, RejectReason> m_rejected_classes;
-        QMap<QString, RejectReason> m_rejected_enums;
-        QMap<QString, RejectReason> m_rejected_functions;
-        QMap<QString, RejectReason> m_rejected_fields;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_classes;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_functionals;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_enums;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_functions;
+        QMap<QPair<QString,QString>, RejectReason> m_rejected_fields;
 
         QList<AbstractMetaEnum *> m_enums;
 
@@ -167,6 +189,35 @@ class AbstractMetaBuilder {
         QString m_namespace_prefix;
 
         QSet<AbstractMetaClass *> m_setup_inheritance_done;
+
+        struct MissingIterator{
+            MissingIterator(const IteratorTypeEntry* _iteratorType,
+                            AbstractMetaType *_meta_type,
+            AbstractMetaClass * _current_class) :
+                iteratorType(_iteratorType),
+                meta_type(_meta_type),
+                current_class(_current_class)
+            {}
+            const IteratorTypeEntry* iteratorType;
+            AbstractMetaType *meta_type;
+            AbstractMetaClass * current_class;
+        };
+        QList<MissingIterator> m_missing_iterators;
+        const QMap<QString, QString>* m_features;
+};
+
+struct Operator {
+    enum Type { Plus, Minus, ShiftLeft, Not, None };
+
+    Operator(const uint _size) : type(None), size(_size), value() { }
+
+    QVariant calculate(QVariant x);
+
+    QString toString(QString x);
+
+    Type type;
+    const uint size;
+    QVariant value;
 };
 
 #endif // ABSTRACTMETBUILDER_H

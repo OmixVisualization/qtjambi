@@ -100,7 +100,7 @@ class Config
     static int numParams(const QString& value);
     static bool removeDirContents(const QString& dir);
 
-    QT_STATIC_CONST QString dot;
+    static const QString dot;
 
  private:
     static bool isMetaKeyChar(QChar ch);

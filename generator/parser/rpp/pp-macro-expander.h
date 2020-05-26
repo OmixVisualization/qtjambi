@@ -52,6 +52,7 @@
 #include "pp-scanner.h"
 #include "pp-environment.h"
 #include "pp-internal.h"
+#include "pp-iterator.h"
 
 namespace rpp {
 
@@ -75,6 +76,7 @@ namespace rpp {
             pp_skip_comment_or_divop skip_comment_or_divop;
             pp_skip_blanks skip_blanks;
             pp_skip_whitespaces skip_whitespaces;
+            bool hasUnexpandedFunctionMacro;
 
             std::string const *resolve_formal(pp_fast_string const *__name);
 
@@ -83,8 +85,8 @@ namespace rpp {
             int generated_lines;
 
         public:
-            pp_macro_expander(pp_environment &__env, pp_frame *__frame = 0) :
-                    env(__env), frame(__frame), lines(0), generated_lines(0) {}
+            pp_macro_expander(pp_environment &__env, pp_frame *__frame = nullptr) :
+                    env(__env), frame(__frame), hasUnexpandedFunctionMacro(false), lines(0), generated_lines(0) {}
 
             template <typename _InputIterator>
             _InputIterator skip_argument_variadics(std::vector<std::string> const &actuals, pp_macro *macro,
@@ -206,7 +208,7 @@ namespace rpp {
                         std::copy(name_begin, name_end, cp);
                         name_buffer[size] = '\0';
 
-                        pp_fast_string fast_name(name_buffer, name_size);
+                        pp_fast_string fast_name(name_buffer, std::size_t(name_size));
 
                         if (std::string const *actual = resolve_formal(&fast_name)) {
                             std::copy(actual->begin(), actual->end(), result);
@@ -215,7 +217,7 @@ namespace rpp {
 
                         static bool hide_next = false; // ### remove me
 
-                        pp_macro *macro = env.resolve(name_buffer, name_size);
+                        pp_macro *macro = env.resolve(name_buffer, std::size_t(name_size));
                         if (! macro || macro->hidden || hide_next) {
                             hide_next = ! strcmp(name_buffer, "defined");
 
@@ -241,7 +243,7 @@ namespace rpp {
                         }
 
                         if (! macro->function_like) {
-                            pp_macro *new_macro = 0;
+                            pp_macro *new_macro = nullptr;
 
                             if (macro->definition) {
                                 macro->hidden = true;
@@ -290,6 +292,7 @@ namespace rpp {
                             std::copy(name_begin, name_end, result);
                             lines += skip_whitespaces.lines;
                             first = arg_it;
+                            hasUnexpandedFunctionMacro = true;
                             continue;
                         }
 
@@ -332,7 +335,13 @@ namespace rpp {
                         pp_frame frame(macro, &actuals);
                         pp_macro_expander expand_macro(env, &frame);
                         macro->hidden = true;
-                        expand_macro(macro->definition->begin(), macro->definition->end(), result);
+                        if(expand_actual.hasUnexpandedFunctionMacro){
+                            std::string macroDefinition;
+                            expand_macro(macro->definition->begin(), macro->definition->end(), rpp::pp_output_iterator<std::string> (macroDefinition));
+                            expand_macro(macroDefinition.c_str(), macroDefinition.c_str()+macroDefinition.size(), result);
+                        }else{
+                            expand_macro(macro->definition->begin(), macro->definition->end(), result);
+                        }
                         macro->hidden = false;
                         generated_lines += expand_macro.lines;
                     } else

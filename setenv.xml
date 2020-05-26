@@ -98,17 +98,7 @@
         to qt's libraries's dir and include dir.
     -->
 
-    <target name="check-kdephonon">
-        <if>
-        <equals arg1="${qtjambi.phonon.kdephonon}" arg2="true" />
-        <then>
-            <property name="qtjambi.phonon.kdephonon-path"
-                    value="${generatorDir}/targets/masterinclude_with_kdephonon.h" />
-        </then>
-        </if>
-    </target>
-
-    <target name="setup-properties" depends="check-kdephonon">
+    <target name="setup-properties">
         <!-- these are used by examples/generator/hello_world_generator/** not by QtJambi to build itself -->
         <property name="qtjambi.jambi.libdir"       value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}lib"/>
         <property name="qtjambi.jambi.pluginsdir"   value="${jambi.directory}${file.separator}build${file.separator}qmake-qtjambi${file.separator}plugins"/>

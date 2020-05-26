@@ -34,8 +34,10 @@
 **
 ****************************************************************************/
 
+#if defined __cplusplus
 
 #include <qtjambi/qtjambi_core.h>
-#include <qtreemodel.h>
 #include <qpainter.h>
+
+#endif //defined __cplusplus
 

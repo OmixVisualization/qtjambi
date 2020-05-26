@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<typesystem package="io.qt.nfc" default-superclass="io.qt.QtObject">
+    <value-type name="QNdefFilter">
+        <inject-code>
+        @io.qt.QtUninvokable
+        public final void appendRecord(Class&lt;? extends QNdefRecord> type) {
+            appendRecord(type, 1, 1);
+        }
+        
+        @io.qt.QtUninvokable
+        public final void appendRecord(Class&lt;? extends QNdefRecord> type, int min) {
+            appendRecord(type, min, 1);
+        }
+        
+        @io.qt.QtUninvokable
+        public final void appendRecord(Class&lt;? extends QNdefRecord> type, int min, int max) {
+            if(type==QNdefRecord.class) {
+                QNdefRecord record = new QNdefRecord();
+                appendRecord(record.typeNameFormat(), record.type(), min, max);
+            }else if(type==QNdefNfcSmartPosterRecord.class) {
+                QNdefNfcSmartPosterRecord record = new QNdefNfcSmartPosterRecord();
+                appendRecord(record.typeNameFormat(), record.type(), min, max);
+            }else if(type==QNdefNfcTextRecord.class) {
+                QNdefNfcTextRecord record = new QNdefNfcTextRecord();
+                appendRecord(record.typeNameFormat(), record.type(), min, max);
+            }else if(type==QNdefNfcUriRecord.class) {
+                QNdefNfcUriRecord record = new QNdefNfcUriRecord();
+                appendRecord(record.typeNameFormat(), record.type(), min, max);
+            }else if(type==QNdefNfcIconRecord.class) {
+                QNdefNfcIconRecord record = new QNdefNfcIconRecord();
+                appendRecord(record.typeNameFormat(), record.type(), min, max);
+            }else {
+                try {
+                    QNdefRecord record = type.getConstructor().newInstance();
+                    appendRecord(record.typeNameFormat(), record.type(), min, max);
+                } catch (RuntimeException | Error e) {
+                    throw e;
+                } catch (InstantiationException | IllegalAccessException
+                        | java.lang.reflect.InvocationTargetException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        </inject-code>
+    </value-type>
+    <object-type name="QNearFieldTarget">
+        <modify-function signature="writeNdefMessages(const QList&lt;QNdefMessage>&amp;)">
+            <modify-argument index="1">
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_to_ArrayList&lt;QList,QNdefMessage>(__jni_env, messages0,
+                                        [](JNIEnv * env,QNdefMessage const &amp; element)->jobject{
+                                            return qtjambi_cast&lt;jobject>(env, element);
+                                        });
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QNdefMessage">
+        <inject-code class="native" position="beginning">
+        bool operator&lt;(const QNdefRecord&amp; lhs, const QNdefRecord&amp; rhs)
+        {
+            return qHash(lhs) &lt; qHash(rhs);
+        }
+        </inject-code>
+    </value-type>
+</typesystem>

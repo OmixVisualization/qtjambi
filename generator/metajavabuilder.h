@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,31 +46,35 @@ class MetaJavaBuilder : public AbstractMetaBuilder {
     protected:
         virtual MetaJavaClass *createMetaClass() {
             return new MetaJavaClass();
-        };
+        }
 
         virtual MetaJavaEnum *createMetaEnum() {
             return new MetaJavaEnum();
-        };
+        }
+
+        virtual MetaJavaFunctional *createMetaFunctional() {
+            return new MetaJavaFunctional();
+        }
 
         virtual MetaJavaEnumValue *createMetaEnumValue() {
             return new MetaJavaEnumValue();
-        };
+        }
 
         virtual MetaJavaField *createMetaField() {
             return new MetaJavaField();
-        };
+        }
 
         virtual MetaJavaFunction *createMetaFunction() {
             return new MetaJavaFunction();
-        };
+        }
 
         virtual MetaJavaArgument *createMetaArgument() {
             return new MetaJavaArgument();
-        };
+        }
 
         virtual MetaJavaType *createMetaType() {
             return new MetaJavaType();
-        };
+        }
 
 };
 

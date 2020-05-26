@@ -49,8 +49,14 @@
 #include <QtCore/QVariant>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QStringList>
+#include <QtNetwork>
+#include <QtWidgets>
 
+#ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
+#endif
+
 #include <QDebug>
 
 #ifndef SIGNAL
@@ -69,7 +75,7 @@ class SignalsAndSlots: public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QByteArray cppProperty READ cppProperty WRITE setCppProperty RESET resetCppProperty);
+    Q_PROPERTY(QByteArray cppProperty READ cppProperty WRITE setCppProperty RESET resetCppProperty)
 public:
     SignalsAndSlots()
     {
@@ -80,22 +86,65 @@ public:
         slot3_called = 0;
     }
 
-    void disconnectSignals(SignalsAndSlots *obj)
-    {
-        disconnect(this, SIGNAL(signal1()), obj, SLOT(slot1_1()));
-        disconnect(this, SIGNAL(signal3(const QString &)), obj, SLOT(slot3(const QString &)));
+    static QString propertyCppType(QMetaProperty property){
+        return QLatin1String(property.typeName());
     }
 
-    void setupSignals(SignalsAndSlots *obj, int i)
-    {
-        connect(this, SIGNAL(signal1()), obj, SLOT(slot1_1()));
-        if (i > 0)
-            connect(this, SIGNAL(signal1()), obj, SLOT(slot1_2()));
-        if (i > 1)
-            connect(this, SIGNAL(signal1()), obj, SLOT(slot1_3()));
+    static QMetaObject::Connection connectToDestroyedSignal(QObject * object, QRunnable *runnable){
+        QObject* receiver = new QObject();
+        receiver->moveToThread(nullptr);
+        return QObject::connect(object, &QObject::destroyed, receiver, [runnable,receiver](){
+            runnable->run();
+            delete runnable;
+            delete receiver;
+        }, Qt::DirectConnection);
+    }
 
-        connect(this, SIGNAL(signal2(int)), obj, SLOT(slot2(int)));
-        connect(this, SIGNAL(signal3(const QString &)), obj, SLOT(slot3(const QString &)));
+    static QVector<QString> emitAuthenticationRequired(QNetworkAccessManager* accessManager, QNetworkReply* reply){
+        QVector<QString> result;
+        QAuthenticator authenticator;
+        result << authenticator.user();
+        result << authenticator.password();
+        emit accessManager->authenticationRequired(reply, &authenticator);
+        result << authenticator.user();
+        result << authenticator.password();
+        return result;
+    }
+
+    QList<bool> disconnectSignals(SignalsAndSlots *obj)
+    {
+        QList<bool> result;
+        result << disconnect(this, SIGNAL(signal1()), obj, SLOT(slot1_1()));
+        result << disconnect(this, SIGNAL(signal3(const QString &)), obj, SLOT(slot3(const QString &)));
+        return result;
+    }
+
+    QList<bool> setupSignals(SignalsAndSlots *obj, int i)
+    {
+        QList<bool> result;
+        result << connect(this, SIGNAL(signal1()), obj, SLOT(slot1_1()));
+        if (i > 0)
+            result << connect(this, SIGNAL(signal1()), obj, SLOT(slot1_2()));
+        if (i > 1)
+            result << connect(this, SIGNAL(signal1()), obj, SLOT(slot1_3()));
+
+        result << connect(this, SIGNAL(signal2(int)), obj, SLOT(slot2(int)));
+        result << connect(this, SIGNAL(signal3(const QString &)), obj, SLOT(slot3(const QString &)));
+        return result;
+    }
+
+    QList<bool> setupSignalsFP(SignalsAndSlots *obj, int i)
+    {
+        QList<bool> result;
+        result << connect(this, &SignalsAndSlots::signal1, obj, &SignalsAndSlots::slot1_1);
+        if (i > 0)
+            result << connect(this, &SignalsAndSlots::signal1, obj, &SignalsAndSlots::slot1_2);
+        if (i > 1)
+            result << connect(this, &SignalsAndSlots::signal1, obj, &SignalsAndSlots::slot1_3);
+
+        result << connect(this, &SignalsAndSlots::signal2, obj, &SignalsAndSlots::slot2);
+        result << connect(this, &SignalsAndSlots::signal3, obj, &SignalsAndSlots::slot3);
+        return result;
     }
 
     void emit_signal_1() { emit signal1(); }
@@ -107,66 +156,91 @@ public:
     }
 
     bool connectSignal4ToSlot1_1() {
-        return connect(this, SIGNAL(signal4), this, SLOT(slot1_1()));
+        return connect(this, SIGNAL(signal4()), this, SLOT(slot1_1()));
     }
 
     bool connectSignal4ToSlot4() {
-        return connect(this, SIGNAL(signal4), this, SLOT(slot4()));
+        return connect(this, SIGNAL(signal4()), this, SLOT(slot4()));
     }
 
     bool connectSignal5ToSlot3()
     {
-        return connect(this, SIGNAL(signal5), this, SLOT(slot3(const QString &)));
+        return connect(this, SIGNAL(signal5(const QString &)), this, SLOT(slot3(const QString &)));
     }
 
-    void connectSignal1ToSlot1_1()
+    bool connectSignal1ToSlot1_1()
     {
-        connectSignal1ToSlot1_1In(this);
+        return connectSignal1ToSlot1_1In(this);
     }
 
-    void connectSignal1ToSlot1_1In(QObject *other)
+    bool connectSignal1ToSlot1_1In(QObject *other)
     {
-        connect(this, SIGNAL(signal1()), other, SLOT(slot1_1()));
+        return connect(this, SIGNAL(signal1()), other, SLOT(slot1_1()));
     }
 
-    void disconnectSignal1FromSlot1_1()
+    bool disconnectSignal1FromSlot1_1()
     {
-        disconnect(this, SIGNAL(signal1()), this, SLOT(slot1_1()));
+        return disconnect(this, SIGNAL(signal1()), this, SLOT(slot1_1()));
     }
 
-    void connectSignal2ToSlot2()
+    bool connectSignal2ToSlot2()
     {
-        connect(this, SIGNAL(signal2(int)), this, SLOT(slot2(int)));
+        return connect(this, SIGNAL(signal2(int)), this, SLOT(slot2(int)));
     }
 
-    void connectSignal6ToUnnormalizedSignature()
+    bool connectSignal1ToSlot1_1FP()
     {
-        connect(this, SIGNAL(  signal6( const QString &, int   ) ), this, SLOT(          unnormalized_signature(   String,   int   )));
+        return connectSignal1ToSlot1_1InFP(this);
     }
 
-    void javaSignalToCppSlot()
+    bool connectSignal1ToSlot1_1InFP(SignalsAndSlots *other)
     {
-        connect(this, SIGNAL(aJavaSignal(const QString &, const QByteArray &)), this, SLOT(aCppSlot(const QString &, const QByteArray &)));
+        return connect(this, &SignalsAndSlots::signal1, other, &SignalsAndSlots::slot1_1);
     }
 
-    void disconnectAllFromObject()
+    bool disconnectSignal1FromSlot1_1FP()
     {
-        disconnect();
+        return disconnect(this, &SignalsAndSlots::signal1, this, &SignalsAndSlots::slot1_1);
     }
 
-    void disconnectAllFromSignal1()
+    bool connectSignal2ToSlot2FP()
     {
-        disconnect(SIGNAL(signal1()));
+        return connect(this, &SignalsAndSlots::signal2, this, &SignalsAndSlots::slot2);
     }
 
-    void disconnectReceiverFromSignal1(QObject *receiver)
+    bool connectSignal6ToUnnormalizedSignature()
     {
-        disconnect(SIGNAL(signal1()), receiver);
+        return connect(this, SIGNAL(  signal6( const QString &, int   ) ), this, SLOT(          unnormalized_signature(   String,   int   )));
     }
 
-    void disconnectAllFromReceiver(QObject *receiver)
+    bool javaSignalToCppSlot()
     {
-        disconnect(0, receiver);
+        return connect(this, SIGNAL(aJavaSignal(const QString &, const QByteArray &)), this, SLOT(aCppSlot(const QString &, const QByteArray &)));
+    }
+
+    bool disconnectAllFromObject()
+    {
+        return disconnect();
+    }
+
+    bool disconnectAllFromSignal1()
+    {
+        return disconnect(SIGNAL(signal1()));
+    }
+
+    bool disconnectAllFromSignal1FP()
+    {
+        return QObject::disconnect(this, &SignalsAndSlots::signal1, nullptr, nullptr);
+    }
+
+    bool disconnectReceiverFromSignal1(QObject *receiver)
+    {
+        return disconnect(SIGNAL(signal1()), receiver);
+    }
+
+    bool disconnectAllFromReceiver(QObject *receiver)
+    {
+        return disconnect(nullptr, receiver);
     }
 
     static SignalsAndSlots *createConnectedObject()
@@ -184,9 +258,9 @@ public:
         return property(propertyName.toLatin1()).toByteArray();
     }
 
-    void resetProperty(const QString &propertyName) {
+    bool resetProperty(const QString &propertyName) {
         QMetaProperty prop = metaObject()->property(metaObject()->indexOfProperty(propertyName.toLatin1()));
-        prop.reset(this);
+        return prop.reset(this);
     }
 
     QString classNameFromMetaObject() {
@@ -275,8 +349,9 @@ public:
 
     static bool invokeMethod(QObject *obj, const QString &name, jobject arg)
     {
-        JNIEnv *env = qtjambi_current_environment();
-        return QMetaObject::invokeMethod(obj, name.toLatin1(), Qt::DirectConnection, Q_ARG(JObjectWrapper, JObjectWrapper(env, arg)));
+        if(JNIEnv *env = qtjambi_current_environment()){
+            return QMetaObject::invokeMethod(obj, name.toLatin1(), Qt::DirectConnection, Q_ARG(JObjectWrapper, JObjectWrapper(env, arg)));
+        }else return false;
     }
 
     int slot1_1_called;
@@ -295,9 +370,9 @@ signals:
     void signal6(const QString &, int);
 
 public slots:
-    void slot1_1() { slot1_1_called++; }
-    virtual void slot1_2() { slot1_2_called++; }
-    QByteArray slot1_3() { slot1_3_called++; return QByteArray(); }
+    void slot1_1() { ++slot1_1_called; }
+    virtual void slot1_2() { ++slot1_2_called; }
+    QByteArray slot1_3() { ++slot1_3_called; return QByteArray(); }
     virtual void slot2(int i) { slot2_called += i; }
     void slot3(const QString &str) { slot3_called += str.toInt(); }
 

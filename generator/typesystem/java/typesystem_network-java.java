@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,61 +37,90 @@
 
 package generator;
 
-import org.qtjambi.qt.*;
-import org.qtjambi.qt.network.*;
+import io.qt.*;
+import io.qt.network.*;
+
+class QSsl___{
+    public native static boolean isAvailable();
+}// class
+
+class QSsl_native__{
+
+extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network_QSsl_isAvailable)
+(JNIEnv *, jclass)
+{
+#if defined(QT_NO_SSL)
+    return false;
+#else
+    return true;    
+#endif
+}
+
+}// class
 
 class QHostInfo___ extends QHostInfo {
-        /**
-         * Looks up the IP address(es) associated with host name <code>name</code>,
-         * and returns an ID for the lookup. When the result of the lookup is ready,
-         * the specified method in <code>receiver</code> is called with a
-         * <code>QHostInfo</code> argument. The <code>QHostInfo</code> object can
-         * then be inspected to get the results of the lookup.
-         *
-         * @param name The host name.
-         * @param receiver The object on which the method will be called.
-         * @param methodName The name of a method which takes a single <code>QHostInfo</code> argument.
-         */
-        public static int lookupHost(String name, org.qtjambi.qt.core.QObject receiver, String methodName) {
-            methodName = org.qtjambi.qt.internal.QtJambiInternal.SlotPrefix + methodName + "(QHostInfo)";
-            return lookupHost(name, receiver, org.qtjambi.qt.QNativePointer.createCharPointer(methodName));
-        }
+    /**
+     * Looks up the IP address(es) associated with host name <code>name</code>,
+     * and returns an ID for the lookup. When the result of the lookup is ready,
+     * the slot is called with a <code>QHostInfo</code> argument.
+     * The <code>QHostInfo</code> object can then be inspected to get the results
+     * of the lookup.
+     *
+     * @param name The host name.
+     * @param slot The clot taking the result.
+     */
+    public static int lookupHost(String name, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
+        io.qt.core.QObject context = io.qt.internal.QtJambiInternal.lambdaContext(slot);
+        return lookupHost(name, context, slot);
+    }
+    
+    public static int lookupHost(String name, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
+        java.util.Objects.requireNonNull(slot);
+        return __qt_QHostInfo_lookupHost(name, io.qt.internal.QtJambiInternal.nativeId(context), slot);
+    }
 
-        /**
-         * Looks up the IP address(es) associated with host name <code>name</code>,
-         * and returns an ID for the lookup. When the result of the lookup is ready,
-         * the specified signal is emitted with a <code>QHostInfo</code> argument.
-         * The <code>QHostInfo</code> object can then be inspected to get the results
-         * of the lookup.
-         *
-         * @param name The host name.
-         * @param signal The signal to emit. Must take a single <code>QHostInfo</code>
-         *               argument, and must be contained in a <code>QObject</code>
-         *               subclass.
-         */
-        public static int lookupHost(String name, org.qtjambi.qt.QSignalEmitter.Signal1<QHostInfo> signal) {
-            if (!(signal.containingObject() instanceof org.qtjambi.qt.core.QObject)) {
-                throw new IllegalArgumentException("Only signals contained in QObject subclasses are supported. "
-                                                   + "Signal's class is '" + signal.containingObject().getClass() + "'.");
+    private static native int __qt_QHostInfo_lookupHost(String name, long context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot);
+}// class
+
+class QHostInfo_native__ extends QHostInfo {
+// QHostInfo::lookupHost(const QString & name, Functor functor)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network_QHostInfo__1_1qt_1QHostInfo_1lookupHost)
+(JNIEnv *__jni_env,
+ jclass,
+ jobject name0,
+ QtJambiNativeID context1,
+ jobject slot)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHostInfo::lookupHost(const QString & name, Functor functor)");
+    try{
+        const QString&  __qt_name0 = qtjambi_to_qstring(__jni_env, jstring(name0));
+        QObject*  __qt_context1 = qtjambi_object_from_nativeId<QObject>(context1);
+        JObjectWrapper objectWrapper(__jni_env, slot);
+        return jint( QHostInfo::lookupHost(__qt_name0, __qt_context1, [objectWrapper](const QHostInfo& info){
+            if(JNIEnv *env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                jobject result = qtjambi_cast<jobject>(env, info);
+                Java::QtCore::QMetaObject$Slot1.invoke(env, objectWrapper.object(), result);
             }
-
-            String methodName = org.qtjambi.qt.internal.QtJambiInternal.SignalPrefix + signal.name() + "(QHostInfo)";
-            return lookupHost(name, (org.qtjambi.qt.core.QObject)signal.containingObject(),
-                              org.qtjambi.qt.QNativePointer.createCharPointer(methodName));
-        }
+        }) );
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return 0;
+}
 }// class
 
 class QAbstractSocket___ extends QAbstractSocket {
 
-        public final void connectToHost(String host, int port, org.qtjambi.qt.core.QIODevice.OpenMode mode) {
+        public final void connectToHost(String host, int port, io.qt.core.QIODevice.OpenMode mode) {
             connectToHost(host, (short) port, mode);
         }
 
-        public final void connectToHost(String host, int port, org.qtjambi.qt.core.QIODevice.OpenMode mode, QAbstractSocket.NetworkLayerProtocol protocol) {
+        public final void connectToHost(String host, int port, io.qt.core.QIODevice.OpenMode mode, QAbstractSocket.NetworkLayerProtocol protocol) {
             connectToHost(host, (short) port, mode, protocol);
         }
 
-        public final void connectToHost(String host, int port, org.qtjambi.qt.core.QIODevice.OpenModeFlag ... mode) {
+        public final void connectToHost(String host, int port, io.qt.core.QIODevice.OpenModeFlag ... mode) {
             connectToHost(host, (short) port, mode);
         }
 
@@ -99,11 +128,11 @@ class QAbstractSocket___ extends QAbstractSocket {
             connectToHost(host, (short) port);
         }
 
-        public final void connectToHost(QHostAddress host, int port, org.qtjambi.qt.core.QIODevice.OpenMode mode) {
+        public final void connectToHost(QHostAddress host, int port, io.qt.core.QIODevice.OpenMode mode) {
             connectToHost(host, (short) port, mode);
         }
 
-        public final void connectToHost(QHostAddress host, int port, org.qtjambi.qt.core.QIODevice.OpenModeFlag ... mode) {
+        public final void connectToHost(QHostAddress host, int port, io.qt.core.QIODevice.OpenModeFlag ... mode) {
             connectToHost(host, (short) port, mode);
         }
 
@@ -157,83 +186,41 @@ class QAbstractSocket___ extends QAbstractSocket {
 
 }// class
 
-class QSslSocket___ extends QSslSocket {
-}// class
-
-class QTcpServer___ extends QTcpServer {
-
-        public final boolean listen(QHostAddress address, int port) {
-            return listen(address, (short) port);
-        }
-
-        public final boolean listen(QHostAddress address) {
-            return listen(address, '\0');
-        }
-
-        public final boolean listen() {
-            return listen(new org.qtjambi.qt.network.QHostAddress(org.qtjambi.qt.network.QHostAddress.SpecialAddress.Any));
-        }
-
-        public final int serverPort() {
-            return serverPort_private();
-        }
-
-        public enum Result {
-            Success, Failure, TimedOut
-        }
-
-        public final Result waitForNewConnection(int msec) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            boolean success = waitForNewConnection(msec, np);
-
-            return (np.booleanValue() ? Result.TimedOut : (success ? Result.Success : Result.Failure));
-        }
-
-        public final Result waitForNewConnection() {
-            return waitForNewConnection(0);
-        }
-
+class Server___ {
+    @io.qt.QtUninvokable
+    public final boolean waitForNewConnection() throws QTimeoutException {
+        return waitForNewConnection(0);
+    }
 }// class
 
 class QUdpSocket___ extends QUdpSocket {
 
-        public static class HostInfo {
-                public HostInfo() {
-                    address = new QHostAddress();
-                    port = 0;
-                }
+        public static final class HostInfo {
+            public HostInfo() {
+            }
 
-                public QHostAddress address;
-                public int port;
+            public QHostAddress address(){return address;}
+            public int port(){return port;}
+            
+            private QHostAddress address;
+            private short port;
         }
 
-        public final int readDatagram(byte data[], HostInfo info) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);
-            QNativePointer address = info != null && info.address != null ? info.address.nativePointer() : null;
-            QNativePointer port = new QNativePointer(QNativePointer.Type.Short);
-
-            int len = (int) readDatagram(np, data.length, address, port);
-            if (info != null)
-                info.port = port.shortValue();
-            for (int i = 0; i < len; ++i)
-                data[i] = np.byteAt(i);
-
-            return len;
+        public final long readDatagram(byte data[], HostInfo info) {
+            return readDatagram(java.nio.ByteBuffer.wrap(data), info);
         }
 
-        public final int readDatagram(byte data[]) {
+        public final long readDatagram(byte data[]) {
             return readDatagram(data, null);
         }
-
-        public final int writeDatagram(byte data[], QHostAddress address, int port) {
-            QNativePointer np = org.qtjambi.qt.internal.QtJambiInternal.byteArrayToNativePointer(data);
-            return (int) writeDatagram(np, data.length, address, (short) port);
+        
+        public final long readDatagram(java.nio.ByteBuffer data) {
+            return readDatagram(data, null);
         }
-
-        public final int writeDatagram(org.qtjambi.qt.core.QByteArray data, QHostAddress address, int port) {
-            return (int) writeDatagram(data, address, (short) port);
+        
+        public final long writeDatagram(byte data[], QHostAddress address, short port) {
+            return writeDatagram(java.nio.ByteBuffer.wrap(data), address, port);
         }
-
 }// class
 
 class QNetworkProxy___ extends QNetworkProxy {
@@ -268,24 +255,17 @@ class QNetworkProxy___ extends QNetworkProxy {
 
 }// class
 
+class QNetworkReply___ extends QNetworkReply {
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray rawHeader(String headerName){
+        return rawHeader(new io.qt.core.QByteArray(headerName));
+    }
+    @io.qt.QtUninvokable
+    public final boolean hasRawHeader(String headerName){
+        return hasRawHeader(new io.qt.core.QByteArray(headerName));
+    }
+}// class
+
 class QNetworkAccessManager___ extends QNetworkAccessManager {
 }// class
 
-class QLocalServer___ extends QLocalServer {
-
-        public enum Result {
-            Success, Failure, TimedOut
-        }
-
-        public final Result waitForNewConnection(int msec) {
-            QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean);
-            boolean success = waitForNewConnection(msec, np);
-
-            return (np.booleanValue() ? Result.TimedOut : (success ? Result.Success : Result.Failure));
-        }
-
-        public final Result waitForNewConnection() {
-            return waitForNewConnection(0);
-        }
-
-}// class

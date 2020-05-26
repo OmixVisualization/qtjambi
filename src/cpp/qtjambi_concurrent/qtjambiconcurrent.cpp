@@ -43,7 +43,10 @@
 ****************************************************************************/
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_cast.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
 #include "qtjambiconcurrent_p.h"
+#include "qtjambi_concurrent_repository.h"
 
 #include <QtCore/QtCore>
 #include <QtConcurrent/QtConcurrent>
@@ -53,7 +56,7 @@
 FutureSequenceCleanUp::FutureSequenceCleanUp(QList<JObjectWrapper> *sequence)
         : m_sequence(sequence)
 {
-    connect(this, SIGNAL(finished()), this, SLOT(cleanUp()));
+    connect(this, &QFutureWatcher::finished, this, &FutureSequenceCleanUp::cleanUp);
 }
 
 FutureSequenceCleanUp::~FutureSequenceCleanUp()
@@ -63,61 +66,53 @@ FutureSequenceCleanUp::~FutureSequenceCleanUp()
 
 void FutureSequenceCleanUp::cleanUp()
 {
-    delete m_sequence; m_sequence = 0;
+    delete m_sequence; m_sequence = nullptr;
     deleteLater();
 }
 
 
 class Functor {
 public:
-    Functor(jobject functor) : m_functor(0)
+    Functor(JNIEnv *env, jobject functor) : m_functor(env, functor)
     {
-        init(functor);
     }
 
-    Functor(const Functor &other) : m_functor(0)
+    Functor(const Functor &other) : m_functor(other.m_functor)
     {
-        init(other.m_functor);
     }
 
     virtual ~Functor()
     {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0)
-            env->DeleteGlobalRef(m_functor);
     }
 
 protected:
-    jobject m_functor;
+    const JObjectWrapper m_functor;
 
 private:
-    void init(jobject functor) {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0)
-            m_functor = env->NewGlobalRef(functor);
-    }
-
-
 };
 
 class MapFunctor: public Functor {
 public:
-    MapFunctor(jobject javaMapFunctor) : Functor(javaMapFunctor) {}
+    MapFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
     MapFunctor(const MapFunctor &other) : Functor(other) {}
 
     void operator ()(JObjectWrapper &wrapper)
     {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0 && m_functor) {
-            jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
-            StaticCache *sc = StaticCache::instance();
-            sc->resolveQtConcurrent_MapFunctor();
-
-            if (javaObject != 0)
-                env->CallVoidMethod(m_functor, sc->QtConcurrent_MapFunctor.map, javaObject);
-        } else {
-            qWarning("Map functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                    env, m_functor);
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
+                if (javaObject != nullptr){
+                    try {
+                        Java::QtConcurrent::QtConcurrent$MapFunctor.map(env, functor, javaObject);
+                    } catch (const JavaException& exn) {
+                        exn.report(env);
+                    }
+                }
+            } else {
+                qWarning("Map functor called with invalid data. JNI Environment == %p, java functor object == %p",
+                        env, m_functor.object());
+            }
         }
     }
 };
@@ -126,54 +121,65 @@ class MappedFunctor: public Functor {
 public:
     typedef JObjectWrapper result_type;
 
-    MappedFunctor(jobject javaMappedFunctor) : Functor(javaMappedFunctor) {}
+    MappedFunctor(JNIEnv *env, jobject javaMappedFunctor) : Functor(env, javaMappedFunctor) {}
     MappedFunctor(const MapFunctor &other) : Functor(other) {}
 
     JObjectWrapper operator ()(const JObjectWrapper &wrapper)
     {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0 && m_functor) {
-            jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
-
-            StaticCache *sc = StaticCache::instance();
-            sc->resolveQtConcurrent_MappedFunctor();
-
-            jobject javaResult = env->CallObjectMethod(m_functor, sc->QtConcurrent_MappedFunctor.map, javaObject);
-            return qtjambi_to_jobjectwrapper(env, javaResult);
-        } else {
-            qWarning("Mapped functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                    env, m_functor);
-            return JObjectWrapper();
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
+                jobject javaResult = nullptr;
+                try {
+                    javaResult = Java::QtConcurrent::QtConcurrent$MappedFunctor.map(env, functor, javaObject);
+                } catch (const JavaException& exn) {
+                    exn.report(env);
+                }
+                return qtjambi_to_jobjectwrapper(env, javaResult);
+            } else {
+                qWarning("Mapped functor called with invalid data. JNI Environment == %p, java functor object == %p",
+                        env, m_functor.object());
+            }
         }
+        return JObjectWrapper();
     }
 };
 
 class ReducedFunctor: public Functor {
 public:
-    ReducedFunctor(jobject javaReducedFunctor) : Functor(javaReducedFunctor), m_first_call(true) {}
+    ReducedFunctor(JNIEnv *env, jobject javaReducedFunctor) : Functor(env, javaReducedFunctor), m_first_call(true) {}
     ReducedFunctor(const ReducedFunctor &other) : Functor(other), m_first_call(other.m_first_call) {}
 
     void operator()(JObjectWrapper &result, const JObjectWrapper &wrapper)
     {
-        JNIEnv *env = qtjambi_current_environment();
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                // reduce() is synchronous, so while this data is static in terms
+                // of the map/reduce operation, it does not need to be protected
+                if (m_first_call) {
+                    m_first_call = false;
+                    jobject javaResult = nullptr;
+                    try {
+                        javaResult = Java::QtConcurrent::QtConcurrent$ReducedFunctor.defaultResult(env, functor);
+                    } catch (const JavaException& exn) {
+                        exn.report(env);
+                    }
+                    result = JObjectWrapper(env, javaResult);
+                }
 
-        if (env != 0 && m_functor != 0) {
-            StaticCache *sc = StaticCache::instance();
-            sc->resolveQtConcurrent_ReducedFunctor();
-
-            // reduce() is synchronous, so while this data is static in terms
-            // of the map/reduce operation, it does not need to be protected
-            if (m_first_call) {
-                m_first_call = false;
-                result = JObjectWrapper(env, env->CallObjectMethod(m_functor, sc->QtConcurrent_ReducedFunctor.defaultResult));
+                jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
+                jobject javaResult = qtjambi_from_jobjectwrapper(env, result);
+                try {
+                    Java::QtConcurrent::QtConcurrent$ReducedFunctor.reduce(env, functor, javaResult, javaObject);
+                } catch (const JavaException& exn) {
+                    exn.report(env);
+                }
+            } else {
+                qWarning("Reduce functor called with invalid data. JNI Environment == %p, java functor object == %p",
+                        env, m_functor.object());
             }
-
-            jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
-            jobject javaResult = qtjambi_from_jobjectwrapper(env, result);
-            env->CallVoidMethod(m_functor, sc->QtConcurrent_ReducedFunctor.reduce, javaResult, javaObject);
-        } else {
-            qWarning("Reduce functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                    env, m_functor);
         }
     }
 
@@ -184,153 +190,80 @@ private:
 
 class FilteredFunctor: public Functor {
 public:
-    FilteredFunctor(jobject javaFilteredFunctor) : Functor(javaFilteredFunctor) {}
+    FilteredFunctor(JNIEnv *env, jobject javaFilteredFunctor) : Functor(env, javaFilteredFunctor) {}
     FilteredFunctor(const FilteredFunctor &other) : Functor(other) {}
 
     bool operator()(const JObjectWrapper &wrapper) {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0 && m_functor != 0) {
-            jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
-
-            StaticCache *sc = StaticCache::instance();
-            sc->resolveQtConcurrent_FilteredFunctor();
-
-            return env->CallBooleanMethod(m_functor, sc->QtConcurrent_FilteredFunctor.filter, javaObject);
-        } else {
-            qWarning("Filtered functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                    env, m_functor);
-            return false;
-        }
-    }
-};
-
-class RunFunctorBase: public Functor
-{
-public:
-
-    RunFunctorBase(jobject javaThis, jclass declaringClass, jmethodID javaMethodId, jobjectArray javaArguments, jintArray typeConversionScheme,
-                   jbyte resultType)
-        : Functor(javaThis), m_declaring_class(0), m_method_id(javaMethodId), m_result_type(resultType), m_conversion_scheme(0)
-    {
-        init(declaringClass, javaArguments, QVarLengthArray<jvalue>(), typeConversionScheme);
-    }
-
-    RunFunctorBase(const RunFunctorBase &other)
-        : Functor(other), m_declaring_class(0), m_method_id(other.m_method_id), m_result_type(other.m_result_type), m_conversion_scheme(0)
-    {
-        init(other.m_declaring_class, 0, other.m_arguments, other.m_conversion_scheme);
-    }
-
-    ~RunFunctorBase() {
-        JNIEnv *env = qtjambi_current_environment();
-        if (env != 0) {
-            if (m_declaring_class != 0)
-                env->DeleteGlobalRef(m_declaring_class);
-
-            jint *a = m_conversion_scheme != 0 ? env->GetIntArrayElements(m_conversion_scheme, 0) : 0;
-            for (int i=0; i<m_arguments.size(); ++i) {
-                if (a != 0 && a[i] == 'L')
-                    env->DeleteGlobalRef(m_arguments[i].l);
-            }
-            env->ReleaseIntArrayElements(m_conversion_scheme, a, JNI_ABORT);
-            if (m_conversion_scheme != 0)
-                env->DeleteGlobalRef(m_conversion_scheme);
-        }
-    }
-
-
-private:
-    void init(jclass declaringClass, jobjectArray javaArguments, QVarLengthArray<jvalue> convertedArgs, jintArray conversionScheme) {
-        JNIEnv *env = qtjambi_current_environment();
-        Q_ASSERT(env != 0);
-        if (env != 0) {
-            if (declaringClass != 0)
-                m_declaring_class = reinterpret_cast<jclass>(env->NewGlobalRef(declaringClass));
-            if (conversionScheme != 0)
-                m_conversion_scheme = reinterpret_cast<jintArray>(env->NewGlobalRef(conversionScheme));
-
-            if (javaArguments != 0) {
-                // Convert all the arguments
-                m_arguments = qtjambi_from_jobjectArray(env, javaArguments, m_conversion_scheme, true);
-            } else {
-                // Copy the converted arguments
-                jint *a = m_conversion_scheme != 0 ? env->GetIntArrayElements(m_conversion_scheme, 0) : 0;
-                for (int i=0; i<convertedArgs.size(); ++i) {
-                    if (a != 0 && a[i] == 'L') {
-                        jvalue val;
-                        val.l = env->NewGlobalRef(convertedArgs[i].l);
-                        m_arguments.append(val);
-                    } else {
-                        m_arguments.append(convertedArgs[i]);
-                    }
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                jobject javaObject = qtjambi_from_jobjectwrapper(env, wrapper);
+                bool result = false;
+                try {
+                    result = Java::QtConcurrent::QtConcurrent$FilteredFunctor.filter(env, functor, javaObject);
+                } catch (const JavaException& exn) {
+                    exn.report(env);
                 }
-                env->ReleaseIntArrayElements(m_conversion_scheme, a, JNI_ABORT);
+                return result;
+            } else {
+                qWarning("Filtered functor called with invalid data. JNI Environment == %p, java functor object == %p",
+                        env, m_functor.object());
             }
         }
-    }
-
-protected:
-    jclass m_declaring_class;
-    jmethodID m_method_id;
-    QVarLengthArray<jvalue> m_arguments;
-    jbyte m_result_type;
-    jintArray m_conversion_scheme;
-};
-
-class RunFunctor: public RunFunctorBase {
-public:
-    typedef JObjectWrapper result_type;
-
-    RunFunctor(jobject javaThis, jclass declaringClass, jmethodID javaMethodId, jobjectArray javaArguments, jintArray typeConversionScheme, jbyte resultType)
-        : RunFunctorBase(javaThis, declaringClass, javaMethodId, javaArguments, typeConversionScheme, resultType)
-    {
-    }
-
-    RunFunctor(const RunFunctor &other)
-        : RunFunctorBase(other)
-    {
-    }
-
-    JObjectWrapper operator()() {
-        JNIEnv *env = qtjambi_current_environment();
-        Q_ASSERT(env != 0);
-        if (env != 0 && m_method_id != 0) {
-            jobject javaResult = qtjambi_invoke_method(env, m_functor, m_method_id, m_result_type, m_arguments);
-            return javaResult != 0 ? qtjambi_to_jobjectwrapper(env, javaResult) : JObjectWrapper();
-        } else {
-            qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
-                     env, m_method_id);
-            return JObjectWrapper();
-        }
+        return false;
     }
 };
 
-class RunVoidFunctor: public RunFunctorBase {
+class RunFunctor: public Functor {
 public:
     typedef void result_type;
+    RunFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
+    RunFunctor(const MapFunctor &other) : Functor(other) {}
 
-    RunVoidFunctor(jobject javaThis, jclass declaringClass, jmethodID javaMethodId, jobjectArray javaArguments, jintArray conversionScheme)
-        : RunFunctorBase(javaThis, declaringClass, javaMethodId, javaArguments, conversionScheme, 'V')
+    void operator ()()
     {
-    }
-
-    RunVoidFunctor(const RunFunctor &other)
-        : RunFunctorBase(other)
-    {
-    }
-
-    void operator()() {
-        JNIEnv *env = qtjambi_current_environment();
-        Q_ASSERT(env != 0);
-        if (env != 0 && m_method_id != 0) {
-            qtjambi_invoke_method(env, m_functor, m_method_id, m_result_type, m_arguments);
-        } else {
-            qWarning("Run functor called with invalid data. JNI Environment == %p, method_id == %p",
-                     env, m_method_id);
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                try {
+                    Java::Runtime::Runnable.run(env, functor);
+                } catch (const JavaException& exn) {
+                    exn.report(env);
+                }
+            } else {
+                qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
+                         env, m_functor.object());
+            }
         }
     }
 };
 
+class CallableFunctor: public Functor {
+public:
+    typedef JObjectWrapper result_type;
+    CallableFunctor(JNIEnv *env, jobject javaMapFunctor) : Functor(env, javaMapFunctor) {}
+    CallableFunctor(const MapFunctor &other) : Functor(other) {}
+
+    JObjectWrapper operator ()()
+    {
+        if (JNIEnv *env = qtjambi_current_environment()) {
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            if(jobject functor = qtjambi_from_jobjectwrapper(env, m_functor)){
+                jobject javaResult = nullptr;
+                try{
+                    javaResult = Java::Private::Runtime::Callable.call(env,functor);
+                }catch(const JavaException& exn){
+                    exn.report(env);
+                }
+                return javaResult ? JObjectWrapper(env, javaResult) : JObjectWrapper();
+            } else {
+                qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
+                         env, m_functor.object());
+            }
+        }
+        return JObjectWrapper();
+    }
+};
 
 static QList<JObjectWrapper> convertJavaSequenceToCpp(JNIEnv *env, jobject javaSequence)
 {
@@ -341,7 +274,6 @@ static QList<JObjectWrapper> convertJavaSequenceToCpp(JNIEnv *env, jobject javaS
     for (int i=0; i<arraySize; ++i) {
         jobject javaElement = env->GetObjectArrayElement(array, i);
         JObjectWrapper wrapper = qtjambi_to_jobjectwrapper(env, javaElement);
-        QTJAMBI_EXCEPTION_CHECK(env);
         returned << wrapper;
     }
 
@@ -357,23 +289,13 @@ static jobject convertCppSequenceToJava(JNIEnv *env, const QList<JObjectWrapper>
     return returned;
 }
 
-static jobject convertCppFutureToJava(JNIEnv *env, const QFuture<JObjectWrapper> &future)
-{
-    return qtjambi_from_object(env, &future, "QFuture", "org/qtjambi/qt/core/", true);
-}
-
-static jobject convertCppFutureVoidToJava(JNIEnv *env, const QFuture<void> &future)
-{
-    return qtjambi_from_object(env, &future, "QFutureVoid", "org/qtjambi/qt/core/", true);
-}
-
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_map)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_map)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMapFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
 
     // Make sure we don't destroy this list while it's in use
     // (map does in place editing and keeps a reference to the list instead of copying)
@@ -383,187 +305,170 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt
     // job is over.
     FutureSequenceCleanUp *cleanUp = new FutureSequenceCleanUp(heapSequence);
 
-    MapFunctor mapFunctor(javaMapFunctor);
-    QFuture<void> future = QtConcurrent::map(*heapSequence, mapFunctor);
+    QFuture<void> future = QtConcurrent::map(*heapSequence, MapFunctor(env, javaMapFunctor));
     cleanUp->setFuture(future);
 
-    return convertCppFutureVoidToJava(__jni_env, future);
+    return qtjambi_cast<jobject>(env, future);
 }
 
-extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_blockingMap)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingMap)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMapFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    MapFunctor mapFunctor(javaMapFunctor);
-    QtConcurrent::blockingMap(sequence, mapFunctor);
+    QtJambiScope scope(nullptr);
+    QList<JObjectWrapper>& sequence = qtjambi_cast<QList<JObjectWrapper>&>(env, scope, javaSequence);
+    QtConcurrent::blockingMap(sequence, MapFunctor(env, javaMapFunctor));
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_mapped)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_mapped)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMappedFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    MappedFunctor mappedFunctor(javaMappedFunctor);
-    QFuture<JObjectWrapper> result = QtConcurrent::mapped(sequence, mappedFunctor);
-
-    return convertCppFutureToJava(__jni_env, result);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    QFuture<JObjectWrapper> result = QtConcurrent::mapped(sequence, MappedFunctor(env, javaMappedFunctor));
+    return qtjambi_cast<jobject>(env, result);
 }
 
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_blockingMapped)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingMapped)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMappedFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    MappedFunctor mappedFunctor(javaMappedFunctor);
-    QList<JObjectWrapper> result = QtConcurrent::blockingMapped(sequence, mappedFunctor);
-
-    return convertCppSequenceToJava(__jni_env, result);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    QList<JObjectWrapper> result = QtConcurrent::blockingMapped(sequence, MappedFunctor(env, javaMappedFunctor));
+    return convertCppSequenceToJava(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_blockingMappedReduced)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingMappedReduced)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMappedFunctor,
  jobject javaReducedFunctor,
  jint options)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    MappedFunctor mappedFunctor(javaMappedFunctor);
-    ReducedFunctor reduceFunctor(javaReducedFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    MappedFunctor mappedFunctor(env, javaMappedFunctor);
+    ReducedFunctor reduceFunctor(env, javaReducedFunctor);
     JObjectWrapper result = QtConcurrent::blockingMappedReduced<JObjectWrapper, QList<JObjectWrapper>, MappedFunctor, ReducedFunctor>(sequence, mappedFunctor, reduceFunctor, QtConcurrent::ReduceOptions(options));
-
-    return qtjambi_from_jobjectwrapper(__jni_env, result);
+    return qtjambi_from_jobjectwrapper(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_mappedReduced)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_mappedReduced)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaMappedFunctor,
  jobject javaReducedFunctor,
  jint options)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    MappedFunctor mappedFunctor(javaMappedFunctor);
-    ReducedFunctor reduceFunctor(javaReducedFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    MappedFunctor mappedFunctor(env, javaMappedFunctor);
+    ReducedFunctor reduceFunctor(env, javaReducedFunctor);
     QFuture<JObjectWrapper> result = QtConcurrent::mappedReduced<JObjectWrapper, QList<JObjectWrapper>, MappedFunctor, ReducedFunctor>(sequence, mappedFunctor, reduceFunctor, QtConcurrent::ReduceOptions(options));
-
-    return convertCppFutureToJava(__jni_env, result);
+    return qtjambi_cast<jobject>(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_filtered)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_filtered)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    FilteredFunctor filteredFunctor(javaFilteredFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    FilteredFunctor filteredFunctor(env, javaFilteredFunctor);
     QFuture<JObjectWrapper> result = QtConcurrent::filtered(sequence, filteredFunctor);
-
-    return convertCppFutureToJava(__jni_env, result);
+    return qtjambi_cast<jobject>(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_blockingFiltered)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingFiltered)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaFilteredFunctor)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    FilteredFunctor filteredFunctor(javaFilteredFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    FilteredFunctor filteredFunctor(env, javaFilteredFunctor);
     QList<JObjectWrapper> result = QtConcurrent::blockingFiltered(sequence, filteredFunctor);
-
-    return convertCppSequenceToJava(__jni_env, result);
+    return convertCppSequenceToJava(env, result);
 }
 
+extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingFilter)
+(JNIEnv *env,
+ jclass,
+ jobject javaSequence,
+ jobject javaFilteredFunctor)
+{
+    QtJambiScope scope(nullptr);
+    QList<JObjectWrapper>& sequence = qtjambi_cast<QList<JObjectWrapper>&>(env, scope, javaSequence);
+    QtConcurrent::blockingFilter(sequence, FilteredFunctor(env, javaFilteredFunctor));
+}
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_filteredReduced)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_filteredReduced)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaFilteredFunctor,
  jobject javaReducedFunctor,
  jint options)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    FilteredFunctor filteredFunctor(javaFilteredFunctor);
-    ReducedFunctor reducedFunctor(javaReducedFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    FilteredFunctor filteredFunctor(env, javaFilteredFunctor);
+    ReducedFunctor reducedFunctor(env, javaReducedFunctor);
     QFuture<JObjectWrapper> result = QtConcurrent::filteredReduced<JObjectWrapper, QList<JObjectWrapper>, FilteredFunctor, ReducedFunctor>(sequence, filteredFunctor, reducedFunctor, QtConcurrent::ReduceOptions(options));
-
-    return convertCppFutureToJava(__jni_env, result);
+    return qtjambi_cast<jobject>(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_blockingFilteredReduced)
-(JNIEnv *__jni_env,
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_blockingFilteredReduced)
+(JNIEnv *env,
  jclass,
  jobject javaSequence,
  jobject javaFilteredFunctor,
  jobject javaReducedFunctor,
  jint options)
 {
-    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(__jni_env, javaSequence);
-
-    FilteredFunctor filteredFunctor(javaFilteredFunctor);
-    ReducedFunctor reducedFunctor(javaReducedFunctor);
+    QList<JObjectWrapper> sequence = convertJavaSequenceToCpp(env, javaSequence);
+    FilteredFunctor filteredFunctor(env, javaFilteredFunctor);
+    ReducedFunctor reducedFunctor(env, javaReducedFunctor);
     JObjectWrapper result = QtConcurrent::blockingFilteredReduced<JObjectWrapper, QList<JObjectWrapper>, FilteredFunctor, ReducedFunctor>(sequence, filteredFunctor, reducedFunctor, QtConcurrent::ReduceOptions(options));
-
-    return qtjambi_from_jobjectwrapper(__jni_env, result);
+    return qtjambi_from_jobjectwrapper(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_runPrivate)
-(JNIEnv *__jni_env,
- jclass,
- jobject javaThis,
- jclass declaringClass,
- jobject javaMethod,
- jobjectArray javaArgs,
- jintArray typeConversionScheme,
- jbyte resultType)
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run)
+(JNIEnv *env, jclass, jobject javaCallable)
 {
-    jmethodID methodId = __jni_env->FromReflectedMethod(javaMethod);
-    Q_ASSERT(methodId);
-
-    RunFunctor runFunctor(javaThis, declaringClass, methodId, javaArgs, typeConversionScheme, resultType);
-    QFuture<JObjectWrapper> result = QtConcurrent::run(runFunctor);
-
-    return convertCppFutureToJava(__jni_env, result);
+    QFuture<JObjectWrapper> result = QtConcurrent::run(CallableFunctor(env, javaCallable));
+    return qtjambi_cast<jobject>(env, result);
 }
 
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_org_qtjambi_qt_concurrent_QtConcurrent_runVoidMethodPrivate)
-(JNIEnv *__jni_env,
- jclass,
- jobject javaThis,
- jclass declaringClass,
- jobject javaMethod,
- jobjectArray javaArgs,
- jintArray typeConversionScheme)
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_run2)
+(JNIEnv *env, jclass, jobject threadPool, jobject javaCallable)
 {
-    jmethodID methodId = __jni_env->FromReflectedMethod(javaMethod);
-    Q_ASSERT(methodId);
+    QFuture<JObjectWrapper> result = QtConcurrent::run(qtjambi_cast<QThreadPool*>(env, threadPool), CallableFunctor(env, javaCallable));
+    return qtjambi_cast<jobject>(env, result);
+}
 
-    RunVoidFunctor runFunctor(javaThis, declaringClass, methodId, javaArgs, typeConversionScheme);
-    QFuture<void> result = QtConcurrent::run(runFunctor);
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid)
+(JNIEnv *env, jclass, jobject javaRunnable)
+{
+    QFuture<void> result = QtConcurrent::run(RunFunctor(env, javaRunnable));
+    return qtjambi_cast<jobject>(env, result);
+}
 
-    return convertCppFutureVoidToJava(__jni_env, result);
+extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_concurrent_QtConcurrent_runVoid2)
+(JNIEnv *env, jclass, jobject threadPool, jobject javaRunnable)
+{
+    QFuture<void> result = QtConcurrent::run(qtjambi_cast<QThreadPool*>(env, threadPool), RunFunctor(env, javaRunnable));
+    return qtjambi_cast<jobject>(env, result);
 }
 
 
 #endif // QT_NO_CONCURRENT
+
+

@@ -122,7 +122,7 @@ void CodeMarker::terminate()
 CodeMarker *CodeMarker::markerForCode(const QString& code)
 {
     CodeMarker *defaultMarker = markerForLanguage(defaultLang);
-    if (defaultMarker != 0 && defaultMarker->recognizeCode(code))
+    if (defaultMarker != nullptr && defaultMarker->recognizeCode(code))
 	return defaultMarker;
 
     QList<CodeMarker *>::ConstIterator m = markers.begin();
@@ -140,7 +140,7 @@ CodeMarker *CodeMarker::markerForFileName(const QString& fileName)
     int dot = -1;
     while ((dot = fileName.lastIndexOf(QLatin1Char('.'), dot)) != -1) {
 	QString ext = fileName.mid(dot + 1);
-	if (defaultMarker != 0 && defaultMarker->recognizeExtension(ext))
+    if (defaultMarker != nullptr && defaultMarker->recognizeExtension(ext))
 	    return defaultMarker;
 	QList<CodeMarker *>::ConstIterator m = markers.begin();
 	while (m != markers.end()) {
@@ -161,26 +161,26 @@ CodeMarker *CodeMarker::markerForLanguage(const QString& lang)
 	    return *m;
 	++m;
     }
-    return 0;
+    return nullptr;
 }
 
 const Node *CodeMarker::nodeForString(const QString& string)
 {
-    if (sizeof(const Node *) == sizeof(uint)) {
-        return reinterpret_cast<const Node *>(string.toUInt());
-    }
-    else {
-        return reinterpret_cast<const Node *>(string.toULongLong());
+    switch(sizeof(const Node *)){
+    case 4:
+        return reinterpret_cast<const Node *>(quintptr(string.toUInt()));
+    default:
+        return reinterpret_cast<const Node *>(quintptr(string.toULongLong()));
     }
 }
 
 QString CodeMarker::stringForNode(const Node *node)
 {
-    if (sizeof(const Node *) == sizeof(ulong)) {
-        return QString::number(reinterpret_cast<quintptr>(node));
-    }
-    else {
-        return QString::number(reinterpret_cast<qulonglong>(node));
+    switch(sizeof(const Node *)){
+    case 4:
+        return QString::number(quint32(reinterpret_cast<quintptr>(node)));
+    default:
+        return QString::number(quint64(reinterpret_cast<quintptr>(node)));
     }
 }
 
@@ -378,7 +378,7 @@ void CodeMarker::insert(FastSection &fastSection,
     bool irrelevant = false;
     bool inheritedMember = false;
     if (!node->relates()) {
-        if (node->parent() != (const InnerNode*)fastSection.innerNode) {
+        if (node->parent() != static_cast<const InnerNode*>(fastSection.innerNode)) {
             if (node->type() != Node::QmlProperty)
                 inheritedMember = true;
         }
@@ -388,7 +388,7 @@ void CodeMarker::insert(FastSection &fastSection,
 	irrelevant = true;
     }
     else if (node->type() == Node::Function) {
-	FunctionNode *func = (FunctionNode *) node;
+    FunctionNode *func = static_cast<FunctionNode *>(node);
 	irrelevant = (inheritedMember
 		      && (func->metaness() == FunctionNode::Ctor ||
 			  func->metaness() == FunctionNode::Dtor));
@@ -426,7 +426,7 @@ void CodeMarker::insert(FastSection &fastSection,
 	    if (node->parent()->type() == Node::Class) {
 		if (fastSection.inherited.isEmpty()
                     || fastSection.inherited.last().first != node->parent()) {
-		    QPair<ClassNode *, int> p((ClassNode *)node->parent(), 0);
+            QPair<ClassNode *, int> p(static_cast<ClassNode *>(node->parent()), 0);
 		    fastSection.inherited.append(p);
 		}
 		fastSection.inherited.last().second++;
@@ -447,8 +447,8 @@ bool CodeMarker::insertReimpFunc(FastSection& fs, Node* node, Status status)
         return false;
 
     const FunctionNode* fn = static_cast<const FunctionNode*>(node);
-    if ((fn->reimplementedFrom() != 0) && (status == Okay)) {
-        bool inherited = (!fn->relates() && (fn->parent() != (const InnerNode*)fs.innerNode));
+    if ((fn->reimplementedFrom() != nullptr) && (status == Okay)) {
+        bool inherited = (!fn->relates() && (fn->parent() != static_cast<const InnerNode*>(fs.innerNode)));
         if (!inherited) {
             QString key = sortName(fn);
             if (!fs.reimpMemberMap.contains(key)) {
@@ -637,7 +637,7 @@ const Node* CodeMarker::resolveTarget(const QString& ,
 		                      const Node* ,
                                       const Node* )
 {
-    return 0;
+    return nullptr;
 }
 
 QT_END_NAMESPACE

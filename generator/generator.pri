@@ -6,7 +6,6 @@ TARGET +=
 DEPENDPATH += $$GENERATORPATH tests parser
 mac:CONFIG -= app_bundle
 INCLUDEPATH += $$GENERATORPATH/.
-INCLUDEPATH += $$GENERATORPATH/../src/cpp/common
 
 CONFIG += console
 RESOURCES += generator.qrc
@@ -96,4 +95,5 @@ mac {
     CONFIG -= precompile_header
 	# this option is necessary to properly compile on mountain lion because of std::string to char* casts
 	QMAKE_CXXFLAGS += -fpermissive
+    QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
 }

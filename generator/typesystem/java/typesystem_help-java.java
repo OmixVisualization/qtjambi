@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,39 +36,32 @@
 
 package generator;
 
-import org.qtjambi.qt.QNativePointer;
-import org.qtjambi.qt.QtBlockedSlot;
-import org.qtjambi.qt.Utilities;
-import org.qtjambi.qt.QtJambiObject.QPrivateConstructor;
-import org.qtjambi.qt.core.QCoreApplication;
-import org.qtjambi.qt.core.QPoint;
-import org.qtjambi.qt.core.QPointF;
-import org.qtjambi.qt.gui.*;
+import io.qt.*;
+import io.qt.QtJambiObject.QPrivateConstructor;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QPoint;
+import io.qt.core.QPointF;
+import io.qt.gui.*;
 
 class QHelpContentItem___ extends QHelpContentItem {
 
-	@QtBlockedSlot
-	public final int childPosition(QHelpContentItem child)    {
-		if (nativeId() == 0)
-			throw new QNoNativeResourcesException("Function call on incomplete object of type: " +getClass().getName());
-		return __qt_childPosition_nativepointer(nativeId(), child == null ? null : child.nativePointer());
-	}
+    @io.qt.QtUninvokable
+    public final int childPosition(QHelpContentItem child)    {
+        long nativeId = io.qt.internal.QtJambiInternal.nativeId(this);
+        if (nativeId == 0)
+            throw new QNoNativeResourcesException("Function call on incomplete object of type: " +getClass().getName());
+        return __qt_QHelpContentItem_childPosition_nativepointer(nativeId, child == null ? null : QNativePointer.fromObject(child));
+    }
 
-	@QtBlockedSlot
+    @io.qt.QtUninvokable
     public final QHelpContentItem child(int row)    {
-		return fromNativePointer(__child(row));
+        return __child(row).object(QHelpContentItem.class);
     }
 
-	@QtBlockedSlot
-	public final QHelpContentItem parent()    {
-		return fromNativePointer(__parent());
-	}
+    @io.qt.QtUninvokable
+    public final QHelpContentItem parent()    {
+        return __parent().object(QHelpContentItem.class);
+    }
 
 }// class
 
-class QHelpContentModel___ extends QHelpContentModel {
-@QtBlockedSlot
-    public final QHelpContentItem contentItemAt(org.qtjambi.qt.core.QModelIndex index)    {
-        return QHelpContentItem.fromNativePointer(__contentItemAt(index));
-    }
-}// class

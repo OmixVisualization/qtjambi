@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="Qt3DExtras">
+    <namespace-type name="Qt3DExtras" generate="no" since="5.10.0"/>
+    <value-type name="Qt3DExtras::QAbstractCameraController::InputState" java-name="QAbstractCameraController$InputState"/>
+    <object-type name="Qt3DExtras::QAbstractCameraController" java-name="QAbstractCameraController" since="5.10.0">
+        <modify-function signature="setCamera(Qt3DRender::QCamera*)">
+            <modify-argument index="1">
+                <define-ownership class="java" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QAbstractSpriteSheet" java-name="QAbstractSpriteSheet" since="5.10.0">
+        <modify-function signature="setTexture(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcTexture" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QConeGeometry" java-name="QConeGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QConeMesh" java-name="QConeMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QCuboidMesh" java-name="QCuboidMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QCuboidGeometry" java-name="QCuboidGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QCylinderGeometry" java-name="QCylinderGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QCylinderMesh" java-name="QCylinderMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QDiffuseSpecularMaterial" java-name="QDiffuseSpecularMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QDiffuseMapMaterial" java-name="QDiffuseMapMaterial" since="5.10.0">
+        <modify-function signature="setDiffuse(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDiffuse" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QDiffuseSpecularMapMaterial" java-name="QDiffuseSpecularMapMaterial" since="5.10.0">
+        <modify-function signature="setDiffuse(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDiffuse" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSpecular(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSpecular" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QNormalDiffuseMapAlphaMaterial" java-name="QNormalDiffuseMapAlphaMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QNormalDiffuseMapMaterial" java-name="QNormalDiffuseMapMaterial" since="5.10.0">
+        <modify-function signature="setDiffuse(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDiffuse" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setNormal(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcNormal" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QNormalDiffuseSpecularMapMaterial" java-name="QNormalDiffuseSpecularMapMaterial" since="5.10.0">
+        <modify-function signature="setDiffuse(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDiffuse" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSpecular(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSpecular" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setNormal(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcNormal" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QPhongAlphaMaterial" java-name="QPhongAlphaMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QPhongMaterial" java-name="QPhongMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QTexturedMetalRoughMaterial" java-name="QTexturedMetalRoughMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QExtrudedTextGeometry" java-name="QExtrudedTextGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QExtrudedTextMesh" java-name="QExtrudedTextMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QFirstPersonCameraController" java-name="QFirstPersonCameraController" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QForwardRenderer" java-name="QForwardRenderer" since="5.10.0">
+        <modify-function signature="setCamera(Qt3DCore::QEntity*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSurface(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QGoochMaterial" java-name="QGoochMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QMetalRoughMaterial" java-name="QMetalRoughMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QMorphPhongMaterial" java-name="QMorphPhongMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QOrbitCameraController" java-name="QOrbitCameraController" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QPerVertexColorMaterial" java-name="QPerVertexColorMaterial" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QPlaneGeometry" java-name="QPlaneGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QPlaneMesh" java-name="QPlaneMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSkyboxEntity" java-name="QSkyboxEntity" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSphereGeometry" java-name="QSphereGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSphereMesh" java-name="QSphereMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSpriteGrid" java-name="QSpriteGrid" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSpriteSheet" java-name="QSpriteSheet" since="5.10.0">
+        <modify-function signature="addSprite(Qt3DExtras::QSpriteSheetItem*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeSprite(Qt3DExtras::QSpriteSheetItem*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QSpriteSheetItem" java-name="QSpriteSheetItem" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QText2DEntity" java-name="QText2DEntity" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QTextureMaterial" java-name="QTextureMaterial" since="5.10.0">
+        <modify-function signature="setTexture(Qt3DRender::QAbstractTexture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcTexture" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="Qt3DExtras::QTorusGeometry" java-name="QTorusGeometry" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QTorusMesh" java-name="QTorusMesh" since="5.10.0"/>
+    <object-type name="Qt3DExtras::Qt3DWindow" java-name="Qt3DWindow" since="5.10.0">
+        <modify-function signature="registerAspect(Qt3DCore::QAbstractAspect *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setActiveFrameGraph(Qt3DRender::QFrameGraphNode*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRootEntity(Qt3DCore::QEntity*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="showEvent(QShowEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="resizeEvent(QResizeEvent*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractSpriteSheet' set to non-final, as it is extended by other classes" />
+</typesystem>

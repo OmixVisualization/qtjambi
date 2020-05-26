@@ -44,31 +44,30 @@ typedef QMap<int, QString> ArgumentMap;
 
 class CodeSnipFragment {
     private:
-        const QString m_code;
+        QString m_code;
         TemplateInstance *m_instance;
+        friend class CodeSnipAbstract;
 
     public:
         CodeSnipFragment(const QString &code)
                 : m_code(code),
-                m_instance(0) {}
+                m_instance(nullptr) {}
 
         CodeSnipFragment(TemplateInstance *instance)
                 : m_instance(instance) {}
 
         QString code() const;
+        bool hasCode() const;
 };
 
 class CodeSnipAbstract {
     public:
         QString code() const;
+        bool hasCode() const;
 
-        void addCode(const QString &code) {
-            codeList.append(new CodeSnipFragment(code));
-        }
+        void addCode(const QString &code);
 
-        void addTemplateInstance(TemplateInstance *ti) {
-            codeList.append(new CodeSnipFragment(ti));
-        }
+        void addTemplateInstance(TemplateInstance *ti);
 
         QList<CodeSnipFragment*> codeList;
 };
@@ -79,18 +78,18 @@ class CustomFunction : public CodeSnipAbstract {
 
         QString name;
         QString param_name;
-        QString where_name;
+        QString placement_name;
 };
 
 class TemplateEntry : public CodeSnipAbstract {
     public:
         TemplateEntry(const QString &name)
                 : m_name(name) {
-        };
+        }
 
         QString name() const {
             return m_name;
-        };
+        }
 
     private:
         QString m_name;
@@ -101,7 +100,10 @@ class CodeSnip : public CodeSnipAbstract {
         enum Position {
             Beginning,
             End,
-            AfterThis
+            Position1,
+            Position2,
+            Position3,
+            Position4,
         };
 
         CodeSnip() : language(TypeSystem::TargetLangCode) { }

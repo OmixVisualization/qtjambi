@@ -57,17 +57,23 @@
 
 using namespace rpp;
 
-QHash<QString, QStringList> includedFiles;
+static QHash<QString, QStringList> includedFiles;
 
 /*void includeFileHook ( const std::string &fileName, const std::string &filePath, FILE * )
 {
     includedFiles[QString::fromStdString ( fileName ) ].append ( QString::fromStdString ( filePath ) );
 }*/
 
-Preprocessor::Preprocessor() {
-    d = new PreprocessorPrivate;
+Preprocessor::Preprocessor(const std::function<void(std::string,std::string)>& featureRegistry) {
+    d = new PreprocessorPrivate(featureRegistry);
     includedFiles.clear();
 }
+
+PreprocessorPrivate::PreprocessorPrivate(const std::function<void(std::string,std::string)>& featureRegistry)
+    : result(),
+      env(featureRegistry),
+      includePaths()
+{}
 
 Preprocessor::~Preprocessor() {
     delete d;
@@ -104,7 +110,7 @@ QStringList Preprocessor::macroNames() const {
     pp_environment::const_iterator it = d->env.first_macro();
     while (it != d->env.last_macro()) {
         const pp_macro *m = *it;
-        macros += QString::fromLatin1(m->name->begin(), (int) m->name->size());
+        macros += QString::fromLatin1(m->name->begin(), int(m->name->size()));
         ++it;
     }
 
@@ -118,12 +124,12 @@ QList<Preprocessor::MacroItem> Preprocessor::macros() const {
     while (it != d->env.last_macro()) {
         const pp_macro *m = *it;
         MacroItem item;
-        item.name = QString::fromLatin1(m->name->begin(), (int)m->name->size());
+        item.name = QString::fromLatin1(m->name->begin(), int(m->name->size()));
         item.definition = QString::fromLatin1(m->definition->begin(),
-                                              (int) m->definition->size());
+                                              int(m->definition->size()));
         for (size_t i = 0; i < m->formals.size(); ++i) {
             item.parameters += QString::fromLatin1(m->formals[i]->begin(),
-                                                   (int) m->formals[i]->size());
+                                                   int(m->formals[i]->size()));
         }
         item.isFunctionLike = m->function_like;
 

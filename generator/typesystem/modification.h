@@ -39,20 +39,32 @@
 #include "typesystem.h"
 #include "codesnip.h"
 
-struct ReferenceCount;
+enum class AsArrayType{
+    No = 0,
+    Yes = 0x001,
+    Deref = 0x002,
+    VarArgs = 0x004,
+    Buffer = 0x008
+};
+typedef QFlags<AsArrayType> AsArrayTypes;
 
 struct ArgumentModification {
     ArgumentModification(int idx) :
             removed_default_expression(false),
             removed(false),
             no_null_pointers(false),
-            index(idx) {}
+            index(idx),
+            useAsArrayType(AsArrayType::No),
+            arrayLengthParameter(-1),
+            minArrayLength(-1),
+            maxArrayLength(-1)
+    {}
 
     //! Should the default expression be removed?
-uint removed_default_expression : 1;
-uint removed : 1;
-uint no_null_pointers : 1;
-uint reset_after_use : 1;
+    uint removed_default_expression : 1;
+    uint removed : 1;
+    uint no_null_pointers : 1;
+    uint reset_after_use : 1;
 
     //! The index of this argument
     int index;
@@ -62,6 +74,8 @@ uint reset_after_use : 1;
 
     //! The text given for the new type of the argument
     QString modified_type;
+    QString modified_jni_type;
+    QString modified_name;
 
     QString replace_value;
 
@@ -75,10 +89,17 @@ uint reset_after_use : 1;
     QString replaced_default_expression;
 
     //! The new definition of ownership for a specific argument
-    QHash<TypeSystem::Language, TypeSystem::Ownership> ownerships;
+    QHash<TypeSystem::Language, OwnershipRule> ownerships;
 
     //! Different conversion rules
     CodeSnipList conversion_rules;
+
+    AsArrayTypes useAsArrayType;
+    int arrayLengthParameter;
+    int minArrayLength;
+    int maxArrayLength;
+
+    static int ADDED_ARGUMENT;
 };
 
 struct Modification {
@@ -103,7 +124,10 @@ struct Modification {
         ReplaceExpression =     0x00008000,
         VirtualSlot =           0x00010000 | NonFinal,
         AllowAsSlot =           0x00020000,
-        PrivateSignal =         0x00040000
+        PrivateSignal =         0x00040000,
+        ThreadAffine =          0x00080000,
+        UIThreadAffine =        0x00800000,
+        NoExcept =              0x02000000
     };
 
     Modification() : modifiers(0) { }
@@ -118,11 +142,14 @@ struct Modification {
     bool isDeclaredFinal() const { return modifiers & NativeDeclFinal; }
     bool isNonFinal() const { return modifiers & NonFinal && !(modifiers & NativeDeclFinal); }
     bool isVirtualSlot() const { return (modifiers & VirtualSlot) == VirtualSlot; }
+    bool isThreadAffine() const { return (modifiers & ThreadAffine) == ThreadAffine; }
+    bool isUIThreadAffine() const { return (modifiers & UIThreadAffine) == UIThreadAffine; }
     bool isAllowedAsSlot() const { return (modifiers & AllowAsSlot) == AllowAsSlot; }
     bool isPrivateSignal() const { return (modifiers & PrivateSignal) == PrivateSignal; }
     QString accessModifierString() const;
 
     bool isDeprecated() const { return modifiers & Deprecated; }
+    bool isNoExcept() const { return modifiers & NoExcept; }
 
     void setRenamedTo(const QString &name) { renamedToName = name; }
     QString renamedTo() const { return renamedToName; }
@@ -147,6 +174,8 @@ struct FunctionModification: public Modification {
     QString toString() const;
 
     QString signature;
+    QString ppCondition;
+    QString throws;
     QString association;
     CodeSnipList snips;
     TypeSystem::Language removal;
@@ -157,10 +186,32 @@ struct FunctionModification: public Modification {
 typedef QList<FunctionModification> FunctionModificationList;
 
 struct FieldModification: public Modification {
+    FieldModification()
+        : name(),
+          modified_type(),
+          modified_jni_type(),
+          ownerships(),
+          referenceCounts(),
+          conversion_rules(),
+          no_null_pointers(false)
+    {}
     bool isReadable() const { return modifiers & Readable; }
     bool isWritable() const { return modifiers & Writable; }
 
     QString name;
+    //! The text given for the new type of the argument
+    QString modified_type;
+    QString modified_jni_type;
+
+    //! The new definition of ownership for a specific argument
+    QHash<TypeSystem::Language, OwnershipRule> ownerships;
+
+    //! Reference count flags for this argument
+    QList<ReferenceCount> referenceCounts;
+
+    //! Different conversion rules
+    CodeSnipList conversion_rules;
+    uint no_null_pointers : 1;
 };
 typedef QList<FieldModification> FieldModificationList;
 

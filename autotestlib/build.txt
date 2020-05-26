@@ -1,29 +1,16 @@
-<typesystem package="org.qtjambi.autotests.generated" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+<typesystem package="io.qt.autotests.generated" default-superclass="io.qt.QtObject">
 
-  <inject-code>
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-			org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-		}
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-			org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-		}
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-			org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-		}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("libEGL", ""))
-            org.qtjambi.qt.Utilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtGui");
-		org.qtjambi.qt.Utilities.loadQtLibrary("QtWidgets");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtNetwork");
-        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtXml"))
-            org.qtjambi.qt.Utilities.loadQtLibrary("QtXml"); // usually available
-        if(org.qtjambi.qt.Utilities.isAvailableQtLibrary("QtSql"))
-            org.qtjambi.qt.Utilities.loadQtLibrary("QtSql"); // load if exists
+  <inject-code location="1">
+    io.qt.QtUtilities.initializePackage("io.qt.network");
+    io.qt.QtUtilities.initializePackage("io.qt.xml");
+    io.qt.QtUtilities.initializePackage("io.qt.sql");
+    io.qt.QtUtilities.initializePackage("io.qt.quick");
+    io.qt.QtUtilities.initializePackage("io.qt.widgets");
   </inject-code>
 
+  <rejection class="SignalsAndSlots" function-name="connectNotify"/>
+  <rejection class="SignalsAndSlots" function-name="disconnectNotify"/>
+  
   <load-typesystem name="../build/generator/typesystem_core.xml" generate="no" />
   <load-typesystem name="../build/generator/typesystem_gui.xml" generate="no" />
   <load-typesystem name="../build/generator/typesystem_widgets.xml" generate="no" />
@@ -31,28 +18,78 @@
   <load-typesystem name="../build/generator/typesystem_network.xml" generate="no" />
   <load-typesystem name="../build/generator/typesystem_sql.xml" generate="no" optional="true" />
 
+    <rejection class="PropertyAndMethodCallTest" function-name="dumpMetaObject"/>
   <value-type name="Tulip">
     <include file-name="tulip.h" location="local"/>
   </value-type>
 
   <value-type name="Variants">
     <include file-name="variants.h" location="local"/>
+    <modify-function signature="createInternalObject(QObject*)">
+        <modify-argument index="0">
+            <define-ownership class="native" owner="java" />
+        </modify-argument>
+    </modify-function>
   </value-type>
 
   <enum-type name="TheGlobalEnum"/>
+  <enum-type name="TheGlobalShortEnum"/>
+  <enum-type name="TheGlobalFlag" flags="TheGlobalFlags"/>
+  <enum-type name="TheGlobalEnumClass">
+	<reject-enum-value name="Repeat"/>
+  </enum-type>
+  <enum-type name="TheGlobalCharEnumStruct"/>
+  <enum-type name="TheGlobalLongEnumStruct"/>
+  <enum-type name="TheGlobalShortEnumClass"/>
+  <enum-type name="TheExtensibleGlobalLongEnumClass" extensible="true"/>
+  <enum-type name="TheGlobalIntegerEnum" force-integer="true"/>
+  <enum-type name="TheGlobalLongIntegerEnumClass" force-integer="true"/>
+  <namespace-type name="EnumNamespace"/>
+  <enum-type name="EnumNamespace::NSFlag" flags="EnumNamespace::NSFlags"/>
+  <enum-type name="EnumNamespace::NSEnumClass">
+	<reject-enum-value name="Repeat1"/>
+	<reject-enum-value name="Repeat2"/>
+	<reject-enum-value name="Repeat3"/>
+  </enum-type>
+  <enum-type name="EnumNamespace::NSClassFlag" flags="EnumNamespace::NSClassFlags"/>
+  <enum-type name="GlobalEnumTest::ScopedEnum"/>
+  <enum-type name="GlobalEnumTest::ScopedEnumClass"/>
+  <object-type name="GlobalEnumTest">
+        <modify-function signature="testGlobalFlags(QFlags&lt;TheGlobalFlag&gt;)">
+            <modify-argument index="1">
+                <replace-default-expression with="io.qt.autotests.generated.TheGlobalFlag.Flag2, io.qt.autotests.generated.TheGlobalFlag.Flag3"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
 
   <object-type name="General" />
 
   <object-type name="SignalsAndSlots">
     <include file-name="signalsandslots.h" location="local"/>
+    <modify-function signature="connectToDestroyedSignal(QObject *, QRunnable *)">
+        <modify-argument index="2">
+            <define-ownership class="java" owner="cplusplus" />
+        </modify-argument>
+    </modify-function>
   </object-type>
 
   <object-type name="SenderQObject" />
   <object-type name="StyledItemDelegateSubclass" />
-  <object-type name="GraphicsWidgetSubclass" />
+  <object-type name="GraphicsWidgetSubclass">
+    <extra-includes>
+        <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
+    </extra-includes>
+  </object-type>
 
+  <object-type name="AbstractSubclass">
+  </object-type>
   <object-type name="AbstractClass">
     <include file-name="abstractclass.h" location="local"/>
+    <modify-function signature="setReferenceCountTest(QObject*)">
+        <modify-argument index="1" invalidate-after-use="yes">
+            <reference-count action="set" variable-name="__rcReferenceCountTest"/>
+        </modify-argument>
+    </modify-function>
   </object-type>
 
   <object-type name="CustomPaintEngine" />
@@ -64,6 +101,11 @@
 
   <object-type name="AnotherNonAbstractSubclass">
     <include file-name="abstractclass.h" location="local"/>
+    <modify-function signature="setReferenceCountTest(QObject*)">
+        <modify-argument index="1" invalidate-after-use="yes">
+            <reference-count action="set" variable-name="__rcReferenceCountTest" declare-variable="AbstractClass"/>
+        </modify-argument>
+    </modify-function>
   </object-type>
 
   <object-type name="NativePointerTester">
@@ -72,12 +114,18 @@
 
   <object-type name="OrdinarySuperclass" />
   <object-type name="OrdinaryDestroyed">
-    <modify-function signature="getObjectJavaOwnership()">
+    <modify-function signature="getObjectJavaOwnership(DestroyCounter*)">
+        <modify-argument index="1">
+            <reference-count action="ignore"/>
+        </modify-argument>
         <modify-argument index="return">
             <define-ownership class="java" owner="java" />
         </modify-argument>
     </modify-function>
-    <modify-function signature="getObjectCppOwnership()">
+    <modify-function signature="getObjectCppOwnership(DestroyCounter*)">
+        <modify-argument index="1">
+            <reference-count action="ignore"/>
+        </modify-argument>
         <modify-argument index="return">
             <define-ownership class="java" owner="cplusplus" />
         </modify-argument>
@@ -87,12 +135,18 @@
             <define-ownership class="java" owner="default" />
         </modify-argument>
     </modify-function>
-    <modify-function signature="virtualGetObjectJavaOwnership()">
+    <modify-function signature="virtualGetObjectJavaOwnership(DestroyCounter*)">
+        <modify-argument index="1">
+            <reference-count action="ignore"/>
+        </modify-argument>
         <modify-argument index="return">
             <define-ownership class="shell" owner="java" />
         </modify-argument>
     </modify-function>
-    <modify-function signature="virtualGetObjectCppOwnership()">
+    <modify-function signature="virtualGetObjectCppOwnership(DestroyCounter*)">
+        <modify-argument index="1">
+            <reference-count action="ignore"/>
+        </modify-argument>
         <modify-argument index="return">
             <define-ownership class="shell" owner="cplusplus" />
         </modify-argument>
@@ -102,34 +156,25 @@
             <define-ownership class="shell" owner="default" />
         </modify-argument>
     </modify-function>
-    <inject-code class="java">
-    public static int disposedCount = 0;
-    public static int getDisposedCount() {
-        synchronized(OrdinaryDestroyed.class) {	// PARANOIA
-            return disposedCount;
-        }
-    }
-    public static void setDisposedCount(int disposedCount) {
-        synchronized(OrdinaryDestroyed.class) {	// PARANOIA
-            OrdinaryDestroyed.disposedCount = disposedCount;
-        }
-    }
-
-    @Override
-    protected void disposed() {
-        synchronized(OrdinaryDestroyed.class) {
-            disposedCount++;
-        }
-
-        super.disposed();
-    }
-    </inject-code>
   </object-type>
+  <object-type name="DestroyCounter" />
   <object-type name="QObjectDestroyed" />
-  <object-type name="XmlEntityResolverSubclass" />
+  <object-type name="XmlEntityResolverSubclass">
+      <extra-includes>
+          <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+      </extra-includes>
+  </object-type>
   <object-type name="SpinBoxHandler" />
-  <object-type name="SpinBoxSubclass" />
+  <object-type name="SpinBoxSubclass">
+      <extra-includes>
+          <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+      </extra-includes>
+  </object-type>
   <object-type name="GraphicsSceneSubclass">
+    <extra-includes>
+        <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
+        <include file-name="qtjambi_core/qtjambi_core_qhashes.h" location="global"/>
+    </extra-includes>
   </object-type>
 
   <object-type name="IODeviceSubclass" />
@@ -148,8 +193,18 @@
   </object-type>
   <value-type name="PictureSubclass" />
 
-  <object-type name="SetupLayout" />
-  <object-type name="GraphicsItemSubclass" />
+  <object-type name="SetupLayout">
+    <modify-function signature="createLayout()">
+        <modify-argument index="return">
+            <define-ownership class="native" owner="java" />
+        </modify-argument>
+    </modify-function>
+  </object-type>
+  <object-type name="GraphicsItemSubclass">
+    <extra-includes>
+        <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
+    </extra-includes>
+  </object-type>
   <object-type name="ImageIOHandlerSubclass" />
   <object-type name="AccessibleInterfaceSubclass" />
   <object-type name="SqlTableModelSubclass" /><!-- might not exist if QT_NO_SQL is set -->
@@ -160,45 +215,49 @@
 
     <modify-function signature="getButtonStyleOption()">
         <modify-argument index="return">
-           <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+           <replace-type modified-type="io.qt.widgets.QStyleOption" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
             </conversion-rule>
             <conversion-rule class="shell">
-                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+                QStyleOption *%out = qtjambi_cast&lt;QStyleOption *>(%env, %in);
             </conversion-rule>
         </modify-argument>
     </modify-function>
 
     <modify-function signature="getCustomStyleOption(int)">
         <modify-argument index="return">
-           <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+           <replace-type modified-type="io.qt.widgets.QStyleOption" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
             </conversion-rule>
             <conversion-rule class="shell">
-                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+                QStyleOption *%out = qtjambi_cast&lt;QStyleOption *>(%env, %in);
             </conversion-rule>
         </modify-argument>
     </modify-function>
 
     <modify-function signature="getUnmappedCustomStyleOption()">
         <modify-argument index="return">
-            <replace-type modified-type="org.qtjambi.qt.widgets.QStyleOption" />
+            <replace-type modified-type="io.qt.widgets.QStyleOption" />
             <conversion-rule class="native">
-                jobject %out = qtjambi_from_object(__jni_env, %in, "QStyleOption", "org/qtjambi/qt/widgets/", "Lorg_qtjambi_qt_widgets_QStyleOption_2", true);
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
             </conversion-rule>
             <conversion-rule class="shell">
-                QStyleOption *%out = (QStyleOption *) qtjambi_to_object(__jni_env, %in);
+                QStyleOption *%out = qtjambi_cast&lt;QStyleOption *>(%env, %in);
             </conversion-rule>
         </modify-argument>
     </modify-function>
   </object-type>
 
   <object-type name="CustomEvent"
-               polymorphic-id-expression="int(%1->type()) == QEvent::User + 1" />
+               polymorphic-id-expression="int(%1->type()) == CustomEvent::customType()" />
 
-  <object-type name="ValidatorSubclass" />
+  <object-type name="ValidatorSubclass">
+      <extra-includes>
+          <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+      </extra-includes>
+  </object-type>
 
   <object-type name="SomeQObject" />
 
@@ -209,7 +268,118 @@
 
   <object-type name="MessageHandler"/>
 
-  <!--object-type name="AccessibleTableInterfaceSubclass" /-->
+  <object-type name="AccessibleTextInterfaceSubclass">
+        <modify-function signature="callAttributes(AccessibleTextInterfaceSubclass *, int, int *, int *)">
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="callSelection(AccessibleTextInterfaceSubclass *, int, int *, int *)">
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="callTextAfterOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)">
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="callTextAtOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)">
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="callTextBeforeOffset(AccessibleTextInterfaceSubclass *, int, QAccessible::TextBoundaryType, int *, int *)">
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+  </object-type>
 
   <namespace-type name="NameSpace::NameSpace2" />
   <namespace-type name="NameSpace::NameSpace2::NameSpace3" />
@@ -237,25 +407,76 @@
   <object-type name="AbstractSocketSubclass" />
 
 
-  <object-type name="QHash_int" />
-  <object-type name="QLinkedList_int" />
-  <object-type name="QList_int" />
-  <object-type name="QMap_int" />
-  <object-type name="QQueue_int" />
-  <object-type name="QSet_int" />
-  <object-type name="QStack_int" />
-  <object-type name="QVector_int" />
+  <value-type name="QHash_int" />
+  <value-type name="QLinkedList_int" />
+  <value-type name="QList_int" />
+  <value-type name="QList_String" />
+  <value-type name="QMap_int" />
+  <value-type name="QMultiMap_int" />
+  <value-type name="QMap_int_String" />
+  <value-type name="QMap_String_int" />
+  <value-type name="QMap_String" />
+  <value-type name="QQueue_int" />
+  <value-type name="QQueue_String" />
+  <value-type name="QSet_int" />
+  <value-type name="QSet_String" />
+  <value-type name="QStack_int" />
+  <value-type name="QStack_String" />
+  <value-type name="QVector_int" />
+  <value-type name="QVector_String" />
+  <value-type name="StringList" />
+  <value-type name="ByteArrayList" />
+  <value-type name="QMultiMap_int" />
+  <value-type name="QMultiMap_String" />
+  <value-type name="QMultiMap_String_int" />
+  <value-type name="QMultiMap_int_String" />
+  <value-type name="QMultiHash_int" />
+  <value-type name="QMultiHash_String" />
+  <value-type name="QMultiHash_String_int" />
+  <value-type name="QMultiHash_int_String" />
   <object-type name="PolymorphicObjectType" />
+  <object-type name="PolymorphicOwnedObjectType" delete-in-owner-thread="yes" owner="%1->owner()"/>
   <object-type name="NonPolymorphicObjectType" />
+  <object-type name="NonPolymorphicOwnedObjectType" delete-in-owner-thread="yes" owner="%1->owner()"/>
   <object-type name="QObjectType">
       <extra-includes>
-          <include file-name="org.qtjambi.autotests.Utils" location="java"/>
+          <include file-name="io.qt.autotests.Utils" location="java"/>
       </extra-includes>
-      <inject-code>
+    <modify-function signature="QObjectType()">
+      <inject-code position="end">
           <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class QObjectType___" quote-before-line="}// class"/>
       </inject-code>
+    </modify-function>
   </object-type>
-  <value-type name="ValueType" />
+  <value-type name="ValueType">
+    <extra-includes>
+        <include file-name="qtjambi/qtjambidebugtools_p.h" location="global"/>
+    </extra-includes>
+    <modify-function signature="newInstance()">
+        <modify-argument index="0">
+            <replace-type modified-type="io.qt.autotests.generated.ValueType"/>
+            <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+    <custom-destructor>
+        qtjambi_increase_destructorFunctionCalledCount("ValueType");
+        QtMetaTypePrivate::QMetaTypeFunctionHelper&lt;ValueType>::Destruct(copy);
+    </custom-destructor>
+  </value-type>
+
+  <object-type name="InvalidatorPolymorphicOwnedObjectType">
+    <modify-function signature="overrideMe(PolymorphicOwnedObjectType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
+
+  <object-type name="InvalidatorNonPolymorphicOwnedObjectType">
+    <modify-function signature="overrideMe(NonPolymorphicOwnedObjectType*)">
+        <modify-argument index="1" invalidate-after-use="yes" />
+    </modify-function>
+  </object-type>
 
   <object-type name="InvalidatorPolymorphicObjectType">
     <modify-function signature="overrideMe(PolymorphicObjectType*)">
@@ -270,8 +491,24 @@
   </object-type>
 
   <object-type name="InvalidatorValueType">
+    <modify-function signature="invalidateObject(ValueType*)">
+        <modify-argument index="1">
+            <replace-type modified-type="io.qt.autotests.generated.ValueType"/>
+            <conversion-rule class="native">
+                ValueType* %out = qtjambi_cast&lt;ValueType*>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
     <modify-function signature="overrideMe(ValueType*)">
-        <modify-argument index="1" invalidate-after-use="yes" />
+        <modify-argument index="1" invalidate-after-use="yes">
+            <replace-type modified-type="io.qt.autotests.generated.ValueType"/>
+            <conversion-rule class="native">
+                ValueType* %out = qtjambi_cast&lt;ValueType*>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
     </modify-function>
   </object-type>
 
@@ -283,14 +520,73 @@
   <object-type name="FlagsAndEnumTest">
   </object-type>
   <object-type name="PropertyAndMethodCallTest">
+    <extra-includes>
+        <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
+    </extra-includes>
   </object-type>
   <object-type name="MetaObjectQtMetaCast">
     <include file-name="metaobjectqtmetacast.h" location="local"/>
   </object-type>
   <object-type name="SharedPointerTest">
-    <modify-function signature="createSharedObject2()" rename="privateCreateSharedObject2" access="private"/>
-    <inject-code>
-        <import-file name="../autotestlib/typesystem_autotests-java.java" quote-after-line="class SharedPointerTest___" quote-before-line="}// class"/>
-    </inject-code>
+    <extra-includes>
+        <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
+        <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+    </extra-includes>
   </object-type>
+  <object-type name="SettingsTest">
+  </object-type>
+  <object-type name="MultiSignalTest">
+  </object-type>
+  <object-type name="TestAbstractClass">
+        <modify-function signature="setReferenceCountTest1(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <object-type name="TestInterfaceImpl">
+        <modify-function signature="setReferenceCountTest1(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <object-type name="TestInterfaceObject">
+    <modify-function signature="setReferenceCountTest1(QObject*)">
+        <modify-argument index="1">
+            <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="create(QString)">
+        <modify-argument index="return">
+            <define-ownership class="native" owner="java" />
+        </modify-argument>
+    </modify-function>
+  </object-type>
+  <interface-type name="TestInterface">
+        <modify-function signature="setReferenceCountTest1(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setReferenceCountTest2(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcReferenceCountTest2" conditional="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setReferenceCountTest3(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcReferenceCountTest3" conditional="__qt_return_value"/>
+            </modify-argument>
+        </modify-function>
+  </interface-type>
+  <interface-type name="TestPrivateInterface"/>
+  <object-type name="FunctionManager">
+  </object-type>
+    <functional-type name="FunctionManager::StringSupplier"/>
+    <functional-type name="FunctionManager::StringConsumer"/>
+    <object-type name="FunctionalTest" />
+    <functional-type name="FunctionalTest::TestFunction1"/>
+    <functional-type name="FunctionalTest::TestFunction2"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'abstractFunction(const QString*)' in 'AnotherNonAbstractSubclass'" />
 </typesystem>

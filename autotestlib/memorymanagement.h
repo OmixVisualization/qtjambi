@@ -45,7 +45,9 @@
 #ifndef MEMORYMANAGEMENT_H
 #define MEMORYMANAGEMENT_H
 
+#ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
+#endif
 
 class PolymorphicObjectType
 {
@@ -54,13 +56,32 @@ public:
     virtual ~PolymorphicObjectType();
 
     static PolymorphicObjectType *newInstance();
+    static QSharedPointer<PolymorphicObjectType> newSharedInstance();
+    static QSharedPointer<PolymorphicObjectType> asSharedPointer(PolymorphicObjectType*);
     static void deleteLastInstance();
 
 private:
     static PolymorphicObjectType *m_lastInstance;
 };
 
-class QObjectType: public QObject
+class PolymorphicOwnedObjectType
+{
+public:
+    PolymorphicOwnedObjectType();
+    virtual ~PolymorphicOwnedObjectType();
+
+    QObject* owner() const;
+
+    static PolymorphicOwnedObjectType *newInstance();
+    static QSharedPointer<PolymorphicOwnedObjectType> newSharedInstance();
+    static QSharedPointer<PolymorphicOwnedObjectType> asSharedPointer(PolymorphicOwnedObjectType*);
+    static void deleteLastInstance();
+
+private:
+    static PolymorphicOwnedObjectType *m_lastInstance;
+};
+
+class QObjectType : public QObject
 {
     Q_OBJECT
 public:
@@ -68,6 +89,8 @@ public:
     ~QObjectType();
 
     static QObjectType *newInstance();
+    static QSharedPointer<QObjectType> newSharedInstance();
+    static QSharedPointer<QObjectType> asSharedPointer(QObjectType*);
     static void deleteLastInstance();
 
 private:
@@ -81,10 +104,29 @@ public:
     ~NonPolymorphicObjectType();
 
     static NonPolymorphicObjectType *newInstance();
+    static QSharedPointer<NonPolymorphicObjectType> newSharedInstance();
+    static QSharedPointer<NonPolymorphicObjectType> asSharedPointer(NonPolymorphicObjectType*);
     static void deleteLastInstance();
 
 private:
     static NonPolymorphicObjectType *m_lastInstance;
+};
+
+class NonPolymorphicOwnedObjectType
+{
+public:
+    NonPolymorphicOwnedObjectType();
+    ~NonPolymorphicOwnedObjectType();
+
+    QObject* owner() const;
+
+    static NonPolymorphicOwnedObjectType *newInstance();
+    static QSharedPointer<NonPolymorphicOwnedObjectType> newSharedInstance();
+    static QSharedPointer<NonPolymorphicOwnedObjectType> asSharedPointer(NonPolymorphicOwnedObjectType*);
+    static void deleteLastInstance();
+
+private:
+    static NonPolymorphicOwnedObjectType *m_lastInstance;
 };
 
 class ValueType
@@ -105,6 +147,7 @@ private:
 { \
 public: \
     Invalidator##T() {} \
+    virtual ~Invalidator##T() {} \
     void invalidateObject(T *meh) { \
         overrideMe(meh); \
     } \
@@ -113,6 +156,8 @@ public: \
 
 INVALIDATOR(PolymorphicObjectType);
 INVALIDATOR(NonPolymorphicObjectType);
+INVALIDATOR(PolymorphicOwnedObjectType);
+INVALIDATOR(NonPolymorphicOwnedObjectType);
 INVALIDATOR(ValueType);
 INVALIDATOR(QObjectType);
 

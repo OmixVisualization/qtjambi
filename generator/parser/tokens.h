@@ -74,6 +74,7 @@ enum TOKEN_KIND {
     Token_compl,
     Token_concat,
     Token_const,
+    Token_constexpr,
     Token_const_cast,
     Token_continue,
     Token_decr,
@@ -132,6 +133,7 @@ enum TOKEN_KIND {
     Token_static,
     Token_static_cast,
     Token_string_literal,
+    Token_rawstring_literal,
     Token_struct,
     Token_switch,
     Token_template,
@@ -156,9 +158,13 @@ enum TOKEN_KIND {
     Token_Q_ENUMS,
     Token_Q_ENUM,
     Token_Q_INVOKABLE,
+    Token_Q_SCRIPTABLE,
     Token_Q_GADGET,
     Token_Q_DECLARE_METATYPE,
-    Token_nullptr,
+    Token_QT_REQUIRE_CONFIG,
+    Token_QTJAMBI_DEPRECATED,
+    Token_QTJAMBI_DEPRECATED_X,
+//    Token_nullptr,
 
     TOKEN_KIND_COUNT
 };

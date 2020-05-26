@@ -45,11 +45,14 @@ class Handler : public QXmlDefaultHandler {
     public:
         Handler(TypeDatabase *database, bool generate)
                 : m_database(database), m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass) {
-            current = 0;
+            current = nullptr;
 
             tagNames["rejection"]                   = StackElement::Rejection;
             tagNames["primitive-type"]              = StackElement::PrimitiveTypeEntry;
             tagNames["object-type"]                 = StackElement::ObjectTypeEntry;
+            tagNames["template-type"]               = StackElement::TemplateTypeEntry;
+            tagNames["functional-type"]             = StackElement::FunctionalTypeEntry;
+            tagNames["iterator-type"]               = StackElement::IteratorTypeEntry;
             tagNames["value-type"]                  = StackElement::ValueTypeEntry;
             tagNames["interface-type"]              = StackElement::InterfaceTypeEntry;
             tagNames["namespace-type"]              = StackElement::NamespaceTypeEntry;
@@ -57,6 +60,7 @@ class Handler : public QXmlDefaultHandler {
             tagNames["extra-includes"]              = StackElement::ExtraIncludes;
             tagNames["include"]                     = StackElement::Include;
             tagNames["inject-code"]                 = StackElement::InjectCode;
+            tagNames["interface-polymorphy"]        = StackElement::InterfacePolymorphicId;
             tagNames["modify-function"]             = StackElement::ModifyFunction;
             tagNames["modify-field"]                = StackElement::ModifyField;
             tagNames["instantiate-template"]        = StackElement::InstantiateTemplate;
@@ -66,24 +70,26 @@ class Handler : public QXmlDefaultHandler {
             tagNames["typesystem"]                  = StackElement::Root;
             tagNames["custom-constructor"]          = StackElement::CustomMetaConstructor;
             tagNames["custom-destructor"]           = StackElement::CustomMetaDestructor;
-            tagNames["custom-creator"]              = StackElement::CustomMetaCreator;
-            tagNames["custom-deleter"]              = StackElement::CustomMetaDeleter;
             tagNames["argument-map"]                = StackElement::ArgumentMap;
             tagNames["suppress-warning"]            = StackElement::SuppressedWarning;
             tagNames["load-typesystem"]             = StackElement::LoadTypesystem;
             tagNames["define-ownership"]            = StackElement::DefineOwnership;
             tagNames["replace-default-expression"]  = StackElement::ReplaceDefaultExpression;
             tagNames["reject-enum-value"]           = StackElement::RejectEnumValue;
+            tagNames["rename-enum-value"]           = StackElement::RenameEnumValue;
             tagNames["replace-type"]                = StackElement::ReplaceType;
+            tagNames["array-type"]                  = StackElement::ArrayType;
             tagNames["conversion-rule"]             = StackElement::ConversionRule;
             tagNames["modify-argument"]             = StackElement::ModifyArgument;
             tagNames["remove-argument"]             = StackElement::RemoveArgument;
+            tagNames["add-argument"]                = StackElement::AddArgument;
             tagNames["remove-default-expression"]   = StackElement::RemoveDefaultExpression;
             tagNames["template"]                    = StackElement::Template;
             tagNames["insert-template"]             = StackElement::TemplateInstanceEnum;
             tagNames["replace"]                     = StackElement::Replace;
             tagNames["no-null-pointer"]             = StackElement::NoNullPointers;
             tagNames["reference-count"]             = StackElement::ReferenceCount;
+            tagNames["import"]                      = StackElement::ImportTemplate;
         }
 
         bool startElement(const QString &namespaceURI, const QString &localName,
@@ -109,6 +115,8 @@ class Handler : public QXmlDefaultHandler {
 
         bool importFileElement(const QXmlAttributes &atts);
         bool convertBoolean(const QString &, const QString &, bool);
+
+        uint parseQtVersion(QString strg, uint defaultValue);
 
         TypeDatabase *m_database;
         StackElement* current;

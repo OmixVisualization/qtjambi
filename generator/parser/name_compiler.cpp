@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,9 +50,9 @@ NameCompiler::NameCompiler(Binder *binder)
         : _M_binder(binder), _M_token_stream(binder->tokenStream()) {
 }
 
-QString NameCompiler::decode_operator(std::size_t index) const {
-    const Token &tk = _M_token_stream->token((int) index);
-    return QString::fromUtf8(&tk.text[tk.position], (int) tk.size);
+QString NameCompiler::decode_operator(std::size_t index, bool op2) const {
+    const Token &tk = _M_token_stream->token(index);
+    return QString::fromUtf8(&tk.text[tk.position], int(tk.size + (op2 ? 1 : 0)));
 }
 
 QString NameCompiler::internal_run(AST *node) {
@@ -77,17 +77,17 @@ void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
 
         if (op_id->op && op_id->op->op) {
             tmp_name += QLatin1String("operator");
-            tmp_name += decode_operator(op_id->op->op);
+            tmp_name += decode_operator(op_id->op->op, op_id->op->op2);
             if (op_id->op->close)
-                tmp_name += decode_operator(op_id->op->close);
+                tmp_name += decode_operator(op_id->op->close, false);
         } else if (op_id->type_specifier) {
 #if defined(__GNUC__)
 #warning "don't use an hardcoded string as cast' name"
 #endif
-            Token const &tk = _M_token_stream->token((int) op_id->start_token);
-            Token const &end_tk = _M_token_stream->token((int) op_id->end_token);
+            Token const &tk = _M_token_stream->token(op_id->start_token);
+            Token const &end_tk = _M_token_stream->token(op_id->end_token);
             tmp_name += QString::fromLatin1(&tk.text[tk.position],
-                                            (int)(end_tk.position - tk.position)).trimmed();
+                                            int(end_tk.position - tk.position)).trimmed();
         }
     }
 
@@ -131,8 +131,37 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
 
         _M_name.last() += q.join("::");
 
-        if (decl_cc.isReference())
+        if(!decl_cc.parameters().isEmpty()){
+            _M_functionalReturnType.setQualifiedName(type_cc.qualifiedName());
+            _M_functionalReturnType.setConstant(type_cc.isConstant());
+            _M_functionalReturnType.setVolatile(type_cc.isVolatile());
+            _M_functionalReturnType.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+            _M_functionalReturnType.setIndirections(decl_cc.indirection());
+            _M_functionalReturnType.setArrayElements(decl_cc.arrayElements());
+            _M_functionalReturnType.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+            _M_functionalReturnType.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+            _M_functionalReturnType.setFunctionalReturnType(type_cc.functionalReturnType());
+            _M_name.last() += "(";
+            bool isBegin = true;
+            for(const DeclaratorCompiler::Parameter& parameter : decl_cc.parameters()){
+                if(!isBegin)
+                    _M_name.last() += ",";
+                if(!parameter.name.isEmpty()){
+                    _M_name.last() += parameter.name;
+                }else{
+                    _M_name.last() += parameter.type.qualifiedName().join("::");
+                }
+                _M_functionalArgumentTypes << parameter.type;
+                _M_functionalArgumentNames << parameter.name;
+                isBegin = false;
+            }
+            _M_name.last() += ")";
+        }
+
+        if (decl_cc.getReferenceType()==DeclaratorCompiler::Reference)
             _M_name.last() += "&";
+        if (decl_cc.getReferenceType()==DeclaratorCompiler::RReference)
+            _M_name.last() += "&&";
         for (int i=0; i<decl_cc.indirection().size(); i++){
             if(decl_cc.indirection()[i]){
                 _M_name.last() += "*const ";

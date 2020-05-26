@@ -60,7 +60,7 @@ CodeModelFinder::~CodeModelFinder() {
 }
 
 ScopeModelItem CodeModelFinder::resolveScope(NameAST *name, ScopeModelItem scope) {
-    Q_ASSERT(scope != 0);
+    Q_ASSERT(scope != nullptr);
 
     ResolvePolicy saved_resolve_policy = _M_resolve_policy;
     _M_resolve_policy = ResolveScope;

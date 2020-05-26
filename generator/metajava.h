@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,7 +48,7 @@ class MetaJavaVariable;
 class MetaJavaArgument;
 class MetaJavaEnumValue;
 class MetaJavaEnum;
-
+class MetaJavaFunctional;
 
 
 class MetaJavaType : public AbstractMetaType {};
@@ -64,6 +64,8 @@ class MetaJavaFunction : public AbstractMetaFunction {};
 class MetaJavaEnumValue : public AbstractMetaEnumValue {};
 
 class MetaJavaEnum : public AbstractMetaEnum {};
+
+class MetaJavaFunctional : public AbstractMetaFunctional {};
 
 class MetaJavaClass : public AbstractMetaClass {};
 

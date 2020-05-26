@@ -1,7 +1,6 @@
 #!/bin/sh
 
-QT_WIDGETS="MacOSXFunctions \
-QAbstractButton \
+QT_WIDGETS="QAbstractButton \
 QAbstractGraphicsShapeItem \
 QAbstractItemDelegate \
 QAbstractItemView \
@@ -239,19 +238,19 @@ for PATH in $@
 	do
 		if [[ -f $file ]]; then
 			echo "replace on $file"
-			/usr/bin/sed -i 's/com\.trolltech\.qt/org.qtjambi.qt/g' $file
-			/usr/bin/sed -i 's/com_trolltech_qt/org_qtjambi_qt/g' $file
-			/usr/bin/sed -i 's_com/trolltech/qt_org/qtjambi/qt_g' $file
-			/usr/bin/sed -i "s/org\.qtjambi\.qt\.gui\.\($QT_WIDGETS_CLASSES\)/org.qtjambi.qt.widgets.\1/g" $file
-			/usr/bin/sed -i "s/org\.qtjambi\.qt\.gui\.\($QT_PRINTSUPPORT_CLASSES\)/org.qtjambi.qt.printsupport.\1/g" $file
-			/usr/bin/sed -i 's/org\.qtjambi\.qt\.gui\.\(QItemSelection\|QItemSelectionModel\|QSortFilterProxyModel\|QMarginsF\|QAbstractProxyModel\)/org.qtjambi.qt.core.\1/g' $file
+			/usr/bin/sed -i 's/com\.trolltech\.qt/io.qt/g' $file
+			/usr/bin/sed -i 's/com_trolltech_qt/io_qt/g' $file
+			/usr/bin/sed -i 's_com/trolltech/qt_io/qt_g' $file
+			/usr/bin/sed -i "s/org\.qtjambi\.qt\.gui\.\($QT_WIDGETS_CLASSES\)/io.qt.widgets.\1/g" $file
+			/usr/bin/sed -i "s/org\.qtjambi\.qt\.gui\.\($QT_PRINTSUPPORT_CLASSES\)/io.qt.printsupport.\1/g" $file
+			/usr/bin/sed -i 's/org\.qtjambi\.qt\.gui\.\(QItemSelection\|QItemSelectionModel\|QSortFilterProxyModel\|QMarginsF\|QAbstractProxyModel\)/io.qt.core.\1/g' $file
 			/usr/bin/sed -i 's/QStyleOptionFrameV2\|QStyleOptionFrameV3/QStyleOptionFrame/g' $file
 			/usr/bin/sed -i 's/QInputDialog\.getInteger/QInputDialog.getInt/g' $file
 			/usr/bin/sed -i 's/QDesktopServices\.storageLocation/QStandardPaths.writableLocation/g' $file
 			/usr/bin/sed -i 's/QDesktopServices\.displayName/QStandardPaths.displayName/g' $file
 			/usr/bin/sed -i 's/QDesktopServices\.StandardLocation/QStandardPaths.StandardLocation/g' $file
 			/usr/bin/sed -i 's/QPrinter\.PageSize/QPagedPaintDevice.PageSize/g' $file
-			/usr/bin/sed -i 's/import\sorg\.qtjambi\.qt\.gui\.QDesktopServices;/import org.qtjambi.qt.gui.QDesktopServices;\nimport org.qtjambi.qt.core.QStandardPaths;/g' $file
+			/usr/bin/sed -i 's/import\sorg\.qtjambi\.qt\.gui\.QDesktopServices;/import io.qt.gui.QDesktopServices;\nimport io.qt.core.QStandardPaths;/g' $file
 		fi
 	done
 	for file in $PATH/*

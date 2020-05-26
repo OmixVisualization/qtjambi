@@ -3,8 +3,9 @@
         Building and running the Generator
     -->
 
-    <target name="generator.run" depends="init.build, generator.xmlmerge"
+    <target name="generator.run" depends="init.build"
         description="Runs the Qt Jambi generator on the Qt headers">
+		<antcall target="generator.xmlmerge"/>
         <mkdir dir="${generator.outputdir}"/>
         <generator dir="${generator.builddir}"
                 debugTools="${qtjambi.debug-tools}"
@@ -13,11 +14,10 @@
                 generatorDirectory="${generator.builddir}"
                 typesystem="${generatorDir}/targets/build_all.xml"
                 header="${generatorDir}/targets/qtjambi_masterinclude.h"
-                phononpath="${qtjambi.phonon.includedir}"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
-                includepaths="${qtjambi.qt.includedir}/QtCore/${qt.version};${qtjambi.qt.includedir}/Qt3DCore/${qt.version};${generator.includepaths}"
-                kdephonon="${qtjambi.phonon.kdephonon-path}"
+                targetJavaVersion="${target.java.version}"
+                includepaths="${generator.includepaths};${generator.extra.includes}"
                 options="${qtjambi.generator.jumptable}"/>
     </target>
 	
@@ -75,35 +75,54 @@
 		<xmlmerge victim="widgets"/>
         <xmlmerge victim="sql"/>
         <xmlmerge victim="network"/>
+        <xmlmerge victim="networkauth"/>
         <xmlmerge victim="xml"/>
         <xmlmerge victim="xmlpatterns"/>
         <xmlmerge victim="qml"/>
 		<xmlmerge victim="quick"/>
+		<xmlmerge victim="quickcontrols2"/>
 		<xmlmerge victim="quickwidgets"/>
 		<xmlmerge victim="printsupport"/>
 		<xmlmerge victim="script"/>
         <xmlmerge victim="scripttools"/>
         <xmlmerge victim="multimedia"/>
 		<xmlmerge victim="multimediawidgets"/>
-        <xmlmerge victim="opengl"/>
         <xmlmerge victim="svg"/>
         <xmlmerge victim="dbus"/>
 		<xmlmerge victim="test"/>
-        <xmlmerge victim="declarative"/>
         <xmlmerge victim="help"/>
-        <xmlmerge victim="phonon"/>
-        <xmlmerge victim="webkit"/>
-		<xmlmerge victim="webkitwidgets"/>
+		<xmlmerge victim="websockets"/>
+		<xmlmerge victim="webchannel"/>
+		<xmlmerge victim="webenginecore"/>
+		<xmlmerge victim="webenginewidgets"/>
+		<xmlmerge victim="webview"/>
+		<xmlmerge victim="webengine"/>
         <xmlmerge victim="designer"/>
 		<xmlmerge victim="winextras"/>
 		<xmlmerge victim="macextras"/>
 		<xmlmerge victim="x11extras"/>
 		<xmlmerge victim="serialport"/>
 		<xmlmerge victim="qt3dcore"/>
+		<xmlmerge victim="qt3dextras"/>
 		<xmlmerge victim="qt3drenderer"/>
 		<xmlmerge victim="qt3dinput"/>
 		<xmlmerge victim="qt3dquick"/>
+		<xmlmerge victim="qt3dquickextras"/>
 		<xmlmerge victim="qt3dquickrenderer"/>
+		<xmlmerge victim="qt3danimation"/>
+		<xmlmerge victim="qt3dquickscene2d"/>
+		<xmlmerge victim="qt3dlogic"/>
+		<xmlmerge victim="gamepad"/>
+		<xmlmerge victim="remoteobjects"/>
+		<xmlmerge victim="scxml"/>
+		<xmlmerge victim="bluetooth"/>
+		<xmlmerge victim="location"/>
+		<xmlmerge victim="positioning"/>
+		<xmlmerge victim="nfc"/>
+		<xmlmerge victim="sensors"/>
+		<xmlmerge victim="serialbus"/>
+		<xmlmerge victim="purchasing"/>
+		<xmlmerge victim="texttospeech"/>
     </target>
 
 </project>

@@ -1,11 +1,14 @@
-TARGET = org_qtjambi_qt_concurrent
+QTJAMBILIB = QtJambiConcurrent
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_concurrent/org_qtjambi_qt_concurrent.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-HEADERS += qtjambiconcurrent_p.h
-SOURCES += qtjambiconcurrent.cpp
+HEADERS += qtjambiconcurrent_p.h \
+    qtjambi_concurrent_repository.h
+SOURCES += qtjambiconcurrent.cpp \
+    qtjambi_concurrent_repository.cpp
 
 QT = core concurrent

@@ -56,8 +56,12 @@
 class CustomEvent: public QEvent
 {
 public:
-    CustomEvent(int something) : QEvent(QEvent::Type(QEvent::User + 1)) { m_something = something; }
+    CustomEvent(int something) : QEvent(customType()) { m_something = something; }
 
+    static QEvent::Type customType(){
+        static QEvent::Type customType = QEvent::Type(QEvent::registerEventType());
+        return customType;
+    }
     int m_something;
 };
 

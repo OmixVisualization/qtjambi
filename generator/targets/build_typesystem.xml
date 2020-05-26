@@ -1,4 +1,4 @@
-<typesystem package="org.qtjambi.tools.generator" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
+<typesystem package="io.qt.tools.generator" default-superclass="io.qt.internal.QtJambiObject">
     <load-typesystem name=":/trolltech/generator/typesystem_core.txt" generate="no" />
 
     <rejection class="QDataStream"/>

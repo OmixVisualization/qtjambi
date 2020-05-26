@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -66,7 +66,7 @@ static QString simplifyName(const QString &name, const QString &context, const Q
         shortNames.insert("bool", "Z");
     }
 
-    QString sn = ((const QHash<QString, QString> &) shortNames).value(name);
+    QString sn = shortNames.value(name);
     if (sn.isEmpty()) {
         printf("Failed to translate to shortname: %s in %s :: %s\n",
                qPrintable(name),
@@ -91,7 +91,7 @@ static QString expandNameJNI(const QChar &c) {
         expandNamesJNI.insert('V', "void");
     }
 
-    QString n = ((const QHash<char, QString> &) expandNamesJNI).value(c.toLatin1());
+    QString n = expandNamesJNI.value(c.toLatin1());
     if (n.isEmpty())
         printf("Failed to translate to expanded names: %c\n", c.toLatin1());
 
@@ -112,7 +112,7 @@ static QString expandNameJava(const QChar &c) {
         expandNamesJava.insert('V', "void");
     }
 
-    QString n = ((const QHash<char, QString> &) expandNamesJava).value(c.toLatin1());
+    QString n = expandNamesJava.value(c.toLatin1());
     if (n.isEmpty())
         printf("Failed to translate to expanded names: %c\n", c.toLatin1());
 
@@ -122,7 +122,7 @@ static QString expandNameJava(const QChar &c) {
 
 void JumpTablePreprocessor::generate() {
     ReportHandler::setContext("JumpTablePreprocessor");
-    foreach(AbstractMetaClass *cl, m_classes) {
+    for(AbstractMetaClass *cl : m_classes) {
         process(cl);
     }
 }
@@ -147,7 +147,7 @@ void JumpTablePreprocessor::process(AbstractMetaClass *cls) {
 
     // Native callbacks (all java functions require native callbacks)
     AbstractMetaFunctionList class_funcs = cls->functionsInTargetLang();
-    foreach(AbstractMetaFunction *function, class_funcs) {
+    for(AbstractMetaFunction *function : class_funcs) {
         if (!function->isEmptyFunction())
             process(function, &signatureList);
     }
@@ -156,7 +156,7 @@ void JumpTablePreprocessor::process(AbstractMetaClass *cls) {
     class_funcs = cls->queryFunctions(AbstractMetaClass::NormalFunctions
                                       | AbstractMetaClass::AbstractFunctions
                                       | AbstractMetaClass::NotRemovedFromTargetLang);
-    foreach(AbstractMetaFunction *function, class_funcs) {
+    for(AbstractMetaFunction *function : class_funcs) {
         if (function->implementingClass() != cls) {
             process(function, &signatureList);
         }
@@ -169,14 +169,14 @@ QString JumpTablePreprocessor::signature(const AbstractMetaFunction *func) {
     QString context = func->implementingClass()->name();
     QString functionSignature = func->signature();
 
-    if (func->argumentRemoved(0))
+    if (func->argumentRemoved(0)!=ArgumentRemove_No)
         signature = "V";
     else
         signature = simplifyName(CppImplGenerator::jniReturnName(func), context, functionSignature);
 
-    AbstractMetaArgumentList args = func->arguments();
-    foreach(const AbstractMetaArgument *a, args) {
-        if (!func->argumentRemoved(a->argumentIndex() + 1)) {
+    const AbstractMetaArgumentList& args = func->arguments();
+    for(const AbstractMetaArgument *a : args) {
+        if (func->argumentRemoved(a->argumentIndex() + 1)==ArgumentRemove_No) {
             if (!a->type()->hasNativeId())
                 signature += simplifyName(CppImplGenerator::translateType(a->type(), EnumAsInts),
                                           context, functionSignature);
@@ -301,14 +301,14 @@ void JumpTableGenerator::generateNativeTable(const QString &packageName,
 
         s << ", jobject __this)" << endl
         << "{" << endl
-        << "Q_UNUSED(__this);" << endl
-        << "Q_UNUSED(nid);" << endl
+        << "Q_UNUSED(__this)" << endl
+        << "Q_UNUSED(nid)" << endl
         << "switch (id) { " << endl;
 
         AbstractMetaFunctionList functions = sit.value();
         bool hasReturn = signature.at(0) != 'V';
 
-        foreach(AbstractMetaFunction *f, functions) {
+        for(AbstractMetaFunction *f : functions) {
             const AbstractMetaClass *cls = f->ownerClass();
             s << endl
             << "// " << cls->name() << "::" << f->signature() << ", declaring=" << f->declaringClass()->name() << ", implementing=" << f->implementingClass()->name() << endl

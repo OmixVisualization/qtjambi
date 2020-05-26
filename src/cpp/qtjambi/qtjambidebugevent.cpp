@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 2011 Darryl L. Miles.  All rights reserved.
 ** Copyright (C) 2011 D L Miles Consulting Ltd.  All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,14 +50,7 @@
 #include <stdio.h>		// snprintf
 #include <sys/types.h> 		// size_t
 
-#include "qtjambi_global.h"
 #include "qtjambi_core.h"
-
-#if 0
-#include <QtGui/QAccessibleEvent>
-#include <QtGui/QActionEvent>
-#include <QtCore/QChildEvent>
-#endif
 
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QAccessibleEvent *e, const char *type_name)
@@ -69,7 +62,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QAccessibleEvent *e, const char *type
         .arg((long)(void*)e->child(), 0, 16)
         .arg(e->value());
 #else
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
 #endif
@@ -86,7 +79,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QActionEvent *e, const char *type_nam
         .arg((long)(void*)e->action(), 0, 16)
         .arg((long)(void*)e->before(), 0, 16);
 #else
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
 #endif
@@ -105,7 +98,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QChildEvent *e, const char *type_name
         .arg(e->removed())
         .arg(e->polished());
 #else
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
 #endif
@@ -115,7 +108,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QChildEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QCloseEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -125,7 +118,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QCloseEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QCustomEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -135,7 +128,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QCustomEvent *e, const char *type_nam
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QDragLeaveEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -144,7 +137,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QDragLeaveEvent *e, const char *type_
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QDropEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -153,7 +146,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QDropEvent *e, const char *type_name)
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QDynamicPropertyChangeEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -162,7 +155,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QDynamicPropertyChangeEvent *e, const
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QFileOpenEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -171,7 +164,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QFileOpenEvent *e, const char *type_n
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QFocusEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -181,7 +174,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QFocusEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QGestureEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -191,7 +184,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QGestureEvent *e, const char *type_na
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QGraphicsSceneEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -200,7 +193,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QGraphicsSceneEvent *e, const char *t
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QHelpEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -209,7 +202,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QHelpEvent *e, const char *type_name)
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QHideEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -218,7 +211,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QHideEvent *e, const char *type_name)
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QHoverEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -227,7 +220,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QHoverEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QIconDragEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -236,7 +229,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QIconDragEvent *e, const char *type_n
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QInputEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -245,7 +238,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QInputEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QInputMethodEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -254,7 +247,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QInputMethodEvent *e, const char *typ
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QMoveEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -263,7 +256,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QMoveEvent *e, const char *type_name)
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QPaintEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -272,7 +265,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QPaintEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QResizeEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -281,7 +274,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QResizeEvent *e, const char *type_nam
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QShortcutEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -290,7 +283,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QShortcutEvent *e, const char *type_n
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QShowEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -299,7 +292,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QShowEvent *e, const char *type_name)
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QStatusTipEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -308,7 +301,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QStatusTipEvent *e, const char *type_
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QTimerEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -317,7 +310,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QTimerEvent *e, const char *type_name
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QWhatsThisClickedEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -326,7 +319,7 @@ QtJambiDebugEvent::qtjambi_event_to_string(QWhatsThisClickedEvent *e, const char
 QString
 QtJambiDebugEvent::qtjambi_event_to_string(QWindowStateChangeEvent *e, const char *type_name)
 {
-    Q_UNUSED(e);
+    Q_UNUSED(e)
     QString s = QString("%1")
         .arg(type_name);
     return s;
@@ -868,7 +861,7 @@ QtJambiDebugEvent::qtjambi_event_type_to_string(int type)
         return  "UpdateSoftKeys";
 
 */
-    return 0;
+    return nullptr;
 }
 
 const char *
@@ -898,13 +891,6 @@ QtJambiDebugEvent::qtjambi_event_to_string(QEvent *event)
     const char *typedesc = qtjambi_event_type_to_string(tmpbuf, sizeof(tmpbuf), type, true);
 
     switch(type) {
-    case QEvent::None:				// 0
-//    case QEvent::AccessibilityPrepare:		// 86
-    default:
-    {
-        return QString(typedesc);
-    }
-
 //    case QEvent::AccessibilityHelp:		// 119
 //    case QEvent::AccessibilityDescription:	// 130
 //    {
@@ -1110,9 +1096,13 @@ QtJambiDebugEvent::qtjambi_event_to_string(QEvent *event)
     }
  #endif
 #endif // QT_VERSION >= 0x040600
+    case QEvent::None:				// 0
+//    case QEvent::AccessibilityPrepare:		// 86
+    default:
+    {
+        return QString(typedesc);
     }
-
-    return QString();
+    }
 }
 
 const char *
@@ -1120,7 +1110,7 @@ QtJambiDebugEvent::qtjambi_event_desc_to_string(char *buf, size_t buflen, QEvent
 {
     QString typedesc = qtjambi_event_to_string(event);
     if(typedesc.isNull())
-        return 0;
+        return nullptr;
     QByteArray ba = typedesc.toLocal8Bit(); // keeps constData() alive for strncpy()
     const char *s = ba.constData();
     if(s) {
@@ -1128,7 +1118,7 @@ QtJambiDebugEvent::qtjambi_event_desc_to_string(char *buf, size_t buflen, QEvent
         buf[buflen - 1] = '\0';
         return buf;
     }
-    return 0;
+    return nullptr;
 }
 
 #else // QTJAMBI_DEBUG_TOOLS

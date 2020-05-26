@@ -47,7 +47,7 @@
 #include "visitor.h"
 
 Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
-    0,
+    nullptr,
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitAccessSpecifier),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitAsmDefinition),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitBaseClause),
@@ -71,7 +71,8 @@ Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitExceptionSpecification),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitExpressionOrDeclarationStatement),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitExpressionStatement),
-    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitForStatement),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitClassicForStatement),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitIteratorForStatement),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitFunctionCall),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitFunctionDefinition),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitIfStatement),
@@ -101,7 +102,9 @@ Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitReturnStatement),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSimpleDeclaration),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSimpleTypeSpecifier),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitAutoTypeSpecifier),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSizeofExpression),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitTypeidExpression),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitStringLiteral),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSubscriptExpression),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSwitchStatement),
@@ -118,13 +121,16 @@ Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitUnaryExpression),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitUnqualifiedName),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitUsing),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitUsingAs),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitUsingDirective),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitWhileStatement),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitWinDeclSpec),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQProperty),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitForwardDeclarationSpecifier),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQEnums),
-    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQEnum)
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQEnum),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQGadget),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQObject)
 };
 
 Visitor::Visitor() {

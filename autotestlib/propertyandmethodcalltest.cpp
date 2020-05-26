@@ -2,26 +2,30 @@
 
 PropertyAndMethodCallTest::PropertyAndMethodCallTest(QObject *parent) :
     QObject(parent),
-    m_receivedEnum(0),
+    m_receivedEnum(),
     m_receivedColor(),
     m_receivedQtEnum(),
+    m_receivedQtFlags(),
     m_receivedList(),
     m_receivedNumber(),
-    m_receivedCustomQtValue(0),
+    m_receivedCustomQtValue(nullptr),
+    m_receivedCustomQtInterfaceValue(nullptr),
     m_receivedCustomJavaType(),
-    m_receivedDerivedQObject(0)
+    m_receivedDerivedQObject(nullptr)
 {
 }
 
 bool PropertyAndMethodCallTest::connectSignals(QObject* sender){
-    QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper)));
-    QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper)));
-    QObject::connect(sender, SIGNAL(customQtFlagsChanged(JEnumWrapper)), this, SLOT(receiveQtFlags(JEnumWrapper)));
-    QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor)));
-    QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*)));
-    QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper)));
-    QObject::connect(sender, SIGNAL(derivedQObjectChanged(QObject*)), this, SLOT(receiveDerivedQObject(QObject*)));
-    return true;
+    bool connected = true;
+    connected &= (bool)QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customQtFlagsChanged(JObjectWrapper)), this, SLOT(receiveQtFlags(JObjectWrapper)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customQtInterfaceValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper)));
+    connected &= (bool)QObject::connect(sender, SIGNAL(derivedQObjectChanged(QObject*)), this, SLOT(receiveDerivedQObject(QObject*)));
+    return connected;
 }
 
 void PropertyAndMethodCallTest::receiveCustomEnum(JEnumWrapper value){
@@ -36,7 +40,7 @@ void PropertyAndMethodCallTest::receiveCustomQtEnum(JEnumWrapper value){
     m_receivedQtEnum = value;
 }
 
-void PropertyAndMethodCallTest::receiveQtFlags(JEnumWrapper value){
+void PropertyAndMethodCallTest::receiveQtFlags(JObjectWrapper value){
     m_receivedQtFlags = value;
 }
 
@@ -50,6 +54,10 @@ void PropertyAndMethodCallTest::receiveNumber(JObjectWrapper value){
 
 void PropertyAndMethodCallTest::receiveCustomQtValue(QGraphicsItem* value){
     m_receivedCustomQtValue = value;
+}
+
+void PropertyAndMethodCallTest::receiveCustomQtInterfaceValue(QGraphicsItem* value){
+    m_receivedCustomQtInterfaceValue = value;
 }
 
 void PropertyAndMethodCallTest::receiveCustomJavaType(JObjectWrapper value){
@@ -84,6 +92,10 @@ QGraphicsItem* PropertyAndMethodCallTest::receivedCustomQtValue(){
     return m_receivedCustomQtValue;
 }
 
+QGraphicsItem* PropertyAndMethodCallTest::receivedCustomQtInterfaceValue(){
+    return m_receivedCustomQtInterfaceValue;
+}
+
 JObjectWrapper PropertyAndMethodCallTest::receivedCustomJavaType(){
     return m_receivedCustomJavaType;
 }
@@ -92,7 +104,7 @@ QObject* PropertyAndMethodCallTest::receivedDerivedQObject(){
     return m_receivedDerivedQObject;
 }
 
-JEnumWrapper PropertyAndMethodCallTest::receivedQtFlags(){
+JObjectWrapper PropertyAndMethodCallTest::receivedQtFlags(){
     return m_receivedQtFlags;
 }
 
@@ -129,6 +141,10 @@ bool PropertyAndMethodCallTest::testMethodCallCustomQtValue(QObject* qobj){
     GETMETHOD_TEST(QGraphicsItem*, CustomQtValue)
 }
 
+bool PropertyAndMethodCallTest::testMethodCallCustomQtInterfaceValue(QObject* qobj){
+    GETMETHOD_TEST(QGraphicsItem*, CustomQtInterfaceValue)
+}
+
 bool PropertyAndMethodCallTest::testMethodCallCustomJavaType(QObject* qobj){
     GETMETHOD_TEST(JObjectWrapper, CustomJavaType)
 }
@@ -142,7 +158,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyNumber(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyEnum(QObject* qobj){
-    PROPERTY_TEST(JEnumWrapper, Enum)
+    PROPERTY_TEST(JEnumWrapper, CustomEnum)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyColor(QObject* qobj){
@@ -150,7 +166,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyColor(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyQtEnum(QObject* qobj){
-    PROPERTY_TEST2(Qt::AspectRatioMode, QtEnum)
+    PROPERTY_TEST(Qt::AspectRatioMode, QtEnum)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyDerivedQObject(QObject* qobj){
@@ -166,7 +182,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyQtFlags(QObject* qobj){
     if(qobj){
         QString name("QtFlags");
         name[0] = name[0].toLower();
-        Qt::Orientations arg = (Qt::Orientations)qobj->property(name.toLatin1()).toInt();
+        Qt::Orientations arg = qobj->property(name.toLatin1()).value<Qt::Orientations>();
         const QMetaMethod testmethod = qobj->metaObject()->method(qobj->metaObject()->indexOfMethod("testQtFlags(Qt::Orientations)"));
         testmethod.invoke(qobj, Q_RETURN_ARG(bool, result), Q_ARG(Qt::Orientations, arg));
     }
@@ -175,6 +191,10 @@ bool PropertyAndMethodCallTest::testFetchPropertyQtFlags(QObject* qobj){
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomQtValue(QObject* qobj){
     PROPERTY_TEST3(QGraphicsItem*, CustomQtValue)
+}
+
+bool PropertyAndMethodCallTest::testFetchPropertyCustomQtInterfaceValue(QObject* qobj){
+    PROPERTY_TEST3(QGraphicsItem*, CustomQtInterfaceValue)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomJavaType(QObject* qobj){

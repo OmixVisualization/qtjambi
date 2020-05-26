@@ -48,32 +48,120 @@
 #include <QtGui/QtGui>
 #include <QtWidgets>
 
+class TestAbstractClass
+{
+public:
+    explicit TestAbstractClass();
+    virtual ~TestAbstractClass();
+    virtual bool setReferenceCountTest1(QObject* object) = 0;
+    virtual QString method1() const;
+    virtual QString method2() const = 0;
+    virtual QString method3() const = 0;
+    virtual QString method4() const;
+    QString method5() const;
+    static QString callMethod1(TestAbstractClass* cls);
+    static QString callMethod2(TestAbstractClass* cls);
+    static QString callMethod3(TestAbstractClass* cls);
+    static QString callMethod4(TestAbstractClass* cls);
+    static QString callMethod5(TestAbstractClass* cls);
+};
+
+class TestInterface
+{
+public:
+    explicit TestInterface(const QString &);
+    virtual ~TestInterface();
+    virtual bool setReferenceCountTest1(QObject* object) = 0;
+    virtual bool setReferenceCountTest2(QObject* object);
+    bool setReferenceCountTest3(QObject* object);
+    QString method1() const;
+    QString method2() const;
+    virtual QString method3() const;
+    virtual QString method4() const = 0;
+    virtual QString method5() const = 0;
+    static QString callMethod1(TestInterface* cls);
+    static QString callMethod2(TestInterface* cls);
+    static QString callMethod3(TestInterface* cls);
+    static QString callMethod4(TestInterface* cls);
+    static QString callMethod5(TestInterface* cls);
+    virtual void virtualInterfaceMethod();
+    virtual void virtualImplementedInterfaceMethod();
+protected:
+    void protectedNonVirtualInterfaceMethod();
+    virtual void protectedVirtualInterfaceMethod();
+    virtual void protectedImplementedVirtualInterfaceMethod();
+};
+
+class TestInterfaceObject : public QObject, public TestInterface
+{
+    Q_OBJECT
+public:
+    explicit TestInterfaceObject(const QString & s);
+    virtual ~TestInterfaceObject();
+    virtual bool setReferenceCountTest1(QObject* object);
+    void nonVirtualMethod();
+    virtual void virtualMethod();
+    virtual void virtualImplementedMethod();
+    static TestInterfaceObject* create(const QString & s);
+protected:
+    virtual void protectedVirtualMethod();
+};
+
+class TestInterfaceObject2 : public TestInterfaceObject{
+    Q_OBJECT
+public:
+    explicit TestInterfaceObject2(const QString & s);
+    virtual ~TestInterfaceObject2();
+    void virtualImplementedMethod();
+    void virtualImplementedInterfaceMethod();
+    void protectedImplementedVirtualInterfaceMethod();
+    QString method4() const;
+    QString method5() const;
+};
+
+class TestInterfaceImpl : public TestInterface
+{
+public:
+    explicit TestInterfaceImpl(const QString & s);
+    virtual ~TestInterfaceImpl();
+    virtual bool setReferenceCountTest1(QObject* object);
+};
+
+class TestPrivateInterface
+{
+public:
+    virtual void interfaceVirtual() = 0;
+    virtual ~TestPrivateInterface();
+private:
+    TestPrivateInterface();
+};
+
 class SetupLayout
 {
 public:
-    static void setupLayout(QLayout *layout)
-    {
-        QPushButton *button1 = new QPushButton("Test", layout->parentWidget());
-        QPushButton *button2 = new QPushButton("Test2", layout->parentWidget());
-        QSpacerItem *spacer = new QSpacerItem(10, 10);
+    static void setupLayout(QLayout *layout);
+    static QLayout* createLayout();
+};
 
-        layout->addWidget(button1);
-        layout->addItem(spacer);
-        layout->addWidget(button2);
+class FunctionManager : public QObject{
+    Q_OBJECT
+public:
+    FunctionManager(QObject* parent = nullptr);
+    virtual ~FunctionManager();
 
-        {
-            QHBoxLayout *other_layout = new QHBoxLayout;
-            QPushButton *button3 = new QPushButton("Test3", layout->parentWidget());
-            QSpacerItem *spacer2 = new QSpacerItem(5, 5);
-            QPushButton *button4 = new QPushButton("Test4", layout->parentWidget());
-            other_layout->addWidget(button3);
-            other_layout->addItem(spacer2);
-            other_layout->addWidget(button4);
+    typedef std::function<QString(int)> StringSupplier;
+    typedef std::function<void(const QString&)> StringConsumer;
 
-            layout->addItem(other_layout);
-        }
-
-    }
+    void reset();
+    void setStringSupplier(StringSupplier stringSupplier);
+    void setStringConsumer(StringConsumer stringConsumer);
+    bool callStringSupplier();
+    bool callStringConsumer();
+    QString text() const;
+private:
+    QString m_text;
+    StringSupplier m_stringSupplier;
+    StringConsumer m_stringConsumer;
 };
 
 #endif

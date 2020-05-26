@@ -40,26 +40,34 @@
 #include "asttoxml.h"
 #include "parser/binder.h"
 #include "util.h"
+#include "rpp/pp-engine-bits.h"
 
 QString Wrapper::include_directory = QString();
 
-bool Wrapper::isTargetPlatformArmCpu = false;
-
 void ReportHandler_message_handler(const std::string &str) {
     ReportHandler::warning(fromStdString(str));
+}
+
+int Wrapper::defineUndefineStageCurrent = 1;
+QList< DefineUndefine > Wrapper::defineUndefineStageOneList;
+QList< DefineUndefine > Wrapper::defineUndefineStageTwoList;
+
+void messageHandler(QtMsgType /*type*/, const QMessageLogContext & /*ctxt*/, const QString & /*msg*/){
+//    std::cout << qPrintable(msg) << std::endl;
 }
 
 Wrapper::Wrapper(int argc, char *argv[]) :
         default_file("targets/qtjambi_masterinclude.h"),
         default_system("targets/build_all.xml"),
         pp_file("preprocessed.tmp"),
-        defineUndefineStageCurrent(1),
         debugCppMode(DEBUGLOG_DEFAULTS) {
 
     gs = GeneratorSet::getInstance();
     args = parseArguments(argc, argv);
     handleArguments();
     assignVariables();
+
+    //qInstallMessageHandler(&messageHandler);
 }
 
 void Wrapper::handleArguments() {
@@ -149,9 +157,6 @@ void Wrapper::handleArguments() {
 
     if (args.contains("output-directory"))
         pp_file = QDir(args.value("output-directory")).absoluteFilePath(pp_file);
-
-    if (args.contains("target-platform-arm-cpu"))
-        isTargetPlatformArmCpu = true;
 
     if (args.contains("cpp-output-directory"))
         gs->cppOutDir = args.value("cpp-output-directory");
@@ -243,16 +248,38 @@ void Wrapper::assignVariables() {
 }
 
 int Wrapper::runJambiGenerator() {
+    ReportHandler::setContext("Preprocessor");
+    rpp::MessageUtil::installMessageHandler(ReportHandler_message_handler);
+    Binder::installMessageHandler(ReportHandler_message_handler);
+
+    TypeDatabase* typeDatabase = TypeDatabase::instance();
+    typeDatabase->setDefined(&defined);
+
     printf("Running the Qt Jambi Generator. Please wait while source files are being generated...\n");
 
     //parse the type system file
-    if (!TypeDatabase::instance()->parseFile(typesystemFileName, inputDirectoryList))
+    if (!typeDatabase->parseFile(typesystemFileName, inputDirectoryList))
         qFatal("Cannot parse file: '%s'", qPrintable(typesystemFileName));
 
     //removing file here for theoretical case of wanting to parse two master include files here
     QFile::remove(pp_file);
+    QMap<QString, QString> features;
+    bool isQtJambiPort = false;
+    std::function<void(std::string,std::string)> featureRegistry = [&features, &isQtJambiPort](std::string macro, std::string file){
+        QString _macro = QString::fromStdString(macro);
+        if(_macro.startsWith("QT_FEATURE_")){
+            QString _file = QString::fromStdString(file);
+            _macro = _macro.mid(11);
+            if(features.contains(_macro) && features[_macro]!=_file){
+                qWarning("Feature %s defined twice:\n%s\n%s", qPrintable(_macro), qPrintable(_file), qPrintable(features[_macro]));
+            }
+            features[_macro] = _file;
+        }else if(_macro=="QT_QTJAMBI_PORT"){
+            isQtJambiPort = true;
+        }
+    };
     //preprocess using master include, preprocessed file and command line given include paths, if any
-    if (!Preprocess::preprocess(fileName, pp_file, args.value("phonon-include"), includePathsList, inputDirectoryList, debugCppMode)) {
+    if (!Preprocess::preprocess(fileName, pp_file, featureRegistry, args.value("phonon-include"), includePathsList, inputDirectoryList, debugCppMode)) {
         fprintf(stderr, "Preprocessor failed on file: '%s'\n", qPrintable(fileName));
         return 1;
     }
@@ -263,9 +290,13 @@ int Wrapper::runJambiGenerator() {
         return 0;
     }
 
-    Binder::installMessageHandler(ReportHandler_message_handler);
+    if(isQtJambiPort){
+        typeDatabase->replaceQThreadType();
+    }
 
-    gs->buildModel(pp_file);
+    analyzeDependencies(typeDatabase);
+
+    gs->buildModel(features, pp_file);
 
     if (args.contains("dump-object-tree")) {
         gs->dumpObjectTree();
@@ -278,6 +309,64 @@ int Wrapper::runJambiGenerator() {
            ReportHandler::suppressedCount());
 
     return 0;
+}
+
+void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
+{
+    const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary = typeDatabase->typeSystemsByQtLibrary();
+    for(TypeSystemTypeEntry * entry : typeSystemsByQtLibrary.values()){
+        QStringList pathsList;
+        pathsList << include_directory << includePathsList;
+        for(const QString& path : pathsList){
+            QString file(path+"/"+entry->qtLibrary()+"/"+entry->qtLibrary()+"Depends");
+            if(!QFileInfo(file).exists()){
+                file = path+"/"+entry->qtLibrary()+"Depends";
+            }
+#ifdef Q_OS_MAC
+            if(!QFileInfo(file).exists()){
+                file = path+"/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
+            }
+            if(!QFileInfo(file).exists()){
+                file = path+"/../lib/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
+            }
+#endif
+            if(QFileInfo(file).exists()){
+                QFile f(file);
+                f.open(QIODevice::ReadOnly);
+                QTextStream s(&f);
+                while(!s.atEnd()){
+                    QString line = s.readLine();
+                    if(line.startsWith("#include <") && line.endsWith(">")){
+                        line.chop(1);
+                        line = line.mid(10);
+                        QStringList include = line.split("/");
+                        if((include.size()==2 && include[0]==include[1]) || include.size()==1){
+                            TypeSystemTypeEntry * lib = typeSystemsByQtLibrary[include[0]];
+                            if(lib){
+                                entry->addRequiredTypeSystem(lib);
+                            }else{
+                                entry->addRequiredQtLibrary(include[0]);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+}
+
+bool Wrapper::defined(QString name){
+    for(const DefineUndefine& ddf : defineUndefineStageOneList){
+        if(ddf.isSet() && ddf.name()==name){
+            return true;
+        }
+    }
+    return false;
+}
+
+const QList< DefineUndefine >& Wrapper::getDefineUndefineStageOneList(){
+    return defineUndefineStageOneList;
 }
 
 void Wrapper::displayHelp(GeneratorSet* generatorSet) {
@@ -316,7 +405,7 @@ void Wrapper::displayHelp(GeneratorSet* generatorSet) {
 }
 
 void Wrapper::modifyCppDefine(const QString &arg, bool f_set) {
-qDebug() << "modifyCppDefine():" << arg << ((f_set) ? " define" : " undef");
+//qDebug() << "modifyCppDefine():" << arg << ((f_set) ? " define" : " undef");
     QStringList list;
     if (arg.length() > 0) {
         const QChar ch = arg.at(0);
@@ -336,9 +425,9 @@ qDebug() << "modifyCppDefine():" << arg << ((f_set) ? " define" : " undef");
         QString value("1");
         if (split > 0)
             value = s.mid(split + 1);
-qDebug() << "modifyCppDefine():" << name << " = " << value << ((f_set) ? " define" : " undef");
+//qDebug() << "modifyCppDefine():" << name << " = " << value << ((f_set) ? " define" : " undef");
         if(name.compare("*") == 0) {	// "-U*" has the effect of clearing the list
-            if(f_set == false) {	// its invalid name so ignore on f_set==true
+            if(!f_set) {	// its invalid name so ignore on f_set==true
                 if(defineUndefineStageCurrent == 2)
                     defineUndefineStageTwoList.clear();
                 else

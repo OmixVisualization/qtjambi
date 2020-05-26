@@ -124,7 +124,7 @@ void WebXMLGenerator::startText(const Node *relative, CodeMarker *marker)
 int WebXMLGenerator::generateAtom(QXmlStreamWriter &writer, const Atom *atom,
                                   const Node *relative, CodeMarker *marker)
 {
-    Q_UNUSED(writer);
+    Q_UNUSED(writer)
 
     int skipAhead = 0;
 
@@ -268,7 +268,7 @@ void WebXMLGenerator::generateInnerNode(const InnerNode *node, CodeMarker *marke
             return;
     }
 
-    if ( node->parent() != 0 ) {
+    if ( node->parent() != nullptr ) {
 	beginSubPage( node->location(), fileName(node) );
 	if ( node->type() == Node::Namespace || node->type() == Node::Class) {
 	    generateClassLikeNode(node, marker);
@@ -282,7 +282,7 @@ void WebXMLGenerator::generateInnerNode(const InnerNode *node, CodeMarker *marke
     while ( c != node->childNodes().end() ) {
 	if ((*c)->isInnerNode() && (
             (*c)->access() != Node::Private || (*c)->status() == Node::Internal))
-	    generateInnerNode( (const InnerNode *) *c, marker );
+        generateInnerNode( static_cast<const InnerNode *>(*c), marker );
 	++c;
     }
 }
@@ -327,7 +327,7 @@ const Atom *WebXMLGenerator::addAtomElements(QXmlStreamWriter &writer,
         if (relative->type() == Node::Property || relative->type() == Node::Variable) {
             QString str;
             const Atom *a = atom->next();
-            while (a != 0 && a->type() != Atom::BriefRight) {
+            while (a != nullptr && a->type() != Atom::BriefRight) {
                 if (a->type() == Atom::String || a->type() == Atom::AutoLink)
                     str += a->string();
                 a = a->next();
@@ -372,7 +372,7 @@ const Atom *WebXMLGenerator::addAtomElements(QXmlStreamWriter &writer,
     case Atom::Qml:
         writer.writeTextElement("qml", trimmedTrailing(plainCode(atom->string())));
 #endif
-        
+    Q_FALLTHROUGH();
     case Atom::CodeBad:
         writer.writeTextElement("badcode", trimmedTrailing(plainCode(atom->string())));
         break;
@@ -771,7 +771,7 @@ const Atom *WebXMLGenerator::addAtomElements(QXmlStreamWriter &writer,
 
             if (params.size() == 2) {
                 numColumns = qMax(columnText.toInt(), numColumns);
-                sectioningUnit = (Doc::SectioningUnit)params.at(1).toInt();
+                sectioningUnit = Doc::SectioningUnit(params.at(1).toInt());
                 writer.writeAttribute("columns", QString::number(numColumns));
                 writer.writeAttribute("unit", QString::number(sectioningUnit));
             }
@@ -800,7 +800,7 @@ const Atom *WebXMLGenerator::addAtomElements(QXmlStreamWriter &writer,
     if (atom)
         return atom->next();
 
-    return 0;
+    return nullptr;
 }
 /*
         QDomElement atomElement = document.createElement(atom->typeString().toLower());
@@ -827,9 +827,9 @@ const Node *WebXMLGenerator::findNode(const QString &title, const Node *relative
              || title.startsWith("ftp:")
              || title.startsWith("mailto:"))) {
 
-        return 0;
+        return nullptr;
     } else if (title.count('@') == 1) {
-        return 0;
+        return nullptr;
     } else {
         QStringList path;
         if (title.contains('#')) {
@@ -838,8 +838,8 @@ const Node *WebXMLGenerator::findNode(const QString &title, const Node *relative
             path.append(title);
         }
 
-        const Node *node = 0;
-        Atom *targetAtom = 0;
+        const Node *node = nullptr;
+        Atom *targetAtom = nullptr;
 
         QString first = path.first().trimmed();
         if (first.isEmpty()) {
@@ -860,12 +860,12 @@ const Node *WebXMLGenerator::findNode(const QString &title, const Node *relative
             else
                 path.removeFirst();
         } else {
-            return 0;
+            return nullptr;
         }
 
         while (!path.isEmpty()) {
             targetAtom = tre->findTarget(path.first(), node);
-            if (targetAtom == 0)
+            if (targetAtom == nullptr)
                 break;
             path.removeFirst();
         }
@@ -877,7 +877,7 @@ const Node *WebXMLGenerator::findNode(const QString &title, const Node *relative
 */
         return node;
     }
-    return 0;
+    //return nullptr;
 }
 
 void WebXMLGenerator::startLink(QXmlStreamWriter &writer, const Atom *atom,
@@ -909,6 +909,7 @@ void WebXMLGenerator::startLink(QXmlStreamWriter &writer, const Atom *atom,
             if (propertyNode->getters().size() > 0)
                 writer.writeAttribute("getter", tre->fullDocumentName(propertyNode->getters()[0]));
         }
+            Q_FALLTHROUGH();
         default:
             ;
         }
@@ -921,35 +922,25 @@ QString WebXMLGenerator::targetType(const Node *node)
     switch (node->type()) {
         case Node::Namespace:
             return "namespace";
-            break;
         case Node::Class:
             return "class";
-            break;
         case Node::Fake:
             return "page";
-            break;
         case Node::Enum:
             return "enum";
-            break;
         case Node::Typedef:
             return "typedef";
-            break;
         case Node::Property:
             return "property";
-            break;
         case Node::Function:
             return "function";
-            break;
         case Node::Variable:
             return "variable";
-            break;
         case Node::Target:
             return "target";
-            break;
         default:
             return "";
     }
-    return "";
 }
 
 void WebXMLGenerator::generateRelations(QXmlStreamWriter &writer, const Node *node, CodeMarker *marker)
@@ -1037,7 +1028,7 @@ void WebXMLGenerator::generateTableOfContents(QXmlStreamWriter &writer, const No
         Atom *atom = toc.at(i);
 
         int nextLevel = atom->string().toInt();
-        if (nextLevel > (int)sectioningUnit)
+        if (nextLevel > int(sectioningUnit))
             continue;
 
         if (sectionNumber.size() < nextLevel) {
@@ -1116,7 +1107,7 @@ void WebXMLGenerator::generateFullName(QXmlStreamWriter &writer,
     const Node *apparentNode, const Node *relative, CodeMarker *marker,
     const Node *actualNode)
 {
-    if ( actualNode == 0 )
+    if ( actualNode == nullptr )
         actualNode = apparentNode;
     writer.writeStartElement("link");
     writer.writeAttribute("href", tre->fullDocumentLocation(actualNode));

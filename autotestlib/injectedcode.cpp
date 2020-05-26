@@ -70,63 +70,113 @@ void GraphicsSceneSubclass::drawItems(QPainter *painter,
     secondStyleOption = options[1];
 }
 
-/*
-void AccessibleTableInterfaceSubclass::cellAtIndex(int index, int *row, int *column, int *rowSpan,
-                                                   int *columnSpan, bool *isSelected)
+
+void AccessibleTextInterfaceSubclass::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
-    if (row != 0) *row = index + 1;
-    if (column != 0) *column = index + 2;
-    if (rowSpan != 0) *rowSpan = index + 3;
-    if (columnSpan != 0) *columnSpan = index + 4;
-    if (isSelected != 0) *isSelected = (index % 2) == 0;
+    if (startOffset) *startOffset = selectionIndex + 1;
+    if (endOffset) *endOffset = selectionIndex + 2;
 }
 
-void AccessibleTableInterfaceSubclass::callCellAtIndex(AccessibleTableInterfaceSubclass *obj, int index, int *row, int *col, int *rowSpan, int *columnSpan, bool *isSelected)
+void AccessibleTextInterfaceSubclass::callSelection(AccessibleTextInterfaceSubclass *obj, int selectionIndex, int *startOffset, int *endOffset)
 {
-    obj->cellAtIndex(index, row, col, rowSpan, columnSpan, isSelected);
+    Q_ASSERT(obj);
+    obj->selection(selectionIndex, startOffset, endOffset);
 }
 
-int AccessibleTableInterfaceSubclass::selectedColumns(int maxColumns, QList<int> *columns)
+QString AccessibleTextInterfaceSubclass::attributes(int offset, int *startOffset, int *endOffset) const
 {
-    if (columns != 0)
-        columns->append(maxColumns);
-    return 0;
+    if (startOffset) *startOffset = offset + 1;
+    if (endOffset) *endOffset = offset + 2;
+    return QString("AccessibleTextInterfaceSubclass::attributes");
 }
 
-int AccessibleTableInterfaceSubclass::selectedRows(int maxRows, QList<int> *rows)
+QString AccessibleTextInterfaceSubclass::callAttributes(AccessibleTextInterfaceSubclass *obj, int offset, int *startOffset, int *endOffset)
 {
-    if (rows != 0)
-        rows->append(maxRows);
-    return 0;
+    Q_ASSERT(obj);
+    return obj->attributes(offset, startOffset, endOffset);
 }
 
-QList<int> AccessibleTableInterfaceSubclass::callSelectedColumns(AccessibleTableInterfaceSubclass *obj, int maxColumns, QList<int> columns)
+QString AccessibleTextInterfaceSubclass::textBeforeOffset(int offset, QAccessible::TextBoundaryType,
+                                int *startOffset, int *endOffset) const
 {
-    obj->selectedColumns(maxColumns, &columns);
-    return columns;
+    if (startOffset) *startOffset = offset + 1;
+    if (endOffset) *endOffset = offset + 2;
+    return QString("AccessibleTextInterfaceSubclass::textBeforeOffset");
 }
 
-QList<int> AccessibleTableInterfaceSubclass::callSelectedRows(AccessibleTableInterfaceSubclass *obj, int maxRows, QList<int> rows)
+QString AccessibleTextInterfaceSubclass::callTextBeforeOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                                 int *startOffset, int *endOffset)
 {
-    obj->selectedRows(maxRows, &rows);
-    return rows;
+    Q_ASSERT(obj);
+    return obj->textBeforeOffset(offset, boundaryType, startOffset, endOffset);
 }
-*/
+
+QString AccessibleTextInterfaceSubclass::textAfterOffset(int offset, QAccessible::TextBoundaryType,
+                                int *startOffset, int *endOffset) const
+{
+    if (startOffset) *startOffset = offset + 1;
+    if (endOffset) *endOffset = offset + 2;
+    return QString("AccessibleTextInterfaceSubclass::textAfterOffset");
+}
+
+QString AccessibleTextInterfaceSubclass::callTextAfterOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                                int *startOffset, int *endOffset)
+{
+    Q_ASSERT(obj);
+    return obj->textAfterOffset(offset, boundaryType, startOffset, endOffset);
+}
+
+QString AccessibleTextInterfaceSubclass::textAtOffset(int offset, QAccessible::TextBoundaryType,
+                             int *startOffset, int *endOffset) const
+{
+    if (startOffset) *startOffset = offset + 1;
+    if (endOffset) *endOffset = offset + 2;
+    return QString("AccessibleTextInterfaceSubclass::textAtOffset");
+}
+
+QString AccessibleTextInterfaceSubclass::callTextAtOffset(AccessibleTextInterfaceSubclass *obj, int offset, QAccessible::TextBoundaryType boundaryType,
+                             int *startOffset, int *endOffset)
+{
+    Q_ASSERT(obj);
+    return obj->textAtOffset(offset, boundaryType, startOffset, endOffset);
+}
 
 void AbstractSocketSubclass::connectProxyAuthenticationRequired(QAbstractSocket *socket)
 {
-    connect(socket, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)), this, SLOT(aSlot(const QNetworkProxy &, QAuthenticator *)));
+    QObject::connect(socket, &QAbstractSocket::proxyAuthenticationRequired, this, &AbstractSocketSubclass::aSlot);
 }
 
 void AbstractSocketSubclass::emitProxyAuthenticationRequired(QAbstractSocket *socket, const QNetworkProxy &proxy, QAuthenticator *authenticator)
 {
-    ((AbstractSocketSubclass *) socket)->emitSignalAccessor(proxy, authenticator);
+    static_cast<AbstractSocketSubclass *>(socket)->emitSignalAccessor(proxy, authenticator);
 }
 
 void AbstractSocketSubclass::aSlot(const QNetworkProxy &proxy, QAuthenticator *authenticator)
 {
-    if (authenticator != 0) {
+    if (authenticator) {
         authenticator->setUser(proxy.user());
         authenticator->setPassword(proxy.password());
     }
+}
+
+namespace Java{
+Q_GLOBAL_STATIC_WITH_ARGS(QMutex, gMutex, (QMutex::Recursive))
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlEntityResolver$ResolvedEntity,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLio/qt/xml/QXmlInputSource;)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(error,Z)
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(inputSource,Lio/qt/xml/QXmlInputSource;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlNamespaceSupport$ProcessedName,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlNamespaceSupport$SplitName,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtWidgets,io/qt/widgets,QGraphicsItem$BlockedByModalPanelInfo,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLio/qt/widgets/QGraphicsItem;)
+)
 }

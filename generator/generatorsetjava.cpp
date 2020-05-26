@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,6 +65,7 @@ GeneratorSetJava::GeneratorSetJava() :
         docs_enabled(false),
         do_ui_convert(false),
         native_jump_table(false),
+        target_JDK_version(7),
         doc_dir("../../main/doc/jdoc") {}
 
 QString GeneratorSetJava::usage() {
@@ -74,7 +75,8 @@ QString GeneratorSetJava::usage() {
         "  --no-cpp-h                                \n"
         "  --no-cpp-impl                             \n"
         "  --convert-to-jui=[.ui-file name]          \n"
-        "  --custom-widgets=[file names]             \n";
+        "  --custom-widgets=[file names]             \n"
+        "  --target-java-version=8                   \n";
 
     return usage;
 }
@@ -94,6 +96,14 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
         no_cpp_impl = true;
         no_metainfo = true;
         build_qdoc_japi = true;
+    }
+
+    if (args.contains("target-java-version")) {
+        bool ok = false;
+        target_JDK_version = args["target-java-version"].toUInt(&ok);
+        if(!ok){
+            target_JDK_version = 7;
+        }
     }
 
     if (args.contains("jdoc-dir")) {
@@ -117,10 +127,11 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
     return GeneratorSet::readParameters(args);
 }
 
-void GeneratorSetJava::buildModel(const QString pp_file) {
+void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const QString pp_file) {
     builder.setFileName(pp_file);
     if (!outDir.isNull())
         builder.setOutputDirectory(outDir);
+    builder.setFeatures(features);
     builder.build();
 }
 
@@ -135,7 +146,7 @@ QString GeneratorSetJava::generate() {
         UiConverter converter;
         converter.setClasses(builder.classes());
         converter.convertToJui(ui_file_name, custom_widgets);
-        return 0;
+        return nullptr;
     } else if (!custom_widgets.isEmpty()) {
         fprintf(stderr, "NOTE: The --custom-widgets option only has an effect when used with --convert-to-jui");
     }
@@ -143,12 +154,12 @@ QString GeneratorSetJava::generate() {
     // Code generation
     QList<Generator *> generators;
     PriGenerator *priGenerator = new PriGenerator;
-    JavaGenerator *java_generator = 0;
-    CppHeaderGenerator *cpp_header_generator = 0;
-    CppImplGenerator *cpp_impl_generator = 0;
-    MetaInfoGenerator *metainfo = 0;
-    JumpTablePreprocessor *jumpTablePreprocessor = 0;
-    JumpTableGenerator *jumpTableGenerator = 0;
+    JavaGenerator *java_generator = nullptr;
+    CppHeaderGenerator *cpp_header_generator = nullptr;
+    CppImplGenerator *cpp_impl_generator = nullptr;
+    MetaInfoGenerator *metainfo = nullptr;
+    JumpTablePreprocessor *jumpTablePreprocessor = nullptr;
+    JumpTableGenerator *jumpTableGenerator = nullptr;
 
     QStringList contexts;
     if (build_qdoc_japi) {
@@ -167,6 +178,7 @@ QString GeneratorSetJava::generate() {
         java_generator->setDocumentationDirectory(doc_dir);
         java_generator->setDocumentationEnabled(docs_enabled);
         java_generator->setNativeJumpTable(native_jump_table);
+        java_generator->setTargetJDKVersion(target_JDK_version);
         if (!javaOutDir.isNull())
             java_generator->setJavaOutputDirectory(javaOutDir);
         if (!outDir.isNull())
@@ -277,7 +289,8 @@ void dumpMetaJavaType(const AbstractMetaType *type) {
         printf("[void]");
     } else {
         printf("[type: %s", qPrintable(type->typeEntry()->qualifiedCppName()));
-        if (type->isReference()) printf(" &");
+        if (type->getReferenceType()==AbstractMetaType::Reference) printf(" &");
+        if (type->getReferenceType()==AbstractMetaType::RReference) printf(" &&");
         for(int i=0; i<type->indirections().size(); i++){
             if(type->indirections()[i]){
                 printf("*const ");
@@ -295,6 +308,7 @@ void dumpMetaJavaType(const AbstractMetaType *type) {
         if (type->isTargetLangString()) printf(" java_string");
         if (type->isTargetLangStringRef()) printf(" java_string");
         if (type->isConstant()) printf(" const");
+        if (type->isVolatile()) printf(" volatile");
         printf("]");
     }
 }
@@ -319,7 +333,7 @@ void dumpMetaJavaFunction(const AbstractMetaFunction *func) {
     if (func->isConstant()) printf(" const");
 
     printf("\n      arguments:\n");
-    foreach(AbstractMetaArgument *arg, func->arguments())
+    for(AbstractMetaArgument *arg : func->arguments())
         dumpMetaJavaArgument(arg);
 }
 
@@ -329,27 +343,19 @@ void dumpMetaJavaClass(const AbstractMetaClass *cls) {
         printf("    shell based\n");
     printf("  baseclass: %s %s\n", qPrintable(cls->baseClassName()), cls->isQObject() ? "'QObject-type'" : "'not a QObject-type'");
     printf("  interfaces:");
-    foreach(AbstractMetaClass *iface, cls->interfaces())
+    for(AbstractMetaClass *iface : cls->interfaces())
         printf(" %s", qPrintable(iface->name().replace("$", ".")));
     printf("\n");
     printf("  attributes:");
     dumpMetaJavaAttributes(cls);
 
     printf("\n  functions:\n");
-    foreach(const AbstractMetaFunction *func, cls->functions())
+    for(const AbstractMetaFunction *func : cls->functions())
         dumpMetaJavaFunction(func);
-
-    //     printf("\n  fields:\n");
-    //     foreach (const AbstractMetaField *field, cls->fields())
-    //         dumpMetaJavaField(field);
-
-    //     printf("\n  enums:\n");
-    //     foreach (const AbstractMetaEnum *e, cls->enums())
-    //         dumpMetaJavaEnum(e);
 }
 
 void dumpMetaJavaTree(const AbstractMetaClassList &classes) {
-    foreach(AbstractMetaClass *cls, classes) {
+    for(AbstractMetaClass *cls : classes) {
         dumpMetaJavaClass(cls);
     }
 }

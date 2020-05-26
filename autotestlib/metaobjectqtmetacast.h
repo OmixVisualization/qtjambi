@@ -47,8 +47,12 @@
 
 //#include <stdint.h>
 #include <QtCore/QObject>
+#include <QtCore/qmetaobject.h>
+#include <QtWidgets/QLayoutItem>
 
+#ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
+#endif
 
 #ifndef SIGNAL
 #  define SIGNAL(A) #A
@@ -125,6 +129,53 @@ public:
         void *p = qobject->qt_metacast(str);
         return (qint64) (qintptr) p;
     }
+
+    QString propertyTypeName(QObject *qobject, const QString property) const {
+        const QMetaObject *mo;
+        if (qobject == 0)
+            return QString();  // return 0;
+        mo = qobject->metaObject();
+        if (mo == 0)
+            return QString();  // return 0;
+        //return mo->className();  // const char *
+        int idx = mo->indexOfProperty(qPrintable(property));
+        if(idx<0)
+            return QString();  // return 0;
+        QMetaProperty _property = mo->property(idx);
+        return QString::fromLatin1(_property.typeName());
+    }
+
+    int propertyType(QObject *qobject, const QString property) const {
+        const QMetaObject *mo;
+        if (qobject == 0)
+            return (int)QVariant::Invalid;  // return 0;
+        mo = qobject->metaObject();
+        if (mo == 0)
+            return (int)QVariant::Invalid;  // return 0;
+        //return mo->className();  // const char *
+        int idx = mo->indexOfProperty(qPrintable(property));
+        if(idx<0)
+            return (int)QVariant::Invalid;  // return 0;
+        QMetaProperty _property = mo->property(idx);
+        return (int)_property.type();
+    }
+
+    int propertyUserType(QObject *qobject, const QString property) const {
+        const QMetaObject *mo;
+        if (qobject == 0)
+            return 0;
+        mo = qobject->metaObject();
+        if (mo == 0)
+            return 0;
+        //return mo->className();  // const char *
+        int idx = mo->indexOfProperty(qPrintable(property));
+        if(idx<0)
+            return 0;
+        QMetaProperty _property = mo->property(idx);
+        return _property.userType();
+    }
+
+    static QRect geometry(QLayoutItem* item){ return item ? item->geometry() : QRect(); }
 };
 
 #endif // METAOBJECTQTMETACAST_H

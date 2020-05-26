@@ -62,16 +62,16 @@ void PriGenerator::generate() {
         FileOut file(resolveOutputDirectory() + "/" + pri.key());
         file.stream << "HEADERS += \\\n";
         QStringList list = pri.value().headers;
-        qSort(list.begin(), list.end());
-        foreach(const QString &entry, list) {
+        std::sort(list.begin(), list.end());
+        for(const QString &entry : list) {
             file.stream << "           $$PWD/" << entry << " \\\n";
         }
         file.stream << "\n";
 
         file.stream << "SOURCES += \\\n";
         list = pri.value().sources;
-        qSort(list.begin(), list.end());
-        foreach(const QString &entry, list) {
+        std::sort(list.begin(), list.end());
+        for(const QString &entry : list) {
             file.stream << "           $$PWD/" << entry << " \\\n";
         }
         file.stream << "\n\n";

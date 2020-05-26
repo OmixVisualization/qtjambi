@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,25 +35,25 @@
 
 package generator;
 
-import org.qtjambi.qt.*;
-import org.qtjambi.qt.qt3d.*;
+import io.qt.*;
+import io.qt.qt3d.*;
 
 class QDeclarativeItem3D___java extends QDeclarativeItem3D {
-	
-	public org.qtjambi.qt.declarative.QDeclarativeListReference dataReference(){
-		return new org.qtjambi.qt.declarative.QDeclarativeListReference(this, "data");
-	}
-	
-	public org.qtjambi.qt.declarative.QDeclarativeListReference resourcesReference(){
-		return new org.qtjambi.qt.declarative.QDeclarativeListReference(this, "resources");
-	}
-	
-	public org.qtjambi.qt.declarative.QDeclarativeListReference transformReference(){
-		return new org.qtjambi.qt.declarative.QDeclarativeListReference(this, "transform");
-	}
-	
-	public org.qtjambi.qt.declarative.QDeclarativeListReference pretransformReference(){
-		return new org.qtjambi.qt.declarative.QDeclarativeListReference(this, "pretransform");
-	}
-	
+    
+    public io.qt.declarative.QDeclarativeListReference dataReference(){
+        return new io.qt.declarative.QDeclarativeListReference(this, "data");
+    }
+    
+    public io.qt.declarative.QDeclarativeListReference resourcesReference(){
+        return new io.qt.declarative.QDeclarativeListReference(this, "resources");
+    }
+    
+    public io.qt.declarative.QDeclarativeListReference transformReference(){
+        return new io.qt.declarative.QDeclarativeListReference(this, "transform");
+    }
+    
+    public io.qt.declarative.QDeclarativeListReference pretransformReference(){
+        return new io.qt.declarative.QDeclarativeListReference(this, "pretransform");
+    }
+    
 }// class

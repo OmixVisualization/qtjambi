@@ -78,7 +78,7 @@
     </target>
 
     <target name="init.taskdef" depends="log, jar.ant-qtjambi">
-        <taskdef resource="org/qtjambi/tools/ant/ant-qtjambi.xml">
+        <taskdef resource="io/qt/tools/ant/ant-qtjambi.xml">
             <classpath>
                 <pathelement path="${jardir}/qtjambi-util.jar"/>
                 <pathelement path="${jardir}/nobundle/ant-qtjambi.jar"/>
@@ -89,19 +89,6 @@
     <target name="init" depends="log, init.taskdef">
         <qtjambi-initialize verbose="true"/>
         <!-- copy jogl to the jar dir. needed for compilation examples  -->
-		<copy file="${basedir}/jogl/jogl-all.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/jogl-all-natives-linux-amd64.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/jogl-all-natives-linux-i586.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/jogl-all-natives-macosx-universal.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/jogl-all-natives-windows-amd64.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/jogl-all-natives-windows-i586.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-natives-linux-amd64.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-natives-linux-i586.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-natives-macosx-universal.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-natives-windows-amd64.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-natives-windows-i586.jar" todir="${jardir}"/>
-		<copy file="${basedir}/jogl/gluegen-rt.jar" todir="${jardir}"/>
     </target>
 
     <target name="init.test" depends="log, init.taskdef"
@@ -148,26 +135,7 @@
         </sequential>
     </macrodef>
 
-    <!--
-        END of tools building
-    -->
-
-    <!-- TODO: move to better place -->
-    <target name="qtjambi.source" depends="log, generator.run">
-        <zip destfile="qtjambi-${qtjambi.version}-src.zip" basedir="java/src/qtjambi">
-        </zip>
-        <zip destfile="qtjambi-${qtjambi.version}-src.zip" basedir="${generator.outputdir}/java/qtjambi" update="true">
-        </zip>
-    </target>
-
-    <!--
-        TODO: the following two targets must go away
-        Move them to their real location or something
-    -->
-
     <target name="library.java.bundle" depends="log, jar.qtjambi">
-        <copy file="${jardir}/qtjambi.jar"
-            tofile="qtjambi-${qtjambi.version}${qtjambi.configuration.dash}.jar"/>
     </target>
 
     <target name="library.designer.bundle" depends="log, jar.qtjambi-designer">
@@ -217,7 +185,7 @@ ant all
     <target name="library.designer" depends="log, library.designer.bundle"
         description="Compiles and bundles the Qt Jambi designer libraries."/>
 
-    <target name="library" depends="log, library.native, library.java, library.designer"
+    <target name="library" depends="log, library.native, library.java"
         description="Compiles and bundles the Qt Jambi libraries.">
         <!--<copy file="${jardir}/qtjambi-util.jar"
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->
@@ -226,10 +194,10 @@ ant all
     <target name="qdoc3" depends="qdoc3.make"
         description="Compiles qdoc3 for doc generation scripts." />
 
-    <target name="examples" depends="log, examples.bundle"
+    <target name="examples" depends="log"
         description="Compiles and bundles the Qt Jambi examples."/>
 
-    <target name="all" depends="log, generator, library, examples"
+    <target name="all" depends="log, generator, library"
         description="Generates, builds and bundles the Qt Jambi libraries."/>
 
 </project>

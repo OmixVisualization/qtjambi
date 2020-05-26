@@ -64,7 +64,7 @@ typedef void (*MessageHandler)(const std::string &s);
 
 class Binder: protected DefaultVisitor {
     public:
-        Binder(CodeModel *__model, LocationManager &__location, Control *__control = 0);
+        Binder(CodeModel *__model, LocationManager &__location, Control *__control = nullptr);
         virtual ~Binder();
 
         inline TokenStream *tokenStream() const { return _M_token_stream; }
@@ -90,11 +90,14 @@ class Binder: protected DefaultVisitor {
         virtual void visitTemplateDeclaration(TemplateDeclarationAST *);
         virtual void visitTypedef(TypedefAST *);
         virtual void visitUsing(UsingAST *);
+        virtual void visitUsingAs(UsingAsAST *);
         virtual void visitUsingDirective(UsingDirectiveAST *);
         virtual void visitQProperty(QPropertyAST *);
         virtual void visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *);
         virtual void visitQEnums(QEnumsAST *);
         virtual void visitQEnum(QEnumAST *);
+        virtual void visitQGadget(QGadgetAST *);
+        virtual void visitQObject(QObjectAST *);
 
     private:
 

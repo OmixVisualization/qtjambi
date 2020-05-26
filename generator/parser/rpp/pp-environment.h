@@ -49,6 +49,7 @@
 #include <vector>
 #include <string>
 #include <cstring>
+#include <functional>
 
 #include "pp-macro.h"
 
@@ -59,9 +60,10 @@ namespace rpp {
             typedef std::vector<pp_macro*>::const_iterator const_iterator;
 
         public:
-            pp_environment():
+            pp_environment(const std::function<void(std::string,std::string)>& featureRegistry):
                     current_line(0),
-                    _M_hash_size(4093) {
+                    _M_hash_size(4093),
+                    _M_featureRegistry(featureRegistry){
                 _M_base = (pp_macro **) memset(new pp_macro* [_M_hash_size], 0, _M_hash_size * sizeof(pp_macro*));
             }
 
@@ -113,6 +115,7 @@ namespace rpp {
             std::vector<pp_macro*> _M_macros;
             pp_macro **_M_base;
             std::size_t _M_hash_size;
+            std::function<void(std::string,std::string)> _M_featureRegistry;
     };
 
 } // namespace rpp

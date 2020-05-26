@@ -1,8 +1,9 @@
-TARGET = org_qtjambi_qt_printsupport
+QTJAMBILIB = QtJambiPrintSupport
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include ($$QTJAMBI_CPP/org_qtjambi_qt_printsupport/org_qtjambi_qt_printsupport.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 QT += core gui widgets printsupport

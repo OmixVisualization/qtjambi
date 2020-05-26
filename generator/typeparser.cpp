@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -54,6 +54,7 @@ class Scanner {
             GreaterThanToken,
 
             ConstToken,
+            VolatileToken,
             Identifier,
             NoToken
         };
@@ -137,6 +138,18 @@ Scanner::Token Scanner::nextToken() {
             tok = ConstToken;
     }
 
+    if (tok == Identifier && m_pos - m_token_start == 8) {
+        if (m_chars[m_token_start] == 'v'
+                && m_chars[m_token_start + 1] == 'o'
+                && m_chars[m_token_start + 2] == 'l'
+                && m_chars[m_token_start + 3] == 'a'
+                && m_chars[m_token_start + 4] == 't'
+                && m_chars[m_token_start + 5] == 'i'
+                && m_chars[m_token_start + 6] == 'l'
+                && m_chars[m_token_start + 7] == 'e')
+            tok = VolatileToken;
+    }
+
     return tok;
 
 }
@@ -165,7 +178,11 @@ TypeParser::Info TypeParser::parse(const QString &str) {
                 break;
 
             case Scanner::AmpersandToken:
-                stack.top()->is_reference = true;
+                if(stack.top()->reference_type==TypeParser::Info::Reference){
+                    stack.top()->reference_type = TypeParser::Info::RReference;
+                }else{
+                    stack.top()->reference_type = TypeParser::Info::Reference;
+                }
                 break;
 
             case Scanner::LessThanToken:
@@ -194,6 +211,10 @@ TypeParser::Info TypeParser::parse(const QString &str) {
                     stack.top()->is_constant = true;
                 }
                 break;
+
+        case Scanner::VolatileToken:
+            stack.top()->is_volatile = true;
+            break;
 
             case Scanner::OpenParenToken: // function pointers not supported
             case Scanner::CloseParenToken: {
@@ -279,7 +300,12 @@ QString TypeParser::Info::toString() const {
             s += "*";
         }
     }
-    if (is_reference)  s += '&';
+    if(reference_type==RReference){
+        s += '&';
+        s += '&';
+    }else if(reference_type==Reference){
+        s += '&';
+    }
 
     return s;
 }

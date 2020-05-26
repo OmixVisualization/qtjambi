@@ -42,6 +42,8 @@
 
 class TypeDatabase {
     public:
+        typedef bool (*DefinedPtr)(QString name);
+
         TypeDatabase();
 
         static TypeDatabase *instance();
@@ -49,12 +51,17 @@ class TypeDatabase {
         QList<Include> extraIncludes(const QString &className);
 
         ComplexTypeEntry *findComplexType(const QString &name);
+        FunctionalTypeEntry *findFunctionalType(const QString &name);
+        FunctionalTypeEntry *findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using);
         PrimitiveTypeEntry *findPrimitiveType(const QString &name);
         ObjectTypeEntry *findObjectType(const QString &name);
         NamespaceTypeEntry *findNamespaceType(const QString &name);
 
         ContainerTypeEntry *findContainerType(const QString &name);
+        IteratorTypeEntry *findIteratorType(const QString &name);
+        IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container);
         PointerContainerTypeEntry *findPointerContainerType(const QString &name);
+        InitializerListTypeEntry *findInitializerListType(const QString &name);
 
         TypeEntry *findType(const QString &name) const;
 
@@ -62,7 +69,7 @@ class TypeDatabase {
             return m_entries.value(name);
         }
 
-        TypeEntryHash allEntries() {
+        const TypeEntryHash& allEntries() {
             return m_entries;
         }
 
@@ -81,6 +88,27 @@ class TypeDatabase {
             m_entries[e->qualifiedCppName()].append(e);
             QString name = e->qualifiedCppName().contains("::") ? e->qualifiedCppName().split("::").last() : e->qualifiedCppName();
             m_class_name_counter[name]++;
+            if(e->type()==TypeEntry::TypeSystemType){
+                TypeSystemTypeEntry* tsentry = static_cast<TypeSystemTypeEntry*>(e);
+                if(!tsentry->qtLibrary().isEmpty()){
+                    m_typeSystemsByQtLibrary[tsentry->qtLibrary()] = tsentry;
+                }
+            }
+        }
+
+        void replaceQThreadType() {
+            if(ObjectTypeEntry * threadType = findObjectType("QThread")){
+                m_entries[threadType->qualifiedCppName()].removeAll(threadType);
+            }
+            if(ObjectTypeEntry * threadType = findObjectType("QtJambiThreadStorage")){
+                //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
+                threadType->setCodeGeneration(TypeEntry::GenerateNothing);
+            }
+            if(ObjectTypeEntry * threadType = findObjectType("QThreadStorage")){
+                //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
+                threadType->setCodeGeneration(TypeEntry::GenerateNothing);
+            }
+            addType(new ThreadTypeEntry());
         }
 
         bool isUniqueClassName(QString name) {
@@ -100,8 +128,16 @@ class TypeDatabase {
         TemplateEntry *findTemplate(const QString &name) {
             return m_templates[name];
         }
+
+        TemplateTypeEntry *findTemplateType(const QString &name) {
+            return m_templateTypes[name];
+        }
+
         void addTemplate(TemplateEntry *t) {
             m_templates[t->name()] = t;
+        }
+        void addTemplateType(TemplateTypeEntry *t) {
+            m_templateTypes[t->name()] = t;
         }
 
         void setIncludeEclipseWarnings(bool on) {
@@ -124,12 +160,18 @@ class TypeDatabase {
             m_rebuild_classes = cls;
         }
 
-        static QString globalNamespaceClassName(const TypeEntry *te);
+        static QString globalNamespaceClassName();
         QString filename() const {
             return "typesystem.txt";
         }
 
         bool parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate = true, bool optional = false);
+
+        bool defined(QString name);
+
+        void setDefined(DefinedPtr function);
+
+        const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary() const { return m_typeSystemsByQtLibrary; }
 
     private:
     uint m_suppressWarnings :
@@ -143,10 +185,14 @@ class TypeDatabase {
         QHash<QString,int> m_class_name_counter;
         SingleTypeEntryHash m_flags_entries;
         TemplateEntryHash m_templates;
+        TemplateTypeEntryHash m_templateTypes;
         QStringList m_suppressedWarnings;
 
         QList<TypeRejection> m_rejections;
         QStringList m_rebuild_classes;
+
+        DefinedPtr m_defined;
+        QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;
 };
 
 #endif

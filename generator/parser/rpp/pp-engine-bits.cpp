@@ -45,6 +45,22 @@
 #include <QStringList>
 #include <QDir>
 
+void rpp_default_message_handler(const std::string &str) {
+    std::cerr << str;
+}
+
+MsgHandler rpp::MessageUtil::_m_messageHandler = rpp_default_message_handler;
+
+void rpp::MessageUtil::installMessageHandler(MsgHandler handler) {
+    _m_messageHandler = handler;
+}
+
+void rpp::MessageUtil::message(const std::string &message){
+    if(_m_messageHandler){
+        _m_messageHandler(message);
+    }
+}
+
 rpp::pp::pp(pp_environment &__env) :
         env(__env), expand_macro(env) {
     verbose = 0;
@@ -186,14 +202,15 @@ rpp::PP_DIRECTIVE_TYPE rpp::pp::find_directive(char const *p_directive, std::siz
         default:
             break;
     }
-    std::cerr << "** WARNING unknown directive '#" << p_directive << "' at " << env.current_file << ":" << env.current_line << std::endl;
+    QString message = QString("** WARNING unknown directive '#%1' at %2:%3").arg(p_directive).arg(QString::fromStdString(env.current_file)).arg(QString::number(env.current_line));
+    rpp::MessageUtil::message(message.toStdString());
     return PP_UNKNOWN_DIRECTIVE;
 }
 
 
 FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::string *p_filepath,
                                  INCLUDE_POLICY p_include_policy, bool p_skip_current_path)  {
-    assert(p_filepath != 0);
+    assert(p_filepath != nullptr);
     assert(!p_input_filename.empty());
 
     p_filepath->assign(p_input_filename);
@@ -210,9 +227,31 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
 
         if(file_exists(__tmp) && !file_isdir(__tmp)) {
             p_filepath->append(p_input_filename);
-            if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0)
-                std::cout << "** INCLUDE local  " << *p_filepath << ": found" << std::endl;
+            if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
+                QString message = QString("** INCLUDE local %1: found").arg(QString::fromStdString(*p_filepath));
+                rpp::MessageUtil::message(message.toStdString());
+            }
             return std::fopen(p_filepath->c_str(), "r");
+        }
+    }
+
+    {
+        QDir dir(p_filepath->c_str());
+        if(dir.dirName()=="private"){
+            dir.cdUp();
+            dir.cdUp();
+            dir.cdUp();
+            std::string __tmp;
+            __tmp.assign(dir.absoluteFilePath(QString::fromStdString(p_input_filename)).toStdString());
+
+            if(file_exists(__tmp) && !file_isdir(__tmp)) {
+                p_filepath->assign(dir.absoluteFilePath(QString::fromStdString(p_input_filename)).toStdString());
+                if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
+                    QString message = QString("** INCLUDE local %1: found").arg(QString::fromStdString(*p_filepath));
+                    rpp::MessageUtil::message(message.toStdString());
+                }
+                return std::fopen(p_filepath->c_str(), "r");
+            }
         }
     }
 
@@ -232,9 +271,6 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
         if(p_skip_current_path && it == include_paths.begin())
             continue;
 
-        p_filepath->assign(*it);
-        p_filepath->append(p_input_filename);
-
 #ifdef Q_OS_MAC
         /* On MacOSX for those not familiar with the platform, it can group a collection of things
          *  like libraries/header files as installable modules called a framework.  A framework has
@@ -245,28 +281,43 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
         //QStringList list = string.split("/"); //could be used for error checks
         QString module = string.split("/")[0];
         if(!module.contains('.')) {
-            string.replace(module + "/", module + ".framework/Headers/");
-            string = QString::fromStdString(*it) + string;
-            QFileInfo file = QFileInfo(string);
+            QString _string = string;
+            _string.replace(module + "/", module + ".framework/Headers/");
+            _string = QString::fromStdString(*it) + _string;
+            QFileInfo file = QFileInfo(QString::fromStdString(*it) + "/" + _string);
+            if(!file.exists() || !file.isFile()) {
+                _string = string;
+                _string.replace(module + "/", "../lib/" + module + ".framework/Headers/");
+                file = QFileInfo(QString::fromStdString(*it) + "/" + _string);
+            }
             if(file.exists() && file.isFile()) {
-                QString path = QString::fromStdString(*it) + module + ".framework/Headers";
+                QString path = file.absoluteFilePath();
                 push_include_path(path.toStdString());
-                if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0)
-                    std::cout << "** INCLUDE system " << string.toStdString() << ": found" << std::endl;
-                return std::fopen(string.toLatin1().data(), "r");
+                if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
+                    QString message = QString("** INCLUDE system %1: found").arg(_string);
+                    rpp::MessageUtil::message(message.toStdString());
+                }
+                p_filepath->assign(path.toStdString());
+                return std::fopen(p_filepath->c_str(), "r");
             }
         }
 #endif
+        p_filepath->assign(*it);
+        p_filepath->append(p_input_filename);
         if(file_exists(*p_filepath) && !file_isdir(*p_filepath)) {
-            if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0)
-                std::cout << "** INCLUDE system " << *p_filepath << ": found" << std::endl;
+            if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
+                QString message = QString("** INCLUDE system %1: found").arg(QString::fromStdString(*p_filepath));
+                rpp::MessageUtil::message(message.toStdString());
+            }
             return std::fopen(p_filepath->c_str(), "r");
         }
 
         // Log all search attempts
-        if((verbose & DEBUGLOG_INCLUDE_FULL) != 0)
-            std::cout << "** INCLUDE system " << *p_filepath << ": " << strerror(errno) << std::endl;
+        if((verbose & DEBUGLOG_INCLUDE_FULL) != 0){
+            QString message = QString("** INCLUDE system %1: %2").arg(QString::fromStdString(*p_filepath)).arg(QLatin1String(strerror(errno)));
+            rpp::MessageUtil::message(message.toStdString());
+        }
     }
 
-    return 0;
+    return nullptr;
 }

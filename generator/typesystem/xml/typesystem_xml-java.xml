@@ -1,286 +1,447 @@
 <?xml version="1.0"?>
-<typesystem package="org.qtjambi.qt.xml" default-superclass="org.qtjambi.qt.internal.QtJambiObject">
-    <inject-code>
-		if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icudata", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icudata", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icuuc", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icuuc", "51");
-        	}
-        	if(org.qtjambi.qt.Utilities.isAvailableUtilityLibrary("icui18n", "51")){
-        		org.qtjambi.qt.Utilities.loadUtilityLibrary("icui18n", "51");
-        	}
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtCore");
-        org.qtjambi.qt.Utilities.loadQtLibrary("QtXml");
-    </inject-code>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
 
-
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem package="io.qt.xml" default-superclass="io.qt.QtObject">
     <value-type name="QDomDocument">
         <inject-code>
             <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QDomDocument___" quote-before-line="}// class"/>
         </inject-code>
         <extra-includes>
-            <include file-name="org.qtjambi.qt.QNativePointer.Type" location="java"/>
-            <include file-name="org.qtjambi.qt.core.QIODevice" location="java"/>
-            <include file-name="org.qtjambi.qt.core.QByteArray" location="java"/>
+             <include file-name="qtjambi_xml_repository.h" location="local"/>
         </extra-includes>
-
-
-
-        <template name="xml.domdocument_setContent">
-            public final Result setContent(%ARGUMENTS){
-                QNativePointer errorStr = new QNativePointer(Type.String);
-                QNativePointer errorLine = new QNativePointer(Type.Int);
-                QNativePointer errorColumn = new QNativePointer(Type.Int);
-
-                boolean success = setContent(%CALL_ARGUMENTS, errorStr, errorLine, errorColumn);
-                return new Result(success, errorStr, errorLine, errorColumn);
-            }
-        </template>
-
-
-        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)">
-            <access modifier="private" />
-            <modify-argument index="3">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression />
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression />
-            </modify-argument>
-        </modify-function>
-
-        <!--bool setContent(QIODevice* dev, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 ); -->
         <modify-function signature="setContent(QIODevice*, bool, QString*, int*, int*)">
-            <access modifier="private"/>
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcContent" />
+            </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="5">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code class="java">
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="QIODevice dev, boolean namespaceProcessing"/>
-                <replace from="%CALL_ARGUMENTS" to="dev, namespaceProcessing"/>
-            </insert-template>
-        </inject-code>
-
-        <!--bool setContent(const QByteArray& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 ); -->
-        <modify-function signature="setContent(QByteArray, bool, QString*, int*, int*)">
-            <access modifier="private"/>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-
-        </modify-function>
-        <inject-code class="java">
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="QByteArray text, boolean namespaceProcessing"/>
-                <replace from="%CALL_ARGUMENTS" to="text, namespaceProcessing"/>
-            </insert-template>
-        </inject-code>
-
-        <!--bool setContent(const QString& text, bool namespaceProcessing, QString *errorMsg=0, int *errorLine=0, int *errorColumn=0 );-->
-        <modify-function signature="setContent(QString, bool, QString*, int*, int*)">
-            <access modifier="private"/>
-            <modify-argument index="3">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="4">
-                <remove-default-expression/>
-            </modify-argument>
-            <modify-argument index="5">
-                <remove-default-expression/>
-            </modify-argument>
-        </modify-function>
-        <inject-code class="java">
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="String text, boolean namespaceProcessing"/>
-                <replace from="%CALL_ARGUMENTS" to="text, namespaceProcessing"/>
-            </insert-template>
-        </inject-code>
-
         <modify-function signature="setContent(QXmlInputSource*,QXmlReader*,QString*,int*,int*)">
-            <access modifier="private"/>
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcContent" />
+            </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="5">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="QXmlInputSource source, QXmlReader reader"/>
-                <replace from="%CALL_ARGUMENTS" to="source, reader"/>
-            </insert-template>
-        </inject-code>
-
+        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcContent" />
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>        
+        <modify-function signature="setContent(QByteArray, bool, QString*, int*, int*)">
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setContent(QString, bool, QString*, int*, int*)">
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="5">
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setContent(QString,QString*,int*,int*)">
-            <access modifier="private"/>
             <modify-argument index="2">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="String text"/>
-                <replace from="%CALL_ARGUMENTS" to="text"/>
-            </insert-template>
-        </inject-code>
-
         <modify-function signature="setContent(QByteArray,QString*,int*,int*)">
-            <access modifier="private"/>
             <modify-argument index="2">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="QByteArray buffer"/>
-                <replace from="%CALL_ARGUMENTS" to="buffer"/>
-            </insert-template>
-        </inject-code>
-
         <modify-function signature="setContent(QIODevice*,QString*,int*,int*)">
-            <access modifier="private"/>
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcContent" />
+            </modify-argument>
             <modify-argument index="2">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString errorMsg;
+                    QString *%out = &amp;errorMsg;
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="3">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorLine = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorLine);
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <remove-default-expression/>
+                <remove-argument />
+                <conversion-rule class="native">
+                    jint errorColumn = 0;
+                    int *%out = reinterpret_cast&lt;int *>(&amp;errorColumn);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code>
-            <insert-template name="xml.domdocument_setContent">
-                <replace from="%ARGUMENTS" to="QIODevice dev"/>
-                <replace from="%CALL_ARGUMENTS" to="dev"/>
-            </insert-template>
-        </inject-code>
-
     </value-type>
-
-
-
     <value-type name="QXmlNamespaceSupport">
         <inject-code>
             <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QXmlNamespaceSupport___" quote-before-line="}// class"/>
         </inject-code>
         <extra-includes>
-            <include file-name="org.qtjambi.qt.QNativePointer" location="java"/>
+             <include file-name="qtjambi_xml_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="processName(QString,bool,QString&amp;,QString&amp;)const">
-            <access modifier="private"/>
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QXmlNamespaceSupport$ProcessedName"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QXmlNamespaceSupport$ProcessedName.newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%3), qtjambi_cast&lt;jstring>(%env, __qt_%4));
+                </conversion-rule>
+            </modify-argument>
         </modify-function>
-
-
         <modify-function signature="splitName(QString,QString&amp;,QString&amp;)const">
-            <access modifier="private"/>
+            <modify-argument index="2">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <remove-argument />
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.xml.QXmlNamespaceSupport$SplitName"/>
+                <conversion-rule class="native">
+                    jobject %out = Java::QtXml::QXmlNamespaceSupport$SplitName.newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%2), qtjambi_cast&lt;jstring>(%env, __qt_%3));
+                </conversion-rule>
+            </modify-argument>
         </modify-function>
-
     </value-type>
-
     <value-type name="QDomElement">
-
-        <template name="xml.constQString_to_constQStringRef">
-            QString %out = qtjambi_to_qstring(__jni_env, (jstring) %in);
-        </template>
-
-        <modify-function signature="attributeNS(const QString, const QString &amp;, const QString &amp;) const">
+        <!--modify-function signature="attributeNS(const QString, const QString &amp;, const QString &amp;) const">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, const QString &amp;)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, int)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, uint)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, long long)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, unsigned long long)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="setAttributeNS(const QString, const QString &amp;, double)">
             <modify-argument index="1">
                 <conversion-rule class="native">
-                    <insert-template name="xml.constQString_to_constQStringRef"/>
+                    QString %out = qtjambi_to_qstring(%env, jstring(%in));
                 </conversion-rule>
             </modify-argument>
-        </modify-function>
+        </modify-function-->
 
     </value-type>
 
     <object-type name="QXmlReader">
+        <modify-function signature="setContentHandler(QXmlContentHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcContentHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setDTDHandler(QXmlDTDHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcDTDHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setDeclHandler(QXmlDeclHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcDeclHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setEntityResolver(QXmlEntityResolver*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcEntityResolver"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setErrorHandler(QXmlErrorHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcErrorHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setLexicalHandler(QXmlLexicalHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcLexicalHandler"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="parse(const QXmlInputSource &amp;)">
             <remove class="java"/>
-		<inject-code class="shell">
-			return this->parse(&amp;input0);
-		</inject-code>
+            <inject-code class="shell">
+            <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QXmlReader_parse___" quote-before-line="}// class"/>
+            </inject-code>
         </modify-function>
 
         <modify-function signature="property(QString,bool*)const">
             <remove class="java"/>
         </modify-function>
         <modify-function signature="setProperty(QString,void*)">
+            <remove class="java"/>
+        </modify-function>
+        <modify-function signature="hasProperty(QString)const">
             <remove class="java"/>
         </modify-function>
 
@@ -291,23 +452,66 @@
                     // nothing
                 </conversion-rule>
                 <conversion-rule class="native">
-                    bool *%out = 0;
+                    bool ok = false;
+                    bool *%out = &amp;ok;
                 </conversion-rule>
             </modify-argument>
-
             <modify-argument index="0">
+                <replace-type modified-type="java.lang.Boolean"/>
                 <conversion-rule class="shell">
-                    bool %out = (bool) %in;
-                    if (%2 != 0) *%2 = hasFeature(%1);
+                    bool %out = false;
+                    if(%in){
+                        if (%2) *%2 = true;
+                        %out = qtjambi_to_boolean(%env, %in);
+                    }
+                </conversion-rule>
+                <conversion-rule class="native">
+                    jobject %out = ok ? qtjambi_from_boolean(%env, %in) : nullptr;
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
 
+    <object-type name="QXmlSimpleReader">
+        <modify-function signature="setContentHandler(QXmlContentHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcContentHandler" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setDTDHandler(QXmlDTDHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcDTDHandler" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setDeclHandler(QXmlDeclHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcDeclHandler" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setEntityResolver(QXmlEntityResolver*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcEntityResolver" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setErrorHandler(QXmlErrorHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcErrorHandler" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setLexicalHandler(QXmlLexicalHandler*)">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="set" variable-name="__rcLexicalHandler" declare-variable="QXmlReader"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
     <interface-type name="QXmlEntityResolver">
-        <inject-code>
+        <inject-code class="interface">
             <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="interface QXmlEntityResolver___" quote-before-line="}// class"/>
         </inject-code>
+        <extra-includes>
+             <include file-name="qtjambi_xml_repository.h" location="local"/>
+        </extra-includes>
         <modify-function signature="resolveEntity(QString,QString,QXmlInputSource&amp;*)">
             <modify-argument index="3">
                 <remove-argument/>
@@ -315,17 +519,19 @@
                     // nothing
                 </conversion-rule>
                 <conversion-rule class="native">
-                    QXmlInputSource *inputSourceHolder = 0;
-                    QXmlInputSource *&amp;%out = inputSourceHolder;
+                    QXmlInputSource *%out = nullptr;
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="return">
-                <replace-type modified-type="org.qtjambi.qt.xml.QXmlEntityResolver$ResolvedEntity" />
+                <replace-type modified-type="io.qt.xml.QXmlEntityResolver$ResolvedEntity" />
                 <conversion-rule class="native">
-                    jobject %out = qtjambi_to_resolvedentity(__jni_env, %in, inputSourceHolder);
+                    jobject java_inputSource = qtjambi_cast&lt;jobject>(%env, __qt_%3);
+                    jobject %out = Java::QtXml::QXmlEntityResolver$ResolvedEntity.newInstance(%env, !%in, java_inputSource);
                 </conversion-rule>
                 <conversion-rule class="shell">
-                    bool %out = qtjambi_from_resolvedentity(__jni_env, (void *&amp;) %3, %in);
+                    bool %out = !Java::QtXml::QXmlEntityResolver$ResolvedEntity.error(%env, %in);
+                    jobject __inputSource = Java::QtXml::QXmlEntityResolver$ResolvedEntity.inputSource(%env, %in);
+                    %3 = qtjambi_cast&lt;QXmlInputSource*>(%env, __inputSource);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

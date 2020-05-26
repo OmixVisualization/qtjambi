@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@
 
 #include "qtmatrixes.h"
 #include <QtGui/QtGui>
-
+/*
 #define QTJAMBIMATRIX_IMPL(M,N)\
 QTJAMBIMATRIX(M,N)::QTJAMBIMATRIX(M,N)():QMATRIX(M,N)(){}\
 QTJAMBIMATRIX(M,N)::QTJAMBIMATRIX(M,N)(const QMATRIX(M,N)& other):QMATRIX(M,N)(other){}\
@@ -56,3 +56,4 @@ QTJAMBIMATRIX_IMPL(3,3)
 QTJAMBIMATRIX_IMPL(3,4)
 QTJAMBIMATRIX_IMPL(4,2)
 QTJAMBIMATRIX_IMPL(4,3)
+*/

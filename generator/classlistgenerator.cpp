@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,10 +39,6 @@
 
 QString ClassListGenerator::fileName() const { return "qtjambi-classes.qdoc"; }
 
-static bool class_sorter(AbstractMetaClass *a, AbstractMetaClass *b) {
-    return a->name() < b->name();
-}
-
 void ClassListGenerator::generate() {
     QFile f(fileName());
     if (f.open(QFile::WriteOnly)) {
@@ -60,8 +56,8 @@ void ClassListGenerator::generate() {
         << "This is a list of all Qt Jambi classes." << endl << endl
         << "\\table 100%" << endl;
 
-        AbstractMetaClassList classes = Generator::classes();
-        qSort(classes.begin(), classes.end(), class_sorter);
+        QVector<AbstractMetaClass*> classes = Generator::classes().toVector();
+        std::sort(classes.begin(), classes.end(), [](AbstractMetaClass *a, AbstractMetaClass *b) ->bool {return a->name() < b->name();});
 
         int numColumns = 4;
         int numRows = (classes.size() + numColumns - 1) / numColumns;
@@ -69,9 +65,9 @@ void ClassListGenerator::generate() {
         for (int i = 0; i < numRows; ++i) {
             s << endl << "\\row ";
             for (int j = 0; j < numColumns; ++j) {
-                if (classes.value(i + j * numRows)) {
-                    s << "\\o \\l{" << classes.value(i + j * numRows)->qualifiedCppName()
-                    << "}{" << classes.value(i + j * numRows)->name() << "} ";
+                if (AbstractMetaClass* cls = classes.value(i + j * numRows, nullptr)) {
+                    s << "\\o \\l{" << cls->qualifiedCppName()
+                    << "}{" << cls->name() << "} ";
                 }
             }
 

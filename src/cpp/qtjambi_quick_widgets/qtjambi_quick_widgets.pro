@@ -1,9 +1,10 @@
-TARGET = org_qtjambi_qt_quick_widgets
+QTJAMBILIB = QtJambiQuickWidgets
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/org_qtjambi_qt_quick_widgets/org_qtjambi_qt_quick_widgets.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD

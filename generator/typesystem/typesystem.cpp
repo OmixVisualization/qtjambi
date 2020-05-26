@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,9 +55,20 @@ QString strings_char = QLatin1String("char");
 QString strings_java_lang = QLatin1String("java.lang");
 QString strings_jchar = QLatin1String("jchar");
 QString strings_jobject = QLatin1String("jobject");
+QString strings_jobjectArray = QLatin1String("jobjectArray");
 
 //static void addRemoveFunctionToTemplates(TypeDatabase *db);
 
+bool TypeDatabase::defined(QString name){
+    if(m_defined){
+        return m_defined(name);
+    }
+    return false;
+}
+
+void TypeDatabase::setDefined(TypeDatabase::DefinedPtr function){
+    m_defined = function;
+}
 
 QString Include::toString() const {
     if (type == IncludePath)
@@ -119,7 +130,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
             return line;
         } else if (line.endsWith("}")) {
             s << indentor << line << endl;
-            return 0;
+            return nullptr;
         } else if (line.endsWith("{")) {
             s << indentor << line << endl;
             QString tmp;
@@ -146,7 +157,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
         }
         lastLine = line;
     }
-    return 0;
+    return nullptr;
 }
 
 
@@ -165,15 +176,75 @@ QTextStream &CodeSnip::formattedCode(QTextStream &s, Indentor &indentor) const {
 QString TemplateInstance::expandCode() const {
     TemplateEntry *templateEntry = TypeDatabase::instance()->findTemplate(m_name);
     if (templateEntry) {
-        QString res = templateEntry->code();
-        foreach(QString key, replaceRules.keys()) {
-            res.replace(key, replaceRules[key]);
+        QString code = templateEntry->code();
+        for(const QString& key : replaceRules.keys()) {
+            code.replace(key, replaceRules[key]);
         }
-        return "// TEMPLATE - " + m_name + " - START" + res + "// TEMPLATE - " + m_name + " - END";
+        QStringList lines = code.split("\n");
+        while(!lines.isEmpty()){
+            if(lines.last().trimmed().isEmpty()){
+                lines.takeLast();
+            }else{
+                break;
+            }
+        }
+        while(!lines.isEmpty()){
+            if(lines.first().trimmed().isEmpty()){
+                lines.takeFirst();
+            }else{
+                break;
+            }
+        }
+        int sp = -1;
+        QString spaces;
+        QString cleanedCode;
+        QTextStream s(&cleanedCode);
+        s << m_indent << "// TEMPLATE - " << m_name << " - START" << endl;
+        for(QString line : lines) {
+            if(!line.isEmpty() && line[0]==QLatin1Char('\r')){
+                line = line.mid(1);
+            }
+            if(sp<0 && line.isEmpty()){
+                continue;
+            }
+            if(sp<0 && !QString(line).trimmed().isEmpty()){
+                for(sp=0; sp<line.length(); ++sp){
+                    if(line[sp]!=QLatin1Char(' ')){
+                        break;
+                    }
+                }
+                if(sp==0){
+                    sp = 0;
+                    for(; sp<lines[0].length(); ++sp){
+                        if(lines[0][sp]!=QLatin1Char('\t')){
+                            break;
+                        }
+                    }
+                    spaces.fill(QLatin1Char('\t'), sp);
+                }else{
+                    spaces.fill(QLatin1Char(' '), sp);
+                }
+            }
+            if(!QString(line).trimmed().isEmpty() || sp>=0){
+                if(line.startsWith(spaces))
+                    line = line.mid(sp);
+                s << m_indent << line << endl;
+            }
+        }
+        s << m_indent << "// TEMPLATE - " << m_name << " - END";
+        return cleanedCode;
     } else {
         ReportHandler::warning("insert-template referring to non-existing template '" + m_name + "'");
     }
     return QString();
+}
+
+bool TemplateInstance::hasCode() const {
+    TemplateEntry *templateEntry = TypeDatabase::instance()->findTemplate(m_name);
+    if (templateEntry) {
+        return templateEntry->hasCode();
+    }
+    return false;
 }
 
 
@@ -204,7 +275,7 @@ QString FunctionModification::toString() const {
     if (modifiers & Writable) str += QLatin1String("writable");
 
     if (modifiers & CodeInjection) {
-        foreach(CodeSnip s, snips) {
+        for(const CodeSnip& s : snips) {
             str += QLatin1String("\n//code injection:\n");
             str += s.code();
         }
@@ -221,6 +292,7 @@ QString FunctionModification::toString() const {
 
 //static functions
 
+/*
 static void removeFunction(ComplexTypeEntry *e, const char *signature) {
     FunctionModification mod;
     mod.signature = QMetaObject::normalizedSignature(signature);
@@ -250,7 +322,7 @@ static void injectCode(ComplexTypeEntry *e,
 }
 
 
-/*static void addRemoveFunctionToTemplates(TypeDatabase *db)
+static void addRemoveFunctionToTemplates(TypeDatabase *db)
 {
     ContainerTypeEntry *qvector = db->findContainerType(QLatin1String("QVector"));
     removeFunction(qvector, "constData() const");
@@ -285,34 +357,34 @@ static void injectCode(ComplexTypeEntry *e,
 
     QByteArray code =
         "\nif ($1 >= __qt_this->size() || $1 < 0) {"
-        "\n   __jni_env->ThrowNew(__jni_env->FindClass(\"java/lang/IndexOutOfBoundsException\"),"
+        "\n   JavaException::raiseIndexOutOfBoundsException(__jni_env,"
         "\n                       QString::fromLatin1(\"Accessing container of size %3 at %4\")"
-        "\n                       .arg(__qt_this->size()).arg($1).toLatin1());"
+        "\n                       .arg(__qt_this->size()).arg($1).toLatin1() QTJAMBI_STACKTRACEINFO );"
         "\n   return;"
         "\n}";
 
-    QByteArray code_with_return = QByteArray(code).replace("return;", "return 0;");
+    QByteArray code_with_return = QByteArray(code).replace("return;", "return $DEFAULT_VALUE_RETURN;");
 
     QByteArray code_index_length =
         "\nif ($1 < 0 || $2 < 0 || ($1 + $2) >= __qt_this->size()) {"
-        "\n   __jni_env->ThrowNew(__jni_env->FindClass(\"java/lang/IndexOutOfBoundsException\"),"
+        "\n   JavaException::raiseIndexOutOfBoundsException(__jni_env,"
         "\n                       QString::fromLatin1(\"Accessing container of size %3 from %4 to %5\")"
-        "\n                       .arg(__qt_this->size()).arg($1).arg($1+$2).toLatin1());"
+        "\n                       .arg(__qt_this->size()).arg($1).arg($1+$2).toLatin1() QTJAMBI_STACKTRACEINFO );"
         "\n   return;"
         "\n}";
 
     QByteArray code_non_empty =
         "\nif (__qt_this->isEmpty()) {"
-        "\n   __jni_env->ThrowNew(__jni_env->FindClass(\"java/lang/IndexOutOfBoundsException\"),"
-        "\n                       QString::fromLatin1(\"Accessing empty container...\").toLatin1());"
+        "\n   JavaException::raiseIndexOutOfBoundsException(__jni_env,"
+        "\n                       QString::fromLatin1(\"Accessing empty container...\").toLatin1() QTJAMBI_STACKTRACEINFO );"
         "\n   return;"
         "\n}";
 
     QByteArray code_two_indices =
         "\nif ($1 < 0 || $2 < 0 || $1 >= __qt_this->size() || $2 >= __qt_this->size()) {"
-        "\n   __jni_env->ThrowNew(__jni_env->FindClass(\"java/lang/IndexOutOfBoundsException\"),"
+        "\n   JavaException::raiseIndexOutOfBoundsException(__jni_env,"
         "\n                       QString::fromLatin1(\"Accessing container of size %3 from %4 to %5\")"
-        "\n                       .arg(__qt_this->size()).arg($1).arg($1+$2).toLatin1());"
+        "\n                       .arg(__qt_this->size()).arg($1).arg($1+$2).toLatin1() QTJAMBI_STACKTRACEINFO );"
         "\n   return;"
         "\n}";
 

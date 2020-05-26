@@ -1,0 +1,195 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2019 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtRemoteObjects">
+  <rejection class="*" function-name="getTypeNameAndMetaobjectFromClassInfo"/>
+  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacast"/>
+  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacall"/>
+  <rejection class="ExternalIoDevice"/>
+  <rejection class="QtROServerFactory"/>
+  <rejection class="QtROClientFactory"/>
+  <namespace-type name="QRemoteObjectStringLiterals"/>
+  <namespace-type name="QtRemoteObjects">
+        <modify-function signature="operator&lt;&lt;(QDataStream &amp;, QFlags&lt;QItemSelectionModel::SelectionFlag&gt;)" remove="all">
+        </modify-function>
+        <modify-function signature="operator&lt;&lt;(QDataStream &amp;, Qt::Orientation)" remove="all">
+        </modify-function>
+        <modify-function signature="operator&gt;&gt;(QDataStream &amp;, QFlags&lt;QItemSelectionModel::SelectionFlag&gt; &amp;)" remove="all">
+        </modify-function>
+        <modify-function signature="operator&gt;&gt;(QDataStream &amp;, Qt::Orientation &amp;)" remove="all">
+        </modify-function>
+        <modify-function signature="copyStoredProperties(const QMetaObject *, QDataStream &amp;, void *)" remove="all">
+        </modify-function>
+        <modify-function signature="copyStoredProperties(const QMetaObject *, const void *, QDataStream &amp;)" remove="all">
+        </modify-function>
+        <modify-function signature="copyStoredProperties(const QMetaObject *, const void *, void *)" remove="all">
+        </modify-function>
+  </namespace-type>
+  <enum-type name="QtRemoteObjects::QRemoteObjectPacketTypeEnum" hidden-metaobject="true"/>
+  <enum-type name="QtRemoteObjects::InitialAction" hidden-metaobject="true"/>
+  <enum-type name="QRemoteObjectHostBase::AllowedSchemas"/>
+  <enum-type name="QRemoteObjectNode::ErrorCode"/>
+  <enum-type name="QRemoteObjectReplica::State"/>
+  <enum-type name="QRemoteObjectReplica::ConstructorType"/>
+  <enum-type name="QRemoteObjectPendingCall::Error"/>
+  <object-type name="QRemoteObjectAbstractPersistedStore">
+  </object-type>
+  <object-type name="QRemoteObjectDynamicReplica">
+    <modify-function signature="metaObject() const" remove="all"/>
+  </object-type>
+  <object-type name="QRemoteObjectHost">
+  </object-type>
+  <object-type name="QRemoteObjectHostBase">
+  </object-type>
+  <functional-type name="QRemoteObjectHostBase::RemoteObjectNameFilter">
+  </functional-type>
+  <object-type name="QRemoteObjectNode">
+        <modify-function signature="setPersistedStore(QRemoteObjectAbstractPersistedStore*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcPersistedStore"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <functional-type name="QRemoteObjectNode::RemoteObjectSchemaHandler"/>
+  <object-type name="QRemoteObjectRegistry">
+  </object-type>
+  <object-type name="QRemoteObjectRegistryHost">
+  </object-type>
+  <object-type name="QRemoteObjectReplica">
+        <modify-function signature="setNode(QRemoteObjectNode*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcNode"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <object-type name="QAbstractItemModelReplica">
+        <!--modify-function signature="data(const QModelIndex &amp;, int)">
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(const QModelIndex &amp;, const QVariant &amp;, int)">
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="parent(const QModelIndex &amp;) const ">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="index(int, int, const QModelIndex &amp;) const">
+            <modify-argument index="3">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="hasChildren(const QModelIndex &amp;) const">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="rowCount(const QModelIndex &amp;) const">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="columnCount(const QModelIndex &amp;) const">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="data(const QModelIndex &amp;, int)">
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function-->
+  </object-type>
+  <object-type name="QRemoteObjectSettingsStore">
+  </object-type>
+  <object-type name="QConnectionAbstractServer">
+  </object-type>
+  <object-type name="IoDeviceBase" since="5.12.0">
+        <modify-field name="m_isClosing" read="false" write="true" rename="Closing"/>
+        <inject-code class="destructor-function">
+            if (!%this->m_isClosing)
+                %this->close();
+        </inject-code>
+  </object-type>
+  <object-type name="ServerIoDevice">
+        <inject-code class="destructor-function" until="5.11">
+            if (!%this->m_isClosing)
+                %this->close();
+        </inject-code>
+  </object-type>
+  <object-type name="ClientIoDevice">
+      <modify-field name="m_dataStream" read="false" write="false"/>
+        <inject-code class="destructor-function" until="5.11">
+            if (!%this->m_isClosing)
+                %this->close();
+        </inject-code>
+  </object-type>
+  <value-type name="QRemoteObjectSourceLocationInfo">
+        <modify-function signature="operator=(const QRemoteObjectSourceLocationInfo &amp;)" remove="all">
+        </modify-function>
+  </value-type>
+  <interface-type name="QRemoteObjectPendingCall" is-value="true">
+        <modify-function signature="operator=(const QRemoteObjectPendingCall &amp;)" remove="all">
+        </modify-function>
+  </interface-type>
+  <value-type name="QRemoteObjectPendingReply" generate="no" generic-class="yes">
+  </value-type>
+  <object-type name="QRemoteObjectPendingCallWatcher">
+        <interface-polymorphy interface="QRemoteObjectPendingCall" condition="false" />
+        <modify-function signature="waitForFinished()" rename="waitForFinishedAndSend">
+        </modify-function>
+  </object-type>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAbstractItemModelReplica::QAbstractItemModelReplica', unmatched parameter type 'QAbstractItemModelReplicaImplementation*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectHostBase::enableRemoting', unmatched parameter type 'SourceApiMap const*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field 'QRemoteObjectReplica::d_impl' with unmatched type 'QSharedPointer&lt;QReplicaImplementationInterface&gt;'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectPendingCall::QRemoteObjectPendingCall', unmatched parameter type 'QRemoteObjectPendingCallData*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'initialize()' in 'QRemoteObjectRegistry'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '' for function modification in 'QRemoteObjectRegistry' not found. Possible candidates: " />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator*' for function modification in 'QtRemoteObjects' not found. Possible candidates:*" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator=(*)' for function modification in '*' not found. Possible candidates:*" />
+</typesystem>

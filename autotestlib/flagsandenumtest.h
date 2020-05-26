@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2015 Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,23 +47,80 @@
 
 #include <QtCore/QtCore>
 
+class HiddenObject : public QObject
+{
+    Q_OBJECT
+public:
+    HiddenObject(QObject *parent = nullptr);
+    ~HiddenObject();
+
+    enum HiddenEnum{
+        None = 0, Entry1 = 1, Entry2 = 2, Entry3 = 4, Entry4 = 8
+    };
+    Q_DECLARE_FLAGS(HiddenFlags, HiddenEnum)
+    Q_FLAG(HiddenFlags)
+
+    enum class HiddenEnumClass{
+        None = 0, Entry1 = 1, Entry2 = 2, Entry3 = 4, Entry4 = 8
+    };
+    Q_ENUM(HiddenEnumClass)
+
+    Q_PROPERTY(HiddenFlags hiddenFlags READ hiddenFlags WRITE setHiddenFlags NOTIFY hiddenFlagsChanged)
+    Q_PROPERTY(HiddenEnumClass hiddenEnum READ hiddenEnum WRITE setHiddenEnum NOTIFY hiddenEnumChanged)
+
+    Q_INVOKABLE HiddenObject::HiddenEnumClass hiddenEnum() const;
+    Q_INVOKABLE void setHiddenEnum(HiddenObject::HiddenEnumClass hiddenEnumClass);
+    Q_INVOKABLE HiddenObject::HiddenFlags hiddenFlags() const;
+    Q_INVOKABLE void setHiddenFlags(HiddenObject::HiddenFlags hiddenFlags);
+
+Q_SIGNALS:
+    void hiddenEnumChanged(HiddenObject::HiddenEnumClass hiddenEnumClass);
+    void hiddenFlagsChanged(HiddenObject::HiddenFlags hiddenFlags);
+private:
+    HiddenFlags m_hiddenFlags;
+    HiddenEnumClass m_hiddenEnumClass;
+private:
+    Q_DISABLE_COPY(HiddenObject)
+};
+
+Q_DECLARE_METATYPE(HiddenObject*)
+Q_DECLARE_METATYPE(HiddenObject::HiddenFlags)
+Q_DECLARE_METATYPE(HiddenObject::HiddenEnumClass)
+Q_DECLARE_OPERATORS_FOR_FLAGS(HiddenObject::HiddenFlags)
+
 class FlagsAndEnumTest : public QObject
 {
     Q_OBJECT
 public:
-    explicit FlagsAndEnumTest(QObject *parent = 0);
+    explicit FlagsAndEnumTest(QObject *parent = nullptr);
 
     virtual void processResult(int result);
+	
+	virtual void setAttributes(std::initializer_list<Qt::WidgetAttribute> attributes);
+    virtual void setInts(std::initializer_list<int> iList);
+	
+	const QList<Qt::WidgetAttribute>& getAttributes();
+    const QList<int>& getInts();
+
+    static QObject* createHiddenObject(QObject* parent);
     
 public slots:
     void testSlot1(Qt::AlignmentFlag o);
     void testSlot2(Qt::Orientation o);
     void testSlot3(Qt::Alignment o);
+    void testSlot4(std::initializer_list<Qt::WidgetAttribute> o);
+    void testSlot5(std::initializer_list<int> o);
 
 signals:
     void testSignal1(Qt::AlignmentFlag);
     void testSignal2(Qt::Orientation);
     void testSignal3(Qt::Alignment);
+	void testSignal4(std::initializer_list<Qt::WidgetAttribute>);
+    void testSignal5(std::initializer_list<int>);
+	
+private:
+	QList<Qt::WidgetAttribute> m_attributes;
+    QList<int> m_ints;
 };
 
 #endif // FLAGSANDENUMTEST_H

@@ -5,6 +5,7 @@
 #include "pp-environment.h"
 
 void rpp::pp_environment::bind(pp_fast_string const *__name, pp_macro const &__macro) {
+    _M_featureRegistry(std::string(__name->begin()), current_file);
     std::size_t h = hash_code(*__name) % _M_hash_size;
     pp_macro *m = new pp_macro(__macro);
     m->name = __name;
@@ -60,7 +61,7 @@ std::size_t rpp::pp_environment::hash_code(pp_fast_string const &s) const {
     std::size_t hash_value = 0;
 
     for (std::size_t i = 0; i < s.size(); ++i)
-        hash_value = (hash_value << 5) - hash_value + s.at(i);
+        hash_value = (hash_value << 5) - hash_value + std::size_t(s.at(i));
 
     return hash_value;
 }
@@ -70,7 +71,7 @@ void rpp::pp_environment::rehash() {
 
     _M_hash_size <<= 1;
 
-    _M_base = (pp_macro **) memset(new pp_macro* [_M_hash_size], 0, _M_hash_size * sizeof(pp_macro*));
+    _M_base = reinterpret_cast<pp_macro **>(memset(new pp_macro* [_M_hash_size], 0, _M_hash_size * sizeof(pp_macro*)));
     for (std::size_t index = 0; index < _M_macros.size(); ++index) {
         pp_macro *elt = _M_macros [index];
         std::size_t h = hash_code(*elt->name) % _M_hash_size;

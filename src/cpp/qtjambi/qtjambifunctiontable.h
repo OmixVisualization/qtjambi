@@ -46,42 +46,17 @@
 class QTJAMBI_EXPORT QtJambiFunctionTable
 {
 public:
-    QtJambiFunctionTable(const QString &className, int size);
-    ~QtJambiFunctionTable();
+    virtual ~QtJambiFunctionTable();
 
-    inline int methodCount() const { return m_method_count; }
+    virtual jclass javaClass() const = 0;
 
-    inline QString className() const { return m_class_name; }
+    virtual jmethodID javaMethod(const std::type_info& typeId, int pos) const = 0;
 
-    inline jmethodID method(int pos) const;
-    inline void setMethod(int pos, jmethodID methodId);
-
-    void deref();
-    void ref();
-
-private:
-    QString m_class_name;
-
-    int m_method_count;
-    jmethodID *m_method_ids;
-
-    int m_reference_count;
-    QMutex mutex;
+    virtual const QMetaObject* metaObject() const = 0;
+#ifdef QT_DEBUG
+    virtual void deref() const = 0;
+    virtual void ref() const = 0;
+#endif
 };
-
-QTJAMBI_EXPORT jmethodID QtJambiFunctionTable::method(int pos) const
-{
-    Q_ASSERT(pos >= 0);
-    Q_ASSERT(pos < m_method_count);
-    return m_method_ids[pos];
-}
-
-
-QTJAMBI_EXPORT void QtJambiFunctionTable::setMethod(int pos, jmethodID id)
-{
-    Q_ASSERT(pos >= 0);
-    Q_ASSERT(pos < m_method_count);
-    m_method_ids[pos] = id;
-}
 
 #endif // QTJAMBIFUNCTIONTABLE_H

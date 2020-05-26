@@ -87,6 +87,7 @@ class ReportHandler {
 
         static void debug(DebugLevel level, const QString &str);
 
+        static const QSet<QString>& reportedWarnings();
     private:
         static int m_warning_count;
         static int m_suppressed_count;

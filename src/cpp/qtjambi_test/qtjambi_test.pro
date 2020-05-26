@@ -1,9 +1,10 @@
-TARGET = org_qtjambi_qt_test
+QTJAMBILIB = QtJambiTest
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/org_qtjambi_qt_test/org_qtjambi_qt_test.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 # This looks like a bug in Qt to me
 INCLUDEPATH += $$QMAKE_INCDIR_QT/QtTest
