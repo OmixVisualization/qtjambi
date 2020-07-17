@@ -36,9 +36,9 @@
 
 #include <QtCore/QtCore>
 
-#if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
-
 #include "qtjambidebugtools_p.h"
+
+#if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
 
 #include "qtjambi_core.h"
 

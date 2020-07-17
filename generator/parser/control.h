@@ -134,17 +134,12 @@ class Control {
         bool isTypedef(const NameSymbol *name) const;
 
         void reportError(const ErrorMessage &errmsg);
-        QList<ErrorMessage> errorMessages() const;
-        void clearErrorMessages();
-
     private:
         NameTable name_table;
         QHash<const NameSymbol*, Declarator*> stl_typedef_table;
         bool _M_skipFunctionBody;
         Lexer *_M_lexer;
         Parser *_M_parser;
-
-        QList<ErrorMessage> _M_error_messages;
 };
 
 #endif // CONTROL_H

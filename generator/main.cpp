@@ -39,7 +39,8 @@
 #include "preprocesshandler.h"
 
 bool Preprocess::preprocess(const QString& sourceFile, const QString& targetFile,
-                            const std::function<void(std::string,std::string)>& featureRegistry, const QString& phononinclude,
+                            const std::function<void(std::string,std::string)>& featureRegistry,
+                            const QString& phononinclude,
                             const QStringList& includePathList, const QStringList& inputDirectoryList, int verbose) {
     PreprocessHandler handler(sourceFile, targetFile, featureRegistry, phononinclude, includePathList, inputDirectoryList, verbose);
     for(const DefineUndefine& ddf : Wrapper::getDefineUndefineStageOneList()){

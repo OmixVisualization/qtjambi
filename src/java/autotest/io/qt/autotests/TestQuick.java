@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
+import io.qt.core.QMetaObject;
 import io.qt.core.QSize;
 import io.qt.core.QSizeF;
 import io.qt.core.QTimer;
@@ -61,6 +62,7 @@ import io.qt.quick.QSGMaterialShader;
 import io.qt.quick.QSGMaterialType;
 import io.qt.quick.QSGNode;
 import io.qt.quick.widgets.QQuickWidget;
+import io.qt.widgets.QMainWindow;
 
 public class TestQuick extends QApplicationTest {
 	
@@ -131,7 +133,7 @@ public class TestQuick extends QApplicationTest {
 			geometryNode.setMaterial(new SGMaterial());
 			geometryNode.setGeometry(new QSGGeometry(QSGGeometry.defaultAttributes_Point2D(), 5));
 			if(loop!=null)
-				loop.quit();
+				QMetaObject.invokeMethod(loop::quit, Qt.ConnectionType.QueuedConnection);
 			return geometryNode;
 		}
 	}
@@ -159,7 +161,7 @@ public class TestQuick extends QApplicationTest {
 			QSGNode result = super.updatePaintNode(arg__1, arg__2);
 			updatePaintNode_ended = true;
 			if(loop!=null)
-				loop.quit();
+				QMetaObject.invokeMethod(loop::quit, Qt.ConnectionType.QueuedConnection);
 			return result;
 		}
 
@@ -191,14 +193,14 @@ public class TestQuick extends QApplicationTest {
 			updatePaintNode_begone = true;
 			QSGNode result = super.updatePaintNode(arg__1, arg__2);
 			updatePaintNode_ended = true;
-			if(loop!=null)
-				loop.quit();
 			return result;
 		}
 
 		@Override
 		public Renderer createRenderer() {
 			painted = true;
+			if(loop!=null)
+				QMetaObject.invokeMethod(loop::quit, Qt.ConnectionType.QueuedConnection);
 			return new Renderer() {
 				@Override
 				protected void render() {
@@ -236,10 +238,12 @@ public class TestQuick extends QApplicationTest {
 			Assert.assertEquals(error, QQuickView.Status.Ready, component.status());
 			Assert.assertTrue(component.rootObject() instanceof TestItem);
 		    component.show();
-		    timer.start(15000);
+		    timer.start(5000);
 		    loop.exec();
 		    timer.timeout.disconnect();
 		    component.close();
+		    timer.stop();
+		    timer.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);
@@ -261,8 +265,11 @@ public class TestQuick extends QApplicationTest {
 			QtQml.qmlRegisterType(TestItem.class, "io.qt.test", 1, 0, "TestItem");
 		    QTimer timer = new QTimer();
 		    timer.timeout.connect(loop::quit);
-			QQuickWidget component = new QQuickWidget();
+		    QMainWindow mainWindow = new QMainWindow();
+		    mainWindow.setWindowTitle("testQuickWidget");
+			QQuickWidget component = new QQuickWidget(mainWindow);
 			component.setObjectName("testQuickWidget");
+			mainWindow.setCentralWidget(component);
 			String prefix = io.qt.QtUtilities.qtPrefix();
 	        if(new QDir(prefix+"/qml").exists()) {
 	        	component.engine().addImportPath(prefix+"/qml");
@@ -277,11 +284,13 @@ public class TestQuick extends QApplicationTest {
 			}
 			Assert.assertEquals(error, QQuickWidget.Status.Ready, component.status());
 			Assert.assertTrue(component.rootObject() instanceof TestItem);
-		    component.show();
-			timer.start(15000);
+			mainWindow.show();
+			timer.start(5000);
 		    loop.exec();
 		    timer.timeout.disconnect();
 		    component.close();
+		    timer.stop();
+		    timer.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);
@@ -300,7 +309,11 @@ public class TestQuick extends QApplicationTest {
 			updatePaintNode_ended = false;
 			updatePaintNode_item_disposed = false;
 			QtQml.qmlClearTypeRegistrations();
-			QQuickWindow component = new QQuickWindow();
+		    QTimer timer = new QTimer();
+		    timer.setInterval(5000);
+		    timer.setSingleShot(true);
+		    timer.timeout.connect(loop::quit);
+		    QQuickWindow component = new QQuickWindow();
 			component.setObjectName("testQuickWindow");
 		    QSurfaceFormat format = component.format();
 		    format.setSamples(16);
@@ -309,13 +322,14 @@ public class TestQuick extends QApplicationTest {
 		    test.setParentItem(component.contentItem());
 		    component.contentItem().setEnabled(true);
 		    component.sceneGraphInitialized.connect(()->component.setRenderTarget(0, new QSize(200, 200)), Qt.ConnectionType.DirectConnection);
+		    component.sceneGraphInitialized.connect(timer::start);
 		    component.show();
-		    QTimer timer = new QTimer();
-		    timer.timeout.connect(loop::quit);
-		    timer.start(5000);
+		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
 		    timer.timeout.disconnect();
 		    component.close();
+		    timer.stop();
+		    timer.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("updatePaintNode item not disposed", updatePaintNode_item_disposed);
@@ -334,6 +348,8 @@ public class TestQuick extends QApplicationTest {
 			painted = false;
 			QtQml.qmlClearTypeRegistrations();
 		    QTimer timer = new QTimer();
+		    timer.setInterval(5000);
+		    timer.setSingleShot(true);
 		    timer.timeout.connect(loop::quit);
 			QQuickWindow component = new QQuickWindow();
 			component.setObjectName("testQuickWindow_Painted");
@@ -345,11 +361,14 @@ public class TestQuick extends QApplicationTest {
 		    test.setParentItem(component.contentItem());
 		    component.contentItem().setEnabled(true);
 		    component.sceneGraphInitialized.connect(()->component.setRenderTarget(0, new QSize(200, 200)), Qt.ConnectionType.DirectConnection);
+		    component.sceneGraphInitialized.connect(timer::start);
 		    component.show();
-		    timer.start(5000);
+		    QTimer.singleShot(20000, loop::quit);
 		    loop.exec();
 		    timer.timeout.disconnect();
 		    component.close();
+		    timer.stop();
+		    timer.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("not createRenderer", painted);
@@ -368,6 +387,8 @@ public class TestQuick extends QApplicationTest {
 			painted = false;
 			QtQml.qmlClearTypeRegistrations();
 		    QTimer timer = new QTimer();
+		    timer.setInterval(10000);
+		    timer.setSingleShot(true);
 		    timer.timeout.connect(loop::quit);
 			QQuickWindow component = new QQuickWindow();
 			component.setObjectName("testQuickWindow_FramebufferObject");
@@ -379,11 +400,14 @@ public class TestQuick extends QApplicationTest {
 		    test.setParentItem(component.contentItem());
 		    component.contentItem().setEnabled(true);
 		    component.sceneGraphInitialized.connect(()->component.setRenderTarget(0, new QSize(200, 200)), Qt.ConnectionType.DirectConnection);
-		    component.sceneGraphInitialized.connect(()->timer.start(15000));
+		    component.sceneGraphInitialized.connect(timer::start);
 		    component.show();
+		    QTimer.singleShot(100000, loop::quit);
 		    loop.exec();
 		    timer.timeout.disconnect();
 		    component.close();
+		    timer.stop();
+		    timer.dispose();
 		    Assert.assertTrue("updatePaintNode not begone", updatePaintNode_begone);
 		    Assert.assertTrue("updatePaintNode not ended", updatePaintNode_ended);
 		    Assert.assertTrue("not painted", painted);

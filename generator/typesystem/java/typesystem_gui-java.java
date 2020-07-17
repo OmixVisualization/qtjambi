@@ -325,11 +325,7 @@ class QPen___ extends QPen {
 }// class
 
 class QPixmap___ extends QPixmap {
-        /*initialize*/{
-            if(QGuiApplication.instance()==null) {
-                throw new IllegalStateException("Must initialize QGuiApplication before creating QPixmap.");
-            }
-        }
+         
 }// class
 
 class QPixmapFilter___ extends QPixmapFilter {

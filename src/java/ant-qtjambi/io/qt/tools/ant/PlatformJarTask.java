@@ -705,8 +705,8 @@ public class PlatformJarTask extends Task {
         List<String> list = Util.splitStringTokenizer(execStrip);
         list.add(file.getAbsolutePath());
         String[] cmd = list.toArray(new String[list.size()]);
-        getProject().log("Stripping binary: " + Arrays.toString(cmd), Project.MSG_VERBOSE);
-        Exec.exec(cmd, null, getProject(), false);
+        getProject().log(this, "Stripping binary: " + Arrays.toString(cmd), Project.MSG_VERBOSE);
+        Exec.exec(this, cmd, null, getProject(), false);
     }
 
     private void processLibraryEntry(LibraryEntry e) {
@@ -1232,7 +1232,7 @@ public class PlatformJarTask extends Task {
         }
         change_lib_paths.setExecutable(true);
         getProject().log(this, " exec " + change_lib_paths.getAbsolutePath(), Project.MSG_INFO);
-        Exec.exec(new String[]{"./change_lib_paths.sh"}, outdir, getProject(), false);
+        Exec.exec(this, new String[]{"./change_lib_paths.sh"}, outdir, getProject(), false);
         change_lib_paths.delete();
     }
     
@@ -1252,7 +1252,7 @@ public class PlatformJarTask extends Task {
 						directories.add(file);
 						}else if(file.isFile() && (file.getName().endsWith(".so") || file.getName().endsWith(".so.1") || file.getName().endsWith(".so.4") || file.getName().endsWith(".so.5"))){
 							try{
-								Exec.exec (new String[]{"chrpath", "--replace", "$ORIGIN/"+suffix, file.getAbsolutePath()}, file.getParentFile(), getProject(), true );
+								Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/"+suffix, file.getAbsolutePath()}, file.getParentFile(), getProject(), true );
 							}catch(Exception e){
 							}
 						}

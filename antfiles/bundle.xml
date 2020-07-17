@@ -189,6 +189,8 @@
         <library name="QtOpenGLExtensions"        dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.openglextensions"/>
         <library name="QtPlatformSupport"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.platformsupport"/>
         <library name="QtEglDeviceIntegration"    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.egldeviceintegration"/>
+        <library name="QtEglFSDeviceIntegration"  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.eglfsdeviceintegration"/>
+        <library name="QtEglFsKmsSupport"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.eglfskmssupport"/>
         <library name="QtWaylandClient"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.waylandclient"/>
         <library name="QtWaylandCompositor"       dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.waylandcompositor"/>
         <library name="QtGamepad"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.gamepad"/>
@@ -284,6 +286,12 @@
         <library name="qmacheif"                  load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qmacheif"/>
         <library name="qmacjp2"                   load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qmacjp2"/>
         <library name="qwbmp"                     load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qwbmp"/>
+        <library name="qjp2"                      load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qjp2"/>
+        <library name="qicns"                     load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qicns"/>
+        <library name="qdds"                      load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qdds"/>
+        <library name="qtga"                      load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qtga"/>
+        <library name="qwbmp"                     load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qwbmp"/>
+        <library name="qwebp"                     load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qwebp"/>
 
         <library name="qimsw-multi"               load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="inputmethods" destSubdir="plugins" if="qtjambi.plugins.inputmethods.imsw-multi"/>
 
@@ -312,12 +320,6 @@
         <library name="qtaudio_coreaudio"              load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="audio"      destSubdir="plugins" if="qtjambi.plugins.audio.qtaudio_coreaudio"/>
         <library name="qtmedia_pulse"                  load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="audio"      destSubdir="plugins" if="qtjambi.plugins.audio.qtmedia_pulse"/>
         <library name="qtuiotouchplugin"               load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="generic"      destSubdir="plugins" if="qtjambi.plugins.generic.qtuiotouchplugin"/>
-        <library name="qjp2"                           load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qjp2"/>
-        <library name="qicns"                          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qicns"/>
-        <library name="qdds"                           load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qdds"/>
-        <library name="qtga"                           load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qtga"/>
-        <library name="qwbmp"                          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qwbmp"/>
-        <library name="qwebp"                          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="imageformats" destSubdir="plugins" if="qtjambi.plugins.imageformats.qwebp"/>
         <library name="dsengine"                       load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="mediaservice" destSubdir="plugins" if="qtjambi.plugins.mediaservice.dsengine"/>
         <library name="qtmedia_audioengine"            load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="mediaservice" destSubdir="plugins" if="qtjambi.plugins.mediaservice.qtmedia_audioengine"/>
         <library name="wmfengine"                      load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="mediaservice" destSubdir="plugins" if="qtjambi.plugins.mediaservice.wmfengine"/>
@@ -338,11 +340,15 @@
         <library name="qwayland-egl"                   load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platforms" destSubdir="plugins" if="qtjambi.plugins.platforms.qwayland-egl"/>
         <library name="qwayland-generic"               load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platforms" destSubdir="plugins" if="qtjambi.plugins.platforms.qwayland-generic"/>
         <library name="qxcb"                           load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platforms" destSubdir="plugins" if="qtjambi.plugins.platforms.qxcb"/>
+        <library name="qdirect2d"                      load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platforms" destSubdir="plugins" if="qtjambi.plugins.platforms.qdirect2d"/>
         <library name="qxdgdesktopportal"              load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platformthemes" destSubdir="plugins" if="qtjambi.plugins.platformthemes.qxdgdesktopportal"/>
+        <library name="qgtk3"                          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="platformthemes" destSubdir="plugins" if="qtjambi.plugins.platformthemes.qgtk3"/>
         <library name="qtmultimedia_m3u"               load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="playlistformats" destSubdir="plugins" if="qtjambi.plugins.playlistformats.qtmultimedia_m3u"/>
         <library name="qtposition_positionpoll"        load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="position" destSubdir="plugins" if="qtjambi.plugins.position.qtposition_positionpoll"/>
         <library name="qtposition_cl"                  load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="position" destSubdir="plugins" if="qtjambi.plugins.position.qtposition_cl"/>
         <library name="qtposition_serialnmea"          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="position" destSubdir="plugins" if="qtjambi.plugins.position.qtposition_serialnmea"/>
+        <library name="qtposition_geoclue"             load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="position" destSubdir="plugins" if="qtjambi.plugins.position.qtposition_geoclue"/>
+        <library name="qtposition_geoclue2"            load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="position" destSubdir="plugins" if="qtjambi.plugins.position.qtposition_geoclue2"/>
         <library name="windowsprintersupport"          load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="printsupport" destSubdir="plugins" if="qtjambi.plugins.printsupport.windowsprintersupport"/>
         <library name="cupsprintersupport"             load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="printsupport" destSubdir="plugins" if="qtjambi.plugins.printsupport.cupsprintersupport"/>
         <library name="cocoaprintersupport"            load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="printsupport" destSubdir="plugins" if="qtjambi.plugins.printsupport.cocoaprintersupport"/>

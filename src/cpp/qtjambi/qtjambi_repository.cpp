@@ -67,6 +67,7 @@ namespace Java{
 
 #define DEFINE_CLASS_REF(cls)\
     _this->__##cls = getGlobalClassRef(env, jclass(env->GetStaticObjectField(_this->class_ref, env->GetStaticFieldID(_this->class_ref, #cls, "Ljava/lang/Class;") )), nullptr);\
+    POST_CLASS_REF_ACTION(_this->__##cls)\
     qtjambi_throw_java_exception(env)
 
 #ifndef QT_QTJAMBI_PORT
@@ -295,17 +296,15 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(Runtime,java/util,ArrayList)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(Runtime,java/util,ArrayDeque)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(Runtime,java/util,LinkedList)
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/lang/invoke,MethodHandles$Lookup,
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Class;)
-)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/lang/invoke,MethodHandles$Lookup,)
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,List,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)Ljava/lang/Object;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(of,([Ljava/lang/Object;)Ljava/util/List;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(set,(ILjava/lang/Object;)Ljava/lang/Object;)
+    QTJAMBI_REPOSITORY_DEFINE_RENAMED_METHOD(removeByIndex,remove,(I)Ljava/lang/Object;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,Set,
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(of,([Ljava/lang/Object;)Ljava/util/Set;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,Map,
@@ -367,6 +366,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/lang,IndexOutOfBoundsException,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,Collection,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(add,(Ljava/lang/Object;)Z)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(addAll,(Ljava/util/Collection;)Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(size,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(toArray,()[Ljava/lang/Object;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(clear,()V)
@@ -376,6 +376,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,Collection,
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util,Iterator,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(remove,()V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(hasNext,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(next,()Ljava/lang/Object;)
 )
@@ -507,7 +508,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(QtJambi,io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(signalMatchesSlot,(Ljava/lang/String;Ljava/lang/String;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(putMultiMap,(Ljava/util/Map;Ljava/lang/Object;Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createComparator,(J)Ljava/util/Comparator;)
-    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(registerCleaner,(Ljava/lang/Object;Ljava/lang/Runnable;)Ljava/lang/ref/Cleaner$Cleanable;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(registerCleaner,(Ljava/lang/Object;Ljava/lang/Runnable;)Lio/qt/internal/QtJambiInternal$Cleanable;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(disconnectAll,(Lio/qt/QtSignalEmitterInterface;Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findDefaultImplementation,(Ljava/lang/Class;)Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_RENAMED_STATIC_METHOD(resolveEnumI,resolveEnum,(Ljava/lang/Class;I)Ljava/lang/Enum;)

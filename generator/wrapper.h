@@ -62,7 +62,7 @@ class Wrapper {
 
         void analyzeDependencies(TypeDatabase* typeDatabase);
 
-        static bool defined(QString name);
+        static bool defined(const QString& name);
 
         QString default_file;
         QString default_system;

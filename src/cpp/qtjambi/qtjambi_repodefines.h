@@ -64,6 +64,7 @@ public:\
     private: jmethodID __constructor;\
     public: inline jobject newInstance(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -77,6 +78,7 @@ public:\
     private: jmethodID __constructor2;\
     public: inline jobject newInstance2(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -90,6 +92,7 @@ public:\
     private: jmethodID __constructor3;\
     public: inline jobject newInstance3(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -113,9 +116,10 @@ public:\
     private: jmethodID __##method;\
     public: inline void method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         va_start(args, object);\
@@ -128,10 +132,11 @@ public:\
     private: jmethodID __##method;\
     public: inline jobject method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject result;\
         va_start(args, object);\
@@ -145,9 +150,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jclass method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jobject result;\
@@ -162,9 +168,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jobjectArray method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jobject result;\
@@ -179,9 +186,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jstring method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jobject result;\
@@ -196,9 +204,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jint method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jint result;\
@@ -213,9 +222,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jlong method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jlong result;\
@@ -230,9 +240,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jshort method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jshort result;\
@@ -247,9 +258,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jbyte method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jbyte result;\
@@ -264,9 +276,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jdouble method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jdouble result;\
@@ -281,9 +294,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jfloat method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jfloat result;\
@@ -298,9 +312,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jchar method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jchar result;\
@@ -315,9 +330,10 @@ public:\
     private: jmethodID __##method;\
     public: inline jboolean method(JNIEnv* env,jobject object,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return false;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot invoke member function %1." #method "(...) on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         va_list args;\
         jboolean result;\
@@ -332,6 +348,7 @@ public:\
     private: jmethodID __##method;\
     public: inline void method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         va_list args;\
         va_start(args, env);\
         env->CallStaticVoidMethodV(class_ref,__##method,args);\
@@ -343,6 +360,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jobject method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -356,6 +374,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jobjectArray method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -369,6 +388,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jclass method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -382,6 +402,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jstring method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         va_list args;\
         jobject result;\
         va_start(args, env);\
@@ -395,6 +416,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jint method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jint result;\
         va_start(args, env);\
@@ -408,6 +430,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jlong method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jlong result;\
         va_start(args, env);\
@@ -421,6 +444,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jshort method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jshort result;\
         va_start(args, env);\
@@ -434,6 +458,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jbyte method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jbyte result;\
         va_start(args, env);\
@@ -447,6 +472,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jdouble method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jdouble result;\
         va_start(args, env);\
@@ -460,6 +486,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jfloat method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jfloat result;\
         va_start(args, env);\
@@ -473,6 +500,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jchar method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         va_list args;\
         jchar result;\
         va_start(args, env);\
@@ -486,6 +514,7 @@ public:\
     private: jmethodID __##method;\
     public: inline jboolean method(JNIEnv* env,...) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return false;\
         va_list args;\
         jboolean result;\
         va_start(args, env);\
@@ -499,9 +528,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jobject field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject _result = env->GetObjectField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -509,9 +539,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jobject _value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetObjectField(object, __##field, _value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -521,9 +552,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jclass field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject _result = env->GetObjectField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -531,9 +563,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jclass value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetObjectField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -543,9 +576,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jstring field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject _result = env->GetObjectField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -553,9 +587,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jstring value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetObjectField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -565,9 +600,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jintArray field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject _result = env->GetObjectField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -575,9 +611,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jintArray value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetObjectField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -587,9 +624,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jobjectArray field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jobject _result = env->GetObjectField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -597,9 +635,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jobjectArray value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetObjectField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -609,9 +648,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jbyte field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jbyte _result = env->GetByteField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -619,9 +659,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jbyte value) const {\
         __qt_resolve(env, this);\
+    if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetByteField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -631,9 +672,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jshort field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jshort result = env->GetShortField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -641,9 +683,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jshort value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetShortField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -653,9 +696,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jint field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jint result = env->GetIntField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -663,9 +707,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jint value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetIntField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -675,9 +720,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jlong field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jlong result = env->GetLongField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -685,9 +731,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jlong value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetLongField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -697,9 +744,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jfloat field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jfloat result = env->GetFloatField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -707,9 +755,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jfloat value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetFloatField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -719,9 +768,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jdouble field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jdouble result = env->GetDoubleField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -729,9 +779,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jdouble value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetDoubleField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -741,9 +792,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jboolean field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return false;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jboolean result = env->GetBooleanField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -751,9 +803,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jboolean value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetBooleanField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -763,9 +816,10 @@ public:\
     private: jfieldID __##field;\
     public: inline jchar field(JNIEnv* env,jobject object) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         jchar result = env->GetCharField(object, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -773,9 +827,10 @@ public:\
     }\
     public: inline void set_##field(JNIEnv* env,jobject object, jchar value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         if(env->IsSameObject(object, nullptr))\
             JavaException::raiseNullPointerException(env, nullptr QTJAMBI_STACKTRACEINFO );\
-        if(!isInstanceOf(env, object))\
+        if(!env->IsInstanceOf(object, class_ref))\
             JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot access member field %1." #field " on object of type %2.").arg(qtjambi_class_name(env, class_ref)).arg(qtjambi_object_class_name(env, object))) QTJAMBI_STACKTRACEINFO );\
         env->SetCharField(object, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
@@ -785,12 +840,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jobject field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return nullptr;\
         jobject result = env->GetStaticObjectField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jobject value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticObjectField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -799,12 +856,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jbyte field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jbyte result = env->GetStaticByteField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jbyte value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticByteField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -813,12 +872,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jshort field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jshort result = env->GetStaticShortField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jshort value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticShortField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -827,12 +888,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jint field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jint result = env->GetStaticIntField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jint value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticIntField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -841,12 +904,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jlong field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jlong result = env->GetStaticLongField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jlong value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticLongField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -855,12 +920,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jfloat field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jfloat result = env->GetStaticFloatField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jfloat value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticFloatField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -869,12 +936,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jdouble field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jdouble result = env->GetStaticDoubleField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jdouble value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticDoubleField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -883,12 +952,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jboolean field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return false;\
         jboolean result = env->GetStaticBooleanField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jboolean value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticBooleanField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -897,12 +968,14 @@ public:\
     private: jfieldID __##field;\
     public: inline jchar field(JNIEnv* env) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return 0;\
         jchar result = env->GetStaticCharField(class_ref, __##field);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return result;\
     }\
     public: inline void set_##field(JNIEnv* env, jchar value) const {\
         __qt_resolve(env, this);\
+        if(!class_ref) return;\
         env->SetStaticCharField(class_ref, __##field, value);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
     }
@@ -911,6 +984,7 @@ public:\
     private: jclass __##cls;\
     public: inline bool isPrimitiveType(JNIEnv* env, jclass type) const{\
         __qt_resolve(env, this);\
+        if(!class_ref) return false;\
         return env->IsSameObject(type, __##cls);\
     }\
     inline jclass primitiveType(JNIEnv* env) const{\
@@ -944,25 +1018,25 @@ jclass container::_##type_name::getClass(JNIEnv* env) const {\
 }\
 jboolean container::_##type_name::isInstanceOf(JNIEnv* env,jobject instance) const {\
     __qt_resolve(env, this);\
-    jboolean result = !env->IsSameObject(instance, nullptr) && env->IsInstanceOf(instance, class_ref);\
+    jboolean result = class_ref && !env->IsSameObject(instance, nullptr) && env->IsInstanceOf(instance, class_ref);\
     qtjambi_throw_java_exception_no_stackinfo(env)\
     return result;\
 }\
 jboolean container::_##type_name::isAssignableFrom(JNIEnv* env,jclass otherClass) const {\
     __qt_resolve(env, this);\
-    jboolean result = env->IsAssignableFrom(otherClass, class_ref);\
+    jboolean result = class_ref && env->IsAssignableFrom(otherClass, class_ref);\
     qtjambi_throw_java_exception_no_stackinfo(env)\
     return result;\
 }\
 jboolean container::_##type_name::isSameClass(JNIEnv* env,jclass otherClass) const {\
     __qt_resolve(env, this);\
-    jboolean result = env->IsSameObject(otherClass, class_ref);\
+    jboolean result = class_ref && env->IsSameObject(otherClass, class_ref);\
     qtjambi_throw_java_exception_no_stackinfo(env)\
     return result;\
 }\
 jobjectArray container::_##type_name::newArray(JNIEnv* env,jsize size) const {\
     __qt_resolve(env, this);\
-    jobjectArray result = env->NewObjectArray(size, class_ref, nullptr);\
+    jobjectArray result = class_ref ? env->NewObjectArray(size, class_ref, nullptr) : nullptr;\
     qtjambi_throw_java_exception_no_stackinfo(env)\
     return result;\
 }

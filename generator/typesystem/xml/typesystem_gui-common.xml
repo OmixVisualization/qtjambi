@@ -92,6 +92,7 @@
     <rejection class="QAccessibleInterface" function-name="interface_cast"/>
     <rejection class="QAccessibleInterfaceEx" function-name="interface_cast"/>
     <rejection class="QBrushData"/>
+    <rejection class="QGradient::QGradientData"/>
     <rejection class="QBrush" function-name="cleanUp"/>
     <rejection class="QPixmap" function-name="grabWidget"/>
     <rejection class="QPixmap" function-name="grabWindow"/>
@@ -130,7 +131,7 @@
     <rejection class="QPixelFormat" function-name="get"/>
     <rejection class="QPixelFormat" function-name="set"/>
     <rejection class="QWheelEvent" enum-name="enum_1"/>
-    <rejection class="QTextDocument" function-name="appendUndoItem"/>
+    <!--rejection class="QTextDocument" function-name="appendUndoItem"/-->
     <rejection class="QTouchEvent" field-name="_window"/>
     <rejection class="QTouchEvent" field-name="_target"/>
     <rejection class="QTouchEvent" field-name="_device"/>
@@ -1526,8 +1527,8 @@ class QWidget;
     <iterator-type name="QRegion::const_iterator" java-name="Iterator"/>
 
     <object-type name="QPdfWriter">
-        <interface-polymorphy interface="QPaintDevice" condition="false" />
-        <interface-polymorphy interface="QPagedPaintDevice" condition="false" />
+        <interface-polymorphy interface="QPaintDevice" condition="dynamic_cast&lt;const QPdfWriter*>(%1)" />
+        <interface-polymorphy interface="QPagedPaintDevice" condition="dynamic_cast&lt;const QPdfWriter*>(%1)" />
         <modify-function signature="devType() const" remove="all" />
     </object-type>
 
@@ -1855,6 +1856,7 @@ class QWidget;
         </extra-includes>
     </object-type>
 
+    <interface-type name="QAbstractUndoItem"/>
     <object-type name="QTextDocument" is-value-owner="yes">
         <extra-includes>
             <include file-name="QTextBlock" location="global"/>
@@ -2101,7 +2103,7 @@ class QWidget;
     <object-type name="QRasterWindow">
     </object-type>
     <object-type name="QPaintDeviceWindow">
-        <interface-polymorphy interface="QPaintDevice" condition="false" />
+        <interface-polymorphy interface="QPaintDevice" condition="dynamic_cast&lt;const QPaintDeviceWindow*>(%1)" />
         <modify-function signature="devType() const" remove="all" />
         <modify-function signature="event(QEvent *)" remove="all">
         </modify-function>

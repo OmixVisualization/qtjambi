@@ -80,7 +80,9 @@
 #endif
 
 #  include <jni.h>
+#ifndef Q_OS_ANDROID
 #  include <jni_md.h>
+#endif
 
 /* Win64 ABI does not use underscore prefixes symbols we could also use !defined(__MINGW64__) */
 #if defined(Q_CC_MINGW) && !defined(_WIN64)
@@ -100,6 +102,13 @@ typedef const class QObject* (*PtrOwnerFunction)(void *);
 extern "C" QTJAMBI_EXPORT JNIEnv *qtjambi_current_environment();
 
 enum class QtJambiNativeID : jlong { Invalid = 0 };
+
+#ifndef JNI_VERSION_9
+#define JNI_VERSION_9 JNI_VERSION_1_8
+#endif
+#ifndef JNI_VERSION_10
+#define JNI_VERSION_10 JNI_VERSION_9
+#endif
 
 #define InvalidNativeID QtJambiNativeID::Invalid
 

@@ -497,6 +497,8 @@ qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread, QTh
     return link;
 #else
     Q_UNUSED(created_by_java)
+    QString threadName = qtjambi_to_qstring(env, Java::Private::Runtime::Thread.getName(env, java_thread));
+    qt_thread->setObjectName(threadName);
     jobject javaQThread = java_qthread ? env->NewLocalRef(java_qthread) : nullptr;
     if(!javaQThread){
         javaQThread = qtjambi_cast<jobject>(env, qt_thread);

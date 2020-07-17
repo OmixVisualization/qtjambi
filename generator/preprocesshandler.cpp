@@ -42,7 +42,9 @@
 #include "preprocesshandler.h"
 #include "wrapper.h"
 
-PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile, const std::function<void(std::string,std::string)> &featureRegistry, const QString &phononInclude,
+PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile,
+                                     const std::function<void(std::string,std::string)> &featureRegistry,
+                                     const QString &phononInclude,
     const QStringList &includePathList, const QStringList &inputDirectoryList, int verbose) :
         env(featureRegistry),
         preprocess(env),
@@ -56,6 +58,17 @@ PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile, con
 {
     //empty space for useless comments
     preprocess.verbose = verbose;
+}
+
+PreprocessHandler::~PreprocessHandler(){
+    for(std::string* s : stdStrings){
+        delete s;
+    }
+    stdStrings.clear();
+    for(rpp::pp_fast_string* s : fastStrings){
+        delete s;
+    }
+    fastStrings.clear();
 }
 
 bool PreprocessHandler::checkDefineUndefine(const QString &, int) const {

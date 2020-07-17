@@ -42,6 +42,7 @@ import org.apache.tools.ant.Project;
 
 public class FindCompiler {
 
+	private String compilerPathValue;
     private Compiler compiler;
     private boolean verbose = false;
     private final InitializeBuildTask task;
@@ -73,6 +74,7 @@ public class FindCompiler {
         OldGCC("gcc3.3"),
         GCC("gcc"),
         SUNCC("suncc"),
+        CLANG("clang"),
         Other("unknown");
 
         Compiler(String n) {
@@ -101,11 +103,14 @@ public class FindCompiler {
             if(name.equals("msvc2015x64")) return MSVC2015_64;
             if(name.equals("msvc2017")) return MSVC2017;
             if(name.equals("msvc2017x64")) return MSVC2017_64;
+            if(name.equals("msvc2019")) return MSVC2019;
+            if(name.equals("msvc2019x64")) return MSVC2019_64;
             if(name.equals("mingw")) return MinGW;
             if(name.equals("mingw-w64")) return MinGW_W64;
             if(name.equals("gcc3.3")) return OldGCC;
             if(name.equals("gcc")) return GCC;
             if(name.equals("suncc")) return SUNCC;
+            if(name.equals("clang")) return CLANG;
             return Other;
         }
 
@@ -321,22 +326,68 @@ public class FindCompiler {
     }
 
     Compiler decideCompiler() {
-        switch(OSInfo.os()) {
+        switch(OSInfo.crossOS()) {
         case Windows:
             checkWindowsCompilers();
             break;
+        case IOS:
         case MacOS:
-            compiler = Compiler.GCC;
+            compiler = Compiler.CLANG;
             break;
         case Linux:
         case FreeBSD:
             compiler = testForGCC();
+            if(compiler==null)
+            	compiler = testForCLANG();
             break;
         case Solaris:
             checkSolarisCompiler();
             break;
+        case Android:
+        	compiler = testForCLANG();
+            break;
 		default:
 			break;
+        }
+        
+        String compilerPathValue = AntUtil.getPropertyAsString(task.propertyHelper, "tools.compiler.path");
+    	if(compilerPathValue!=null && !compilerPathValue.isEmpty()) {
+    		Compiler crossCompiler = compiler;
+    		this.compilerPathValue = new File(compilerPathValue).getAbsolutePath();
+    		try {
+    			switch(OSInfo.os()) {
+                case Windows:
+                    checkWindowsCompilers();
+                    break;
+                case MacOS:
+                    compiler = Compiler.GCC;
+                    break;
+                case Linux:
+                case FreeBSD:
+                    compiler = testForGCC();
+                    if(compiler==null)
+                    	compiler = testForCLANG();
+                    break;
+                case Solaris:
+                    checkSolarisCompiler();
+                    break;
+                case Android:
+                	compiler = testForCLANG();
+                    break;
+        		default:
+        			break;
+                }
+    		}catch(BuildException e) {
+    			throw new BuildException("No cross compiler found in PATH="+this.compilerPathValue+": "+e.getMessage(), e);
+    		}
+    		if(compiler!=null) {
+    			task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from tools.compiler.path)", compiler.toString(), false);
+    		}else {
+    			task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", crossCompiler.toString(), false);
+    		}
+    		compiler = crossCompiler;
+        }else {
+        	task.mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", compiler.toString(), false);
         }
 
         if(availableCompilers == null && compiler != null)
@@ -349,9 +400,14 @@ public class FindCompiler {
     private Compiler testForGCC() {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
-            cmdAndArgs.add("gcc");
+            String cmd = "gcc";
+            if(OSInfo.isWindows())
+            	cmd += ".exe";
+            if(compilerPathValue!=null)
+            	cmd = compilerPathValue+File.separator+cmd;
+            cmdAndArgs.add(cmd);
             cmdAndArgs.add("-dumpversion");
-            String[] sA = Exec.executeCaptureOutput(cmdAndArgs, new File("."), task.getProject(), null, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
             Util.emitDebugLog(task.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[0] != null) {
                 if(match(new String[] { sA[0] }, new String[] { "^3\\.3\\." }))  // sA[0] is stdout
@@ -362,6 +418,25 @@ public class FindCompiler {
             if(verbose)
                 ex.printStackTrace();
             throw new BuildException("Failed to properly execute 'gcc' command");
+        } catch(IOException ex) {
+            if(verbose)
+                ex.printStackTrace();
+        }
+        return null;
+    }
+
+    private Compiler testForCLANG() {
+        try {
+            List<String> cmdAndArgs = new ArrayList<String>();
+            cmdAndArgs.add("clang");
+            cmdAndArgs.add("-dumpversion");
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
+            Util.emitDebugLog(task.getProject(), sA);
+            return Compiler.CLANG;
+        } catch(InterruptedException ex) {
+            if(verbose)
+                ex.printStackTrace();
+            throw new BuildException("Failed to properly execute 'clang' command");
         } catch(IOException ex) {
             if(verbose)
                 ex.printStackTrace();
@@ -403,9 +478,12 @@ public class FindCompiler {
     private Compiler testForMinGW() {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
-            cmdAndArgs.add("gcc");
+            String cmd = "gcc.exe";
+            if(compilerPathValue!=null)
+            	cmd = compilerPathValue+File.separator+cmd;
+            cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(cmdAndArgs, new File("."), task.getProject(), null, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
             Util.emitDebugLog(task.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
                 if(match(new String[] { sA[1] }, new String[] { "mingw" }))  // sA[1] is stderr
@@ -427,14 +505,16 @@ public class FindCompiler {
         String crossCompiler = System.getenv("CROSS_COMPILE");
         String cmd;
         if(crossCompiler != null)
-            cmd = crossCompiler + "gcc";
+            cmd = crossCompiler + "gcc.exe";
         else
-            cmd = "gcc";
+            cmd = "gcc.exe";
+        if(compilerPathValue!=null)
+        	cmd = compilerPathValue+File.separator+cmd;
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
             cmdAndArgs.add(cmd);
             cmdAndArgs.add("-v");
-            String[] sA = Exec.executeCaptureOutput(cmdAndArgs, new File("."), task.getProject(), null, null, false);
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
             Util.emitDebugLog(task.getProject(), sA);
             if(sA != null && sA.length == 2 && sA[1] != null) {
                 if(match(new String[] { sA[1] }, new String[] { "mingw-w64", "mingw64" }))   // sA[1] is stderr
@@ -454,8 +534,11 @@ public class FindCompiler {
     private Compiler testForVisualStudio() {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
-            cmdAndArgs.add("cl.exe");   // /version ?
-            String[] sA = Exec.executeCaptureOutput(cmdAndArgs, new File("."), task.getProject(), null, null, false);
+            if(compilerPathValue!=null)
+            	cmdAndArgs.add(compilerPathValue+File.separator+"cl.exe");
+            else
+            	cmdAndArgs.add("cl.exe");   // /version ?
+            String[] sA = Exec.executeCaptureOutput(task, cmdAndArgs, new File("."), task.getProject(), compilerPathValue, null, false);
             Util.emitDebugLog(task.getProject(), sA);
             String stderr = null;
             if(sA != null && sA.length == 2 && sA[1] != null)
@@ -504,6 +587,11 @@ public class FindCompiler {
                     return Compiler.MSVC2017;
                 }
 				if(stderr.contains("19.24")) {
+                    if(stderr.contains("x64"))
+                        return Compiler.MSVC2019_64;
+                    return Compiler.MSVC2019;
+                }
+				if(stderr.contains("19.26")) {
                     if(stderr.contains("x64"))
                         return Compiler.MSVC2019_64;
                     return Compiler.MSVC2019;

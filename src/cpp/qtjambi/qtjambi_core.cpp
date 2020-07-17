@@ -80,7 +80,7 @@
 #include <stdio.h>
 #include <string.h>
 #ifdef Q_OS_WIN
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 #if defined(QTJAMBI_DEBUG_TOOLS)
@@ -270,9 +270,11 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread, JavaVM *vm)
     int result = vm->GetEnv( reinterpret_cast<void **>(&env), qtjambi_jni_version);
     if (result == JNI_EDETACHED) {
 #ifndef QT_QTJAMBI_PORT
+        QThread* currentThread = QThread::currentThread();
+        if(!currentThread)// this is possible during thread destruction.
+            return nullptr;
         jobject uncaughtExceptionHandler = nullptr;
         jobject contextClassLoader = nullptr;
-        QThread* currentThread = QThread::currentThread();
         QThreadUserData* threadData = static_cast<QThreadUserData*>(currentThread->userData(QThreadUserData::id()));
         if(threadData){
             uncaughtExceptionHandler = threadData->getUncaughtExceptionHandler();
@@ -284,13 +286,23 @@ JNIEnv *qtjambi_current_environment(bool initializeJavaThread, JavaVM *vm)
             args.group = threadData->getThreadGroup();
             JavaVMAttachArgs* _args = args.name && args.group ? &args : nullptr;
             if(threadData->isDaemon())
+#ifdef Q_OS_ANDROID
+                result = vm->AttachCurrentThreadAsDaemon(&env, _args);
+            else
+                result = vm->AttachCurrentThread(&env, _args);
+#else
                 result = vm->AttachCurrentThreadAsDaemon(reinterpret_cast<void **>(&env), _args);
             else
                 result = vm->AttachCurrentThread(reinterpret_cast<void **>(&env), _args);
+#endif
             threadData->clearThreadGroup();
         }else{
 #endif
+#ifdef Q_OS_ANDROID
+            result = vm->AttachCurrentThreadAsDaemon(&env, nullptr);
+#else
             result = vm->AttachCurrentThreadAsDaemon(reinterpret_cast<void **>(&env), nullptr);
+#endif
 #ifndef QT_QTJAMBI_PORT
         }
 #endif
@@ -2026,9 +2038,9 @@ jobject qtjambi_from_qobject_notype(JNIEnv *env, const QObject *const_qt_object,
         // better than C++ since we depend on C++ to do it.
         if(link && !link->createdByJava()){
             QMutexLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
             QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()));
             if (p && p->metaObject() != qt_object->metaObject()) {
+                locker.unlock();
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
                 jobject nativeLink = link->nativeLink(env);
@@ -2037,6 +2049,7 @@ jobject qtjambi_from_qobject_notype(JNIEnv *env, const QObject *const_qt_object,
                 qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
                 delete p;
                 link = QSharedPointer<QtJambiLink>();
+                locker.relock();
             }
         }
     }
@@ -2045,9 +2058,9 @@ jobject qtjambi_from_qobject_notype(JNIEnv *env, const QObject *const_qt_object,
         obj = link->getJavaObjectLocalRef(env);
         if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
             QMutexLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
             if(QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()))){
                 qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
+                locker.unlock();
                 delete p;
                 jobject nativeLink = link->nativeLink(env);
                 if(nativeLink){
@@ -2055,6 +2068,7 @@ jobject qtjambi_from_qobject_notype(JNIEnv *env, const QObject *const_qt_object,
                 }
                 link->invalidate(env);
                 link = QSharedPointer<QtJambiLink>();
+                locker.relock();
             }
         }
     }
@@ -2207,9 +2221,9 @@ jobject qtjambi_from_qobject_shared_pointer_notype(JNIEnv *env, const char *clas
             object = link->getJavaObjectLocalRef(env);
             if(!object && !link->createdByJava()){
                 QMutexLocker locker(QtJambiLinkUserData::lock());
-                Q_UNUSED(locker)
                 QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()));
                 if (p && p->metaObject() != qt_object->metaObject()) {
+                    locker.unlock();
                     // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                     // object isn't deleted.
                     jobject nativeLink = link->nativeLink(env);
@@ -2218,6 +2232,7 @@ jobject qtjambi_from_qobject_shared_pointer_notype(JNIEnv *env, const char *clas
                     qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
                     delete p;
                     link = QSharedPointer<QtJambiLink>();
+                    locker.relock();
                 }
             }
             if(link && !link->isSharedPointer()){
@@ -2246,10 +2261,14 @@ jobject qtjambi_from_qobject_shared_pointer_notype(JNIEnv *env, const char *clas
                         return nullptr;
                     }
                 }else{
-                    QMutexLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
-                    if(QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()))){
+                    QtJambiLinkUserData *p;
+                    {
+                        QMutexLocker locker(QtJambiLinkUserData::lock());
+                        Q_UNUSED(locker)
+                        p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()));
                         qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
+                    }
+                    if(p){
                         delete p;
                         jobject nativeLink = link->nativeLink(env);
                         if(nativeLink){
@@ -3135,13 +3154,6 @@ QThread *qtjambi_to_thread(JNIEnv *env, jobject thread)
     return qt_thread;
 }
 
-#ifdef QT_QTJAMBI_PORT
-const QSharedPointer<QtJambiLink>&
-#else
-void
-#endif
-qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread, QThread *qt_thread, bool created_by_java);
-
 jobject qtjambi_from_thread_impl(JNIEnv * env, jobject java_qthread, QThread *thread)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_qthread)){
@@ -3183,15 +3195,16 @@ jobject qtjambi_from_thread(JNIEnv * env, QThread *thread)
         return nullptr;
     {
         QMutexLocker locker(QtJambiLinkUserData::lock());
-        Q_UNUSED(locker)
         if(QtJambiLinkUserData* threadUserData = static_cast<QtJambiLinkUserData*>(thread->userData(QtJambiLinkUserData::id()))){
             if(QSharedPointer<QtJambiLink> link = threadUserData->link().toStrongRef()){
                 if(jobject o = link->getJavaObjectLocalRef(env)){
+                    locker.unlock();
 #ifdef QT_QTJAMBI_PORT
                     jobject result = Java::Private::QtCore::QThread$Wrapper.thread(env, o);
 #else
                     jobject result = Java::QtCore::QThread.javaThread(env, o);
 #endif
+                    locker.relock();
                     if(result)
                         return result;
                 }
@@ -3912,6 +3925,7 @@ void qtjambi_startup(JNIEnv * __jni_env){
         registerSpecialTypeInfo<std::nullptr_t>("std::nullptr_t", "java/lang/Object");
         registerMetaType<std::nullptr_t>("std::nullptr_t");
         registerSpecialTypeInfo<QVariant>("QVariant", "java/lang/Object");
+        registerEnumTypeInfo<QVariant::Type>("QVariant::Type", "io/qt/core/QVariant$Type");
         registerTypeAlias(typeid(QVariant), nullptr, "io/qt/core/QVariant");
         registerMetaType<QVariant>("QVariant");
         registerMetaType<JObjectWrapper>("JObjectWrapper");
@@ -4026,9 +4040,6 @@ void qtjambi_startup(JNIEnv * __jni_env){
             });
         }
 
-        registerTypeInfo<QMetaType>("QMetaType", "io/qt/core/QMetaType");
-        registerOperators<QMetaType>();
-
         {
             registerSpecialTypeInfo<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>", "io/qt/core/QUrl$FormattingOptions");
             registerTypeAlias(typeid(QUrl::FormattingOptions), "QUrl::FormattingOptions", nullptr);
@@ -4116,6 +4127,11 @@ void qtjambi_shutdown(JNIEnv * env)
             qtjambi_thread_factory->reset();
         }
     #endif
+        {
+            QWriteLocker locker(qtjambi_vm_lock());
+            Q_UNUSED(locker)
+            qtjambi_vm = nullptr;
+        }
 
         clear_metaobjects_at_shutdown();
         clear_typehandlers_at_shutdown();
@@ -4123,11 +4139,6 @@ void qtjambi_shutdown(JNIEnv * env)
         clear_supertypes_at_shutdown();
         clear_repository_at_shutdown();
         clear_registry_at_shutdown(env);
-        {
-            QWriteLocker locker(qtjambi_vm_lock());
-            Q_UNUSED(locker)
-            qtjambi_vm = nullptr;
-        }
         return true;
     }(env, exception);
     Q_UNUSED(invoked)
@@ -5243,6 +5254,54 @@ jobject qtjambi_deque_new(JNIEnv *env) {
 
 void qtjambi_collection_add(JNIEnv *env, jobject list, jobject obj) {
     Java::Private::Runtime::Collection.add(env, list, obj);
+}
+
+jobject qtjambi_collection_replace(JNIEnv *env, jobject list, int idx, jobject obj){
+    if(Java::Private::Runtime::List.isInstanceOf(env, list)){
+        return Java::Private::Runtime::List.set(env, list, idx, obj);
+    }else{
+        jobject result = nullptr;
+        int size = qtjambi_collection_size(env, list);
+        jobject newList = qtjambi_arraylist_new(env, size);
+        jobject iterator = qtjambi_collection_iterator(env, list);
+        int i = 0;
+        while(qtjambi_iterator_has_next(env, iterator)){
+            if(i==idx){
+                result = qtjambi_iterator_next(env, iterator);
+                qtjambi_collection_add(env, newList, obj);
+            }else{
+                qtjambi_collection_add(env, newList, qtjambi_iterator_next(env, iterator));
+            }
+            ++i;
+        }
+        qtjambi_collection_clear(env, list);
+        Java::Private::Runtime::Collection.addAll(env, list, newList);
+        return result;
+    }
+}
+
+jobject qtjambi_collection_remove_last(JNIEnv *env, jobject list){
+    int size = qtjambi_collection_size(env, list);
+    if(size>0){
+        if(Java::Private::Runtime::List.isInstanceOf(env, list)){
+            return Java::Private::Runtime::List.removeByIndex(env, list, size-1);
+        }else{
+            jobject iterator = qtjambi_collection_iterator(env, list);
+            jobject last = nullptr;
+            while(qtjambi_iterator_has_next(env, iterator)){
+                last = qtjambi_iterator_next(env, iterator);
+            }
+            try {
+                Java::Private::Runtime::Iterator.remove(env, iterator);
+                return last;
+            } catch (const JavaException&) {
+            }
+            if(last){
+                Java::Private::Runtime::Collection.remove(env, list, last);
+            }
+            return last;
+        }
+    }else return nullptr;
 }
 
 void qtjambi_collection_clear(JNIEnv *env, jobject collection)

@@ -43,15 +43,16 @@ import org.junit.Test;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
-import io.qt.autotests.generated.SignalsAndSlots;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
 import io.qt.core.QVariantAnimation;
+import io.qt.core.Qt;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.internal.QtJambiInternal;
+import io.qt.internal.QtJambiThreadUtility;
 import io.qt.widgets.QWidget;
 
 public class TestThreads extends QApplicationTest {
@@ -98,7 +99,7 @@ public class TestThreads extends QApplicationTest {
     
     @Test
     public void testJavaThreadDeletion() throws InterruptedException {
-		AtomicBoolean threadDisposed = new AtomicBoolean();
+    	AtomicBoolean threadDisposed = new AtomicBoolean();
 		AtomicBoolean qobjectDisposed = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadFinished = new AtomicBoolean();
@@ -112,35 +113,48 @@ public class TestThreads extends QApplicationTest {
 	    			qthread.finished.connect(()->{
 	    				qthreadFinished.set(true);
     				});
-	    			QtUtilities.getSignalOnDispose(qthread).connect(()->threadDisposed.set(true));
-					qthread.destroyed.connect(()->qthreadDestroyed.set(true));
+	    			QtUtilities.getSignalOnDispose(qthread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
+					qthread.destroyed.connect(()->qthreadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 	    			QtJambiInternal.registerCleaner(qthread, ()->qthreadCleaned.set(true));
 					QObject object = new QObject();
-					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true));
-					object.destroyed.connect(()->qobjectDestroyed.set(true));
+					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
+					object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
 	    	});
+	    	thread.setName("\0\0");
 	    	QtJambiInternal.registerCleaner(thread, ()->threadCleaned.set(true));
+	    	thread.setDaemon(true);
 	    	thread.start();
+	    	thread = null;
     	}
+		Thread.yield();
+		System.gc();
 		Thread.sleep(100);
-    	for (int i = 0; i < 200
-    			&& (!threadCleaned.get()
-    			|| !threadDisposed.get()); i++) {
+    	for (int i = 0; i < 200; i++) {
+    		if(threadCleaned.get()) {
+        		Thread.yield();
+        		Thread.sleep(100);
+    			break;
+    		}
+    		Thread.yield();
     		System.gc();
     		Thread.sleep(10);
 		}
-    	System.gc();
-		Thread.sleep(1000);
+		Thread.yield();
+		System.gc();
+		Thread.yield();
+		Thread.sleep(100);
+		System.gc();
+		Thread.yield();
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
-    	assertTrue("threadCleaned", threadCleaned.get());
     	assertTrue("qthreadDisposed", threadDisposed.get());
-    	assertTrue("qthreadCleaned", qthreadCleaned.get());
     	assertTrue("qthreadDestroyed", qthreadDestroyed.get());
     	assertTrue("qthreadFinished", qthreadFinished.get());
+    	assertTrue("threadCleaned", threadCleaned.get());
+    	assertTrue("qthreadCleaned", qthreadCleaned.get());
     }
     
     @Test
@@ -152,23 +166,28 @@ public class TestThreads extends QApplicationTest {
     	{
 	    	QThread thread = QThread.create(()->{
 	    		QObject object = new QObject();
-	    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true));
+	    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
 	    		object.destroyed.connect(()->qobjectDestroyed.set(true));
 	    	});
-	    	QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true));
-    		thread.destroyed.connect(()->threadDestroyed.set(true));
+	    	QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
+    		thread.destroyed.connect(()->threadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 	    	thread.setDaemon(true);
 	    	thread.start();
     	}
+		Thread.yield();
+		System.gc();
 		Thread.sleep(100);
-    	for (int i = 0; i < 50
-    			&& !threadDisposed.get(); i++) {
+    	for (int i = 0; i < 200; i++) {
+    		if(threadDestroyed.get() || threadDisposed.get())
+    			i = 200;
+    		Thread.yield();
     		System.gc();
     		Thread.sleep(10);
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
-		Thread.sleep(100);
+    	Thread.sleep(100);
 		System.gc();
+		Thread.yield();
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
@@ -178,6 +197,7 @@ public class TestThreads extends QApplicationTest {
     
     @Test
     public void testEventThreadDeletion() throws InterruptedException {
+    	AtomicBoolean threadFinished = new AtomicBoolean();
 		AtomicBoolean threadDisposed = new AtomicBoolean();
 		AtomicBoolean qobjectDisposed = new AtomicBoolean();
 		AtomicBoolean threadDestroyed = new AtomicBoolean();
@@ -185,26 +205,30 @@ public class TestThreads extends QApplicationTest {
     	{
 	    	QThread thread = new QThread() {};
     		QObject object = new QObject();
-    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true));
-    		SignalsAndSlots.connectToDestroyedSignal(object, ()->{
-    			qobjectDestroyed.set(true);
-    			thread.exit();
-    		});
+    		QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
+    		object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
+    		object.destroyed.connect(thread::quit, Qt.ConnectionType.DirectConnection);
     		object.moveToThread(thread);
     		object.disposeLater();
     		
-    		QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true));
-    		SignalsAndSlots.connectToDestroyedSignal(thread, ()->threadDestroyed.set(true));
+    		QtUtilities.getSignalOnDispose(thread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
+    		thread.destroyed.connect(()->threadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
 	    	thread.setDaemon(true);
+	    	thread.finished.connect(()->threadFinished.set(true), Qt.ConnectionType.DirectConnection);
 	    	thread.start();
     	}
-    	Thread.sleep(100);
-    	for (int i = 0; i < 50
-    			&& !threadDisposed.get(); i++) {
+		Thread.yield();
+		Thread.sleep(100);
+		System.gc();
+    	for (int i = 0; i < 200; i++) {
+    		if(threadFinished.get())
+    			i = 200;
+    		Thread.yield();
     		System.gc();
     		Thread.sleep(10);
         	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 		}
+		Thread.yield();
     	Thread.sleep(100);
 		System.gc();
     	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -561,7 +585,7 @@ public class TestThreads extends QApplicationTest {
     @Test
     public void run_moveToThread() throws Exception
     {
-        var currentThread = QThread.currentThread();
+        Object currentThread = QThread.currentThread();
 
         {
             QObject object = new QObject();
@@ -571,7 +595,7 @@ public class TestThreads extends QApplicationTest {
             object.moveToThread(null);
             assertEquals(object.thread(), null);
             assertEquals(child.thread(), null);
-            object.moveToThread(currentThread);
+            object.moveToThread(QtJambiThreadUtility.castToThread(currentThread));
             assertEquals(object.thread(), currentThread);
             assertEquals(child.thread(), currentThread);
             object.moveToThread(null);

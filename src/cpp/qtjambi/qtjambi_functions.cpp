@@ -237,8 +237,13 @@ QString simpleClassName(JNIEnv *env, jclass enumClass){
 jobject getRejectedEntries(JNIEnv *env, jclass enumClass){
     jobject rejectedEntries = nullptr;
     if(jobject qtRejectedEntries = Java::Private::Runtime::Class.getAnnotation(env, enumClass, Java::Private::QtJambi::QtRejectedEntries.getClass(env))){
-        jobject rejectedValues = Java::Private::QtJambi::QtRejectedEntries.value(env, qtRejectedEntries);
-        rejectedEntries = Java::Private::Runtime::Set.of(env, rejectedValues);
+        jobjectArray rejectedValues = Java::Private::QtJambi::QtRejectedEntries.value(env, qtRejectedEntries);
+        jobject set = Java::Private::Runtime::HashSet.newInstance(env);
+        jsize arrayLength = env->GetArrayLength(rejectedValues);
+        for(jsize i=0; i<arrayLength; ++i){
+            qtjambi_collection_add(env, set, env->GetObjectArrayElement(rejectedValues, i));
+        }
+        rejectedEntries = set;
     }
     return rejectedEntries;
 }
@@ -486,7 +491,23 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_privateLookup)
 {
     try{
         Q_ASSERT(targetClass);
-        return Java::Private::Runtime::MethodHandles$Lookup.newInstance(env, targetClass);
+        static jmethodID constructor = [](JNIEnv *env) -> jmethodID {
+            QString version = qtjambi_to_qstring(env, Java::Private::Runtime::System.getProperty(env, env->NewStringUTF("java.version")));
+            jmethodID result(nullptr);
+            if(version.startsWith("1.")){
+                result = env->GetMethodID(Java::Private::Runtime::MethodHandles$Lookup.getClass(env), "<init>", "(Ljava/lang/Class;I)V");
+                if(env->ExceptionCheck()){
+                    env->ExceptionClear();
+                }
+            }
+            if(!result){
+                result = env->GetMethodID(Java::Private::Runtime::MethodHandles$Lookup.getClass(env), "<init>", "(Ljava/lang/Class;)V");
+            }
+            return result;
+        }(env);
+        jobject result = env->NewObject(Java::Private::Runtime::MethodHandles$Lookup.getClass(env), constructor, targetClass, 0xf);
+        JavaException::check(env);
+        return result;
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }

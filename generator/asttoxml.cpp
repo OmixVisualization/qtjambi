@@ -64,9 +64,6 @@ void astToXML(const QString& name) {
     ReportHandler::setContext("Parser");
 
     TranslationUnitAST *ast = p.parse(contents, size_t(contents.size()), &__pool);
-    for(const Control::ErrorMessage& message : control.errorMessages()){
-        ReportHandler::warning(QString("%4 (in %1, line %2, column %3)").arg(message.fileName()).arg(QString::number(message.line())).arg(QString::number(message.column())).arg(message.message()));
-    }
 
     CodeModel model;
     Binder binder(&model, p.location());

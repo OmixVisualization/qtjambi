@@ -449,4 +449,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractSkeleton' set to non-final, as it is extended by other classes" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'sendCommand*' for function modification in 'Qt3DCore::QNode' not found. Possible candidates: *" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'sendCommand*' for function modification in 'Qt3DCore::QBackendNode' not found. Possible candidates: *" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::QAspectJob::postFrame', unmatched parameter type 'Qt3DCore::QAspectManager*'" />
 </typesystem>

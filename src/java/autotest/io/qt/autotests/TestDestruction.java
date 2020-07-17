@@ -50,6 +50,7 @@ import io.qt.autotests.generated.OrdinaryDestroyed;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QThread;
+import io.qt.core.Qt;
 import io.qt.gui.QTextCursor;
 import io.qt.gui.QTextDocument;
 import io.qt.internal.QtJambiDebugTools;
@@ -61,7 +62,7 @@ class MyOrdinaryDestroyed extends OrdinaryDestroyed {
     MyOrdinaryDestroyed(DisposeCounter counter, Integer id) {
     	super(counter);
         this.id = id;
-        io.qt.QtUtilities.getSignalOnDispose(this).connect(( (Runnable) counter::onDisposed )::run);
+        io.qt.QtUtilities.getSignalOnDispose(this).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
         Utils.println(5, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
     }
 
@@ -386,7 +387,7 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
     private void testCppCreationSplitOwnership_internal(DisposeCounter counter) {
         // Split ownership: Java object should be collected, but the c++ object should not be baleeted
         OrdinaryDestroyed d = MyOrdinaryDestroyed.getObjectSplitOwnership(counter);
-        io.qt.QtUtilities.getSignalOnDispose(d).connect(( (Runnable) counter::onDisposed )::run);
+        io.qt.QtUtilities.getSignalOnDispose(d).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
 
         accountingForNewObject(d);
     }
@@ -429,7 +430,7 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
     // method exists to ensure object reference created here is discarded for GC
     private void testCppCreationJavaOwnership_internal(DisposeCounter counter) {
         OrdinaryDestroyed d = MyOrdinaryDestroyed.getObjectJavaOwnership(counter);
-        io.qt.QtUtilities.getSignalOnDispose(d).connect(( (Runnable) counter::onDisposed )::run);
+        io.qt.QtUtilities.getSignalOnDispose(d).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
 
         accountingForNewObject(d);
     }

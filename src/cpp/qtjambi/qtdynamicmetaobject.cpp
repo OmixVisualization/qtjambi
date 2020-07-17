@@ -539,7 +539,7 @@ void QtDynamicMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, cons
     Q_ASSERT(string_data);
 
     jsize number_of_strings = env->GetArrayLength(string_data);
-    QByteArrayData* __stringdata = new QByteArrayData[size_t(number_of_strings)];
+    QByteArrayData* __stringdata = reinterpret_cast<QByteArrayData*>(new char[size_t(number_of_strings)*sizeof(QByteArrayData)]);
     {
         static int string_size = int(std::strlen(QtDynamicMetaObjectID)+1);
         __stringdata[0].ref.atomic._q_value = -1L;

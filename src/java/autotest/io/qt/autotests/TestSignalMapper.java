@@ -41,6 +41,7 @@ import io.qt.core.QObject;
 import io.qt.core.QSignalMapper;
 import io.qt.core.QThread;
 import io.qt.internal.QtJambiDebugTools;
+import io.qt.internal.QtJambiThreadUtility;
 import io.qt.widgets.QWidget;
 
 public class TestSignalMapper extends QApplicationTest {
@@ -142,7 +143,7 @@ public class TestSignalMapper extends QApplicationTest {
     // Method requires: getObjectCacheMode == DEFAULT
     @Test
     public void run_mappedInt() throws InterruptedException {
-    	var currentThread = QThread.currentThread();
+    	Object currentThread = QThread.currentThread();
         QSignalMapper mapper = new QSignalMapper();
         Receiver receiver = new Receiver();
         final Emitter emitters[] = new Emitter[10];
@@ -170,7 +171,7 @@ public class TestSignalMapper extends QApplicationTest {
             } catch(Throwable t) {
                 t.printStackTrace();
             }finally {
-            	receiver.moveToThread(currentThread);
+            	receiver.moveToThread(QtJambiThreadUtility.castToThread(currentThread));
             }
         }, "Receiver Thread");
 

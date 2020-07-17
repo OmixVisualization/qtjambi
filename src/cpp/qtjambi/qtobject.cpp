@@ -315,31 +315,11 @@ jobject qtjambi_from_QMetaProperty(JNIEnv *env, jobject jmetaObject, const QMeta
     }
     if(!propertyType)
         propertyType = Java::Private::Runtime::Object.getClass(env);
-    jint flags = Invalid;
-    if(property.isReadable())
-        flags |= Readable;
-    if(property.isWritable())
-        flags |= Writable;
-    if(property.isScriptable())
-        flags |= Scriptable;
-    if(property.isEditable())
-        flags |= Editable;
-    if(property.isStored())
-        flags |= Stored;
-    if(property.isDesignable())
-        flags |= Designable;
-    if(property.isResettable())
-        flags |= Resettable;
-    if(property.hasNotifySignal())
-        flags |= Notify;
-    if(property.isConstant())
-        flags |= Constant;
-    if(property.isFinal())
-        flags |= Final;
-    if(property.isUser())
-        flags |= User;
-    if(property.hasStdCppSet())
-        flags |= StdCppSet;
+
+    int relativeIndex = property.propertyIndex() - property.enclosingMetaObject()->propertyOffset();
+    const QMetaObjectPrivate* priv = QMetaObjectPrivate::get(property.enclosingMetaObject());
+    int handle = priv->propertyData + 3*relativeIndex;
+    jint flags = jint(property.enclosingMetaObject()->d.data[handle + 2]);
     jobject result = Java::Private::QtCore::QMetaProperty.newInstance(env,
                           jmetaObject,
                           property.propertyIndex(),

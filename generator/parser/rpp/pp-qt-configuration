@@ -28,14 +28,14 @@
 #define Q_PRIVATE_PROPERTY(A,B)
 #define __declspec(A)
 #define JNICALL
+#define __forceinline
 #define __stdcall
 
 #define Q_PRIVATE_SLOT(a, b)
 #define Q_DECLARE_INTERFACE(a,b)
 #define Q_INTERFACES(a)
 #define Q_OVERRIDE(a)
-#define Q_DECL_ALIGN(a)
-#define alignas(a)
+#define Q_DECL_ALIGN(a) alignas(a)
 #define Q_DECL_FINAL final
 #define Q_DECL_OVERRIDE override
 #define Q_DECL_CONSTEXPR constexpr
@@ -53,8 +53,11 @@
 #define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
 #define QT_DEPRECATED_VERSION_X_5(a,text) QTJAMBI_DEPRECATED_X(text)
 #define QT_DEPRECATED_VERSION_X_6(a,text) QTJAMBI_DEPRECATED_X(text)
+#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_5(a) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_6(a) QTJAMBI_DEPRECATED
 #define Q_DECLARE_TR_FUNCTIONS
-#define decltype(A) DECLTYPE
+#define Q_OBJECT_FAKE Q_OBJECT
 
 // There are symbols in Qt that exist in Debug but
 // not in release

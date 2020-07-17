@@ -53,7 +53,17 @@
 
 #include "pp-macro.h"
 
+typedef void (*MsgHandler)(const std::string &s);
+
 namespace rpp {
+
+    class MessageUtil{
+    public:
+        static void installMessageHandler(MsgHandler handler);
+        static void message(const std::string &message);
+    private:
+        static MsgHandler _m_messageHandler;
+    };
 
     class pp_environment {
         public:
@@ -64,7 +74,7 @@ namespace rpp {
                     current_line(0),
                     _M_hash_size(4093),
                     _M_featureRegistry(featureRegistry){
-                _M_base = (pp_macro **) memset(new pp_macro* [_M_hash_size], 0, _M_hash_size * sizeof(pp_macro*));
+                _M_base = reinterpret_cast<pp_macro **>(memset(new pp_macro* [_M_hash_size], 0, _M_hash_size * sizeof(pp_macro*)));
             }
 
             ~pp_environment() {
@@ -99,6 +109,8 @@ namespace rpp {
              * Find corresponding pp_macro from hash table.
              */
             pp_macro *resolve(char const *__data, std::size_t __size) const;
+
+            void log(const std::string &message) const;
 
             std::string current_file;
             int current_line;

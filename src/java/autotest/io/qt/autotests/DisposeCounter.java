@@ -30,6 +30,7 @@
 package io.qt.autotests;
 
 import io.qt.autotests.generated.DestroyCounter;
+import io.qt.core.QThread;
 
 public class DisposeCounter extends DestroyCounter{
 	public DisposeCounter(){
@@ -39,6 +40,7 @@ public class DisposeCounter extends DestroyCounter{
         return disposedCount;
     }
     public synchronized void onDisposed() {
+    	QThread.currentThread();
         ++disposedCount;
     }
 }

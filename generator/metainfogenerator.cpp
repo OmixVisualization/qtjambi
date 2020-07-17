@@ -152,6 +152,7 @@ void MetaInfoGenerator::writeCppFile() {
 
     AbstractMetaClassList classList = classes();
     QHash<QString, FileOut *> fileHash;
+    QHash<QString, QSet<QString>> writtenClasses;
 
     Indentor INDENT;
 
@@ -175,7 +176,7 @@ void MetaInfoGenerator::writeCppFile() {
                     }
                 }
             }
-            f->stream << endl;
+            f->stream << Qt::endl;
 
             generateInitializer(f->stream, cls->targetTypeSystem(), TypeSystem::MetaInfo, CodeSnip::Position1, INDENT);
 
@@ -186,11 +187,15 @@ void MetaInfoGenerator::writeCppFile() {
         }
 
         if (f != nullptr) {
-            if(!cls->typeEntry()->isIterator() && (!cls->isFake() || !cls->enums().isEmpty()) && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0){
-                f->stream << INDENT << "void initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << endl;
+            if((!cls->typeEntry()->isIterator() && !cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
+                    || (cls->isFake() && !cls->enums().isEmpty())){
+                if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
+                    writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();
+                    f->stream << INDENT << "void initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                }
             }
             for(AbstractMetaFunctional* functional : cls->functionals()){
-                f->stream << INDENT << "void initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_").replace("<", "_").replace(">", "_") << "();" << endl;
+                f->stream << INDENT << "void initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
             }
         }
     }
@@ -211,11 +216,11 @@ void MetaInfoGenerator::writeCppFile() {
             generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position2, INDENT);
 
             // Initialization function: Registers meta types
-            f->stream << endl
-                      << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM *, void *)" << endl
-                      << INDENT << "{" << endl;
+            f->stream << Qt::endl
+                      << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM *, void *)" << Qt::endl
+                      << INDENT << "{" << Qt::endl;
             INDENTATION(INDENT)
-            f->stream << INDENT << "QTJAMBI_DEBUG_METHOD_PRINT(\"native\", \"" << package << "::JNI_OnLoad(JavaVM *, void *)\")" << endl;
+            f->stream << INDENT << "QTJAMBI_DEBUG_METHOD_PRINT(\"native\", \"" << package << "::JNI_OnLoad(JavaVM *, void *)\")" << Qt::endl;
             generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Beginning, INDENT);
         }
     }
@@ -223,14 +228,19 @@ void MetaInfoGenerator::writeCppFile() {
     {
         INDENTATION(INDENT)
         QHash<const TypeEntry *, AbstractMetaEnum *> metaEnums;
+        writtenClasses.clear();
         for(AbstractMetaClass *cls : classList) {
             FileOut *f = fileHash.value(cls->targetTypeSystem(), nullptr);
 
-            if (f != nullptr && (!cls->isFake() || !cls->enums().isEmpty()) ) {
-                if (cls && !cls->typeEntry()->isIterator() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0){
-                    f->stream << INDENT << "initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << endl;
+            if (f != nullptr && cls) {
+                if((!cls->typeEntry()->isIterator() && !cls->isFake() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp) != 0)
+                        || (cls->isFake() && !cls->enums().isEmpty())){
+                    if(!writtenClasses[cls->targetTypeSystem()].contains(cls->typeEntry()->qualifiedCppName())){
+                        writtenClasses[cls->targetTypeSystem()] << cls->typeEntry()->qualifiedCppName();
+                        f->stream << INDENT << "initialize_meta_info_" << cls->typeEntry()->qualifiedCppName().replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                    }
                     for(AbstractMetaFunctional* functional : cls->functionals()){
-                        f->stream << INDENT << "initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_") << "();" << endl;
+                        f->stream << INDENT << "initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_") << "();" << Qt::endl;
                     }
                 }
             }
@@ -245,9 +255,9 @@ void MetaInfoGenerator::writeCppFile() {
                 generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position3, INDENT);
                 generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position4, INDENT);
                 generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::End, INDENT);
-                f->stream << INDENT << "return JNI_VERSION_10;" << endl;
+                f->stream << INDENT << "return JNI_VERSION_10;" << Qt::endl;
             }
-            f->stream << "}" << endl << endl;
+            f->stream << "}" << Qt::endl << Qt::endl;
             if (f->done())
                 ++m_num_generated_written;
             ++m_num_generated;
@@ -285,7 +295,7 @@ static void generateInitializer(QTextStream &s, const QString &package, TypeSyst
         int sp = -1;
         QString spaces;
         if(!lines.isEmpty())
-            s << endl;
+            s << Qt::endl;
         for(QString line : lines) {
             if(!line.isEmpty() && line[0]==QLatin1Char('\r')){
                 line = line.mid(1);
@@ -313,7 +323,7 @@ static void generateInitializer(QTextStream &s, const QString &package, TypeSyst
             }
             if(line.startsWith(spaces))
                 line = line.mid(sp);
-            s << indent << line << endl;
+            s << indent << line << Qt::endl;
         }
     }
 }
@@ -332,7 +342,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
 
             Indentor INDENT;
             QTextStream &s = fileOut.stream;
-            s << INDENT << "package " << package << ";" << endl << endl;
+            s << INDENT << "package " << package << ";" << Qt::endl << Qt::endl;
 
             QSet<QString> dedupe = QSet<QString>();
             TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
@@ -347,38 +357,38 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 }
             }
             if(!dedupe.isEmpty()){
-                s << endl;
+                s << Qt::endl;
             }
-            s << INDENT << "final class QtJambi_LibraryInitializer {" << endl;
+            s << INDENT << "final class QtJambi_LibraryInitializer {" << Qt::endl;
             {
                 INDENTATION(INDENT)
-                s << INDENT << "static{" << endl;
+                s << INDENT << "static{" << Qt::endl;
                 {
                     INDENTATION(INDENT)
-                    s << INDENT << "try {" << endl;
+                    s << INDENT << "try {" << Qt::endl;
                     {
                         INDENTATION(INDENT)
                         generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Beginning, INDENT);
-                        s << INDENT << "io.qt.QtUtilities.initializePackage(\"io.qt.internal\");" << endl;
+                        s << INDENT << "io.qt.QtUtilities.initializePackage(\"io.qt.internal\");" << Qt::endl;
                         generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position1, INDENT);
                         if(typeSystemEntry){
                             for(const TypeSystemTypeEntry* entry : typeSystemEntry->requiredTypeSystems()){
-                                s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << entry->name() << "\");" << endl;
+                                s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << entry->name() << "\");" << Qt::endl;
                             }
                             generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position2, INDENT);
                             for(const QString& lib : typeSystemEntry->requiredQtLibraries()){
                                 if(lib.startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << lib.mid(2) << "\");" << endl;
+                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << lib.mid(2) << "\");" << Qt::endl;
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << lib << "\");" << endl;
+                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << lib << "\");" << Qt::endl;
                                 }
                             }
                             generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position3, INDENT);
                             if(!typeSystemEntry->qtLibrary().isEmpty()){
                                 if(typeSystemEntry->qtLibrary().startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\");" << endl;
+                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\");" << Qt::endl;
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << typeSystemEntry->qtLibrary() << "\");" << endl;
+                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << typeSystemEntry->qtLibrary() << "\");" << Qt::endl;
                                 }
                             }
                         }else{
@@ -388,23 +398,23 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position4, INDENT);
                         if(typeSystemEntry->qtLibrary().startsWith("Qt")){
                             QString libName = typeSystemEntry->qtLibrary();
-                            s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << endl;
+                            s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << Qt::endl;
                         }else{
-                            s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << endl;
+                            s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
                         }
                         generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
                     }
-                    s << INDENT << "} catch(RuntimeException | Error t) {" << endl;
-                    s << INDENT << "    throw t;" << endl;
-                    s << INDENT << "} catch(Throwable t) {" << endl;
-                    s << INDENT << "    throw new RuntimeException(t);" << endl;
-                    s << INDENT << "}" << endl;
+                    s << INDENT << "} catch(RuntimeException | Error t) {" << Qt::endl;
+                    s << INDENT << "    throw t;" << Qt::endl;
+                    s << INDENT << "} catch(Throwable t) {" << Qt::endl;
+                    s << INDENT << "    throw new RuntimeException(t);" << Qt::endl;
+                    s << INDENT << "}" << Qt::endl;
                 }
-                s << INDENT << "}" << endl;
-                s << INDENT << "static void init() { };" << endl;
-                s << INDENT << "private QtJambi_LibraryInitializer() { };" << endl;
+                s << INDENT << "}" << Qt::endl;
+                s << INDENT << "static void init() { };" << Qt::endl;
+                s << INDENT << "private QtJambi_LibraryInitializer() { };" << Qt::endl;
             }
-            s << INDENT << "}" << endl << endl;
+            s << INDENT << "}" << Qt::endl << Qt::endl;
 
             if (fileOut.done())
                 ++m_num_generated_written;

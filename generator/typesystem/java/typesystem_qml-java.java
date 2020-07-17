@@ -290,18 +290,30 @@ class QQmlIncubationController_native__{
 extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_create)
 (JNIEnv *, jclass, jboolean flag)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     return jlong(new volatile bool(flag));
+#else
+    return jlong(new std::atomic<bool>(flag));
+#endif
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_destroy)
 (JNIEnv *, jclass, jlong ptr)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     if(ptr) delete reinterpret_cast<volatile bool*>(ptr);
+#else
+    if(ptr) delete reinterpret_cast<std::atomic<bool>*>(ptr);
+#endif
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlIncubationController_00024WhileFlag_set)
 (JNIEnv *, jclass, jlong ptr, jboolean flag)
 {
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
     if(ptr) *reinterpret_cast<volatile bool*>(ptr) = flag;
+#else
+    if(ptr) *reinterpret_cast<std::atomic<bool>*>(ptr) = flag;
+#endif
 }
 }// class

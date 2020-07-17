@@ -63,7 +63,7 @@
             QGradient *object = reinterpret_cast&lt;QGradient *>(ptr);
             Q_ASSERT(object);
             return object->type() == QGradient::NoGradient;
-        }, nullptr, typeid(nullptr_t), false);
+        }, nullptr, typeid(std::nullptr_t), false);
     </inject-code>
   <primitive-type name="GLuint" java-name="int" preferred-conversion="no" jni-name="jint"/>
   <primitive-type name="GLshort" java-name="short" preferred-conversion="no" jni-name="jshort"/>
@@ -2367,7 +2367,7 @@ public final void copyDataTo(float[] values)    {
             </insert-template>
         </template>
 
-        <modify-function signature="bitmap()const">
+        <modify-function signature="bitmap()const" until="5.14">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QBitmap"/>
                 <conversion-rule class="native">
@@ -2376,11 +2376,29 @@ public final void copyDataTo(float[] values)    {
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="mask()const">
+        <modify-function signature="mask()const" until="5.14">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QBitmap"/>
                 <conversion-rule class="native">
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="bitmap()const" remove="all" since="5.15.0"/>
+        <modify-function signature="mask()const" remove="all" since="5.15.0"/>
+        <modify-function signature="bitmap(Qt::ReturnByValueConstant)const" since="5.15.0">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    Qt::ReturnByValueConstant %out = Qt::ReturnByValue;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="mask(Qt::ReturnByValueConstant)const" since="5.15.0">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    Qt::ReturnByValueConstant %out = Qt::ReturnByValue;
                 </conversion-rule>
             </modify-argument>
         </modify-function>

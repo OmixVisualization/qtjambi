@@ -57,6 +57,7 @@
                 header="${basedir}/autotestlib/masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
+                qtbindirectory="${tools.qt.bindir}"
                 includepaths="${basedir}/autotestlib${psep}${generator.includepaths}"
                 outputPreprocessFile="preprocessed_autotests.tmp"
             />
@@ -68,8 +69,8 @@
                 config="${qtjambi.configuration}"
                 qtconfig="${qtjambi.qtconfig}"
                 debugTools="${qtjambi.debug-tools}"
-                qmakebinary="${qtjambi.qt.qmake.abspath}"/>
-        <make dir="${outputDir}/tests/autotest-generator" target="${qtjambi.qmake.target.default}"/>
+                qmakebinary="${qtjambi.qt.qmake.abspath}" tools="true"/>
+        <make dir="${outputDir}/tests/autotest-generator" target="${qtjambi.qmake.target.default}" tools="true"/>
         <if>
             <os family="mac"/>
             <then>
@@ -110,53 +111,112 @@
         <!-- encoding="UTF-8" required due to some file tests (I18N) using
         no ASCII/ISO-8859-1 characters and the MacOSX Java using "MacRoman"
         character set by default. -->
-        <module-info outputDirectory="${outputDir}/tests/autotest-generator/java" jarDirectory="${basedir}/jars"/>
-        <javac destdir="${outputDir}/tests/java" debug="true"
-                includeantruntime="false"
-                source="${target.java.version}" target="${target.java.version}" encoding="UTF-8">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <compilerarg value="--add-exports" />
-            <compilerarg value="qtjambi/io.qt.internal=qtjambi.autotest" />
-            <modulepath>
-                <fileset dir="${basedir}/jars/">
-                    <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
-                </fileset>
-                <pathelement location="${tests.junit}" />
-                <pathelement location="${tests.hamcrest}" />
-            </modulepath>
-            <src path="${basedir}/src/java/autotest"/>
-            <!-- pick up the generated code from compile.native -->
-            <src path="${outputDir}/tests/autotest-generator/java"/>
-            <include name="io/qt/autotests/**/*.java"/>
-            <include name="io/qt/generatortests/**/*.java"/>
-            <include name="io/qt/unittests/**/*.java"/>
-            <exclude name="io/qt/autotests/**/*QPlastiqueStyle.java" if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableOpenGL.java"/>
-            <exclude name="io/qt/autotests/**/TestDBus.java" unless="${qtjambi.dbus.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestSensors.java" unless="${qtjambi.sensors.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
-            <exclude name="io/qt/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
-            <exclude name="io/qt/autotests/**/TestInjectedCodeOpenGL.java"/>
-            <exclude name="io/qt/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
-            <exclude name="**/io/qt/autotests/**/TestInjectedCodeBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
-            <exclude name="**/io/qt/autotests/**/TestInjectedCodeLocation.java" unless="${qtjambi.location.any.true}"/>
-            <exclude name="**/io/qt/autotests/**/TestInjectedCodeRemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
-            <exclude name="**/io/qt/autotests/**/TestInjectedCodeMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
-            <exclude name="io/qt/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
-            <exclude name="io/qt/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-            <exclude name="io/qt/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
-            <!-- MacOSX version of Qt does not have this API -->
-            <exclude name="io/qt/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
-        </javac>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <module-info outputDirectory="${outputDir}/tests/autotest-generator/java" jarDirectory="${basedir}/jars"/>
+                <javac destdir="${outputDir}/tests/java" debug="true"
+                        includeantruntime="false"
+                        source="${target.java.version}" target="${target.java.version}" encoding="UTF-8">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <compilerarg value="--add-exports" />
+                    <compilerarg value="qtjambi/io.qt.internal=qtjambi.autotest" />
+                    <modulepath>
+                        <fileset dir="${basedir}/jars/">
+                            <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
+                        </fileset>
+                        <pathelement location="${tests.junit}" />
+                        <pathelement location="${tests.hamcrest}" />
+                    </modulepath>
+                    <src path="${basedir}/src/java/autotest"/>
+                    <!-- pick up the generated code from compile.native -->
+                    <src path="${outputDir}/tests/autotest-generator/java"/>
+                    <include name="io/qt/autotests/**/*.java"/>
+                    <include name="io/qt/generatortests/**/*.java"/>
+                    <include name="io/qt/unittests/**/*.java"/>
+                    <exclude name="io/qt/autotests/**/*QPlastiqueStyle.java" if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableOpenGL.java"/>
+                    <exclude name="io/qt/autotests/**/TestDBus.java" unless="${qtjambi.dbus.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestInterfacesScriptable.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestWebEngine.java" unless="${qtjambi.webengine.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestWebView.java" unless="${qtjambi.webview.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestSensors.java" unless="${qtjambi.sensors.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeOpenGL.java"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeLocation.java" unless="${qtjambi.location.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeRemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
+                    <exclude name="io/qt/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
+                    <!-- MacOSX version of Qt does not have this API -->
+                    <exclude name="io/qt/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
+                </javac>
+            </then>
+            <else>
+                <javac destdir="${outputDir}/tests/java" debug="true"
+                        includeantruntime="false"
+                        source="${target.java.version}" target="${target.java.version}" encoding="UTF-8">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <classpath>
+                        <fileset dir="${basedir}/jars/">
+                            <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
+                        </fileset>
+                        <pathelement location="${tests.junit}" />
+                        <pathelement location="${tests.hamcrest}" />
+                    </classpath>
+                    <src path="${basedir}/src/java/autotest"/>
+                    <!-- pick up the generated code from compile.native -->
+                    <src path="${outputDir}/tests/autotest-generator/java"/>
+                    <include name="io/qt/autotests/**/*.java"/>
+                    <include name="io/qt/generatortests/**/*.java"/>
+                    <include name="io/qt/unittests/**/*.java"/>
+                    <exclude name="io/qt/autotests/**/*QPlastiqueStyle.java" if="${qt.feature.QT_NO_STYLE_PLASTIQUE}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableOpenGL.java"/>
+                    <exclude name="io/qt/autotests/**/TestDBus.java" unless="${qtjambi.dbus.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestInterfacesScriptable.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestWebEngine.java" unless="${qtjambi.webengine.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestWebView.java" unless="${qtjambi.webview.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableWebkit.java" unless="${qtjambi.webkit.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableScript.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestSensors.java" unless="${qtjambi.sensors.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestMemoryManagementQt3D.java" unless="${qtjambi.qt3d.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableDeclarative.java" unless="${qtjambi.declarative.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableHelp.java" unless="${qtjambi.help.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableXmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeOpenGL.java"/>
+                    <exclude name="io/qt/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeLocation.java" unless="${qtjambi.location.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeRemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInjectedCodeMultimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestQSslSocket.java" unless="qtjambi.ssl" /><!--depends on ssl-->
+                    <exclude name="io/qt/unittests/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="io/qt/unittests/**/TestQXmlFormatter.java" unless="${qtjambi.xmlpattern.any.true}"/>
+                    <!-- MacOSX version of Qt does not have this API -->
+                    <exclude name="io/qt/unittests/TestXmlQXmlStreamReader.java" if="qtjambi.config.ismacosx"/>
+                </javac>
+            </else>
+        </if>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotest"/>
         </antcall>
@@ -203,7 +263,7 @@
         <copy todir="${outputDir}/tests/auto/io/qt/unittests">
             <fileset dir="src/java/autotest/io/qt/unittests" excludes="**/*.java"/>
         </copy>
-        <junit fork="yes" printsummary="true" haltonfailure="no" timeout="6000000" showoutput="yes" logfailedtests="yes">
+        <junit fork="yes" printsummary="true" haltonfailure="no" timeout="600000" showoutput="yes" logfailedtests="yes">
             <classpath>
                 <fileset dir="${basedir}/jars/">
                     <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
@@ -243,6 +303,11 @@
                     <exclude name="**/io/qt/autotests/**/TestCloneableSQL.java" unless="${qtjambi.sql.any.true}"/>
                     <exclude name="**/io/qt/autotests/**/TestInjectedCodeV2LookupHost.java" if="qtjambi.javac.sunjdk5.compiler"/>
                     <exclude name="**/io/qt/autotests/**/TestInjectedCodeOpenGL.java"/>
+                    <exclude name="**/io/qt/autotests/**/TestDBus.java" unless="${qtjambi.dbus.any.true}"/>
+                    <exclude name="**/io/qt/unittests/**/TestBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestInterfacesScriptable.java" unless="${qtjambi.script.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestWebEngine.java" unless="${qtjambi.webengine.any.true}"/>
+                    <exclude name="**/io/qt/autotests/**/TestWebView.java" unless="${qtjambi.webview.any.true}"/>
                     <exclude name="**/io/qt/autotests/**/TestSensors.java" unless="${qtjambi.sensors.any.true}"/>
                     <exclude name="**/io/qt/autotests/**/TestInjectedCodeSQL.java" unless="${qtjambi.sql.any.true}"/>
                     <exclude name="**/io/qt/autotests/**/TestInjectedCodeBluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>

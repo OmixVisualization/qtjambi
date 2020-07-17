@@ -40,6 +40,47 @@
 #include "codemodel.h"
 
 // ---------------------------------------------------------------------------
+
+void reduceStringLiteral(QString& strg) {
+    if(strg.startsWith("\"") && strg.endsWith("\"")){
+        strg = strg.mid(1);
+        strg.chop(1);
+        strg.replace("\\\\", "\\");
+        strg.replace("\\\"", "\"");
+        strg.replace("\\t", "\t");
+        strg.replace("\\n", "\n");
+        strg.replace("\\r", "\r");
+        strg.replace("\\b", "\b");
+        strg.replace("\\f", "\f");
+    }else if(strg.startsWith("u8\"") && strg.endsWith("\"")){
+        strg = strg.mid(3);
+        strg.chop(1);
+        strg.replace("\\\\", "\\");
+        strg.replace("\\\"", "\"");
+        strg.replace("\\t", "\t");
+        strg.replace("\\n", "\n");
+        strg.replace("\\r", "\r");
+        strg.replace("\\b", "\b");
+        strg.replace("\\f", "\f");
+    }else if(strg.startsWith("R\"(") && strg.endsWith(")\"")){
+        strg = strg.mid(3);
+        strg.chop(2);
+    }else if((strg.startsWith("u\"")
+        || strg.startsWith("U\"")
+        || strg.startsWith("L\"")) && strg.endsWith("\"")){
+        strg = strg.mid(2);
+        strg.chop(1);
+        strg.replace("\\\\", "\\");
+        strg.replace("\\\"", "\"");
+        strg.replace("\\t", "\t");
+        strg.replace("\\n", "\n");
+        strg.replace("\\r", "\r");
+        strg.replace("\\b", "\b");
+        strg.replace("\\f", "\f");
+    }
+}
+
+
 CodeModel::CodeModel()
         : _M_creation_id(0) {
     _M_globalNamespace = create<NamespaceModelItem>();
@@ -269,12 +310,7 @@ const QString& _ClassModelItem::declDeprecatedComment() const {
 
 void _ClassModelItem::setDeclDeprecatedComment(const QString& declDeprecatedComment) {
     _M_declDeprecatedComment = declDeprecatedComment;
-    if(_M_declDeprecatedComment.startsWith("\"")){
-        _M_declDeprecatedComment = _M_declDeprecatedComment.mid(1);
-    }
-    if(_M_declDeprecatedComment.endsWith("\"")){
-        _M_declDeprecatedComment.chop(1);
-    }
+    reduceStringLiteral(_M_declDeprecatedComment);
 }
 
 bool _ClassModelItem::isDeclDeprecated() const {
@@ -745,12 +781,7 @@ const QString& _EnumeratorModelItem::deprecatedComment() const {
 
 void _EnumeratorModelItem::setDeprecatedComment(const QString& value){
     _M_deprecatedComment = value;
-    if(_M_deprecatedComment.startsWith("\"")){
-        _M_deprecatedComment = _M_deprecatedComment.mid(1);
-    }
-    if(_M_deprecatedComment.endsWith("\"")){
-        _M_deprecatedComment.chop(1);
-    }
+    reduceStringLiteral(_M_deprecatedComment);
 }
 
 // ---------------------------------------------------------------------------
@@ -926,12 +957,7 @@ const QString& _MemberModelItem::getDeprecatedComment() const {
 
 void _MemberModelItem::setDeprecatedComment(const QString& comment) {
     _M_deprecatedComment = comment;
-    if(_M_deprecatedComment.startsWith("\"")){
-        _M_deprecatedComment = _M_deprecatedComment.mid(1);
-    }
-    if(_M_deprecatedComment.endsWith("\"")){
-        _M_deprecatedComment.chop(1);
-    }
+    reduceStringLiteral(_M_deprecatedComment);
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

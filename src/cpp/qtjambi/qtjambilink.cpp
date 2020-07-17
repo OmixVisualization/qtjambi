@@ -175,8 +175,6 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
             QString jclassName = obj ? qtjambi_object_class_name(env, obj) : QLatin1String("null");
             jlong native_link = _link->m_nativeLink ? Java::Private::QtJambi::QtJambiInternal$NativeLink.native__id(env, _link->m_nativeLink) : 0;
             if(_link->isQObject()){
-                if(_link->pointer()==QCoreApplicationPrivate::theMainThread.loadRelaxed())
-                    continue;
                 QString objectName;
                 bool hasParent = false;
                 QThread* objectThread = nullptr;
@@ -184,6 +182,9 @@ int QtJambiLink::dumpLinks(JNIEnv * env)
                     objectName = _link->qobject()->objectName();
                     objectThread = _link->qobject()->thread();
                     hasParent = _link->qobject()->parent();
+                    QThread* objectAsThread = qobject_cast<QThread*>(_link->qobject());
+                    if(objectAsThread && objectAsThread->isRunning())
+                        continue;
                 }
                 fprintf(stderr, "QtJambiLink(%p %s) ALIVE: { java_object=%p (%s), java_native_link=%p (%s), global_ref=%s, is_qobject=true, pointer=%p, delete_later=%s, qtType=%s, objectName='%s', hasParent=%s, object_thread='%s' }\n",
                         reinterpret_cast<void*>(_link), _link->debugFlagsToString(xb),
@@ -1302,7 +1303,12 @@ void PointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                     const QObjectPrivate* p = QObjectPrivate::get(obj);
                     Q_ASSERT(p);
                     ValueOwnerUserData* vud = static_cast<ValueOwnerUserData*>(obj->userData(ValueOwnerUserData::id()));
-                    QThread* ownerThread = p->threadData->thread;
+                    QThread* ownerThread =
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
+                            p->threadData->thread;
+#else
+                            p->threadData.loadAcquire()->thread.loadAcquire();
+#endif
                     if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
                         if(vud){
                             if(p->wasDeleted){
@@ -1799,7 +1805,12 @@ void QSharedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool){
                 const QObjectPrivate* p = QObjectPrivate::get(obj);
                 Q_ASSERT(p);
                 ValueOwnerUserData* vud = static_cast<ValueOwnerUserData*>(obj->userData(ValueOwnerUserData::id()));
-                QThread* ownerThread = p->threadData->thread;
+                QThread* ownerThread =
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
+                            p->threadData->thread;
+#else
+                            p->threadData.loadAcquire()->thread.loadAcquire();
+#endif
                 if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
                     if(vud){
                         if(p->wasDeleted){

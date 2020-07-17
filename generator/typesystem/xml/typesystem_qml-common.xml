@@ -65,7 +65,8 @@
     <rejection class="QV4::CompiledData::CompilationUnit"/>
     <rejection class="QV4::CompiledData"/>
     <rejection class="QV4"/>
-    <rejection class="QQmlInfo"/>
+    <rejection class="QQmlModuleRegistration"/>
+    <rejection class="QmlTypeAndRevisionsRegistration"/>
 
     <enum-type name="QJSEngine::Extension" flags="QJSEngine::Extensions"/>
     <enum-type name="QQmlIncubator::IncubationMode"/>
@@ -239,8 +240,11 @@
         <modify-function signature="rootObjects()" remove="all" since="5.9.0"/>
     </object-type>
     <object-type name="QQmlExtensionPlugin">
-        <interface-polymorphy interface="QQmlExtensionInterface" condition="false" />
-        <interface-polymorphy interface="QQmlTypesExtensionInterface" condition="false" />
+        <interface-polymorphy interface="QQmlExtensionInterface" condition="dynamic_cast&lt;const QQmlExtensionPlugin*>(%1)" />
+        <interface-polymorphy interface="QQmlTypesExtensionInterface" condition="dynamic_cast&lt;const QQmlExtensionPlugin*>(%1)" />
+    </object-type>
+    <object-type name="QQmlEngineExtensionPlugin" since="5.15.0">
+        <interface-polymorphy interface="QQmlEngineExtensionInterface" condition="dynamic_cast&lt;const QQmlEngineExtensionPlugin*>(%1)" />
     </object-type>
     <object-type name="QQmlComponent">
         <modify-function signature="setInitialProperties(QObject*,QMap&lt;QString,QVariant>)">
@@ -256,7 +260,7 @@
     <interface-type name="QQmlImageProviderBase">
     </interface-type>
     <interface-type name="QQmlIncubationController">
-    <modify-function signature="operator=(const QQmlIncubationController &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QQmlIncubationController &amp;)" remove="all"/>
     </interface-type>
     <object-type name="QQmlIncubator">
         <modify-function signature="operator=(const QQmlIncubator &amp;)" remove="all"/>
@@ -285,6 +289,7 @@
 
     <interface-type name="QQmlTypesExtensionInterface"/>
     <interface-type name="QQmlExtensionInterface"/>
+    <interface-type name="QQmlEngineExtensionInterface" since="5.15.0"/>
 
     <value-type name="QQmlProperty">
         <modify-function signature="operator=(const QQmlProperty &amp;)" remove="all"/>
@@ -332,4 +337,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QV4::*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQmlInfo'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQmlAttachedPropertiesFunc'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'T::QmlForeignType'"/>
 </typesystem>

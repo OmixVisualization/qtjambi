@@ -21,6 +21,12 @@ class QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QMessageHandler,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(process))
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QFile$TrashResult,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QByteArray$FromBase64Result,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#endif
 private:
     QtCore() = delete;
     ~QtCore() = delete;

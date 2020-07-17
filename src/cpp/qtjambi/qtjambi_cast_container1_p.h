@@ -39,6 +39,7 @@
 #include <qtjambi_qml/qqmllistproperty.h>
 
 QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
+QT_WARNING_DISABLE_DEPRECATED
 
 namespace QtJambiPrivate {
 
@@ -217,7 +218,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<T> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<T>(data->operator const T *(), data->operator const T *() + data->size());
 #else
                 struct{
@@ -263,7 +264,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<qint32> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<qint32>(data->operator const qint32* (), data->operator const qint32* () + data->size());
 #else
                 struct{
@@ -309,7 +310,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<qint16> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<qint16>(data->operator const qint16* (), data->operator const qint16* () + data->size());
 #else
                 struct{
@@ -355,7 +356,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<qint8> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<qint8>(data->operator const qint8* (), data->operator const qint8* () + data->size());
 #else
                 struct{
@@ -401,7 +402,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<qint64> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<qint64>(data->operator const qint64* (), data->operator const qint64* () + data->size());
 #else
                 struct{
@@ -447,7 +448,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<quint32> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<quint32>(data->operator const quint32* (), data->operator const quint32* () + data->size());
 #else
                 struct{
@@ -493,7 +494,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<quint16> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<quint16>(data->operator const quint16* (), data->operator const quint16* () + data->size());
 #else
                 struct{
@@ -539,7 +540,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<quint8> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<quint8>(data->operator const quint8* (), data->operator const quint8* () + data->size());
 #else
                 struct{
@@ -585,7 +586,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<quint64> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<quint64>(data->operator const quint64* (), data->operator const quint64* () + data->size());
 #else
                 struct{
@@ -631,7 +632,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<float> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<float>(data->operator const float* (), data->operator const float* () + data->size());
 #else
                 struct{
@@ -677,7 +678,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<double> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<double>(data->operator const double* (), data->operator const double* () + data->size());
 #else
                 struct{
@@ -723,7 +724,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<bool> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<bool>(data->operator const bool* (), data->operator const bool* () + data->size());
 #else
                 struct{
@@ -769,7 +770,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<wchar_t> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<wchar_t>(data->operator const wchar_t* (), data->operator const wchar_t* () + data->size());
 #else
                 struct{
@@ -815,7 +816,7 @@ struct qtjambi_jnitype_container1_cast<forward, has_scope,
             }
             std::initializer_list<QChar> out;
             if (data) {
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                 out = std::initializer_list<QChar>(reinterpret_cast<const QChar*>(data->operator const wchar_t* ()), reinterpret_cast<const QChar*>(data->operator const wchar_t* ()) + data->size());
 #else
                 struct{

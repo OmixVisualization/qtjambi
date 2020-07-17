@@ -81,7 +81,7 @@ macx {
 }
 
 # gcc reports some functions as unused when they are not.
-linux-g++* | freebsd-g++* {
+linux-g++* | freebsd-g++* | win32-g++* {
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
     QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined

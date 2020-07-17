@@ -29,44 +29,47 @@
 
 #include <QtQuick/QQuickItem>
 #include <QtQml/QQmlPropertyValueSource>
-#include <qtjambi_qml/qmlregistry.h>
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_qml.h>
 
 class QmlPropertyValueSource : public QQmlPropertyValueSource{
-    inline void setTarget(const QQmlProperty &){}
+    void setTarget(const QQmlProperty &);
 };
+
+void QmlPropertyValueSource::setTarget(const QQmlProperty &){}
 
 class ErrorDummyQuickItem : public QQuickItem{
 public:
-    inline ErrorDummyQuickItem(int _vsCast, int _viCast)
-        : QQuickItem(), vsCast(_vsCast), viCast(_viCast)
-    {
-        if(vsCast>0){
-            void * vsCastPtr = reinterpret_cast<void*>(qintptr(this)+vsCast);
-            new(vsCastPtr) QmlPropertyValueSource();
-        }
-        if(viCast>0){
-            void * viCastPtr = reinterpret_cast<void*>(qintptr(this)+viCast);
-            Q_UNUSED(viCastPtr)
-        }
-    }
-
-    inline ~ErrorDummyQuickItem(){
-        if(vsCast>0){
-            QmlPropertyValueSource * vsCastPtr = reinterpret_cast<QmlPropertyValueSource*>(qintptr(this)+vsCast);
-            vsCastPtr->~QmlPropertyValueSource();
-        }
-        if(viCast>0){
-            void * viCastPtr = reinterpret_cast<void*>(qintptr(this)+viCast);
-            Q_UNUSED(viCastPtr)
-        }
-    }
-
+    ErrorDummyQuickItem(int _vsCast, int _viCast);
+    ~ErrorDummyQuickItem();
 private:
     int vsCast;
     int viCast;
 };
+
+ErrorDummyQuickItem::ErrorDummyQuickItem(int _vsCast, int _viCast)
+    : QQuickItem(), vsCast(_vsCast), viCast(_viCast)
+{
+    if(vsCast>0){
+        void * vsCastPtr = reinterpret_cast<void*>(qintptr(this)+vsCast);
+        new(vsCastPtr) QmlPropertyValueSource();
+    }
+    if(viCast>0){
+        void * viCastPtr = reinterpret_cast<void*>(qintptr(this)+viCast);
+        Q_UNUSED(viCastPtr)
+    }
+}
+
+ErrorDummyQuickItem::~ErrorDummyQuickItem(){
+    if(vsCast>0){
+        QmlPropertyValueSource * vsCastPtr = reinterpret_cast<QmlPropertyValueSource*>(qintptr(this)+vsCast);
+        vsCastPtr->~QmlPropertyValueSource();
+    }
+    if(viCast>0){
+        void * viCastPtr = reinterpret_cast<void*>(qintptr(this)+viCast);
+        Q_UNUSED(viCastPtr)
+    }
+}
 
 extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGSimpleMaterialShader_isOpenGL)
 (JNIEnv *, jclass)

@@ -45,6 +45,8 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
+import io.qt.tools.ant.OSInfo.OS;
+
 public class MakeTask extends Task {
 
     private String msg = "";
@@ -52,31 +54,70 @@ public class MakeTask extends Task {
     private String dir = ".";
     private boolean silent = false;
     private boolean failOnError = true;
+    private boolean isTools;
 
     private String compilerName() {
         String make = System.getenv("MAKE");
         if(make !=  null)
             return make;
-        String make_tool = (String)PropertyHelper.getProperty(getProject(), "make.tool");
-        if(make_tool!=null && !make_tool.isEmpty()){
-            return make_tool;
+        if(isTools) {
+        	String compilerPathValue = (String)PropertyHelper.getProperty(getProject(), "tools.compiler.path");
+        	if(compilerPathValue!=null && !compilerPathValue.isEmpty()) {
+	        	switch(OSInfo.os()) {
+		        case Windows:
+		            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.TOOLS_COMPILER);
+		
+		            if(FindCompiler.Compiler.MinGW.toString().equals(compiler)
+	            			|| FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+		                return new File(compilerPathValue, "mingw32-make.exe").getAbsolutePath();
+		            return new File(compilerPathValue, "nmake.exe").getAbsolutePath();
+				default:
+					break;
+		        }
+	        	return new File(compilerPathValue, "make.exe").getAbsolutePath();
+        	}else {
+        		switch(OSInfo.os()) {
+    	        case Windows:
+    	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
+    	
+    	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+    	                return "mingw32-make";
+    	            return "nmake";
+    			default:
+    				break;
+    	        }
+    	        return "make";
+        	}
+        }else {
+	        String make_tool = (String)PropertyHelper.getProperty(getProject(), "make.tool");
+	        if(make_tool!=null && !make_tool.isEmpty()){
+	            return make_tool;
+	        }
+	
+	        if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
+	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
+	        	if(ndkRoot!=null) {
+	        		File nrkRootFile = new File(ndkRoot);
+	    	        switch(OSInfo.os()) {
+	    	        case Windows:
+	    	        	return nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin\\make.exe";
+	    			default:
+	    				break;
+	    	        }
+	        	}
+	        }
+	        switch(OSInfo.os()) {
+	        case Windows:
+	            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
+	
+	            if(FindCompiler.Compiler.MinGW.toString().equals(compiler) || FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
+	                return "mingw32-make";
+	            return "nmake";
+			default:
+				break;
+	        }
+	        return "make";
         }
-
-        switch(OSInfo.os()) {
-        case Windows:
-            String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
-
-            if(FindCompiler.Compiler.MinGW.toString().equals(compiler))
-                return "mingw32-make";
-            // our instructions for mingw-w64 are to copy mingw32-make.exe (and its required DLLs) into
-            //  a directory on their own such as $MINGW_W64/mybin to make use of the GNU make from mingw.
-            if(FindCompiler.Compiler.MinGW_W64.toString().equals(compiler))
-                return "mingw32-make";
-            return "nmake";
-		default:
-			break;
-        }
-        return "make";
     }
 
     @Override
@@ -107,7 +148,28 @@ public class MakeTask extends Task {
             File dirExecute = null;
             if(dir != null)
                 dirExecute = new File(dir);
-            Exec.execute(commandArray, dirExecute, getProject(), null, ldpath);
+            if(isTools) {
+            	String compilerPathValue = (String)PropertyHelper.getProperty(getProject(), "tools.compiler.path");
+            	Exec.execute(this, commandArray, dirExecute, getProject(), 
+            			compilerPathValue!=null && !compilerPathValue.isEmpty() ? new File(compilerPathValue).getAbsolutePath() : null, ldpath);
+            }else {
+            	String path = null;
+            	if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
+    	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
+    	        	if(ndkRoot!=null) {
+    	        		File nrkRootFile = new File(ndkRoot);
+    	    	        switch(OSInfo.os()) {
+    	    	        case Windows:
+    	    	        	path = nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin;"
+    	    	        			+ nrkRootFile.getAbsolutePath() + "\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin";
+    	    			default:
+    	    				break;
+    	    	        }
+    	        	}
+    	        }
+            	Exec.execute(this, commandArray, dirExecute, getProject(), path, ldpath);
+            }
+            Exec.execute(this, commandArray, dirExecute, getProject(), null, ldpath);
         } catch(BuildException e) {
             if(failOnError)
                 throw e;
@@ -134,5 +196,9 @@ public class MakeTask extends Task {
 
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
+    }
+    
+    public void setTools(boolean tools) {
+    	isTools = tools;
     }
 }

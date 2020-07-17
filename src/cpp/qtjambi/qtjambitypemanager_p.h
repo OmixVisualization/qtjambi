@@ -62,6 +62,8 @@
 #include "qtjambi_registry_p.h"
 #include "qtjambi_templates.h"
 
+QT_WARNING_DISABLE_DEPRECATED
+
 #define ELEMENT_STATICSIZE_SWITCH2(isStaticType,size)\
     case size:\
     if(isStaticType){\
@@ -370,7 +372,7 @@ struct ContainerElement{
 
 template<size_t size, uint i, bool isStatic>
 struct ContainerElement<size, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -385,7 +387,7 @@ private:
 
 template<uint i, bool isStatic>
 struct ContainerElement<1, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -400,7 +402,7 @@ private:
 
 template<uint i, bool isStatic>
 struct ContainerElement<2, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -415,7 +417,7 @@ private:
 
 template<uint i, bool isStatic>
 struct ContainerElement<4, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -430,7 +432,7 @@ private:
 
 template<uint i, bool isStatic>
 struct ContainerElement<8, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -445,7 +447,7 @@ private:
 
 template<uint i, bool isStatic>
 struct ContainerElement<16, i, isStatic, 0, false>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -460,7 +462,7 @@ private:
 
 template<size_t size, uint i, bool isStatic, size_t align>
 struct Q_DECL_ALIGN(align) ContainerElement<size, i, isStatic, align, true>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -475,7 +477,7 @@ private:
 
 template<uint i, bool isStatic, size_t align>
 struct Q_DECL_ALIGN(align) ContainerElement<1, i, isStatic, align, true>{
-    ContainerElement(nullptr_t = nullptr){
+    ContainerElement(std::nullptr_t = nullptr){
         constructContainerElement(i, this);
     }
     ContainerElement(const ContainerElement& copy){
@@ -589,6 +591,130 @@ public:
     static InternalToExternalConverter getInternalToExternalConverter_QMultiHash(const QString& typeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int metaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int metaType2, MapType mapType);
     static InternalToExternalConverter getInternalToExternalConverter_QPair(const QString& typeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int metaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int metaType2);
     static InternalToExternalConverter getInternalToExternalConverter_std_pair(const QString& typeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int metaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int metaType2);
+
+#define ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,D)\
+    static ExternalToInternalConverter getExternalToInternalConverter_##HASH##_##A##_##B##_##C##_##D(const QString& typeName, const ExternalToInternalConverter& memberConverter1, int metaType1, const ExternalToInternalConverter& memberConverter2, int metaType2);
+#define ELEMENT_CONVERTER_HASH_DECL0(HASH,C,D)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,0,0,C,D)
+#define ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,C)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,1)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,2)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,4)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,8)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,16)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,32)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,64)
+#define ELEMENT_CONVERTER_HASH_DECL3(HASH,A,B)\
+    ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,0,0)\
+    ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,1)\
+    ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,2)\
+    ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,4)\
+    ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,8)\
+    ELEMENT_CONVERTER_HASH_DECL2(HASH,A,B,16)
+#define ELEMENT_CONVERTER_HASH_DECL4(HASH,A)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,1)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,2)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,4)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,8)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,16)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,32)\
+    ELEMENT_CONVERTER_HASH_DECL3(HASH,A,64)
+#define ELEMENT_CONVERTER_HASH_DECL5(HASH,A)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,1)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,2)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,4)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,8)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,16)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,32)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,A,64)
+#define ELEMENT_CONVERTER_HASH_DECL(HASH)\
+    ELEMENT_CONVERTER_HASH_DECL0(HASH,0,0)\
+    ELEMENT_CONVERTER_HASH_DECL4(HASH,1)\
+    ELEMENT_CONVERTER_HASH_DECL4(HASH,2)\
+    ELEMENT_CONVERTER_HASH_DECL4(HASH,4)\
+    ELEMENT_CONVERTER_HASH_DECL4(HASH,8)\
+    ELEMENT_CONVERTER_HASH_DECL4(HASH,16)\
+    ELEMENT_CONVERTER_HASH_DECL5(HASH,1)\
+    ELEMENT_CONVERTER_HASH_DECL5(HASH,2)\
+    ELEMENT_CONVERTER_HASH_DECL5(HASH,4)\
+    ELEMENT_CONVERTER_HASH_DECL5(HASH,8)\
+    ELEMENT_CONVERTER_HASH_DECL5(HASH,16)
+
+    ELEMENT_CONVERTER_HASH_DECL(QHash)
+    ELEMENT_CONVERTER_HASH_DECL(QMultiHash)
+    ELEMENT_CONVERTER_HASH_DECL(QMap)
+    ELEMENT_CONVERTER_HASH_DECL(QMultiMap)
+
+#undef ELEMENT_CONVERTER_HASH_DECL1
+#define ELEMENT_CONVERTER_HASH_DECL1(HASH,A,B,C,D)\
+    static InternalToExternalConverter getInternalToExternalConverter_##HASH##_##A##_##B##_##C##_##D(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, int memberMetaType2, MapType mapType);
+    ELEMENT_CONVERTER_HASH_DECL(QHash)
+    ELEMENT_CONVERTER_HASH_DECL(QMultiHash)
+    ELEMENT_CONVERTER_HASH_DECL(QMap)
+    ELEMENT_CONVERTER_HASH_DECL(QMultiMap)
+
+#undef ELEMENT_CONVERTER_HASH_DECL
+#undef ELEMENT_CONVERTER_HASH_DECL0
+#undef ELEMENT_CONVERTER_HASH_DECL1
+#undef ELEMENT_CONVERTER_HASH_DECL2
+#undef ELEMENT_CONVERTER_HASH_DECL3
+#undef ELEMENT_CONVERTER_HASH_DECL4
+#undef ELEMENT_CONVERTER_HASH_DECL5
+
+#define ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,D)\
+    ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_##HASH##_##A##_##B##_##C##_##D(const QString& typeName, const ExternalToInternalConverter& memberConverter1, int metaType1, const ExternalToInternalConverter& memberConverter2, int metaType2){\
+        return ContainerConverter::getExternalToInternalConverter<HASH,A,B,true,C,D,true>(typeName, memberConverter1, metaType1, memberConverter2, metaType2);\
+    }\
+    InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_##HASH##_##A##_##B##_##C##_##D(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, int memberMetaType2, MapType mapType){\
+        return ContainerConverter::getInternalToExternalConverter<HASH,A,B,true,C,D,true>(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);\
+    }
+
+#define ELEMENT_CONVERTER_HASH_IMPL0(HASH,C,D)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,0,0,C,D)
+#define ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,C)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,1)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,2)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,4)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,8)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,16)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,32)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,C,64)
+#define ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,B)\
+    ELEMENT_CONVERTER_HASH_IMPL1(HASH,A,B,0,0)\
+    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,1)\
+    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,2)\
+    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,4)\
+    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,8)\
+    ELEMENT_CONVERTER_HASH_IMPL2(HASH,A,B,16)
+#define ELEMENT_CONVERTER_HASH_IMPL4(HASH,A)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,1)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,2)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,4)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,8)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,16)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,32)\
+    ELEMENT_CONVERTER_HASH_IMPL3(HASH,A,64)
+#define ELEMENT_CONVERTER_HASH_IMPL5(HASH,A)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,1)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,2)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,4)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,8)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,16)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,32)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,A,64)
+#define ELEMENT_CONVERTER_HASH_IMPL(HASH)\
+    ELEMENT_CONVERTER_HASH_IMPL0(HASH,0,0)\
+    ELEMENT_CONVERTER_HASH_IMPL4(HASH,1)\
+    ELEMENT_CONVERTER_HASH_IMPL4(HASH,2)\
+    ELEMENT_CONVERTER_HASH_IMPL4(HASH,4)\
+    ELEMENT_CONVERTER_HASH_IMPL4(HASH,8)\
+    ELEMENT_CONVERTER_HASH_IMPL4(HASH,16)\
+    ELEMENT_CONVERTER_HASH_IMPL5(HASH,1)\
+    ELEMENT_CONVERTER_HASH_IMPL5(HASH,2)\
+    ELEMENT_CONVERTER_HASH_IMPL5(HASH,4)\
+    ELEMENT_CONVERTER_HASH_IMPL5(HASH,8)\
+    ELEMENT_CONVERTER_HASH_IMPL5(HASH,16)
+
 private:
     static QMetaType::Destructor wrapDestructor(int metaType,
                                                QHashFunction hashFunction,

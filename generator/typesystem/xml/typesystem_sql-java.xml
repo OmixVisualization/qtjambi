@@ -117,5 +117,11 @@
         </modify-function>
 
     </object-type>
-
+  <value-type name="QSqlField">
+        <modify-function signature="QSqlField(QString,QVariant::Type)">
+            <modify-argument index="2">
+                <replace-default-expression with="io.qt.core.QVariant.Type.Invalid"/>
+            </modify-argument>
+        </modify-function>
+  </value-type>
 </typesystem>

@@ -31,7 +31,6 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
@@ -54,7 +53,6 @@ import io.qt.autotests.generated.SomeQObject;
 import io.qt.autotests.generated.StyledItemDelegateSubclass;
 import io.qt.autotests.generated.TextCodecSubclass;
 import io.qt.autotests.generated.ValidatorSubclass;
-import io.qt.autotests.generated.XmlReaderSubclass;
 import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
 import io.qt.core.QCborError;
@@ -146,19 +144,6 @@ import io.qt.widgets.QStyleOptionViewItem;
 import io.qt.widgets.QWidget;
 import io.qt.xml.QDomDocument;
 import io.qt.xml.QDomElement;
-import io.qt.xml.QXmlContentHandler;
-import io.qt.xml.QXmlDTDHandler;
-import io.qt.xml.QXmlDeclHandler;
-import io.qt.xml.QXmlDefaultHandler;
-import io.qt.xml.QXmlEntityResolver;
-import io.qt.xml.QXmlEntityResolver.ResolvedEntity;
-import io.qt.xml.QXmlErrorHandler;
-import io.qt.xml.QXmlInputSource;
-import io.qt.xml.QXmlLexicalHandler;
-import io.qt.xml.QXmlNamespaceSupport;
-import io.qt.xml.QXmlNamespaceSupport.ProcessedName;
-import io.qt.xml.QXmlReader;
-import io.qt.xml.QXmlSimpleReader;
 
 public class TestInjectedCode extends QApplicationTest {
     static class IODeviceSubclassSubclass extends IODeviceSubclass {
@@ -432,7 +417,8 @@ public class TestInjectedCode extends QApplicationTest {
 
     }
 
-    static class XmlReaderSubclassSubclass extends XmlReaderSubclass {
+    @Deprecated
+    static class XmlReaderSubclassSubclass extends io.qt.autotests.generated.XmlReaderSubclass {
 
         @Override
         public Boolean feature(String name) {
@@ -444,27 +430,27 @@ public class TestInjectedCode extends QApplicationTest {
         }
 
         @Override
-        public QXmlContentHandler contentHandler() {
+        public io.qt.xml.QXmlContentHandler contentHandler() {
             return null;
         }
 
         @Override
-        public QXmlDeclHandler declHandler() {
+        public io.qt.xml.QXmlDeclHandler declHandler() {
             return null;
         }
 
         @Override
-        public QXmlDTDHandler DTDHandler() {
+        public io.qt.xml.QXmlDTDHandler DTDHandler() {
             return null;
         }
 
         @Override
-        public QXmlEntityResolver entityResolver() {
+        public io.qt.xml.QXmlEntityResolver entityResolver() {
             return null;
         }
 
         @Override
-        public QXmlErrorHandler errorHandler() {
+        public io.qt.xml.QXmlErrorHandler errorHandler() {
             return null;
         }
 
@@ -474,37 +460,37 @@ public class TestInjectedCode extends QApplicationTest {
         }
 
         @Override
-        public QXmlLexicalHandler lexicalHandler() {
+        public io.qt.xml.QXmlLexicalHandler lexicalHandler() {
             return null;
         }
 
         @Override
-        public boolean parse(QXmlInputSource input) {
+        public boolean parse(io.qt.xml.QXmlInputSource input) {
             return false;
         }
 
         @Override
-        public void setContentHandler(QXmlContentHandler handler) {
+        public void setContentHandler(io.qt.xml.QXmlContentHandler handler) {
 
         }
 
         @Override
-        public void setDeclHandler(QXmlDeclHandler handler) {
+        public void setDeclHandler(io.qt.xml.QXmlDeclHandler handler) {
 
         }
 
         @Override
-        public void setDTDHandler(QXmlDTDHandler handler) {
+        public void setDTDHandler(io.qt.xml.QXmlDTDHandler handler) {
 
         }
 
         @Override
-        public void setEntityResolver(QXmlEntityResolver handler) {
+        public void setEntityResolver(io.qt.xml.QXmlEntityResolver handler) {
 
         }
 
         @Override
-        public void setErrorHandler(QXmlErrorHandler handler) {
+        public void setErrorHandler(io.qt.xml.QXmlErrorHandler handler) {
 
         }
 
@@ -514,7 +500,7 @@ public class TestInjectedCode extends QApplicationTest {
         }
 
         @Override
-        public void setLexicalHandler(QXmlLexicalHandler handler) {
+        public void setLexicalHandler(io.qt.xml.QXmlLexicalHandler handler) {
 
         }
 
@@ -722,6 +708,7 @@ public class TestInjectedCode extends QApplicationTest {
     }
 
     @Test
+    @Deprecated
     public void testQXmlReaderFeature() {
         XmlReaderSubclassSubclass xrss = new XmlReaderSubclassSubclass();
 
@@ -1426,13 +1413,13 @@ public class TestInjectedCode extends QApplicationTest {
     @Test
     public void testQCursorBitmap() {
         QCursor cursor = new QCursor(Qt.CursorShape.CrossCursor);
-        assertEquals(null, cursor.bitmap());
+        assertTrue(cursor.bitmap().isNull());
 
         QBitmap bm = new QBitmap("classpath:io/qt/autotests/svgcards-example.png");
         cursor = new QCursor(bm,
                              new QBitmap("classpath:io/qt/autotests/svgcards-example.png"));
 
-        assertNotNull(cursor.bitmap());
+        assertFalse(cursor.bitmap().isNull());
         assertEquals(bm.width(), cursor.bitmap().width());
         assertEquals(bm.height(), cursor.bitmap().height());
 
@@ -1627,17 +1614,17 @@ public class TestInjectedCode extends QApplicationTest {
 
         QPointF intersectionPoint = new QPointF();
 
-        assertEquals(QLineF.IntersectType.BoundedIntersection, line1.intersect(line2, intersectionPoint));
+        assertEquals(QLineF.IntersectType.BoundedIntersection, line1.intersects(line2, intersectionPoint));
         assertEquals(10.0, intersectionPoint.x(), 0.0);
         assertEquals(10.0, intersectionPoint.y(), 0.0);
 
         line2 = new QLineF(0, 30, 20, 30);
-        assertEquals(QLineF.IntersectType.UnboundedIntersection, line1.intersect(line2, intersectionPoint));
+        assertEquals(QLineF.IntersectType.UnboundedIntersection, line1.intersects(line2, intersectionPoint));
         assertEquals(10.0, intersectionPoint.x(), 0.0);
         assertEquals(30.0, intersectionPoint.y(), 0.0);
 
         line2 = new QLineF(11, 0, 11, 20);
-        assertEquals(QLineF.IntersectType.NoIntersection, line1.intersect(line2, null));
+        assertEquals(QLineF.IntersectType.NoIntersection, line1.intersects(line2, null));
     }
 
     @Test
@@ -2335,19 +2322,6 @@ public class TestInjectedCode extends QApplicationTest {
     	assertEquals(0, result.errorColumn);
     	assertEquals(0, result.errorLine);
     	assertEquals("", result.errorMessage);
-    	QXmlInputSource source = new QXmlInputSource(new QBuffer(new QByteArray(content)));
-    	result = doc.setContent(source, false);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	QXmlReader reader = new QXmlSimpleReader();
-    	source = new QXmlInputSource(new QBuffer(new QByteArray(content)));
-    	result = doc.setContent(source, reader);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
     	result = doc.setContent("<unclosed>");
     	assertEquals(false, result.success);
     	assertEquals(11, result.errorColumn);
@@ -2366,25 +2340,48 @@ public class TestInjectedCode extends QApplicationTest {
     }
     
     @Test
+    @Deprecated
+    public void testQDomDocument_setXMLContent() {
+    	String content = "<root></root>";
+    	QDomDocument doc = new QDomDocument();
+    	io.qt.xml.QXmlInputSource source = new io.qt.xml.QXmlInputSource(new QBuffer(new QByteArray(content)));
+    	QDomDocument.Result result = doc.setContent(source, false);
+    	assertEquals(true, result.success);
+    	assertEquals(0, result.errorColumn);
+    	assertEquals(0, result.errorLine);
+    	assertEquals("", result.errorMessage);
+    	io.qt.xml.QXmlReader reader = new io.qt.xml.QXmlSimpleReader();
+    	source = new io.qt.xml.QXmlInputSource(new QBuffer(new QByteArray(content)));
+    	result = doc.setContent(source, reader);
+    	assertEquals(true, result.success);
+    	assertEquals(0, result.errorColumn);
+    	assertEquals(0, result.errorLine);
+    	assertEquals("", result.errorMessage);
+    }
+    
+    @Test
+    @Deprecated
     public void testQXmlEntityResolver_resolveEntity() {
-    	QXmlEntityResolver handler = new QXmlDefaultHandler();
-    	ResolvedEntity entity = handler.resolveEntity("http://io.qt", "http://io.qt");
+    	io.qt.xml.QXmlEntityResolver handler = new io.qt.xml.QXmlDefaultHandler();
+    	io.qt.xml.QXmlEntityResolver.ResolvedEntity entity = handler.resolveEntity("http://io.qt", "http://io.qt");
     	assertFalse(entity.error);
     	assertEquals(null, entity.inputSource);
     }
     
     @Test
+    @Deprecated
     public void testQXmlNamespaceSupport_processName() {
-    	QXmlNamespaceSupport handler = new QXmlNamespaceSupport();
-    	ProcessedName result = handler.processName("NS:NAME", true);
+    	io.qt.xml.QXmlNamespaceSupport handler = new io.qt.xml.QXmlNamespaceSupport();
+    	io.qt.xml.QXmlNamespaceSupport.ProcessedName result = handler.processName("NS:NAME", true);
     	assertEquals("NAME", result.localName);
     	assertEquals("", result.nsuri);
     }
     
     @Test
+    @Deprecated
     public void testQXmlNamespaceSupport_splitName() {
-    	QXmlNamespaceSupport handler = new QXmlNamespaceSupport();
-    	QXmlNamespaceSupport.SplitName result = handler.splitName("NS:NAME");
+    	io.qt.xml.QXmlNamespaceSupport handler = new io.qt.xml.QXmlNamespaceSupport();
+    	io.qt.xml.QXmlNamespaceSupport.SplitName result = handler.splitName("NS:NAME");
     	assertEquals("NAME", result.localname);
     	assertEquals("NS", result.prefix);
     }

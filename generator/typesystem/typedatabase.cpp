@@ -43,6 +43,7 @@
 #include <qfile.h>
 #include <qfileinfo.h>
 #include <qxml.h>
+#include <QtCore>
 #include "handler.h"
 #include "../reporthandler.h"
 #include "../main.h"
@@ -114,10 +115,19 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         VariantTypeEntry *qvariant = new VariantTypeEntry("QVariant");
         qvariant->setCodeGeneration(TypeEntry::GenerateNothing);
         addType(qvariant);
+        EnumTypeEntry* etype = new EnumTypeEntry("QVariant", "Type");
+        etype->setTargetTypeSystem("QtCore");
+        etype->setTargetLangPackage("io.qt.core");
+        etype->setCodeGeneration(TypeEntry::GenerateNothing);
+        addType(etype);
     }
 
     {
         JWrapperTypeEntry *wrapper = new JWrapperTypeEntry(TypeEntry::JObjectWrapperType, "JObjectWrapper", strings_java_lang, strings_Object);
+        wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
+        addType(wrapper);
+        
+        wrapper = new JWrapperTypeEntry(TypeEntry::QAndroidJniObjectType, "QAndroidJniObject", strings_java_lang, strings_Object);
         wrapper->setCodeGeneration(TypeEntry::GenerateNothing);
         addType(wrapper);
 
@@ -554,6 +564,11 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         removeFunction(entry, "operator[](const Key &)const");
         removeFunction(entry, "insert(QMap::const_iterator, const Key &, const T &)");
         removeFunction(entry, "insertMulti(QMap::const_iterator, const Key &, const T &)");
+        removeFunction(entry, "uniqueKeys() const");
+        removeFunction(entry, "values(const Key &) const");
+        removeFunction(entry, "insertMulti(const Key &, const T &)");
+        removeFunction(entry, "insertMulti(QMap::const_iterator, const Key &, const T &)");
+        removeFunction(entry, "unite(const QMap<Key, T> &)");
         protectedAccess(entry, "begin()");
         protectedAccess(entry, "end()");
         protectedAccess(entry, "begin() const");
@@ -626,6 +641,7 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         removeFunction(entry, "operator+=(const QMultiMap &)");
         removeFunction(entry, "insert(QMap::const_iterator, const Key &, const T &)");
         removeFunction(entry, "insertMulti(QMap::const_iterator, const Key &, const T &)");
+        removeFunction(entry, "insert(const QMap<Key, T> &)");
         rename(entry, "values()const", "allValues");
         rename(entry, "remove(const Key &)", "removeFirst");
 //        removeFunction(entry, "begin()");
@@ -662,6 +678,11 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         removeFunction(entry, "constEnd() const");
         removeFunction(entry, "constFind() const");
         removeFunction(entry, "constFind()");
+        removeFunction(entry, "uniqueKeys() const");
+        removeFunction(entry, "values(const Key &) const");
+        removeFunction(entry, "insertMulti(const Key &, const T &)");
+        removeFunction(entry, "unite(const QHash &)");
+        removeFunction(entry, "insert(const QHash &)");
         protectedAccess(entry, "find(const Key &)const");
         protectedAccess(entry, "begin() const");
         protectedAccess(entry, "end() const");
@@ -728,6 +749,7 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
     addType(new ContainerTypeEntry("QDeclarativeListProperty", ContainerTypeEntry::QDeclarativeListPropertyContainer));
     addType(new ContainerTypeEntry("QQmlListProperty", ContainerTypeEntry::QQmlListPropertyContainer));
     addType(new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer));
+    addType(new ContainerTypeEntry("std::atomic", ContainerTypeEntry::std_atomic));
     {
         ContainerTypeEntry* entry = new ContainerTypeEntry("QDBusReply", ContainerTypeEntry::QDBusReplyContainer);
         removeFunction(entry, "operator QDBusReply::Type() const");
@@ -804,7 +826,7 @@ bool TypeDatabase::isSuppressedWarning(const QString &s) {
     for(const QString &_warning : m_suppressedWarnings) {
         QString warning(QString(_warning).replace("\\*", "&place_holder_for_asterisk;"));
 
-        QStringList segs = warning.split("*", QString::SkipEmptyParts);
+        QStringList segs = warning.split("*", Qt::SkipEmptyParts);
         if (segs.size() == 0)
             continue ;
 

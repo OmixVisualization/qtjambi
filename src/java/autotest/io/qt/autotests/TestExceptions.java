@@ -39,7 +39,8 @@ import io.qt.core.QObject;
 import io.qt.core.QRunnable;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
-import io.qt.script.QScriptable;
+import io.qt.gui.QPaintDevice;
+import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
 
 public class TestExceptions extends QApplicationTest {
@@ -48,7 +49,7 @@ public class TestExceptions extends QApplicationTest {
     public void test() {
     	{
 			QObject parent = new QObject();
-			class MultiImpl2 extends QObject implements QRunnable, QScriptable{
+			class MultiImpl2 extends QObject implements QRunnable, QPaintDevice{
 			    public MultiImpl2() {
 					super();
 				}
@@ -72,6 +73,11 @@ public class TestExceptions extends QApplicationTest {
 			    	System.out.println("TestInterfaces.test_MultiInterfaceImpl() "+Thread.currentThread()+" / object thread "+this.thread());
 			    	throw new RuntimeException();
 			    }
+
+				@Override
+				public QPaintEngine paintEngine() {
+					return null;
+				}
 			}
 			MultiImpl2 object = new MultiImpl2();
 			object.setParent(parent);
@@ -80,7 +86,7 @@ public class TestExceptions extends QApplicationTest {
 			});
 			Assert.assertFalse(object.isDisposed());
 			object.objectName();
-			object.argumentCount();
+			object.paintingActive();
 			object.autoDelete();
 			QThreadPool pool = new QThreadPool();
 			pool.start(object);
@@ -89,7 +95,7 @@ public class TestExceptions extends QApplicationTest {
 			List<QObject> children = parent.children();
 			Assert.assertEquals(object, children.get(0));
 			try {
-				object.argumentCount();
+				object.paintingActive();
 				Assert.assertTrue(false);
 			} catch (Exception e) {
 				Assert.assertTrue(e instanceof io.qt.QNoNativeResourcesException);

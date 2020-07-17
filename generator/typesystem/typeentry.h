@@ -109,6 +109,7 @@ class TypeEntry {
             PointerContainerType,
             InitializerListType,
             JObjectWrapperType,
+            QAndroidJniObjectType,
             JMapWrapperType,
             JCollectionWrapperType,
             JIteratorWrapperType,
@@ -217,6 +218,9 @@ class TypeEntry {
         }
         bool isJObjectWrapper() const {
             return m_type == JObjectWrapperType;
+        }
+        bool isQAndroidJniObject() const {
+            return m_type == QAndroidJniObjectType;
         }
         bool isJMapWrapper() const {
             return m_type == JMapWrapperType;
@@ -1022,7 +1026,7 @@ class ComplexTypeEntry : public TypeEntry {
                 m_qobject(false),
                 m_polymorphic_base(false),
                 m_generic_class(false),
-                m_type_flags(nullptr) {
+                m_type_flags() {
             Include inc;
             inc.name = "QtCore/QVariant";
             inc.type = Include::IncludePath;
@@ -1545,7 +1549,8 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             QQmlListPropertyContainer,
             QDeclarativeListPropertyContainer,
             QArrayDataContainer,
-            QTypedArrayDataContainer
+            QTypedArrayDataContainer,
+            std_atomic
         };
 
         ContainerTypeEntry(const QString &name, Type type)

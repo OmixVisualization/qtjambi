@@ -36,9 +36,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.junit.Assert;
+import org.junit.Assume;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.QApplicationTest;
@@ -121,17 +119,7 @@ public class TestQImage extends QApplicationTest {
 	
 	@org.junit.Test
 	public void testLoadSVGSmall() {
-		Assert.assertThat(QImageReader.supportedImageFormats().contains(new QByteArray("svg")), new BaseMatcher<Boolean>() {
-			@Override
-			public boolean matches(Object item) {
-				return Boolean.TRUE.equals(item);
-			}
-
-			@Override
-			public void describeTo(Description description) {
-				description.appendText("Need to support SVG");
-			}
-		});
+		Assume.assumeTrue("Need to support SVG", QImageReader.supportedImageFormats().contains(new QByteArray("svg")));
 		assertTrue(anSVGImage.load(anSVGImagePath));
 	}
 	
@@ -146,17 +134,7 @@ public class TestQImage extends QApplicationTest {
 	 */
 	@org.junit.Test
 	public void testLoadSVGBig() {
-		Assert.assertThat(QImageReader.supportedImageFormats().contains(new QByteArray("svg")), new BaseMatcher<Boolean>() {
-			@Override
-			public boolean matches(Object item) {
-				return Boolean.TRUE.equals(item);
-			}
-
-			@Override
-			public void describeTo(Description description) {
-				description.appendText("Need to support SVG");
-			}
-		});
+		Assume.assumeTrue("Need to support SVG", QImageReader.supportedImageFormats().contains(new QByteArray("svg")));
 		assertTrue(anotherSVGImage.load(anotherSVGImagePath));
 	}
 	

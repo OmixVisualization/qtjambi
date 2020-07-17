@@ -44,6 +44,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSerialBus">
+    <rejection class="QModbusPdu::IsType"/>
     <object-type name="QModbusClient">
     </object-type>
     <object-type name="QCanBus">

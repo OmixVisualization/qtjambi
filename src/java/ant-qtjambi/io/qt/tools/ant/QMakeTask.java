@@ -45,13 +45,18 @@
 package io.qt.tools.ant;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
+
+import io.qt.tools.ant.OSInfo.OS;
 
 public class QMakeTask extends Task {
 
@@ -59,6 +64,7 @@ public class QMakeTask extends Task {
     private String config = "";
     private String dir = ".";
     private String pro = "";
+    private boolean isTools;
 
     //parameters
     private String qtconfig;
@@ -172,7 +178,11 @@ public class QMakeTask extends Task {
 		
 		String javaVersion = getProject().getProperty("target.java.version");
         if(javaVersion != null){
-			parameters.add("DEFINES+=\"TARGET_JAVA_VERSION=" + javaVersion+"\"");
+            if(javaVersion.startsWith("1.")){
+            	parameters.add("DEFINES+=\"TARGET_JAVA_VERSION=" + javaVersion.substring(2) + "\"");
+            }else{
+                parameters.add("DEFINES+=\"TARGET_JAVA_VERSION=" + javaVersion + "\"");
+            }
 		}
 
         return parameters;
@@ -221,7 +231,65 @@ public class QMakeTask extends Task {
             dirExecute = new File(dir);
         
         String binpath = AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR);
-        Exec.execute(command, dirExecute, getProject(), binpath, null);
+        
+        if(isTools) {
+        	String compilerbinpath = AntUtil.getPropertyAsString(propertyHelper, "tools.compiler.path");
+        	String pathKey = "PATH";
+        	String path = System.getenv(pathKey);
+        	if(path==null || path.isEmpty()) {
+        		pathKey = "Path";
+        		path = System.getenv(pathKey);
+        	}
+        	if(path==null || path.isEmpty()) {
+        		pathKey = "path";
+        		path = System.getenv(pathKey);
+        	}
+        	if(path==null || path.isEmpty()) {
+        		pathKey = "PATH";
+        	}
+        	if(path==null) {
+        		path = "";
+        	}
+        	if(!path.isEmpty()) {
+        		path += File.pathSeparator;
+        	}
+        	if(binpath!=null) {
+        		path += binpath + File.pathSeparator;
+        	}
+        	if(compilerbinpath!=null) {
+        		path += new File(compilerbinpath).getAbsolutePath() + File.pathSeparator;
+        	}
+        	Map<String,String> env = new HashMap<>();
+        	env.put(pathKey, path);
+        	Exec.execute(this, command, dirExecute, getProject(), null, null, env);
+        }else {
+        	Map<String,String> env = null;
+        	if(OSInfo.crossOS()==OS.Android) {
+        		String ndkRoot = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.ndk");
+        		if(ndkRoot!=null) {
+	            	env = new HashMap<>();
+	            	File nrkRootFile = new File(ndkRoot);
+	            	env.put("ANDROID_NDK_ROOT", nrkRootFile.getAbsolutePath());
+            		File dummyInclude = new File(new File(AntUtil.getPropertyAsString(propertyHelper, "outputDir"), "androidjdk"), "include");
+            		File dummyJni = new File(dummyInclude, "jni.h");
+            		if(!dummyJni.exists()) {
+	            		dummyInclude.mkdirs();
+		            	File jni_h = new File(new File(new File(new File(nrkRootFile, "sysroot"), "usr"), "include"), "jni.h");
+		            	if(jni_h.exists()) {
+		            		try {
+								Util.copy(jni_h, dummyJni);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+		            	}
+            		}
+	            	env.put("JAVA_HOME", dummyInclude.getParentFile().getAbsolutePath());
+	            	env.put("JAVA_HOME_TARGET", dummyInclude.getParentFile().getAbsolutePath());
+	            	command.add("\"ANDROID_ABIS="+AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_ABIS)+"\"");
+        		}
+        	}
+        	Exec.execute(this, command, dirExecute, getProject(), binpath, null, env);
+        }
     }
 
     public void setMessage(String msg) {
@@ -262,5 +330,9 @@ public class QMakeTask extends Task {
 
     public void setDebugTools(boolean debugTools) {
         this.debugTools = debugTools;
+    }
+    
+    public void setTools(boolean tools) {
+    	isTools = tools;
     }
 }

@@ -246,8 +246,8 @@ void JumpTableGenerator::generateJavaTable(const QString &packageName,
 
     QTextStream &s = file.stream;
 
-    s << "package " << packageName << ";" << endl << endl;
-    s << "class JTbl {" << endl;
+    s << "package " << packageName << ";" << Qt::endl << Qt::endl;
+    s << "class JTbl {" << Qt::endl;
 
 
     for (SignatureTable::const_iterator sit = table.constBegin(); sit != table.constEnd(); ++sit) {
@@ -261,10 +261,10 @@ void JumpTableGenerator::generateJavaTable(const QString &packageName,
             s << ", " << expandNameJava(signature.at(i)) << " a" << i;
         }
 
-        s << ", Object _this);" << endl;
+        s << ", Object _this);" << Qt::endl;
     }
 
-    s << "}" << endl;
+    s << "}" << Qt::endl;
 }
 
 
@@ -283,41 +283,41 @@ void JumpTableGenerator::generateNativeTable(const QString &packageName,
 
     QTextStream &s = file.stream;
 
-    s << "#include <qtjambi/qtjambi_global.h>" << endl;
+    s << "#include <qtjambi/qtjambi_global.h>" << Qt::endl;
 
     for (SignatureTable::const_iterator sit = table.constBegin(); sit != table.constEnd(); ++sit) {
         QString signature = sit.key();
 
         QString ret = expandNameJNI(signature.at(0));
 
-        s << endl << endl
+        s << Qt::endl << Qt::endl
         << "extern \"C\" Q_DECL_EXPORT " << ret << " JNICALL QTJAMBI_FUNCTION_PREFIX(Java_"
-        << QString(packageName).replace("_", "_1").replace(".", "_") << "_JTbl_" << signature << ")" << endl
+        << QString(packageName).replace("_", "_1").replace(".", "_") << "_JTbl_" << signature << ")" << Qt::endl
         << "(JNIEnv *e, jclass, jint id, jlong nid";
 
         for (int i = 1; i < signature.size(); ++i) {
             s << ", " << expandNameJNI(signature.at(i)) << " a" << i;
         }
 
-        s << ", jobject __this)" << endl
-        << "{" << endl
-        << "Q_UNUSED(__this)" << endl
-        << "Q_UNUSED(nid)" << endl
-        << "switch (id) { " << endl;
+        s << ", jobject __this)" << Qt::endl
+        << "{" << Qt::endl
+        << "Q_UNUSED(__this)" << Qt::endl
+        << "Q_UNUSED(nid)" << Qt::endl
+        << "switch (id) { " << Qt::endl;
 
         AbstractMetaFunctionList functions = sit.value();
         bool hasReturn = signature.at(0) != 'V';
 
         for(AbstractMetaFunction *f : functions) {
             const AbstractMetaClass *cls = f->ownerClass();
-            s << endl
-            << "// " << cls->name() << "::" << f->signature() << ", declaring=" << f->declaringClass()->name() << ", implementing=" << f->implementingClass()->name() << endl
-            << "case " << f->jumpTableId() << ":" << endl
+            s << Qt::endl
+            << "// " << cls->name() << "::" << f->signature() << ", declaring=" << f->declaringClass()->name() << ", implementing=" << f->implementingClass()->name() << Qt::endl
+            << "case " << f->jumpTableId() << ":" << Qt::endl
             << "extern ";
             CppImplGenerator::writeFunctionName(s, f, cls, CppImplGenerator::ReturnType);
-            s << endl;
+            s << Qt::endl;
             CppImplGenerator::writeFinalFunctionArguments(s, f, "object");
-            s << ";" << endl;
+            s << ";" << Qt::endl;
 
             if (hasReturn && !f->isConstructor())
                 s << "return ";
@@ -337,16 +337,16 @@ void JumpTableGenerator::generateNativeTable(const QString &packageName,
                 s << ", a" << i;
             }
 
-            s << ");" << endl
-            << "break;" << endl;
+            s << ");" << Qt::endl
+            << "break;" << Qt::endl;
         }
 
-        s << "} // switch..." << endl;
+        s << "} // switch..." << Qt::endl;
 
         if (hasReturn)
-            s << "return 0;" << endl;
+            s << "return 0;" << Qt::endl;
 
-        s << "} // " << signature << endl;
+        s << "} // " << signature << Qt::endl;
     }
 }
 

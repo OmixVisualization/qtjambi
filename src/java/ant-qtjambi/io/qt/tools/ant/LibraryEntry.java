@@ -298,7 +298,7 @@ public class LibraryEntry extends Task {
                 } else if(dsoVersion != null && dsoVersion.compareToIgnoreCase("use-soname-version") == 0) {
                     useDsoVersion = sonameVersion;
                 } else if(dsoVersion == null) {  // the default stratagy
-                    if(OSInfo.os() == OSInfo.OS.Windows)
+                    if(OSInfo.crossOS() == OSInfo.OS.Windows)
                         useDsoVersion = ""+qtMajorVersion;
                     else
                         useDsoVersion = null;
@@ -344,7 +344,7 @@ public class LibraryEntry extends Task {
                 // MacOSX: uses *.dylib and _debug any suffix
                 name = formatUnversionedPluginName(name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
             } else if(type.equals(TYPE_EXE)) {
-            	if(OSInfo.os() == OSInfo.OS.Windows) {
+            	if(OSInfo.crossOS() == OSInfo.OS.Windows) {
             		if(debug) {
             			name = name+"d.exe";
             		}else {
@@ -378,7 +378,7 @@ public class LibraryEntry extends Task {
 
     public static String formatPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if(debug) {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows: return name + "d.dll";
             case MacOS:
                 if(qtMajorVersion==5 && qtMinorVersion<14){
@@ -386,23 +386,29 @@ public class LibraryEntry extends Task {
                 }else{
                     return "lib" + name + ".dylib";
                 }
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so";
+            case IOS:
+                return "lib" + name + "_debug.a";
 			default:
 				break;
             }
         } else {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + ".dll";
             case MacOS:
                 return "lib" + name + ".dylib";
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so";
+            case IOS:
+                return "lib" + name + ".a";
 			default:
 				break;
             }
@@ -412,23 +418,27 @@ public class LibraryEntry extends Task {
 
 	public static String formatQmlPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if (debug) {
-            switch (OSInfo.os()) {
+            switch (OSInfo.crossOS()) {
             case Windows: return name + "d.dll";
             case MacOS: 
                 if(qtMajorVersion==5 && qtMinorVersion<14)
                     return "lib" + name + "_debug.dylib";
                 else return "lib" + name + ".dylib";
+            case Android:
             case Solaris:
             case Linux: return "lib" + name + ".so";
+            case IOS: return "lib" + name + "_debug.a";
 			default:
 				break;
             }
         } else {
-            switch (OSInfo.os()) {
+            switch (OSInfo.crossOS()) {
             case Windows: return name + ".dll";
             case MacOS: return "lib" + name + ".dylib";
+            case Android:
             case Solaris:
             case Linux: return "lib" + name + ".so";
+            case IOS: return "lib" + name + ".a";
 			default:
 				break;
             }
@@ -478,7 +488,7 @@ public class LibraryEntry extends Task {
             }else{
                 tmpDotVersionString = "";
             }
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + infix + "d" + tmpVersionString + ".dll";
             case MacOS:
@@ -491,6 +501,9 @@ public class LibraryEntry extends Task {
             case Linux:
             case FreeBSD:
                 return libPrefix + name + infix + ".so" + tmpDotVersionString;
+            case Android:
+                return libPrefix + name + infix + ".so";
+            case IOS: return "lib" + name + infix + "_debug.a";
 			default:
 				break;
             }
@@ -511,7 +524,7 @@ public class LibraryEntry extends Task {
             }else{
                 tmpDotVersionString = "";
             }
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + infix + tmpVersionString + ".dll";
             case MacOS:
@@ -520,6 +533,9 @@ public class LibraryEntry extends Task {
             case Linux:
             case FreeBSD:
                 return libPrefix + name + infix + ".so" + tmpDotVersionString;
+            case Android:
+                return libPrefix + name + infix + ".so";
+            case IOS: return "lib" + name + infix + ".a";
 			default:
 				break;
             }
@@ -544,13 +560,15 @@ public class LibraryEntry extends Task {
     	}
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + infix + "d" + ".prl";
             case MacOS:
+            case IOS:
                 if(qtMajorVersion==5 && qtMinorVersion<14)
                     return "lib" + name + infix + ".prl";
                 else return "lib" + name + infix + tmpDebugSuffix + ".prl";
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
@@ -559,11 +577,13 @@ public class LibraryEntry extends Task {
 				break;
             }
         } else {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + ".prl";
             case MacOS:
+            case IOS:
                 return "lib" + name + infix + ".prl";
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
@@ -578,30 +598,36 @@ public class LibraryEntry extends Task {
     public static String formatUnversionedPluginName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + "d.dll";
             case MacOS:
                 if(qtMajorVersion==5 && qtMinorVersion<14)
                     return "lib" + name + tmpDebugSuffix + ".dylib";
                 else return "lib" + name + ".dylib";
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so";
+            case IOS:
+                return "lib" + name + ".a";
 			default:
 				break;
             }
         } else {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 return name + ".dll";
             case MacOS:
                 return "lib" + name + ".dylib";
+            case Android:
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so";
+            case IOS:
+                return "lib" + name + ".a";
 			default:
 				break;
             }
@@ -621,7 +647,7 @@ public class LibraryEntry extends Task {
         String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:{
             	if(iversion>=5){
             		return name + tmpDebugSuffix + tmpVersionString + ".dll";
@@ -631,15 +657,18 @@ public class LibraryEntry extends Task {
             }
             case MacOS:
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".jnilib";
+            case Android:
+                return "lib" + name + tmpDebugSuffix + ".so";
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
+            case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
 				break;
             }
         } else {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
             	if(iversion>=5){
             		return name + tmpVersionString + ".dll";
@@ -648,10 +677,13 @@ public class LibraryEntry extends Task {
             	}
             case MacOS:
                 return "lib" + name + tmpDotVersionString + ".jnilib";
+            case Android:
+                return "lib" + name + ".so";
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so" + tmpDotVersionString;
+            case IOS: return "lib" + name + ".a";
 			default:
 				break;
             }
@@ -672,7 +704,7 @@ public class LibraryEntry extends Task {
         String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
         if(debug) {
             String tmpDebugSuffix = "_debug";
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
                 if(iversion>=5){
             		return name + tmpDebugSuffix + tmpVersionString + ".dll";
@@ -681,15 +713,18 @@ public class LibraryEntry extends Task {
             	}
             case MacOS:
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".dylib";
+            case Android:
+                return "lib" + name + tmpDebugSuffix + ".so";
             case Solaris:
             case Linux:
             case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
+            case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
 				break;
             }
         } else {
-            switch(OSInfo.os()) {
+            switch(OSInfo.crossOS()) {
             case Windows:
             	if(iversion>=5){
             		return name + tmpVersionString + ".dll";
@@ -699,9 +734,11 @@ public class LibraryEntry extends Task {
             case MacOS:
                 return "lib" + name + tmpDotVersionString + ".dylib";
             case Solaris:
+            case Android:
             case Linux:
             case FreeBSD:
                 return "lib" + name + ".so" + tmpDotVersionString;
+            case IOS: return "lib" + name + ".a";
 			default:
 				break;
             }
@@ -722,7 +759,7 @@ public class LibraryEntry extends Task {
 //        String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
          if(debug) {
             String tmpDebugSuffix = "_debug";
-             switch(OSInfo.os()) {
+             switch(OSInfo.crossOS()) {
              case Windows:
             	 if(iversion>=5){
             		 return name + tmpDebugSuffix + tmpVersionString + ".dll";
@@ -731,15 +768,17 @@ public class LibraryEntry extends Task {
             	 }
              case MacOS:
                 return "lib" + name + tmpDebugSuffix + ".dylib";
+             case Android:
              case Solaris:
              case Linux:
              case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so";
+             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
  			default:
 				break;
              }
          } else {
-             switch(OSInfo.os()) {
+             switch(OSInfo.crossOS()) {
              case Windows:
             	 if(iversion>=5){
             		 return name + tmpVersionString + ".dll";
@@ -748,10 +787,12 @@ public class LibraryEntry extends Task {
             	 }
              case MacOS:
                 return "lib" + name + ".dylib";
+             case Android:
              case Solaris:
              case Linux:
              case FreeBSD:
                 return "lib" + name + ".so";
+             case IOS: return "lib" + name + ".a";
  			default:
 				break;
              }

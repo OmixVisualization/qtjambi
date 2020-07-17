@@ -47,11 +47,13 @@
 #include "fileout.h"
 
 void PriGenerator::addHeader(const QString &folder, const QString &header) {
-    priHash[folder].headers << header;
+    if(!priHash[folder].headers.contains(header))
+        priHash[folder].headers << header;
 }
 
 void PriGenerator::addSource(const QString &folder, const QString &source) {
-    priHash[folder].sources << source;
+    if(!priHash[folder].sources.contains(source))
+        priHash[folder].sources << source;
 }
 
 void PriGenerator::generate() {

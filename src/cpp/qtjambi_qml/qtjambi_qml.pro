@@ -6,7 +6,7 @@ VERSION = $$QT_VERSION
 include(../qtjambi/qtjambi_include.pri)
 include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-HEADERS += qmlregistry.h qqmllistproperty.h \
+HEADERS += qqmllistproperty.h \
     qmlcreateparentfunction.h \
     qmlattachedpropertiesfunction.h \
     qmlcreatorfunction.h \

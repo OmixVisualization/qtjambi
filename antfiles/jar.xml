@@ -73,6 +73,22 @@
         </javac>
     </target>
 
+    <target name="compile-ant" depends="jar_init">
+        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <mkdir dir="${jardir}"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <javac debug="true" deprecation="true"
+                fork="true" memorymaximumsize="1024m" verbose="false"
+                includeantruntime="true"
+                excludes="${module.excludes}"
+                destdir="${java.outdir}/${module}">
+            <compilerarg value="-Xlint:deprecation" />
+            <compilerarg value="-Xlint:unchecked" />
+            <src path="${sourcedir}"/>
+            <classpath refid="java.compile.classpath"/>
+        </javac>
+    </target>
+
     <!-- Same as "compile" target but with 2 sourcedirs -->
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
@@ -164,6 +180,17 @@
     -->
 
     <target name="makejar" depends="compile, copy-resources">
+        <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
+        <property name="destdir" value="${jardir}"/>
+        <mkdir dir="${destdir}"/>
+        <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
+            <manifest>
+                <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
+            </manifest>
+        </jar>
+    </target>
+    
+    <target name="makejar-ant" depends="compile-ant, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>

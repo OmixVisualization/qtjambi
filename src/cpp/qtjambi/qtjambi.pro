@@ -26,6 +26,24 @@ SOURCES += \
     qtjambitypemanager11.cpp \
     qtjambitypemanager12.cpp \
     qtjambitypemanager13.cpp \
+    qtjambitypemanager14.cpp \
+    qtjambitypemanager15.cpp \
+    qtjambitypemanager16.cpp \
+    qtjambitypemanager17.cpp \
+    qtjambitypemanager18.cpp \
+    qtjambitypemanager19.cpp \
+    qtjambitypemanager20.cpp \
+    qtjambitypemanager21.cpp \
+    qtjambitypemanager22.cpp \
+    qtjambitypemanager23.cpp \
+    qtjambitypemanager24.cpp \
+    qtjambitypemanager25.cpp \
+    qtjambitypemanager26.cpp \
+    qtjambitypemanager27.cpp \
+    qtjambitypemanager28.cpp \
+    qtjambitypemanager29.cpp \
+    qtjambitypemanager30.cpp \
+    qtjambitypemanager31.cpp \
     qtobject.cpp \
     qvariant.cpp \
     qtdynamicmetaobject.cpp \
@@ -83,8 +101,15 @@ HEADERS += \
 
 win32:CONFIG += precompile_header
 win32:PRECOMPILED_HEADER = qtjambi_core.h
-win32:QMAKE_CXXFLAGS += -bigobj
-linux-g++* | freebsd-g++* | macx {
+msvc:QMAKE_CXXFLAGS += /bigobj
+
+win32-g++* {
+    QMAKE_CXXFLAGS += -Wa,-mbig-obj
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}
+linux-g++* | freebsd-g++* | macx | win32-g++* {
     QMAKE_CXXFLAGS += -ftemplate-depth=20000
 }
 

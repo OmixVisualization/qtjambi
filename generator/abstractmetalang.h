@@ -1270,6 +1270,9 @@ class QPropertySpec {
                 m_stored(),
                 m_revision(),
                 m_user(),
+                m_required(false),
+                m_constant(false),
+                m_final(false),
                 m_index(-1) {
         }
 
@@ -1303,6 +1306,9 @@ class QPropertySpec {
         QString user() const { return m_user; }
         void setUser(const QString &user) { m_user = user; }
 
+        bool required() const { return m_required; }
+        void setRequired(bool required) { m_required = required; }
+
         bool constant() const { return m_constant; }
         void setConstant(bool constant) { m_constant = constant; }
 
@@ -1323,6 +1329,7 @@ class QPropertySpec {
         QString m_stored;
         QString m_revision;
         QString m_user;
+        bool m_required;
         bool m_constant;
         bool m_final;
         int m_index;

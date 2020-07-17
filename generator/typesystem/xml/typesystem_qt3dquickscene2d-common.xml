@@ -46,6 +46,7 @@
     <namespace-type name="Qt3DRender::Quick" generate="no"/>
     <enum-type name="Qt3DRender::Quick::QScene2D::RenderPolicy" />
     <object-type name="Qt3DRender::Quick::QScene2D" java-name="QScene2D" since="5.11.0">
+        <modify-function signature="entities()" remove="all" since="5.15.0"/>
         <modify-function signature="addEntity(Qt3DCore::QEntity*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>

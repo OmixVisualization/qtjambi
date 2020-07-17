@@ -84,7 +84,7 @@ public class InstallNameToolTask extends Task {
         }) {
             command.set(2, library);
             command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/"+library);
-            Exec.execute(command, dirExecute, getProject());
+            Exec.execute(this, command, dirExecute, getProject());
         }
         
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
@@ -93,13 +93,13 @@ public class InstallNameToolTask extends Task {
             for (String library : libraries) {
                 command.set(2, "@rpath/Qt"+library+".framework/Versions/"+qtMajorVersion+"/Qt"+library);
                 command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-                Exec.execute(command, dirExecute, getProject());
+                Exec.execute(this, command, dirExecute, getProject());
             }
         }else{
             for (String library : libraries) {
                 command.set(2, "libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
                 command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-                Exec.execute(command, dirExecute, getProject());
+                Exec.execute(this, command, dirExecute, getProject());
             }
             if(qtlibdir!=null){
                 for (String library : new String[]{
@@ -107,12 +107,12 @@ public class InstallNameToolTask extends Task {
                 }) {
                     command.set(2, qtlibdir+"/"+library);
                     command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/"+library);
-                    Exec.execute(command, dirExecute, getProject());
+                    Exec.execute(this, command, dirExecute, getProject());
                 }
                 for (String library : libraries) {
                     command.set(2, qtlibdir+"/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
                     command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-                    Exec.execute(command, dirExecute, getProject());
+                    Exec.execute(this, command, dirExecute, getProject());
                 }
             }
         }

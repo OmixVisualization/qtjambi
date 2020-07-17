@@ -1151,6 +1151,11 @@ typedef qtjambireal qreal;
 #include <QtCore/qstringliteral.h>
 #define QStringLiteral QString
 
+#undef QT_DEPRECATED_VERSION
+#undef QT_DEPRECATED_VERSION_X
+#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
+
 // this is a trick to allow creating Java type of QVector::const_iterator
 template <typename T>
 class QVector__const_iterator{

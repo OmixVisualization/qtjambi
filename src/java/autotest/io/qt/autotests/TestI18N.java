@@ -33,8 +33,6 @@ import static io.qt.core.QObject.tr;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -47,22 +45,7 @@ public class TestI18N extends QApplicationTest {
 
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	Assert.assertThat("Hello è", new BaseMatcher<String>() {
-			//@Override // Java6 only
-			public boolean matches(final Object actualObject) {
-				String actual = (String) actualObject;
-				return "Hello \u00e8".compareTo(actual) == 0; 
-			}
-			//@Override // Java6 only
-			public void describeTo(final Description description) {
-				description.appendText("Prerequisite 1 of 1: -encoding UTF-8 is required.  This test class can only be expected to work as intended when javac used -encoding UTF-8 for compling the source code.");
-			}
-			//@Override // Java6 only
-			@SuppressWarnings("unused")
-			public void describeMismatch(final Object actualObject, final Description description) {
-				description.appendText("Prerequisite 1 of 1: -encoding UTF-8 is required.  This test class can only be expected to work as intended when javac used -encoding UTF-8 for compling the source code.");
-			}
-		});
+    	Assert.assertTrue("Prerequisite 1 of 1: -encoding UTF-8 is required.  This test class can only be expected to work as intended when javac used -encoding UTF-8 for compling the source code.", "Hello \u00e8".compareTo("Hello è") == 0);
         QApplicationTest.testInitialize();
     }
 

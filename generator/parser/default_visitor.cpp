@@ -426,4 +426,17 @@ void DefaultVisitor::visitWinDeclSpec(WinDeclSpecAST *) {
     // nothing to do
 }
 
+void DefaultVisitor::visitNamedTypeSpecifier(NamedTypeSpecifierAST * node) {
+    visit(node->name);
+}
+
+void DefaultVisitor::visitDecltypeExpression(DecltypeExpressionAST * node) {
+    visit(node->expression);
+}
+
+void DefaultVisitor::visitDeclTypeSpecifier(DeclTypeSpecifierAST * node) {
+    visit(node->expression);
+}
+
+
 // kate: space-indent on; indent-width 2; replace-tabs on;

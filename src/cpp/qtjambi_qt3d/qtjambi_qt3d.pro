@@ -1,15 +1,15 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-contains(QT_CONFIG, 3dcore):              SUBDIRS += qtjambi_3dcore
-contains(QT_CONFIG, 3drender):            SUBDIRS += qtjambi_3drender
-contains(QT_CONFIG, 3dinput):             SUBDIRS += qtjambi_3dinput
-contains(QT_CONFIG, 3dquick):             SUBDIRS += qtjambi_3dquick
-contains(QT_CONFIG, 3dextras):            SUBDIRS += qtjambi_3dextras
-contains(QT_CONFIG, 3dquickextras):       SUBDIRS += qtjambi_3dquickextras
-contains(QT_CONFIG, 3danimation):         SUBDIRS += qtjambi_3danimation
-contains(QT_CONFIG, 3dquickscene2d):      SUBDIRS += qtjambi_3dquickscene2d
-contains(QT_CONFIG, 3dlogic):             SUBDIRS += qtjambi_3dlogic
+contains(QT_CONFIG, qtjambi-3dcore):              SUBDIRS += qtjambi_3dcore
+contains(QT_CONFIG, qtjambi-3drender):            SUBDIRS += qtjambi_3drender
+contains(QT_CONFIG, qtjambi-3dinput):             SUBDIRS += qtjambi_3dinput
+contains(QT_CONFIG, qtjambi-3dquick):             SUBDIRS += qtjambi_3dquick
+contains(QT_CONFIG, qtjambi-3dextras):            SUBDIRS += qtjambi_3dextras
+contains(QT_CONFIG, qtjambi-3dquickextras):       SUBDIRS += qtjambi_3dquickextras
+contains(QT_CONFIG, qtjambi-3danimation):         SUBDIRS += qtjambi_3danimation
+contains(QT_CONFIG, qtjambi-3dquickscene2d):      SUBDIRS += qtjambi_3dquickscene2d
+contains(QT_CONFIG, qtjambi-3dlogic):             SUBDIRS += qtjambi_3dlogic
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     # Qt was configued with both debug and release libs

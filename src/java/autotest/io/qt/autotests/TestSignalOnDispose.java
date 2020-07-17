@@ -49,8 +49,9 @@ import io.qt.core.QMetaObject.Connection;
 import io.qt.core.QObject;
 import io.qt.core.QTemporaryFile;
 import io.qt.gui.QColor;
+import io.qt.gui.QPaintDevice;
+import io.qt.gui.QPaintEngine;
 import io.qt.internal.QtJambiInternal;
-import io.qt.script.QScriptable;
 
 public class TestSignalOnDispose extends QApplicationTest {
 	private final static int NativeConnectionPolicy;
@@ -192,9 +193,14 @@ public class TestSignalOnDispose extends QApplicationTest {
 	
 	@Test(expected=IllegalArgumentException.class)
     public void testSignalOnDisposeSelfInterface() {
-		QScriptable scriptable = new QScriptable() {
+		QPaintDevice scriptable = new QPaintDevice() {
 			@SuppressWarnings("unused")
 			public void test() {}
+
+			@Override
+			public QPaintEngine paintEngine() {
+				return null;
+			}
 		};
 		QtUtilities.getSignalOnDispose(scriptable).connect(scriptable, "test()");
 	}

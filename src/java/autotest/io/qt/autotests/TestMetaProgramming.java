@@ -46,6 +46,7 @@ import io.qt.QtInvokable;
 import io.qt.QtPropertyDesignable;
 import io.qt.QtPropertyNotify;
 import io.qt.QtPropertyReader;
+import io.qt.QtPropertyRequired;
 import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyUser;
 import io.qt.QtPropertyWriter;
@@ -155,6 +156,14 @@ public class TestMetaProgramming extends QApplicationTest {
         @SuppressWarnings("unused")
 		public final void setTestDesignableProperty(int i) { 
         }
+        
+        @QtPropertyRequired
+        public final int requiredProperty() { 
+        	return 0; 
+    	}
+        @SuppressWarnings("unused")
+		public final void setRequiredProperty(int i) { 
+        }
 
         @QtPropertyReader
         @QtPropertyUser
@@ -187,15 +196,17 @@ public class TestMetaProgramming extends QApplicationTest {
         private boolean resettable;
         private boolean designable;
         private boolean user;
+        private boolean required;
         private boolean hasNotifySignal;
         private String name;
 
-        private ExpectedValues(String name, boolean writable, boolean resettable, boolean designable, boolean user, boolean hasNotifySignal) {
+        private ExpectedValues(String name, boolean writable, boolean resettable, boolean designable, boolean user, boolean required, boolean hasNotifySignal) {
             this.name = name;
             this.writable = writable;
             this.resettable = resettable;
             this.designable = designable;
             this.user = user;
+            this.required = required;
             this.hasNotifySignal = hasNotifySignal;
         }
     }
@@ -203,19 +214,20 @@ public class TestMetaProgramming extends QApplicationTest {
     @Test
     public void testMetaProperties() {
         ExpectedValues expectedValues[] = {
-                new ExpectedValues("testDesignableProperty", true, false, true, false, false),
-                new ExpectedValues("ordinaryProperty", true, false, true, false, true),
-                new ExpectedValues("annotatedProperty", true, false, true, false, false),
-                new ExpectedValues("ordinaryReadOnlyProperty", false, false, true, false, false),
-                new ExpectedValues("readOnlyProperty", false, false, true, false, false),
-                new ExpectedValues("ordinaryNonDesignableProperty", true, false, false, false, false),
-                new ExpectedValues("annotatedNonDesignableProperty", true, false, false, false, false),
-                new ExpectedValues("booleanProperty", true, false, true, false, false),
-                new ExpectedValues("otherBooleanProperty", true, false, true, false, false),
-                new ExpectedValues("resettableProperty", true, true, true, false, false),
-                new ExpectedValues("objectName", true, false, true, false, true),
-                new ExpectedValues("myUserProperty", true, false, true, true, false),
-                new ExpectedValues("annotatedUserProperty", true, false, true, true, false)
+                new ExpectedValues("testDesignableProperty", true, false, true, false, false, false),
+                new ExpectedValues("requiredProperty", true, false, true, false, true, false),
+                new ExpectedValues("ordinaryProperty", true, false, true, false, false, true),
+                new ExpectedValues("annotatedProperty", true, false, true, false, false, false),
+                new ExpectedValues("ordinaryReadOnlyProperty", false, false, true, false, false, false),
+                new ExpectedValues("readOnlyProperty", false, false, true, false, false, false),
+                new ExpectedValues("ordinaryNonDesignableProperty", true, false, false, false, false, false),
+                new ExpectedValues("annotatedNonDesignableProperty", true, false, false, false, false, false),
+                new ExpectedValues("booleanProperty", true, false, true, false, false, false),
+                new ExpectedValues("otherBooleanProperty", true, false, true, false, false, false),
+                new ExpectedValues("resettableProperty", true, true, true, false, false, false),
+                new ExpectedValues("objectName", true, false, true, false, false, true),
+                new ExpectedValues("myUserProperty", true, false, true, true, false, false),
+                new ExpectedValues("annotatedUserProperty", true, false, true, true, false, false)
         };
 
         FullOfProperties fop = new FullOfProperties(true);
@@ -223,11 +235,12 @@ public class TestMetaProgramming extends QApplicationTest {
 //            Utils.println(1, "Current property: " + e.name);
             QMetaProperty property = fop.metaObject().property(e.name);
             assertTrue(property!=null);
-            assertEquals(property.name(), e.writable, property.isWritable());
-            assertEquals(property.name(), e.resettable, property.isResettable());
-            assertEquals(property.name(), e.designable, property.isDesignable(fop));
-            assertEquals(property.name(), e.user, property.isUser());
-            assertEquals(property.name(), e.hasNotifySignal, property.hasNotifySignal());
+            assertEquals(property.name()+" writable", e.writable, property.isWritable());
+            assertEquals(property.name()+" resettable", e.resettable, property.isResettable());
+            assertEquals(property.name()+" designable", e.designable, property.isDesignable(fop));
+            assertEquals(property.name()+" user", e.user, property.isUser());
+            assertEquals(property.name()+" required", e.required, property.isRequired());
+            assertEquals(property.name()+" hasNotifySignal", e.hasNotifySignal, property.hasNotifySignal());
             if(property.hasNotifySignal()) {
             	switch(property.name()) {
             	case "ordinaryProperty":

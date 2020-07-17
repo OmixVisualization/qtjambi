@@ -46,10 +46,13 @@
 #include "generator_predefinitions.h"
 
 #define QTJAMBI_CORE_H
+#define QQMLPRIVATE_H
+#define QML_GETTYPENAMES
 
 #if QT_VERSION>=0x050000
-	#include <QtCore/private/qabstractfileengine_p.h>
-	#include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qabstractfileengine_p.h>
+    #include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qmetaobject_p.h>
 #endif
 
 #define QSETTINGS_H
@@ -61,6 +64,7 @@
 #include <qtjambi_core/qtjambiqfuture.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 
+#ifndef QTJAMBI_NO_GUI
 #define QACCESSIBLE_H
 #include <QtGui/QtGui>
 #include <QtGui/QOpenGLFunctions_1_0>
@@ -104,93 +108,114 @@
 #undef quint64
 
 #include <QtPlatformHeaders/QtPlatformHeaders>
-#include <qtjambi_gui/qtreemodel.h>
 #include <qtjambi_gui/qtjambi_gui.h>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 #include <qtjambi_gui/qtmatrixes.h>
+#endif
 
 
+#ifndef QTJAMBI_NO_NETWORK
 #include <QtNetwork/qtnetworkglobal.h>
 #undef QT_NO_SSL
 #include <QtNetwork/QtNetwork>
 #include <qtjambi_network/qtjambi_network.h>
-
-#if QT_VERSION>=0x050000
-	#include <QtWidgets/QtWidgets>
-    #include <qtjambi_widgets/qtjambi_widgets_core.h>
-	#include <QtQuickWidgets/QtQuickWidgets>
-	#ifndef QT_NO_PRINTSUPPORT
-		#include <QtPrintSupport/QtPrintSupport>
-	#endif
-	#ifndef QT_NO_CONCURRENT
-		#include <QtConcurrent/QtConcurrent>
-	#endif
-	
-	#define QQMLPRIVATE_H
-	#include <QtQml/QtQml>
-	#include <qtjambi_qml/qqmllistproperty.h>
-	#include <QtQuick/QtQuick>
-	#include <QtQuickControls2/QtQuickControls2>
 #endif
 
-#ifndef QT_NO_NETWORKAUTH
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#include <qtjambi_widgets/qtjambi_widgets_core.h>
+#endif
+
+#ifndef QTJAMBI_NO_QML
+#include <QtQml/QtQml>
+#include <qtjambi_qml/qqmllistproperty.h>
+#endif
+
+#ifndef QTJAMBI_NO_QUICK
+#include <QtQuick/QtQuick>
+#endif
+
+#ifndef QTJAMBI_NO_QUICKWIDGETS
+#include <QtQuickWidgets/QtQuickWidgets>
+#endif
+
+#ifndef QTJAMBI_NO_QUICKCONTROLS2
+#include <QtQuickControls2/QtQuickControls2>
+#endif
+
+#ifndef QTJAMBI_NO_XML
+#include <QtXml/QtXml>
+#include <qtjambi_xml/qtjambi_xml_hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_PRINTSUPPORT
+    #include <QtPrintSupport/QtPrintSupport>
+#endif
+#ifndef QTJAMBI_NO_CONCURRENT
+    #include <QtConcurrent/QtConcurrent>
+#endif
+
+#ifndef QTJAMBI_NO_NETWORKAUTH
 #include <QtNetworkAuth/QtNetworkAuth>
 #endif
 
-#ifndef QT_NO_SQL
+#ifndef QTJAMBI_NO_SQL
 #  include <QtSql/QtSql>
 #  include <qtjambi_sql/qtjambi_sql_hashes.h>
 #endif
-#ifndef QT_NO_SVG
+
+#ifndef QTJAMBI_NO_SVG
 #  include <QtSvg/QtSvg>
 #endif
-#include <QtXml/QtXml>
-#include <qtjambi_xml/qtjambi_xml_hashes.h>
-#ifndef QT_NO_HELP
+
+#ifndef QTJAMBI_NO_HELP
 #  include <QtHelp/QtHelp>
 #  include <qtjambi_help/qtjambi_help_hashes.h>
 #endif
-#ifndef QT_NO_MULTIMEDIA
+
+#ifndef QTJAMBI_NO_MULTIMEDIA
 #include <qtjambi_multimedia/qtjambi_multimedia.h>
 #  include <QtMultimedia/QtMultimedia>
 #if QT_VERSION>=0x050000
 #  include <QtMultimediaWidgets/QtMultimediaWidgets>
 #endif
+
 #endif
-#ifndef QT_NO_SCRIPT
+#ifndef QTJAMBI_NO_SCRIPT
 #  include <QtScript/QtScript>
 #  include <qtjambi_script/qtjambi_script_hashes.h>
 #endif
-#ifndef QT_NO_SCRIPTTOOLS
+
+#ifndef QTJAMBI_NO_SCRIPTTOOLS
 # if QT_VERSION >= 0x040600
 #  include <QtScriptTools/QtScriptTools>
 # endif
 #endif
 
-#ifndef QT_NO_XMLPATTERNS
+#ifndef QTJAMBI_NO_XMLPATTERNS
 #  include <QtXmlPatterns/QtXmlPatterns>
 #endif
 
-#ifndef QT_NO_DBUS
+#ifndef QTJAMBI_NO_DBUS
 # if QT_VERSION >= 0x040200
 #  include <QtDBus/QtDBus>
 #  include <qtjambi_dbus/QDBusVariantReply.h>
 # endif
 #endif
 
-#ifndef QT_NO_TEST
+#ifndef QTJAMBI_NO_TEST
 #  include <QtTest/QtTest>
 #endif
 
-#include <qtjambi_designer/designer.h>
+//#include <qtjambi_designer/designer.h>
 
-//#ifndef QT_NO_OPENGL
+//#ifndef QTJAMBI_NO_OPENGL
 //#	include <QtOpenGL/QtOpenGL>
-//#endif // QT_NO_OPENGL
+//#endif // QTJAMBI_NO_OPENGL
 
 # if QT_VERSION >= 0x050000
 
-#ifndef QT_NO_WEBENGINE
+#ifndef QTJAMBI_NO_WEBENGINE
 #include <qtjambi_webenginecore/qtjambi_qwebenginecore_hashes.h>
 #include <QtWebEngineCore/QtWebEngineCore>
 #include <QtWebEngine/QtWebEngine>
@@ -198,19 +223,19 @@
 #include <qtjambi_webenginewidgets/qtjambi_webenginewidgets_hashes.h>
 #endif
 
-#ifndef QT_NO_WEBSOCKETS
+#ifndef QTJAMBI_NO_WEBSOCKETS
 #include <QtWebSockets/QtWebSockets>
 #endif
 
-#ifndef QT_NO_WEBCHANNEL
+#ifndef QTJAMBI_NO_WEBCHANNEL
 #include <QtWebChannel/QtWebChannel>
 #endif
 
-#ifndef QT_NO_WEBVIEW
+#ifndef QTJAMBI_NO_WEBVIEW
 #include <QtWebView/QtWebView>
 #endif
 
-#ifndef QT_NO_WINEXTRAS
+#ifndef QTJAMBI_NO_WINEXTRAS
 #ifndef Q_OS_WIN
 #define Q_OS_WIN
 #include <QtWinExtras/QtWinExtras>
@@ -220,7 +245,7 @@
 #endif
 #endif
 
-#ifndef QT_NO_MACEXTRAS
+#ifndef QTJAMBI_NO_MACEXTRAS
 #ifndef Q_OS_OSX
 #define Q_OS_OSX
 #include <QtMacExtras/QtMacExtras>
@@ -230,7 +255,7 @@
 #endif
 #endif
 
-#ifndef QT_NO_X11EXTRAS
+#ifndef QTJAMBI_NO_X11EXTRAS
 #ifndef Q_OS_X11
 #define Q_OS_X11
 #include <QtX11Extras/QtX11Extras>
@@ -242,11 +267,11 @@
 #endif
 #endif
 
-#ifndef QT_NO_SERIALPORT
+#ifndef QTJAMBI_NO_SERIALPORT
 #include <QtSerialPort/QtSerialPort>
 #endif
 
-#ifndef QT_NO_REMOTEOBJECTS
+#ifndef QTJAMBI_NO_REMOTEOBJECTS
 #define QREMOTEOBJECTS_ABSTRACT_ITEM_MODEL_TYPES_H
 #define QREMOTEOBJECTSOURCE_H
 #include <QtRemoteObjects/QtRemoteObjects>
@@ -254,100 +279,92 @@
 #include <qtjambi_remoteobjects/qtjambi_remoteobjects.h>
 #endif
 
-#ifndef QT_NO_GAMEPAD
+#ifndef QTJAMBI_NO_GAMEPAD
 #include <QtGamepad/QtGamepad>
 #endif
 
-#ifndef QT_NO_SCXML
+#ifndef QTJAMBI_NO_SCXML
 #include <QtScxml/QtScxml>
 #endif
 
-#ifndef QT_NO_NFC
+#ifndef QTJAMBI_NO_NFC
 #include <QtNfc/QtNfc>
 #include <qtjambi_nfc/qtjambi_nfc.h>
 #endif
 
-#ifndef QT_NO_PURCHASING
+#ifndef QTJAMBI_NO_PURCHASING
 #include <QtPurchasing/QtPurchasing>
 #endif
 
-#ifndef QT_NO_TEXTTOSPEECH
+#ifndef QTJAMBI_NO_TEXTTOSPEECH
 #include <QtTextToSpeech/QtTextToSpeech>
 #include <qtjambi_texttospeech/qtjambi_texttospeech_qhashes.h>
 #endif
 
-#ifndef QT_NO_SERIALBUS
+#ifndef QTJAMBI_NO_SERIALBUS
 #include <QtSerialBus/QtSerialBus>
 #include <qtjambi_serialbus/qtjambi_serialbus_qhashes.h>
 #endif
 
-#ifndef QT_NO_SENSORS
+#ifndef QTJAMBI_NO_SENSORS
 #include <QtSensors/QtSensors>
 #endif
 
 //#define Q_COMPILER_EXPLICIT_OVERRIDES
-#ifndef QT_NO_QT3DCORE
-
-// the generator is not able to find enum QSceneChange::Priority
-#include <Qt3DCore/QSceneChange>
-#define Priority Qt3DCore::QSceneChange::Priority
-#include <Qt3DCore/QBackendScenePropertyChange>
+#ifndef QTJAMBI_NO_QT3DCORE
 #include <qtjambi_qt3d/qtjambi_3dcore/qtjambi_3dcore.h>
-#undef Priority
-
 #include <Qt3DCore/Qt3DCore>
-#include <Qt3DCore/private/qbackendnodefactory_p.h>
 #endif
 
-#ifndef QT_NO_QT3DQUICKSCENE2D
+#ifndef QTJAMBI_NO_QT3DQUICKSCENE2D
 #include <Qt3DQuickScene2D/Qt3DQuickScene2D>
 #endif
 
-#ifndef QT_NO_QT3DINPUT
+#ifndef QTJAMBI_NO_QT3DINPUT
 #include <qtjambi_qt3d/qtjambi_3dinput/qt3dinput.h>
 #include <Qt3DInput/Qt3DInput>
 #endif
 
-#ifndef QT_NO_QT3DEXTRAS
+#ifndef QTJAMBI_NO_QT3DEXTRAS
 #include <Qt3DExtras/Qt3DExtras>
 #endif
 
-#ifndef QT_NO_QT3DLOGIC
+#ifndef QTJAMBI_NO_QT3DLOGIC
 #include <Qt3DLogic/Qt3DLogic>
 #endif
 
-#ifndef QT_NO_QT3DQUICK
+#ifndef QTJAMBI_NO_QT3DQUICK
 #include <Qt3DQuick/Qt3DQuick>
 #endif
 
-#ifndef QT_NO_QT3DQUICKEXTRAS
+#ifndef QTJAMBI_NO_QT3DQUICKEXTRAS
 #include <Qt3DQuickExtras/Qt3DQuickExtras>
 #endif
 
-#ifndef QT_NO_QT3DRENDER
-#include <qtjambi_qt3d/qtjambi_3drenderer/qt3drender.h>
+#ifndef QTJAMBI_NO_QT3DRENDER
+#include <qtjambi_qt3d/qtjambi_3drender/qt3drender.h>
 #include <Qt3DRender/Qt3DRender>
 #endif
 
-#ifndef QT_NO_QT3DQUICKRENDER
+#ifndef QTJAMBI_NO_QT3DQUICKRENDER
 #include <Qt3DQuickRender/Qt3DQuickRender>
 #endif
 
-#ifndef QT_NO_QT3DANIMATION
+#ifndef QTJAMBI_NO_QT3DANIMATION
 #include <Qt3DAnimation/Qt3DAnimation>
 #endif
 
-#ifndef QT_NO_LOCATION
+#ifndef QTJAMBI_NO_LOCATION
 #include <qtjambi_location/qtjambi_location_hashes.h>
 #include <QtLocation/QtLocation>
 #endif
 
-#ifndef QT_NO_POSITIONING
+#ifndef QTJAMBI_NO_POSITIONING
 #include <qtjambi_positioning/qtjambi_positioning_hashes.h>
 #include <QtPositioning/QtPositioning>
 #endif
 
-#ifndef QT_NO_BLUETOOTH
+#ifndef QTJAMBI_NO_BLUETOOTH
 #include <qtjambi_bluetooth/qtjambi_bluetooth_hashes.h>
 #include <QtBluetooth/QtBluetooth>
 #endif

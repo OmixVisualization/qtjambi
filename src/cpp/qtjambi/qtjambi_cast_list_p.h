@@ -34,6 +34,8 @@
 #include "qtjambi_cast_util_p.h"
 #include "qtjambi_cast_type_p.h"
 
+QT_WARNING_DISABLE_DEPRECATED
+
 namespace QtJambiPrivate {
 
 typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&);

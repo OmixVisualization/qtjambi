@@ -130,7 +130,13 @@ Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQEnums),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQEnum),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQGadget),
-    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQObject)
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQObject),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitDeclDefault),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitDeclDelete),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitQDeclFinal),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitNamedTypeSpecifier),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitDecltypeExpression),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitDeclTypeSpecifier)
 };
 
 Visitor::Visitor() {

@@ -35,6 +35,8 @@
 #include "qtjambi_cast_list_p.h"
 #include "qtjambi_cast_map_p.h"
 
+QT_WARNING_DISABLE_DEPRECATED
+
 namespace QtJambiPrivate {
 
 template<bool has_scope, template<typename> class Pointer, bool p_is_pointer, bool p_is_const, bool p_is_reference,
@@ -1689,7 +1691,7 @@ struct qtjambi_QMap_shared_pointer_caster<has_scope, Pointer, p_is_pointer, p_is
                                          QMapSizeFunction(BiContainerSize<QMap, K_content, T_content, supported>::function()),
                                          QMapTakeFunction(BiContainerTake<QMap, K_content, T_content, supported && supports_StandardConstructor<T>::value>::function()),
                                          QMapUniqueKeysFunction(BiContainerUniqueKeys<QMap, K_content, T_content, supported>::function()),
-                                         QMapUniteFunction(BiContainerUnite<QMap, K_content, T_content, supported, qtjambi_is_QMap>::function()),
+                                         QMapUniteFunction(BiContainerUnite<QMap, K_content, T_content, supported, false, qtjambi_is_QMap>::function()),
                                          QMapUpperBoundFunction(BiContainerUpperBound<QMap, K_content, T_content, supported>::function()),
                                          QMapValueFunction(BiContainerValue<QMap, K_content, T_content, supported>::function()),
                                          QMapValuesFunction(BiContainerValues<QMap, K_content, T_content, supported>::function()),
@@ -1804,7 +1806,7 @@ struct qtjambi_QMultiMap_shared_pointer_caster<has_scope,
                                          BiContainerSize<QMultiMap, K_content, T_content, supported>::function(),
                                          BiContainerTake<QMultiMap, K_content, T_content, supported && supports_StandardConstructor<T>::value>::function(),
                                          BiContainerUniqueKeys<QMultiMap, K_content, T_content, supported>::function(),
-                                         BiContainerUnite<QMultiMap, K_content, T_content, supported, qtjambi_is_QMultiMap>::function(),
+                                         BiContainerUnite<QMultiMap, K_content, T_content, supported, true, qtjambi_is_QMultiMap>::function(),
                                          BiContainerUpperBound<QMultiMap, K_content, T_content, supported>::function(),
                                          BiContainerValue<QMultiMap, K_content, T_content, supported>::function(),
                                          BiContainerValues<QMultiMap, K_content, T_content, supported>::function(),
@@ -1912,7 +1914,7 @@ struct qtjambi_QHash_shared_pointer_caster<has_scope,
                                          QHashSizeFunction(BiContainerSize<QHash, K_content, T_content, supported>::function()),
                                          QHashTakeFunction(BiContainerTake<QHash, K_content, T_content, supported && supports_StandardConstructor<T>::value>::function()),
                                          QHashUniqueKeysFunction(BiContainerUniqueKeys<QHash, K_content, T_content, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QHash, K_content, T_content, supported, qtjambi_is_QHash>::function()),
+                                         QHashUniteFunction(BiContainerUnite<QHash, K_content, T_content, supported, false, qtjambi_is_QHash>::function()),
                                          QHashValueFunction(BiContainerValue<QHash, K_content, T_content, supported>::function()),
                                          QHashValuesFunction(BiContainerValues<QHash, K_content, T_content, supported>::function()),
                                          QHashValuesKeyFunction(BiContainerValuesKey<QHash, K_content, T_content, supported>::function())
@@ -2017,7 +2019,7 @@ struct qtjambi_QMultiHash_shared_pointer_caster<has_scope,
                                          QHashSizeFunction(BiContainerSize<QMultiHash, K_content, T_content, supported>::function()),
                                          QHashTakeFunction(BiContainerTake<QMultiHash, K_content, T_content, supported && supports_StandardConstructor<T>::value>::function()),
                                          QHashUniqueKeysFunction(BiContainerUniqueKeys<QMultiHash, K_content, T_content, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QMultiHash, K_content, T_content, supported, qtjambi_is_QMultiHash>::function()),
+                                         QHashUniteFunction(BiContainerUnite<QMultiHash, K_content, T_content, supported, true, qtjambi_is_QMultiHash>::function()),
                                          QHashValueFunction(BiContainerValue<QMultiHash, K_content, T_content, supported>::function()),
                                          QHashValuesFunction(BiContainerValues<QMultiHash, K_content, T_content, supported>::function()),
                                          QHashValuesKeyFunction(BiContainerValuesKey<QMultiHash, K_content, T_content, supported>::function()),

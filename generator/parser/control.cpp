@@ -46,12 +46,13 @@
 
 #include "control.h"
 #include "lexer.h"
+#include "reporthandler.h"
 
 Control::Control()
         : current_context(nullptr),
         _M_skipFunctionBody(false),
         _M_lexer(nullptr),
-        _M_parser(nullptr) {
+        _M_parser(nullptr){
     pushContext();
 
     declareTypedef(findOrInsertName("__builtin_va_list",
@@ -123,16 +124,8 @@ bool Control::isTypedef(const NameSymbol *name) const {
     return stl_typedef_table.contains(name);
 }
 
-QList<Control::ErrorMessage> Control::errorMessages() const {
-    return _M_error_messages;
-}
-
-void Control::clearErrorMessages() {
-    _M_error_messages.clear();
-}
-
-void Control::reportError(const ErrorMessage &errmsg) {
-    _M_error_messages.append(errmsg);
+void Control::reportError(const ErrorMessage &message) {
+    ReportHandler::warning(QString("%4 (in %1, line %2, column %3)").arg(message.fileName()).arg(QString::number(message.line())).arg(QString::number(message.column())).arg(message.message()));
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

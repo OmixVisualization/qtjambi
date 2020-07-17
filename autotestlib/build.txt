@@ -159,7 +159,7 @@
   </object-type>
   <object-type name="DestroyCounter" />
   <object-type name="QObjectDestroyed" />
-  <object-type name="XmlEntityResolverSubclass">
+  <object-type name="XmlEntityResolverSubclass" deprecated="true">
       <extra-includes>
           <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
       </extra-includes>
@@ -178,7 +178,7 @@
   </object-type>
 
   <object-type name="IODeviceSubclass" />
-  <object-type name="XmlReaderSubclass" />
+  <object-type name="XmlReaderSubclass" deprecated="true"/>
   <object-type name="TextCodecSubclass">
     <!-- see genertor source for "HACK method ownership of constructor return value" -->
     <!-- this setting does not work, also we should probably do some equality

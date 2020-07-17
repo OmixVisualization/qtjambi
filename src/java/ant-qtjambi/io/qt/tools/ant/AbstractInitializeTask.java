@@ -37,6 +37,9 @@
 package io.qt.tools.ant;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -151,24 +154,105 @@ public abstract class AbstractInitializeTask extends Task {
     protected String decideJavaHomeTarget() {
         String sourceValue = null;
         String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
+        String error = null;
         if(s == null) {
             try {
                 s = System.getenv("JAVA_HOME_TARGET");
-                if(s != null)
-                    sourceValue = " (from envvar:JAVA_HOME_TARGET)";
+                if(s != null) {
+            		File includeDir = new File(s, "include");
+            		File jni_h = new File(includeDir, "jni.h");
+            		if(jni_h.isFile()) {
+                    	sourceValue = " (from envvar:JAVA_HOME_TARGET)";
+            		}else {
+            			error = "Environment variable JAVA_HOME_TARGET does not specify suitable JDK: "+s;
+            			s = null;
+            		}
+                }
             } catch(SecurityException eat) {
             }
         }
         if(s == null) {
             try {
                 s = System.getenv("JAVA_HOME");
-                if(s != null)
-                    sourceValue = " (from envvar:JAVA_HOME)";
+                if(s != null) {
+            		File includeDir = new File(s, "include");
+            		File jni_h = new File(includeDir, "jni.h");
+            		if(jni_h.isFile()) {
+            			sourceValue = " (from envvar:JAVA_HOME)";
+            			error = null;
+            		}else {
+            			error = "Environment variable JAVA_HOME does not specify suitable JDK: "+s;
+            			s = null;
+            		}
+                }
             } catch(SecurityException eat) {
             }
         }
+//        System.getProperties().forEach((a,b)->System.out.println(a+"="+b));
+        if(s == null) {
+        	s = System.getProperty("java.home");
+        	if(s != null) {
+        		File includeDir = new File(s, "include");
+        		File jni_h = new File(includeDir, "jni.h");
+        		if(jni_h.isFile()) {
+        			sourceValue = " (from JVM property:java.home)";
+        			error = null;
+        		}else {
+        			s = null;
+        		}
+        	}
+        }
+        if(error!=null) {
+        	throw new BuildException(error);
+        }
         String result = s;
         mySetProperty(-1, Constants.JAVA_HOME_TARGET, sourceValue, result, false);
+        String targetJavaVersion = this.getProject().getProperty("target.java.version");
+        if(targetJavaVersion==null || targetJavaVersion.isEmpty()) {
+	        Properties properties = new Properties();
+			try(FileInputStream stream = new FileInputStream(new File(new File(result), "release"))){
+				properties.load(stream);
+			} catch (IOException e) {
+				getProject().log("reading java version", e, Project.MSG_ERR);
+			}
+			targetJavaVersion = "11";
+			String javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+			if(javaVersion!=null) {
+				int offset = 0;
+				if(javaVersion.startsWith("\"")) {
+					++offset;
+				}
+                if(javaVersion.substring(offset).startsWith("1.")){
+                    targetJavaVersion = "1.";
+                    offset += 2;
+                }else{
+                    targetJavaVersion = "";
+                }
+                for (; offset < javaVersion.length(); ++offset) {
+                    char c = javaVersion.charAt(offset);
+                    if(c>='0' && c<='9') {
+                        targetJavaVersion += c;
+                    }else {
+                        break;
+                    }
+                }
+				PropertyHelper.setNewProperty(getProject(), "target.java.version", ""+targetJavaVersion);
+				mySetProperty(-1, "target.java.version", " (auto-detected)", targetJavaVersion, false);
+			}
+			if(!targetJavaVersion.startsWith("1.")) {
+				if(Integer.parseInt(targetJavaVersion)>9) {
+					this.getProject().setProperty("java.module.based", "true");
+				}
+			}
+			String minJavaVersion = this.getProject().getProperty("minimum.java.version");
+			if(minJavaVersion==null || minJavaVersion.isEmpty()) {
+				mySetProperty(-1, "minimum.java.version", " (auto-detected)", minJavaVersion = targetJavaVersion, false);
+			}
+			String srcJavaVersion = this.getProject().getProperty("source.java.version");
+			if(srcJavaVersion==null || srcJavaVersion.isEmpty()) {
+				mySetProperty(-1, "source.java.version", " (auto-detected)", minJavaVersion, false);
+			}
+        }
         return result;
     }
 

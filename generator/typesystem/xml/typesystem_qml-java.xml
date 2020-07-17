@@ -189,6 +189,16 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <interface-type name="QQmlEngineExtensionInterface" since="5.15.0">
+        <modify-function signature="initializeEngine(QQmlEngine *, const char *)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
     <interface-type name="QQmlIncubationController">
         <extra-includes>
             <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
@@ -200,7 +210,7 @@
         <inject-code class="native">
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController_native__" quote-before-line="}// class"/>
         </inject-code>
-        <modify-function signature="incubateWhile(bool *, int)">
+        <modify-function signature="incubateWhile(bool *, int)" until="5.14">
             <inject-code class="native" position="beginning">
             QTJAMBI_BLOCK_EXCEPTIONS(true)
             </inject-code>
@@ -211,6 +221,22 @@
                 <conversion-rule class="native">
                     jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag.flag(%env, %in);
                     volatile bool* %out = reinterpret_cast&lt;volatile bool* >(ptr);
+                </conversion-rule>
+                <reference-count action="set" variable-name="__rcWhileFlag"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="incubateWhile(bool *, int)" remove="all" since="5.15"/>
+        <modify-function signature="incubateWhile(std::atomic&lt;bool> *, int)" since="5.15">
+            <inject-code class="native" position="beginning">
+            QTJAMBI_BLOCK_EXCEPTIONS(true)
+            </inject-code>
+            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
+                <no-null-pointer/>
+                <conversion-rule class="native">
+                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag.flag(%env, %in);
+                    std::atomic&lt;bool>* %out = reinterpret_cast&lt;std::atomic&lt;bool>* >(ptr);
                 </conversion-rule>
                 <reference-count action="set" variable-name="__rcWhileFlag"/>
             </modify-argument>

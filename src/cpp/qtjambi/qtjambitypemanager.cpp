@@ -122,9 +122,9 @@ void insertEqualFunctionByMetaType(int type, QEqualFunction fct){
     gEqualFunctionByMetaTypeHash->insert(type, fct);
 }
 
-uint pointerHashFunction(const void* ptr){ return !ptr ? 0 : qHash(quintptr(*reinterpret_cast<void*const*const>(ptr)));}
-bool pointerLessFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*const>(ptr1)) < quintptr(*reinterpret_cast<void*const*const>(ptr2));}
-bool pointerEqualFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*const>(ptr1)) == quintptr(*reinterpret_cast<void*const*const>(ptr2));}
+uint pointerHashFunction(const void* ptr){ return !ptr ? 0 : qHash(quintptr(*reinterpret_cast<void*const*>(ptr)));}
+bool pointerLessFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) < quintptr(*reinterpret_cast<void*const*>(ptr2));}
+bool pointerEqualFunction(const void* ptr1, const void* ptr2){ return !ptr1 || !ptr2 ? false : quintptr(*reinterpret_cast<void*const*>(ptr1)) == quintptr(*reinterpret_cast<void*const*>(ptr2));}
 
 QString QtJambiTypeManager::complexTypeOf(TypePattern type) {
     switch (type) {
@@ -5188,7 +5188,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jbyte* data = new jbyte[size_t(arrayLength)];
                                     env->GetByteArrayRegion(jbyteArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jbyte>*>(out) = std::initializer_list<jbyte>(data, data + size_t(arrayLength));
 #else
                                     struct jbyte_initializer_list_access{
@@ -5215,7 +5215,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jshort* data = new jshort[size_t(arrayLength)];
                                     env->GetShortArrayRegion(jshortArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jshort>*>(out) = std::initializer_list<jshort>(data, data + size_t(arrayLength));
 #else
                                     struct jshort_initializer_list_access{
@@ -5242,7 +5242,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jint* data = new jint[size_t(arrayLength)];
                                     env->GetIntArrayRegion(jintArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jint>*>(out) = std::initializer_list<jint>(data, data + size_t(arrayLength));
 #else
                                     struct jint_initializer_list_access{
@@ -5269,7 +5269,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jlong* data = new jlong[size_t(arrayLength)];
                                     env->GetLongArrayRegion(jlongArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jlong>*>(out) = std::initializer_list<jlong>(data, data + size_t(arrayLength));
 #else
                                     struct jlong_initializer_list_access{
@@ -5296,7 +5296,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jfloat* data = new jfloat[size_t(arrayLength)];
                                     env->GetFloatArrayRegion(jfloatArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jfloat>*>(out) = std::initializer_list<jfloat>(data, data + size_t(arrayLength));
 #else
                                     struct jfloat_initializer_list_access{
@@ -5323,7 +5323,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jdouble* data = new jdouble[size_t(arrayLength)];
                                     env->GetDoubleArrayRegion(jdoubleArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jdouble>*>(out) = std::initializer_list<jdouble>(data, data + size_t(arrayLength));
 #else
                                     struct jdouble_initializer_list_access{
@@ -5350,7 +5350,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     jchar* data = new jchar[size_t(arrayLength)];
                                     env->GetCharArrayRegion(jcharArray(in.l), 0, arrayLength, data);
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<jchar>*>(out) = std::initializer_list<jchar>(data, data + size_t(arrayLength));
 #else
                                     struct jchar_initializer_list_access{
@@ -5382,7 +5382,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     }
                                     delete[] _data;
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<bool>*>(out) = std::initializer_list<bool>(data, data + size_t(arrayLength));
 #else
                                     struct bool_initializer_list_access{
@@ -5421,7 +5421,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                         externalToInternalComponentConverter(env, scope, val, ptr, jValueType::l);
                                     }
                                     scope->addFinalAction([data](){delete[] data;});
-#ifdef Q_OS_WIN32
+#ifdef Q_CC_MSVC
                                     *reinterpret_cast<std::initializer_list<char>*>(out) = std::initializer_list<char>(data, data + size * size_t(arrayLength));
 #else
                                     struct initializer_list_access{
@@ -6781,4 +6781,125 @@ void ContainerConverter::findFunction(QHashFunction &hashFunction, QLessFunction
         if(!equalFunction)
             equalFunction = equalFunctionByMetaType(metaType);
     }
+}
+
+ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_QMap(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getExternalToInternalConverter_QMap_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QMap(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getInternalToExternalConverter_QMap_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_QHash(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getExternalToInternalConverter_QHash_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QHash(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getInternalToExternalConverter_QHash_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_QMultiMap(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getExternalToInternalConverter_QMultiMap_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QMultiMap(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getInternalToExternalConverter_QMultiMap_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_QMultiHash(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getExternalToInternalConverter_QMultiHash_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
+}
+
+
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QMultiHash(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+{
+    Q_UNUSED(isStaticType1)
+    Q_UNUSED(isStaticType2)
+    if(isPointer1)
+        size1 = 0;
+    if(isPointer2)
+        size2 = 0;
+#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
+    return ContainerConverter::getInternalToExternalConverter_QMultiHash_##AL1##_##SZ1##_##AL2##_##SZ2(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
+    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
+#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    return nullptr;
 }

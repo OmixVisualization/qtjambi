@@ -71,19 +71,12 @@ void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
         tmp_name += _M_token_stream->symbol(node->id)->as_string();
 
     if (OperatorFunctionIdAST *op_id = node->operator_id) {
-#if defined(__GNUC__)
-#warning "NameCompiler::visitUnqualifiedName() -- implement me"
-#endif
-
         if (op_id->op && op_id->op->op) {
             tmp_name += QLatin1String("operator");
             tmp_name += decode_operator(op_id->op->op, op_id->op->op2);
             if (op_id->op->close)
                 tmp_name += decode_operator(op_id->op->close, false);
         } else if (op_id->type_specifier) {
-#if defined(__GNUC__)
-#warning "don't use an hardcoded string as cast' name"
-#endif
             Token const &tk = _M_token_stream->token(op_id->start_token);
             Token const &end_tk = _M_token_stream->token(op_id->end_token);
             tmp_name += QString::fromLatin1(&tk.text[tk.position],

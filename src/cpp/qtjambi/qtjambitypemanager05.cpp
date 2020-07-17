@@ -44,33 +44,27 @@
 #include "qtjambi_interfaces.h"
 #include "qtjambi_functionpointer.h"
 
-InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QMultiMap(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QList(const QString& internalTypeName, const InternalToExternalConverter& memberConverter, bool isPointer, bool isStaticType, size_t align, size_t size, int memberMetaType, ContainerType containerType)
 {
-    Q_UNUSED(isStaticType1)
-    Q_UNUSED(isStaticType2)
-    if(isPointer1)
-        size1 = 0;
-    if(isPointer2)
-        size2 = 0;
-#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
-    return ContainerConverter::getInternalToExternalConverter<QMultiMap,AL1,SZ1,true,AL2,SZ2,true>(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
-    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
-#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    Q_UNUSED(align)
+    if(isPointer)
+        size = 0;
+#define ELEMENT_STATICSIZE_CASEACTION(ST,SZ)\
+            return ContainerConverter::getInternalToExternalConverter<QList,0,SZ,ST>(internalTypeName, memberConverter, memberMetaType, containerType);
+            ELEMENT_STATICSIZE_SWITCH(isStaticType, size)
+#undef ELEMENT_STATICSIZE_CASEACTION
     return nullptr;
 }
 
-InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QMap(const QString& internalTypeName, const InternalToExternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const InternalToExternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2, MapType mapType)
+InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QQueue(const QString& internalTypeName, const InternalToExternalConverter& memberConverter, bool isPointer, bool isStaticType, size_t align, size_t size, int memberMetaType, ContainerType containerType)
 {
-    Q_UNUSED(isStaticType1)
-    Q_UNUSED(isStaticType2)
-    if(isPointer1)
-        size1 = 0;
-    if(isPointer2)
-        size2 = 0;
-#define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
-    return ContainerConverter::getInternalToExternalConverter<QMap,AL1,SZ1,true,AL2,SZ2,true>(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2, mapType);
-    ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
-#undef ELEMENT_ALIGNSIZE2_CASEACTION
+    Q_UNUSED(align)
+    if(isPointer)
+        size = 0;
+#define ELEMENT_STATICSIZE_CASEACTION(ST,SZ)\
+            return ContainerConverter::getInternalToExternalConverter<QQueue,0,SZ,ST>(internalTypeName, memberConverter, memberMetaType, containerType);
+            ELEMENT_STATICSIZE_SWITCH(isStaticType, size)
+#undef ELEMENT_STATICSIZE_CASEACTION
     return nullptr;
 }
 

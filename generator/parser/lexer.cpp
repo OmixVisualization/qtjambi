@@ -182,7 +182,7 @@ void Lexer::reportError(const QString& msg) {
     errmsg.setLine(line + 1);
     errmsg.setColumn(column);
     errmsg.setFileName(fileName);
-    errmsg.setMessage(QLatin1String("** LEXER ERROR ") + msg);
+    errmsg.setMessage(msg);
     control->reportError(errmsg);
 }
 
@@ -325,11 +325,11 @@ void Lexer::scan_identifier_or_literal() {
                 ++cursor;//R
                 ++cursor;//"
                 ++cursor;//(
-                while (*cursor && *cursor != ')' && *(cursor + 1) != '"') {
+                while (*cursor && (*cursor != ')' || *(cursor + 1) != '"')) {
                     ++cursor;
                 }
 
-                if (*cursor != ')' && *(cursor + 1) != '"')
+                if (*cursor != ')' || *(cursor + 1) != '"')
                     reportError("expected )\"");
 
                 ++cursor;//)
@@ -339,31 +339,31 @@ void Lexer::scan_identifier_or_literal() {
                     control->findOrInsertName(reinterpret_cast<const char*>(begin), size_t(cursor - begin));
 
                 token_stream[index++].kind = Token_rawstring_literal;
-                break;
+                return;
             }
-        Q_FALLTHROUGH();
+        break;
         case 'u':
             if(*(cursor + 1)=='8' && *(cursor + 2)=='\"'){
                 ++cursor;
                 ++cursor;
                 ++cursor;
                 scan_string_constant();
-                break;
+                return;
             }
-        Q_FALLTHROUGH();
+            Q_FALLTHROUGH();
         case 'U':
         case 'L':
             if(*(cursor + 1)=='\"'){
                 ++cursor;
                 ++cursor;
                 scan_string_constant();
-                break;
+                return;
             }
-        Q_FALLTHROUGH();
+        break;
         default:
-            scan_identifier_or_keyword();
             break;
     }
+    scan_identifier_or_keyword();
 }
 
 void Lexer::scan_identifier_or_keyword() {
@@ -710,9 +710,7 @@ void Lexer::scan_EOF() {
 }
 
 void Lexer::scan_invalid_input() {
-    QString errmsg("invalid input: %1");
-    errmsg = errmsg.arg(int(*cursor));
-    reportError(errmsg);
+    reportError(QString("Invalid input: %1").arg(int(*cursor)));
     ++cursor;
 }
 
@@ -1288,6 +1286,17 @@ void Lexer::scanKeyword6() {
 
 void Lexer::scanKeyword7() {
     switch (*cursor) {
+        case 'a':
+            if (*(cursor + 1) == 'l' &&
+                    *(cursor + 2) == 'i' &&
+                    *(cursor + 3) == 'g' &&
+                    *(cursor + 4) == 'n' &&
+                    *(cursor + 5) == 'a' &&
+                    *(cursor + 6) == 's') {
+                token_stream[index++].kind = Token_alignas;
+                return;
+            }
+            break;
         case 'd':
             if (*(cursor + 1) == 'e' &&
                     *(cursor + 2) == 'f' &&
@@ -1410,6 +1419,19 @@ void Lexer::scanKeyword8() {
                     *(cursor + 6) == 'u' &&
                     *(cursor + 7) == 'e') {
                 token_stream[index++].kind = Token_continue;
+                return;
+            }
+            break;
+
+        case 'd':
+            if (*(cursor + 1) == 'e' &&
+                    *(cursor + 2) == 'c' &&
+                    *(cursor + 3) == 'l' &&
+                    *(cursor + 4) == 't' &&
+                    *(cursor + 5) == 'y' &&
+                    *(cursor + 6) == 'p' &&
+                    *(cursor + 7) == 'e') {
+                token_stream[index++].kind = Token_decltype;
                 return;
             }
             break;

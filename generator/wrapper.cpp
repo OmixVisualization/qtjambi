@@ -103,7 +103,7 @@ void Wrapper::handleArguments() {
     }
 
     if (args.contains("rebuild-only")) {
-        QStringList classes = args.value("rebuild-only").split(",", QString::SkipEmptyParts);
+        QStringList classes = args.value("rebuild-only").split(",", Qt::SkipEmptyParts);
         TypeDatabase::instance()->setRebuildClasses(classes);
     }
 
@@ -122,7 +122,7 @@ void Wrapper::handleArguments() {
             if(firstChar == QChar(':') || firstChar == QChar(';'))
                 pathSeparator = firstChar;	// this allows override default trick
         }
-        includePathsList = arg.split(pathSeparator, QString::SkipEmptyParts);
+        includePathsList = arg.split(pathSeparator, Qt::SkipEmptyParts);
     }
 
     if (args.contains("input-directory")) {
@@ -137,7 +137,7 @@ void Wrapper::handleArguments() {
             if(firstChar == QChar(':') || firstChar == QChar(';'))
                 pathSeparator = firstChar;	// this allows override default trick
         }
-        inputDirectoryList = arg.split(pathSeparator, QString::SkipEmptyParts);
+        inputDirectoryList = arg.split(pathSeparator, Qt::SkipEmptyParts);
         QString first;
         if(!inputDirectoryList.isEmpty())
             first = inputDirectoryList.first();
@@ -356,7 +356,7 @@ void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
     }
 }
 
-bool Wrapper::defined(QString name){
+bool Wrapper::defined(const QString& name){
     for(const DefineUndefine& ddf : defineUndefineStageOneList){
         if(ddf.isSet() && ddf.name()==name){
             return true;
@@ -410,16 +410,16 @@ void Wrapper::modifyCppDefine(const QString &arg, bool f_set) {
     if (arg.length() > 0) {
         const QChar ch = arg.at(0);
         if (ch.isSpace()) {
-            list = arg.split(QRegExp("[\\s]+"), QString::SkipEmptyParts);
+            list = arg.split(QRegExp("[\\s]+"), Qt::SkipEmptyParts);
         } else if (ch == QChar(',')) {
-            list = arg.split(ch, QString::SkipEmptyParts);
+            list = arg.split(ch, Qt::SkipEmptyParts);
         } else {
             list = QStringList(arg);	// 1 item
         }
     }
 
     for (int i = 0; i < list.size(); i++) {
-        const QString s = list.at(i);
+        const QString& s = list.at(i);
         int split = s.indexOf("=");
         const QString name(s.left(split));
         QString value("1");

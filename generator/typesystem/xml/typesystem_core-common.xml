@@ -64,6 +64,8 @@
     <rejection class="_jbyteArray"/>
     <rejection class="_jbooleanArray"/>
     <rejection class="_jarray"/>
+    <rejection class="QArgumentType"/>
+    <rejection class="QMetaObjectPrivate"/>
     <rejection class="QStringView"/>
     <rejection class="QFSFileEnginePrivate"/>
     <rejection class="QAbstractFileEnginePrivate"/>
@@ -152,16 +154,14 @@
     <rejection class="*" function-name="qt_getEnumName"/>
     <rejection class="QVector" function-name="operator="/>
     <rejection class="QStack" function-name="operator="/>
-    <rejection class="QMultiHash" function-name="operator="/>
-    <rejection class="QHash" function-name="operator="/>
     <rejection class="QMap" function-name="operator="/>
-    <rejection class="QMap" function-name="constFind"/>
-    <rejection class="QMultiMap" function-name="constFind"/>
-    <rejection class="QHash" function-name="constFind"/>
-    <rejection class="QHash" function-name="operator[]"/>
     <rejection class="QMap" function-name="operator[]"/>
-    <rejection class="QMultiHash" function-name="operator[]"/>
+    <rejection class="QHash" function-name="operator="/>
+    <rejection class="QHash" function-name="operator[]"/>
+    <rejection class="QMultiMap" function-name="constFind"/>
     <rejection class="QMultiMap" function-name="operator[]"/>
+    <rejection class="QMultiHash" function-name="operator="/>
+    <rejection class="QMultiHash" function-name="operator[]"/>
     <rejection class="QMultiHash" function-name="constFind"/>
     <rejection class="QDeadlineTimer" function-name="_q_data"/>
 
@@ -202,6 +202,7 @@
     <rejection class="QLocalePrivate"/>
     <rejection class="QLocale" function-name="d"/>
     <rejection class="QVersionNumber" function-name="Q_STATIC_ASSERT"/>
+    <rejection class="QRunnable" function-name="create"/>
 
     <rejection class="Qt" enum-name="Modifier" />
     
@@ -241,6 +242,12 @@
     <rejection class="QScopedValueRollback" />
     <rejection class="QCustomScopedPointer" />
     <rejection class="QStringBuilder" />
+    <rejection class="" enum-name="QCborNegativeInteger" />
+    <rejection class="QProcess::CreateProcessArguments" />
+    <rejection class="QOverload" />
+    <rejection class="QNonConstOverload" />
+    <rejection class="QConstOverload" />
+    <rejection class="Null" />
 
     <rejection class="QAbstractConcatenable"/>
     <rejection class="QBitRef"/>
@@ -440,6 +447,7 @@
     <rejection class="QAbstractFileEngine::UnMapExtensionOption"/>
     <rejection class="QSharedPointer" function-name="*"/>
     <rejection class="QWeakPointer" function-name="*"/>
+    <rejection class="QLibrary" function-name="resolve"/>
     <rejection class="QAtomicOps"/>
     <rejection class="QAtomicTraits"/>
 
@@ -463,6 +471,14 @@
         <modify-function signature="convertFromPlainText(const QString &amp;, Qt::WhiteSpaceMode)" remove="all" /-->
     </namespace-type>
 
+    <enum-type name="PropertyFlags" flags="PropertyAttributes" package="io.qt.internal"/>
+    <enum-type name="MethodFlags" flags="MethodAttributes" package="io.qt.internal">
+        <reject-enum-value name="MethodMethod" />
+        <reject-enum-value name="MethodTypeMask" />
+    </enum-type>
+    <enum-type name="EnumFlags" flags="EnumAttributes" package="io.qt.internal"/>
+    <enum-type name="MetaObjectFlags" flags="MetaObjectAttributes" package="io.qt.internal"/>
+    <enum-type name="MetaDataFlags" flags="MetaDataAttributes" package="io.qt.internal"/>
     <enum-type name="QFileDevice::MemoryMapFlags"/>
     <enum-type name="QDate::MonthNameType" />
     <enum-type name="QAbstractAnimation::State" />
@@ -681,6 +697,7 @@
         <reject-enum-value name="Qt_5_10" since="5.10.0"/>
         <reject-enum-value name="Qt_5_11" since="5.11.0"/>
         <reject-enum-value name="Qt_5_14" since="5.14.0"/>
+        <reject-enum-value name="Qt_5_15" since="5.15.0"/>
         <reject-enum-value name="Qt_DefaultCompiledVersion"/>
     </enum-type>
 
@@ -783,12 +800,16 @@
     <enum-type name="QLineF::IntersectType"/>
     <enum-type name="QByteArray::Base64Option" flags="QByteArray::Base64Options">
         <reject-enum-value name="KeepTrailingEquals"/>
+        <reject-enum-value name="IgnoreBase64DecodingErrors"/>
+    </enum-type>
+    <enum-type name="QByteArray::Base64DecodingStatus">
     </enum-type>
     <enum-type name="QTimeZone::TimeType"/>
     <enum-type name="QTimeZone::NameType"/>
     
     <enum-type name="QAbstractTransition::TransitionType"/>
     <enum-type name="QSysInfo::Endian"/>
+    <enum-type name="Qt::ReturnByValueConstant" since="5.15.0" generate="no"/>
     <namespace-type name="QSysInfo"/>
     
     <value-type name="QLine"/>
@@ -811,6 +832,7 @@
     <value-type name="QDateTime">
         <modify-function signature="operator=(QDateTime)" remove="all"/>
         <modify-function signature="toString(QStringView) const" remove="all" since="5.10.0"/>
+        <modify-function signature="toString(QStringView,QCalendar) const" remove="all" since="5.15.0"/>
     </value-type>
 
     <value-type name="QDir">
@@ -1215,6 +1237,9 @@
     </value-type>
     <value-type name="QRegularExpression">
         <modify-function signature="operator=(QRegularExpression)" remove="all"/>
+        <modify-function signature="anchoredPattern(QStringView)" remove="all" since="5.15.0"/>
+        <modify-function signature="wildcardToRegularExpression(QStringView)" remove="all" since="5.15.0"/>
+        <modify-function signature="escape(QStringView)" remove="all" since="5.15.0"/>
         <modify-function signature="globalMatch(const QStringRef &amp;, int, QRegularExpression::MatchType, QFlags&lt;QRegularExpression::MatchOption&gt;) const" remove="all"/>
         <modify-function signature="match(const QStringRef &amp;, int, QRegularExpression::MatchType, QFlags&lt;QRegularExpression::MatchOption&gt;) const" remove="all"/>
     </value-type>
@@ -1339,6 +1364,7 @@
 
     <interface-type name="QFactoryInterface" />
 
+    <value-type name="QByteArray::FromBase64Result" generate="no" since="5.15.0"/>
     <value-type name="QByteArray">
 
         <!--extra-includes>
@@ -2494,6 +2520,9 @@
     <rejection class="QMetaType" function-name="hasRegisteredDebugStreamOperator"/>
     <rejection class="QMetaType" function-name="registerNormalizedTypedef"/>
     <rejection class="QMetaType" function-name="registerTypedef"/>
+    <rejection class="QMetaType" function-name="id"/>
+    <rejection class="QMetaType" function-name="name"/>
+    <rejection class="QMetaType" function-name="fromType" since="5.15.0"/>
     <object-type name="QMetaType">
         <modify-function signature="QMetaType(const int)" remove="all" />
     </object-type>
@@ -2679,4 +2708,6 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.QMetaObject' for enum 'Call' is not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QCborValue' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Class 'QFuture' has equals operators but no qHash() function. Hashcode of objects will consistently be 0." />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.QVariant' for enum 'Type' is not declared" />
+  <suppress-warning text="WARNING(CppImplGenerator) :: AbstractMeta::findEnum(), unknown class 'QVariant' in 'QVariant::Type'" />
 </typesystem>

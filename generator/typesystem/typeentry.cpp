@@ -107,6 +107,8 @@ QString FunctionalTypeEntry::javaQualifier() const {
     if(!m_qualifier_type)
         m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
     if (m_qualifier_type){
+        if(m_qualifier_type->isVariant())
+            return "QVariant";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->targetLangName();
         }
@@ -119,6 +121,8 @@ QString EnumTypeEntry::javaQualifier() const {
     if(!m_qualifier_type)
         m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
     if (m_qualifier_type){
+        if(m_qualifier_type->isVariant())
+            return "QVariant";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->targetLangName();
         }
@@ -312,6 +316,9 @@ FieldModification ComplexTypeEntry::fieldModification(const QString &name) const
     for (int i = 0; i < m_field_mods.size(); ++i)
         if (m_field_mods.at(i).name == name)
             return m_field_mods.at(i);
+    if(isInterface()){
+        return static_cast<const InterfaceTypeEntry*>(this)->origin()->fieldModification(name);
+    }
     FieldModification mod;
     mod.name = name;
     mod.modifiers = FieldModification::Readable | FieldModification::Writable;

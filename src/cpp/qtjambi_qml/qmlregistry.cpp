@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include <QtQml>
-#include "qmlregistry.h"
+#include <qtjambi/qtjambi_jobjectwrapper.h>
 #include "qmlcreateparentfunction.h"
 #include "qmlattachedpropertiesfunction.h"
 #include "qmlcreatorfunction.h"
@@ -85,8 +85,13 @@ int registerQmlListType(QString javaName){
                                                 list->clear = _copy->clear;
                                                 list->count = _copy->count;
                                                 list->data = _copy->data;
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
                                                 list->dummy1 = _copy->dummy1;
                                                 list->dummy2 = _copy->dummy2;
+#else
+                                                list->replace = _copy->replace;
+                                                list->removeLast = _copy->removeLast;
+#endif
                                                 list->object = _copy->object;
                                             }
                                             return list;

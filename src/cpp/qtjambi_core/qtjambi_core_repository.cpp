@@ -4,6 +4,15 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, gMutex, (QMutex::Recursive))
 
 namespace Java{
 namespace Private{
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtCore,io/qt/core,QFile$TrashResult,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLjava/lang/String;)
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(QtCore,io/qt/core,QByteArray$FromBase64Result,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QByteArray;I)
+)
+#endif
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(QtCore,io/qt/core,QCborStreamReader$StringResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Object;Lio/qt/core/QCborStreamReader$StringResultCode;)
 )

@@ -45,22 +45,6 @@
 #include <QStringList>
 #include <QDir>
 
-void rpp_default_message_handler(const std::string &str) {
-    std::cerr << str;
-}
-
-MsgHandler rpp::MessageUtil::_m_messageHandler = rpp_default_message_handler;
-
-void rpp::MessageUtil::installMessageHandler(MsgHandler handler) {
-    _m_messageHandler = handler;
-}
-
-void rpp::MessageUtil::message(const std::string &message){
-    if(_m_messageHandler){
-        _m_messageHandler(message);
-    }
-}
-
 rpp::pp::pp(pp_environment &__env) :
         env(__env), expand_macro(env) {
     verbose = 0;
@@ -202,8 +186,8 @@ rpp::PP_DIRECTIVE_TYPE rpp::pp::find_directive(char const *p_directive, std::siz
         default:
             break;
     }
-    QString message = QString("** WARNING unknown directive '#%1' at %2:%3").arg(p_directive).arg(QString::fromStdString(env.current_file)).arg(QString::number(env.current_line));
-    rpp::MessageUtil::message(message.toStdString());
+    QString message = QString("unknown directive '#%1' at %2:%3").arg(p_directive).arg(QString::fromStdString(env.current_file)).arg(QString::number(env.current_line));
+    env.log(message.toStdString());
     return PP_UNKNOWN_DIRECTIVE;
 }
 
@@ -229,7 +213,7 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
             p_filepath->append(p_input_filename);
             if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
                 QString message = QString("** INCLUDE local %1: found").arg(QString::fromStdString(*p_filepath));
-                rpp::MessageUtil::message(message.toStdString());
+                env.log(message.toStdString());
             }
             return std::fopen(p_filepath->c_str(), "r");
         }
@@ -248,7 +232,7 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
                 p_filepath->assign(dir.absoluteFilePath(QString::fromStdString(p_input_filename)).toStdString());
                 if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
                     QString message = QString("** INCLUDE local %1: found").arg(QString::fromStdString(*p_filepath));
-                    rpp::MessageUtil::message(message.toStdString());
+                    env.log(message.toStdString());
                 }
                 return std::fopen(p_filepath->c_str(), "r");
             }
@@ -295,7 +279,7 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
                 push_include_path(path.toStdString());
                 if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
                     QString message = QString("** INCLUDE system %1: found").arg(_string);
-                    rpp::MessageUtil::message(message.toStdString());
+                    env.log(message.toStdString());
                 }
                 p_filepath->assign(path.toStdString());
                 return std::fopen(p_filepath->c_str(), "r");
@@ -307,7 +291,7 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
         if(file_exists(*p_filepath) && !file_isdir(*p_filepath)) {
             if((verbose & DEBUGLOG_INCLUDE_DIRECTIVE) != 0){
                 QString message = QString("** INCLUDE system %1: found").arg(QString::fromStdString(*p_filepath));
-                rpp::MessageUtil::message(message.toStdString());
+                env.log(message.toStdString());
             }
             return std::fopen(p_filepath->c_str(), "r");
         }
@@ -315,7 +299,7 @@ FILE *rpp::pp::find_include_file(std::string const &p_input_filename, std::strin
         // Log all search attempts
         if((verbose & DEBUGLOG_INCLUDE_FULL) != 0){
             QString message = QString("** INCLUDE system %1: %2").arg(QString::fromStdString(*p_filepath)).arg(QLatin1String(strerror(errno)));
-            rpp::MessageUtil::message(message.toStdString());
+            env.log(message.toStdString());
         }
     }
 

@@ -1,4 +1,4 @@
-
+#include <QtCore/QString>
 #include <iostream>
 //#define DEBUG_DEFUNDEF
 
@@ -79,4 +79,24 @@ void rpp::pp_environment::rehash() {
         elt->hash_code = h;
         _M_base [h] = elt;
     }
+}
+
+MsgHandler rpp::MessageUtil::_m_messageHandler = [](const std::string &str){std::cerr << str;};
+
+void rpp::MessageUtil::installMessageHandler(MsgHandler handler) {
+    _m_messageHandler = handler;
+}
+
+void rpp::MessageUtil::message(const std::string &message){
+    if(_m_messageHandler){
+        _m_messageHandler(message);
+    }
+}
+
+void rpp::pp_environment::log(const std::string &message) const{
+    QString _message = QString("%1 (in %2:%3)")
+            .arg(message.c_str())
+            .arg(current_file.c_str())
+            .arg(QString::number(current_line));
+    rpp::MessageUtil::message(_message.toStdString());
 }

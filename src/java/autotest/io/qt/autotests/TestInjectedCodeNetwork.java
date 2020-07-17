@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import io.qt.QNativePointer;
 import io.qt.autotests.generated.AbstractSocketSubclass;
-import io.qt.autotests.generated.XmlEntityResolverSubclass;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QObject;
 import io.qt.network.QAbstractSocket;
@@ -44,7 +43,6 @@ import io.qt.network.QHostInfo;
 import io.qt.network.QNetworkProxy;
 import io.qt.network.QTcpSocket;
 import io.qt.network.QUdpSocket;
-import io.qt.xml.QXmlInputSource;
 
 public class TestInjectedCodeNetwork extends QApplicationTest {
     @Test
@@ -224,12 +222,13 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
         Utils.println(2, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
     }
 
-    static class XmlEntityResolverSubclassSubclass extends XmlEntityResolverSubclass{
+    @Deprecated
+    static class XmlEntityResolverSubclassSubclass extends io.qt.autotests.generated.XmlEntityResolverSubclass{
 
         @Override
         public ResolvedEntity resolveEntity(String publicId, String systemId) {
             if (publicId.equals("In java")) {
-                QXmlInputSource src = new QXmlInputSource();
+            	io.qt.xml.QXmlInputSource src = new io.qt.xml.QXmlInputSource();
                 src.setData("Made in Java");
                 return new ResolvedEntity(systemId.equals("error"), src);
             } else {
@@ -246,30 +245,34 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
 
 
     @Test
+    @Deprecated
     public void QXmlEntityResolverResolveEntityMadeInJava() {
         XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        QXmlInputSource src = xerss.callResolveEntity("In java", "");
+        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("In java", "");
         assertEquals("Made in Java", src.data());
     }
 
     @Test
+    @Deprecated
     public void QXmlEntityResolverResolveEntityMadeInJavaWithError() {
         XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        QXmlInputSource src = xerss.callResolveEntity("In java", "error");
+        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("In java", "error");
         assertEquals("Made in Java with error", src.data());
     }
 
     @Test
+    @Deprecated
     public void QXmlEntityResolverResolveEntityMadeInCpp() {
         XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        QXmlInputSource src = xerss.callResolveEntity("c++", "");
+        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("c++", "");
         assertEquals("Made in C++", src.data());
     }
 
     @Test
+    @Deprecated
     public void QXmlEntityResolverResolveEntityMadeInCppWithError() {
         XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        QXmlInputSource src = xerss.callResolveEntity("c++", "error");
+        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("c++", "error");
         assertEquals("Made in C++ with error", src.data());
     }
 

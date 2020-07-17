@@ -44,7 +44,7 @@
 #include "qtjambi_interfaces.h"
 #include "qtjambi_functionpointer.h"
 
-ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_QMultiMap(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
+ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_std_pair(const QString& internalTypeName, const ExternalToInternalConverter& memberConverter1, bool isPointer1, bool isStaticType1, size_t align1, size_t size1, int memberMetaType1, const ExternalToInternalConverter& memberConverter2, bool isPointer2, bool isStaticType2, size_t align2, size_t size2, int memberMetaType2)
 {
     Q_UNUSED(isStaticType1)
     Q_UNUSED(isStaticType2)
@@ -53,7 +53,7 @@ ExternalToInternalConverter ContainerConverter::getExternalToInternalConverter_Q
     if(isPointer2)
         size2 = 0;
 #define ELEMENT_ALIGNSIZE2_CASEACTION(AL1,SZ1,AL2,SZ2)\
-    return ContainerConverter::getExternalToInternalConverter<QMultiMap,AL1,SZ1,true,AL2,SZ2,true>(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
+    return ContainerConverter::getExternalToInternalConverter_QPair<std::pair,AL1,SZ1,true,AL2,SZ2,true>(internalTypeName, memberConverter1, memberMetaType1, memberConverter2, memberMetaType2);
     ELEMENT_ALIGNSIZE2_SWITCH(align1,size1,align2,size2)
 #undef ELEMENT_ALIGNSIZE2_CASEACTION
     return nullptr;

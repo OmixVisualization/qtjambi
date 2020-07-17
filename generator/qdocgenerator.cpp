@@ -65,7 +65,7 @@ void QDocGenerator::generate() {
     }
 
     QTextStream s(&f);
-    s << "<japi>" << endl;
+    s << "<japi>" << Qt::endl;
 
     AbstractMetaClassList clazzes = classes();
     for(AbstractMetaClass *cls : clazzes) {
@@ -74,7 +74,7 @@ void QDocGenerator::generate() {
         }
     }
 
-    s << "</japi>" << endl;
+    s << "</japi>" << Qt::endl;
 }
 
 // copy-paste from linguist/shared/metatranslator.cpp
@@ -153,26 +153,26 @@ void QDocGenerator::writeOverload(QTextStream &s,
                                           NoOption,
                                           arg_count);
 
-    s << "<method java=\"" << protect(signature.toUtf8()) << "\"" << endl
-    << "        cpp=\"" << protect(java_function->signature().toUtf8()) << "\"" << endl;
+    s << "<method java=\"" << protect(signature.toUtf8()) << "\"" << Qt::endl
+    << "        cpp=\"" << protect(java_function->signature().toUtf8()) << "\"" << Qt::endl;
 
     FunctionModificationList mods = java_function->modifications(java_function->implementingClass());
     QList<ArgumentModification> argumentMods;
     for(const FunctionModification &m : mods) {
         if (!m.association.isEmpty())
-            s << "        association=\"" << m.association << "\"" << endl;
+            s << "        association=\"" << m.association << "\"" << Qt::endl;
         if (m.modifiers & Modification::AccessModifierMask)
-            s << "        access-change=\"" << m.accessModifierString() << "\"" << endl;
+            s << "        access-change=\"" << m.accessModifierString() << "\"" << Qt::endl;
         if (m.modifiers & Modification::Rename)
-            s << "        renamed=\"" << m.renamedToName << "\"" << endl;
+            s << "        renamed=\"" << m.renamedToName << "\"" << Qt::endl;
         if (m.modifiers & (Modification::FinalMask)) {
             s << "        final=\"" << ((m.modifiers & Modification::Final) ? "final" : ( (m.modifiers & Modification::NativeDeclFinal) ? "declared-final" : "non-final"))
-            << "\"" << endl;
+            << "\"" << Qt::endl;
         }
         if (m.modifiers & Modification::Deprecated)
-            s << "        deprecated=\"yes\"" << endl;
+            s << "        deprecated=\"yes\"" << Qt::endl;
         if (m.removal)
-            s << "        removal=\"" << m.removal << "\"" << endl;
+            s << "        removal=\"" << m.removal << "\"" << Qt::endl;
 
         argumentMods << m.argument_mods;
     }
@@ -189,7 +189,7 @@ void QDocGenerator::writeOverload(QTextStream &s,
         }
         if (ownership.ownership==TypeSystem::CppOwnership) {
             if (!wroteOwnershipStolen) {
-                s << endl << "    steals-ownership-of=\"";
+                s << Qt::endl << "    steals-ownership-of=\"";
                 wroteOwnershipStolen = true;
             } else {
                 s << ",";
@@ -200,36 +200,36 @@ void QDocGenerator::writeOverload(QTextStream &s,
     if (wroteOwnershipStolen)
         s << "\"";
 
-    s << ">" << endl;
+    s << ">" << Qt::endl;
 
     if (argumentMods.size()) {
 
         for(const ArgumentModification &m : argumentMods) {
-            s << "    <argument index=\"" << m.index << "\"" << endl;
+            s << "    <argument index=\"" << m.index << "\"" << Qt::endl;
             if (m.removed_default_expression)
-                s << "              remove-default-expression=\"yes\"" << endl;
+                s << "              remove-default-expression=\"yes\"" << Qt::endl;
             if (m.removed)
-                s << "              removed=\"yes\"" << endl;
+                s << "              removed=\"yes\"" << Qt::endl;
             if (m.no_null_pointers)
-                s << "              no-null=\"yes\"" << endl;
+                s << "              no-null=\"yes\"" << Qt::endl;
             if (!m.modified_type.isEmpty())
-                s << "              modified-type=\"" << protect(m.modified_type.toLatin1()) << "\"" << endl;
+                s << "              modified-type=\"" << protect(m.modified_type.toLatin1()) << "\"" << Qt::endl;
             if (!m.replaced_default_expression.isEmpty()) {
                 s << "              default-expression=\"" << protect(m.replaced_default_expression.toUtf8())
-                << "\"" << endl;
+                << "\"" << Qt::endl;
             }
             if (!m.referenceCounts.isEmpty())
-                s << "              reference-counted=\"...\"" << endl;
-            s << "/>" << endl;
+                s << "              reference-counted=\"...\"" << Qt::endl;
+            s << "/>" << Qt::endl;
         }
     }
 
-    s << "</method>" << endl;
+    s << "</method>" << Qt::endl;
 }
 
 void QDocGenerator::write(QTextStream &s, const int size, const AbstractMetaEnumValue *java_enum_value) {
-    s << "<enum-value java=\"" << protect(java_enum_value->name().toUtf8()) << "\"" << endl
-    << "              cpp=\"" << protect(java_enum_value->cppName().toUtf8()) << "\"" << endl
+    s << "<enum-value java=\"" << protect(java_enum_value->name().toUtf8()) << "\"" << Qt::endl
+    << "              cpp=\"" << protect(java_enum_value->cppName().toUtf8()) << "\"" << Qt::endl
     << "              value=\"";
     switch(size){
     case 8:
@@ -248,32 +248,32 @@ void QDocGenerator::write(QTextStream &s, const int size, const AbstractMetaEnum
         s << java_enum_value->value().value<qint32>();
         break;
     }
-    s << "\"/>" << endl;
+    s << "\"/>" << Qt::endl;
 }
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaEnum *java_enum) {
     int size = int(java_enum->typeEntry()->size());
-    s << "<enum java=\"" << protect(java_enum->name().toUtf8()) << "\"" << endl
-    << "      bitsize=\"" << QString::number(size) << "\"" << endl
-    << "      cpp=\"" << protect(java_enum->name().toUtf8()) << "\"" << endl;
+    s << "<enum java=\"" << protect(java_enum->name().toUtf8()) << "\"" << Qt::endl
+    << "      bitsize=\"" << QString::number(size) << "\"" << Qt::endl
+    << "      cpp=\"" << protect(java_enum->name().toUtf8()) << "\"" << Qt::endl;
 
     if (java_enum->typeEntry()->flags()) {
         s << "      flags=\"" << protect(java_enum->typeEntry()->flags()->targetLangName().toUtf8())
-        << "\"" << endl;
+        << "\"" << Qt::endl;
     }
 
-    s << "      >" << endl;
+    s << "      >" << Qt::endl;
     AbstractMetaEnumValueList values = java_enum->values();
     for(AbstractMetaEnumValue *value : values) {
         write(s, size, value);
     }
-    s << "</enum>" << endl;
+    s << "</enum>" << Qt::endl;
 }
 
 void QDocGenerator::writeSignal(QTextStream &s, const AbstractMetaFunction *java_function) {
     s << "<signal java=\""
     << protect(java_function->targetLangSignature().toUtf8()) << "\" cpp=\""
-    << protect(java_function->signature().toUtf8()) << "\"/>" << endl;
+    << protect(java_function->signature().toUtf8()) << "\"/>" << Qt::endl;
 }
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaField *java_field) {
@@ -281,23 +281,23 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaField *java_field) {
     uint excluded_attributes = 0;
     setupForFunction(java_field->getter(), &included_attributes, &excluded_attributes);
     s << "<variablegetter java=\"" << protect(functionSignature(java_field->getter(), included_attributes, excluded_attributes).toUtf8())
-    << "\"" << endl
-    << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << endl;
+    << "\"" << Qt::endl
+    << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << Qt::endl;
 
     included_attributes = NoBlockedSlot;
     excluded_attributes = 0;
     setupForFunction(java_field->setter(), &included_attributes, &excluded_attributes);
     s << "<variablesetter java=\"" << protect(functionSignature(java_field->setter(), included_attributes, excluded_attributes).toUtf8())
-    << "\"" << endl
-    << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << endl;
+    << "\"" << Qt::endl
+    << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << Qt::endl;
 }
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
-    s << "<class" << endl
-    << "   java=\"" << protect(java_class->name().toUtf8()) << "\"" << endl
-    << "   cpp=\"" << protect(java_class->typeEntry()->qualifiedCppName().toUtf8()) << "\"" << endl
-    << "   java-extends=\"" << protect(java_class->baseClass() ? java_class->baseClass()->name().toUtf8() : "") << "\"" << endl
-    << "   package=\"" << protect(java_class->package().toUtf8()) << "\"" << endl;
+    s << "<class" << Qt::endl
+    << "   java=\"" << protect(java_class->name().toUtf8()) << "\"" << Qt::endl
+    << "   cpp=\"" << protect(java_class->typeEntry()->qualifiedCppName().toUtf8()) << "\"" << Qt::endl
+    << "   java-extends=\"" << protect(java_class->baseClass() ? java_class->baseClass()->name().toUtf8() : "") << "\"" << Qt::endl
+    << "   package=\"" << protect(java_class->package().toUtf8()) << "\"" << Qt::endl;
 
     AbstractMetaClassList interfaces = java_class->interfaces();
     if (interfaces.count() > 0) {
@@ -308,7 +308,7 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
                 s << ",";
             s << protect(interfaze->name().toUtf8());
         }
-        s << "\"" << endl;
+        s << "\"" << Qt::endl;
     }
 
     s << "   type=\"";
@@ -318,7 +318,7 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
         s << "value";
     else
         s << "object";
-    s << "\">" << endl;
+    s << "\">" << Qt::endl;
 
     // Write signals
     AbstractMetaFunctionList sigs = java_class->queryFunctions(AbstractMetaClass::Signals);
@@ -344,5 +344,5 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
         write(s, f);
     }
 
-    s << "</class>" << endl;
+    s << "</class>" << Qt::endl;
 }

@@ -13,11 +13,13 @@
 class PreprocessHandler {
 
     public:
-        PreprocessHandler(QString sourceFile, QString targetFile, const std::function<void(std::string,std::string)> &featureRegistry, const QString &phononInclude,
+        PreprocessHandler(QString sourceFile, QString targetFile,
+                          const std::function<void(std::string,std::string)> &featureRegistry,
+                          const QString &phononInclude,
             const QStringList &includePathList, const QStringList &inputDirectoryList, int verbose);
 
         bool handler();
-
+        ~PreprocessHandler();
     private:
         rpp::pp_environment env;
         rpp::pp preprocess;
@@ -30,6 +32,8 @@ class PreprocessHandler {
         QString phononInclude;
         QStringList includePathList;
         QStringList inputDirectoryList;
+        QList<std::string*> stdStrings;
+        QList<rpp::pp_fast_string*> fastStrings;
 
         QStringList setIncludes();
 
@@ -50,8 +54,12 @@ class PreprocessHandler {
             env.unbind(&fs_name);
         }
         void define(const QString &name, const QString &value) {
-            rpp::pp_fast_string* fs_name = new rpp::pp_fast_string(::toStdString(name));
-            rpp::pp_fast_string* fs_value = new rpp::pp_fast_string(::toStdString(value));
+            std::string* s_name = new std::string(name.toStdString());
+            std::string* s_value = new std::string(value.toStdString());
+            stdStrings << s_name << s_value;
+            rpp::pp_fast_string* fs_name = new rpp::pp_fast_string(*s_name);
+            rpp::pp_fast_string* fs_value = new rpp::pp_fast_string(*s_value);
+            fastStrings << fs_name << fs_value;
             rpp::pp_macro macro;
             macro.name = fs_name;
             macro.definition = fs_value;

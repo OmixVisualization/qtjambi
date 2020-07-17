@@ -285,7 +285,7 @@ QList<bool> _start_qtjambi_cast_test(jobject list, jobject qObject, jobject grap
             jobject o = qtjambi_cast<jobject>(env, f1, "FunctionalTest::TestFunction1");
             qtjambi_collection_add(env, list, o);
             FunctionalTest::TestFunction1 _f1 = qtjambi_cast<FunctionalTest::TestFunction1>(env, o, "FunctionalTest::TestFunction1");
-#ifdef Q_OS_WIN
+#ifdef Q_CC_MSVC
             results << (_f1.target<int(int,bool)>() == f1.target<int(int,bool)>());
 #endif
             results << (_f1.target_type() == f1.target_type());

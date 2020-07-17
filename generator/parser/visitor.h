@@ -140,6 +140,12 @@ class Visitor {
         virtual void visitQEnum(QEnumAST *) {}
         virtual void visitQGadget(QGadgetAST *) {}
         virtual void visitQObject(QObjectAST *) {}
+        virtual void visitDeclDefault(DeclDefaultAST *) {}
+        virtual void visitDeclDelete(DeclDeleteAST *) {}
+        virtual void visitQDeclFinal(QDeclFinalAST *) {}
+        virtual void visitNamedTypeSpecifier(NamedTypeSpecifierAST *) {}
+        virtual void visitDecltypeExpression(DecltypeExpressionAST *) {}
+        virtual void visitDeclTypeSpecifier(DeclTypeSpecifierAST *) {}
 
     private:
         typedef void (Visitor::*visitor_fun_ptr)(AST *);

@@ -116,6 +116,7 @@
     <modify-function signature="operator=(const QGeoRoute &amp;)" remove="all"/>
   </value-type>
   <value-type name="QGeoRouteLeg">
+    <modify-function signature="operator=(const QGeoRouteLeg &amp;)" remove="all" since="5.15.0"/>
   </value-type>
   <value-type name="QPlace">
     <modify-function signature="operator=(const QPlace &amp;)" remove="all"/>

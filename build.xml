@@ -152,15 +152,20 @@
         <echo>
 Welcome to Qt Jambi help task.
 
-Please refer for all building related questions to our building
-documentation at http://qt-jambi.org/development/building/
-
-Full command listing with ant -projecthelp
-
 Quick howto:
+
 [edit build.properties to suit your system]
+set QTDIR to directory containing Qt either as environment variable or in build.properties.
+
 ant all
+
+Further options:
         </echo>
+        <java classname="org.apache.tools.ant.Main">
+            <arg value="-projecthelp" />
+            <arg value="-buildfile" />
+            <arg value="${ant.file}" />
+        </java>
     </target>
 
     <!--

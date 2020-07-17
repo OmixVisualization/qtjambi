@@ -169,7 +169,7 @@ public class JuicTask extends MatchingTask {
                 if(dir != null)
                     dirExecute = new File(dir);
                 String binpath = AntUtil.getPropertyAsString(PropertyHelper.getPropertyHelper(getProject()), Constants.BINDIR);
-                Exec.execute(thisCommandList, dirExecute, getProject(), binpath, qtLibDirectory);
+                Exec.execute(this, thisCommandList, dirExecute, getProject(), binpath, qtLibDirectory);
             }
         }
     }

@@ -52,7 +52,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import io.qt.autotests.generated.SqlTableModelSubclass;
-import io.qt.core.QMetaType;
 import io.qt.core.QVariant;
 import io.qt.sql.QSqlDatabase;
 import io.qt.sql.QSqlField;
@@ -77,7 +76,7 @@ public class TestInjectedCodeSQL extends QApplicationTest {
 
     // Used by testSqlTableModelBeforeInsertJava()
     private void receiveBeforeInsert(QSqlRecord record) {
-        record.append(new QSqlField("javaInt", QMetaType.Type.Int.value()));
+        record.append(new QSqlField("javaInt", QVariant.Type.Int));
         record.setValue("javaInt", 3456);
     }
 

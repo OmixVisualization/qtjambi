@@ -17,7 +17,15 @@ win32*:{
 macx:{
     LIBS += $$PWD/../../../build/qmake-qtjambi/lib/lib$$member(QTJAMBI_LIB_NAME, 0).jnilib
 } else {
-    LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib -l$$QTJAMBI_LIB_NAME
+    LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib
+    android:{
+        armeabi-v7a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_armeabi-v7a
+        arm64-v8a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_arm64-v8a
+        x86: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86
+        x86_64: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_x86_64
+    }else{
+        LIBS += -l$$QTJAMBI_LIB_NAME
+    }
 }
 
 QTJAMBI_CPP = ../../../build/generator/out/cpp/

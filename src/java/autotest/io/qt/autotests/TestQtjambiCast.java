@@ -38,7 +38,6 @@ import io.qt.gui.QGradient;
 import io.qt.gui.QRadialGradient;
 import io.qt.gui.QStandardItemModel;
 import io.qt.qml.QQmlListProperty;
-import io.qt.script.QScriptable;
 import io.qt.widgets.QDialog;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsWidget;
@@ -47,7 +46,7 @@ public class TestQtjambiCast extends QApplicationTest {
 
 	@Test
 	public void test() {
-		class TestObject extends QObject implements QScriptable, QEasingCurve.EasingFunction, QRunnable{
+		class TestObject extends QObject implements QEasingCurve.EasingFunction, QRunnable{
 			@Override
 			public double call(double arg__1) {
 				return 0;
@@ -71,7 +70,7 @@ public class TestQtjambiCast extends QApplicationTest {
 		customJavaList.addAll(Arrays.asList("A", "B", "C", "D"));
 		String text = "TestQtjambiCast::test()";
 		List<Object> list = new ArrayList<>();
-		List<Class<?>> types = List.of(
+		List<Class<?>> types = Arrays.asList(
 				io.qt.widgets.QLabel.class, 
 				io.qt.widgets.QGraphicsPixmapItem.class, 
 				io.qt.gui.QColor.class, 

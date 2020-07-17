@@ -55,7 +55,6 @@
     <rejection class="QGtkStyle" />
     <rejection class="QWindowsCEStyle" />
     <rejection class="QWindowsMobileStyle" />
-    <rejection class="QAbstractUndoItem"/>
     <rejection class="QItemEditorCreator"/>
     <rejection class="QMimeSource"/>
     <rejection class="QUpdateLaterEvent"/>
@@ -138,6 +137,7 @@
     <rejection class="QStyleOptionSpinBox" enum-name="StyleOptionVersion"/>
     <rejection class="QStyleOptionTab" enum-name="StyleOptionType"/>
     <rejection class="QStyleOptionTab" enum-name="StyleOptionVersion"/>
+    <rejection class="QStyleOptionTabV4" enum-name="StyleOptionVersion"/>
     <rejection class="QStyleOptionTabBarBase" enum-name="StyleOptionType"/>
     <rejection class="QStyleOptionTabBarBase" enum-name="StyleOptionVersion"/>
     <rejection class="QStyleOptionTabWidgetFrame" enum-name="StyleOptionType"/>
@@ -519,6 +519,8 @@
                 <replace-type modified-type="void"/>
             </modify-argument>
         </modify-function>
+    </value-type>
+    <value-type name="QStyleOptionTabV4" delete-in-main-thread="yes" polymorphic-id-expression="false">
     </value-type>
     <value-type name="QStyleOptionTab" delete-in-main-thread="yes" polymorphic-id-expression="%1-&gt;type == QStyleOptionTab::Type">
         <modify-function signature="QStyleOptionTab(int)" remove="all"/>
@@ -972,7 +974,7 @@
         <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSimpleTextItem::Type)" />
     </object-type>
     <object-type name="QHBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QHBoxLayout*>(%1)" />
     </object-type>
     <object-type name="QHeaderView">
         <modify-function signature="paintSection(QPainter*,QRect,int)const">
@@ -1560,7 +1562,7 @@
         </modify-function>
     </object-type>
     <object-type name="QVBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QVBoxLayout*>(%1)" />
     </object-type>
     <object-type name="QWhatsThis">
         <modify-function signature="createAction(QObject *)">
@@ -1717,7 +1719,7 @@
     </object-type>
 
     <object-type name="QStackedLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QStackedLayout*>(%1)" />
         <modify-function signature="itemAt(int) const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="invalidate"/>
@@ -1738,7 +1740,7 @@
     </object-type>
 
     <object-type name="QBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QBoxLayout*>(%1)" />
         <modify-function signature="addWidget(QWidget *, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="2">
                 <remove-default-expression/>
@@ -1801,7 +1803,7 @@
     </object-type>
 
     <object-type name="QGridLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QGridLayout*>(%1)" />
         <modify-function signature="addLayout(QLayout *, int, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -1830,7 +1832,7 @@
     </object-type>
 
     <object-type name="QFormLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="false" />
+        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QFormLayout*>(%1)" />
         <modify-function signature="itemAt(int) const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="invalidate"/>
@@ -2883,7 +2885,8 @@
          <extra-includes>
              <include file-name="qtjambi_widgets_repository.h" location="local"/>
          </extra-includes>
-        <modify-function signature="setCalendarWidget(QCalendarWidget*)">
+         <modify-function signature="QDateTimeEdit(const QVariant &amp;, QVariant::Type, QWidget *)" remove="all"/>
+         <modify-function signature="setCalendarWidget(QCalendarWidget*)">
             <modify-argument index="1">
                 <!-- Safe to ignore because widget is reparented -->
                 <reference-count action="ignore"/>

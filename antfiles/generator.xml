@@ -16,6 +16,7 @@
                 header="${generatorDir}/targets/qtjambi_masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
+                qtbindirectory="${tools.qt.bindir}"
                 targetJavaVersion="${target.java.version}"
                 includepaths="${generator.includepaths};${generator.extra.includes}"
                 options="${qtjambi.generator.jumptable}"/>
@@ -44,11 +45,11 @@
 		</condition>
         <qmake dir="${generator.builddir}" pro="${basedir}/generator/generator.pro"
                 config="${generator.configuration}"
-                qmakebinary="${tools.qt.qmake.abspath}"/>
+                qmakebinary="${tools.qt.qmake.abspath}" tools="true"/>
     </target>
 
     <target name="tools.generator.make" depends="tools.generator.qmake">
-        <make dir="${generator.builddir}"/>
+        <make dir="${generator.builddir}" tools="true"/>
     </target>
 
     <!--

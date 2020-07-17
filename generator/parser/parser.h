@@ -171,7 +171,6 @@ class Parser {
         bool parseTemplateDeclaration(DeclarationAST *&node);
         bool parseTemplateParameter(TemplateParameterAST *&node);
         bool parseTemplateParameterList(const ListNode<TemplateParameterAST*> *&node);
-        bool parseThrowExpression(ExpressionAST *&node, bool templArgs = false);
         bool parseTranslationUnit(TranslationUnitAST *&node);
         bool parseTryBlockStatement(StatementAST *&node);
         bool parseTypeId(TypeIdAST *&node);

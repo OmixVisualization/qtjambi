@@ -46,6 +46,7 @@
 <typesystem qt-library="QtConcurrent">
     <rejection class="QtConcurrent" enum-name="enum_1" />
     <rejection class="QtConcurrent" function-name="operator|" />
+    <rejection class="QtConcurrent" function-name="run" />
     <rejection class="QtConcurrent::BlockSizeManager" />
     <rejection class="QtConcurrent::BlockSizeManagerV2" />
     <rejection class="QtConcurrent::ConstMemberFunctionWrapper" />

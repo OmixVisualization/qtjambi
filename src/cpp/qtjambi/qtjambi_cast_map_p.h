@@ -645,13 +645,45 @@ struct BiContainerTake<Container, K, T, true>{
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported, IsBiContainerFunction isContainer>
+template<template<typename K, typename T> class Container, typename K, typename T, bool supported, bool isMulti, IsBiContainerFunction isContainer>
 struct BiContainerUnite{
     static QMapUniteFunction function() { return nullptr; }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer>
-struct BiContainerUnite<Container, K, T, true, isContainer>{
+struct BiContainerUnite<Container, K, T, true, true, isContainer>{
+    static QMapUniteFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
+                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+                QScopedPointer<Container<K,T> > __qt_scoped_pointer;
+                Container<K,T> *__qt_other_pointer = nullptr;
+                if (other!= nullptr) {
+                    if (isContainer(env, other, qtjambi_type<K>::id(), qtjambi_type<T>::id())) {
+                        __qt_other_pointer = reinterpret_cast<Container<K,T> *>(qtjambi_to_object(env, other));
+                    } else {
+                        __qt_scoped_pointer.reset(new Container<K,T> ());
+                        __qt_other_pointer = __qt_scoped_pointer.data();
+                        jobject iterator = qtjambi_map_entryset_iterator(env, other);
+                        while(qtjambi_iterator_has_next(env, iterator)) {
+                            jobject entry = qtjambi_iterator_next(env, iterator);
+                            jobject key = qtjambi_map$entry_key(env, entry);
+                            jobject valCollection = qtjambi_map$entry_value(env, entry);
+                            jobject iterator2 = qtjambi_collection_iterator(env, valCollection);
+                            while(qtjambi_iterator_has_next(env, iterator2)) {
+                                jobject val = qtjambi_iterator_next(env, iterator2);
+                                __qt_other_pointer->insert(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
+                            }
+                        }
+                    }
+                }else{
+                    __qt_scoped_pointer.reset(new Container<K,T> ());
+                    __qt_other_pointer = __qt_scoped_pointer.data();
+                }
+                container->unite(*__qt_other_pointer);
+            }; }
+};
+
+template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer>
+struct BiContainerUnite<Container, K, T, true, false, isContainer>{
     static QMapUniteFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
                 Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
                 QScopedPointer<Container<K,T> > __qt_scoped_pointer;
@@ -829,7 +861,7 @@ struct qtjambi_QMap_caster<c_is_pointer, false, K, T>{
                                          QMapSizeFunction(BiContainerSize<QMap, K, T, supported>::function()),
                                          QMapTakeFunction(BiContainerTake<QMap, K, T, supported && supports_StandardConstructor<T>::value>::function()),
                                          QMapUniqueKeysFunction(BiContainerUniqueKeys<QMap, K, T, supported>::function()),
-                                         QMapUniteFunction(BiContainerUnite<QMap, K, T, supported, qtjambi_is_QMap>::function()),
+                                         QMapUniteFunction(BiContainerUnite<QMap, K, T, supported, false, qtjambi_is_QMap>::function()),
                                          QMapUpperBoundFunction(BiContainerUpperBound<QMap, K, T, supported>::function()),
                                          QMapValueFunction(BiContainerValue<QMap, K, T, supported>::function()),
                                          QMapValuesFunction(BiContainerValues<QMap, K, T, supported>::function()),
@@ -921,7 +953,7 @@ struct qtjambi_QMultiMap_caster<c_is_pointer, false, K, T>{
                                          BiContainerSize<QMultiMap, K, T, supported>::function(),
                                          BiContainerTake<QMultiMap, K, T, supported && supports_StandardConstructor<T>::value>::function(),
                                          BiContainerUniqueKeys<QMultiMap, K, T, supported>::function(),
-                                         BiContainerUnite<QMultiMap, K, T, supported, qtjambi_is_QMultiMap>::function(),
+                                         BiContainerUnite<QMultiMap, K, T, supported, true, qtjambi_is_QMultiMap>::function(),
                                          BiContainerUpperBound<QMultiMap, K, T, supported>::function(),
                                          BiContainerValue<QMultiMap, K, T, supported>::function(),
                                          BiContainerValues<QMultiMap, K, T, supported>::function(),
@@ -1007,7 +1039,7 @@ struct qtjambi_QHash_caster<c_is_pointer, false, K, T>{
                                          QHashSizeFunction(BiContainerSize<QHash, K, T, supported>::function()),
                                          QHashTakeFunction(BiContainerTake<QHash, K, T, supported && supports_StandardConstructor<T>::value>::function()),
                                          QHashUniqueKeysFunction(BiContainerUniqueKeys<QHash, K, T, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QHash, K, T, supported, qtjambi_is_QHash>::function()),
+                                         QHashUniteFunction(BiContainerUnite<QHash, K, T, supported, false, qtjambi_is_QHash>::function()),
                                          QHashValueFunction(BiContainerValue<QHash, K, T, supported>::function()),
                                          QHashValuesFunction(BiContainerValues<QHash, K, T, supported>::function()),
                                          QHashValuesKeyFunction(BiContainerValuesKey<QHash, K, T, supported>::function())
@@ -1091,7 +1123,7 @@ struct qtjambi_QMultiHash_caster<c_is_pointer, false, K, T>{
                                          QHashSizeFunction(BiContainerSize<QMultiHash, K, T, supported>::function()),
                                          QHashTakeFunction(BiContainerTake<QMultiHash, K, T, supported && supports_StandardConstructor<T>::value>::function()),
                                          QHashUniqueKeysFunction(BiContainerUniqueKeys<QMultiHash, K, T, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QMultiHash, K, T, supported, qtjambi_is_QMultiHash>::function()),
+                                         QHashUniteFunction(BiContainerUnite<QMultiHash, K, T, supported, true, qtjambi_is_QMultiHash>::function()),
                                          QHashValueFunction(BiContainerValue<QMultiHash, K, T, supported>::function()),
                                          QHashValuesFunction(BiContainerValues<QMultiHash, K, T, supported>::function()),
                                          QHashValuesKeyFunction(BiContainerValuesKey<QMultiHash, K, T, supported>::function()),

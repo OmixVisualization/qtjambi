@@ -81,18 +81,18 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         }
         if (file.open(flags)) {
             QTextStream s(&file);
-            s << java_class->typeEntry()->qualifiedCppName() << endl;
+            s << java_class->typeEntry()->qualifiedCppName() << Qt::endl;
             file.close();
         }
     }
 #endif
     QString include_block = java_class->name().replace("$", "_").toUpper() + "_SHELL_H";
-    s << "#ifndef " << include_block << endl
-      << "#define " << include_block << endl << endl;
+    s << "#ifndef " << include_block << Qt::endl
+      << "#define " << include_block << Qt::endl << Qt::endl;
 
-    s << "#include <qtjambi/qtjambi_core.h>" << endl
-      << "#include <QtCore/QHash>" << endl
-      << "#include <QtCore/QWeakPointer>" << endl;
+    s << "#include <qtjambi/qtjambi_core.h>" << Qt::endl
+      << "#include <QtCore/QHash>" << Qt::endl
+      << "#include <QtCore/QWeakPointer>" << Qt::endl;
     QSet<QString> included;
     included << "<qtjambi/qtjambi_core.h>"
              << "<QtCore/QHash>"
@@ -102,7 +102,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
     writeInclude(s, java_class->typeEntry()->include(), included);
-    s << endl;
+    s << Qt::endl;
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -112,22 +112,22 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
     }
 
     if(java_class->enclosingClass() && !java_class->enclosingClass()->typeEntry()->ppCondition().isEmpty()){
-        s << endl << "#if " << java_class->enclosingClass()->typeEntry()->ppCondition() << endl;
+        s << Qt::endl << "#if " << java_class->enclosingClass()->typeEntry()->ppCondition() << Qt::endl;
     }
     writeForwardDeclareSection(s, java_class);
 
-    s << endl
-      << "class " << shellClassName(java_class) << " final : public FunctionalBase" << endl
-      << "{" << endl
-      << "public:" << endl
-      << "    " << shellClassName(java_class) << "();" << endl
-      << "    ~" << shellClassName(java_class) << "() override;" << endl
-      << "    void getFunctional(void*) override;" << endl
-      << "    static void operator delete(void * ptr) noexcept;" << endl << endl
-      << "    class Functor final : private FunctorBase{" << endl
-      << "    public:" << endl
-      << "        Functor(const Functor& functor);" << endl
-      << "        ~Functor() override;" << endl
+    s << Qt::endl
+      << "class " << shellClassName(java_class) << " final : public FunctionalBase" << Qt::endl
+      << "{" << Qt::endl
+      << "public:" << Qt::endl
+      << "    " << shellClassName(java_class) << "();" << Qt::endl
+      << "    ~" << shellClassName(java_class) << "() override;" << Qt::endl
+      << "    void getFunctional(void*) override;" << Qt::endl
+      << "    static void operator delete(void * ptr) noexcept;" << Qt::endl << Qt::endl
+      << "    class Functor final : private FunctorBase{" << Qt::endl
+      << "    public:" << Qt::endl
+      << "        Functor(const Functor& functor);" << Qt::endl
+      << "        ~Functor() override;" << Qt::endl
       << "        ";
     if(java_class->type()){
         writeTypeInfo(s, java_class->type(), Option());
@@ -143,29 +143,29 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         s << arg->indexedName();
         ++counter;
     }
-    s << ");" << endl
-      << "    private:" << endl
-      << "        Functor(" << shellClassName(java_class) << "& functional);" << endl
-      << "        friend class " << shellClassName(java_class) << ";" << endl
-      << "    };" << endl << endl
-      << "    static jobject resolveFunctional(JNIEnv *, const " << java_class->typeEntry()->qualifiedCppName() << "*);" << endl << endl
-      << "protected:" << endl
-      << "    QtJambiShell* __shell() const override;" << endl
-      << "private:" << endl
-      << "    friend class " << shellClassName(java_class) << "::Functor;" << endl;
+    s << ");" << Qt::endl
+      << "    private:" << Qt::endl
+      << "        Functor(" << shellClassName(java_class) << "& functional);" << Qt::endl
+      << "        friend class " << shellClassName(java_class) << ";" << Qt::endl
+      << "    };" << Qt::endl << Qt::endl
+      << "    static jobject resolveFunctional(JNIEnv *, const " << java_class->typeEntry()->qualifiedCppName() << "*);" << Qt::endl << Qt::endl
+      << "protected:" << Qt::endl
+      << "    QtJambiShell* __shell() const override;" << Qt::endl
+      << "private:" << Qt::endl
+      << "    friend class " << shellClassName(java_class) << "::Functor;" << Qt::endl;
     if(java_class->isFunctionPointer()){
-        s << "    std::function<void()> m_functionPointerDeleter;" << endl
-          << "    static std::function<const Functor*(" << java_class->typeEntry()->qualifiedCppName() << ")> reverseFunctionGetter;" << endl;
+        s << "    std::function<void()> m_functionPointerDeleter;" << Qt::endl
+          << "    static std::function<const Functor*(" << java_class->typeEntry()->qualifiedCppName() << ")> reverseFunctionGetter;" << Qt::endl;
     }
 
-    s  << "};" << endl << endl;
+    s  << "};" << Qt::endl << Qt::endl;
 
 
 
     if(java_class->enclosingClass() && !java_class->enclosingClass()->typeEntry()->ppCondition().isEmpty()){
-        s << "#endif // " << java_class->enclosingClass()->typeEntry()->ppCondition() << endl;
+        s << "#endif // " << java_class->enclosingClass()->typeEntry()->ppCondition() << Qt::endl;
     }
-    s  << "#endif // " << include_block << endl;
+    s  << "#endif // " << include_block << Qt::endl;
 
     QString pro_file_name = MetaInfoGenerator::subDirectoryForClass(java_class, MetaInfoGenerator::CppDirectory) + "/generated.pri";
 
@@ -183,19 +183,19 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         }
         if (file.open(flags)) {
             QTextStream s(&file);
-            s << java_class->typeEntry()->qualifiedCppName() << endl;
+            s << java_class->typeEntry()->qualifiedCppName() << Qt::endl;
             file.close();
         }
     }
 #endif
     QString include_block = java_class->name().replace("$", "_").toUpper() + "_SHELL_H";
 
-    s << "#ifndef " << include_block << endl
-      << "#define " << include_block << endl << endl;
+    s << "#ifndef " << include_block << Qt::endl
+      << "#define " << include_block << Qt::endl << Qt::endl;
 
-    s << "#include <qtjambi/qtjambi_core.h>" << endl
-      << "#include <QtCore/QHash>" << endl
-      << "#include <QtCore/QWeakPointer>" << endl;
+    s << "#include <qtjambi/qtjambi_core.h>" << Qt::endl
+      << "#include <QtCore/QHash>" << Qt::endl
+      << "#include <QtCore/QWeakPointer>" << Qt::endl;
 
     QSet<QString> included;
     included << "<qtjambi/qtjambi_core.h>"
@@ -214,21 +214,28 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             continue;
         writeInclude(s, inc, included);
     }
-    s << endl;
+    s << Qt::endl;
 
     if(!java_class->typeEntry()->ppCondition().isEmpty()){
-        s << endl << "#if " << java_class->typeEntry()->ppCondition() << endl;
+        s << Qt::endl << "#if " << java_class->typeEntry()->ppCondition() << Qt::endl;
+    }
+
+    for(const AbstractMetaFunction* f : java_class->functions()){
+        if(!f->wasPrivate() && f->isDeclDeprecated()){
+            s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
+            break;
+        }
     }
 
     writeForwardDeclareSection(s, java_class);
 
     if (java_class->generateShellClass()) {
-        s << endl
+        s << Qt::endl
           << "class " << shellClassName(java_class)
-          << " : public " << java_class->qualifiedCppName() << endl
-          << "{" << endl;
+          << " : public " << java_class->qualifiedCppName() << Qt::endl
+          << "{" << Qt::endl;
 
-        s << "public:" << endl;
+        s << "public:" << Qt::endl;
         if(!java_class->hasPrivateDestructor()){
             for(const AbstractMetaFunction *function : java_class->functions()) {
                 if (function->isConstructor() && !function->isPrivate()){
@@ -254,7 +261,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                                 ppConditions[i] = "(" + ppConditions[i] + ")";
                             }
                         }
-                        s << endl << "#if " << ppConditions.join(" && ") << endl << endl;
+                        s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;
                     }
                     Option option = Option(SkipRemovedArguments);
                     //if(java_class->isQObject()){
@@ -264,7 +271,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                         option = Option(option | EnumAsInts);
                     writeFunction(s, function, option);
                     if(!ppConditions.isEmpty()){
-                        s << endl << "#endif //" << ppConditions.join(" && ") << endl << endl;
+                        s << Qt::endl << "#endif //" << ppConditions.join(" && ") << Qt::endl << Qt::endl;
                     }
                 }
             }
@@ -273,9 +280,9 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             if(java_class->hasVirtualDestructor()){
                 s << " override";
             }
-            s << ";" << endl;
+            s << ";" << Qt::endl;
         }
-        s << endl;
+        s << Qt::endl;
 
         QList<const AbstractMetaFunction *> functionsInTargetLang;
         QList<const AbstractMetaFunction *> signalsInTargetLang;
@@ -349,11 +356,11 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                 break;
             }
         }
-        s << "    static void operator delete(void * ptr) noexcept;" << endl;
+        s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
         if (java_class->isQObject() && java_class->qualifiedCppName()!="QDBusInterface") {
-            s << "    const QMetaObject *metaObject() const override final;" << endl
-              << "    void *qt_metacast(const char *) override final;" << endl
-              << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << endl;
+            s << "    const QMetaObject *metaObject() const override final;" << Qt::endl
+              << "    void *qt_metacast(const char *) override final;" << Qt::endl
+              << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
         }
         QList<AbstractMetaEnum *> protetedEnums;
         for(AbstractMetaEnum *cpp_enum : java_class->enums()){
@@ -371,7 +378,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         {
             INDENTATION(INDENT)
             for(AbstractMetaEnum * cpp_enum : protetedEnums){
-                s << INDENT << "static inline const std::type_info& __registerEnumTypeInfo_" << cpp_enum->name().replace("::", "_") << "() {" << endl;
+                s << INDENT << "static inline const std::type_info& __registerEnumTypeInfo_" << cpp_enum->name().replace("::", "_") << "() {" << Qt::endl;
                 {
                     INDENTATION(INDENT)
                     const EnumTypeEntry *entry = cpp_enum->typeEntry();
@@ -399,43 +406,51 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                         const QString qtFlagName = fentry->qualifiedCppName();
                         const QString javaFlagName = [java_class,fentry]()->QString{
                             if(java_class){
-                                if(java_class->typeEntry()->javaPackage().isEmpty()){
-                                    return java_class->typeEntry()->targetLangName() + "$" + fentry->targetLangName();
+                                if(java_class->typeEntry()->targetLangName()=="package_global"){
+                                    if(java_class->typeEntry()->javaPackage().isEmpty()){
+                                        return fentry->targetLangName();
+                                    }else{
+                                        return java_class->typeEntry()->javaPackage().replace(".", "/") + "/" + fentry->targetLangName();
+                                    }
                                 }else{
-                                    return java_class->typeEntry()->javaPackage().replace(".", "/") + "/" + java_class->typeEntry()->targetLangName() + "$" + fentry->targetLangName();
+                                    if(java_class->typeEntry()->javaPackage().isEmpty()){
+                                        return java_class->typeEntry()->targetLangName() + "$" + fentry->targetLangName();
+                                    }else{
+                                        return java_class->typeEntry()->javaPackage().replace(".", "/") + "/" + java_class->typeEntry()->targetLangName() + "$" + fentry->targetLangName();
+                                    }
                                 }
                             }else{
                                 return fentry->targetLangName();
                             }
                         }();
                         QString qtFlagsAliasName = fentry->originalName();
-                        s << INDENT << "return registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\", \"" << qtFlagName << "\", \"" << qtFlagsAliasName << "\", \"" << javaFlagName << "\");" << endl;
+                        s << INDENT << "return registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\", \"" << qtFlagName << "\", \"" << qtFlagsAliasName << "\", \"" << javaFlagName << "\");" << Qt::endl;
                     }else{
-                        s << INDENT << "return registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\");" << endl;
+                        s << INDENT << "return registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\");" << Qt::endl;
                     }
-                    s << INDENT << "}" << endl;
+                    s << INDENT << "}" << Qt::endl;
                 }
             }
         }
 
-        s << "private:" << endl;
+        s << "private:" << Qt::endl;
         for(const AbstractMetaFunction *function : privatePureVirtuals) {
             writeFunction(s, function);
         }
-        s << "    QtJambiShell* __shell() const;" << endl;
-        s << "    jmethodID __shell_javaMethod(int pos) const;" << endl;
+        s << "    QtJambiShell* __shell() const;" << Qt::endl;
+        s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
 
         //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
         writeInjectedCode(s, java_class);
 
-        s  << "};" << endl << endl;
+        s  << "};" << Qt::endl << Qt::endl;
     }
 
     if(!java_class->typeEntry()->ppCondition().isEmpty()){
-        s << "#endif // " << java_class->typeEntry()->ppCondition() << endl;
+        s << "#endif // " << java_class->typeEntry()->ppCondition() << Qt::endl;
     }
 
-    s  << "#endif // " << include_block << endl;
+    s  << "#endif // " << include_block << Qt::endl;
 
     QString pro_file_name = MetaInfoGenerator::subDirectoryForClass(java_class, MetaInfoGenerator::CppDirectory) + "/generated.pri";
 
@@ -456,13 +471,13 @@ void CppHeaderGenerator::writeFunction(QTextStream &s, const AbstractMetaFunctio
         return;
     QStringList pps = getFunctionPPConditions(java_function);
     if(!pps.isEmpty()){
-        s << endl << "#if " << pps.join(" && ") << endl;
+        s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
     writeFunctionSignature(s, java_function, nullptr, QString(), Option(OriginalName | ShowStatic | ShowOverride | options));
-    s << ";" << endl;
+    s << ";" << Qt::endl;
     if(!pps.isEmpty()){
-        s << "#endif //" << pps.join(" && ") << endl << endl;
+        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
     }
 }
 
@@ -470,14 +485,14 @@ void CppHeaderGenerator::writePublicFunctionOverride(QTextStream &s,
         const AbstractMetaFunction *java_function) {
     QStringList pps = getFunctionPPConditions(java_function);
     if(!pps.isEmpty()){
-        s << endl << "#if " << pps.join(" && ") << endl;
+        s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
     writeFunctionSignature(s, java_function, nullptr, "__public_", Option(EnumAsInts |
                            ShowStatic | UnderscoreSpaces));
-    s << ";" << endl;
+    s << ";" << Qt::endl;
     if(!pps.isEmpty()){
-        s << "#endif //" << pps.join(" && ") << endl << endl;
+        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
     }
 }
 
@@ -486,14 +501,14 @@ void CppHeaderGenerator::writeVirtualFunctionOverride(QTextStream &s,
         const AbstractMetaFunction *java_function) {
     QStringList pps = getFunctionPPConditions(java_function);
     if(!pps.isEmpty()){
-        s << endl << "#if " << pps.join(" && ") << endl;
+        s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
     writeFunctionSignature(s, java_function, nullptr, "__override_", Option(EnumAsInts | ShowStatic |
                            UnderscoreSpaces), QString(), QStringList() << ( java_function->isAbstract() ? "JNIEnv *__jni_env, QtJambiNativeID __this_nativeId" : "QtJambiNativeID __this_nativeId") );
-    s << ";" << endl;
+    s << ";" << Qt::endl;
     if(!pps.isEmpty()){
-        s << "#endif //" << pps.join(" && ") << endl << endl;
+        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
     }
 }
 
@@ -512,7 +527,7 @@ void CppHeaderGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaCla
     CodeSnipList code_snips = java_class->typeEntry()->codeSnips();
     for(const CodeSnip &cs : code_snips) {
         if (cs.language == TypeSystem::ShellDeclaration) {
-            s << cs.code() << endl;
+            s << cs.code() << Qt::endl;
         }
     }
 }

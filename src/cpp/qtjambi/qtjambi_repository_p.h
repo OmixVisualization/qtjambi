@@ -156,8 +156,7 @@ namespace Java{
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,URL,QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 
-            QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,MethodHandles$Lookup,
-                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,MethodHandles$Lookup,)
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Method,
                 QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(getDeclaringClass)
@@ -222,15 +221,16 @@ namespace Java{
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,List,
                                              QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
-                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(of))
+                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(set)
+                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(removeByIndex))
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Deque,)
 
-            QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Set,
-                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(of))
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Set,)
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Collection,
                 QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(add)
+                QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(addAll)
                 QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(remove)
                 QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(contains)
                 QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(size)
@@ -241,6 +241,7 @@ namespace Java{
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Iterator,
                 QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasNext)
+                QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(remove)
                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(next)
             )
 
@@ -484,7 +485,7 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtJambi,QtJambiMultiHashObject)
 
             QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambi,QtRejectedEntries,
-                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value))
+                                             QTJAMBI_REPOSITORY_DECLARE_OBJECTARRAY_METHOD(value))
 
             QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtJambi,QtExtensibleEnum)
 

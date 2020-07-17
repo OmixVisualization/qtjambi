@@ -79,7 +79,7 @@ public class InitializeTask extends AbstractInitializeTask {
             mySetProperty(-1, emit, sourceValue, value, false);
         }
 
-        String detectedOsname = OSInfo.osArchName();
+        String detectedOsname = OSInfo.crossOSArchName();
         String osname = AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME);
         if(osname == null) {
             sourceValue = " (auto-detected)";
@@ -131,18 +131,13 @@ public class InitializeTask extends AbstractInitializeTask {
         if(s != null)
             AntUtil.setNewProperty(propertyHelper, Constants.OSCPU, s);
 
-
-        String JAVA_HOME = System.getenv("JAVA_HOME");   // used here
-        if(JAVA_HOME != null)
-            getProject().log(this, "JAVA_HOME is set: " + prettyValue(JAVA_HOME), Project.MSG_INFO);
-
         String javaHomeTarget = decideJavaHomeTarget();
         if(javaHomeTarget == null)
             throw new BuildException("Unable to determine JAVA_HOME_TARGET, setup environment variable JAVA_HOME (or JAVA_HOME_TARGET) or edit build.properties");
 
         String javaOsarchTarget = decideJavaOsarchTarget();
         if(javaOsarchTarget == null) {
-            if(OSInfo.isMacOS() == false)  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
+            if(!OSInfo.isMacOS())  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
                 throw new BuildException("Unable to determine JAVA_OSARCH_TARGET, setup environment variable JAVA_OSARCH_TARGET or edit build.properties");
         }
 

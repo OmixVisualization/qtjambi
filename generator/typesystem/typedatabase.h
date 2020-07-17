@@ -42,7 +42,7 @@
 
 class TypeDatabase {
     public:
-        typedef bool (*DefinedPtr)(QString name);
+        typedef bool (*DefinedPtr)(const QString& name);
 
         TypeDatabase();
 

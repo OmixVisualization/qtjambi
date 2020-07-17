@@ -190,12 +190,12 @@
         <extra-includes>
              <include file-name="qtjambi_xml_repository.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QXmlContentHandler" condition="false" />
-        <interface-polymorphy interface="QXmlErrorHandler" condition="false" />
-        <interface-polymorphy interface="QXmlDTDHandler" condition="false" />
-        <interface-polymorphy interface="QXmlEntityResolver" condition="false" />
-        <interface-polymorphy interface="QXmlLexicalHandler" condition="false" />
-        <interface-polymorphy interface="QXmlDeclHandler" condition="false" />
+        <interface-polymorphy interface="QXmlContentHandler" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
+        <interface-polymorphy interface="QXmlErrorHandler" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
+        <interface-polymorphy interface="QXmlDTDHandler" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
+        <interface-polymorphy interface="QXmlEntityResolver" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
+        <interface-polymorphy interface="QXmlLexicalHandler" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
+        <interface-polymorphy interface="QXmlDeclHandler" condition="dynamic_cast&lt;const QXmlDefaultHandler*>(%1)" />
         <modify-function signature="setDocumentLocator(QXmlLocator*)">
             <modify-argument index="1">
                 <define-ownership class="shell" owner="cplusplus" />

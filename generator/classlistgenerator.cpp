@@ -44,17 +44,17 @@ void ClassListGenerator::generate() {
     if (f.open(QFile::WriteOnly)) {
         QTextStream s(&f);
 
-        s << "/****************************************************************************" << endl
-        << "**" << endl
-        << "** This is a generated file, please don't touch." << endl
-        << "**" << endl
-        << "****************************************************************************/" << endl << endl;
+        s << "/****************************************************************************" << Qt::endl
+        << "**" << Qt::endl
+        << "** This is a generated file, please don't touch." << Qt::endl
+        << "**" << Qt::endl
+        << "****************************************************************************/" << Qt::endl << Qt::endl;
 
-        s << "/*!" << endl
-        << "\\page qtjambi-classes.html" << endl << endl
-        << "\\title Qt Jambi's classes" << endl << endl
-        << "This is a list of all Qt Jambi classes." << endl << endl
-        << "\\table 100%" << endl;
+        s << "/*!" << Qt::endl
+        << "\\page qtjambi-classes.html" << Qt::endl << Qt::endl
+        << "\\title Qt Jambi's classes" << Qt::endl << Qt::endl
+        << "This is a list of all Qt Jambi classes." << Qt::endl << Qt::endl
+        << "\\table 100%" << Qt::endl;
 
         QVector<AbstractMetaClass*> classes = Generator::classes().toVector();
         std::sort(classes.begin(), classes.end(), [](AbstractMetaClass *a, AbstractMetaClass *b) ->bool {return a->name() < b->name();});
@@ -63,7 +63,7 @@ void ClassListGenerator::generate() {
         int numRows = (classes.size() + numColumns - 1) / numColumns;
 
         for (int i = 0; i < numRows; ++i) {
-            s << endl << "\\row ";
+            s << Qt::endl << "\\row ";
             for (int j = 0; j < numColumns; ++j) {
                 if (AbstractMetaClass* cls = classes.value(i + j * numRows, nullptr)) {
                     s << "\\o \\l{" << cls->qualifiedCppName()
@@ -73,7 +73,7 @@ void ClassListGenerator::generate() {
 
         }
 
-        s << endl << "\\endtable" << endl
-        << "*/" << endl;
+        s << Qt::endl << "\\endtable" << Qt::endl
+        << "*/" << Qt::endl;
     }
 }

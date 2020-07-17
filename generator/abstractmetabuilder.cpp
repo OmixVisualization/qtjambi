@@ -396,12 +396,12 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Classes:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Classes:" << Qt::endl;
             for(QMap<QString, ClassModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << "class " << i.key() << "{" << endl;
+                stream << indent << "class " << i.key() << "{" << Qt::endl;
                 writeContent(stream, indent+"    ", i.value()->classMap(), i.value()->enumMap(), i.value()->typeAliasMap(), i.value()->variableMap(), i.value()->functionDefinitionMap(), i.value()->functionMap(), QHash<QString, NamespaceModelItem>());
-                stream << indent << "}" << endl;
+                stream << indent << "}" << Qt::endl;
             }
         }
     }
@@ -411,10 +411,10 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Enums:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Enums:" << Qt::endl;
             for(QMap<QString, EnumModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << i.key() << endl;
+                stream << indent << i.key() << Qt::endl;
             }
         }
     }
@@ -424,10 +424,10 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Type Aliases:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Type Aliases:" << Qt::endl;
             for(QMap<QString, TypeAliasModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << i.key() << endl;
+                stream << indent << i.key() << Qt::endl;
             }
         }
     }
@@ -437,10 +437,10 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Variables:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Variables:" << Qt::endl;
             for(QMap<QString, VariableModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << i.key() << endl;
+                stream << indent << i.key() << Qt::endl;
             }
         }
     }
@@ -450,10 +450,10 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Function Definitions:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Function Definitions:" << Qt::endl;
             for(QMap<QString, FunctionDefinitionModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << i.key() << endl;
+                stream << indent << i.key() << Qt::endl;
             }
         }
     }
@@ -463,10 +463,10 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Functions:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Functions:" << Qt::endl;
             for(QMap<QString, FunctionModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << i.key() << endl;
+                stream << indent << i.key() << Qt::endl;
             }
         }
     }
@@ -476,12 +476,12 @@ void writeContent(QTextStream &stream,
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
-            stream << endl;
-            stream << indent << "Namespaces:" << endl;
+            stream << Qt::endl;
+            stream << indent << "Namespaces:" << Qt::endl;
             for(QMap<QString, NamespaceModelItem>::const_iterator i = _map.begin(); i!=_map.end(); i++){
-                stream << indent << "namespace " << i.key() << "{" << endl;
+                stream << indent << "namespace " << i.key() << "{" << Qt::endl;
                 writeContent(stream, indent+"    ", i.value()->classMap(), i.value()->enumMap(), i.value()->typeAliasMap(), i.value()->variableMap(), i.value()->functionDefinitionMap(), i.value()->functionMap(), i.value()->namespaceMap());
-                stream << indent << "}" << endl;
+                stream << indent << "}" << Qt::endl;
             }
         }
     }
@@ -509,9 +509,6 @@ bool AbstractMetaBuilder::build() {
     pool __pool;
 
     TranslationUnitAST *ast = p.parse(contents, std::size_t(contents.size()), &__pool);
-    for(const Control::ErrorMessage& message : control.errorMessages()){
-        ReportHandler::warning(QString("%4 (in %1, line %2, column %3)").arg(message.fileName()).arg(QString::number(message.line())).arg(QString::number(message.column())).arg(message.message()));
-    }
 
     CodeModel model;
     Binder binder(&model, p.location());
@@ -3604,6 +3601,15 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
 
         if(!ok){
             meta_type = translateType(arg->type(), &ok, QString("traverseFunction %1.%2 arg#%3").arg(class_name).arg(function_name).arg(i));
+            if (meta_type && ok && meta_type->typeEntry()->isEnum() && !meta_type->typeEntry()->qualifiedCppName().contains("::")) {
+                bool _ok = false;
+                TypeInfo typeInfo = arg->type();
+                typeInfo.setQualifiedName(QStringList() << m_current_class->typeEntry()->qualifiedCppName().split("::") << typeInfo.qualifiedName());
+                AbstractMetaType *_meta_type = translateType(typeInfo, &_ok, QString("traverseFunction %1.%2 arg#%3").arg(class_name).arg(function_name).arg(i));
+                if (_meta_type && _ok){
+                    meta_type = _meta_type;
+                }
+            }
         }
         if (!meta_type || !ok) {
             ReportHandler::warning(QString("skipping function '%1::%2', "
@@ -4553,6 +4559,21 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             }
             if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
                 return expr.mid(8, expr.length()-9);
+            else if(expr.startsWith("u8\"") && expr.endsWith("\""))
+                return expr.mid(2, expr.length()-2);
+            else if((expr.startsWith("u\"") || expr.startsWith("U\"") || expr.startsWith("L\"")) && expr.endsWith("\""))
+                return expr.mid(1, expr.length()-1);
+            else if(expr.startsWith("R\"(") && expr.endsWith(")\"")){
+                expr = expr.mid(3, expr.length()-5);
+                expr.replace("\\", "\\\\");
+                expr.replace("\"", "\\\"");
+                expr.replace("\t", "\\t");
+                expr.replace("\n", "\\n");
+                expr.replace("\r", "\\r");
+                expr.replace("\b", "\\b");
+                expr.replace("\f", "\\f");
+                expr = "\"" + expr + "\"";
+            }
             return expr;
         } else if (type->isObject() || type->isValue() || expr.contains("::")) { // like Qt::black passed to a QColor
             if(type->isObject() && expr == type->name()+"()"){
@@ -5166,6 +5187,9 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
             else if (l.at(pos) == QLatin1String("CONSTANT")){
                 spec->setConstant(true);
             }
+            else if (l.at(pos) == QLatin1String("REQUIRED")){
+                spec->setRequired(true);
+            }
             else if (l.at(pos) == QLatin1String("FINAL")){
                 spec->setFinal(true);
             }
@@ -5396,7 +5420,7 @@ static void write_reject_log_file(QFile *f,
     }
 
     for (int reason = 0; reason < AbstractMetaBuilder::NoReason; ++reason) {
-        s << QString(72, '*') << endl;
+        s << QString(72, '*') << Qt::endl;
         switch (reason) {
             case AbstractMetaBuilder::NotInTypeSystem:
                 s << "Not in type system";
@@ -5421,7 +5445,7 @@ static void write_reject_log_file(QFile *f,
                 break;
         }
 
-        s << endl;
+        s << Qt::endl;
 
         for (QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason>::const_iterator it = rejects.constBegin();
                 it != rejects.constEnd(); ++it) {
@@ -5429,10 +5453,10 @@ static void write_reject_log_file(QFile *f,
                 continue;
             QString space;
             space.fill(QLatin1Char(' '), maxSize+5-it.key().first.size());
-            s << " - " << it.key().first << space << it.key().second << endl;
+            s << " - " << it.key().first << space << it.key().second << Qt::endl;
         }
 
-        s << QString(72, '*') << endl << endl;
+        s << QString(72, '*') << Qt::endl << Qt::endl;
     }
 
 }
@@ -5489,7 +5513,7 @@ void AbstractMetaBuilder::dumpLog() {
                 QTextStream s(&file);
                 for(const QString& w : ReportHandler::reportedWarnings()){
                     if(!w.contains("Suppressed warning with no text specified"))
-                        s << w << endl;
+                        s << w << Qt::endl;
                 }
             }
             file.close();

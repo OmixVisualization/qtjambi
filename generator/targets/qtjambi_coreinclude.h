@@ -44,17 +44,22 @@
 
 #include "generator_predefinitions.h"
 
+#define QTJAMBI_CORE_H
+#define QTCONCURRENT_RUN_H
+#define QQMLPRIVATE_H
+#define QML_GETTYPENAMES
+
 #if QT_VERSION>=0x050000
-	#include <QtCore/private/qabstractfileengine_p.h>
-	#include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qabstractfileengine_p.h>
+    #include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qmetaobject_p.h>
 #endif
-	
+
 #define QSETTINGS_H
 #include <QtCore/QtCore>
 #undef QSETTINGS_H
 #define Q_OS_WIN
 #include <QtCore/QSettings>
 #undef Q_OS_WIN
-
 #include <qtjambi_core/qtjambiqfuture.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>

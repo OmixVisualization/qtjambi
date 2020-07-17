@@ -51,14 +51,12 @@ class QObject___ extends QObject {
         private final Class<?> cls;
     }
     
-    private final static StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
-
     private static String classToScope(Class<?> cls) {
         if(cls.isEnum()) {
             if(cls.getDeclaringClass()!=null) {
                 return classToScope(cls.getDeclaringClass());
             }else {
-                return cls.getPackageName();
+                return cls.getPackage().getName();
             }
         }else if(cls.isAnonymousClass()) {
             if(cls.getEnclosingClass()!=null) {
@@ -79,7 +77,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source) {
-        String scope = classToScope(stackWalker.getCallerClass());
+        String scope = classToScope(callerClassProvider().get());
         return QCoreApplication.translate(scope, source);
     }
 
@@ -94,7 +92,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source, String comment) {
-        String scope = classToScope(stackWalker.getCallerClass());
+        String scope = classToScope(callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment);
     }
 
@@ -111,7 +109,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source, String comment, int count) {
-        String scope = classToScope(stackWalker.getCallerClass());
+        String scope = classToScope(callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment, count);
     }
 
@@ -1324,7 +1322,7 @@ class QObject___ extends QObject {
     }
     
     protected static void emit(PrivateSignal0 signal) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit();
@@ -1334,7 +1332,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A> void emit(PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1);
@@ -1344,7 +1342,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B> void emit(PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2);
@@ -1354,7 +1352,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C> void emit(PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3);
@@ -1364,7 +1362,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D> void emit(PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4);
@@ -1374,7 +1372,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D,E> void emit(PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5);
@@ -1384,7 +1382,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D,E,F> void emit(PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
@@ -1394,7 +1392,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D,E,F,G> void emit(PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -1404,7 +1402,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D,E,F,G,H> void emit(PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -1414,7 +1412,7 @@ class QObject___ extends QObject {
     }
     
     protected static <A,B,C,D,E,F,G,H,I> void emit(PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+        Class<?> callerClass = callerClassProvider().get();
         Class<?> signalDeclaringClass = signalDeclaringClass(signal);
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -3170,6 +3168,18 @@ class QByteArray_5_12__ extends QByteArray {
     
 }// class
 
+class QByteArray_5_15__ extends QByteArray {
+    public static class FromBase64Result{
+        public final io.qt.core.QByteArray decoded;
+        public final io.qt.core.QByteArray.Base64DecodingStatus decodingStatus;
+        private FromBase64Result(QByteArray decoded, int decodingStatus) {
+            super();
+            this.decoded = decoded;
+            this.decodingStatus = Base64DecodingStatus.resolve(decodingStatus);
+        }
+    }
+}// class
+
 class QByteArray___ extends QByteArray {
     
     public QByteArray(String s) {
@@ -4726,7 +4736,7 @@ class QSharedMemory_java__{
     public static class DataAccess implements AutoCloseable{
         
         private final QSharedMemory sharedMemory;
-        private final java.lang.ref.Cleaner.Cleanable cleanable;
+        private final Cleanable cleanable;
         
         DataAccess(QSharedMemory sharedMemory){
             this.sharedMemory = sharedMemory;
@@ -4829,6 +4839,18 @@ class QDir__{
     @io.qt.QtUninvokable
     public final java.util.List<io.qt.core.QFileInfo> entryInfoList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
         return entryInfoList(nameFilters, new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
+    }
+}// class
+
+class QFile__{
+    public static class TrashResult{
+        public final boolean success;
+        public final String pathInTrash;
+        private TrashResult(boolean success, String pathInTrash) {
+            super();
+            this.success = success;
+            this.pathInTrash = pathInTrash;
+        }
     }
 }// class
 

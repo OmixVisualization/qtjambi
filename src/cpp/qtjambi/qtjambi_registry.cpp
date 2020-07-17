@@ -1239,7 +1239,7 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
             QString pathSeparator = ";";
             QString qtClassPath;
             {
-                if (jstring classPath = Java::Private::Runtime::System.getProperty(env, qtjambi_from_qstring(env, "io.qt.qtjambi.internal.urlbase")))
+                if (jstring classPath = Java::Private::Runtime::System.getProperty(env, env->NewStringUTF("io.qt.qtjambi.internal.urlbase")))
                     qtjambi_to_qstring(qtClassPath, env, classPath);
             }
             if (!qtClassPath.isEmpty()) {

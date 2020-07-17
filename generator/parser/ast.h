@@ -76,6 +76,7 @@ struct DeclaratorAST;
 struct DeleteExpressionAST;
 struct DoStatementAST;
 struct ElaboratedTypeSpecifierAST;
+struct NamedTypeSpecifierAST;
 struct EnumSpecifierAST;
 struct EnumeratorAST;
 struct ExceptionSpecificationAST;
@@ -237,6 +238,9 @@ struct AST {
         Kind_DeclDefaultAST,
         Kind_DeclDeleteAST,
         Kind_QDeclFinalAST,
+        Kind_NamedTypeSpecifier,
+        Kind_DecltypeExpression,
+        Kind_DeclTypeSpecifier,
 
         NODE_KIND_COUNT
     };
@@ -412,6 +416,16 @@ struct DoStatementAST: public StatementAST {
 
     StatementAST *statement;
     ExpressionAST *expression;
+};
+
+struct DeclTypeSpecifierAST: public TypeSpecifierAST {
+    DECLARE_AST_NODE(DeclTypeSpecifier)
+    ExpressionAST *expression;
+};
+
+struct NamedTypeSpecifierAST: public TypeSpecifierAST {
+    DECLARE_AST_NODE(NamedTypeSpecifier)
+    NameAST *name;
 };
 
 struct ElaboratedTypeSpecifierAST: public TypeSpecifierAST {
@@ -691,6 +705,7 @@ struct PtrToMemberAST: public AST {
 struct ReturnStatementAST: public StatementAST {
     DECLARE_AST_NODE(ReturnStatement)
 
+    bool isthrow;
     ExpressionAST *expression;
 };
 
@@ -720,6 +735,14 @@ struct AutoTypeSpecifierAST: public TypeSpecifierAST {
 
     TypeSpecifierAST *type_specifier;
     ExpressionAST *type_expression;
+};
+
+struct DecltypeExpressionAST: public ExpressionAST {
+    DECLARE_AST_NODE(DecltypeExpression)
+
+    std::size_t sizeof_token;
+    std::size_t ellipsis_token;
+    ExpressionAST *expression;
 };
 
 struct SizeofExpressionAST: public ExpressionAST {

@@ -135,6 +135,10 @@
     </object-type>
     <object-type name="QSensorReading">
     </object-type>
+    <object-type name="QLightReading" since="5.15.0">
+    </object-type>
+    <object-type name="QLightSensor" since="5.15.0">
+    </object-type>
     <value-type name="qoutputrange" java-name="QOutputRange">
     </value-type>
     <object-type name="QSensorBackend">
@@ -146,6 +150,8 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <interface-type name="QLightFilter" since="5.15.0">
+    </interface-type>
     <interface-type name="QSensorFilter">
     </interface-type>
     <interface-type name="QAccelerometerFilter">

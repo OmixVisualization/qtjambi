@@ -45,8 +45,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 
 import org.junit.Test;
@@ -223,84 +223,84 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_IntVector() {
     	Object variant = Variants.getIntVector();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of(1, 2, 3, 4), variant);
+    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntLinkedList() {
     	Object variant = Variants.getIntLinkedList();
     	assertTrue(variant instanceof LinkedList);
-    	assertEquals(List.of(1, 2, 3, 4), variant);
+    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntList() {
     	Object variant = Variants.getIntList();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of(1, 2, 3, 4), variant);
+    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntSet() {
     	Object variant = Variants.getIntSet();
     	assertTrue(variant instanceof HashSet);
-    	assertEquals(Set.of(1, 2, 3, 4), variant);
+    	assertEquals(new TreeSet<>(Arrays.asList(1, 2, 3, 4)), variant);
     }
     
     @Test
     public void testQVariant_IntQueue() {
     	Object variant = Variants.getIntQueue();
     	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(List.of(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
     public void testQVariant_IntStack() {
     	Object variant = Variants.getIntStack();
     	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(List.of(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
     public void testQVariant_StringVector() {
     	Object variant = Variants.getStringVector();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of("S1", "S2", "S3", "S4"), variant);
+    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_StringLinkedList() {
     	Object variant = Variants.getStringLinkedList();
     	assertTrue(variant instanceof LinkedList);
-    	assertEquals(List.of("S1", "S2", "S3", "S4"), variant);
+    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_StringList() {
     	Object variant = Variants.getStringList();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of("S1", "S2", "S3", "S4"), variant);
+    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_StringSet() {
     	Object variant = Variants.getStringSet();
     	assertTrue(variant instanceof HashSet);
-    	assertEquals(Set.of("S1", "S2", "S3", "S4"), variant);
+    	assertEquals(new TreeSet<>(Arrays.asList("S1", "S2", "S3", "S4")), variant);
     }
     
     @Test
     public void testQVariant_StringQueue() {
     	Object variant = Variants.getStringQueue();
     	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(List.of("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
     public void testQVariant_StringStack() {
     	Object variant = Variants.getStringStack();
     	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(List.of("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
@@ -349,7 +349,7 @@ public class TestQVariant extends QApplicationTest {
     		assertTrue(e instanceof QtEnumerator);
     		values.add(((QtEnumerator)e).value());
     	}
-    	assertEquals(Set.of(101, 102, 103, 104), values);
+    	assertEquals(new TreeSet<>(Arrays.asList(101, 102, 103, 104)), values);
     }
     
     @Test
@@ -380,21 +380,21 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_DirVector() {
     	Object variant = Variants.getDirVector();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of(new QDir("/"), new QDir("/home")), variant);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
     }
     
     @Test
     public void testQVariant_DirLinkedList() {
     	Object variant = Variants.getDirLinkedList();
     	assertTrue(variant instanceof LinkedList);
-    	assertEquals(List.of(new QDir("/"), new QDir("/home")), variant);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
     }
     
     @Test
     public void testQVariant_DirList() {
     	Object variant = Variants.getDirList();
     	assertTrue(variant instanceof ArrayList);
-    	assertEquals(List.of(new QDir("/"), new QDir("/home")), variant);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
     }
     
     @Test
@@ -402,7 +402,7 @@ public class TestQVariant extends QApplicationTest {
     	Object variant = Variants.getDirSet();
     	assertNotNull(variant);
     	assertTrue(variant.getClass().getName(), variant instanceof HashSet);
-    	assertEquals(Set.of(new QDir("/"), new QDir("/home")), variant);
+    	assertEquals(new HashSet<>(Arrays.asList(new QDir("/"), new QDir("/home"))), variant);
     }
     
     @Test
@@ -410,7 +410,7 @@ public class TestQVariant extends QApplicationTest {
     	Object variant = Variants.getDirQueue();
     	assertNotNull(variant);
     	assertTrue(variant.getClass().getName(), variant instanceof ArrayDeque);
-    	assertEquals(List.of(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
@@ -418,7 +418,7 @@ public class TestQVariant extends QApplicationTest {
     	Object variant = Variants.getDirStack();
     	assertNotNull(variant);
     	assertTrue(variant.getClass().getName(), variant instanceof ArrayDeque);
-    	assertEquals(List.of(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
     }
     
     @Test
@@ -529,7 +529,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_QObjectSet() {
     	Object variant = Variants.getQObjectSet();
     	assertTrue(variant instanceof HashSet);
-    	assertEquals(Set.of(QCoreApplication.instance(), QThread.currentThread(), QAbstractEventDispatcher.instance()), variant);
+    	assertEquals(new HashSet<>(Arrays.asList(QCoreApplication.instance(), QThread.currentThread(), QAbstractEventDispatcher.instance())), variant);
     }
     
     @Test
@@ -1624,11 +1624,11 @@ public class TestQVariant extends QApplicationTest {
 	    	sentArguments.put("test7", new HashSet<>(Arrays.asList(new QComboBox(), new QComboBox(), new QComboBox(), new QComboBox())));
 	    	sentArguments.put("test8", Arrays.asList(2,4,6,8));
 	    	sentArguments.put("test9", Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9)));
-	    	sentArguments.put("test10", Map.of("file1", new QFileInfo(QDir.rootPath())));
+	    	sentArguments.put("test10", mapOf("file1", new QFileInfo(QDir.rootPath())));
 	    	sentArguments.put("test11", Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9)));
-	    	sentArguments.put("test12", Map.of((byte)5, Arrays.asList(2,4,6,8), (byte)9, Arrays.asList(3,5,7,9)));
-	    	sentArguments.put("test13", Map.of((byte)5, Arrays.asList(2,4,6,8), (byte)9, Arrays.asList(3,5,7,9)));
-	    	sentArguments.put("test14", Map.of(new QUrl.FormattingOptions(QUrl.FormattingOption.DecodeReserved), Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
+	    	sentArguments.put("test12", mapOf((byte)5, Arrays.asList(2,4,6,8), (byte)9, Arrays.asList(3,5,7,9)));
+	    	sentArguments.put("test13", mapOf((byte)5, Arrays.asList(2,4,6,8), (byte)9, Arrays.asList(3,5,7,9)));
+	    	sentArguments.put("test14", mapOf(new QUrl.FormattingOptions(QUrl.FormattingOption.DecodeReserved), Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
 	    	sentArguments.put("test15", new ArrayDeque<>(Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
 	
 	        Map<String,Object> receivedArguments = new TreeMap<>();
@@ -1742,6 +1742,18 @@ public class TestQVariant extends QApplicationTest {
     	}finally {
     		object.dispose();
     	}
+    }
+    
+    static <K, V> Map<K, V> mapOf(K k1, V v1) {
+    	Map<K,V> map = new HashMap<>();
+    	map.put(k1, v1);
+    	return map;
+    }
+    
+    static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2) {
+    	Map<K,V> map = new HashMap<>();
+    	map.put(k2, v2);
+    	return map;
     }
 
     public static void main(String args[]) {

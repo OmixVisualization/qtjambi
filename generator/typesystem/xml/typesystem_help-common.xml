@@ -105,6 +105,20 @@
   </object-type>
   <object-type name="QHelpFilterEngine" since="5.13.0">
   </object-type>
+  <value-type name="QHelpLink" since="5.15.0">
+  </value-type>
+  <object-type name="QHelpFilterSettingsWidget" since="5.15.0">
+        <modify-function signature="applySettings(QHelpFilterEngine *) const">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="readSettings(const QHelpFilterEngine *)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+  </object-type>
   <value-type name="QCompressedHelpInfo" since="5.13.0">
     <modify-function signature="operator=(const QCompressedHelpInfo &amp;)" remove="all"/>
   </value-type>

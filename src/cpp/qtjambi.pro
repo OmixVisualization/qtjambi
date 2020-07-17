@@ -1,59 +1,57 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
+SUBDIRS =   qtjambi qtjambi_core
 
-SUBDIRS =   qtjambi \
-            qtjambi_core \
-            qtjambi_gui \
-            qtjambi_widgets \
-            qtjambi_network \
-            qtjambi_qml \
-            qtjambi_quick \
-            qtjambi_quick_widgets
+contains(QT_CONFIG, qtjambi-gui):                 SUBDIRS += qtjambi_gui
+contains(QT_CONFIG, qtjambi-widgets):             SUBDIRS += qtjambi_widgets
+contains(QT_CONFIG, qtjambi-network):             SUBDIRS += qtjambi_network
+contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_qml
+contains(QT_CONFIG, qtjambi-quick):               SUBDIRS += qtjambi_quick
+contains(QT_CONFIG, qtjambi-quickwidgets):        SUBDIRS += qtjambi_quick_widgets
+contains(QT_CONFIG, qtjambi-sensors):             SUBDIRS += qtjambi_sensors
+contains(QT_CONFIG, qtjambi-remoteobjects):       SUBDIRS += qtjambi_remoteobjects
+contains(QT_CONFIG, qtjambi-texttospeech):        SUBDIRS += qtjambi_texttospeech
+contains(QT_CONFIG, qtjambi-nfc):                 SUBDIRS += qtjambi_nfc
+contains(QT_CONFIG, qtjambi-purchasing):          SUBDIRS += qtjambi_purchasing
+contains(QT_CONFIG, qtjambi-bluetooth):           SUBDIRS += qtjambi_bluetooth
+contains(QT_CONFIG, qtjambi-xml):                 SUBDIRS += qtjambi_xml
+contains(QT_CONFIG, qtjambi-scxml):               SUBDIRS += qtjambi_scxml
+contains(QT_CONFIG, qtjambi-quickcontrols2):      SUBDIRS += qtjambi_quick_controls2
+contains(QT_CONFIG, qtjambi-networkauth):         SUBDIRS += qtjambi_network_auth
+contains(QT_CONFIG, qtjambi-printsupport):        SUBDIRS += qtjambi_printsupport
 
-contains(QT_CONFIG, sensors):             SUBDIRS += qtjambi_sensors
-contains(QT_CONFIG, remoteobjects):       SUBDIRS += qtjambi_remoteobjects
-contains(QT_CONFIG, texttospeech):        SUBDIRS += qtjambi_texttospeech
-contains(QT_CONFIG, nfc):                 SUBDIRS += qtjambi_nfc
-contains(QT_CONFIG, purchasing):          SUBDIRS += qtjambi_purchasing
-contains(QT_CONFIG, bluetooth):           SUBDIRS += qtjambi_bluetooth
-contains(QT_CONFIG, xml):                 SUBDIRS += qtjambi_xml
-contains(QT_CONFIG, scxml):               SUBDIRS += qtjambi_scxml
-contains(QT_CONFIG, quickcontrols2):      SUBDIRS += qtjambi_quick_controls2
-contains(QT_CONFIG, networkauth):         SUBDIRS += qtjambi_network_auth
-contains(QT_CONFIG, printsupport):        SUBDIRS += qtjambi_printsupport
+contains(QT_CONFIG, qtjambi-sql):                 SUBDIRS += qtjambi_sql
+contains(QT_CONFIG, qtjambi-svg):                 SUBDIRS += qtjambi_svg
+contains(QT_CONFIG, qtjambi-concurrent):          SUBDIRS += qtjambi_concurrent
+contains(QT_CONFIG, qtjambi-xmlpatterns):         SUBDIRS += qtjambi_xmlpatterns
+#contains(QT_CONFIG, qtjambi-opengl):             SUBDIRS += qtjambi_opengl
+contains(QT_CONFIG, qtjambi-script):              SUBDIRS += qtjambi_script
+contains(QT_CONFIG, qtjambi-scripttools):         SUBDIRS += qtjambi_scripttools
 
-contains(QT_CONFIG, sql):                 SUBDIRS += qtjambi_sql
-contains(QT_CONFIG, svg):                 SUBDIRS += qtjambi_svg
-contains(QT_CONFIG, concurrent):          SUBDIRS += qtjambi_concurrent
-contains(QT_CONFIG, xmlpatterns):         SUBDIRS += qtjambi_xmlpatterns
-#contains(QT_CONFIG, opengl):             SUBDIRS += qtjambi_opengl
-contains(QT_CONFIG, script):              SUBDIRS += qtjambi_script
-contains(QT_CONFIG, scripttools):         SUBDIRS += qtjambi_scripttools
+contains(QT_CONFIG, qtjambi-multimediawidgets):   SUBDIRS += qtjambi_multimedia_widgets
+contains(QT_CONFIG, qtjambi-multimedia):          SUBDIRS += qtjambi_multimedia
+contains(QT_CONFIG, qtjambi-webengine):           SUBDIRS += qtjambi_webengine
+contains(QT_CONFIG, qtjambi-webenginecore):       SUBDIRS += qtjambi_webenginecore
+contains(QT_CONFIG, qtjambi-webenginewidgets):    SUBDIRS += qtjambi_webenginewidgets
 
-contains(QT_CONFIG, multimediawidgets):   SUBDIRS += qtjambi_multimedia_widgets
-contains(QT_CONFIG, multimedia):          SUBDIRS += qtjambi_multimedia
-contains(QT_CONFIG, webengine):           SUBDIRS += qtjambi_webengine
-contains(QT_CONFIG, webenginecore):       SUBDIRS += qtjambi_webenginecore
-contains(QT_CONFIG, webenginewidgets):    SUBDIRS += qtjambi_webenginewidgets
+contains(QT_CONFIG, qtjambi-location):            SUBDIRS += qtjambi_location
+contains(QT_CONFIG, qtjambi-positioning):         SUBDIRS += qtjambi_positioning
 
-contains(QT_CONFIG, location):            SUBDIRS += qtjambi_location
-contains(QT_CONFIG, positioning):         SUBDIRS += qtjambi_positioning
-
-contains(QT_CONFIG, dbus):                SUBDIRS += qtjambi_dbus
-contains(QT_CONFIG, testlib):             SUBDIRS += qtjambi_test
-contains(QT_CONFIG, help):                SUBDIRS += qtjambi_help
-contains(QT_CONFIG, websockets):          SUBDIRS += qtjambi_websockets
-contains(QT_CONFIG, webchannel):          SUBDIRS += qtjambi_webchannel
-contains(QT_CONFIG, webview):             SUBDIRS += qtjambi_webview
-#contains(QT_CONFIG, designer):           SUBDIRS += qtjambi_designer
-#contains(QT_CONFIG, designer):           SUBDIRS += designer-integration
-contains(QT_CONFIG, serialport):          SUBDIRS += qtjambi_serialport
-contains(QT_CONFIG, serialbus):           SUBDIRS += qtjambi_serialbus
-contains(QT_CONFIG, winextras):           SUBDIRS += qtjambi_winextras
-contains(QT_CONFIG, macextras):           SUBDIRS += qtjambi_macextras
-contains(QT_CONFIG, x11extras):           SUBDIRS += qtjambi_x11extras
-contains(QT_CONFIG, gamepad):             SUBDIRS += qtjambi_gamepad
+contains(QT_CONFIG, qtjambi-dbus):                SUBDIRS += qtjambi_dbus
+contains(QT_CONFIG, qtjambi-test):                SUBDIRS += qtjambi_test
+contains(QT_CONFIG, qtjambi-help):                SUBDIRS += qtjambi_help
+contains(QT_CONFIG, qtjambi-websockets):          SUBDIRS += qtjambi_websockets
+contains(QT_CONFIG, qtjambi-webchannel):          SUBDIRS += qtjambi_webchannel
+contains(QT_CONFIG, qtjambi-webview):             SUBDIRS += qtjambi_webview
+#contains(QT_CONFIG, qtjambi-designer):           SUBDIRS += qtjambi_designer
+#contains(QT_CONFIG, qtjambi-designer):           SUBDIRS += designer-integration
+contains(QT_CONFIG, qtjambi-serialport):          SUBDIRS += qtjambi_serialport
+contains(QT_CONFIG, qtjambi-serialbus):           SUBDIRS += qtjambi_serialbus
+contains(QT_CONFIG, qtjambi-winextras):           SUBDIRS += qtjambi_winextras
+contains(QT_CONFIG, qtjambi-macextras):           SUBDIRS += qtjambi_macextras
+contains(QT_CONFIG, qtjambi-x11extras):           SUBDIRS += qtjambi_x11extras
+contains(QT_CONFIG, qtjambi-gamepad):             SUBDIRS += qtjambi_gamepad
 
 SUBDIRS += qtjambi_qt3d
 

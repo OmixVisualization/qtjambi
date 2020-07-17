@@ -448,7 +448,7 @@ const QtJambiTypeEntry* get_type_entry(JNIEnv* env, const std::type_info& typeId
         case EntryTypes::SpecialTypeInfo:
         {
             size_t value_size = getValueSize(typeId);
-            if(typeId==typeid(nullptr_t)){
+            if(typeId==typeid(std::nullptr_t)){
                 result = new NullptrTypeEntry(env, typeId, qt_name, nullptr, nullptr, value_size);
             }else if(typeId==typeid(QUrl::FormattingOptions)){
                 jmethodID creator_method = resolveMethod(env, "<init>", "(I)V", java_class, false);
@@ -1870,9 +1870,9 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
             QMutexLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
             QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()));
             if (p && p->metaObject() != qt_object->metaObject()) {
+                locker.unlock();
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
                 jobject nativeLink = link->nativeLink(env);
@@ -1881,6 +1881,7 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
                 qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
                 delete p;
                 link = QSharedPointer<QtJambiLink>();
+                locker.relock();
             }
         }
         if(link){
@@ -1888,10 +1889,11 @@ bool QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, bool makeCopy
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
                     QMutexLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
                     if(QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()))){
                         qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
+                        locker.unlock();
                         delete p;
+                        locker.relock();
                     }
                 }
                 link->invalidate(env);
@@ -1962,9 +1964,9 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
         // better than C++ since we depend on C++ to do it.
         if(!link->createdByJava()){
             QMutexLocker locker(QtJambiLinkUserData::lock());
-            Q_UNUSED(locker)
             QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()));
             if (p && p->metaObject() != qt_object->metaObject()) {
+                locker.unlock();
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
                 jobject nativeLink = link->nativeLink(env);
@@ -1973,6 +1975,7 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
                 link->setSplitOwnership(env);
                 delete p;
                 link = QSharedPointer<QtJambiLink>();
+                locker.relock();
             }
         }
         if(link && !link->isSharedPointer()){
@@ -2009,10 +2012,11 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
             if(!output->l && link->ownership()==QtJambiLink::Ownership::Split){
                 {
                     QMutexLocker locker(QtJambiLinkUserData::lock());
-                    Q_UNUSED(locker)
                     if(QtJambiLinkUserData *p = static_cast<QtJambiLinkUserData *>(qt_object->userData(QtJambiLinkUserData::id()))){
                         qt_object->setUserData(QtJambiLinkUserData::id(), nullptr);
+                        locker.unlock();
                         delete p;
+                        locker.relock();
                     }
                 }
                 link->invalidate(env);

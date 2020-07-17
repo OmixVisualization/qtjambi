@@ -33,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -74,6 +73,7 @@ import io.qt.core.QSize;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
+import io.qt.gui.QAbstractUndoItem;
 import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPaintDevice;
@@ -89,7 +89,6 @@ import io.qt.network.auth.QAbstractOAuth.ModifyParametersFunction;
 import io.qt.network.auth.QAbstractOAuth.Stage;
 import io.qt.qml.QQmlImageProviderBase;
 import io.qt.qml.QtQml;
-import io.qt.script.QScriptable;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsScene;
@@ -296,7 +295,14 @@ public class TestInterfaces extends QApplicationTest {
 		Assert.assertTrue(item!=null);
 	}
 	
-	private static class Incombinable extends QColor implements QScriptable{
+	private static class Incombinable extends QColor implements QAbstractUndoItem{
+		@Override
+		public void redo() {
+		}
+
+		@Override
+		public void undo() {
+		}
 	}
 	
 	private static class InconstructibleSurfaceObject extends QEvent implements QSurface{
@@ -412,7 +418,7 @@ public class TestInterfaces extends QApplicationTest {
 		}
 	}
 	
-	private static class CustomObjectMultiInterface extends QObject implements QScriptable, TestInterface, QFactoryInterface{
+	private static class CustomObjectMultiInterface extends QObject implements QAbstractUndoItem, TestInterface, QFactoryInterface{
 
 		public CustomObjectMultiInterface() {
 			super();
@@ -441,6 +447,14 @@ public class TestInterfaces extends QApplicationTest {
 		@Override
 		public String method5() {
 			return "CustomObjectMultiInterface::method5";
+		}
+
+		@Override
+		public void redo() {
+		}
+
+		@Override
+		public void undo() {
 		}
 	}
 	
@@ -789,106 +803,101 @@ public class TestInterfaces extends QApplicationTest {
 	
 	@Test
 	public void test_MultiInterfaceImpl() {
-		{
-			class MultiImpl extends QtObject implements QLayoutItem, QScriptable, ModifyParametersFunction, QEasingCurve.EasingFunction, QtQml.ObjectCallback{
-	
-				@Override
-				public void call(Stage arg__1, Map<String, Object> arg__2) {
-				}
-				
-				@Override
-				public double call(double v) {
-					return v;
-				}
-				
-				@Override
-				public io.qt.core.QObject call(io.qt.qml.QQmlEngine arg__1, io.qt.qml.QJSEngine arg__2){
-					return null;
-				}
-	
-				@Override
-				public Qt.Orientations expandingDirections() {
-					return new Qt.Orientations(0);
-				}
-	
-				@Override
-				public QRect geometry() {
-					return new QRect();
-				}
-	
-				@Override
-				public boolean isEmpty() {
-					return false;
-				}
-	
-				@Override
-				public QSize maximumSize() {
-					return new QSize();
-				}
-	
-				@Override
-				public QSize minimumSize() {
-					return new QSize();
-				}
-	
-				@Override
-				public void setGeometry(QRect arg__1) {
-				}
-	
-				@Override
-				public QSize sizeHint() {
-					return new QSize();
-				}
+		class MultiImpl extends QtObject implements QLayoutItem, QPaintDevice, ModifyParametersFunction, QEasingCurve.EasingFunction, QtQml.ObjectCallback{
+
+			@Override
+			public void call(Stage arg__1, Map<String, Object> arg__2) {
 			}
-			MultiImpl object = new MultiImpl();
-			Assert.assertFalse(object.isDisposed());
-			object.alignment();
-			object.argumentCount();
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
+			
+			@Override
+			public double call(double v) {
+				return v;
+			}
+			
+			@Override
+			public io.qt.core.QObject call(io.qt.qml.QQmlEngine arg__1, io.qt.qml.QJSEngine arg__2){
+				return null;
+			}
+
+			@Override
+			public Qt.Orientations expandingDirections() {
+				return new Qt.Orientations(0);
+			}
+
+			@Override
+			public QRect geometry() {
+				return new QRect();
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return false;
+			}
+
+			@Override
+			public QSize maximumSize() {
+				return new QSize();
+			}
+
+			@Override
+			public QSize minimumSize() {
+				return new QSize();
+			}
+
+			@Override
+			public void setGeometry(QRect arg__1) {
+			}
+
+			@Override
+			public QSize sizeHint() {
+				return new QSize();
+			}
+
+			@Override
+			public QPaintEngine paintEngine() {
+				return null;
+			}
 		}
-		{
-			QScriptable object = new QScriptable() {};
-			Assert.assertFalse(object.isDisposed());
-			object.argumentCount();
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		{
-			QRunnable object = ()->{};
-			Assert.assertFalse(object.isDisposed());
-			object.autoDelete();
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		{
-			QtObjectInterface object = new QtObjectInterface() {};
-			Assert.assertTrue(object.isDisposed());
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		{
-			QtObjectInterface object = (QRunnable & QScriptable & Serializable) ()->{};
-			Assert.assertFalse(object.isDisposed());
-			((QRunnable)object).run();
-			((QScriptable)object).argumentCount();
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		{
-			CustomInterface object = ()->{};
-			Assert.assertTrue(object.isDisposed());
-			object.call();
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		{
-			QtObject object = new QtObject() {};
-			Assert.assertTrue(object.isDisposed());
-			object.dispose();
-			Assert.assertTrue(object.isDisposed());
-		}
-		System.gc();
+		MultiImpl object = new MultiImpl();
+		Assert.assertFalse(object.isDisposed());
+		object.alignment();
+		object.paintingActive();
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+	}
+	
+	@Test
+	public void test_InterfaceLiveCircle2() {
+		QRunnable object = ()->{};
+		Assert.assertFalse(object.isDisposed());
+		object.autoDelete();
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+	}
+
+	@Test
+	public void test_InterfaceLiveCircle3() {
+		QtObjectInterface object = new QtObjectInterface() {};
+		Assert.assertTrue(object.isDisposed());
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+	}
+
+	@Test
+	public void test_InterfaceLiveCircle5() {
+		CustomInterface object = ()->{};
+		Assert.assertTrue(object.isDisposed());
+		object.call();
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
+	}
+
+	@Test
+	public void test_InterfaceLiveCircle6() {
+		QtObject object = new QtObject() {};
+		Assert.assertTrue(object.isDisposed());
+		object.dispose();
+		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
 	}
 	
 	static class VirtualOverrideTest extends TestAbstractClass implements TestInterface{

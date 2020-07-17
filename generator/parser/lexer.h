@@ -96,7 +96,7 @@ class LocationTable {
 
         void resize(std::size_t size) {
             Q_ASSERT(size > 0);
-            lines = (std::size_t*) ::realloc(lines, sizeof(std::size_t) * size);
+            lines = reinterpret_cast<std::size_t*>(::realloc(lines, sizeof(std::size_t) * size));
             line_count = size;
         }
 

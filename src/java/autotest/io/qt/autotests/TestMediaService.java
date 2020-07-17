@@ -31,6 +31,8 @@ package io.qt.autotests;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -325,7 +327,7 @@ public class TestMediaService extends QApplicationTest {
 
 		@Override
 		public List<QByteArray> devices(QByteArray service) {
-			return List.of();
+			return Collections.emptyList();
 		}
 
 		@Override
@@ -335,7 +337,7 @@ public class TestMediaService extends QApplicationTest {
 
 		@Override
 		public List<String> supportedMimeTypes() {
-			return List.of();
+			return Collections.emptyList();
 		}
     }
     
@@ -344,7 +346,10 @@ public class TestMediaService extends QApplicationTest {
     	MyMediaServiceProviderPlugin plugin = new MyMediaServiceProviderPlugin();
     	QJsonValue key = new QJsonValue("Test");
     	QJsonValue value = new QJsonValue(QMediaServiceProviderFactoryInterface.Q_MEDIASERVICE_MEDIAPLAYER);
-    	QPluginLoader.registerStaticPluginFunction(plugin, Map.of("Keys", new QJsonArray(key), "Services", new QJsonArray(value)));
+    	Map<String, Object> map = new HashMap<>();
+    	map.put("Keys", new QJsonArray(key));
+    	map.put("Services", new QJsonArray(value));
+    	QPluginLoader.registerStaticPluginFunction(plugin, map);
     	QMediaPlayer player = new QMediaPlayer(null, QMediaPlayer.Flag.VideoSurface, QMediaPlayer.Flag.StreamPlayback);
     	QMediaContent content = new QMediaContent(QUrl.fromLocalFile("Test.mp4"));
     	player.setMedia(content);

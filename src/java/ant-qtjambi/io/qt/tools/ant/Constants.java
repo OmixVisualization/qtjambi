@@ -84,6 +84,7 @@ public abstract class Constants {
     public static final String QT_VERSION_MINOR         = "qt.version.minor";
     public static final String QT_VERSION_PATCHLEVEL    = "qt.version.patchlevel";
     public static final String QT_VERSION               = "qt.version";
+    public static final String QT_SPEC                  = "qt.qmakespec";
 
     public static final String QT_VERSION_MAJOR_NEXT    = "qt.version.major.next";
     public static final String QT_VERSION_MINOR_NEXT    = "qt.version.minor.next";
@@ -104,6 +105,7 @@ public abstract class Constants {
     public static final String TOOLS_LIBDIR             = "tools.qt.libdir";
     public static final String TOOLS_QMAKE              = "tools.qt.qmake";
     public static final String TOOLS_QMAKE_ABSPATH      = "tools.qt.qmake.abspath";
+    public static final String TOOLS_COMPILER           = "tools.compiler";
 
     /*
      * This is needed for Linux/Unix/MacOSX so that the bundled item filename matches the
@@ -114,6 +116,7 @@ public abstract class Constants {
     public static final String QTJAMBI_SONAME_VERSION_MINOR   = "qtjambi.soname.version.minor";
     public static final String QTJAMBI_QT_LIBINFIX			  = "qtjambi.qt.libinfix";
     public static final String QTJAMBI_LIBINFIX			  	  = "qtjambi.libinfix";
+    public static final String QTJAMBI_ABIS  			  	  = "qtjambi.android.abis";
 
     /*
      * These properties are set inside this task

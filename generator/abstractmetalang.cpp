@@ -400,6 +400,7 @@ AbstractMetaFunction *AbstractMetaFunction::copy() const {
     cpy->setConstant(isConstant());
     cpy->setOriginalAttributes(originalAttributes());
     cpy->setDeclaringTemplate(declaringTemplate());
+    cpy->setDeprecatedComment(deprecatedComment());
 
     for(const AbstractMetaArgument *arg : arguments())
         cpy->addArgument(arg->copy());

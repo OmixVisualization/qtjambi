@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,11 +75,11 @@ public class TestIterators extends QApplicationTest {
 	@Test
     public void test_QTreeWidgetItemIterator_owner_deletion() {
     	QTreeWidget widget = new QTreeWidget();
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("A")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("B")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("C")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("D")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("E")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
     	QTreeWidgetItemIterator iterator = widget.iterator();
     	widget.dispose();
     	try {
@@ -91,17 +92,17 @@ public class TestIterators extends QApplicationTest {
 	@Test
     public void test_QTreeWidgetItemIterator_correct_iteration() {
     	QTreeWidget widget = new QTreeWidget();
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("A")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("B")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("C")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("D")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(List.of("E")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
+    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
     	List<String> texts = new ArrayList<>();
     	for(QTreeWidgetItem item : widget) {
     		Assert.assertTrue(item!=null);
     		texts.add(item.text(0));
     	}
-    	Assert.assertEquals(List.of("A", "B", "C", "D", "E"), texts);
+    	Assert.assertEquals(Arrays.asList("A", "B", "C", "D", "E"), texts);
     }
     
     @Test
@@ -120,7 +121,7 @@ public class TestIterators extends QApplicationTest {
     			int idx = subdir.lastIndexOf('/');
     			subDirs.add(subdir.substring(idx+1));
 	    	}
-	    	Assert.assertEquals(new HashSet<>(List.of(".", "..", "A", "B", "C", "D", "E")), subDirs);
+	    	Assert.assertEquals(new HashSet<>(Arrays.asList(".", "..", "A", "B", "C", "D", "E")), subDirs);
     	}finally {
     		QDir temp = QDir.temp();
     		if(temp.exists("QtJambi_QDirTest")) {

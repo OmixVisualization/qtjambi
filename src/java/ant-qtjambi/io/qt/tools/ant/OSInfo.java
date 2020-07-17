@@ -58,7 +58,9 @@ public class OSInfo
         Linux ("linux"),
         MacOS ("macosx"),
         Solaris ("sunos"),
-        FreeBSD ("freebsd");
+        FreeBSD ("freebsd"),
+        Android ("android"),
+        IOS ("ios");
 
         private String name;
 
@@ -113,6 +115,24 @@ public class OSInfo
         }
         return os;
     }
+    
+    public static OS crossOS() {
+    	if(crossOS==null) {
+    		return os();
+    	}
+    	else {
+    		return crossOS;
+    	}
+    }
+    
+    public static String crossOSArchName() {
+    	if(crossOSArchName==null) {
+    		return osArchName();
+    	}
+    	else {
+    		return crossOSArchName;
+    	}
+    }
 
 
     /**
@@ -141,6 +161,12 @@ public class OSInfo
                 break;
             case MacOS:
                 osArchName = "macosx";
+                break;
+            case Android:
+                osArchName = "android";
+                break;
+            case IOS:
+                osArchName = "ios";
                 break;
             case Solaris:
                 // sparc || sparcv9
@@ -201,7 +227,22 @@ public class OSInfo
         return Boolean.FALSE;
     }
 
+    static void setQMakeXSpec(String qmakeXSpec) {
+    	switch(qmakeXSpec) {
+    	case "android-clang":
+    		crossOS = OS.Android;
+    		crossOSArchName = "android";
+    		break;
+    	case "macx-ios-clang":
+    		crossOS = OS.IOS;
+    		crossOSArchName = "ios";
+    		break;
+    		default:break;
+    	}
+    }
 
+    private static OS crossOS;
+    private static String crossOSArchName;
     private static OS os;
     private static String osArchName;
 }

@@ -110,18 +110,18 @@ void Generator::writeInclude(QTextStream &s, const Include &inc, QSet<QString> &
 
     if (!inc.suppressed){
         if (inc.type == Include::TargetLangImport)
-            s << "import " << incString << ";" << endl;
+            s << "import " << incString << ";" << Qt::endl;
         else{
             for(const QString& feature : inc.requiredFeatures.keys()){
                 QString configFile = inc.requiredFeatures[feature];
                 if(!configFile.isEmpty()){
                     writeInclude(s, Include(Include::IncludePath, configFile), dedupe);
                 }
-                s << "#if QT_CONFIG(" << feature << ")" << endl;
+                s << "#if QT_CONFIG(" << feature << ")" << Qt::endl;
             }
-            s << "#include " << incString << endl;
+            s << "#include " << incString << Qt::endl;
             for(const QString& feature : inc.requiredFeatures.keys()){
-                s << "#endif //QT_CONFIG(" << feature << ")" << endl;
+                s << "#endif //QT_CONFIG(" << feature << ")" << Qt::endl;
             }
         }
     }
@@ -137,7 +137,7 @@ void Generator::printClasses() {
         if (!shouldGenerate(cls))
             continue;
         write(s, cls);
-        s << endl << endl;
+        s << Qt::endl << Qt::endl;
     }
 }
 

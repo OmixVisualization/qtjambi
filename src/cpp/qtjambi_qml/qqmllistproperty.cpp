@@ -134,6 +134,36 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             }
         }
     };
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    listProperty->replace = [](QQmlListProperty<QObject> * list, int idx, QObject *v){
+        if(JNIEnv * env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            jobject javaList = jobject(list->data);
+            if(!env->IsSameObject(javaList, nullptr)){
+                try{
+                    jobject java_object = qtjambi_from_QObject(env, v);
+                    qtjambi_collection_replace(env, javaList, idx, java_object);
+                } catch (const JavaException& exn) {
+                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                }
+            }
+        }
+    };
+
+    listProperty->removeLast = [](QQmlListProperty<QObject> * list){
+        if(JNIEnv * env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            jobject javaList = jobject(list->data);
+            if(!env->IsSameObject(javaList, nullptr)){
+                try{
+                    qtjambi_collection_remove_last(env, javaList);
+                } catch (const JavaException& exn) {
+                    exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
+                }
+            }
+        }
+    };
+#endif
 }
 
 // destruct QQmlListProperty
@@ -364,8 +394,13 @@ void initialize_meta_info_QQmlListProperty(){
                                     listProperty->at = _ptr->at;
                                     listProperty->clear = _ptr->clear;
                                     listProperty->count = _ptr->count;
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
                                     listProperty->dummy1 = _ptr->dummy1;
                                     listProperty->dummy2 = _ptr->dummy2;
+#else
+                                    listProperty->replace = _ptr->replace;
+                                    listProperty->removeLast = _ptr->removeLast;
+#endif
                                 }
                                 return listProperty;
                             }

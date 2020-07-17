@@ -164,6 +164,8 @@ enum TOKEN_KIND {
     Token_QT_REQUIRE_CONFIG,
     Token_QTJAMBI_DEPRECATED,
     Token_QTJAMBI_DEPRECATED_X,
+    Token_decltype,
+    Token_alignas,
 //    Token_nullptr,
 
     TOKEN_KIND_COUNT

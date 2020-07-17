@@ -1,17 +1,17 @@
 <typesystem>
-  <load-typesystem name="../build/generator/typesystem_core.xml" 				generate="yes"/>
-  <load-typesystem name="../build/generator/typesystem_gui.xml" 				generate="yes"/>
+  <load-typesystem name="../build/generator/typesystem_core.xml" 				generate="yes" 				unless="QT_NO_CORE"/>
+  <load-typesystem name="../build/generator/typesystem_gui.xml" 				generate="yes" 				unless="QT_NO_GUI"/>
   <load-typesystem name="../build/generator/typesystem_concurrent.xml" 			generate="yes" 				unless="QT_NO_CONCURRENT"/>
-  <load-typesystem name="../build/generator/typesystem_widgets.xml" 			generate="yes"/>
+  <load-typesystem name="../build/generator/typesystem_widgets.xml" 			generate="yes" 				unless="QT_NO_WIDGETS"/>
   <load-typesystem name="../build/generator/typesystem_sql.xml" 				generate="yes" 				unless="QT_NO_SQL"/>
-  <load-typesystem name="../build/generator/typesystem_network.xml" 			generate="yes"/>
+  <load-typesystem name="../build/generator/typesystem_network.xml" 			generate="yes" 				unless="QT_NO_NETWORK"/>
   <load-typesystem name="../build/generator/typesystem_networkauth.xml" 		generate="yes" 				unless="QT_NO_NETWORKAUTH"/>
-  <load-typesystem name="../build/generator/typesystem_xml.xml" 				generate="yes"/>
+  <load-typesystem name="../build/generator/typesystem_xml.xml" 				generate="yes" 				unless="QT_NO_XML"/>
   <load-typesystem name="../build/generator/typesystem_xmlpatterns.xml" 		generate="yes" 				unless="QT_NO_XMLPATTERNS"/>
-  <load-typesystem name="../build/generator/typesystem_qml.xml" 				generate="yes"/>
-  <load-typesystem name="../build/generator/typesystem_quick.xml" 				generate="yes"/>
-  <load-typesystem name="../build/generator/typesystem_quickcontrols2.xml"		generate="yes"/>
-  <load-typesystem name="../build/generator/typesystem_quickwidgets.xml" 		generate="yes"/>
+  <load-typesystem name="../build/generator/typesystem_qml.xml" 				generate="yes" 				unless="QT_NO_QML"/>
+  <load-typesystem name="../build/generator/typesystem_quick.xml" 				generate="yes" 				unless="QT_NO_QUICK"/>
+  <load-typesystem name="../build/generator/typesystem_quickcontrols2.xml"		generate="yes" 				unless="QT_NO_QUICKCONTROLS2"/>
+  <load-typesystem name="../build/generator/typesystem_quickwidgets.xml" 		generate="yes" 				unless="QT_NO_QUICKWIDGETS"/>
   <load-typesystem name="../build/generator/typesystem_macextras.xml" 			generate="yes" 				unless="QT_NO_MACEXTRAS"/>
   <load-typesystem name="../build/generator/typesystem_winextras.xml" 			generate="yes" 				unless="QT_NO_WINEXTRAS"/>
   <load-typesystem name="../build/generator/typesystem_x11extras.xml" 			generate="yes" 				unless="QT_NO_X11EXTRAS"/>
@@ -27,7 +27,6 @@
   <load-typesystem name="../build/generator/typesystem_test.xml" 				generate="yes" 				unless="QT_NO_TEST"/>
   <load-typesystem name="../build/generator/typesystem_declarative.xml" 		generate="yes"	until="5.5"	unless="QT_NO_DECLARATIVE"/>
   <load-typesystem name="../build/generator/typesystem_help.xml" 				generate="yes" 				unless="QT_NO_HELP"/>
-  <load-typesystem name="../build/generator/typesystem_designer.xml" 			generate="yes"/>
   <load-typesystem name="../build/generator/typesystem_qt3dcore.xml" 			generate="yes" 				unless="QT_NO_QT3DCORE"/>
   <load-typesystem name="../build/generator/typesystem_qt3dextras.xml" 			generate="yes" 				unless="QT_NO_QT3DEXTRAS"/>
   <load-typesystem name="../build/generator/typesystem_qt3drenderer.xml" 		generate="yes" 				unless="QT_NO_QT3DRENDER"/>

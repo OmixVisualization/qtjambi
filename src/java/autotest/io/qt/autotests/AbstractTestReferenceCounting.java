@@ -80,7 +80,7 @@ import io.qt.widgets.QApplication;
 import io.qt.widgets.QButtonGroup;
 import io.qt.widgets.QComboBox;
 import io.qt.widgets.QCompleter;
-import io.qt.widgets.QDirModel;
+import io.qt.widgets.QFileSystemModel;
 import io.qt.widgets.QLineEdit;
 import io.qt.widgets.QListWidget;
 import io.qt.widgets.QListWidgetItem;
@@ -1702,7 +1702,7 @@ public abstract class AbstractTestReferenceCounting extends QApplicationTest {
 
         reset();
         {
-            view.setModel(new QDirModel());
+            view.setModel(new QFileSystemModel());
 
             QItemSelectionModel model = new QItemSelectionModel(view.model());
             model.destroyed.connect(this::increaseDeleted);

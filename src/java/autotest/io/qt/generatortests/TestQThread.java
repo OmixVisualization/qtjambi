@@ -131,7 +131,7 @@ public class TestQThread extends QApplicationTest {
 		final QTimeLine[] timeLine = {null};
 		final AtomicBoolean threadFinished = new AtomicBoolean(false);
 		final AtomicInteger finished = new AtomicInteger(0);
-		final var currentThread = QThread.currentThread();
+		final Object currentThread = QThread.currentThread();
 		QThread signalTestThread = QThread.create(()->{
 			parent[0] = new QObject();
 			parent[0].setObjectName("testSignalMoveToThread-parent");
@@ -139,7 +139,7 @@ public class TestQThread extends QApplicationTest {
 			timeLine[0].setObjectName("testSignalMoveToThread-child");
 			timeLine[0].setParent(parent[0]);
 			timeLine[0].finished.connect(finished::incrementAndGet);
-			parent[0].moveToThread(currentThread);
+			parent[0].moveToThread(QtJambiThreadUtility.castToThread(currentThread));
 			threadFinished.set(true);
 		});
 		signalTestThread.setDaemon(true);
@@ -727,8 +727,7 @@ public class TestQThread extends QApplicationTest {
 	
 	@org.junit.Test
 	public void testDeleteAdoptedThread() throws InterruptedException {
-		@SuppressWarnings("unchecked")
-		WeakReference<QThread>[] reference = new WeakReference[1];
+		WeakReference<?>[] reference = {null};
 		{
 			QtJambiInternal.Ownership[] ownership = {null};
 			Thread[] javaThreads = {null,null};
@@ -751,10 +750,13 @@ public class TestQThread extends QApplicationTest {
 			qtarray[0] = null;
 			thread = null;
 		}
+		Thread.yield();
 		System.gc();
 		System.runFinalization();
+		Thread.yield();
 		System.gc();
 		System.runFinalization();
+		Thread.yield();
 		Assert.assertTrue("reference is not null", null==reference[0].get());
 	}
 }

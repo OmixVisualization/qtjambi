@@ -86,7 +86,7 @@
   <value-type name="QScriptProgram">
     <modify-function signature="operator= ( const QScriptProgram &amp; )" remove="all"/>
   </value-type>
-  <interface-type name="QScriptExtensionInterface" java-name="QScriptExtension"/>
+  <interface-type name="QScriptExtensionInterface"/>
     <value-type name="QScriptSyntaxCheckResult">
     <modify-function signature="operator= ( const QScriptSyntaxCheckResult &amp; )" remove="all"/>
         <custom-constructor>
@@ -133,7 +133,7 @@
     </object-type>
     <functional-type name="QScriptEngine::FunctionSignature"/>
     <object-type name="QScriptExtensionPlugin">
-        <interface-polymorphy interface="QScriptExtension" condition="false" />
+        <interface-polymorphy interface="QScriptExtension" condition="dynamic_cast&lt;const QScriptExtensionPlugin*>(%1)" />
         <modify-function signature="setupPackage(QString,QScriptEngine*)const">
             <modify-argument index="2">
             <reference-count action="ignore" />

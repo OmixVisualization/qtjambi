@@ -52,6 +52,8 @@
     <rejection class="QSGTexture" function-name="setWorkResourceUpdateBatch"/>
     <rejection class="QSGMaterialRhiShader" function-name="setShader"/>
     <rejection class="PtrShaderCreateFunc"/>
+    <rejection class="QSGTexture::NativeTexture"/>
+    <rejection class="QSGTexture" function-name="nativeTexture"/>
     <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
     <enum-type name="QQuickItem::ItemChange"/>
     <enum-type name="QQuickItem::TransformOrigin"/>
@@ -109,7 +111,7 @@
         <extra-includes>
             <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
         </extra-includes>
-        <interface-polymorphy interface="QQmlParserStatus" condition="false" />
+        <interface-polymorphy interface="QQmlParserStatus" condition="dynamic_cast&lt;const QQuickItem*>(%1)" />
         <modify-function signature="childMouseEventFilter(QQuickItem*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
@@ -526,7 +528,7 @@
     <value-type name="QSGGeometry::Point2D">
     </value-type>
     <object-type name="QQuickImageProvider">
-        <interface-polymorphy interface="QQmlImageProviderBase" condition="false" />
+        <interface-polymorphy interface="QQmlImageProviderBase" condition="dynamic_cast&lt;const QQuickImageProvider*>(%1)" />
     </object-type>
     <object-type name="QQuickAsyncImageProvider">
     </object-type>

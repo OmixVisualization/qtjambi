@@ -100,14 +100,14 @@ import io.qt.widgets.QWidget;
 class OrdinarySubclass extends OrdinaryDestroyed {
     public OrdinarySubclass(DisposeCounter destroyCounter) {
     	super(destroyCounter);
-    	io.qt.QtUtilities.getSignalOnDispose(this).connect(((Runnable)destroyCounter::onDisposed)::run);
+    	io.qt.QtUtilities.getSignalOnDispose(this).connect(destroyCounter::onDisposed, Qt.ConnectionType.DirectConnection);
     }
 }
 
 class QObjectSubclass extends QObjectDestroyed {
     public QObjectSubclass(DisposeCounter counter, QObject parent) {
         super(counter, parent);
-        destroyed.connect(((Runnable)counter::onDisposed)::run);
+        destroyed.connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
     }
 }
 

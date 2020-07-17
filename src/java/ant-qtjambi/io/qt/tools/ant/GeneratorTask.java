@@ -50,7 +50,6 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
@@ -67,6 +66,7 @@ public class GeneratorTask extends Task {
     private String options;
     private String qtIncludeDirectory;
     private String qtLibDirectory;
+    private String qtBinDirectory;
     private String jambiDirectory;
     private String generatorDirectory;
     private String generatorExe;
@@ -278,16 +278,11 @@ public class GeneratorTask extends Task {
         List<String> thisCommandList = new ArrayList<String>();
         thisCommandList.add(generator);
         thisCommandList.addAll(commandList);
-        getProject().log(this, "Arguments: " + thisCommandList.toString(), Project.MSG_INFO);
 
         File dirExecute = null;
         if(dir != null)
             dirExecute = new File(dir);
-        String qtBinDirectory = null;
-        if(OSInfo.isWindows()){
-        	qtBinDirectory = qtLibDirectory;
-        }
-        Exec.execute(thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File("generator.out.txt"), new File("generator.err.txt"));
+        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File("generator.out.txt"), new File("generator.err.txt"));
     }
 
     public void setHeader(String header) {
@@ -322,6 +317,10 @@ public class GeneratorTask extends Task {
      */
     public void setQtLibDirectory(String dir) {
         this.qtLibDirectory = dir;
+    }
+    
+    public void setQtBinDirectory(String dir) {
+        this.qtBinDirectory = dir;
     }
 
     public void setInputDirectory(String inputDirectory) {

@@ -220,7 +220,7 @@ abstract class Util {
 
         // Make /usr/lib an implicit part of library path
         if(OSInfo.os() == OSInfo.OS.Linux || OSInfo.os() == OSInfo.OS.FreeBSD || OSInfo.os() == OSInfo.OS.Solaris) {
-            String archName = OSInfo.osArchName();
+            String archName = OSInfo.crossOSArchName();
             boolean match = false;
             if(archName.equals(OSInfo.K_LINUX32)) {
                 // (some non-FHS) Linux 32bit might have lib32 directory most Linux

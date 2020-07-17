@@ -122,7 +122,7 @@ void UiConverter::traverseCustomWidgetFile(const QString &customWidgetFile) {
             QString className = attributes.value("class").toString();
 
             int pos = className.lastIndexOf(".");
-            m_custom_widgets.insertMulti(className.mid(pos + 1), CustomWidget(className, nullptr));
+            m_custom_widgets.insert(className.mid(pos + 1), CustomWidget(className, nullptr));
         }
     }
 
@@ -191,7 +191,7 @@ void UiConverter::fixCustomWidgetNode(QDomElement el, QDomDocument *) {
     QString extends = extendss.at(0).toElement().text();
 
     AbstractMetaClass *javaClass = m_java_classes.findClass(extends);
-    if (javaClass == 0) {
+    if (!javaClass) {
         ReportHandler::warning("Couldn't find super class for custom widget: '" + extends + "'");
         return;
     }

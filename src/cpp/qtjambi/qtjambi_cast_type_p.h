@@ -36,6 +36,8 @@
 #include <QtDBus/QDBusReply>
 #endif
 
+QT_WARNING_DISABLE_DEPRECATED
+
 namespace QtJambiPrivate {
 
 struct qtjambi_type_proxy{};

@@ -66,6 +66,8 @@
 #include <functional>
 #include <typeinfo>
 
+QT_WARNING_DISABLE_CLANG("-Wshift-count-overflow")
+
 #if TARGET_JAVA_VERSION>=10
 #ifndef JNI_VERSION_10
 #define JNI_VERSION_10   0x000a0000
@@ -1008,6 +1010,8 @@ QTJAMBI_EXPORT jobject qtjambi_linkedlist_new(JNIEnv *env);
 QTJAMBI_EXPORT jobject qtjambi_deque_new(JNIEnv *env);
 QTJAMBI_EXPORT jobject qtjambi_list_get(JNIEnv *env, jobject list, jint index);
 QTJAMBI_EXPORT void qtjambi_collection_add(JNIEnv *env, jobject list, jobject obj);
+QTJAMBI_EXPORT jobject qtjambi_collection_replace(JNIEnv *env, jobject list, int idx, jobject obj);
+QTJAMBI_EXPORT jobject qtjambi_collection_remove_last(JNIEnv *env, jobject list);
 QTJAMBI_EXPORT void qtjambi_collection_clear(JNIEnv *env, jobject collection);
 QTJAMBI_EXPORT jobjectArray qtjambi_collection_toArray(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT int qtjambi_collection_size(JNIEnv *env, jobject col);

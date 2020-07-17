@@ -106,6 +106,30 @@
             <replace-default-expression with="new java.util.ArrayList&lt;&gt;()"/>
            </modify-argument>
       </modify-function>
+      <!--modify-function signature="setProperty(const QString &amp;, const QScriptValue &amp;, const PropertyFlags &amp;);">
+           <modify-argument index="3">
+            <replace-type modified-type="io.qt.script.QScriptValue$PropertyFlags" />
+                <conversion-rule class="native">
+                    QScriptValue::PropertyFlags %out = qtjambi_cast&lt;QScriptValue::PropertyFlags>(%env, %in);
+                </conversion-rule>
+           </modify-argument>
+      </modify-function>
+      <modify-function signature="setProperty(const QScriptString &amp;, const QScriptValue &amp;, const PropertyFlags &amp;);">
+           <modify-argument index="3">
+            <replace-type modified-type="io.qt.script.QScriptValue$PropertyFlags" />
+                <conversion-rule class="native">
+                    QScriptValue::PropertyFlags %out = qtjambi_cast&lt;QScriptValue::PropertyFlags>(%env, %in);
+                </conversion-rule>
+           </modify-argument>
+      </modify-function>
+      <modify-function signature="setProperty(unsigned int, const QScriptValue &amp;, const PropertyFlags &amp;);">
+           <modify-argument index="3">
+            <replace-type modified-type="io.qt.script.QScriptValue$PropertyFlags" />
+                <conversion-rule class="native">
+                    QScriptValue::PropertyFlags %out = qtjambi_cast&lt;QScriptValue::PropertyFlags>(%env, %in);
+                </conversion-rule>
+           </modify-argument>
+      </modify-function-->
       <inject-code>
       
       @io.qt.QtUninvokable

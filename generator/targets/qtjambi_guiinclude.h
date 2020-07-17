@@ -44,96 +44,79 @@
 
 #include "generator_predefinitions.h"
 
+#define QTJAMBI_CORE_H
+#define QQMLPRIVATE_H
+#define QML_GETTYPENAMES
+
 #if QT_VERSION>=0x050000
-	#include <QtCore/private/qabstractfileengine_p.h>
-	#include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qabstractfileengine_p.h>
+    #include <QtCore/private/qfsfileengine_p.h>
+    #include <QtCore/private/qmetaobject_p.h>
 #endif
-	
+
 #define QSETTINGS_H
 #include <QtCore/QtCore>
 #undef QSETTINGS_H
 #define Q_OS_WIN
 #include <QtCore/QSettings>
 #undef Q_OS_WIN
-
 #include <qtjambi_core/qtjambiqfuture.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 
-#include <QtNetwork/QtNetwork>
-#include <qtjambi_network/qschemanetworkaccessmanager.h>
-#include <qtjambi_network/qclasspathaccessmanager.h>
-/*
+#define QACCESSIBLE_H
 #include <QtGui/QtGui>
-#include <qtjambi_gui/qtreemodel.h>
-#include <qtjambi_gui/qguisignalmapper.h>
-#include <qtjambi_gui/qtjambitextobjectinterface.h>
+#include <QtGui/QOpenGLFunctions_1_0>
+#include <QtGui/QOpenGLFunctions_1_1>
+#include <QtGui/QOpenGLFunctions_1_2>
+#include <QtGui/QOpenGLFunctions_1_3>
+#include <QtGui/QOpenGLFunctions_1_4>
+#include <QtGui/QOpenGLFunctions_1_5>
+#include <QtGui/QOpenGLFunctions_2_0>
+#include <QtGui/QOpenGLFunctions_2_1>
+#include <QtGui/QOpenGLFunctions_3_0>
+#include <QtGui/QOpenGLFunctions_3_1>
+#include <QtGui/QOpenGLFunctions_3_2_Compatibility>
+#include <QtGui/QOpenGLFunctions_3_2_Core>
+#include <QtGui/QOpenGLFunctions_3_3_Compatibility>
+#include <QtGui/QOpenGLFunctions_3_3_Core>
+#include <QtGui/QOpenGLFunctions_4_0_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_0_Core>
+#include <QtGui/QOpenGLFunctions_4_1_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_1_Core>
+#include <QtGui/QOpenGLFunctions_4_2_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_2_Core>
+#include <QtGui/QOpenGLFunctions_4_3_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_3_Core>
+#include <QtGui/QOpenGLFunctions_4_4_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_4_Core>
+#include <QtGui/QOpenGLFunctions_4_5_Compatibility>
+#include <QtGui/QOpenGLFunctions_4_5_Core>
+
+#ifndef QT_OPENGL_ES_2
+#define QT_OPENGL_ES_2
+#include <QtGui/QOpenGLFunctions_ES2>
+#undef QT_OPENGL_ES_2
+#else
+#include <QtGui/QOpenGLFunctions_ES2>
+#endif
+
+#undef QACCESSIBLE_H
+#define quint64 bool
+#include <QtGui/qaccessible.h>
+#undef quint64
+
+#include <QtPlatformHeaders/QtPlatformHeaders>
+#include <qtjambi_gui/qtjambi_gui.h>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 #include <qtjambi_gui/qtmatrixes.h>
-*/
-//#include <QtQml/QtQml>
-//#include <QtQuick/QtQuick>
-//#include <qtjambi_qml/qqmllistproperty.h>
-
-//#define Q_COMPILER_EXPLICIT_OVERRIDES
-
-/*
-// the generator is not able to find enum QSceneChange::Priority
-#include <Qt3DCore/QSceneChange>
-#define Priority Qt3D::QSceneChange::Priority
-#include <Qt3DCore/QBackendScenePropertyChange>
-#undef Priority
-*/
-/*
-#include <Qt3DCore/Qt3DCore>
-#include <Qt3DCore/private/qobservableinterface_p.h>
-#include <Qt3DCore/private/qlockableobserverinterface_p.h>
-#include <Qt3DCore/private/qobserverinterface_p.h>
-#include <Qt3DCore/private/qabstractaspectjobmanager_p.h>
-*/
-//#include <Qt3DRenderer/Qt3DRenderer>
-//#include <Qt3DInput/Qt3DInput>
-//#include <Qt3DQuick/Qt3DQuick>
-//#include <Qt3DQuickRenderer/Qt3DQuickRenderer>
 
 
-*/
-# if QT_VERSION >= 0x050000
-/*
-#ifndef QT_NO_WINEXTRAS
-//#include <QtWinExtras/QtWinExtras>
-#endif
-
-#ifndef QT_NO_MACEXTRAS
-//#include <QtMacExtras/QtMacExtras>
-#endif
-
-#ifndef QT_NO_X11EXTRAS
-//#include <QtX11Extras/QtX11Extras>
-#endif
-
-#define Q_NULLPTR 0
-//#define NULL 0
-//#define null 0
-//#define nullptr 0
-#ifndef QT_NO_SERIALPORT
-//#include <QtSerialPort/QtSerialPort>
-#endif
-*/
-/*
-#ifndef QT_NO_QT3DCORE
-#include <Qt3DCore/Qt3DCore>
-#endif
-
-#ifndef QT_NO_QT3DINPUT
-#include <Qt3DInput/Qt3DInput>
-#endif
-
-#ifndef QT_NO_QT3DRENDERER
-#include <Qt3DRenderer/Qt3DRenderer>
-#endif
-
-#ifndef QT_NO_QT3DQUICK
-#include <Qt3DQuick/Qt3DQuick>
-#endif
-*/
+#if QT_VERSION>=0x050000
+    #include <QtWidgets/QtWidgets>
+    #include <qtjambi_widgets/qtjambi_widgets_core.h>
+    #ifndef QT_NO_CONCURRENT
+        #include <QtConcurrent/QtConcurrent>
+    #endif
+    #include <QtQml/QtQml>
+    #include <qtjambi_qml/qqmllistproperty.h>
 #endif

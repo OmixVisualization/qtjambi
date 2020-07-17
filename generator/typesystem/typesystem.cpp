@@ -110,7 +110,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
 // the new solution overrides the qreal typedef during qtjambi wrapper generation.
         if (line.isEmpty()) {
             if (!lastEmpty)
-                s << endl;
+                s << Qt::endl;
             lastEmpty = true;
             continue;
         } else {
@@ -123,23 +123,23 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
             s << indentor;
             if (line.startsWith("*"))
                 s << " ";
-            s << line << endl;
+            s << line << Qt::endl;
             if (line.endsWith("*/"))
                 multilineComment = false;
         } else if (line.startsWith("}")) {
             return line;
         } else if (line.endsWith("}")) {
-            s << indentor << line << endl;
+            s << indentor << line << Qt::endl;
             return nullptr;
         } else if (line.endsWith("{")) {
-            s << indentor << line << endl;
+            s << indentor << line << Qt::endl;
             QString tmp;
             {
                 Indentation indent(indentor);
                 tmp = formattedCodeHelper(s, indentor, lines);
             }
             if (!tmp.isNull()) {
-                s << indentor << tmp << endl;
+                s << indentor << tmp << Qt::endl;
             }
             lastLine = tmp;
             continue;
@@ -153,7 +153,7 @@ QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lin
                     !lastLine.endsWith("}") &&
                     !line.startsWith("{"))
                 s << "    ";
-            s << line << endl;
+            s << line << Qt::endl;
         }
         lastLine = line;
     }
@@ -166,7 +166,7 @@ QTextStream &CodeSnip::formattedCode(QTextStream &s, Indentor &indentor) const {
     while (!lst.isEmpty()) {
         QString tmp = formattedCodeHelper(s, indentor, lst);
         if (!tmp.isNull()) {
-            s << indentor << tmp << endl;
+            s << indentor << tmp << Qt::endl;
         }
     }
     s.flush();
@@ -199,7 +199,7 @@ QString TemplateInstance::expandCode() const {
         QString spaces;
         QString cleanedCode;
         QTextStream s(&cleanedCode);
-        s << m_indent << "// TEMPLATE - " << m_name << " - START" << endl;
+        s << m_indent << "// TEMPLATE - " << m_name << " - START" << Qt::endl;
         for(QString line : lines) {
             if(!line.isEmpty() && line[0]==QLatin1Char('\r')){
                 line = line.mid(1);
@@ -228,7 +228,7 @@ QString TemplateInstance::expandCode() const {
             if(!QString(line).trimmed().isEmpty() || sp>=0){
                 if(line.startsWith(spaces))
                     line = line.mid(sp);
-                s << m_indent << line << endl;
+                s << m_indent << line << Qt::endl;
             }
         }
         s << m_indent << "// TEMPLATE - " << m_name << " - END";

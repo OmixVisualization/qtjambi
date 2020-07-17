@@ -170,7 +170,7 @@ CodeModel::ClassType Binder::decode_class_type(std::size_t index) const {
         case Token_union:
             return CodeModel::Union;
         default:
-            _M_message_handler("** WARNING unrecognized class type");
+            _M_message_handler("unrecognized class type");
     }
     return CodeModel::Class;
 }
@@ -237,7 +237,7 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
 
     NameAST *id = declarator->id;
     if (! declarator->id) {
-        _M_message_handler("** WARNING expected a declarator id");
+        _M_message_handler("expected a declarator id");
         return;
     }
 
@@ -245,7 +245,7 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
     ScopeModelItem symbolScope = finder.resolveScope(id, currentScope());
     if (! symbolScope) {
         name_cc.run(id);
-        _M_message_handler(std::string("** WARNING scope not found for symbol:") + qPrintable(name_cc.name()));
+        _M_message_handler(std::string("scope not found for symbol: ") + qPrintable(name_cc.name()));
         return;
     }
 
@@ -279,6 +279,9 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         fun->setTemplateParameters(_M_current_template_parameters);
         applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
         applyFunctionSpecifiers(node->function_specifiers, fun);
+        if(fun->isDeprecated() && node->deprecationComment){
+            fun->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+        }
 
         // build the type
         TypeInfo typeInfo = CompilerUtils::typeDescription(node->type_specifier,
@@ -525,14 +528,6 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             if (parameter->parameter_declaration == nullptr ||
                     parameter->parameter_declaration->declarator == nullptr ||
                     parameter->parameter_declaration->declarator->id == nullptr) {
-
-                /*std::cerr << "** WARNING template declaration not supported ``";
-                Token const &tk = _M_token_stream->token (node->start_token);
-                Token const &end_tk = _M_token_stream->token (node->declaration->start_token);
-
-                std::cerr << std::string (&tk.text[tk.position], (end_tk.position) - tk.position) << "''"
-                    << std::endl << std::endl;*/
-
                 changeTemplateParameters(savedTemplateParameters);
                 return;
 
@@ -542,13 +537,6 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
         } else {
             int tk = decode_token(type_parameter->type);
             if (tk != Token_typename && tk != Token_class) {
-                /*std::cerr << "** WARNING template declaration not supported ``";
-                Token const &tk = _M_token_stream->token (node->start_token);
-                Token const &end_tk = _M_token_stream->token (node->declaration->start_token);
-
-                std::cerr << std::string (&tk.text[tk.position], (end_tk.position) - tk.position) << "''"
-                << std::endl << std::endl;*/
-
                 changeTemplateParameters(savedTemplateParameters);
                 return;
             }
@@ -589,7 +577,7 @@ void Binder::visitTypedef(TypedefAST *node) {
         QString alias_name = decl_cc.id();
 
         if (alias_name.isEmpty()) {
-            _M_message_handler("** WARNING anonymous typedef not supported! ``");
+            _M_message_handler("anonymous typedef not supported! ``");
             Token const &tk = _M_token_stream->token(node->start_token);
             Token const &end_tk = _M_token_stream->token(node->end_token);
 
@@ -771,7 +759,7 @@ void Binder::visitUsingAs(UsingAsAST *node) {
     QString alias_name = node->name->toString(_M_token_stream).trimmed();
 
     if (alias_name.isEmpty()) {
-        _M_message_handler("** WARNING anonymous using not supported! ``");
+        _M_message_handler("anonymous using not supported! ``");
         Token const &tk = _M_token_stream->token(node->start_token);
         Token const &end_tk = _M_token_stream->token(node->end_token);
 

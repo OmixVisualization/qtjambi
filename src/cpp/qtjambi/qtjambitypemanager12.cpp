@@ -34,36 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qtjambi_repository_p.h"
-#include "qtjambi_jobjectwrapper.h"
 #include "qtjambitypemanager_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambi_core.h"
-#include "qtjambi_cast.h"
-#include "qtjambi_registry_p.h"
-#include "qtjambi_interfaces.h"
-#include "qtjambi_functionpointer.h"
 
-InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QList(const QString& internalTypeName, const InternalToExternalConverter& memberConverter, bool isPointer, bool isStaticType, size_t align, size_t size, int memberMetaType, ContainerType containerType)
-{
-    Q_UNUSED(align)
-    if(isPointer)
-        size = 0;
-#define ELEMENT_STATICSIZE_CASEACTION(ST,SZ)\
-            return ContainerConverter::getInternalToExternalConverter<QList,0,SZ,ST>(internalTypeName, memberConverter, memberMetaType, containerType);
-            ELEMENT_STATICSIZE_SWITCH(isStaticType, size)
-#undef ELEMENT_STATICSIZE_CASEACTION
-    return nullptr;
-}
-
-InternalToExternalConverter ContainerConverter::getInternalToExternalConverter_QQueue(const QString& internalTypeName, const InternalToExternalConverter& memberConverter, bool isPointer, bool isStaticType, size_t align, size_t size, int memberMetaType, ContainerType containerType)
-{
-    Q_UNUSED(align)
-    if(isPointer)
-        size = 0;
-#define ELEMENT_STATICSIZE_CASEACTION(ST,SZ)\
-            return ContainerConverter::getInternalToExternalConverter<QQueue,0,SZ,ST>(internalTypeName, memberConverter, memberMetaType, containerType);
-            ELEMENT_STATICSIZE_SWITCH(isStaticType, size)
-#undef ELEMENT_STATICSIZE_CASEACTION
-    return nullptr;
-}
+ELEMENT_CONVERTER_HASH_IMPL4(QHash,8)
+ELEMENT_CONVERTER_HASH_IMPL4(QHash,16)

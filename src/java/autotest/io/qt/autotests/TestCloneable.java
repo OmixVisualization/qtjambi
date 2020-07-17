@@ -153,7 +153,6 @@ import io.qt.network.QHostInfo;
 import io.qt.network.QIPv6Address;
 import io.qt.network.QNetworkAddressEntry;
 import io.qt.network.QNetworkCacheMetaData;
-import io.qt.network.QNetworkConfiguration;
 import io.qt.network.QNetworkCookie;
 import io.qt.network.QNetworkInterface;
 import io.qt.network.QNetworkProxy;
@@ -1768,12 +1767,13 @@ public class TestCloneable extends QApplicationTest {
 	}
 
 	@Test
+	@Deprecated
 	public void run_clone_QNetworkConfiguration() {
-		QNetworkConfiguration org = new QNetworkConfiguration();
-		QNetworkConfiguration clone = org.clone();
+		io.qt.network.QNetworkConfiguration org = new io.qt.network.QNetworkConfiguration();
+		io.qt.network.QNetworkConfiguration clone = org.clone();
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
 		org.dispose();
-		QNetworkConfiguration clone2 = clone.clone();
+		io.qt.network.QNetworkConfiguration clone2 = clone.clone();
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
 		assertEquals(clone, clone2);
 	}

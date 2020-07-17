@@ -44,52 +44,54 @@ class TypeDatabase;
 class Handler : public QXmlDefaultHandler {
     public:
         Handler(TypeDatabase *database, bool generate)
-                : m_database(database), m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass) {
-            current = nullptr;
-
-            tagNames["rejection"]                   = StackElement::Rejection;
-            tagNames["primitive-type"]              = StackElement::PrimitiveTypeEntry;
-            tagNames["object-type"]                 = StackElement::ObjectTypeEntry;
-            tagNames["template-type"]               = StackElement::TemplateTypeEntry;
-            tagNames["functional-type"]             = StackElement::FunctionalTypeEntry;
-            tagNames["iterator-type"]               = StackElement::IteratorTypeEntry;
-            tagNames["value-type"]                  = StackElement::ValueTypeEntry;
-            tagNames["interface-type"]              = StackElement::InterfaceTypeEntry;
-            tagNames["namespace-type"]              = StackElement::NamespaceTypeEntry;
-            tagNames["enum-type"]                   = StackElement::EnumTypeEntry;
-            tagNames["extra-includes"]              = StackElement::ExtraIncludes;
-            tagNames["include"]                     = StackElement::Include;
-            tagNames["inject-code"]                 = StackElement::InjectCode;
-            tagNames["interface-polymorphy"]        = StackElement::InterfacePolymorphicId;
-            tagNames["modify-function"]             = StackElement::ModifyFunction;
-            tagNames["modify-field"]                = StackElement::ModifyField;
-            tagNames["instantiate-template"]        = StackElement::InstantiateTemplate;
-            tagNames["access"]                      = StackElement::Access;
-            tagNames["remove"]                      = StackElement::Removal;
-            tagNames["rename"]                      = StackElement::Rename;
-            tagNames["typesystem"]                  = StackElement::Root;
-            tagNames["custom-constructor"]          = StackElement::CustomMetaConstructor;
-            tagNames["custom-destructor"]           = StackElement::CustomMetaDestructor;
-            tagNames["argument-map"]                = StackElement::ArgumentMap;
-            tagNames["suppress-warning"]            = StackElement::SuppressedWarning;
-            tagNames["load-typesystem"]             = StackElement::LoadTypesystem;
-            tagNames["define-ownership"]            = StackElement::DefineOwnership;
-            tagNames["replace-default-expression"]  = StackElement::ReplaceDefaultExpression;
-            tagNames["reject-enum-value"]           = StackElement::RejectEnumValue;
-            tagNames["rename-enum-value"]           = StackElement::RenameEnumValue;
-            tagNames["replace-type"]                = StackElement::ReplaceType;
-            tagNames["array-type"]                  = StackElement::ArrayType;
-            tagNames["conversion-rule"]             = StackElement::ConversionRule;
-            tagNames["modify-argument"]             = StackElement::ModifyArgument;
-            tagNames["remove-argument"]             = StackElement::RemoveArgument;
-            tagNames["add-argument"]                = StackElement::AddArgument;
-            tagNames["remove-default-expression"]   = StackElement::RemoveDefaultExpression;
-            tagNames["template"]                    = StackElement::Template;
-            tagNames["insert-template"]             = StackElement::TemplateInstanceEnum;
-            tagNames["replace"]                     = StackElement::Replace;
-            tagNames["no-null-pointer"]             = StackElement::NoNullPointers;
-            tagNames["reference-count"]             = StackElement::ReferenceCount;
-            tagNames["import"]                      = StackElement::ImportTemplate;
+                : m_database(database),
+                  current(nullptr),
+                  m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass),
+                  tagNames{
+                      {"rejection",                  StackElement::Rejection},
+                      {"primitive-type",             StackElement::PrimitiveTypeEntry},
+                      {"object-type",                StackElement::ObjectTypeEntry},
+                      {"template-type",              StackElement::TemplateTypeEntry},
+                      {"functional-type",            StackElement::FunctionalTypeEntry},
+                      {"iterator-type",              StackElement::IteratorTypeEntry},
+                      {"value-type",                 StackElement::ValueTypeEntry},
+                      {"interface-type",             StackElement::InterfaceTypeEntry},
+                      {"namespace-type",             StackElement::NamespaceTypeEntry},
+                      {"enum-type",                  StackElement::EnumTypeEntry},
+                      {"extra-includes",             StackElement::ExtraIncludes},
+                      {"include",                    StackElement::Include},
+                      {"inject-code",                StackElement::InjectCode},
+                      {"interface-polymorphy",       StackElement::InterfacePolymorphicId},
+                      {"modify-function",            StackElement::ModifyFunction},
+                      {"modify-field",               StackElement::ModifyField},
+                      {"instantiate-template",       StackElement::InstantiateTemplate},
+                      {"access",                     StackElement::Access},
+                      {"remove",                     StackElement::Removal},
+                      {"rename",                     StackElement::Rename},
+                      {"typesystem",                 StackElement::Root},
+                      {"custom-constructor",         StackElement::CustomMetaConstructor},
+                      {"custom-destructor",          StackElement::CustomMetaDestructor},
+                      {"argument-map",               StackElement::ArgumentMap},
+                      {"suppress-warning",           StackElement::SuppressedWarning},
+                      {"load-typesystem",            StackElement::LoadTypesystem},
+                      {"define-ownership",           StackElement::DefineOwnership},
+                      {"replace-default-expression", StackElement::ReplaceDefaultExpression},
+                      {"reject-enum-value",          StackElement::RejectEnumValue},
+                      {"rename-enum-value",          StackElement::RenameEnumValue},
+                      {"replace-type",               StackElement::ReplaceType},
+                      {"array-type",                 StackElement::ArrayType},
+                      {"conversion-rule",            StackElement::ConversionRule},
+                      {"modify-argument",            StackElement::ModifyArgument},
+                      {"remove-argument",            StackElement::RemoveArgument},
+                      {"add-argument",               StackElement::AddArgument},
+                      {"remove-default-expression",  StackElement::RemoveDefaultExpression},
+                      {"template",                   StackElement::Template},
+                      {"insert-template",            StackElement::TemplateInstanceEnum},
+                      {"replace",                    StackElement::Replace},
+                      {"no-null-pointer",            StackElement::NoNullPointers},
+                      {"reference-count",            StackElement::ReferenceCount},
+                      {"import",                     StackElement::ImportTemplate}
+                  } {
         }
 
         bool startElement(const QString &namespaceURI, const QString &localName,
@@ -136,7 +138,7 @@ class Handler : public QXmlDefaultHandler {
         FunctionModificationList m_function_mods;
         FieldModificationList m_field_mods;
 
-        QHash<QString, StackElement::ElementType> tagNames;
+        const QHash<QString, StackElement::ElementType> tagNames;
 };
 
 #endif
