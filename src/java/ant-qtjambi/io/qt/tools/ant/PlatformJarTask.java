@@ -308,15 +308,42 @@ public class PlatformJarTask extends Task {
         writer.println();
         writer.println("  <!-- Qt libraries -->");
         for(LibraryEntry e : libs) {
-            String resolvedName = e.getResolvedName();
-            String subdir = e.getSubdir();
-            String destSubdir = e.getDestSubdir();
-            String load = e.getLoad();
-
-            writer.print("  <library name=\"" + xmlEscape(Util.pathCanon(new String[] { destSubdir, subdir, resolvedName }, "/")) + "\"");
-            if(!load.equals(LibraryEntry.LOAD_DEFAULT))
-                writer.print(" load=\"" + xmlEscape(load) + "\"");
-            writer.println("/>");
+        	if(e.isPacked()) {
+	        	if(e.getAbsolutePath()==null && e.getType().equals(LibraryEntry.TYPE_FILESET)) {
+	        		File rootPath = e.getRootPath();
+	                if(rootPath == null)
+	                    rootPath = new File(".");
+	                String subdir = e.getSubdir();
+	                File srcDir;
+	                if(subdir==null || subdir.isEmpty()){
+	                    srcDir = rootPath;        	
+	                }else{
+	                	srcDir = new File(rootPath, subdir.replace("/", File.separator));
+	                }
+	                
+	                for(String strg : srcDir.list()){
+	            		if(strg.matches(e.getName())){
+	        	            String destSubdir = e.getDestSubdir();
+	        	            String load = e.getLoad();
+	        	
+	        	            writer.print("  <library name=\"" + xmlEscape(Util.pathCanon(new String[] { destSubdir, subdir, strg }, "/")) + "\"");
+	        	            if(!load.equals(LibraryEntry.LOAD_DEFAULT))
+	        	                writer.print(" load=\"" + xmlEscape(load) + "\"");
+	        	            writer.println("/>");
+	            		}
+	            	}
+	        	}else {
+		            String resolvedName = e.getResolvedName();
+		            String subdir = e.getSubdir();
+		            String destSubdir = e.getDestSubdir();
+		            String load = e.getLoad();
+		
+		            writer.print("  <library name=\"" + xmlEscape(Util.pathCanon(new String[] { destSubdir, subdir, resolvedName }, "/")) + "\"");
+		            if(!load.equals(LibraryEntry.LOAD_DEFAULT))
+		                writer.print(" load=\"" + xmlEscape(load) + "\"");
+		            writer.println("/>");
+	        	}
+        	}
         }
 
         // Manifests and the like...
@@ -774,6 +801,7 @@ public class PlatformJarTask extends Task {
 	            try {
 	                //getProject().log(this, "Copying " + srcFile + " to " + destFile + " (type: " + e.getType() + ", target file: "+e.getTargetName()+", absolute path: "+e.getAbsolutePath()+")", Project.MSG_INFO);
 	                Util.copy(srcFile, destFile);
+	                e.setPacked();
 	
 	                boolean doStrip = true;
 	                if(e.getType().equals(LibraryEntry.TYPE_QT))

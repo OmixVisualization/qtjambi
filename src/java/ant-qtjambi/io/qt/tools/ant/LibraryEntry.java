@@ -88,8 +88,17 @@ public class LibraryEntry extends Task {
     private String conditionProperty;
     private String dsoVersion;
     private Boolean debug;  // inherit
+    private boolean isPacked;
 
-    public String getResolvedName() {
+    public boolean isPacked() {
+		return isPacked;
+	}
+
+	public void setPacked() {
+		this.isPacked = true;
+	}
+
+	public String getResolvedName() {
         String libraryName = name;
         if(targetName != null && !targetName.isEmpty())
             libraryName = targetName;

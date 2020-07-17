@@ -1325,9 +1325,10 @@ public class NativeLibraryManager {
                         }
 
                         if (in == null) {
-                            throw new FileNotFoundException("Dirent '" + path
-                                                            + "' specified in qtjambi-deployment.xml in '"
-                                                            + jarName + "' does not exist");
+//                            throw new FileNotFoundException("Dirent '" + path
+//                                                            + "' specified in qtjambi-deployment.xml in '"
+//                                                            + jarName + "' does not exist");
+                            continue;
                         }
 
                         File outFile = new File(tmpDir, path);
@@ -1376,9 +1377,10 @@ public class NativeLibraryManager {
                         }
 
                         if (in == null) {
-                            throw new FileNotFoundException("Library '" + e.getName()
-                                                            + "' specified in qtjambi-deployment.xml in '"
-                                                            + jarName + "' does not exist");
+//                            throw new FileNotFoundException("Library '" + e.getName()
+//                                                            + "' specified in qtjambi-deployment.xml in '"
+//                                                            + jarName + "' does not exist");
+                            continue;
                         }
 
                         File outFile = new File(tmpDir, e.getName());
