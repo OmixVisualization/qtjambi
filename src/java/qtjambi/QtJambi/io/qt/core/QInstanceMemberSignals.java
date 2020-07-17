@@ -93,6 +93,7 @@ import io.qt.core.QMetaObject.AbstractSignal9Default6;
 import io.qt.core.QMetaObject.AbstractSignal9Default7;
 import io.qt.core.QMetaObject.AbstractSignal9Default8;
 import io.qt.internal.QtJambiInternal;
+import static io.qt.internal.QtJambiInternal.*;
 
 public interface QInstanceMemberSignals {
     /**
@@ -1327,7 +1328,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static void emit(PrivateSignal0 signal) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit();
@@ -1337,7 +1338,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A> void emit(PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1);
@@ -1347,7 +1348,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B> void emit(PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2);
@@ -1357,7 +1358,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C> void emit(PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3);
@@ -1367,7 +1368,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D> void emit(PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4);
@@ -1377,7 +1378,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D,E> void emit(PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4, arg5);
@@ -1387,7 +1388,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D,E,F> void emit(PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
@@ -1397,7 +1398,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D,E,F,G> void emit(PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -1407,7 +1408,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D,E,F,G,H> void emit(PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -1417,7 +1418,7 @@ public interface QInstanceMemberSignals {
     }
     
     public static <A,B,C,D,E,F,G,H,I> void emit(PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
-    	Class<?> callerClass = QStaticMemberSignals.stackWalker.getCallerClass();
+    	Class<?> callerClass = callerClassProvider().get();
     	Class<?> signalDeclaringClass = QtJambiInternal.signalDeclaringClass(signal);
     	if(callerClass==signalDeclaringClass) {
     		signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);

@@ -29,7 +29,8 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.*;
+import io.qt.QtUninvokable;
+import io.qt.internal.*;
 
 
 public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
@@ -264,6 +265,7 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     static native <K,V> V __qt_QHash_take(long __this__nativeId, K key, long takeFunction);
 
     @QtUninvokable
+    @Deprecated
     public final java.util.List<K> uniqueKeys()    {
         if(uniqueKeysFunction==0)
         	throw new UnsupportedOperationException();
@@ -273,13 +275,14 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     static native <K> java.util.List<K> __qt_QHash_uniqueKeys(long __this__nativeId, long uniqueKeysFunction);
 
     @QtUninvokable
-    public final void unite(java.util.Map<K,V> other)    {
+    @Deprecated
+    public final void unite(java.util.Map<? super K,? super V> other)    {
         if(uniteFunction==0)
         	throw new UnsupportedOperationException();
         __qt_QHash_unite(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, uniteFunction);
     }
     @QtUninvokable
-    static native <K,V> void __qt_QHash_unite(long __this__nativeId, java.util.Map<K,V> other, long uniteFunction);
+    static native void __qt_QHash_unite(long __this__nativeId, Object other, long uniteFunction);
 
     @QtUninvokable
     public final V value(K key) {
@@ -304,6 +307,7 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     static native <V> java.util.List<V> __qt_QHash_values(long __this__nativeId, long valuesFunction);
 
     @QtUninvokable
+    @Deprecated
     public final java.util.List<V> values(K key)    {
         if(valuesKeyFunction==0)
         	throw new UnsupportedOperationException();

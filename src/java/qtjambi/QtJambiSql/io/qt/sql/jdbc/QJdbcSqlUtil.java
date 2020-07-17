@@ -57,73 +57,74 @@ import io.qt.core.QDate;
 import io.qt.core.QDateTime;
 import io.qt.core.QTime;
 import io.qt.core.QUrl;
+import io.qt.core.QVariant;
 import io.qt.sql.QSqlError;
 import io.qt.sql.QSqlField;
 
 class QJdbcSqlUtil
 {
-    private static HashMap<String, Integer> javaToVariant = new HashMap<String, Integer>();
+    private static HashMap<String, QVariant.Type> javaToVariant = new HashMap<String, QVariant.Type>();
 
     static {
                                                         // QVariant::
-        javaToVariant.put(null, 0);                     // Invalid
-        javaToVariant.put("java.lang.String", 10);      // String
-        javaToVariant.put("java.lang.Integer", 2);      // Int
-        javaToVariant.put("java.lang.Short", 2);        // Int
-        javaToVariant.put("java.lang.Byte", 2);         // Int
-        javaToVariant.put("java.lang.Boolean", 1);      // Bool
-        javaToVariant.put("java.lang.Byte[]", 12);      // ByteArray
-        javaToVariant.put("java.util.Date", 14);        // Date
-        javaToVariant.put("java.sql.Date", 14);         // Date
-        javaToVariant.put("java.lang.Float", 6);        // Double
-        javaToVariant.put("java.lang.Double", 6);       // Double
-        javaToVariant.put("java.lang.Long", 4);         // LongLong
-        javaToVariant.put("java.sql.Time", 15);         // Time
-        javaToVariant.put("java.sql.TimeStamp", 16);    // DateTime
-        javaToVariant.put("java.net.Url", 17);          // Url
+        javaToVariant.put(null, QVariant.Type.Invalid);                     // Invalid
+        javaToVariant.put("java.lang.String", QVariant.Type.String);      // String
+        javaToVariant.put("java.lang.Integer", QVariant.Type.Int);      // Int
+        javaToVariant.put("java.lang.Short", QVariant.Type.Int);        // Int
+        javaToVariant.put("java.lang.Byte", QVariant.Type.Int);         // Int
+        javaToVariant.put("java.lang.Boolean", QVariant.Type.Boolean);      // Bool
+        javaToVariant.put("java.lang.Byte[]", QVariant.Type.ByteArray);      // ByteArray
+        javaToVariant.put("java.util.Date", QVariant.Type.Date);        // Date
+        javaToVariant.put("java.sql.Date", QVariant.Type.Date);         // Date
+        javaToVariant.put("java.lang.Float", QVariant.Type.Double);        // Double
+        javaToVariant.put("java.lang.Double", QVariant.Type.Double);       // Double
+        javaToVariant.put("java.lang.Long", QVariant.Type.Long);         // LongLong
+        javaToVariant.put("java.sql.Time", QVariant.Type.Time);         // Time
+        javaToVariant.put("java.sql.TimeStamp", QVariant.Type.DateTime);    // DateTime
+        javaToVariant.put("java.net.Url", QVariant.Type.Url);          // Url
     }
 
-    static int javaTypeToVariantType(String javaType)
+    static QVariant.Type javaTypeToVariantType(String javaType)
     {
-        Integer variantType = javaToVariant.get(javaType);
+    	QVariant.Type variantType = javaToVariant.get(javaType);
         if (variantType == null)
-            return 127;
+            return QVariant.Type.UserType;
         return variantType;
     }
 
-    static int javaTypeIdToVariantType(int variantType)
+    static QVariant.Type javaTypeIdToVariantType(int variantType)
     {
         // can't use QVariant types directly, since we don't want a dependency to QtGui
         switch (variantType) {
         case Types.VARCHAR:
         case Types.CHAR:
-            return 10; // String
+            return QVariant.Type.String; // String
         case Types.INTEGER:
         case Types.SMALLINT:
         case Types.TINYINT:
-            return 2; // Int
+            return QVariant.Type.Int; // Int
         case Types.BOOLEAN:
         case Types.BIT:
-            return 1; // Bool
+            return QVariant.Type.Boolean; // Bool
         case Types.BIGINT:
         case Types.DECIMAL:
-            return 4; // LongLong
+            return QVariant.Type.Long; // LongLong
         case Types.DATE:
-            return 14; // Date
+            return QVariant.Type.Date; // Date
         case Types.DOUBLE:
         case Types.FLOAT:
         case Types.NUMERIC:
         case Types.REAL:
-            return 6; // Double
+            return QVariant.Type.Double; // Double
         case Types.TIME:
-            return 15; // Time
+            return QVariant.Type.Time; // Time
         case Types.TIMESTAMP:
-            return 16; // DateTime
+            return QVariant.Type.DateTime; // DateTime
         }
 
         // System.out.println("Unknown type id: " + variantType);
 
-        return 127; // QVariant.UserType
+        return QVariant.Type.UserType; // QVariant.UserType
     }
 
     static QSqlField.RequiredStatus toRequiredStatus(int isNullable)

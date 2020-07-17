@@ -48,8 +48,6 @@ import io.qt.core.QAbstractItemModel;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.Qt;
-import io.qt.sql.QSqlRelationalTableModel;
-import io.qt.sql.QSqlTableModel;
 import io.qt.widgets.QComboBox;
 import io.qt.widgets.QItemDelegate;
 import io.qt.widgets.QStyleOptionViewItem;

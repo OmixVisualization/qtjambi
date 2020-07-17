@@ -55,7 +55,7 @@ class QtJambi_LibraryShutdown extends Thread {
             QCoreApplication app = QCoreApplication.instance();
 
             if(app != null) {
-                var appThread = app.thread();
+                Object appThread = app.thread();
                 QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());  // allow deleteLater() to work some magic
                 QCoreApplication.addPostRoutine(()->{
                 	Runtime runtime = Runtime.getRuntime();
@@ -74,11 +74,11 @@ class QtJambi_LibraryShutdown extends Thread {
                     //  console when we know the main GUI thread did not terminate on time
                     //  so the resulting errors/crashes can be explained on shutdown.
                     if(appThread != null)
-                        appThread.join(500);
+                    	QtJambiThreadUtility.castToThread(appThread).join(500);
                 } catch(Throwable e) {
                 	logger.log(java.util.logging.Level.SEVERE, "", e);
                 } finally {
-                    if(appThread == null || QAbstractEventDispatcher.instance(appThread)==null) {
+                    if(appThread == null || QAbstractEventDispatcher.instance(QtJambiThreadUtility.castToThread(appThread))==null) {
                     	logger.log(Level.FINE, "disposing QCoreApplication instance");
                         app.dispose();		// push the delete matter
                     }

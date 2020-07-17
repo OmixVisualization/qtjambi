@@ -43,7 +43,6 @@ import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
-import java.lang.ref.Cleaner.Cleanable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
@@ -68,7 +67,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -386,10 +384,37 @@ public class QtJambiInternal {
     	}
     }
     
+	private static final Map<Cleaner,Runnable> cleaners = new HashMap<>();
+	
+	public static interface Cleanable{
+		public void clean();
+	}
+	
+	private static class Cleaner extends WeakReference<Object> implements Cleanable{
+
+		public Cleaner(Object r) {
+			super(r, referenceQueue);
+		}
+
+		@Override
+		public void clean() {
+			synchronized(cleaners) {
+				Runnable runnable = cleaners.remove(this);
+				if(runnable!=null) {
+					try {
+						runnable.run();
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+	}
+	
 	public static Cleanable registerCleaner(Object obj, Runnable action) {
-		synchronized(object2ObjectAssociations) {
-			AssociativeRunnableReference cleanable = new AssociativeRunnableReference(obj);
-			object2ObjectAssociations.put(cleanable, action);
+		synchronized(cleaners) {
+			Cleaner cleanable = new Cleaner(obj);
+			cleaners.put(cleanable, action);
 			return cleanable;
 		}
 	}
@@ -523,7 +548,7 @@ public class QtJambiInternal {
 			    		List<? extends QtJambiSignals.AbstractSignal> signals = Collections.emptyList();
 			    		if(QtJambiSignals.AbstractSignal.class.isAssignableFrom(f.getType())) {
 					        try {
-					        	if(f.trySetAccessible()) {
+					        	if(RetroHelper.trySetAccessible(f)) {
 					        		signals = Collections.singletonList((QtJambiSignals.AbstractSignal) f.get(signalEmitter));
 					        	}else {
 					        		signals = Collections.singletonList((QtJambiSignals.AbstractSignal) QtJambiInternal.privateLookup(f.getDeclaringClass()).unreflectGetter(f).invoke(signalEmitter));
@@ -534,7 +559,7 @@ public class QtJambiInternal {
 			    		}else if(QtJambiSignals.MultiSignal.class.isAssignableFrom(f.getType())){
 			    			QtJambiSignals.MultiSignal multiSignal;
 			    			try {
-					        	if(f.trySetAccessible()) {
+					        	if(RetroHelper.trySetAccessible(f)) {
 					        		multiSignal = (QtJambiSignals.MultiSignal) f.get(signalEmitter);
 					        	}else {
 					        		multiSignal = (QtJambiSignals.MultiSignal) QtJambiInternal.privateLookup(f.getDeclaringClass()).unreflectGetter(f).invoke(signalEmitter);
@@ -703,13 +728,13 @@ public class QtJambiInternal {
     	if(cls==null) {
 			return null;
     	}else {
-    		initializePackage(cls.getPackageName());
+    		initializePackage(cls);
     		if(isGeneratedClass(cls) || cls.isInterface())
     			return null;
     		List<Class<? extends QtObjectInterface>> result = new ArrayList<>();
     		Class<?> generatedSuperClass = findGeneratedSuperclass(cls);
     		for(Class<?> _interface : cls.getInterfaces()) {
-    			initializePackage(_interface.getPackageName());
+    			initializePackage(_interface);
     			if(isGeneratedClass(_interface) && QtObjectInterface.class.isAssignableFrom(_interface)) {
     				Class<? extends QtObjectInterface> __interface = (Class<? extends QtObjectInterface>)_interface;
     				Class<?> defaultImplementationClass = findDefaultImplementation(__interface);
@@ -721,7 +746,7 @@ public class QtJambiInternal {
     				}
     				if(!result.contains(__interface)) {
     					result.add(0, __interface);
-    					initializePackage(__interface.getPackageName());
+    					initializePackage(__interface);
     				}
     			}
     		}
@@ -748,12 +773,12 @@ public class QtJambiInternal {
     	if(cls==null) {
 			return null;
     	}else {
-    		initializePackage(cls.getPackageName());
+    		initializePackage(cls);
     		if(cls.isInterface())
     			return null;
     		List<Class<? extends QtObjectInterface>> result = new ArrayList<>();
     		for(Class<?> _interface : cls.getInterfaces()) {
-    			initializePackage(_interface.getPackageName());
+    			initializePackage(_interface);
     			if(QtObjectInterface.class.isAssignableFrom(_interface)) {
     				Class<? extends QtObjectInterface> __interface = (Class<? extends QtObjectInterface>)_interface;
     				Class<?> defaultImplementationClass = findDefaultImplementation(__interface);
@@ -762,7 +787,7 @@ public class QtJambiInternal {
 					}
     				if(!result.contains(__interface)) {
     					result.add(0, __interface);
-    					initializePackage(__interface.getPackageName());
+    					initializePackage(__interface);
     				}
     			}
     		}
@@ -1160,7 +1185,7 @@ public class QtJambiInternal {
             	AnnotatedType actualType = actualTypes[j];
             	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
             	if(!isPrimitive) {
-            		AnnotatedType annotatedOwnerType = actualType.getAnnotatedOwnerType();
+            		AnnotatedType annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
             		if(annotatedOwnerType!=null) {
             			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
             		}
@@ -1514,7 +1539,7 @@ public class QtJambiInternal {
 				else
 					setter.invoke(owner, newValue);
 			} catch (Throwable e) {
-				if(field.trySetAccessible()){
+				if(RetroHelper.trySetAccessible(field)){
 	                try{
 	                    field.set(owner, newValue);
 	                } catch (Throwable e2) {
@@ -1534,7 +1559,7 @@ public class QtJambiInternal {
     public static void setField(Object owner, Class<?> declaringClass, String fieldName, Object newValue) {
         try {
             Field f = declaringClass.getDeclaredField(fieldName);
-            if(f.trySetAccessible()){
+            if(RetroHelper.trySetAccessible(f)){
                 try{
                     f.set(owner, newValue);
                 } catch (Throwable e) {
@@ -1564,7 +1589,7 @@ public class QtJambiInternal {
 	public static <V> V fetchField(Object owner, Class<?> declaringClass, String fieldName, Class<V> fieldType) {
         try {
             Field f = declaringClass.getDeclaredField(fieldName);
-            if(f.trySetAccessible()){
+            if(RetroHelper.trySetAccessible(f)){
                 try{
                     return (V)f.get(owner);
                 } catch (Throwable e) {
@@ -1613,7 +1638,7 @@ public class QtJambiInternal {
     				else
     					collection = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    collection = field.get(owner);
     	                } catch (Throwable e2) {
@@ -1674,7 +1699,7 @@ public class QtJambiInternal {
     				else
     					collection = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    collection = field.get(isStatic ? null : owner);
     	                } catch (Throwable e2) {
@@ -1697,7 +1722,7 @@ public class QtJambiInternal {
 	    				else
 	    					setter.invoke(owner, collection);
 	    			} catch (Throwable e) {
-	    				if(field.trySetAccessible()){
+	    				if(RetroHelper.trySetAccessible(field)){
 	    					try {
 								field.set(isStatic ? null : owner, collection);
 							} catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -1750,7 +1775,7 @@ public class QtJambiInternal {
     				else
     					collection = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    collection = field.get(owner);
     	                } catch (Throwable e2) {
@@ -1802,7 +1827,7 @@ public class QtJambiInternal {
     				else
     					collection = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    collection = field.get(owner);
     	                } catch (Throwable e2) {
@@ -1861,7 +1886,7 @@ public class QtJambiInternal {
     				else
     					collection = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    collection = field.get(isStatic ? null : owner);
     	                } catch (Throwable e2) {
@@ -1884,7 +1909,7 @@ public class QtJambiInternal {
 	    				else
 	    					setter.invoke(owner, collection);
 	    			} catch (Throwable e) {
-	    				if(field.trySetAccessible()){
+	    				if(RetroHelper.trySetAccessible(field)){
 	    					try {
 								field.set(isStatic ? null : owner, collection);
 							} catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -1944,7 +1969,7 @@ public class QtJambiInternal {
     				else
     					map = getter.invoke(owner);
     			} catch (Throwable e) {
-    				if(field.trySetAccessible()){
+    				if(RetroHelper.trySetAccessible(field)){
     	                try{
     	                    map = field.get(isStatic ? null : owner);
     	                } catch (Throwable e2) {
@@ -1967,7 +1992,7 @@ public class QtJambiInternal {
 	    				else
 	    					setter.invoke(owner, map);
 	    			} catch (Throwable e) {
-	    				if(field.trySetAccessible()){
+	    				if(RetroHelper.trySetAccessible(field)){
 	    					try {
 								field.set(isStatic ? null : owner, map);
 							} catch (IllegalArgumentException | IllegalAccessException e1) {
@@ -2606,7 +2631,7 @@ public class QtJambiInternal {
 		                	 signal = (AbstractSignal) lookup.unreflectGetter(f).invoke(sender);
 		                 } catch (Throwable e) {
 		            	 	 try {
-								 if(f.trySetAccessible()){
+								 if(RetroHelper.trySetAccessible(f)){
 									 signal = (AbstractSignal) f.get(sender);
 								 }else{
 								     signal = (AbstractSignal) QtJambiInternal.fetchSignal(sender, f, false);
@@ -2626,7 +2651,7 @@ public class QtJambiInternal {
 			    				multiSignal = (QtJambiSignals.MultiSignal) lookup.unreflectGetter(f).invoke(sender);
 			                 } catch (Throwable e) {
 				    			try {
-						        	if(f.trySetAccessible()) {
+						        	if(RetroHelper.trySetAccessible(f)) {
 						        		multiSignal = (QtJambiSignals.MultiSignal) f.get(sender);
 						        	}else {
 						        		multiSignal = (QtJambiSignals.MultiSignal) QtJambiInternal.fetchFieldNative(sender, f);
@@ -2681,7 +2706,7 @@ public class QtJambiInternal {
 							signal = (AbstractSignal) lookup.unreflectGetter(f).invoke(sender);
 						} catch (Throwable e) {
 							try {
-								if (f.trySetAccessible()) {
+								if (RetroHelper.trySetAccessible(f)) {
 									signal = (AbstractSignal) f.get(sender);
 								} else {
 									signal = (AbstractSignal) QtJambiInternal.fetchSignal(sender, f, false);
@@ -3030,11 +3055,11 @@ public class QtJambiInternal {
 	}
 	
 	public static boolean initializePackage(java.lang.Package pkg){
-    	return initializePackage(pkg.getName());
+    	return pkg!=null && initializePackage(pkg.getName());
     }
     
     public static boolean initializePackage(java.lang.Class<?> cls){
-    	return initializePackage(cls.getPackageName());
+    	return cls!=null && initializePackage(cls.getPackage());
     }
     
     public static boolean initializePackage(String packagePath){
@@ -3361,6 +3386,11 @@ public class QtJambiInternal {
 		return lnk==null || lnk.isDisposed();
 	}
     
+    public static boolean tryIsObjectDisposed(QtObjectInterface object) {
+		NativeLink lnk = findInterfaceLink(object, false);
+		return lnk==null || lnk.isDisposed();
+	}
+    
     public static void disposeObject(QtJambiObject object) {
 		object.nativeLink.dispose();
 	}
@@ -3379,7 +3409,7 @@ public class QtJambiInternal {
     private static native int __qt_registerMetaType(Class<?> clazz);
     
     public static int registerMetaType(Class<?> clazz){
-        io.qt.QtUtilities.initializePackage(clazz.getPackageName());
+        initializePackage(clazz);
         return __qt_registerMetaType(clazz);
     }
     
@@ -3400,7 +3430,7 @@ public class QtJambiInternal {
     private static int __metaTypeId(Class<?> clazz){
     	int id = QMetaType.Type.UnknownType.value();
     	if(QtObjectInterface.class.isAssignableFrom(clazz)) {
-	        io.qt.QtUtilities.initializePackage(clazz.getPackageName());
+	        initializePackage(clazz);
 	        id = __qt_metaTypeId(clazz);
 	        if(QMetaType.Type.UnknownType.value()==id) {
 	        	if(!clazz.isInterface())
@@ -3545,25 +3575,26 @@ public class QtJambiInternal {
 	
     @NativeAccess
 	private static void reportException(String message, Throwable e){
-    	UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
-    	if(handler!=null) {
-    		handler.uncaughtException(Thread.currentThread(), e);
-    	}else {
-			try {
+    	try {
+	    	UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
+	    	if(handler!=null) {
+	    		handler.uncaughtException(Thread.currentThread(), e);
+	    	}else {
 				java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, message, e);
-			} catch (Throwable e1) {
-				e.printStackTrace();
-				e1.printStackTrace();
-			}
+	    	}
+		} catch (Throwable e1) {
+			e.printStackTrace();
+			e1.printStackTrace();
     	}
 	}
     
     public static void initializeNativeObject(QtObjectInterface object, Map<Class<?>, List<?>> arguments) throws IllegalArgumentException {
-    	Optional<StackWalker.StackFrame> stackFrame = QtJambiMemberAccess.stackWalker.walk(stream->stream.limit(3).skip(2).findFirst());
-    	if(!stackFrame.isPresent() || !stackFrame.get().getDeclaringClass().isAssignableFrom(object.getClass()) || !"<init>".equals(stackFrame.get().getMethodName())) {
-    		throw new RuntimeException(new IllegalAccessException("QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor."));
+    	QPair<Class<?>, String> callerInfo = RetroHelper.classAccessChecker().get();
+    	if(callerInfo.first==null || !callerInfo.first.isAssignableFrom(object.getClass()) || !"<init>".equals(callerInfo.second)) {
+    		throw new RuntimeException(new IllegalAccessException("QtUtilities.initializeNativeObject(...) can only be called from inside the given object's constructor. Expected: "
+    				+ object.getClass().getName() + ".<init>, found: " + (callerInfo.first==null ? "null" : callerInfo.first.getName()) + "."+callerInfo.second));
     	}
-    	__qt_initializeNativeObject(stackFrame.get().getDeclaringClass(), object, findInterfaceLink(object, true, false), arguments);
+    	__qt_initializeNativeObject(callerInfo.first, object, findInterfaceLink(object, true, false), arguments);
     }
     
     static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
@@ -4057,27 +4088,6 @@ public class QtJambiInternal {
 		}
 	}
 	
-	private static class AssociativeRunnableReference extends AssociativeReference{
-
-		public AssociativeRunnableReference(Object r) {
-			super(r);
-		}
-
-		@Override
-		public void clean() {
-			synchronized(object2ObjectAssociations) {
-				Runnable runnable = (Runnable)object2ObjectAssociations.remove(this);
-				if(runnable!=null) {
-					try {
-						runnable.run();
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-	}
-	
 	private static final Map<AssociativeReference,Object> object2ObjectAssociations = new HashMap<>();
 	
 	@NativeAccess
@@ -4119,5 +4129,9 @@ public class QtJambiInternal {
 			}
 			return matchingReference==null ? null : object2ObjectAssociations.get(matchingReference);
 		}
+	}
+	
+	public static Supplier<Class<?>> callerClassProvider(){
+		return RetroHelper.callerClassProvider();
 	}
 }

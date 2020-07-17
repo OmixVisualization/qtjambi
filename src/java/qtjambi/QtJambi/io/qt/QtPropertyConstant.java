@@ -49,5 +49,5 @@ public @interface QtPropertyConstant {
      * The value should be true or false depending on whether the
      * property is constant property.
      */
-    String value() default "true";
+    boolean value() default true;
 }

@@ -120,7 +120,7 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl imple
 	@io.qt.QtUninvokable
     final Object argumentAt(int index){
         if(index<0 || index>=count())
-            throw new IndexOutOfBoundsException(index);
+            throw new IndexOutOfBoundsException("Index out of range: " + index);
         if(isInvalid())
         	throw new RuntimeException("Invalid QDBusPendingReply");
         waitForFinished();

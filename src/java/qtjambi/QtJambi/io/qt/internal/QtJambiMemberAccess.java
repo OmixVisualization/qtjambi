@@ -35,7 +35,6 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 
 public class QtJambiMemberAccess<T extends QtObjectInterface> {
-	protected final static StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
 	
 	private final java.lang.ref.WeakReference<T> instanceRef;
 	

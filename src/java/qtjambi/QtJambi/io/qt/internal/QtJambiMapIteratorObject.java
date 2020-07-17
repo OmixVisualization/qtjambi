@@ -46,7 +46,7 @@ public abstract class QtJambiMapIteratorObject<K,V> extends QtJambiIteratorObjec
 	}
 
     public java.util.Iterator<QPair<K,V>> toJavaMapIterator(Supplier<QtJambiMapIteratorObject<K,V>> endSupplier){
-    	return new java.util.Iterator<>() {
+    	return new java.util.Iterator<QPair<K,V>>() {
             @Override
             public boolean hasNext() {
                 return !QtJambiMapIteratorObject.this.equals(endSupplier.get());

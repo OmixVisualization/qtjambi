@@ -54,8 +54,6 @@ public class QtUtilities {
 		initializePackage("io.qt.internal");
 	}
 	
-	private final static StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
-	
     public static boolean isAvailableQtLibrary(String library) {
         return NativeLibraryManager.isAvailableQtLibrary(library);
     }
@@ -73,11 +71,11 @@ public class QtUtilities {
     }
 
     public static void loadQtJambiLibrary(String library) {
-        NativeLibraryManager.loadQtJambiLibrary(stackWalker.getCallerClass(), library);
+        NativeLibraryManager.loadQtJambiLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
     
     public static void loadJambiLibrary(String library) {
-        NativeLibraryManager.loadJambiLibrary(stackWalker.getCallerClass(), null, library);
+        NativeLibraryManager.loadJambiLibrary(QtJambiInternal.callerClassProvider().get(), null, library);
     }
 
     public static void loadLibrary(String lib) {
@@ -101,7 +99,7 @@ public class QtUtilities {
     }
     
     public static boolean initializePackage(java.lang.Class<?> cls){
-    	return QtJambiInternal.initializePackage(cls.getPackageName());
+    	return QtJambiInternal.initializePackage(cls);
     }
     
     public static QMetaObject.DisposedSignal getSignalOnDispose(QtObjectInterface object) {

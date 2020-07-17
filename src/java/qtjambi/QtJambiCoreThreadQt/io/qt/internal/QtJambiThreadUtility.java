@@ -45,6 +45,10 @@ public class QtJambiThreadUtility {
 		return thread.javaThread();
 	}
 	
+	public static QThread castToThread(Object object) {
+		return (QThread)object;
+	}
+	
 	public static QObject.PrivateSignal0 currentThreadStartedSignal(){
 		return currentThreadObject().started;
 	}

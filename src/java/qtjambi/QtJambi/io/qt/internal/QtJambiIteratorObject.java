@@ -55,7 +55,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
 	}
 
     public java.util.Iterator<E> toJavaIterator(Supplier<? extends QtJambiIteratorObject<E>> endSupplier){
-    	return new java.util.Iterator<>() {
+    	return new java.util.Iterator<E>() {
             @Override
             public boolean hasNext() {
                 return !QtJambiIteratorObject.this.equals(endSupplier.get());
@@ -73,7 +73,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
     }
 
     public java.util.Iterator<E> toJavaDescendingIterator(Supplier<? extends QtJambiIteratorObject<E>> beginSupplier){
-    	return new java.util.Iterator<>() {
+    	return new java.util.Iterator<E>() {
             @Override
             public boolean hasNext() {
                 return !QtJambiIteratorObject.this.equals(beginSupplier.get());
@@ -91,7 +91,7 @@ public abstract class QtJambiIteratorObject<E> extends QtObject{
     }
     
     public ListIterator<E> toJavaListIterator(Supplier<? extends QtJambiIteratorObject<E>> beginSupplier, Supplier<? extends QtJambiIteratorObject<E>> endSupplier, int index) {
-	    return new ListIterator<>() {
+	    return new ListIterator<E>() {
 	    	private int icursor;
 			{
 				for (int i = 0; i < index && !QtJambiIteratorObject.this.equals(endSupplier.get()); i++) {

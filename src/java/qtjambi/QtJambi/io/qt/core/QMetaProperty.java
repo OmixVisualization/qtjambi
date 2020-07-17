@@ -46,7 +46,9 @@
 package io.qt.core;
 
 import io.qt.QtUninvokable;
+import io.qt.internal.PropertyAttributes;
 import io.qt.internal.NativeAccess;
+import io.qt.internal.PropertyFlags;
 import io.qt.internal.QtJambiInternal;
 
 /**
@@ -55,29 +57,7 @@ import io.qt.internal.QtJambiInternal;
 public final class QMetaProperty {
 	private final static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("io.qt.internal");
 	
-    private final static int Invalid = 0x00000000;
-    private final static int Readable = 0x00000001;
-    private final static int Writable = 0x00000002;
-    private final static int Resettable = 0x00000004;
-    private final static int EnumOrFlag = 0x00000008;
-    private final static int StdCppSet = 0x00000100;
-//	     private final static int Override = 0x00000200;
-    private final static int Constant = 0x00000400;
-    private final static int Final = 0x00000800;
-    private final static int Designable = 0x00001000;
-    private final static int ResolveDesignable = 0x00002000;
-    private final static int Scriptable = 0x00004000;
-    private final static int ResolveScriptable = 0x00008000;
-    private final static int Stored = 0x00010000;
-    private final static int ResolveStored = 0x00020000;
-    private final static int Editable = 0x00040000;
-    private final static int ResolveEditable = 0x00080000;
-    private final static int User = 0x00100000;
-    private final static int ResolveUser = 0x00200000;
-    private final static int Notify = 0x00400000;
-    private final static int Revisioned = 0x00800000;
-	
-    private final int flags;
+    private final PropertyAttributes flags;
     private final String name;
     private final Class<?> type;
     private final int propertyIndex;
@@ -85,7 +65,7 @@ public final class QMetaProperty {
 
     @NativeAccess
     private QMetaProperty(QMetaObject metaObject, int propertyIndex, String name, Class<?> type, int flags) {
-    	this.flags = flags;
+    	this.flags = new PropertyAttributes(flags);
         this.propertyIndex = propertyIndex;
         this.name = name;
         this.metaObject = metaObject;
@@ -109,25 +89,25 @@ public final class QMetaProperty {
 //		}
         this.type = type;
     }
-
+    
 	@QtUninvokable
     public final boolean isWritable() { 
-		return (this.flags & Writable) == Writable; 
+		return this.flags.isSet(PropertyFlags.Writable); 
     }
 	
 	@QtUninvokable
     public final boolean isResettable() { 
-		return (this.flags & Resettable) == Resettable; 
+		return this.flags.isSet(PropertyFlags.Resettable); 
     }
 	
 	@QtUninvokable
     public final boolean isDesignable() { 
-		return (this.flags & Designable) == Designable; 
+		return this.flags.isSet(PropertyFlags.Designable); 
     }
 	
 	@QtUninvokable
     public final boolean isUser() {
-		return (this.flags & User) == User;
+		return this.flags.isSet(PropertyFlags.User);
     }
 	
 	@QtUninvokable
@@ -137,22 +117,31 @@ public final class QMetaProperty {
 	
 	@QtUninvokable
     public final boolean isReadable() {
-		return (this.flags & Readable) == Readable;
+		return this.flags.isSet(PropertyFlags.Readable);
+	}
+	
+	@QtUninvokable
+    public final boolean isRequired() {
+		try {
+			return this.flags.isSet(PropertyFlags.valueOf("Required"));
+		} catch (Throwable e1) {
+		}
+		return false;
 	}
 
 	@QtUninvokable
 	public final boolean hasNotifySignal() {
-		return (this.flags & Notify) == Notify;
+		return this.flags.isSet(PropertyFlags.Notify);
 	}
 
 	@QtUninvokable
 	public final boolean isConstant() {
-		return (this.flags & Constant) == Constant;
+		return this.flags.isSet(PropertyFlags.Constant);
 	}
 
 	@QtUninvokable
 	public final boolean isFinal() {
-		return (this.flags & Final) == Final;
+		return this.flags.isSet(PropertyFlags.Final);
 	}
 
 	@QtUninvokable
@@ -172,38 +161,39 @@ public final class QMetaProperty {
     }
     
     @QtUninvokable
+    @Deprecated
 	public final boolean isEditable(QObject object) {
     	QtJambiInternal.threadCheck(object);
-		return query(object, QMetaObject.Call.QueryPropertyEditable) || (this.flags & Editable) == Editable;
+		return this.flags.isSet(PropertyFlags.Editable) || query(object, QMetaObject.Call.QueryPropertyEditable);
     }
     
     @QtUninvokable
 	public final boolean isDesignable(QObject object) {
     	QtJambiInternal.threadCheck(object);
-		return query(object, QMetaObject.Call.QueryPropertyDesignable) || isDesignable();
+		return isDesignable() || query(object, QMetaObject.Call.QueryPropertyDesignable);
     }
     
     @QtUninvokable
 	public final boolean isScriptable(QObject object) {
     	QtJambiInternal.threadCheck(object);
-		return query(object, QMetaObject.Call.QueryPropertyScriptable) || (this.flags & Scriptable) == Scriptable;
+		return this.flags.isSet(PropertyFlags.Scriptable) || query(object, QMetaObject.Call.QueryPropertyScriptable);
     }
     
     @QtUninvokable
 	public final boolean isStored(QObject object) {
     	QtJambiInternal.threadCheck(object);
-		return query(object, QMetaObject.Call.QueryPropertyStored) || (this.flags & Stored) == Stored;
+		return this.flags.isSet(PropertyFlags.Stored) || query(object, QMetaObject.Call.QueryPropertyStored);
     }
     
     @QtUninvokable
 	public final boolean isUser(QObject object) {
     	QtJambiInternal.threadCheck(object);
-		return query(object, QMetaObject.Call.QueryPropertyUser) || (this.flags & User) == User;
+		return this.flags.isSet(PropertyFlags.User) || query(object, QMetaObject.Call.QueryPropertyUser);
     }
     
     @QtUninvokable
 	public final Object read(QObject object) {
-    	if((this.flags & Readable) == Readable) {
+    	if(isReadable()) {
         	QtJambiInternal.threadCheck(object);
         	Class<?> type = this.type;
         	if(this.type==int.class) {
@@ -230,7 +220,7 @@ public final class QMetaProperty {
     
     @QtUninvokable
 	public final Object readOnGadget(Object object) {
-    	if((this.flags & Readable) == Readable) {
+    	if(isReadable()) {
     		QMetaObject objectMO = QMetaObject.forGadget(object);
     		if(objectMO!=metaObject && !objectMO.inherits(metaObject)) {
     			throw new IllegalArgumentException(String.format("Given gadget is not an instance of %1$s", metaObject.className()));

@@ -96,16 +96,33 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir}"/>
         </antcall>
-        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                fork="true" memorymaximumsize="1024m" verbose="false"
-                includeantruntime="true"
-                excludes="${module.excludes}"
-                destdir="${java.outdir}/${module}">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <src path="${sourcedir}"/>
-            <modulepath refid="qtjambi.modulepath"/>
-        </javac>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
     </target>
 
     <!-- Same as "compile" target but with 2 sourcedirs -->
@@ -120,18 +137,37 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir2}"/>
         </antcall>
-        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                fork="true" memorymaximumsize="1024m" verbose="false"
-                includeantruntime="true"
-                excludes="${module.excludes}"
-                destdir="${java.outdir}/${module}">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <src path="${sourcedir}"/>
-            <src path="${sourcedir2}"/>
-            <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-            <modulepath refid="qtjambi.modulepath"/>
-        </javac>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
     </target>
 
     <!-- Same as "compile" target but with 3 sourcedirs -->
@@ -149,24 +185,44 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir3}"/>
         </antcall>
-        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                fork="true" memorymaximumsize="1024m" verbose="false"
-                includeantruntime="true"
-                excludes="${module.excludes}"
-                destdir="${java.outdir}/${module}">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <compilerarg value="-Xlint:-module" />
-            <src path="${sourcedir}"/>
-            <src path="${sourcedir2}"/>
-            <src path="${sourcedir3}"/>
-            <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-            <modulepath refid="qtjambi.modulepath"/>
-        </javac>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <compilerarg value="-Xlint:-module" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
     </target>
 
     <!-- Same as "compile" target but with 3 sourcedirs -->
-    <target name="compile5" depends="jar_init">
+    <target name="compile6" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${jardir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
@@ -185,28 +241,54 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir5}"/>
         </antcall>
-        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                fork="true" memorymaximumsize="1024m" verbose="false"
-                includeantruntime="true"
-                excludes="${module.excludes}"
-                destdir="${java.outdir}/${module}">
-            <compilerarg value="-Xlint:deprecation" />
-            <compilerarg value="-Xlint:unchecked" />
-            <compilerarg value="-Xlint:-module" />
-            <src path="${sourcedir}"/>
-            <src path="${sourcedir2}"/>
-            <src path="${sourcedir3}"/>
-            <src path="${sourcedir4}"/>
-            <src path="${sourcedir5}"/>
-            <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
-        </javac>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir6}"/>
+        </antcall>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <compilerarg value="-Xlint:-module" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <src path="${sourcedir4}"/>
+                    <src path="${sourcedir5}"/>
+                    <src path="${sourcedir6}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <src path="${sourcedir4}"/>
+                    <src path="${sourcedir5}"/>
+                    <src path="${sourcedir6}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                </javac>
+            </else>
+        </if>
     </target>
     
     <target name="createjar2" depends="compile2,createjar">
     </target>
     <target name="createjar3" depends="compile3,createjar">
     </target>
-    <target name="createjar5" depends="compile5,createjar">
+    <target name="createjar6" depends="compile6,createjar">
     </target>
     
     <target name="createjar" depends="jar_init">
@@ -292,7 +374,7 @@
             <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class"/>
         </jar>
     </target>
-    <target name="createsrcjar5">
+    <target name="createsrcjar6">
         <echo message="Creating source file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
@@ -310,6 +392,9 @@
         </antcall>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir5}"/>
+        </antcall>
+        <antcall inheritrefs="true" target="copy-src-resources">
+            <param name="modulesrc" value="${sourcedir6}"/>
         </antcall>
         <delete file="${destdir}/${module}-${qtjambi.jar.version}-src.jar"/>
         <jar destfile="${destdir}/${module}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">

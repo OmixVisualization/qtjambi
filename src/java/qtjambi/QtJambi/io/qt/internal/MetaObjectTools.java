@@ -44,6 +44,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -64,6 +65,7 @@ import io.qt.QtPropertyConstant;
 import io.qt.QtPropertyDesignable;
 import io.qt.QtPropertyNotify;
 import io.qt.QtPropertyReader;
+import io.qt.QtPropertyRequired;
 import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyScriptable;
 import io.qt.QtPropertyStored;
@@ -213,42 +215,6 @@ public class MetaObjectTools {
         public @NativeAccess boolean hasStaticMembers;
     }
 
-    private final static int MethodAccessPrivate                    = 0x00;
-    private final static int MethodAccessProtected                  = 0x01;
-    private final static int MethodAccessPublic                     = 0x02;
-    private final static int MethodAccessMask                       = 0x03;
-
-    private final static int MethodMethod                           = 0x00;
-    private final static int MethodSignal                           = 0x04;
-    private final static int MethodSlot                             = 0x08;
-    private final static int MethodConstructor                      = 0x0c;
-    private final static int MethodTypeMask                         = 0x0c;
-
-    private final static int MethodCompatibility                    = 0x10;
-    private final static int MethodCloned                           = 0x20;
-    private final static int MethodScriptable                       = 0x40;
-    private final static int MethodRevisioned 						= 0x80;
-
-    private final static int PropertyInvalid                        = 0x00000000;
-    private final static int PropertyReadable                       = 0x00000001;
-    private final static int PropertyWritable                       = 0x00000002;
-    private final static int PropertyResettable                     = 0x00000004;
-    private final static int PropertyEnumOrFlag                     = 0x00000008;
-    private final static int PropertyStdCppSet                      = 0x00000100;
-    private final static int PropertyConstant                      	= 0x00000400;
-    private final static int PropertyFinal                      	= 0x00000800;
-    private final static int PropertyDesignable                     = 0x00001000;
-    private final static int PropertyResolveDesignable              = 0x00002000;
-    private final static int PropertyScriptable                     = 0x00004000;
-    private final static int PropertyResolveScriptable              = 0x00008000;
-    private final static int PropertyStored                         = 0x00010000;
-    private final static int PropertyResolveStored                  = 0x00020000;
-    private final static int PropertyEditable                       = 0x00040000;
-    private final static int PropertyResolveEditable                = 0x00080000;
-    private final static int PropertyUser                           = 0x00100000;
-    private final static int PropertyResolveUser  					= 0x00200000;
-    private final static int PropertyNotify 						= 0x00400000;
-    private final static int PropertyRevisioned                     = 0x00800000;
     private static Class<?> qmlListPropertiesClass;
     private static boolean qmlListPropertiesClassResolved;
     
@@ -368,7 +334,7 @@ public class MetaObjectTools {
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
             } else try {
-                Method m = clazz.getMethod(value, (Class<?>[]) null);
+                Method m = clazz.getMethod(value);
                 if (isBoolean(m.getReturnType()))
                     return m;
                 else
@@ -392,7 +358,7 @@ public class MetaObjectTools {
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
             } else try {
-                Method m = clazz.getMethod(value, (Class<?>[]) null);
+                Method m = clazz.getMethod(value);
                 if (isBoolean(m.getReturnType()))
                     return m;
                 else
@@ -401,7 +367,6 @@ public class MetaObjectTools {
                 java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
             }
         }
-
         return Boolean.TRUE;
     }
     
@@ -416,7 +381,7 @@ public class MetaObjectTools {
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
             } else try {
-                Method m = clazz.getMethod(value, (Class<?>[]) null);
+                Method m = clazz.getMethod(value);
                 if (isBoolean(m.getReturnType()))
                     return m;
                 else
@@ -425,7 +390,6 @@ public class MetaObjectTools {
                 java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "", t);
             }
         }
-
         return Boolean.TRUE;
     }
     
@@ -441,7 +405,7 @@ public class MetaObjectTools {
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
             } else try {
-                Method m = clazz.getMethod(value, (Class<?>[]) null);
+                Method m = clazz.getMethod(value);
                 if (isBoolean(m.getReturnType()))
                     return m;
                 else
@@ -487,7 +451,7 @@ public class MetaObjectTools {
             } else if (value.equals("false")) {
                 return Boolean.FALSE;
             } else try {
-                Method m = clazz.getMethod(value, (Class<?>[]) null);
+                Method m = clazz.getMethod(value);
                 if (isBoolean(m.getReturnType()))
                     return m;
                 else
@@ -500,23 +464,23 @@ public class MetaObjectTools {
         return Boolean.FALSE;
     }
 
+    private static Boolean isRequired(Method declaredMethod, Class<?> clazz) {
+    	QtPropertyRequired required = declaredMethod.getAnnotation(QtPropertyRequired.class);
+        if (required != null) {
+            return required.value();
+        }
+        return Boolean.FALSE;
+    }
+
     private static Boolean isFinal(Method declaredMethod) {
     	return Modifier.isFinal(declaredMethod.getModifiers());
     }
 
     private static Boolean isConstant(Method declaredMethod) {
     	QtPropertyConstant isConstant = declaredMethod.getAnnotation(QtPropertyConstant.class);
-
         if (isConstant != null) {
-            String value = isConstant.value();
-
-            if (value.equals("true")) {
-                return Boolean.TRUE;
-            } else if (value.equals("false")) {
-                return Boolean.FALSE;
-            }
+            return isConstant.value();
         }
-
         return Boolean.FALSE;
     }
 
@@ -1092,6 +1056,7 @@ public class MetaObjectTools {
 			Hashtable<String, Object> propertyEditableResolvers = new Hashtable<String, Object>();
 			Hashtable<String, Object> propertyStoredResolvers = new Hashtable<String, Object>();
 			Hashtable<String, Object> propertyUserResolvers = new Hashtable<String, Object>();
+			Hashtable<String, Boolean> propertyRequiredResolvers = new Hashtable<String, Boolean>();
 			Hashtable<String, Boolean> propertyConstantResolvers = new Hashtable<String, Boolean>();
 			Hashtable<String, Boolean> propertyFinalResolvers = new Hashtable<String, Boolean>();
 			Hashtable<String, Method> propertyResetters = new Hashtable<String, Method>();
@@ -1296,6 +1261,7 @@ public class MetaObjectTools {
 			            propertyEditableResolvers.put(name, isEditable(declaredMethod, clazz));
 			            propertyStoredResolvers.put(name, isStored(declaredMethod, clazz));
 			            propertyUserResolvers.put(name, isUser(declaredMethod, clazz));
+			            propertyRequiredResolvers.put(name, isRequired(declaredMethod, clazz));
 			            propertyConstantResolvers.put(name, isConstant(declaredMethod));
 			            propertyFinalResolvers.put(name, isFinal(declaredMethod));
 			            strings.add(name);
@@ -1364,6 +1330,7 @@ public class MetaObjectTools {
 			                    propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
 			                    propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
 			                    propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+			                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
 			                }
 			            }
 			        }
@@ -1448,16 +1415,16 @@ public class MetaObjectTools {
 			    	for (int i = 0; i < signalFields.size(); ++i) {
 			    		Field signalField = signalFields.get(i);
 			    		QtJambiInternal.ResolvedSignal resolvedSignal = resolvedSignals.get(i);
-			    		int flags = MethodSignal;
+			    		MethodAttributes flags = MethodFlags.MethodSignal.asFlags();
 			    		if (Modifier.isPrivate(signalField.getModifiers()))
-			                flags |= MethodAccessPrivate;
+			    			flags.set(MethodFlags.AccessPrivate);
 			            else if (Modifier.isPublic(signalField.getModifiers()))
-			                flags |= MethodAccessPublic;
+			                flags.set(MethodFlags.AccessPublic);
 			            else
-			                flags |= MethodAccessProtected;
+			                flags.set(MethodFlags.AccessProtected);
 			            
 			    		if (signalField.isAnnotationPresent(QtInvokable.class))
-			                flags |= MethodScriptable;
+			                flags.set(MethodFlags.MethodScriptable);
 			    		int argc = resolvedSignal.signalTypes.size();
 			    		
 			    		// signals: name, argc, parameters, tag, flags
@@ -1466,7 +1433,7 @@ public class MetaObjectTools {
 			    		paramIndexOfMethods.put(resolvedSignal, intdata.size());
 			    		intdata.add(0);		intdataComments.add("signal["+i+"]: parameters");
 			    		intdata.add(strings.indexOf(""));		intdataComments.add("signal["+i+"]: tag");
-			    		intdata.add(flags);		intdataComments.add("signal["+i+"]: flags");
+			    		intdata.add(flags.value());		intdataComments.add("signal["+i+"]: flags");
 			    	}
 			    	
 			    	//
@@ -1475,16 +1442,16 @@ public class MetaObjectTools {
 			    	//
 			    	for (int i = 0; i < slotsMethods.size(); i++) {
 						Method method = slotsMethods.get(i);
-						int flags = slots.contains(method) ? MethodSlot : MethodMethod;
+						MethodAttributes flags = slots.contains(method) ? MethodFlags.MethodSlot.asFlags() : MethodFlags.MethodMethod.asFlags();
 			    		if (Modifier.isPrivate(method.getModifiers()))
-			                flags |= MethodAccessPrivate;
+			                flags.set(MethodFlags.AccessPrivate);
 			            else if (Modifier.isPublic(method.getModifiers()))
-			                flags |= MethodAccessPublic;
+			            	flags.set(MethodFlags.AccessPublic);
 			            else
-			                flags |= MethodAccessProtected;
+			            	flags.set(MethodFlags.AccessProtected);
 			            
 			    		if (!method.isAnnotationPresent(QtInvokable.class) || method.getAnnotation(QtInvokable.class).value())
-			                flags |= MethodScriptable;
+			    			flags.set(MethodFlags.MethodScriptable);
 			    		int argc = method.getParameterTypes().length;
 			    		
 			    		// slots: name, argc, parameters, tag, flags
@@ -1497,7 +1464,7 @@ public class MetaObjectTools {
 			    		intdataComments.add("slot["+i+"]: parameters");
 			    		intdata.add(strings.indexOf(""));
 			    		intdataComments.add("slot["+i+"]: tag");
-			    		intdata.add(flags);
+			    		intdata.add(flags.value());
 			    		intdataComments.add("slot["+i+"]: flags");
 					}
 				}
@@ -1544,16 +1511,16 @@ public class MetaObjectTools {
 			    	intdata.set(CONSTRUCTOR_METADATA_INDEX, intdata.size());
 			        for (int i = 0; i < constructors.size(); i++) {
 						Constructor<?> constructor = constructors.get(i);
-						int flags = MethodConstructor;
+						MethodAttributes flags = MethodFlags.MethodConstructor.asFlags();
 			    		if (Modifier.isPrivate(constructor.getModifiers()))
-			                flags |= MethodAccessPrivate;
+			                flags.set(MethodFlags.AccessPrivate);
 			            else if (Modifier.isPublic(constructor.getModifiers()))
-			                flags |= MethodAccessPublic;
+			            	flags.set(MethodFlags.AccessPublic);
 			            else
-			                flags |= MethodAccessProtected;
+			            	flags.set(MethodFlags.AccessProtected);
 			            
 			    		if (constructor.isAnnotationPresent(QtInvokable.class) && constructor.getAnnotation(QtInvokable.class).value())
-			                flags |= MethodScriptable;
+			    			flags.set(MethodFlags.MethodScriptable);
 			    		int argc = constructor.getParameterTypes().length;
 			    		
 			    		// constructors: name, argc, parameters, tag, flags
@@ -1567,7 +1534,7 @@ public class MetaObjectTools {
 			    		paramIndexOfMethods.put(constructor, intdata.size());
 			    		intdata.add(0);		intdataComments.add("constructor["+i+"]: parameters");
 			    		intdata.add(strings.indexOf(""));		intdataComments.add("constructor["+i+"]: tag");
-			    		intdata.add(flags);		intdataComments.add("constructor["+i+"]: flags");
+			    		intdata.add(flags.value());		intdataComments.add("constructor["+i+"]: flags");
 					}
 			    }
 				
@@ -1679,7 +1646,7 @@ public class MetaObjectTools {
 				//
 				// Build property array
 				//
-				int metaObjectFlags = 0;
+				MetaObjectAttributes metaObjectFlags = new MetaObjectAttributes(0);
 				
 				String propertyNames[] = propertyReaders.keySet().toArray(new String[propertyReaders.keySet().size()]);
 			    metaData.propertyReadersArray = new Method[propertyNames.length];
@@ -1693,7 +1660,7 @@ public class MetaObjectTools {
 			    metaData.propertyUserResolverArray = new Method[propertyNames.length];
 			    if(!propertyReaders.isEmpty()){
 			    	if(!QObject.class.isAssignableFrom(clazz)) {
-			    		metaObjectFlags |= 0x04; // MetaObjectFlags::PropertyAccessInStaticMetaCall
+			    		metaObjectFlags.set(MetaObjectFlags.PropertyAccessInStaticMetaCall);
 			    	}
 			    	intdata.set(PROPERTY_METADATA_INDEX, intdata.size());
 			        for (int i=0; i<propertyNames.length; ++i) {
@@ -1706,6 +1673,7 @@ public class MetaObjectTools {
 			            Object editableVariant = propertyEditableResolvers.get(propertyNames[i]);
 			            Object storedVariant = propertyStoredResolvers.get(propertyNames[i]);
 			            Object userVariant = propertyUserResolvers.get(propertyNames[i]);
+			            Boolean requiredVariant = propertyRequiredResolvers.get(propertyNames[i]);
 			            Boolean constantVariant = propertyConstantResolvers.get(propertyNames[i]);
 			            Boolean finalVariant = propertyFinalResolvers.get(propertyNames[i]);
 
@@ -1715,7 +1683,7 @@ public class MetaObjectTools {
 			                writer = null;
 			            }
 
-			            int flags = PropertyInvalid;
+			            PropertyAttributes flags = PropertyFlags.Invalid.asFlags();
 			            // Type (need to special case flags and enums)
 			            String typeName = internalTypeNameOfClass(reader.getReturnType(),reader.getGenericReturnType());
 			            if(reader.getAnnotatedReturnType().isAnnotationPresent(QtPointerType.class)) {
@@ -1729,73 +1697,78 @@ public class MetaObjectTools {
 			        	}
 			            
 			            if (!isBuiltinType(typeName))
-			                flags |= PropertyEnumOrFlag;
+			                flags.set(PropertyFlags.EnumOrFlag);
 			            if (writer!=null){
-			                flags |= PropertyWritable;
+			                flags.set(PropertyFlags.Writable);
 			                String s = "set";
 			                s += propertyNames[i].toUpperCase().charAt(0);
 			                s += propertyNames[i].substring(1);
 			                if (s.equals(writer.getName()))
-			                    flags |= PropertyStdCppSet;
+			                    flags.set(PropertyFlags.StdCppSet);
 
 			            }
 			            if (reader!=null)
-			                flags |= PropertyReadable;
+			                flags.set(PropertyFlags.Readable);
 			            if (resetter!=null)
-			                flags |= PropertyResettable;
+			                flags.set(PropertyFlags.Resettable);
 			            
 			            if (designableVariant instanceof Boolean) {
 			                if ((Boolean) designableVariant)
-			                	flags |= PropertyDesignable;
+			                	flags.set(PropertyFlags.Designable);
 			            } else if (designableVariant instanceof Method) {
 			                metaData.propertyDesignableResolverArray[i] = (Method) designableVariant;
-			            	flags |= PropertyResolveDesignable;
+			            	flags.set(PropertyFlags.ResolveDesignable);
 			            }
 			            
 			            if (scriptableVariant instanceof Boolean) {
 			                if ((Boolean) scriptableVariant)
-			                	flags |= PropertyScriptable;
+			                	flags.set(PropertyFlags.Scriptable);
 			            } else if (scriptableVariant instanceof Method) {
-			            	flags |= PropertyResolveScriptable;
+			            	flags.set(PropertyFlags.ResolveScriptable);
 			                metaData.propertyScriptableResolverArray[i] = (Method) scriptableVariant;
 			            }
 			            
 			            if (editableVariant instanceof Boolean) {
 			                if ((Boolean) editableVariant)
-			                	flags |= PropertyEditable;
+			                	flags.set(PropertyFlags.Editable);
 			            } else if (editableVariant instanceof Method) {
-			            	flags |= PropertyResolveEditable;
+			            	flags.set(PropertyFlags.ResolveEditable);
 			                metaData.propertyEditableResolverArray[i] = (Method) editableVariant;
 			            }
 			            
 			            if (storedVariant instanceof Boolean) {
 			                if ((Boolean) storedVariant)
-			                	flags |= PropertyStored;
+			                	flags.set(PropertyFlags.Stored);
 			            } else if (storedVariant instanceof Method) {
-			            	flags |= PropertyResolveStored;
+			            	flags.set(PropertyFlags.ResolveStored);
 			                metaData.propertyStoredResolverArray[i] = (Method) storedVariant;
 			            }
 			            
 			            if (userVariant instanceof Boolean) {
 			                if ((Boolean) userVariant)
-			                	flags |= PropertyUser;
+			                	flags.set(PropertyFlags.User);
 			            } else if (userVariant instanceof Method) {
-			            	flags |= PropertyResolveUser;
+			            	flags.set(PropertyFlags.ResolveUser);
 			                metaData.propertyUserResolverArray[i] = (Method) userVariant;
 			            }
 			            
-			            if (constantVariant instanceof Boolean) {
-			                if ((Boolean) constantVariant && writer!=null && notify!=null)
-			                	flags |= PropertyConstant;
+			            if (constantVariant!=null && constantVariant && writer!=null && notify!=null) {
+		                	flags.set(PropertyFlags.Constant);
+			            }
+			            
+			            if (requiredVariant!=null && requiredVariant) {
+		                	try {
+								flags.set(PropertyFlags.valueOf("Required"));
+							} catch (Throwable e1) {
+							}
 			            }
 
-			            if (finalVariant instanceof Boolean) {
-			                if ((Boolean) finalVariant)
-			                	flags |= PropertyFinal;
+			            if (finalVariant!=null && finalVariant) {
+		                	flags.set(PropertyFlags.Final);
 			            }
 			            
 			            if (notify!=null)
-			                flags |= PropertyNotify;
+			                flags.set(PropertyFlags.Notify);
 			            
 			         // properties: name, type, flags
 			            int idx = strings.indexOf(propertyNames[i]);
@@ -1817,7 +1790,7 @@ public class MetaObjectTools {
 			        		intdata.add(type.value());
 			        	}
 			        	intdataComments.add("property["+i+"].type");
-			            intdata.add(flags);
+			            intdata.add(flags.value());
 			            intdataComments.add("property["+i+"].flags");
 			            
 			            metaData.propertyReadersArray[i] = reader;
@@ -1842,8 +1815,8 @@ public class MetaObjectTools {
 			        }
 			    }
 			    
-			    if(metaObjectFlags!=0) {
-			    	intdata.set(flagsIndex, metaObjectFlags);
+			    if(metaObjectFlags.value()!=0) {
+			    	intdata.set(flagsIndex, metaObjectFlags.value());
 			    }
 			    //
 			    // Build enums array
@@ -1908,7 +1881,7 @@ public class MetaObjectTools {
 
 			metaData.metaData = new int[intdata.size()];
 			if(intdataComments instanceof ArrayList) {
-			    List<String> nms = List.of(
+			    List<String> nms = Arrays.asList(
 			    		"revision",
 			    	    "className",
 			    	    "classInfoCount",

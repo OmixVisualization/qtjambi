@@ -32,8 +32,9 @@ package io.qt.qml;
 
 import java.util.Objects;
 
-import io.qt.*;
+import io.qt.QtUninvokable;
 import io.qt.core.QObject;
+import io.qt.internal.*;
 
 /**
  * This class is a wrapper class of the C++ template type QQmlListProperty.

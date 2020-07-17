@@ -93,6 +93,22 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      public final void set(QFlags<T> other) {
          value |= other.value();
      }
+     
+     /**
+      * Sets the flag <tt>other</tt>
+      */
+     public QFlags<T> setFlag(T flag) {
+    	 value |= flag.value();
+    	 return this;
+     }
+
+     public QFlags<T> setFlag(T flag, boolean on) {
+    	 if(on)
+    		 value |= flag.value();
+    	 else 
+    		 value &= ~flag.value();
+    	 return this;
+     }
 
      /**
       * Sets the flags in <tt>ts</tt>.
@@ -123,6 +139,14 @@ public abstract class QFlags<T extends QtFlagEnumerator>
          }
          return true;
      }
+
+     /**
+      * Returns true if flag <tt>other</tt> is set; otherwise, returns
+      * false.
+      */
+      public final boolean testFlag(T flag) {
+          return (value & flag.value()) == flag.value();
+      }
 
      /**
       * Clears the flag <tt>other</tt>.

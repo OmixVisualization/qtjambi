@@ -34,7 +34,6 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.SerializedLambda;
-import java.lang.ref.Cleaner.Cleanable;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -290,8 +289,8 @@ public abstract class QtJambiSignals {
 	
 	private abstract static class AbstractQObjectsSignalCore extends AbstractParameterSignalCore {
 		
-		private static class ReceiverReference extends WeakReference<Object> implements Cleanable{
-			private Cleanable cleanable;
+		private static class ReceiverReference extends WeakReference<Object> implements QtJambiInternal.Cleanable{
+			private QtJambiInternal.Cleanable cleanable;
 
 			public ReceiverReference(Object referent) {
 				super(referent, QtJambiInternal.referenceQueue);
@@ -302,7 +301,7 @@ public abstract class QtJambiSignals {
 					cleanable.clean();
 			}
 			
-			public void setCleanable(Cleanable cleanable) {
+			public void setCleanable(QtJambiInternal.Cleanable cleanable) {
 				this.cleanable = cleanable;
 			}
 		}
@@ -966,7 +965,8 @@ public abstract class QtJambiSignals {
                 return;
             }
             Object currentThread = null;
-            boolean senderWithAffinity = senderObject instanceof QtThreadAffineInterface && ((QtThreadAffineInterface) senderObject).thread() == (currentThread = QThread.currentThread());
+            boolean senderWithAffinity = senderObject instanceof QtThreadAffineInterface 
+            		&& ((QtThreadAffineInterface) senderObject).thread() == (currentThread = QThread.currentThread());
         	if ( senderWithAffinity && senderObject instanceof QtSignalBlockerInterface && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
             	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
                 return;
@@ -1006,7 +1006,7 @@ public abstract class QtJambiSignals {
                 
                 if(
 					   (receiver == null && !isStatic)
-					|| (receiver instanceof QtJambiObject && QtJambiInternal.nativeId((QtJambiObject)receiver) == 0)
+					|| (receiver instanceof QtObjectInterface && QtJambiInternal.nativeId((QtObjectInterface)receiver) == 0)
 				  ){
 					if (toRemove.isEmpty()) {
 						toRemove = Collections.singletonList(c);
@@ -1020,26 +1020,21 @@ public abstract class QtJambiSignals {
 				}
                 boolean directCall = false;
                 boolean receiverThreadIsCurrent;
-                Object receiverThread;
-                if(receiver instanceof QtThreadAffineInterface) {
-                	receiverThread = ((QtThreadAffineInterface) receiver).thread();
+                if(receiver instanceof QtThreadAffineInterface && !c.isDirectConnection()) {
+                	Object receiverThread = ((QtThreadAffineInterface) receiver).thread();
                 	if(receiverThread==null) {
                 		directCall = true;
                 		receiverThreadIsCurrent = true;
                 	}else {
-	                	if(currentThread==null)
+	                	if(currentThread==null) {
 	                		currentThread = QThread.currentThread();
-	                	receiverThreadIsCurrent = receiverThread==currentThread;
-	                	if(receiverThreadIsCurrent) {
-	                		if(c.isAutoConnection() || c.isDirectConnection())
-	                			directCall = true;
+	                		receiverThreadIsCurrent = receiverThread==currentThread;
 	                	}else {
-	                		if(c.isDirectConnection())
-	                			directCall = true;
+	                		receiverThreadIsCurrent = receiverThread==currentThread;
 	                	}
+	                	directCall = receiverThreadIsCurrent && c.isAutoConnection();
                 	}
                 }else{
-                	receiverThread = null;
                 	receiverThreadIsCurrent = true;
                 	directCall = true;
                 }
@@ -1050,7 +1045,7 @@ public abstract class QtJambiSignals {
                             return String.format("Emit signal %1$s: direct invocation of %2$s, receiver=%3$s", 
                             		signal.fullName(), 
                             		methodConnection.slot, 
-                            		receiver==null ? "(static)" : receiver);
+                            		receiver==null ? "(static)" : receiver.getClass().getName());
 						}else {
 							return String.format("Emit signal %1$s: direct invocation of slot object.", signal.fullName());
 						}
@@ -1066,13 +1061,13 @@ public abstract class QtJambiSignals {
                             		signal.fullName(), 
 									methodConnection.slot,
 									senderObject != null ? senderObject.getClass().getName() : "N/A",
-											receiver==null ? "(static)" : receiver
+											receiver==null ? "(static)" : receiver.getClass().getName()
 								),e);
 						}else{
 							throw new QSignalInvocationException(String.format("Exception caught in signal %1$s: sender=%2$s, receiver=%3$s", 
 									signal.fullName(), 
 									senderObject != null ? senderObject.getClass().getName() : "N/A",
-											receiver==null ? "N/A" : receiver
+											receiver==null ? "N/A" : receiver.getClass().getName()
 								),e);
 						}
                     }
@@ -1085,19 +1080,19 @@ public abstract class QtJambiSignals {
                                 return String.format("Emit signal %1$s: queueing invocation of %2$s, receiver=%3$s", 
                                 		signal.fullName(), 
                                 		methodConnection.slot, 
-                                		receiver==null ? "(static)" : receiver);
+                                		receiver.getClass().getName());
 							}else {
 								return String.format("Emit signal %1$s: queueing invocation of slot object.", signal.fullName());
 							}
                     	});
-                        logger.finest(()->"new MetaCall() current thread = "+Thread.currentThread() + "event receiver thread = "+eventReceiver.thread()+" of object "+eventReceiver);
+                        logger.finest(()->"new MetaCall() current thread = "+Thread.currentThread() + "event receiver thread = "+eventReceiver.thread()+" of object "+eventReceiver.getClass().getName());
                         logger.finest(()->c.isBlockingQueuedConnection() ? "invokeAndWait" : "invokeLater");
                         if(c.isBlockingQueuedConnection()) {
                         	if(receiverThreadIsCurrent) {
                         		logger.log(java.util.logging.Level.SEVERE, 
             							()->String.format("Qt: Dead lock detected while activating a BlockingQueuedConnection: signal is %1$s, receiver is %2$s", 
             									signal.fullName(), 
-            									receiver==null ? "N/A" : receiver
+            									receiver.getClass().getName()
             								)
             							);
                         	}
@@ -1124,7 +1119,7 @@ public abstract class QtJambiSignals {
 						logger.log(java.util.logging.Level.SEVERE, 
 							()->String.format("Cannot emit signal %1$s: queued connection to not thread-affine receiver %2$s.", 
 									signal.fullName(), 
-									receiver==null ? "N/A" : receiver
+									receiver==null ? "N/A" : receiver.getClass().getName()
 								)
 							);
 						continue;
@@ -2528,6 +2523,7 @@ public abstract class QtJambiSignals {
 				}
 				
 				if(reflectiveMethod!=null && serializedLambda!=null && methodHandle!=null){
+					Object arg1;
 					if(Modifier.isStatic(reflectiveMethod.getModifiers())){
 						Object[] lambdaArgs = null;
 						Object owner = null;
@@ -2543,17 +2539,26 @@ public abstract class QtJambiSignals {
 						}
 						return addConnectionToMethod(owner, reflectiveMethod, methodHandle, lambdaArgs, false, true, connectionType);
 					}else if(serializedLambda.getCapturedArgCount()>0
-							&& reflectiveMethod.getDeclaringClass().isInstance(serializedLambda.getCapturedArg(0))){
-						if (reflectiveMethod.isAnnotationPresent(QtUninvokable.class))
-							throw new QBlockedSlotException(reflectiveMethod.toString());
-						Object[] lambdaArgs = null;
-						if(serializedLambda.getCapturedArgCount()>1){
-							lambdaArgs = new Object[serializedLambda.getCapturedArgCount()-1];
-							for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
-								lambdaArgs[i-1] = serializedLambda.getCapturedArg(i);
+							&& (arg1 = serializedLambda.getCapturedArg(0))!=null
+							&& reflectiveMethod.getDeclaringClass().isInstance(arg1)){
+						String className = arg1.getClass().getName();
+						if(!(arg1.getClass().isSynthetic() && className.contains("Lambda$") && className.contains("/"))){
+							if (reflectiveMethod.isAnnotationPresent(QtUninvokable.class))
+								throw new QBlockedSlotException(reflectiveMethod.toString());
+							Object[] lambdaArgs = null;
+							if(serializedLambda.getCapturedArgCount()>1){
+								lambdaArgs = new Object[serializedLambda.getCapturedArgCount()-1];
+								for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
+									lambdaArgs[i-1] = serializedLambda.getCapturedArg(i);
+								}
+							}
+							return addConnectionToMethod(arg1, reflectiveMethod, methodHandle, lambdaArgs, false, true, connectionType);
+						}else{
+							try {
+								lambdaOwnerClass = Class.forName(serializedLambda.getCapturingClass().replace('/', '.'));
+							} catch (Throwable e) {
 							}
 						}
-						return addConnectionToMethod(serializedLambda.getCapturedArg(0), reflectiveMethod, methodHandle, lambdaArgs, false, true, connectionType);
 					}else{
 						try {
 							lambdaOwnerClass = Class.forName(serializedLambda.getCapturingClass().replace('/', '.'));

@@ -185,7 +185,7 @@ public class NativeLibraryManager {
         List<String> tmpJniLibdirList = null;
         try {
             final Properties props = new Properties();
-            final InputStream in = QtUtilities.class.getResourceAsStream("version.properties");
+            final InputStream in = NativeLibraryManager.class.getResourceAsStream("version.properties");
             if (in == null)
                 throw new ExceptionInInitializerError("version.properties not found!");
             try {
@@ -963,16 +963,26 @@ public class NativeLibraryManager {
             libPaths = System.getProperty("java.library.path");
         }
 
-        String[] paths = null;
+        List<String> paths = new ArrayList<>();
         if (libPaths != null)
-            paths = libPaths.split("\\"+File.pathSeparator);
+        	paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
+        switch (operatingSystem()) {
+        case Windows:
+    		libPaths = System.getenv("PATH");
+        	break;
+        case MacOSX: 
+    		libPaths = System.getenv("DYLD_LIBRARY_PATH");
+        	break;
+    	default:
+    		libPaths = System.getenv("LD_LIBRARY_PATH");
+    	}
+        if (libPaths != null)
+            paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
         paths = mergeJniLibdir(paths);
-        if(paths != null) {
-            for (String path : paths) {
-                File f = new File(path, lib);
-                if (f.exists()) {
-                	return true;
-                }
+        for (String path : paths) {
+            File f = new File(path, lib);
+            if (f.exists()) {
+            	return true;
             }
         }
         return false;
@@ -1177,25 +1187,35 @@ public class NativeLibraryManager {
                 libPaths = System.getProperty("java.library.path");
             }
 
-            String[] paths = null;
+            List<String> paths = new ArrayList<>();
             if (libPaths != null)
-                paths = libPaths.split("\\"+File.pathSeparator);
+                paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
+        	switch (operatingSystem()) {
+            case Windows:
+        		libPaths = System.getenv("PATH");
+            	break;
+            case MacOSX: 
+        		libPaths = System.getenv("DYLD_LIBRARY_PATH");
+            	break;
+        	default:
+        		libPaths = System.getenv("LD_LIBRARY_PATH");
+        	}
+            if (libPaths != null)
+                paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
             paths = mergeJniLibdir(paths);
-            if(paths != null) {
-                for (String path : paths) {
-                    File f = new File(path, lib);
-                    if (f.exists()) {
-                    	if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
-                        		|| callerClassLoader==Object.class.getClassLoader()) {
-                    		Runtime.getRuntime().load(f.getAbsolutePath());
-                    	}else {
-                    		libraryLoader.accept(callerClass, f.getAbsolutePath());
-                    	}
-                        reporter.report(" - ok, path was: ", f.getAbsolutePath());
-                        result = f;
-                        loaded = true;
-                        break;
-                    }
+            for (String path : paths) {
+                File f = new File(path, lib);
+                if (f.exists()) {
+                	if(callerClassLoader==NativeLibraryManager.class.getClassLoader()
+                    		|| callerClassLoader==Object.class.getClassLoader()) {
+                		Runtime.getRuntime().load(f.getAbsolutePath());
+                	}else {
+                		libraryLoader.accept(callerClass, f.getAbsolutePath());
+                	}
+                    reporter.report(" - ok, path was: ", f.getAbsolutePath());
+                    result = f;
+                    loaded = true;
+                    break;
                 }
             }
             if (!loaded) {
@@ -1640,21 +1660,18 @@ public class NativeLibraryManager {
         return Arrays.copyOf(versionA, versionA.length);
     }
 
-    private static String[] mergeJniLibdir(String[] middle) {
-        List<String> newList = new ArrayList<String>();
-
-        if(jniLibdirBeforeList != null)
-            newList.addAll(jniLibdirBeforeList);
-        if(middle != null) {
-            for(String s : middle)
-                newList.add(s);
-        }
-        if(jniLibdirList != null)
-            newList.addAll(jniLibdirList);
-
-        if(newList.size() == 0)
-            return middle;   // maybe null or empty
-        return newList.toArray(new String[newList.size()]);
+    private static List<String> mergeJniLibdir(List<String> middle) {
+    	if((jniLibdirBeforeList != null && !jniLibdirBeforeList.isEmpty()) 
+    			|| (jniLibdirList != null && !jniLibdirList.isEmpty())) {
+	    	List<String> newList = new ArrayList<String>();
+	        if(jniLibdirBeforeList != null)
+	            newList.addAll(jniLibdirBeforeList);
+	        newList.addAll(middle);
+	        if(jniLibdirList != null)
+	            newList.addAll(jniLibdirList);
+	        middle = newList;
+    	}
+        return middle;
     }
     
     static void loadSystemLibraries() {

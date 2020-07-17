@@ -129,12 +129,8 @@ public class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine imp
 
 	@Override
 	public FileFlags fileFlags(FileFlags type) {
-		return FileFlag.ExistsFlag
-				.combined(FileFlag.FileType)
-				.combined(FileFlag.ReadGroupPerm)
-				.combined(FileFlag.ReadOtherPerm)
-				.combined(FileFlag.ReadOwnerPerm)
-				.combined(FileFlag.ReadUserPerm);
+		return new FileFlags(FileFlag.ExistsFlag, FileFlag.FileType, FileFlag.ReadGroupPerm,
+							 FileFlag.ReadOtherPerm, FileFlag.ReadOwnerPerm, FileFlag.ReadUserPerm);
 	}
 
 	@Override

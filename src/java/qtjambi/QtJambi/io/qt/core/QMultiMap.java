@@ -34,7 +34,8 @@ import static io.qt.core.QMap.*;
 import java.util.Collections;
 import java.util.List;
 
-import io.qt.*;
+import io.qt.QtUninvokable;
+import io.qt.internal.*;
 
 
 public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
@@ -293,7 +294,7 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
     }
 
     @QtUninvokable
-    public final void unite(java.util.Map<K,V> other)    {
+    public final void unite(java.util.Map<? super K,? extends java.util.Collection<? super V>> other)    {
         if(uniteFunction==0)
         	throw new UnsupportedOperationException();
         __qt_QMap_unite(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, uniteFunction);

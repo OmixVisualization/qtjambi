@@ -31,7 +31,8 @@ package io.qt.core;
 
 import static io.qt.core.QVector.*;
 
-import io.qt.*;
+import io.qt.QtUninvokable;
+import io.qt.internal.*;
 
 
 public class QStack<T> extends io.qt.internal.QtJambiStackObject<T>

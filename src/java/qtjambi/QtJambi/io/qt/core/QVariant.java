@@ -45,6 +45,8 @@
 
 package io.qt.core;
 
+import static io.qt.internal.QtJambiInternal.resolveEnum;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -140,6 +142,19 @@ public final class QVariant {
         private int val;
         private Type(int val) { this.val = val; }
         public int value() { return val; }
+        
+        public static Type resolve(int value) {
+            {
+                return resolveEnum(Type.class, value, null);
+            }
+        }
+
+        public static Type resolve(int value, String name) {
+            if(name==null || name.isEmpty())
+                return resolve(value);
+            else
+                return resolveEnum(Type.class, value, name);
+        }
     };
     
     private static Class<?> dbusVariant;
