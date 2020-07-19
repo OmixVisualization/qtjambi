@@ -182,7 +182,7 @@ class QQmlProperty__{
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
         if(!lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
             if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
-                throw new io.qt.QBlockedSlotException(lamdaInfo.reflectiveMethod.toString());
+                throw new io.qt.QUninvokableSlotException(lamdaInfo.reflectiveMethod);
             }
             io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
             if(method==null)
@@ -197,7 +197,7 @@ class QQmlProperty__{
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(slot);
         if(!lamdaInfo.isStatic && lamdaInfo.qobject!=null) {
             if(lamdaInfo.reflectiveMethod.isAnnotationPresent(io.qt.QtUninvokable.class)) {
-                throw new io.qt.QBlockedSlotException(lamdaInfo.reflectiveMethod.toString());
+                throw new io.qt.QUninvokableSlotException(lamdaInfo.reflectiveMethod);
             }
             io.qt.core.QMetaMethod method = io.qt.core.QMetaMethod.fromReflectedMethod(lamdaInfo.reflectiveMethod);
             if(method==null)

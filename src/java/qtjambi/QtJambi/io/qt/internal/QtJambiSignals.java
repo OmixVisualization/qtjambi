@@ -51,7 +51,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import io.qt.QBlockedSlotException;
+import io.qt.QUninvokableSlotException;
 import io.qt.QMisfittingSignatureException;
 import io.qt.QNoSuchSignalException;
 import io.qt.QNoSuchSlotException;
@@ -2062,7 +2062,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
         private QMetaObject.Connection addConnectionFromCpp(Object receiver, Method slotMethod, int conType) {
             if (slotMethod.isAnnotationPresent(QtUninvokable.class))
-                throw new QBlockedSlotException(slotMethod.toString());
+                throw new QUninvokableSlotException(slotMethod);
 
             if (!matchSlot(slotMethod))
             	throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + slotMethod.toString());
@@ -2083,7 +2083,7 @@ public abstract class QtJambiSignals {
         @io.qt.QtUninvokable
         protected QMetaObject.Connection addConnection(Object receiver, Method slotMethod, Qt.ConnectionType... connectionType) {
             if (slotMethod.isAnnotationPresent(QtUninvokable.class))
-                throw new QBlockedSlotException(slotMethod.toString());
+                throw new QUninvokableSlotException(slotMethod);
 
             if (!matchSlot(slotMethod))
                 throw new QMisfittingSignatureException("Incompatible sender/receiver arguments " + fullName() + " --> " + slotMethod.toString());
@@ -2544,7 +2544,7 @@ public abstract class QtJambiSignals {
 						String className = arg1.getClass().getName();
 						if(!(arg1.getClass().isSynthetic() && className.contains("Lambda$") && className.contains("/"))){
 							if (reflectiveMethod.isAnnotationPresent(QtUninvokable.class))
-								throw new QBlockedSlotException(reflectiveMethod.toString());
+								throw new QUninvokableSlotException(reflectiveMethod);
 							Object[] lambdaArgs = null;
 							if(serializedLambda.getCapturedArgCount()>1){
 								lambdaArgs = new Object[serializedLambda.getCapturedArgCount()-1];

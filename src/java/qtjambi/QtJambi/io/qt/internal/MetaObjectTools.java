@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import io.qt.QBlockedSlotException;
+import io.qt.QUninvokableSlotException;
 import io.qt.QFlags;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtByteEnumerator;
@@ -786,7 +786,7 @@ public class MetaObjectTools {
     	Method slotMethod = io.qt.internal.QtJambiInternal.lookupSlot(receiver, slot);
         if (slotMethod != null) {
         	if(slotMethod.isAnnotationPresent(QtUninvokable.class)) {
-        		throw new QBlockedSlotException(slot);
+        		throw new QUninvokableSlotException(slotMethod);
         	}
         	QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
         	char prefix = io.qt.internal.QtJambiInternal.SlotPrefix;

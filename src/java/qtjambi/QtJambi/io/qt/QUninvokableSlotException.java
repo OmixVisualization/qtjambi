@@ -1,7 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2011 Darryl L. Miles.  All rights reserved.
-** Copyright (C) 2011 D L Miles Consulting Ltd.  All rights reserved.
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,14 +43,10 @@
 
 package io.qt;
 
-public class QBlockedSlotException extends QNoSuchSlotException {
-    private static final long serialVersionUID = 1L;
+public class QUninvokableSlotException extends QNoSuchSlotException {
+    private static final long serialVersionUID = 1712127589718894829L;
 
-    public QBlockedSlotException(String message) {
-        super(message);
-    }
-
-    public QBlockedSlotException(Object receiver, String slotSignature) {
-        super(receiver, slotSignature);
+    public QUninvokableSlotException(java.lang.reflect.Method slot) {
+        super(String.format("Slot %1$s is uninvokable.", slot));
     }
 }
