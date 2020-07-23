@@ -36,6 +36,13 @@
     <target name="jar.qtjambi" depends="init.build, javac.excludes">
         <ant antfile="${basedir}/src/java/qtjambi/modules.xml" inheritrefs="true" target="build">
         </ant>
+        <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        </ant>
+    </target>
+    
+    <target name="jar.qtjambi.plugins" depends="init.build, javac.excludes">
+        <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        </ant>
     </target>
 
     <target name="jar.qtjambi-designer" depends="init.build, jar.qtjambi">

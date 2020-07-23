@@ -28,17 +28,72 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static org.junit.Assume.assumeTrue;
+
+import java.io.File;
+import java.io.IOException;
+
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.core.QFileInfo;
+import io.qt.core.QStandardPaths;
+import io.qt.core.internal.QFactoryLoader;
 import io.qt.sql.QSqlDatabase;
+import io.qt.sql.QSqlDriver;
+import io.qt.sql.QSqlDriverPlugin;
+import io.qt.sql.QSqlQuery;
+import io.qt.unittests.support.FilterSQL;
 
 public class TestSql extends QApplicationTest {
 	
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+        assumeTrue(FilterSQL.detectStatic());
+        QApplicationTest.testInitialize();
+    }
+	
     @Test
-    public void test() {
+    public void testDefaultConnection() {
     	String defaultConnection = QSqlDatabase.defaultConnection();
     	Assert.assertEquals("qt_sql_default_connection", defaultConnection);
+    }
+	
+	@Test
+    public void testSqlDriverPlugin() {
+		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
+		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QSQLITE", "QSQLITE");
+		Assert.assertTrue(plugin!=null);
+		Assert.assertEquals("QSQLiteDriver", plugin.metaObject().className());
+	}
+    
+    @Test
+    public void testJdbc() throws IOException {
+    	QSqlDatabase db = QSqlDatabase.addDatabase("QJDBC");
+    	QFileInfo file = new QFileInfo(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.TempLocation)+"/test.sqlite");
+    	if(file.exists())
+    		new File(file.absoluteFilePath()).delete();
+    	try {
+	    	Assert.assertFalse(file.exists());
+	    	db.setDatabaseName("jdbc:sqlite:"+file.absoluteFilePath());
+	    	Assert.assertTrue(db.open());
+	    	try {
+		    	Assert.assertTrue(file.exists());
+		    	QSqlQuery query = new QSqlQuery(db);
+		    	query.prepare("CREATE TABLE qtjambitest (\n"
+		                + "	id integer PRIMARY KEY,\n"
+		                + "	test text NOT NULL\n"
+		                + ");");
+		    	boolean sucs = query.exec();
+		    	Assert.assertTrue(query.lastError().toString(), sucs);
+	    	}finally {
+	    		db.close();
+	    	}
+    	}finally {
+//    		System.out.println(QDir.toNativeSeparators(file.absoluteFilePath()));
+    		new File(file.absoluteFilePath()).delete();
+    	}
     }
 
     public static void main(String args[]) {

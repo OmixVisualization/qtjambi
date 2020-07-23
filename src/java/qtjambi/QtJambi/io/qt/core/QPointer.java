@@ -69,6 +69,8 @@ public final class QPointer<O extends QtObjectInterface> {
 	
     @QtUninvokable
 	public QPointer<O> set(O object) {
+    	if(object!=null && object.isDisposed())
+    		object = null;
 		if(this.object != object) {
 			if(this.object!=null) {
 				if(this.object instanceof QObject) {

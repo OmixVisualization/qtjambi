@@ -32,7 +32,6 @@ package io.qt.core;
 import static io.qt.core.QList.*;
 
 import io.qt.QtUninvokable;
-import io.qt.internal.*;
 
 public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
 {
@@ -146,11 +145,6 @@ public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
     }
     
     @QtUninvokable
-    public final T back()    {
-        return last();
-    }
-
-    @QtUninvokable
     protected final QIterator<T> begin()    {
         if(beginFunction==0)
         	throw new UnsupportedOperationException();
@@ -184,11 +178,6 @@ public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
     }
     
     @QtUninvokable
-    public final boolean empty()    {
-        return size()==0;
-    }
-
-    @QtUninvokable
     protected final QIterator<T> end()    {
         if(endFunction==0)
         	throw new UnsupportedOperationException();
@@ -207,11 +196,6 @@ public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
     	if(size()==0)
     		throw new ArrayIndexOutOfBoundsException(0);
     	return at(0);
-    }
-
-    @QtUninvokable
-    public final T front()    {
-        return first();
     }
 
     @QtUninvokable
@@ -301,32 +285,12 @@ public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
     }
     
     @QtUninvokable
-    public final void pop_back()    {
-    	removeLast();
-    }
-
-    @QtUninvokable
-    public final void pop_front()    {
-    	removeFirst();
-    }
-
-    @QtUninvokable
     public final void prepend(T t)    {
         if(prependFunction==0)
         	throw new UnsupportedOperationException();
         __qt_QList_prepend(io.qt.internal.QtJambiInternal.checkedNativeId(this), t, prependFunction);
     }
     
-    @QtUninvokable
-    public final void push_back(T t)    {
-    	append(t);
-    }
-
-    @QtUninvokable
-    public final void push_front(T t)    {
-    	prepend(t);
-    }
-
     @QtUninvokable
     public final int removeAll(T t)    {
         if(removeAllFunction==0)

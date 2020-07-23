@@ -49,11 +49,10 @@
 #define QQMLPRIVATE_H
 #define QML_GETTYPENAMES
 
-#if QT_VERSION>=0x050000
-    #include <QtCore/private/qabstractfileengine_p.h>
-    #include <QtCore/private/qfsfileengine_p.h>
-    #include <QtCore/private/qmetaobject_p.h>
-#endif
+#include <QtCore/private/qabstractfileengine_p.h>
+#include <QtCore/private/qfsfileengine_p.h>
+#include <QtCore/private/qmetaobject_p.h>
+#include <QtCore/private/qfactoryloader_p.h>
 
 #define QSETTINGS_H
 #include <QtCore/QtCore>
@@ -160,7 +159,13 @@
 #endif
 
 #ifndef QTJAMBI_NO_SQL
+#ifdef QT_WIDGETS_LIB
 #  include <QtSql/QtSql>
+#else
+#define QT_WIDGETS_LIB
+#  include <QtSql/QtSql>
+#undef QT_WIDGETS_LIB
+#endif
 #  include <qtjambi_sql/qtjambi_sql_hashes.h>
 #endif
 

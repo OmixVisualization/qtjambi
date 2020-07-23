@@ -526,6 +526,8 @@ QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, con
 QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, const QtJambiTypeInfo& flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name);
 QTJAMBI_EXPORT void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerInterfaceID(const std::type_info& typeId, const char *interface_iid);
+QTJAMBI_EXPORT const char * registerInterfaceID(JNIEnv* env, jclass cls);
 
 QTJAMBI_EXPORT const char* mediaControlIID(JNIEnv *env, jclass javaType);
 QTJAMBI_EXPORT jclass classByMediaControlIID(JNIEnv *env, const char* iid);

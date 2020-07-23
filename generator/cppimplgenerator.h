@@ -89,6 +89,10 @@ class CppImplGenerator : public CppGenerator {
                              const AbstractMetaType *java_type);
         static void writeCustomStructors(QTextStream &s, const TypeEntry *entry);
         void writeCodeInjections(QTextStream &s,
+                                 const ComplexTypeEntry *typeEntry,
+                                 CodeSnip::Position position,
+                                 TypeSystem::Language language);
+        void writeCodeInjections(QTextStream &s,
                                  const AbstractMetaFunction *java_function,
                                  const AbstractMetaClass *implementor,
                                  CodeSnip::Position position,

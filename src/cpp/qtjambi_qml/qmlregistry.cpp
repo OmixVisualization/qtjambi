@@ -39,6 +39,7 @@
 #include <qtjambi/qtjambi_qml.h>
 #include "qtjambi_qml_repository.h"
 #include <qtjambi/qtjambi_interfaces.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_functionpointer.h>
 
 class QQmlParserStatus;
@@ -606,6 +607,76 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
 /*
  * Class:     io_qt_qml_QtQml
  * Method:    qmlRegisterExtendedType
+ * Signature: (Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;I)I
+ */
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedType__Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2I
+  (JNIEnv * env, jclass, jclass clazz, jclass extendedClazz, jstring uri, jint versionMajor){
+    try{
+        QString _uri = qtjambi_to_qstring(env, uri);
+        QString javaName = qtjambi_class_name(env, clazz);
+        QString extendedJavaName = qtjambi_class_name(env, extendedClazz);
+        jmethodID constructor = resolveMethod(env, "<init>", "(Lio/qt/core/QObject;)V", extendedClazz);
+        if(!constructor){
+            JavaException::raiseIllegalAccessException(env, qPrintable(QString("Class must offer the constructor %1(QObject) to register as Qml extended type.").arg(QString(extendedJavaName).replace(QLatin1Char('$'), QLatin1Char('.')))) QTJAMBI_STACKTRACEINFO );
+        }
+
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        if(!meta_object){
+            jclass closestClass = resolveClosestQtSuperclass(env, clazz);
+            if(closestClass){
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
+            }
+        }
+        const QMetaObject *extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, nullptr);
+        if(!extended_meta_object){
+            jclass closestClass = resolveClosestQtSuperclass(env, extendedClazz);
+            if(closestClass){
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                extended_meta_object = qtjambi_metaobject_for_class(env, extendedClazz, original_meta_object);
+            }
+        }
+        jobject method = qtjambi_find_QmlAttachedProperties(env, clazz);
+
+        QQmlPrivate::RegisterType type = {
+            /* int version */ 0,
+
+            /*int typeId*/ registerQmlMetaType(javaName, meta_object),
+            /*int listId*/ registerQmlListType(javaName),
+            /*int objectSize*/ 0,
+            /*void (*create)(void *)*/ nullptr,
+            /*QString noCreationReason*/ QString(),
+
+            /*const char *uri*/ qPrintable(_uri),
+            /*int versionMajor*/ versionMajor,
+            /*int versionMinor*/ 0,
+            /*const char *elementName*/ nullptr,
+            /*const QMetaObject *metaObject*/ meta_object,
+
+            /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ attachedPropertiesFunc(env, clazz, method),
+            /*const QMetaObject *attachedPropertiesMetaObject*/ attachedPropertiesMetaObject(env, method),
+
+            /*int parserStatusCast*/ parserStatusCast(env, clazz),
+            /*int valueSourceCast*/ valueSourceCast(env, clazz),
+            /*int valueInterceptorCast*/ valueInterceptorCast(env, clazz),
+
+            /*QObject *(*extensionObjectCreate)(QObject *)*/ createParentFunction(env, extendedClazz, constructor),
+            /*const QMetaObject *extensionMetaObject*/ extended_meta_object,
+
+            /*QQmlCustomParser *customParser*/ nullptr,
+            /*int revision*/ 0
+        };
+
+        return QQmlPrivate::qmlregister(QQmlPrivate::TypeRegistration, &type);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return -1;
+}
+
+/*
+ * Class:     io_qt_qml_QtQml
+ * Method:    qmlRegisterExtendedType
  * Signature: (Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/String;IILjava/lang/String;)I
  */
 extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedType__Ljava_lang_Class_2Ljava_lang_Class_2Ljava_lang_String_2IILjava_lang_String_2
@@ -662,7 +733,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
             /*const char *uri*/ _uri.constData(),
             /*int versionMajor*/ int(versionMajor),
             /*int versionMinor*/ int(versionMinor),
-            /*const char *elementName*/ _qmlName.constData(),
+            /*const char *elementName*/ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
             /*const QMetaObject *metaObject*/ meta_object,
 
             /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ attachedPropertiesFunc(env, declClass, method),
@@ -691,7 +762,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedTy
  * Method:    qmlRegisterInterface
  * Signature: (Ljava/lang/Class;Ljava/lang/String;)I
  */
-extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface1
   (JNIEnv * env, jclass, jclass clazz, jstring name){
     try{
         QString typeName = qtjambi_to_qstring(env, name);
@@ -703,14 +774,66 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface
                 meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
             }
         }
+        const char* iid = getInterfaceIID(env, clazz);
+        if(!iid){
+            iid = registerInterfaceID(env, clazz);
+        }
 
         QQmlPrivate::RegisterInterface qmlInterface = {
-            /* int version */ 0,
+            /* int version */ 1,
 
             /* int typeId */ registerQmlMetaType(typeName, meta_object),
             /* int listId */ registerQmlListType(typeName),
 
-            /* const char *iid */ nullptr //qobject_interface_iid<T *>()
+            /* const char *iid */ iid,
+            
+            /* const char *uri */ "",
+            /* int versionMajor */ 0
+        };
+
+        return QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return -1;
+}
+
+/*
+ * Class:     io_qt_qml_QtQml
+ * Method:    qmlRegisterInterface
+ * Signature: (Ljava/lang/Class;Ljava/lang/String;I)I
+ */
+extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterInterface2
+  (JNIEnv * env, jclass, jclass clazz, jstring uri, jint versionMajor){
+    try{
+        QString _uri = qtjambi_to_qstring(env, uri);
+        const QMetaObject *meta_object = qtjambi_metaobject_for_class(env, clazz, nullptr);
+        if(!meta_object){
+            jclass closestClass = resolveClosestQtSuperclass(env, clazz);
+            if(closestClass){
+                const QMetaObject *original_meta_object = qtjambi_metaobject_for_class(env, closestClass, nullptr);
+                meta_object = qtjambi_metaobject_for_class(env, clazz, original_meta_object);
+            }
+        }
+        QString typeName;
+        if(meta_object){
+            typeName = meta_object->className();
+        }
+
+        const char* iid = getInterfaceIID(env, clazz);
+        if(!iid){
+            iid = registerInterfaceID(env, clazz);
+        }
+        QQmlPrivate::RegisterInterface qmlInterface = {
+            /* int version */ 1,
+
+            /* int typeId */ registerQmlMetaType(typeName, meta_object),
+            /* int listId */ registerQmlListType(typeName),
+
+            /* const char *iid */ iid,
+            
+            /* const char *uri */ qPrintable(_uri),
+            /* int versionMajor */ versionMajor
         };
 
         return QQmlPrivate::qmlregister(QQmlPrivate::InterfaceRegistration, &qmlInterface);
@@ -778,7 +901,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterAnonymousT
         Q_UNUSED(clazz)
         Q_UNUSED(uri)
         Q_UNUSED(versionMajor)
-        JavaException::raiseQNoImplementationException(env, "qmlRegisterAnonymousType() is not longer available in Qt versions older than 5.14" QTJAMBI_STACKTRACEINFO);
+        JavaException::raiseQNoImplementationException(env, "qmlRegisterAnonymousType() is not available in Qt versions older than 5.14" QTJAMBI_STACKTRACEINFO);
 #else
         QString javaName = qtjambi_class_name(env, clazz);
         QByteArray _uri = qtjambi_to_qstring(env, uri).toLocal8Bit();
@@ -840,7 +963,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Lio_
     env->EnsureLocalCapacity(300);
     try{
         QUrl* _url = reinterpret_cast<QUrl*>(qtjambi_to_object(env, url));
-        return qmlRegisterType(_url ? *_url : QUrl(), qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), qPrintable(qtjambi_to_qstring(env, qmlName)));
+        QString _qmlName = qtjambi_to_qstring(env, qmlName);
+        return qmlRegisterType(_url ? *_url : QUrl(), qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -940,7 +1064,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             /*const char *uri*/ _uri.constData(),
             /*int versionMajor*/ int(versionMajor),
             /*int versionMinor*/ int(versionMinor),
-            /*const char *elementName*/ _qmlName.constData(),
+            /*const char *elementName*/ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
             /*const QMetaObject *metaObject*/ meta_object,
 
             /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ attachedPropertiesFunc(env, declClass, method),
@@ -1017,7 +1141,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterExtendedUn
             /*const char *uri*/ _uri.constData(),
             /*int versionMajor*/ int(versionMajor),
             /*int versionMinor*/ int(versionMinor),
-            /*const char *elementName*/ _qmlName.constData(),
+            /*const char *elementName*/ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
             /*const QMetaObject *metaObject*/ meta_object,
 
             /*QQmlAttachedPropertiesFunc attachedPropertiesFunction*/ attachedPropertiesFunc(env, declClass, method),
@@ -1050,7 +1174,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
   (JNIEnv * env, jclass, jobject url, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
     try{
         QUrl _url = qtjambi_cast<QUrl>(env, url);
-        return qmlRegisterSingletonType(_url, qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), qPrintable(qtjambi_to_qstring(env, qmlName)));
+        QString _qmlName = qtjambi_to_qstring(env, qmlName);
+        return qmlRegisterSingletonType(_url, qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -1072,7 +1197,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
             /* const char *uri */ _uri.constData(),
             /* int versionMajor */ int(versionMajor),
             /* int versionMinor */ int(versionMinor),
-            /* const char *typeName */ _qmlName.constData(),
+            /* const char *typeName */ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
             /* scriptApi */ qtjambi_to_functional< QJSValue (*)(QQmlEngine *, QJSEngine *) >(env, callback, "io/qt/qml/QtQml$ValueCallback"),
             /* qobjectApi */ nullptr,
             /* const QMetaObject *instanceMetaObject */ nullptr,
@@ -1119,7 +1244,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterSingletonT
             /* const char *uri */ _uri.constData(),
             /* int versionMajor */ int(versionMajor),
             /* int versionMinor */ int(versionMinor),
-            /* const char *typeName */ _qmlName.constData(),
+            /* const char *typeName */ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
             /* scriptApi */ nullptr,
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
             /* qobjectApi */ nullptr,
@@ -1164,7 +1289,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
                                               /*const char *uri*/ _uri.constData(),
                                               /*int versionMajor*/ int(versionMajor),
                                               /*int versionMinor*/ int(versionMinor),
-                                              /*const char *elementName*/ _qmlName.constData(),
+                                              /*const char *elementName*/ _qmlName.isEmpty() ? nullptr : _qmlName.constData(),
                                               /*QString noCreationReason*/ qtjambi_to_qstring(env, reason));
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

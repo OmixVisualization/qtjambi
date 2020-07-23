@@ -43,6 +43,10 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.quick" default-superclass="io.qt.QtObject">
+    <inject-code position="2">
+        if(io.qt.QtUtilities.isAvailableQtLibrary("QmlWorkerScript"))
+            io.qt.QtUtilities.loadQtLibrary("QmlWorkerScript");         // load if exists
+    </inject-code>
     <inject-code class="metainfo" position="1">
     void initialize_meta_info_registerParserStatusCaster();
     </inject-code>

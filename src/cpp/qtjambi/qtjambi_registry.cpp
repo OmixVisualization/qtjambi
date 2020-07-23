@@ -21,7 +21,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
 typedef QMap<size_t, EntryTypes> TypeEntryTypesHash;
 typedef QMap<size_t, const char*> TypeStringHash;
 typedef QMap<size_t, QSharedPointer<QtJambiTypeInfo>> TypeIdToQTypeInfoHash;
-typedef QMap<QLatin1String, const char*> StringStringHash;
+typedef QHash<QLatin1String, const char*> StringStringHash;
 typedef QHash<QLatin1String, const std::type_info*> StringTypeHash;
 typedef QHash<QLatin1String, QList<const std::type_info*>> StringTypesHash;
 Q_GLOBAL_STATIC(TypeStringHash, gTypeQtNameHash)
@@ -34,6 +34,8 @@ Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
 typedef QSet<size_t> TypeSet;
 Q_GLOBAL_STATIC(StringTypeHash, gIIDTypeHash)
 Q_GLOBAL_STATIC(StringStringHash, gTypeIIDHash)
+typedef QHash<QByteArray, QByteArray> IIDByteArrayHash;
+Q_GLOBAL_STATIC(IIDByteArrayHash, gIIDByteArrayHash)
 typedef QMap<size_t, const std::type_info*> ID2IDHash;
 Q_GLOBAL_STATIC(ID2IDHash, gFlagEnumIDHash)
 Q_GLOBAL_STATIC(ID2IDHash, gEnumFlagIDHash)
@@ -252,6 +254,32 @@ void registerInterfaceTypeInfo(const std::type_info& typeId, const QtJambiTypeIn
     Q_UNUSED(locker)
     gIIDTypeHash->insert(QLatin1String(interface_iid), &typeId);
     gTypeIIDHash->insert(QLatin1String(java_name), interface_iid);
+}
+
+void registerInterfaceID(const std::type_info& typeId, const char *interface_iid)
+{
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    gIIDTypeHash->insert(QLatin1String(interface_iid), &typeId);
+    gTypeIIDHash->insert(QLatin1String(gTypeJavaNameHash->value(typeId.hash_code(), nullptr)), interface_iid);
+}
+
+const char * registerInterfaceID(JNIEnv* env, jclass cls)
+{
+    cls = getGlobalClassRef(env, cls);
+    QString iid = qtjambi_class_name(env, cls);
+    QByteArray className = iid.toLatin1().replace('.', '/');
+    {
+        QWriteLocker locker(gLock());
+        Q_UNUSED(locker)
+        if(!gTypeIIDHash->contains(QLatin1String(className))){
+            const char* _iid = gIIDByteArrayHash->insert(iid.toLatin1(), className).key();
+            gTypeIIDHash->insert(QLatin1String(className), _iid);
+            return _iid;
+        }else{
+            return (*gTypeIIDHash)[QLatin1String(className)];
+        }
+    }
 }
 
 void registerInterfaceValueTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid)
@@ -1107,27 +1135,41 @@ void registerMediaControlInfo(const std::type_info& typeId, const char *media_co
     gMediaControlIIDClassHash->insert(QLatin1String(media_control_iid), &typeId);
 }
 
-const char* getInterfaceIID(JNIEnv *env, jclass javaType){
+QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    QList<const char*> iids;
+    QString className;
     if(javaType){
-        QList<const char*> iids;
         jobject interfaceList = Java::Private::QtJambi::QtJambiInternal.getAllImplementedInterfaces(env, javaType);
-
-        int count = qtjambi_collection_size(env, interfaceList);
-        if(count>0){
-            jobject iterator = qtjambi_collection_iterator(env, interfaceList);
-            while(qtjambi_iterator_has_next(env, iterator)) {
-                jclass interfaceClass = jclass(qtjambi_iterator_next(env, iterator));
-                QString className = qtjambi_class_name(env, interfaceClass).replace('.', '/');
-                if(const char* iid = gTypeIIDHash->value(QLatin1String(className.toLatin1()), nullptr)){
-                    iids << iid;
-                    if(QString::fromLatin1(iid).contains("factory/"))
-                        return iid;
+        if(interfaceList){
+            int count = qtjambi_collection_size(env, interfaceList);
+            if(count>0){
+                jobject iterator = qtjambi_collection_iterator(env, interfaceList);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jclass interfaceClass = jclass(qtjambi_iterator_next(env, iterator));
+                    className = qtjambi_class_name(env, interfaceClass).replace('.', '/');
+                    if(const char* iid = gTypeIIDHash->value(QLatin1String(className.toLatin1()), nullptr)){
+                        iids << iid;
+                    }
                 }
             }
         }
-        if(!iids.isEmpty())
-            return iids.first();
+        while(javaType){
+            className = qtjambi_class_name(env, javaType).replace('.', '/');
+            if(const char* iid = gTypeIIDHash->value(QLatin1String(className.toLatin1()), nullptr)){
+                iids << iid;
+            }
+            javaType = env->GetSuperclass(javaType);
+        }
     }
+    return iids;
+}
+
+const char* getInterfaceIID(JNIEnv *env, jclass javaType){
+    QList<const char*> iids = getInterfaceIIDs(env, javaType);
+    if(!iids.isEmpty())
+        return iids.first();
     return nullptr;
 }
 
@@ -1141,6 +1183,16 @@ jclass getInterfaceByIID(JNIEnv *env, const char* iid){
         }
         if(typeId){
             if(const char* javaName = getJavaName(*typeId)){
+                return resolveClass(env, javaName);
+            }
+        }else{
+            const char* javaName(nullptr);
+            {
+                QReadLocker locker(gLock());
+                Q_UNUSED(locker)
+                javaName = (*gIIDByteArrayHash)[iid];
+            }
+            if(javaName){
                 return resolveClass(env, javaName);
             }
         }

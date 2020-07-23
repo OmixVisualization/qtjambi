@@ -1,27 +1,37 @@
 package io.qt.sql;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
+import java.util.function.Supplier;
+
+import io.qt.internal.QtJambiInternal;
 
 public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBase {
 	
-	public interface ConstructorHandle<T>{
-		T create();
-	}
+	private final Supplier<T> constructorHandle;
 
-	private final ConstructorHandle<T> constructorHandle;
-
-	public QSqlDriverCreator(ConstructorHandle<T> constructor) {
+	public QSqlDriverCreator(Supplier<T> constructor) {
 		constructorHandle = Objects.requireNonNull(constructor);
 	}
 	
 	public QSqlDriverCreator(Class<T> type) {
-		long handle = findConstructor(type);
-		constructorHandle = ()->construct(type, handle);
+		MethodHandle handle = findConstructor(type);
+		constructorHandle = ()->{
+			Object object;
+			try {
+				object = handle.invoke();
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+			return type.cast(object);
+		};
 	}
 	
-	private static long findConstructor(Class<?> type){
+	private static MethodHandle findConstructor(Class<?> type){
     	if(Modifier.isAbstract(type.getModifiers())) {
         	throw new RuntimeException("Cannot construct QSqlDriverCreator for abstract widget type "+type.getName()+".");
         }
@@ -29,17 +39,18 @@ public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBa
         try {
         	constructor = type.getDeclaredConstructor();
 		} catch (NoSuchMethodException | SecurityException e) {
-            throw new RuntimeException("Cannot construct QSqlDriverCreator for widget type "+type.getName()+" due to missing constructor T().", e);
+            throw new RuntimeException("Cannot construct QSqlDriverCreator for widget type "+type.getName()+" due to missing constructor "+type.getSimpleName()+"().", e);
 		}
-        return constructorHandle(constructor);
+        try {
+			return QtJambiInternal.getConstructorHandle(constructor);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Cannot construct QSqlDriverCreator for widget type "+type.getName()+" due to missing access to constructor "+type.getSimpleName()+"().", e);
+		}
     }
 	
-	private static native long constructorHandle(Constructor<?> constructor);
-	private static native <T> T construct(Class<T> cls, long constructorHandle);
-
 	@Override
 	public T createObject() {
-		return constructorHandle.create();
+		return constructorHandle.get();
 	}
 
 }

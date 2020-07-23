@@ -54,13 +54,21 @@ import io.qt.widgets.QStyleOptionViewItem;
 import io.qt.widgets.QWidget;
 
 public class QSqlRelationalDelegate extends QItemDelegate {
-    public QSqlRelationalDelegate() {
-        this(null);
+	public QSqlRelationalDelegate() {
+		super((QObject)null);
     }
 
     public QSqlRelationalDelegate(QObject parent) {
         super(parent);
     }
+
+	protected QSqlRelationalDelegate(QDeclarativeConstructor constructor) {
+		super(constructor);
+	}
+
+	protected QSqlRelationalDelegate(QPrivateConstructor p) {
+		super(p);
+	}
 
 
     @Override

@@ -100,18 +100,44 @@
     <rejection class="QMapDataBase"/>
     <rejection class="QMapNodeBase"/>
     <rejection class="QPalette::Data"/>
-    <rejection class="QList" enum-name="MemoryLayout"/>
     <rejection class="QList::MemoryLayout"/>
+    <rejection class="QList" enum-name="MemoryLayout"/>
+    <rejection class="QReadWriteLock" function-name="stateForWaitCondition"/>
+    <rejection class="QFactoryLoader" function-name="library"/>
+    <rejection class="QList" function-name="empty"/>
+    <rejection class="QList" function-name="front"/>
+    <rejection class="QList" function-name="pop_back"/>
+    <rejection class="QList" function-name="pop_front"/>
+    <rejection class="QList" function-name="push_back"/>
+    <rejection class="QList" function-name="push_front"/>
+    <rejection class="QList" function-name="back"/>
+    <rejection class="QQueue" function-name="empty"/>
+    <rejection class="QQueue" function-name="front"/>
+    <rejection class="QQueue" function-name="pop_back"/>
+    <rejection class="QQueue" function-name="pop_front"/>
+    <rejection class="QQueue" function-name="push_back"/>
+    <rejection class="QQueue" function-name="push_front"/>
+    <rejection class="QQueue" function-name="back"/>
     <rejection class="QSet::const_iterator"/>
+    <rejection class="QSet" function-name="empty"/>
     <rejection class="QCborArray::Iterator"/>
     <rejection class="QCborMap::Iterator"/>
     <rejection class="QCborStreamReader::StringResult"/>
     <rejection class="QHash::iterator"/>
     <rejection class="QHash::key_iterator"/>
+    <rejection class="QHash" function-name="empty"/>
     <rejection class="QLinkedList::iterator"/>
+    <rejection class="QLinkedList" function-name="empty"/>
+    <rejection class="QLinkedList" function-name="back"/>
+    <rejection class="QLinkedList" function-name="front"/>
+    <rejection class="QLinkedList" function-name="push_back"/>
+    <rejection class="QLinkedList" function-name="push_front"/>
+    <rejection class="QLinkedList" function-name="pop_back"/>
+    <rejection class="QLinkedList" function-name="pop_front"/>
     <rejection class="QList::iterator"/>
     <rejection class="QMap::iterator"/>
     <rejection class="QMap::key_iterator"/>
+    <rejection class="QMap" function-name="empty"/>
     <rejection class="QFuture::const_iterator"/>
     <rejection class="const_iterator"/>
     <rejection class="QSpecialInteger"/>
@@ -125,6 +151,20 @@
     <rejection class="QMetaTypeIdQObject"/>
     <rejection class="QGenericAtomicOps"/>
     <rejection class="QVector::AlignmentDummy"/>
+    <rejection class="QVector" function-name="back"/>
+    <rejection class="QVector" function-name="empty"/>
+    <rejection class="QVector" function-name="front"/>
+    <rejection class="QVector" function-name="push_back"/>
+    <rejection class="QVector" function-name="push_front"/>
+    <rejection class="QVector" function-name="pop_back"/>
+    <rejection class="QVector" function-name="pop_front"/>
+    <rejection class="QStack" function-name="back"/>
+    <rejection class="QStack" function-name="empty"/>
+    <rejection class="QStack" function-name="front"/>
+    <rejection class="QStack" function-name="push_back"/>
+    <rejection class="QStack" function-name="push_front"/>
+    <rejection class="QStack" function-name="pop_back"/>
+    <rejection class="QStack" function-name="pop_front"/>
     <rejection class="QUrlTwoFlags"/>
     <rejection class="QMetaType::Constructor"/>
     <rejection class="QMetaType::Creator"/>
@@ -139,6 +179,9 @@
     <rejection class="QAbstractEventDispatcherPrivate"/>
     <rejection class="*" function-name="d_func"/>
     <rejection class="*" function-name="data_ptr"/>
+    <rejection class="QMutex" function-name="try_lock"/>
+    <rejection class="QMutex" function-name="try_lock_for"/>
+    <rejection class="QMutex" function-name="try_lock_until"/>
     <!--rejection class="QBitArray" function-name="detach"/>
     <rejection class="QBitArray" function-name="isDetached"/>
     <rejection class="QItemSelection" function-name="detach"/>
@@ -207,7 +250,6 @@
     <rejection class="Qt" enum-name="Modifier" />
     
     <rejection class="QAssociativeIterable" />
-    <rejection class="QAtomicInteger" />
     <rejection class="QEnableSharedFromThis" />
     <rejection class="QGenericArgument" />
     <rejection class="QGenericReturnArgument" />
@@ -219,13 +261,11 @@
     <rejection class="QWeakPointer" />
     <rejection class="QFutureInterface" />
     <rejection class="QFutureInterfaceBase" />
-    <rejection class="QReadWriteLock"/>
-    <rejection class="QReadWriteLock::RecursionMode" />
-    <rejection class="QMutex::RecursionMode"/>
     <rejection class="QMdi" />
     <rejection class="stdext" />
     <rejection class="QAlgorithmsPrivate"/>
     <rejection class="QAtomic"/>
+    <rejection class="QAtomicInteger"/>
     <rejection class="QAtomicPointer"/>
     <rejection class="QAtomicInt" />
     <rejection class="QBasicAtomicInt" />
@@ -287,17 +327,13 @@
     <rejection class="QMutableListIterator"/>
     <rejection class="QMutableMapIterator"/>
     <rejection class="QMutableVectorIterator"/>
-    <rejection class="QMutex"/>
     <rejection class="QMutexLocker"/>
-    <rejection class="QSemaphore"/>
-    <rejection class="QWaitCondition"/>
     <rejection class="QNoImplicitBoolCast"/>
     <rejection class="QObjectData"/>
     <rejection class="QObject" field-name="staticQtMetaObject"/>
     <rejection class="QObjectUserData"/>
     <rejection class="QPointer"/>
     <rejection class="QReadLocker"/>
-    <rejection class="QResource"/>
     <rejection class="QSetIterator"/>
     <rejection class="QSharedData"/>
     <rejection class="QSharedDataPointer"/>
@@ -381,7 +417,6 @@
     <rejection class="QMimeTypePrivate" />
 
     <rejection class="Qt" enum-name="Initialization" />
-    <rejection class="Qt" enum-name="SplitBehaviorFlags" />
 
     <rejection class="QHash" function-name="equal_range"/>
     <rejection class="QMap" function-name="equal_range"/>
@@ -507,7 +542,6 @@
     <enum-type name="Qt::EnterKeyType" />
     <enum-type name="Qt::ChecksumType" since="5.9.0" />
     <enum-type name="Qt::HighDpiScaleFactorRoundingPolicy" since="5.14.0" />
-    <!--enum-type name="Qt::SplitBehaviorFlags" flags="Qt::SplitBehavior" since="5.14.0" /-->
     <enum-type name="Qt::TouchPointState" flags="Qt::TouchPointStates" />
     <enum-type name="Qt::ApplicationState" flags="Qt::ApplicationStates" />
     <enum-type name="Qt::FindChildOption" flags="Qt::FindChildOptions" />
@@ -1183,6 +1217,8 @@
         <modify-function signature="toVariantList()const" rename="toList"/>
         <modify-function signature="constBegin() const" remove="all" since="5.7.0"/>
         <modify-function signature="constEnd() const" remove="all" since="5.7.0"/>
+        <modify-function signature="cbegin() const" remove="all" since="5.14.0"/>
+        <modify-function signature="cend() const" remove="all" since="5.14.0"/>
     </value-type>
     <iterator-type name="QJsonArray::const_iterator" java-name="Iterator"/>
     <value-type name="QJsonDocument">
@@ -2276,11 +2312,6 @@
         <!--modify-function signature="operator+(QVector&lt;QXmlStreamAttribute>)const" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QVector&lt;QXmlStreamAttribute>)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QXmlStreamAttribute)" remove="all"/-->
-        <modify-function signature="push_back(QXmlStreamAttribute)" remove="all"/>
-        <modify-function signature="pop_back()" remove="all"/>
-        <modify-function signature="push_front(QXmlStreamAttribute)" remove="all"/>
-        <modify-function signature="pop_front()" remove="all"/>
-
         <modify-function signature="value(const QString &amp;, const QLatin1String &amp;)const">
             <remove />
         </modify-function>
@@ -2488,10 +2519,13 @@
     </object-type>
     <object-type name="QLibrary"/>
     <namespace-type name="QtJambiStringUtil" java-name="QString" target-type="final class"/>
-    <enum-type name="QtJambiStringUtil::SplitBehavior"/>
+    <enum-type name="Qt::SplitBehaviorFlags" flags="Qt::SplitBehavior" since="5.14.0" />
+    <enum-type name="QtJambiStringUtil::SplitBehavior" until="5.13.0"/>
     <enum-type name="QtJambiStringUtil::SectionFlag" flags="QtJambiStringUtil::SectionFlags"/>
     <enum-type name="QLibrary::LoadHint" flags="QLibrary::LoadHints"/>
     <object-type name="QPluginLoader" since="5.13.0">
+    </object-type>
+    <object-type name="QFactoryLoader" since="5.13.0">
     </object-type>
     <value-type name="QStaticPlugin" since="5.13.0">
         <!--modify-function signature="operator=(const QStaticPlugin&amp;)" remove="all"/-->
@@ -2526,6 +2560,9 @@
     <object-type name="QMetaType">
         <modify-function signature="QMetaType(const int)" remove="all" />
     </object-type>
+    <enum-type name="QResource::Compression"/>
+    <object-type name="QResource">
+    </object-type>
     <enum-type name="QSharedMemory::AccessMode">
     </enum-type>
     <enum-type name="QSharedMemory::SharedMemoryError">
@@ -2554,6 +2591,18 @@
     </enum-type>
     <enum-type name="QDateTime::YearRange" since="5.14.0">
     </enum-type>
+    <object-type name="QMutex">
+    </object-type>
+    <object-type name="QSemaphore">
+    </object-type>
+    <object-type name="QReadWriteLock">
+    </object-type>
+    <enum-type name="QReadWriteLock::RecursionMode" />
+    <enum-type name="QMutex::RecursionMode"/>
+    <object-type name="QWaitCondition">
+        <modify-function signature="notify_all()" remove="all"/>
+        <modify-function signature="notify_one()" remove="all"/>
+    </object-type>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::ExtensionOption const\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::Iterator\*'"/>
 

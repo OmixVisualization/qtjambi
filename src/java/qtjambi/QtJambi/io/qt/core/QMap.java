@@ -153,11 +153,6 @@ public class QMap<K,V> extends io.qt.internal.QtJambiMapObject<K,V>
     static native <K> int __qt_QMap_count(long __this__nativeId, K key, long countObjectFunction);
 
     @QtUninvokable
-    public final boolean empty()    {
-        return this.size()==0;
-    }
-
-    @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {
         if(endFunction==0)
         	throw new UnsupportedOperationException();

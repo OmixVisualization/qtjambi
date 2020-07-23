@@ -1,0 +1,212 @@
+<project default="build">
+    <target name="build">
+        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
+        <subant target="build" inheritall="true" verbose="true">
+            <filelist dir="${basedir}/src/java/qtjambi-plugins" files="qsqljdbc"/>
+        </subant>
+    </target>
+    <target name="jar_init">
+        <fail message="'module' is not set!">
+            <condition>
+                <not>
+                    <isset property="module"/>
+                </not>
+            </condition>
+        </fail>
+    </target>
+    
+    <target name="copy-resources">
+        <mkdir dir="${java.outdir}/${module}"/>
+        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
+            <fileset dir="${modulesrc}">
+                <include name="**/*"/>
+                <exclude name="**/.*"/>
+                <exclude name="build.xml"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/*.jui"/>
+                <exclude name="${jar.excludes}"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-src-resources">
+        <mkdir dir="${java.outsrcdir}/${module}"/>
+        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
+            <fileset dir="${modulesrc}">
+                <include name="**/*"/>
+                <exclude name="build.xml"/>
+                <exclude name="${jar.excludes}"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="compile" depends="jar_init">
+        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <mkdir dir="${jardir}"/>
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir}"/>
+        </antcall>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
+    </target>
+
+    <!-- Same as "compile" target but with 2 sourcedirs -->
+    <target name="compile2" depends="jar_init">
+        <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
+        <mkdir dir="${jardir}"/>
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir}"/>
+        </antcall>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir2}"/>
+        </antcall>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
+    </target>
+
+    <!-- Same as "compile" target but with 3 sourcedirs -->
+    <target name="compile3" depends="jar_init">
+        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <mkdir dir="${jardir}"/>
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}"/>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir}"/>
+        </antcall>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir2}"/>
+        </antcall>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir3}"/>
+        </antcall>
+        <if>
+            <istrue value="${java.module.based}"/>
+            <then>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes}"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <compilerarg value="-Xlint:-module" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <modulepath refid="qtjambi.modulepath"/>
+                </javac>
+            </then>
+            <else>
+                <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        includeantruntime="true"
+                        excludes="${module.excludes},module-info.java"
+                        destdir="${java.outdir}/${module}">
+                    <compilerarg value="-Xlint:deprecation" />
+                    <compilerarg value="-Xlint:unchecked" />
+                    <src path="${sourcedir}"/>
+                    <src path="${sourcedir2}"/>
+                    <src path="${sourcedir3}"/>
+                    <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                    <classpath refid="qtjambi.modulepath"/>
+                </javac>
+            </else>
+        </if>
+    </target>
+
+    <target name="createjar1" depends="compile,createjar">
+    </target>
+    <target name="createjar2" depends="compile2,createjar">
+    </target>
+    <target name="createjar3" depends="compile3,createjar">
+    </target>
+    
+    <target name="createjar" depends="jar_init">
+        <echo message="Creating JAR file for ${module}"/>
+        <property name="destdir" value="${jardir}"/>
+        <delete file="${destdir}/plugins/${plugin-subdir}/${module}.jar" verbose="true"/>
+        <mkdir dir="${destdir}/plugins/${plugin-subdir}"/>
+        <jar destfile="${destdir}/plugins/${plugin-subdir}/${module}.jar" excludes="${jar.excludes}">
+            <manifest>
+                <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
+<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
+                <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
+                <!-- TODO: qtjambi.png -->
+                <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
+                <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
+<!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
+                <attribute name="Bundle-ManifestVersion"  value="2"/>
+                <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
+                <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
+                <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
+                <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
+                <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
+                <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
+                <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
+                <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
+                <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
+            </manifest>
+            <fileset dir="${java.outdir}/${module}"/>
+        </jar>
+    </target>
+</project>

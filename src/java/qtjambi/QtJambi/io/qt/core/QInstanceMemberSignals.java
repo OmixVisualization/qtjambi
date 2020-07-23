@@ -97,7 +97,7 @@ import static io.qt.internal.QtJambiInternal.*;
 
 public interface QInstanceMemberSignals {
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      */
     public static final class Signal0 extends AbstractPublicSignal0 {
     	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal0(Q containingObject) {
@@ -114,7 +114,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      */
@@ -133,7 +133,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -153,7 +153,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -174,7 +174,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -196,7 +196,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -219,7 +219,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -243,7 +243,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -268,7 +268,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -294,7 +294,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -321,7 +321,7 @@ public interface QInstanceMemberSignals {
     }
 
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      */
     public static final class PrivateSignal0 extends AbstractPrivateSignal0 {
     	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal0(Q containingObject) {
@@ -343,7 +343,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      */
@@ -367,7 +367,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -392,7 +392,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -418,7 +418,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -445,7 +445,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -473,7 +473,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -502,7 +502,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -532,7 +532,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -563,7 +563,7 @@ public interface QInstanceMemberSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to define a non-QObject signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.

@@ -262,6 +262,9 @@
         <library name="QtJambi3DAnimation"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.qt3danimation.true"/>
         <library name="QtJambi3DLogic"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.qt3dlogic.true"/>
 
+        <!-- QtJambi Plugins -->
+        <library name="qsqljdbc"                  load="never" type="plugin-jar"   rootPath="${jardir}/plugins" subdir="sqldrivers" destSubdir="plugins" if="qtjambi.sql.true"/>
+
         <!-- Qt Plugins -->
         <library name="qtaccessiblewidgets"       load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible" destSubdir="plugins" if="qtjambi.plugins.accessible.qtaccessiblewidgets"/>
 

@@ -44,8 +44,14 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSql">
-  <rejection class="QSqlDriverCreator" />
+  <inject-code class="metainfo" position="2">
+        void initialize_meta_info_QSqlRelationalDelegate();
+  </inject-code>
+  <inject-code class="metainfo" position="beginning">
+        initialize_meta_info_QSqlRelationalDelegate();
+  </inject-code>
   <rejection class="QSqlRelationalDelegate" />
+  <rejection class="QSqlDriverCreator" />
   <rejection class="QSqlError::Unused" />
 
   <namespace-type name="QSql">
@@ -59,6 +65,9 @@
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QSqlDriverFactoryInterface_iid);
+        </inject-code>
   </object-type>
   <interface-type name="QSqlDriverFactoryInterface" />
   <value-type name="QSqlDatabase">

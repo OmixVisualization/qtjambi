@@ -53,6 +53,7 @@
     initialize_pre_and_post_routines();
     </inject-code>
     <inject-code class="java" position="end">
+    io.qt.internal.QtJambiInternal.findPlugins();
     QMessageHandler.initialize();
     QThread.initializeCurrentThread();
     </inject-code>
@@ -1737,18 +1738,18 @@
     </object-type-->
 
     <!-- Don't wrap Qt concurrency classes. Use similar java concurrency classes instead! -->
-    <!--object-type name="QWaitCondition">
-        <modify-function signature="wait(QMutex *, unsigned long)">
+    <object-type name="QWaitCondition">
+        <modify-function signature="wait(QReadWriteLock *, QDeadlineTimer)">
             <modify-argument index="2">
-                <replace-default-expression with="0xffffffff"/>
+                <replace-default-expression with="new QDeadlineTimer(QDeadlineTimer.ForeverConstant.Forever)"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="wait(QReadWriteLock *, unsigned long)">
+        <modify-function signature="wait(QMutex *, QDeadlineTimer)">
             <modify-argument index="2">
-                <replace-default-expression with="0xffffffff"/>
+                <replace-default-expression with="new QDeadlineTimer(QDeadlineTimer.ForeverConstant.Forever)"/>
             </modify-argument>
         </modify-function>
-    </object-type-->
+    </object-type>
 
 
     <object-type name="QBuffer">
@@ -2108,6 +2109,12 @@
                 <argument-map index="1" meta-name="%1"/>
                 if(%1!=null)
                     threadCheck(%1, "Cannot send posted events for objects in another thread");
+            </inject-code>
+      </modify-function>
+      <modify-function signature="addLibraryPath(QString)">
+            <inject-code class="java" position="end">
+                <argument-map index="1" meta-name="%1"/>
+                findPlugins(%1);
             </inject-code>
       </modify-function>
       <inject-code>
@@ -3325,7 +3332,7 @@
                 <replace-type modified-type="io.qt.core.QBitArray"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="operator~()const" rename="invert">
+        <modify-function signature="operator~()const" rename="inverted">
             <modify-argument index="0" replace-value="this">
                 <replace-type modified-type="io.qt.core.QBitArray"/>
             </modify-argument>
@@ -3465,6 +3472,28 @@
       <inject-code>
           <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QPluginLoader_java__" quote-before-line="}// class"/>
       </inject-code>
+    </object-type>
+    <object-type name="QFactoryLoader" package="io.qt.core.internal" since="5.13.0">
+        <extra-includes>
+            <include file-name="io.qt.core.*" location="java"/>
+            <include file-name="io.qt.*" location="java"/>
+            <include file-name="java.lang.reflect.*" location="java"/>
+            <include file-name="java.util.logging.*" location="java"/>
+        </extra-includes>
+        <modify-function signature="QFactoryLoader(const char *, const QString &amp;, Qt::CaseSensitivity)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.Class&lt;? extends io.qt.QtObjectInterface>"/>
+                <conversion-rule class="native">
+                const char* %out = getInterfaceIID(%env, jclass(%in));
+                if(!%out){
+                    JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Class %1 is not registered as plugin interface.").arg(qtjambi_class_name(%env, jclass(%in)))) QTJAMBI_STACKTRACEINFO);
+                }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFactoryLoader__" quote-before-line="}// class"/>
+        </inject-code>
     </object-type>
     <value-type name="QStaticPlugin" target-type="final class">
         <extra-includes>
@@ -3701,6 +3730,65 @@
     <object-type name="QSocketNotifier">
       <modify-function signature="setEnabled(bool)" thread-affine="yes">
       </modify-function>
+    </object-type>
+    <object-type name="QResource">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
+        <inject-code class="java" position="beginning">
+            private static final java.util.List&lt;java.nio.ByteBuffer> registeredBuffers = new java.util.ArrayList&lt;>();
+        </inject-code>
+        <modify-function signature="data()const">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    jobject %out = %env->NewDirectByteBuffer(const_cast&lt;char*>(reinterpret_cast&lt;const char*>(%in)), jlong(__qt_this->size()));
+                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env, %out);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="registerResource(const unsigned char *, const QString &amp;)">
+            <inject-code class="java" position="beginning">
+                <argument-map index="1" meta-name="%1"/>
+                if(!%1.isDirect()){
+                    throw new IllegalArgumentException("Only direct buffers allowed.");
+                }
+            </inject-code>
+            <inject-code class="java" position="end">
+                <argument-map index="0" meta-name="%0"/>
+                <argument-map index="1" meta-name="%1"/>
+                if(%0){
+                    registeredBuffers.add(%1);
+                }
+            </inject-code>
+            <modify-argument index="1">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    const unsigned char * %out = reinterpret_cast&lt;const unsigned char *>(%env->GetDirectBufferAddress(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="unregisterResource(const unsigned char *, const QString &amp;)">
+            <inject-code class="java" position="beginning">
+                <argument-map index="1" meta-name="%1"/>
+                if(!%1.isDirect()){
+                    throw new IllegalArgumentException("Only direct buffers allowed.");
+                }
+            </inject-code>
+            <inject-code class="java" position="end">
+                <argument-map index="0" meta-name="%0"/>
+                <argument-map index="1" meta-name="%1"/>
+                if(%0){
+                    registeredBuffers.remove(%1);
+                }
+            </inject-code>
+            <modify-argument index="1">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    const unsigned char * %out = reinterpret_cast&lt;const unsigned char *>(%env->GetDirectBufferAddress(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
 <!--    <object-type name="QFSFileEngine" package="io.qt.internal.fileengine"/>
     <object-type name="QAbstractFileEngine" package="io.qt.internal.fileengine"/>

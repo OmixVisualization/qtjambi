@@ -64,7 +64,7 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     private final long replaceFunction;
     private final long reserveFunction;
     private final long resizeFunction;
-    private final long shrinkToFitFunction;
+    private final long squeezeFunction;
     private final long sizeFunction;
     private final long startsWithFunction;
     private final long takeAtFunction;
@@ -78,7 +78,7 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
 			long insertNFunction, long lastIndexOfFunction, long midFunction, long moveFunction, 
 			long equalFunction, long prependFunction, long removeNFunction, long removeAllFunction, long removeAtFunction,
 			long removeOneFunction, long replaceFunction, long reserveFunction, long resizeFunction,
-			long setShrinkRoFitFunction, long sizeFunction, long startsWithFunction, long takeAtFunction, long toListFunction,
+			long squeezeFunction, long sizeFunction, long startsWithFunction, long takeAtFunction, long toListFunction,
 			long valueFunction, long valueDefaultFunction){
         super((QPrivateConstructor)null, elementType);
 		this.appendFunction = appendFunction;
@@ -107,7 +107,7 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
 		this.replaceFunction = replaceFunction;
 		this.reserveFunction = reserveFunction;
 		this.resizeFunction = resizeFunction;
-		this.shrinkToFitFunction = setShrinkRoFitFunction;
+		this.squeezeFunction = squeezeFunction;
 		this.sizeFunction = sizeFunction;
 		this.startsWithFunction = startsWithFunction;
 		this.takeAtFunction = takeAtFunction;
@@ -209,11 +209,6 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     static native <T> int __qt_QVector_count(long __this__nativeId, T t, long countObjectFunction);
 
     @QtUninvokable
-    public final boolean empty()    {
-        return size()==0;
-    }
-
-    @QtUninvokable
     protected final QIterator<T> end()    {
         if(endFunction==0)
         	throw new UnsupportedOperationException();
@@ -247,11 +242,6 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     @QtUninvokable
     public final T first()    {
     	return at(0);
-    }
-
-    @QtUninvokable
-    public final T front()    {
-        return first();
     }
 
     @QtUninvokable
@@ -354,16 +344,6 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     static native <T> boolean __qt_QVector_operator_equal(long __this__nativeId, java.util.Collection<T> l, long equalFunction);
 
     @QtUninvokable
-    public final void pop_back()    {
-    	removeLast();
-    }
-
-    @QtUninvokable
-    public final void pop_front()    {
-    	removeFirst();
-    }
-
-    @QtUninvokable
     public final void prepend(T t)    {
         if(prependFunction==0)
         	throw new UnsupportedOperationException();
@@ -371,16 +351,6 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     }
     @QtUninvokable
     static native <T> void __qt_QVector_prepend(long __this__nativeId, T t, long prependFunction);
-
-    @QtUninvokable
-    public final void push_back(T t)    {
-    	append(t);
-    }
-
-    @QtUninvokable
-    public final void push_front(T t)    {
-    	prepend(t);
-    }
 
     @QtUninvokable
     public final void remove(int i, int n)    {
@@ -462,10 +432,10 @@ public class QVector<T> extends io.qt.internal.QtJambiVectorObject<T>
     static native void __qt_QVector_resize(long __this__nativeId, int size, long resizeFunction);
 
     @QtUninvokable
-    public final void shrink_to_fit()    {
-        if(shrinkToFitFunction==0)
+    public final void squeeze()    {
+        if(squeezeFunction==0)
         	throw new UnsupportedOperationException();
-        __qt_QVector_shrink_to_fit(io.qt.internal.QtJambiInternal.checkedNativeId(this), shrinkToFitFunction);
+        __qt_QVector_shrink_to_fit(io.qt.internal.QtJambiInternal.checkedNativeId(this), squeezeFunction);
     }
     @QtUninvokable
     static native void __qt_QVector_shrink_to_fit(long __this__nativeId, long setShrinkToFitFunction);

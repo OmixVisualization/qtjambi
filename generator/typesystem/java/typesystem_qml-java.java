@@ -117,10 +117,8 @@ class __QJSValue extends QJSValue{
 
 }// class
 
-class __QtQml extends QtQml{
+class __QtQml__ extends QtQml{
 
-    public static native int qmlRegisterType(Class<? extends QObject> type);
-    
     public static native int qmlRegisterTypeNotAvailable(String uri, int versionMajor, int versionMinor, String qmlName, String message);
     
     public static native int qmlRegisterUncreatableType(Class<? extends QObject> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
@@ -133,11 +131,7 @@ class __QtQml extends QtQml{
     
     public static native int qmlRegisterRevision(Class<? extends QObject> type, int metaObjectRevision, String uri, int versionMajor, int versionMinor);
 
-    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType);
-
     public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType, String uri, int versionMajor, int versionMinor, String qmlName);
-
-    public static native int qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String typeName);
 
     public static QObject qmlAttachedPropertiesObject(Class<? extends QObject> clazz, QObject obj){
         return qmlAttachedPropertiesObject(clazz, obj, true);
@@ -145,8 +139,6 @@ class __QtQml extends QtQml{
 
     public static native QObject qmlAttachedPropertiesObject(Class<? extends QObject> clazz, QObject obj, boolean create);
 
-    public static native void qmlRegisterBaseTypes(String uri, int versionMajor, int versionMinor);
-    
     public static native int qmlRegisterAnonymousType(Class<? extends QObject> type, String uri, int versionMajor);
 
     public static native int qmlRegisterType(QUrl url, String uri, int versionMajor, int versionMinor, String qmlName);
@@ -172,6 +164,59 @@ class __QtQml extends QtQml{
     }
 
     public static native int qmlRegisterUncreatableClass(Class<?> type, String uri, int versionMajor, int versionMinor, String qmlName, String reason);
+
+}// class
+
+class __QtQml_5_13 extends QtQml{
+
+    public static native void qmlRegisterBaseTypes(String uri, int versionMajor, int versionMinor);
+    
+}// class
+
+class __QtQml_5_14 extends QtQml{
+
+    public static native int qmlRegisterType(Class<? extends QObject> type);
+    
+    public static int qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String typeName){
+        return type.isInterface() ? qmlRegisterInterface1(type, typeName) : -1;
+    }
+    
+    private static native int qmlRegisterInterface1(Class<? extends io.qt.QtObjectInterface> type, String typeName);
+
+    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType);
+
+}// class
+
+class __QtQml_5_15 extends QtQml{
+    /**
+     * @deprecated Use qmlRegisterAnonymousType instead
+     */
+    @Deprecated
+    public static native int qmlRegisterType(Class<? extends QObject> type);
+    
+    /**
+     * @deprecated Use qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String uri, int versionMajor)
+     */
+    @Deprecated
+    public static int qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String typeName){
+        return type.isInterface() ? qmlRegisterInterface1(type, typeName) : -1;
+    }
+    
+    private static native int qmlRegisterInterface1(Class<? extends io.qt.QtObjectInterface> type, String typeName);
+
+    public static int qmlRegisterInterface(Class<? extends io.qt.QtObjectInterface> type, String uri, int versionMajor){
+        return type.isInterface() ? qmlRegisterInterface2(type, uri, versionMajor) : -1;
+    }
+    
+    private static native int qmlRegisterInterface2(Class<? extends io.qt.QtObjectInterface> type, String uri, int versionMajor);
+
+    /**
+     * @deprecated Use qmlRegisterExtendedType(type, uri, versionMajor) instead
+     */
+    @Deprecated
+    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType);
+    
+    public static native int qmlRegisterExtendedType(Class<? extends QObject> type, Class<? extends QObject> extendedType, String uri, int versionMajor);
 
 }// class
 

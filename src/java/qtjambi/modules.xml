@@ -307,7 +307,7 @@
 <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
-                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>

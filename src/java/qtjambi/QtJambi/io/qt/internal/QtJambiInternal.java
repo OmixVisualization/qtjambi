@@ -58,6 +58,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,8 +71,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 
 import io.qt.QFlags;
 import io.qt.QMissingVirtualOverridingException;
@@ -88,18 +91,29 @@ import io.qt.QtLongEnumerator;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
 import io.qt.QtPrimitiveType;
+import io.qt.QtResources;
 import io.qt.QtShortEnumerator;
 import io.qt.QtSignalEmitterInterface;
+import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QDir;
+import io.qt.core.QFile;
+import io.qt.core.QIODevice;
+import io.qt.core.QJsonDocument;
+import io.qt.core.QJsonDocument.FromJsonResult;
 import io.qt.core.QJsonObject;
+import io.qt.core.QJsonParseError.ParseError;
+import io.qt.core.internal.QtPluginMetaData;
+import io.qt.core.QJsonValue;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QPair;
 import io.qt.core.QStaticMemberSignals;
+import io.qt.core.QString;
 import io.qt.core.QThread;
 import io.qt.gui.QPixmap;
 import io.qt.gui.QWindow;
@@ -294,6 +308,18 @@ public class QtJambiInternal {
 			return result;
 		}
 	}
+	
+	private static class PluginClassLoader extends URLClassLoader{
+		public PluginClassLoader() {
+			super(new URL[0]);
+		}
+		protected void addURLs(Collection<URL> urls) {
+			for(URL url : urls) {
+				super.addURL(url);
+				QtResources.addSearchPath(url.toString());
+			}
+		}
+	}
 
 	private static final Map<NativeLink, QMetaObject.DisposedSignal> disposedSignals;
     private static Function<Class<?>,QMetaObject.DisposedSignal> disposedSignalFactory;
@@ -314,6 +340,8 @@ public class QtJambiInternal {
 	static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 	private static final Thread cleanupRegistrationThread;
 	private static File qtPrefix;
+	private static final Set<String> analyzedPaths = new HashSet<>();
+	private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
     static {
     	interfaceLinks = Collections.synchronizedMap(new HashMap<>());
     	disposedSignals = Collections.synchronizedMap(new HashMap<>());
@@ -1156,6 +1184,20 @@ public class QtJambiInternal {
     public static MethodHandle getConstructorHandle(Constructor<?> constructor) throws IllegalAccessException {
     	java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(constructor.getDeclaringClass());
     	return lookup.unreflectConstructor(constructor);
+    }
+    
+    public static MethodHandle getMethodHandle(Method method) throws IllegalAccessException {
+    	java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(method.getDeclaringClass());
+    	return lookup.unreflect(method);
+    }
+    
+    public static Object invokeMethod(Method method, Object object, Object... args) throws Throwable {
+    	java.lang.invoke.MethodHandles.Lookup lookup = QtJambiInternal.privateLookup(method.getDeclaringClass());
+    	MethodHandle handle = lookup.unreflect(method);
+    	Object[] _arguments = new Object[args.length + 1];
+		_arguments[0] = object;
+		System.arraycopy(args, 0, _arguments, 1, args.length);
+    	return handle.invokeWithArguments(_arguments);
     }
 
     /**
@@ -3917,12 +3959,291 @@ public class QtJambiInternal {
 	public static boolean isSharedPointer(QtObjectInterface object) {
 		return isSharedPointer(nativeId(object));
 	}
-
-	public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
-		qRegisterStaticPluginFunction(checkedNativeId(instance), metaData);
+	
+	public static native void qRegisterPluginInterface(Class<? extends QtObjectInterface> iface);
+	
+	public static Class<? extends QtObjectInterface> qRegisteredPluginInterface(QByteArray iid){
+		return qRegisteredPluginInterface(nativeId(iid));
 	}
 	
-	private static native void qRegisterStaticPluginFunction(long instance, QJsonObject metaData);
+	public static native Class<? extends QtObjectInterface> qRegisteredPluginInterface(long iid);
+
+	public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
+		if(metaData==null) {
+			metaData = loadMetaDataFromClass(instance.getClass());
+		}
+		qRegisterStaticPluginFunctionInstance(checkedNativeId(instance), nativeId(metaData));
+	}
+	
+	public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData) {
+		try {
+			if(metaData==null) {
+				metaData = loadMetaDataFromClass(pluginClass);
+			}
+			qRegisterStaticPluginFunctionClass(pluginClass, nativeId(metaData));
+		} catch (RuntimeException | Error e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to register plugin "+pluginClass.getName(), e);
+		}
+	}
+	
+	private static QJsonObject loadMetaDataFromClass(Class<? extends QObject> pluginClass) {
+		QtPluginMetaData pluginMetaData = pluginClass.getAnnotation(QtPluginMetaData.class);
+		if(!pluginMetaData.file().isEmpty()) {
+			QFile pluginMetaDataFile = new QFile("classpath:"+pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
+			if(pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
+				FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());
+				if(result.document!=null)
+					return result.document.object();
+			}else {
+				try {
+					InputStream stream = pluginClass.getClassLoader().getResourceAsStream(pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
+					if(stream!=null) {
+						ByteArrayOutputStream bas = new ByteArrayOutputStream();
+						try{
+							byte[] buffer = new byte[1024];
+							int length = stream.read(buffer);
+							while(length>0) {
+								bas.write(buffer, 0, length);
+								length = stream.read(buffer);
+							}
+						}finally {
+							stream.close();
+						}
+						FromJsonResult result = QJsonDocument.fromJson(new QByteArray(bas.toByteArray()));
+						if(result.error==null || result.error.error()==ParseError.NoError)
+							return result.document.object();
+						else throw new IOException(result.error.errorString());
+					}
+				}catch(IOException t) {
+					Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "qRegisterPlugin", t);
+				}
+			}
+		}else if(!pluginMetaData.json().isEmpty()) {
+			FromJsonResult result = QJsonDocument.fromJson(new QByteArray(pluginMetaData.json()));
+			if(result.document!=null)
+				return result.document.object();					
+		}
+		return new QJsonObject();
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method1<T, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method2<T, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method3<T, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method4<T, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method5<T, ?, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method6<T, ?, ?, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method7<T, ?, ?, ?, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method8<T, ?, ?, ?, ?, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> Class<T> getFactoryClass(QMetaObject.Method9<T, ?, ?, ?, ?, ?, ?, ?, ?, ?> method){
+		return (Class<T>)getFactoryClass((Serializable)method);
+	}
+		
+	private static Class<?> getFactoryClass(Serializable method){
+		LambdaInfo lamdaInfo = lamdaInfo(method);
+		if(lamdaInfo.reflectiveMethod!=null 
+				&& (lamdaInfo.lambdaArgs==null || lamdaInfo.lambdaArgs.isEmpty())
+				&& !lamdaInfo.reflectiveMethod.isSynthetic()
+				&& !lamdaInfo.reflectiveMethod.isBridge()
+				&& !Modifier.isStatic(lamdaInfo.reflectiveMethod.getModifiers())) {
+			return lamdaInfo.reflectiveMethod.getDeclaringClass();
+		}else return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <R> Class<R> getReturnType(QMetaObject.Method1<?, R> method){
+		LambdaInfo lamdaInfo = lamdaInfo(method);
+		if(lamdaInfo.methodHandle!=null) {
+			return (Class<R>)lamdaInfo.methodHandle.type().returnType();
+		}else {
+			return null;
+		}
+	}
+
+	private static native void qRegisterStaticPluginFunctionClass(Class<? extends QObject> pluginClass, long metaData);
+	
+	private static native void qRegisterStaticPluginFunctionInstance(long instance, long metaData);
+	
+	private static native void qRegisterStaticPluginFunction(Supplier<Class<? extends QObject>> classSupplier, String className, String iid, long metaData);
+
+	@SuppressWarnings("unchecked")
+	public static void findPlugins(String location) {
+		QDir pluginsDir = new QDir(location);
+		if(!analyzedPaths.contains(pluginsDir.absolutePath()) && pluginsDir.exists()) {
+			analyzedPaths.add(pluginsDir.absolutePath());
+			for(String dir : pluginsDir.entryList(QDir.Filter.Dirs, QDir.Filter.NoDotAndDotDot)) {
+				QDir pluginDir = new QDir(location+"/"+dir);
+				for(String plDir : pluginDir.entryList(QDir.Filter.Dirs, QDir.Filter.NoDotAndDotDot)) {
+					QDir pluginBundle = new QDir(location+"/"+dir+"/"+plDir);
+					QFile pluginMetaDataFile = new QFile(pluginBundle+"/plugin.json");
+					if(pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
+						FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());
+						if(result.error==null || result.error.error()==ParseError.NoError) {
+							QJsonObject pluginInfo = result.document.object();
+							QJsonValue clsValue = pluginInfo.value("Class");
+							QJsonValue iidValue = pluginInfo.value("IID");
+							QJsonValue metaDataValue = pluginInfo.value("MetaData");
+							if(clsValue.isString() && iidValue.isString() && metaDataValue.isObject()) {
+								String className = clsValue.toString();
+								String iid = iidValue.toString();
+								QJsonObject metaData = metaDataValue.toObject();
+								if(!className.isEmpty() && !iid.isEmpty()) {
+									Class<? extends QObject> cls = null;
+									try {
+										// check if plugin jar is already loaded
+										Class<?> foundClass = Class.forName(className);
+										if(QObject.class.isAssignableFrom(foundClass)) {
+											cls = (Class<? extends QObject>)foundClass;
+										}
+									} catch (Throwable e) {}
+									if(cls==null) {
+										try {
+											List<URL> urls = new ArrayList<URL>();
+											for(QJsonValue val : pluginInfo.value("ClassPaths").toArray()) {
+												File file = new File(QDir.toNativeSeparators(location+"/"+dir+"/"+plDir+"/"+val));
+												urls.add(file.toURI().toURL());
+											}
+											List<String> libraryPaths = new ArrayList<String>();
+											for(QJsonValue val : pluginInfo.value("LibraryPaths").toArray()) {
+												libraryPaths.add(QDir.toNativeSeparators(location+"/"+dir+"/"+plDir+"/"+val));
+											}
+											String appendLibPath = QString.join(libraryPaths, File.pathSeparatorChar);
+											qRegisterStaticPluginFunction(()->{
+												try {
+													System.setProperty("java.library.path", System.getProperty("java.library.path", "")+File.pathSeparatorChar+appendLibPath);
+													Class<? extends QObject> _cls = null;
+													pluginClassLoader.addURLs(urls);
+													Class<?> foundClass = pluginClassLoader.loadClass(className);
+													if(QObject.class.isAssignableFrom(foundClass)) {
+														_cls = (Class<? extends QObject>)foundClass;
+													}
+													return _cls;
+												} catch (Throwable e) {
+													Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
+													return null;
+												}
+											}, className, iid, nativeId(metaData));
+										} catch (Throwable e) {
+											Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
+										}
+									}else {
+										qRegisterStaticPluginFunctionClass(cls, nativeId(metaData));
+									}
+								}
+							}
+						}else {
+							Logger.getLogger("internal").warning(result.error.errorString());
+						}
+					}
+				}
+				for(String jar : pluginDir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
+					ByteArrayOutputStream bas = new ByteArrayOutputStream();
+					File file = new File(QDir.toNativeSeparators(location+"/"+dir+"/"+jar));
+					try(JarFile jarFile = new JarFile(file)){
+						ZipEntry entry = jarFile.getEntry("plugin.json");
+						try(InputStream stream = jarFile.getInputStream(entry)){
+							byte[] buffer = new byte[1024];
+							int length = stream.read(buffer);
+							while(length>0) {
+								bas.write(buffer, 0, length);
+								length = stream.read(buffer);
+							}
+						}
+					} catch (Throwable e) {
+						Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
+					}
+					if(bas.size()>0) {
+						FromJsonResult result = QJsonDocument.fromJson(new QByteArray(bas.toByteArray()));
+						if(result.error==null || result.error.error()==ParseError.NoError) {
+							QJsonObject pluginInfo = result.document.object();
+							QJsonValue clsValue = pluginInfo.value("Class");
+							QJsonValue iidValue = pluginInfo.value("IID");
+							QJsonValue metaDataValue = pluginInfo.value("MetaData");
+							if(clsValue.isString() && iidValue.isString() && metaDataValue.isObject()) {
+								String className = clsValue.toString();
+								String iid = iidValue.toString();
+								QJsonObject metaData = metaDataValue.toObject();
+								if(!className.isEmpty() && !iid.isEmpty()) {
+									Class<? extends QObject> cls = null;
+									try {
+										// check if plugin jar is already loaded
+										Class<?> foundClass = Class.forName(className);
+										if(QObject.class.isAssignableFrom(foundClass)) {
+											cls = (Class<? extends QObject>)foundClass;
+										}
+									} catch (Throwable e) {}
+									if(cls==null) {
+										try {
+											URL url = file.toURI().toURL();
+											qRegisterStaticPluginFunction(()->{
+												try {
+													Class<? extends QObject> _cls = null;
+													pluginClassLoader.addURLs(Collections.singletonList(url));
+													Class<?> foundClass = pluginClassLoader.loadClass(className);
+													if(QObject.class.isAssignableFrom(foundClass)) {
+														_cls = (Class<? extends QObject>)foundClass;
+													}
+													return _cls;
+												} catch (Throwable e) {
+													Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
+													return null;
+												}
+											}, className, iid, nativeId(metaData));
+										} catch (Throwable e) {
+											Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
+										}
+									}else {
+										qRegisterStaticPluginFunctionClass(cls, nativeId(metaData));
+									}
+								}
+							}
+						}else {
+							Logger.getLogger("internal").warning(result.error.errorString());
+						}
+					}
+				}
+			}
+		}
+	}
+	public static void findPlugins() {
+		for(String location : QCoreApplication.libraryPaths()) {
+			findPlugins(location);
+		}
+	}
 	
 	public static int countEventLoops(QThread thread) {
 		return countEventLoops(nativeId(thread));

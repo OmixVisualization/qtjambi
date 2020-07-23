@@ -1,28 +1,17 @@
 /****************************************************************************
- **
- ** (C) 2007-2009 Nokia. All rights reserved.
- **
- ** This file is part of Qt Jambi.
- **
- ** ** $BEGIN_LICENSE$
-** Commercial Usage
-** Licensees holding valid Qt Commercial licenses may use this file in
-** accordance with the Qt Commercial License Agreement provided with the
-** Software or, alternatively, in accordance with the terms contained in
-** a written agreement between you and Nokia.
-** 
+**
+** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
 ** GNU Lesser General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU Lesser
+** This file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-** 
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
 ** 
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
@@ -31,16 +20,13 @@
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
-** 
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
 ** $END_LICENSE$
 
- **
- ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- **
- ****************************************************************************/
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
 
 package io.qt.sql.jdbc;
 
@@ -65,8 +51,15 @@ class QJdbcSqlResult extends QSqlResult
     public QJdbcSqlResult(QSqlDriver db, Connection c)
     {
         super(db);
-        io.qt.internal.QtJambiInternal.setCppOwnership(this);
         this.connection = c;
+        try(Statement st = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY)){
+    	} catch (SQLException ex) {
+    		if(ex.getMessage().contains("TYPE_FORWARD_ONLY")) {
+    			this.setForwardOnly(true);
+    		}
+    	} catch (Throwable ex) {
+        }
     }
 
     public Object handle()
@@ -74,6 +67,7 @@ class QJdbcSqlResult extends QSqlResult
         return statement;
     }
 
+    @Override
     protected Object data(int i)
     {
         try {
@@ -84,6 +78,7 @@ class QJdbcSqlResult extends QSqlResult
         return null;
     }
 
+    @Override
     protected boolean isNull(int i)
     {
         try {
@@ -95,6 +90,7 @@ class QJdbcSqlResult extends QSqlResult
         return false;
     }
 
+    @Override
     protected boolean fetchPrevious()
     {
         if (resultSet == null)
@@ -111,6 +107,7 @@ class QJdbcSqlResult extends QSqlResult
         return true;
     }
 
+    @Override
     protected boolean fetchNext()
     {
         if (resultSet == null)
@@ -128,6 +125,7 @@ class QJdbcSqlResult extends QSqlResult
         return true;
     }
 
+    @Override
     protected boolean fetch(int i)
     {
         if (resultSet == null)
@@ -146,6 +144,7 @@ class QJdbcSqlResult extends QSqlResult
         return false;
     }
 
+    @Override
     protected boolean fetchFirst()
     {
         if (resultSet == null)
@@ -181,16 +180,19 @@ class QJdbcSqlResult extends QSqlResult
         return false;
     }
 
+    @Override
     protected int size()
     {
         return -1;
     }
 
+    @Override
     protected int numRowsAffected()
     {
         return updateCount;
     }
 
+    @Override
     protected boolean reset(String query)
     {
         clearStatement();
@@ -201,8 +203,18 @@ class QJdbcSqlResult extends QSqlResult
                 statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY,
                                     ResultSet.CONCUR_READ_ONLY);
             } else {
-                statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_READ_ONLY);
+            	try {
+	                statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+	                        ResultSet.CONCUR_READ_ONLY);
+            	} catch (SQLException ex) {
+            		if(ex.getMessage().contains("TYPE_FORWARD_ONLY")) {
+            			setForwardOnly(true);
+            			statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY,
+                                ResultSet.CONCUR_READ_ONLY);
+            		}else {
+            			throw ex;
+            		}
+            	}
             }
         } catch (SQLException ex) {
             setError(ex, tr("Unable to create statement"), QSqlError.ErrorType.StatementError);
@@ -213,10 +225,18 @@ class QJdbcSqlResult extends QSqlResult
         // execute the query
         boolean executionResult;
         try {
-            if (connection.getMetaData().supportsGetGeneratedKeys())
-                executionResult = statement.execute(query, Statement.RETURN_GENERATED_KEYS);
-            else
-                executionResult = statement.execute(query, Statement.NO_GENERATED_KEYS);
+        	try {
+	            if (connection.getMetaData().supportsGetGeneratedKeys())
+	                executionResult = statement.execute(query, Statement.RETURN_GENERATED_KEYS);
+	            else
+	                executionResult = statement.execute(query, Statement.NO_GENERATED_KEYS);
+        	} catch (SQLException ex) {
+        		if(ex.getMessage().contains("not implemented")) {
+        			executionResult = statement.execute(query);
+        		}else {
+        			throw ex;
+        		}
+        	}
         } catch (SQLException ex) {
             setError(ex, tr("Unable to execute query"), QSqlError.ErrorType.ConnectionError);
             resultSet = null;
@@ -226,6 +246,7 @@ class QJdbcSqlResult extends QSqlResult
         return getResultSet(executionResult);
     }
 
+    @Override
     protected boolean prepare(String query)
     {
         clearStatement();
@@ -233,11 +254,41 @@ class QJdbcSqlResult extends QSqlResult
         // create a new prepared statement
         try {
             if (isForwardOnly()) {
-                statement = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY,
-                                    ResultSet.CONCUR_UPDATABLE);
+                try {
+					statement = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY,
+					                    ResultSet.CONCUR_UPDATABLE);
+				} catch (SQLException ex) {
+					if(ex.getMessage().contains("CONCUR_READ_ONLY")) {
+						statement = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY,
+			                    ResultSet.CONCUR_READ_ONLY);
+					}
+				}
             } else {
-                statement = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
-                        ResultSet.CONCUR_UPDATABLE);
+            	try {
+	                statement = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
+	                        ResultSet.CONCUR_UPDATABLE);
+            	} catch (SQLException ex) {
+					if(ex.getMessage().contains("CONCUR_READ_ONLY")) {
+						try {
+							statement = connection.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
+							        ResultSet.CONCUR_READ_ONLY);
+						} catch (SQLException e) {
+							if(ex.getMessage().contains("TYPE_FORWARD_ONLY")) {
+		            			setForwardOnly(true);
+		            			statement = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY,
+		                                ResultSet.CONCUR_READ_ONLY);
+		            		}else {
+		            			throw ex;
+		            		}
+						}
+					}else if(ex.getMessage().contains("TYPE_FORWARD_ONLY")) {
+            			setForwardOnly(true);
+            			statement = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY,
+                                ResultSet.CONCUR_READ_ONLY);
+            		}else {
+            			throw ex;
+            		}
+            	}
             }
         } catch (SQLException ex) {
             setError(ex, tr("Unable to prepare statement"), QSqlError.ErrorType.StatementError);
@@ -248,6 +299,7 @@ class QJdbcSqlResult extends QSqlResult
         return true;
     }
 
+    @Override
     protected boolean exec()
     {
         if ((statement == null) || !(statement instanceof PreparedStatement))
@@ -304,6 +356,7 @@ class QJdbcSqlResult extends QSqlResult
         return true;
     }
 
+    @Override
     protected QSqlRecord record()
     {
         if (resultSet == null)
@@ -345,6 +398,7 @@ class QJdbcSqlResult extends QSqlResult
         return cols;
     }
 
+    @Override
     protected Object lastInsertId()
     {
         if (statement == null)

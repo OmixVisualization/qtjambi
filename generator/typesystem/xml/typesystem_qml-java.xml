@@ -349,7 +349,16 @@
             <include file-name="io.qt.core.*" location="java"/>
         </extra-includes>
         <inject-code>
-            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml__" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code until="5.13">
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_13" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code until="5.14">
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_14" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code since="5.15">
+            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QtQml_5_15" quote-before-line="}// class"/>
         </inject-code>
     </namespace-type>
     <interface-type name="QQmlTypesExtensionInterface">

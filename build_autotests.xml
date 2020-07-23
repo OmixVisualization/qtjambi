@@ -69,8 +69,8 @@
                 config="${qtjambi.configuration}"
                 qtconfig="${qtjambi.qtconfig}"
                 debugTools="${qtjambi.debug-tools}"
-                qmakebinary="${qtjambi.qt.qmake.abspath}" tools="true"/>
-        <make dir="${outputDir}/tests/autotest-generator" target="${qtjambi.qmake.target.default}" tools="true"/>
+                qmakebinary="${qtjambi.qt.qmake.abspath}"/>
+        <make dir="${outputDir}/tests/autotest-generator" target="${qtjambi.qmake.target.default}"/>
         <if>
             <os family="mac"/>
             <then>
@@ -232,6 +232,15 @@
             <istrue value="${qtjambi.debug.trace}"/>
         </condition>
         <if>
+            <available type="file" file="${sqlite.jdbc}"/>
+            <then>
+            </then>
+            <else>
+                <mkdir dir="extjars"/>
+                <get src="${sqlite.jdbc.download.url}" dest="${sqlite.jdbc}" verbose="true"/>
+            </else>
+        </if>
+        <if>
             <os family="mac"/>
             <then>
                 <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
@@ -270,6 +279,7 @@
                 </fileset>
                 <pathelement location="${tests.junit}" />
                 <pathelement location="${tests.hamcrest}" />
+                <pathelement location="${sqlite.jdbc}" />
                 <pathelement path="${absOutputDir}/tests/java" />
             </classpath>
             <jvmarg value="-Djava.library.path=${absQtLib}${psep}${absJambiLib}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
@@ -399,10 +409,10 @@
     </target>
     
     <target name="tests.generate"
-            depends="init.build, compile.native.generator, compile.native, compile.java" description="Builds tests and required libraries"/>
+            depends="init.build, compile.native.generator, compile.native, compile.java" description="Generates and builds all tests"/>
 
     <target name="tests.compile"
-            depends="init.build, compile.native, compile.java" description="Builds tests and required libraries"/>
+            depends="init.build, compile.native, compile.java" description="Builds all tests without recalling generator"/>
 
     <target name="tests.run"
             depends="init.build, init.test, setenv, run" description="Runs tests and generates report in TestReport subdir"/>

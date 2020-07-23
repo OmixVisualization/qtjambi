@@ -65,7 +65,7 @@ public final class QDeclarableSignals {
 	private QDeclarableSignals() {}
 	
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      */
     public static final class Signal0 extends QMetaObject.AbstractPublicSignal0 {
     	public Signal0() {
@@ -78,7 +78,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      */
@@ -93,7 +93,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -109,7 +109,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -126,7 +126,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -144,7 +144,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -163,7 +163,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -183,7 +183,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -204,7 +204,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -226,7 +226,7 @@ public final class QDeclarableSignals {
     }
     
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      *
      * @param <A> The type of the single parameter of the signal.
      * @param <B> The type of the single parameter of the signal.
@@ -809,7 +809,7 @@ public final class QDeclarableSignals {
     }
 
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      */
     public static final class GenericSignal extends AbstractPrivateGenericSignal {
     	public GenericSignal(Class<?>...types) {
@@ -822,7 +822,7 @@ public final class QDeclarableSignals {
     }
 
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      */
     public static final class PrivateGenericSignal extends AbstractPrivateGenericSignal {
     	public PrivateGenericSignal(Class<?>...types) {
@@ -843,7 +843,7 @@ public final class QDeclarableSignals {
     }
 
     /**
-     * Use this signal class to define a static signal.
+     * Use this signal class to declare a local signal.
      */
     public static abstract class AbstractPrivateGenericSignal extends QMetaObject.AbstractSignal {
     	

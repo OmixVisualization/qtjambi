@@ -153,11 +153,6 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T>
     static native <T> T __qt_QList_at(long __this__nativeId, int i, long atFunction);
 
     @QtUninvokable
-    public final T back()    {
-        return last();
-    }
-
-    @QtUninvokable
     protected final QIterator<T> begin()    {
         if(beginFunction==0)
         	throw new UnsupportedOperationException();
@@ -199,11 +194,6 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T>
     static native <T> int __qt_QList_count(long __this__nativeId, T t, long countObjectFunction);
 
     @QtUninvokable
-    public final boolean empty()    {
-        return size()==0;
-    }
-
-    @QtUninvokable
     protected final QIterator<T> end()    {
         if(endFunction==0)
         	throw new UnsupportedOperationException();
@@ -224,11 +214,6 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T>
     @QtUninvokable
     public final T first()    {
     	return at(0);
-    }
-
-    @QtUninvokable
-    public final T front()    {
-        return first();
     }
 
     @QtUninvokable
@@ -327,16 +312,6 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T>
     static native <T> boolean __qt_QList_operator_equal(long __this__nativeId, java.util.Collection<T> l, long equalFunction);
 
     @QtUninvokable
-    public final void pop_back()    {
-    	removeLast();
-    }
-
-    @QtUninvokable
-    public final void pop_front()    {
-    	removeFirst();
-    }
-
-    @QtUninvokable
     public final void prepend(T t)    {
         if(prependFunction==0)
         	throw new UnsupportedOperationException();
@@ -344,16 +319,6 @@ public class QList<T> extends io.qt.internal.QtJambiListObject<T>
     }
     @QtUninvokable
     static native <T> void __qt_QList_prepend(long __this__nativeId, T t, long prependFunction);
-
-    @QtUninvokable
-    public final void push_back(T t)    {
-    	append(t);
-    }
-
-    @QtUninvokable
-    public final void push_front(T t)    {
-    	prepend(t);
-    }
 
     @QtUninvokable
     public final int removeAll(T t)    {

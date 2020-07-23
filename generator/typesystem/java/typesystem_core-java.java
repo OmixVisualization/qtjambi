@@ -1,39 +1,39 @@
 /****************************************************************************
-**
-** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
-**
-** This file is part of Qt Jambi.
-**
-** ** $BEGIN_LICENSE$
-**
-** GNU Lesser General Public License Usage
-** This file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
-** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU Lesser General Public License version 2.1 requirements
-** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-**
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
-**
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
-**
-** $END_LICENSE$
-**
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
-****************************************************************************/
+ **
+ ** Copyright (C) 1992-2009 Nokia. All rights reserved.
+ ** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ **
+ ** This file is part of Qt Jambi.
+ **
+ ** ** $BEGIN_LICENSE$
+ **
+ ** GNU Lesser General Public License Usage
+ ** This file may be used under the terms of the GNU Lesser
+ ** General Public License version 2.1 as published by the Free Software
+ ** Foundation and appearing in the file LICENSE.LGPL included in the
+ ** packaging of this file.  Please review the following information to
+ ** ensure the GNU Lesser General Public License version 2.1 requirements
+ ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+ **
+ ** In addition, as a special exception, Nokia gives you certain
+ ** additional rights. These rights are described in the Nokia Qt LGPL
+ ** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+ ** package.
+ **
+ ** GNU General Public License Usage
+ ** Alternatively, this file may be used under the terms of the GNU
+ ** General Public License version 3.0 as published by the Free Software
+ ** Foundation and appearing in the file LICENSE.GPL included in the
+ ** packaging of this file.  Please review the following information to
+ ** ensure the GNU General Public License version 3.0 requirements will be
+ ** met: http://www.gnu.org/copyleft/gpl.html.
+ **
+ ** $END_LICENSE$
+ **
+ ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ **
+ ****************************************************************************/
 
 package generator;
 
@@ -4193,14 +4193,342 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 }// class
 
+class QFactoryLoader__{
+
+    public static void registerFactory(Class<? extends QtObjectInterface> factoryClass){
+        Method createMethod = null;
+        for(Method method : factoryClass.getDeclaredMethods()) {
+            if(!Modifier.isStatic(method.getModifiers())
+                    && Modifier.isPublic(method.getModifiers())
+                    && QtObjectInterface.class.isAssignableFrom(method.getReturnType())) {
+                createMethod = method;
+                break;
+            }
+        }
+        if(createMethod==null) {
+            throw new IllegalArgumentException("Missing create method in interface "+factoryClass.getName());
+        }
+        qRegisterPluginInterface(factoryClass);
+    }
+    
+    public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method1<P, R> create, String key) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory);
+                        } catch (Throwable e) {
+                            Logger.getLogger(QFactoryLoader.class.getName()).throwing(QFactoryLoader.class.getName(), "loadPlugin", e);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method2<P, A, R> create, String key, A a) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method3<P, A, B, R> create, String key, A a, B b) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method4<P, A, B, C, R> create, String key, A a, B b, C c) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method5<P, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method6<P, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method7<P, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method8<P, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f, g);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, F, G, H, R> R loadPlugin(QMetaObject.Method9<P, A, B, C, D, E, F, G, H, R> create, String key, A a, B b, C c, D d, E e, F f, G g, H h) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, a, b, c, d, e, f, g, h);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public QObject loadPlugin(String key, Object... args){
+        return loadPlugin(QObject.class, key, args);
+    }
+    
+    public <P extends QtObjectInterface> P loadPlugin(Class<P> pluginClass, String key, Object... args){
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<? extends QtObjectInterface> factoryClass = qRegisteredPluginInterface(iid);
+                if(factoryClass!=null) {
+                    QObject factoryObject = instance(index);
+                    QtObjectInterface factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        Method createMethod = null;
+                        for(Method method : factoryClass.getDeclaredMethods()) {
+                            if(method.getParameterCount()==args.length
+                                    && !Modifier.isStatic(method.getModifiers())
+                                    && Modifier.isPublic(method.getModifiers())
+                                    && pluginClass==method.getReturnType()) {
+                                Class<?>[] argClassTypes = method.getParameterTypes();
+                                createMethod = method;
+                                for (int i = 0; i < method.getParameterCount(); i++) {
+                                    Class<?> argClassType = argClassTypes[i];
+                                    if(argClassType.isPrimitive()) {
+                                        if(args[i]==null
+                                                || (argClassType==int.class && !(args[i] instanceof Integer))
+                                                || (argClassType==short.class && !(args[i] instanceof Short))
+                                                || (argClassType==byte.class && !(args[i] instanceof Byte))
+                                                || (argClassType==long.class && !(args[i] instanceof Long))
+                                                || (argClassType==boolean.class && !(args[i] instanceof Boolean))
+                                                || (argClassType==float.class && !(args[i] instanceof Float))
+                                                || (argClassType==char.class && !(args[i] instanceof Character))
+                                                || (argClassType==double.class && !(args[i] instanceof Double)) 
+                                            ) {
+                                            createMethod = null;
+                                            break;
+                                        }
+                                    }else if(args[i]!=null && !argClassType.isInstance(args[i])){
+                                        createMethod = null;
+                                        break;
+                                    }
+                                }
+                                if(createMethod!=null)
+                                    break;
+                            }
+                        }
+                        if(createMethod!=null) {
+                            try {
+                                Object result = invokeMethod(createMethod, factory, args);
+                                if(pluginClass.isInterface() && result instanceof QObject) {
+                                    return QMetaObject.cast(pluginClass, (QObject)result);
+                                }else if(result!=null){
+                                    return pluginClass.cast(result);
+                                }
+                            } catch (RuntimeException | Error ex) {
+                                throw ex;
+                            } catch (Throwable ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+}// class
+
 class QPluginLoader_java__{
+    
+    public static void registerStaticPluginFunction(QObject instance){
+        qRegisterStaticPluginFunction(instance, (QJsonObject)null);
+    }
     
     public static void registerStaticPluginFunction(QObject instance, QJsonObject metaData){
         qRegisterStaticPluginFunction(instance, metaData);
     }
     
     public static void registerStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
-        registerStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
+        qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
+    }
+    
+    public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass){
+        qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
+    }
+    
+    public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData){
+        qRegisterStaticPluginFunction(pluginClass, metaData);
+    }
+    
+    public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
+        qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
     
     @io.qt.QtUninvokable

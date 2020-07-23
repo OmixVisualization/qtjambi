@@ -54,7 +54,6 @@
     <!-- objectById is marked as internal API and would expose memory pointer in QtJambi API -->
     <rejection class="QJSEngine" function-name="objectById"/>
     <rejection class="QJSValue" function-name="toQMetaObject"/>
-    <rejection class="QQmlAttachedPropertiesFunc"/>
     <rejection class="QJSValueList"/>
     <rejection class="QJSValue::QJSValueList"/>
     <rejection class="QQmlInfo"/>
@@ -168,6 +167,11 @@
     <namespace-type name="QtQml">
         <modify-function signature="qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)" remove="all"/>
     </namespace-type>
+    <functional-type name="QtQml::QQmlAttachedPropertiesFunc">
+        <extra-includes>
+            <include file-name="qqmllistproperty.h" location="local"/>
+        </extra-includes>
+    </functional-type>
     <functional-type name="QtQml::ValueCallback">
         <extra-includes>
             <include file-name="QtQml/QQmlEngine" location="global"/>
@@ -336,6 +340,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQmlV4Function*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QV4::*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQmlInfo'"/>
-    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QQmlAttachedPropertiesFunc'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'T::QmlForeignType'"/>
 </typesystem>

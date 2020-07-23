@@ -3733,6 +3733,9 @@
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QStyleFactoryInterface_iid);
+        </inject-code>
     </object-type>
     <object-type name="QGesture" />
     <object-type name="QGraphicsAnchor" />

@@ -71,6 +71,8 @@ public final class QWeakPointer<O extends QtObjectInterface> {
 	
     @QtUninvokable
 	public QWeakPointer<O> set(O object) {
+    	if(object!=null && object.isDisposed())
+    		object = null;
 		O _object = data();
 		if(_object != object) {
 			if(_object!=null) {

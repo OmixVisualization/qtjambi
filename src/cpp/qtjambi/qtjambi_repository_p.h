@@ -150,6 +150,9 @@ namespace Java{
                           QTJAMBI_REPOSITORY_DECLARE_STATIC_STRING_METHOD(getProperty)
                           QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(identityHashCode))
 
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Supplier,
+                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get))
+
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,URLClassLoader,
                           QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(newInstance)
                           QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(addURL))

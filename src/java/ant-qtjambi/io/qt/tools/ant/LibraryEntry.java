@@ -59,6 +59,7 @@ public class LibraryEntry extends Task {
     public static final String TYPE_QTJAMBI            = "qtjambi";
     public static final String TYPE_QTJAMBI_JNI        = "qtjambi-jni";
     public static final String TYPE_QTJAMBI_PLUGIN     = "qtjambi-plugin";
+    public static final String TYPE_PLUGIN_JAR         = "plugin-jar";
     public static final String TYPE_UNVERSIONED_PLUGIN = "unversioned-plugin";
 
     public static final String LOAD_DEFAULT            = "default";
@@ -207,6 +208,7 @@ public class LibraryEntry extends Task {
             if(file.isFile()) {
                 if(LibraryEntry.TYPE_QT.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI.equals(getType())
+                    || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
@@ -228,6 +230,7 @@ public class LibraryEntry extends Task {
             if(file.isFile()) {
                 if(LibraryEntry.TYPE_QT.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI.equals(getType())
+                    || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
@@ -295,7 +298,8 @@ public class LibraryEntry extends Task {
 
         if(!resolved) {
             // Fix name
-            if(type.equals(TYPE_PLUGIN)) {
+        	switch(type) {
+        	case TYPE_PLUGIN: {
                 // MacOSX: uses *.dylib and _debug suffix
                 String useDsoVersion = dsoVersion;
                 if(dsoVersion != null && dsoVersion.compareToIgnoreCase("no-version") == 0) {
@@ -317,28 +321,42 @@ public class LibraryEntry extends Task {
                 }else{
                     name = formatPluginName(name, debug, -1, -1, -1);
                 }
-            } else if(type.equals(TYPE_QTJAMBI_PLUGIN)) {
+            } 
+        	break;
+        	case TYPE_PLUGIN_JAR: 
+        		name += ".jar";
+//        		this.setAbsolutePath(libInfix);
+        		break;
+        	case TYPE_QTJAMBI_PLUGIN:
                 // MacOSX: uses *.dylib and _debug suffix
                 name = formatQtJambiPluginName(name, debug, dsoVersion);
-            }else if (type.equals(TYPE_DECLARATIVEPLUGIN) || type.equals(TYPE_QMLPLUGIN)) {
+                break;
+        	case TYPE_DECLARATIVEPLUGIN: case TYPE_QMLPLUGIN:
         		name = formatQmlPluginName(name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-        	} else if(type.equals(TYPE_QT)) {
-                // MacOSX: uses *.dylib and _debug suffix
-                String _name = name;
-                name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-                if(useQtFrameworks){
-                    targetName = name;
-                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-                }
-            } else if (type.equals(TYPE_QT_NONVERSIONED)){
-        			name = formatQtName(name, libInfix, debug, -1, -1, -1);
-        	} else if(type.equals(TYPE_QTJAMBI_JNI)) {  // JNI
+        		break;
+        	case TYPE_QT: {
+	                // MacOSX: uses *.dylib and _debug suffix
+	                String _name = name;
+	                name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+	                if(useQtFrameworks){
+	                    targetName = name;
+	                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+	                }
+	            } 
+	        	break;
+        	case TYPE_QT_NONVERSIONED:
+    			name = formatQtName(name, libInfix, debug, -1, -1, -1);
+    			break;
+        	case TYPE_QTJAMBI_JNI: // JNI
                 // MacOSX: uses *.jnilib and _debug suffix
                 name = formatQtJambiJniName(name, debug, dsoVersion);
-            } else if(type.equals(TYPE_QTJAMBI)) {  // non-JNI base library
+                break;
+        	case TYPE_QTJAMBI: // non-JNI base library
                 // MacOSX: uses *.dylib and _debug suffix
                 name = formatQtJambiName(name, debug, dsoVersion);
-            } else if(type.equals(TYPE_DSO) || type.equals(TYPE_SYSTEM)) {
+                break;
+        	case TYPE_DSO: 
+    		case TYPE_SYSTEM:
                 // name as-iz
                 if(dsoVersion!=null && !dsoVersion.isEmpty()){
                     try{
@@ -349,10 +367,12 @@ public class LibraryEntry extends Task {
                 }else{
                     name = formatQtName(name, libInfix, false, -1, -1, -1);
                 }
-            } else if(type.equals(TYPE_UNVERSIONED_PLUGIN)) {
+                break;
+        	case TYPE_UNVERSIONED_PLUGIN:
                 // MacOSX: uses *.dylib and _debug any suffix
                 name = formatUnversionedPluginName(name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-            } else if(type.equals(TYPE_EXE)) {
+                break;
+        	case TYPE_EXE:
             	if(OSInfo.crossOS() == OSInfo.OS.Windows) {
             		if(debug) {
             			name = name+"d.exe";
@@ -360,9 +380,14 @@ public class LibraryEntry extends Task {
             			name = name+".exe";
             		}
             	}
-            } else if(type.equals(TYPE_FILE) || type.equals(TYPE_FILESET)) {
+	        	break;
+        	case TYPE_FILE: 
+    		case TYPE_FILESET:
             	// do nothing
-            }
+    			break;
+            default: 
+            	break;
+        	}
         }
 
         if(!load.equals(LOAD_YES) && !load.equals(LOAD_NEVER) && !load.equals(LOAD_DEFAULT) && !load.equals(LOAD_SYSTEM))

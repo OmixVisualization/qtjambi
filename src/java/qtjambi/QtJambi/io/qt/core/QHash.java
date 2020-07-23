@@ -30,7 +30,6 @@
 package io.qt.core;
 
 import io.qt.QtUninvokable;
-import io.qt.internal.*;
 
 
 public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
@@ -148,11 +147,6 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     }
     @QtUninvokable
     static native <K> int __qt_QHash_count(long __this__nativeId, K key, long countObjectFunction);
-
-    @QtUninvokable
-    public final boolean empty()    {
-        return this.size()==0;
-    }
 
     @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {

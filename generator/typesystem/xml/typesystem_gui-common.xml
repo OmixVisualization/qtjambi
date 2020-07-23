@@ -100,8 +100,6 @@
     <rejection class="QDesktopServices" function-name="storageLocation"/>
     <rejection class="QDesktopServices" function-name="displayName"/>
     <rejection class="QGenericMatrix"/>
-    <rejection class="QGenericPlugin"/>
-    <rejection class="QGenericPluginFactory"/>
     <rejection class="QIconEngine::AvailableSizesArgument" />
     <rejection class="QIconEngine::IconEngineHook" />
     <rejection class="QImageTextKeyLang"/>
@@ -413,8 +411,10 @@
                 <define-ownership class="shell" owner="cpp" />
             </modify-argument>
         </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QAccessibleBridgeFactoryInterface_iid);
+        </inject-code>
     </object-type>
-    <interface-type name="QAccessibleBridgeFactoryInterface" />
     <object-type name="QIconEnginePlugin">
         <modify-function signature="create(QString)">
             <modify-argument index="return">
@@ -422,6 +422,9 @@
                 <define-ownership class="shell" owner="cpp" />
             </modify-argument>
         </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QIconEngineFactoryInterface_iid);
+        </inject-code>
     </object-type>
     <interface-type name="QIconEngineFactoryInterface"/>
     <object-type name="QAccessibleBridge">
@@ -1054,6 +1057,9 @@
                 <define-ownership class="shell" owner="cpp" />
             </modify-argument>
         </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QImageIOHandlerFactoryInterface_iid);
+        </inject-code>
     </object-type>
     
     <object-type name="QPlatformInputContextPlugin" />
@@ -2218,6 +2224,25 @@ class QWidget;
     </enum-type>
     <enum-type name="QColorSpace::TransferFunction" since="5.14.0">
     </enum-type>
+    <object-type name="QGenericPlugin">
+        <modify-function signature="create(QString,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <inject-code class="metainfo" position="1">
+        registerInterfaceID(typeId, QGenericPluginFactoryInterface_iid);
+        </inject-code>
+    </object-type>
+    <object-type name="QGenericPluginFactory">
+        <modify-function signature="create(QString,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <!--
     <object-type name="QPlatformGraphicsBuffer">
     </object-type>

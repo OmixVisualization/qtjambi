@@ -10,7 +10,7 @@ public class RetroHelper {
 	private static final StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
 	private static final Supplier<Class<?>> callerClassProvider = stackWalker::getCallerClass;
 	private static final Supplier<QPair<Class<?>, String>> callerClassProvider2 = ()->{
-		Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(3).skip(2).findFirst());
+		Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(4).skip(3).findFirst());
 		if(stackFrame.isPresent()) {
 			return new QPair<>(
 				stackFrame.get().getDeclaringClass(),

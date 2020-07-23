@@ -447,6 +447,10 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/lang,System,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(identityHashCode,(Ljava/lang/Object;)I)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/util/function,Supplier,
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(Runtime,java/net,URL,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )

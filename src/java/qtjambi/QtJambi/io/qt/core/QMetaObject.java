@@ -609,7 +609,7 @@ public final class QMetaObject {
 	
 	public static <T extends QtObjectInterface> T cast(Class<T> targetType, QtObjectInterface object) {
 		io.qt.QtUtilities.initializePackage(targetType);
-		if(targetType.isInstance(object)) {
+		if(object==null || targetType.isInstance(object)) {
 			return targetType.cast(object);
 		}
 		long nativeId = QtJambiInternal.checkedNativeId(object);

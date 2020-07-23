@@ -39,11 +39,7 @@
 
 #ifndef QT_NO_QFUTURE
 
-#include <QtCore/QVariant>
-#include <QtCore/qfuture.h>
-#include <QtCore/qfuturewatcher.h>
-#include <QtCore/qfuturesynchronizer.h>
-#include <QtCore/QThreadStorage>
+#include <QtCore/QtCore>
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #endif //def QT_JAMBI_RUN
@@ -56,6 +52,10 @@ typedef QFutureWatcher<JObjectWrapper> QtJambiFutureWatcher;
 typedef QFutureSynchronizer<JObjectWrapper> QtJambiFutureSynchronizer;
 typedef QFutureIterator<JObjectWrapper> QtJambiFutureIterator;
 typedef QThreadStorage<JObjectWrapper> QtJambiThreadStorage;
+typedef QAtomicInteger<jint> QtJambiAtomicInteger;
+typedef QAtomicInteger<jbyte> QAtomicByte;
+typedef QAtomicInteger<jshort> QAtomicShort;
+typedef QAtomicInteger<jlong> QAtomicLong;
 
 namespace QtJambiStringUtil{
 
@@ -65,10 +65,18 @@ inline QString join(const QStringList& stringList, const QString &sep)
 inline QString join(const QStringList& stringList, QChar sep)
 {return stringList.join(sep);}
 
+#if QT_VERSION_CHECK(5,15,0)
+#define Q_SPLITBEHAVIOUR_PREFIX(e) Qt::e
+#define Q_SPLIT_PREFIX(e) Qt::e
+#else
 #ifdef QT_JAMBI_RUN
 enum SplitBehavior { KeepEmptyParts, SkipEmptyParts };
+#define Q_SPLIT_PREFIX(e) e
+#define Q_SPLITBEHAVIOUR_PREFIX(e) e
 #else
-typedef QString::SplitBehavior SplitBehavior;
+#define Q_SPLITBEHAVIOUR_PREFIX(e) QString::e
+#define Q_SPLIT_PREFIX(e) QString::e
+#endif
 #endif
 
 #ifndef QT_JAMBI_RUN
@@ -77,17 +85,17 @@ typedef QString::SplitBehavior SplitBehavior;
 #define Q_STRING_PREFIX(e) e
 #endif
 
-inline QStringList split(const QString& string, const QString &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
+inline QStringList split(const QString& string, const QString &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
 { return string.split(sep, behavior, cs); }
 
-inline QStringList split(const QString& string, QChar sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
+inline QStringList split(const QString& string, QChar sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
 { return string.split(sep, behavior, cs); }
 #ifndef QT_NO_REGEXP
-inline QStringList split(const QString& string, const QRegExp &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts))
+inline QStringList split(const QString& string, const QRegExp &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
 { return string.split(sep, behavior); }
 #endif
 #if QT_CONFIG(regularexpression)
-inline QStringList split(const QString& string, const QRegularExpression &sep, SplitBehavior behavior = Q_STRING_PREFIX(KeepEmptyParts))
+inline QStringList split(const QString& string, const QRegularExpression &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
 { return string.split(sep, behavior); }
 #endif
 
@@ -132,6 +140,14 @@ inline QString mid(const QString& string, int position, int n = -1)
 
 inline QString chopped(const QString& string, int n)
 { return string.chopped(n); }
+
+inline QString arg(QString string, std::initializer_list<QString> args)
+{
+    for(const QString& arg : args){
+        string = string.arg(arg);
+    }
+    return string;
+}
 
 };
 

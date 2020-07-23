@@ -1,0 +1,22 @@
+<project default="build">
+    <property name="plugin-subdir" value="sqldrivers"/>
+    <property name="module-name" value="qsqljdbc"/>
+    <property name="qtjambi-module-name" value="QtJambiSql"/>
+    <path id="qtjambi.modulepath">
+        <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-sql-${qtjambi.jar.version}.jar"/>
+    </path>
+    <target name="build">
+        <condition property="build.module" value="true">
+            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+        </condition>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl" if="build.module">
+        <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar1">
+            <property name="module" value="${module-name}"/>
+            <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}"/>
+            <property name="jar.excludes" value=""/>
+            <property name="module.excludes" value=""/>
+        </ant>
+    </target>
+</project>

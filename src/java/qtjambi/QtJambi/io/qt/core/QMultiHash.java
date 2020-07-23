@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.List;
 
 import io.qt.QtUninvokable;
-import io.qt.internal.*;
 
 public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V>
 {
@@ -154,11 +153,6 @@ public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V>
         if(countObjectFunction==0)
         	throw new UnsupportedOperationException();
         return __qt_QHash_count(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, countObjectFunction);
-    }
-
-    @QtUninvokable
-    public final boolean empty()    {
-        return this.size()==0;
     }
 
     @QtUninvokable

@@ -208,9 +208,9 @@ class IndentationReset {
     Q_UNUSED(indentReset)
 
 inline QTextStream &operator <<(QTextStream &s, const Indentor &indentor) {
+    s << indentor.end();
     for (int i = 0; i < indentor.indent; ++i)
         s << indentor.string();
-    s << indentor.end();
     return s;
 }
 

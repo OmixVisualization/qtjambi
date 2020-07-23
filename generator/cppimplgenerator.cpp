@@ -2293,6 +2293,84 @@ void CppImplGenerator::writeShellDestructor(QTextStream &s, const AbstractMetaFu
     s << "}" << Qt::endl << Qt::endl;
 }
 
+void CppImplGenerator::writeCodeInjections(QTextStream &s,
+        const ComplexTypeEntry *typeEntry, CodeSnip::Position position,
+        TypeSystem::Language language) {
+    for(const CodeSnip& snip : typeEntry->codeSnips()) {
+        if (snip.position != position)
+            continue ;
+
+        if ((snip.language & language) == false)
+            continue ;
+
+        if (position == CodeSnip::End)
+            s << Qt::endl;
+
+        QString code = snip.code();
+        ArgumentMap map = snip.argumentMap;
+        ArgumentMap::iterator it = map.begin();
+        for (;it != map.end();++it) {
+            QString meta_name = it.value();
+            QString debug = QString("argument map specifies invalid argument index %1"
+                                    "for class '%2'")
+                            .arg(it.key()).arg(typeEntry->name());
+            ReportHandler::warning(debug);
+        }
+        QStringList lines = code.split("\n");
+        while(!lines.isEmpty()){
+            if(lines.last().trimmed().isEmpty()){
+                lines.takeLast();
+            }else{
+                break;
+            }
+        }
+        while(!lines.isEmpty()){
+            if(lines.first().trimmed().isEmpty()){
+                lines.takeFirst();
+            }else{
+                break;
+            }
+        }
+
+        int sp = -1;
+        QString spaces;
+        if(!lines.isEmpty())
+            s << Qt::endl;
+        for(QString line : lines) {
+            if(!line.isEmpty() && line[0]==QLatin1Char('\r')){
+                line = line.mid(1);
+            }
+            if(sp<0 && line.isEmpty()){
+                continue;
+            }
+            if(sp<0 && !QString(line).trimmed().isEmpty()){
+                for(sp=0; sp<line.length(); ++sp){
+                    if(line[sp]!=QLatin1Char(' ')){
+                        break;
+                    }
+                }
+                if(sp==0){
+                    sp = 0;
+                    for(; sp<lines[0].length(); ++sp){
+                        if(lines[0][sp]!=QLatin1Char('\t')){
+                            break;
+                        }
+                    }
+                    spaces.fill(QLatin1Char('\t'), sp);
+                }else{
+                    spaces.fill(QLatin1Char(' '), sp);
+                }
+            }
+            if(line.startsWith(spaces))
+                line = line.mid(sp);
+            s << INDENT << line << Qt::endl;
+        }
+        if (position == CodeSnip::Beginning)
+            s << Qt::endl;
+    }
+}
+
+
 void CppImplGenerator::writeCodeInjections(QTextStream &s, const AbstractMetaFunction *java_function,
         const AbstractMetaClass *implementor, CodeSnip::Position position,
         TypeSystem::Language language, const QString& __jni_env, const QString& qtjambi_scope, Option option) {
@@ -8730,6 +8808,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
         if(!cls->typeEntry()->ppCondition().isEmpty()){
             s << Qt::endl << "#if " << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
         }
+        writeCodeInjections(s, cls->typeEntry(), CodeSnip::Beginning, TypeSystem::MetaInfo);
 
         const QString qtName = entry->qualifiedCppName();
         const QString javaTypeName = [entry]()->QString{
@@ -8778,6 +8857,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
                     s << INDENT << "const std::type_info& typeId = registerObjectTypeInfo<" << qtName << ">(\"" << qtName << "\", \"" << javaTypeName << "\");" << Qt::endl;
                 }
             }
+            writeCodeInjections(s, cls->typeEntry(), CodeSnip::Position1, TypeSystem::MetaInfo);
 
             QString constructorName = entry->customConstructor().name.isEmpty() ? QString() : "custom_constructor_" + entry->qualifiedCppName().replace("::", "_");
             QString destructorName = entry->customDestructor().name.isEmpty() ? QString() : "custom_destructor_" + entry->qualifiedCppName().replace("::", "_");
@@ -9557,6 +9637,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *cl
             }
         }
         s << "// END: enums and flags" << Qt::endl;
+        writeCodeInjections(s, cls->typeEntry(), CodeSnip::End, TypeSystem::MetaInfo);
         if(!cls->typeEntry()->ppCondition().isEmpty()){
             s << Qt::endl << "#endif //" << cls->typeEntry()->ppCondition() << Qt::endl << Qt::endl;
         }

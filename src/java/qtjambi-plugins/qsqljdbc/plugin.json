@@ -1,0 +1,5 @@
+{
+    "Class" : "io.qt.sql.jdbc.QJdbc",
+    "IID" : "org.qt-project.Qt.QSqlDriverFactoryInterface",
+    "MetaData" : { "Keys" : ["QJDBC"] }
+}

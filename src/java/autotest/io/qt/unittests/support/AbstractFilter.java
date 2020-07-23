@@ -63,7 +63,7 @@ public abstract class AbstractFilter extends Filter {
 	}
 
 	@Override
-	public boolean shouldRun(@SuppressWarnings("exports") Description description) {
+	public boolean shouldRun(Description description) {
 		Boolean has = hasCorrectCategoryAnnotation(description);
 		if(has != null && has.booleanValue()) {
 			// at this point we have specially marked the test

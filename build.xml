@@ -186,6 +186,9 @@ Further options:
 
     <target name="library.java" depends="log, library.java.bundle"
         description="Compiles and bundles the Qt Jambi java libraries."/>
+        
+    <target name="library.java.plugins" depends="log, jar.qtjambi.plugins"
+        description="Compiles and bundles the Qt Jambi plugins."/>
 
     <target name="library.designer" depends="log, library.designer.bundle"
         description="Compiles and bundles the Qt Jambi designer libraries."/>

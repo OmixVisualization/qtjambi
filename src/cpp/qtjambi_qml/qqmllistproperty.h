@@ -90,6 +90,7 @@ inline uint qHash(const QQmlError &value)
 }
 
 namespace QtQml {
+    typedef QObject *(*QQmlAttachedPropertiesFunc)(QObject *);
     typedef QJSValue (*ValueCallback)(QQmlEngine *, QJSEngine *);
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
     typedef std::function<QObject*(QQmlEngine *, QJSEngine *)> ObjectCallback;
