@@ -31,6 +31,7 @@ package io.qt.core;
 
 import io.qt.QtUninvokable;
 
+
 public class QSet<T> extends io.qt.internal.QtJambiSetObject<T>
 {
 

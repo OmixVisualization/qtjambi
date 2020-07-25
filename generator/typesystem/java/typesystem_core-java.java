@@ -4200,13 +4200,13 @@ class QFactoryLoader__{
         for(Method method : factoryClass.getDeclaredMethods()) {
             if(!Modifier.isStatic(method.getModifiers())
                     && Modifier.isPublic(method.getModifiers())
-                    && QtObjectInterface.class.isAssignableFrom(method.getReturnType())) {
+                    && method.getReturnType()!=void.class) {
                 createMethod = method;
                 break;
             }
         }
         if(createMethod==null) {
-            throw new IllegalArgumentException("Missing create method in interface "+factoryClass.getName());
+            throw new IllegalArgumentException("Missing factory method in interface "+factoryClass.getName());
         }
         qRegisterPluginInterface(factoryClass);
     }
@@ -4531,6 +4531,10 @@ class QPluginLoader_java__{
         qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
     
+    public static void registerPluginInterface(Class<? extends QtObjectInterface> factoryClass){
+        qRegisterPluginInterface(factoryClass);
+    }
+    
     @io.qt.QtUninvokable
     public final <T extends io.qt.core.QObject> T instance(Class<T> type){
         return QMetaObject.cast(type, instance());
@@ -4539,10 +4543,11 @@ class QPluginLoader_java__{
 
 class QStaticPlugin_java__{
     @io.qt.QtUninvokable
-    public native final io.qt.core.QObject instance();
+    public final io.qt.core.QObject instance(){
+        return instance(checkedNativeId(this));
+    }
     
-    @io.qt.QtUninvokable
-    public native final String rawMetaData();
+    private static native final io.qt.core.QObject instance(long nativeId);
 }// class
 
 class QStaticPlugin_native__{
@@ -4550,7 +4555,7 @@ class QStaticPlugin_native__{
 // QStaticPlugin::instance()
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QStaticPlugin_instance)
 (JNIEnv *__jni_env,
- jobject,
+ jclass,
  QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QStaticPlugin::instance()")
@@ -4558,23 +4563,6 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QStaticPlugin *__qt_this = qtjambi_object_from_nativeId<QStaticPlugin>(__this_nativeId);
         qtjambi_check_resource(__jni_env, __qt_this);
         return qtjambi_cast<jobject>(__jni_env, __qt_this->instance());
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-// QStaticPlugin::rawMetaData()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QStaticPlugin_rawMetaData)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QStaticPlugin::instance()")
-    try{
-        QStaticPlugin *__qt_this = qtjambi_object_from_nativeId<QStaticPlugin>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        return qtjambi_cast<jstring>(__jni_env, QLatin1String(__qt_this->rawMetaData()));
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
         return nullptr;

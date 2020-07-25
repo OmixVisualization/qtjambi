@@ -220,6 +220,9 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotest"/>
         </antcall>
+        <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+            <property name="qtjambi.test.qmlmodule" value="true"/>
+        </ant>
     </target>
 
     <target name="run.test" depends="init.test, check.junit">

@@ -7,6 +7,7 @@ contains(QT_CONFIG, qtjambi-gui):                 SUBDIRS += qtjambi_gui
 contains(QT_CONFIG, qtjambi-widgets):             SUBDIRS += qtjambi_widgets
 contains(QT_CONFIG, qtjambi-network):             SUBDIRS += qtjambi_network
 contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_qml
+contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_qmlimport
 contains(QT_CONFIG, qtjambi-quick):               SUBDIRS += qtjambi_quick
 contains(QT_CONFIG, qtjambi-quickwidgets):        SUBDIRS += qtjambi_quick_widgets
 contains(QT_CONFIG, qtjambi-sensors):             SUBDIRS += qtjambi_sensors

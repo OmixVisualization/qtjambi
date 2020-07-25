@@ -207,6 +207,7 @@
         <library name="libicudata"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicudata"/>
         <library name="libicuuc"                  dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicuuc"/>
         <library name="libicui18n"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicui18n"/>
+        <library name="jarimport"                 dsoVersion="" type="dso" rootPath="${qtjambi.jambi.libdir}" destSubdir="qml/QtJambi" if="qtjambi.qml.true"/>
 
         <!-- QtJambi Libraries -->
         <library name="QtJambi"                   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.core.true"/>
@@ -263,7 +264,7 @@
         <library name="QtJambi3DLogic"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.qt3dlogic.true"/>
 
         <!-- QtJambi Plugins -->
-        <library name="qsqljdbc"                  load="never" type="plugin-jar"   rootPath="${jardir}/plugins" subdir="sqldrivers" destSubdir="plugins" if="qtjambi.sql.true"/>
+        <library name="qsqljdbc"                  load="never" type="plugin-jar"   rootPath="${jardir}/plugins" subdir="qtjambi" destSubdir="plugins" if="qtjambi.sql.true"/>
 
         <!-- Qt Plugins -->
         <library name="qtaccessiblewidgets"       load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible" destSubdir="plugins" if="qtjambi.plugins.accessible.qtaccessiblewidgets"/>

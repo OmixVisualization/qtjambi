@@ -3461,8 +3461,7 @@
                 QJsonValue iid = %in.value("IID");
                 if(iid.isString()){
                     if(jclass iface = getInterfaceByIID(%env, iid.toString().toUtf8())){
-                        %in.take("IID");
-                        %in.insert("interface", QJsonValue::fromVariant(QVariant::fromValue&lt;JObjectWrapper>(JObjectWrapper(%env, iface))));
+                        %in.insert("interface", qtjambi_class_name(%env, iface));
                     }
                 }
                 jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
@@ -3488,6 +3487,20 @@
                 if(!%out){
                     JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Class %1 is not registered as plugin interface.").arg(qtjambi_class_name(%env, jclass(%in)))) QTJAMBI_STACKTRACEINFO);
                 }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="metaData() const">
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                for(QJsonObject&lt; obj : %in){
+                    if(obj["IID"].isString()){
+                        if(jclass iface = getInterfaceByIID(%env, obj["IID"].toString().toUtf8())){
+                            obj["interface"] = qtjambi_class_name(%env, iface);
+                        }
+                    }
+                }
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

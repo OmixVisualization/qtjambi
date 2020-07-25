@@ -30,14 +30,27 @@
 
 package io.qt.qml.util;
 
+import java.io.File;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import io.qt.QtObjectInterface;
+import io.qt.QtResources;
 import io.qt.core.QDir;
+import io.qt.core.QFile;
+import io.qt.core.QIODevice;
 import io.qt.core.QObject;
+import io.qt.core.QString;
+import io.qt.core.QTextStream;
 import io.qt.core.QUrl;
+import io.qt.internal.NativeAccess;
 import io.qt.internal.QtJambiInternal;
 import io.qt.qml.QtQml;
 
@@ -47,6 +60,17 @@ import io.qt.qml.QtQml;
  *
  */
 public class QmlTypes {
+	
+	private static class QmlClassLoader extends URLClassLoader{
+		public QmlClassLoader() {
+			super(new URL[0]);
+		}
+		protected void addURL(URL url) {
+			super.addURL(url);
+			QtResources.addSearchPath(url.toString());
+		}
+	}
+	private static final QmlClassLoader qmlClassLoader = new QmlClassLoader();
 	
 	public static void registerPackage(Package pkg) {
 		registerPackage(pkg, null);
@@ -69,8 +93,22 @@ public class QmlTypes {
 		QDir classPath = new QDir("classpath:"+pkg.getName().replace('.', '/'));
 		for(String className : classPath.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 			if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+				className = pkg.getName()+"."+className.substring(0, className.length()-6);
 				try {
-					Class<?> cls = Class.forName(pkg.getName()+"."+className.substring(0, className.length()-6));
+					Class<?> cls;
+					try {
+						cls = qmlClassLoader.loadClass(className);
+					} catch (Exception e) {
+						try {
+							cls = ClassLoader.getSystemClassLoader().loadClass(className);
+						} catch (Exception e1) {
+							try {
+								cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+							} catch (Exception e2) {
+								cls = Class.forName(className);
+							}
+						}
+					}
 					analyzeType(cls, uri, versionMajor);
 				} catch (Exception e) {
 				}
@@ -86,16 +124,33 @@ public class QmlTypes {
 	}
 	
 	public static void registerPackage(String pkg, String uri) {
-		java.lang.Package _package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
 		if(_package==null) {
-			_package = ClassLoader.getPlatformClassLoader().getDefinedPackage(pkg);
+			_package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+		}
+		if(_package==null) {
+			_package = Thread.currentThread().getContextClassLoader().getDefinedPackage(pkg);
 		}
 		if(_package==null){
 			QDir classPath = new QDir("classpath:"+pkg.replace('.', '/'));
 			for(String className : classPath.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+					className = pkg+"."+className.substring(0, className.length()-6);
 					try {
-						Class<?> cls = Class.forName(pkg+"."+className.substring(0, className.length()-6));
+						Class<?> cls;
+						try {
+							cls = qmlClassLoader.loadClass(className);
+						} catch (Exception e) {
+							try {
+								cls = ClassLoader.getSystemClassLoader().loadClass(className);
+							} catch (Exception e1) {
+								try {
+									cls = Thread.currentThread().getContextClassLoader().loadClass(className);
+								} catch (Exception e2) {
+									cls = Class.forName(className);
+								}
+							}
+						}
 						_package = cls.getPackage();
 						break;
 					} catch (Exception e) {
@@ -114,9 +169,15 @@ public class QmlTypes {
 	}
 	
 	public static void registerPackage(String pkg, String uri, int versionMajor) {
-		java.lang.Package _package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
+		if(_package==null) {
+			_package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+		}
 		if(_package==null) {
 			_package = ClassLoader.getPlatformClassLoader().getDefinedPackage(pkg);
+		}
+		if(_package==null) {
+			_package = Thread.currentThread().getContextClassLoader().getDefinedPackage(pkg);
 		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
@@ -188,5 +249,80 @@ public class QmlTypes {
 		if(addedInMinorVersion!=null)
 			versionMinor = addedInMinorVersion.value();
 		return versionMinor;
+	}
+	
+	@NativeAccess
+	private static void registerModule(QUrl baseUrl, String uri) {
+		if(baseUrl.isLocalFile()) {
+			QDir directory = new QDir(baseUrl.toLocalFile());
+	        QFile qmldir = new QFile(directory.filePath("qmldir"));
+	        if(qmldir.exists() && qmldir.open(QIODevice.OpenModeFlag.ReadOnly)){
+	            List<String> classPath = Collections.emptyList();
+	            List<String> libraryPath = Collections.emptyList();
+	        	try {
+		            QTextStream s = new QTextStream(qmldir);
+		            while(!s.atEnd()){
+		                String line = s.readLine();
+		                if(line.startsWith("classpath ")){
+		                    classPath = Arrays.asList(line.substring(10).trim().split(","));
+		                }else if(line.startsWith("librarypath ")){
+		                	libraryPath = new ArrayList<>(Arrays.asList(System.getProperty("java.library.path", "").split(File.pathSeparator)));
+							for(String lp : line.substring(12).trim().split(",")) {
+								lp = QDir.toNativeSeparators(directory.absoluteFilePath(lp));
+								if(!libraryPath.contains(lp)) {
+									libraryPath.add(lp);
+								}
+							}
+		                }
+		            }
+	        	}finally {
+	        		qmldir.close();
+	        	}
+				if(!libraryPath.isEmpty()) {
+					System.setProperty("java.library.path", QString.join(libraryPath, File.pathSeparatorChar));
+				}
+				if(classPath.isEmpty()) {
+					classPath = directory.entryList(Arrays.asList("*.jar"), QDir.Filter.Files);
+				}
+				for(String cp : classPath) {
+					File file = new File(QDir.toNativeSeparators(directory.absoluteFilePath(cp)));
+					try {
+						URL url = file.toURI().toURL();
+						if(!Arrays.asList(qmlClassLoader.getURLs()).contains(url)) {
+							qmlClassLoader.addURL(url);
+						}
+					} catch (Throwable e) {
+						Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
+					}
+				}
+				java.lang.Package _package = qmlClassLoader.getDefinedPackage(uri);
+				if(_package==null){
+					QDir classPathDir = new QDir("classpath:"+uri.replace('.', '/'));
+					for(String className : classPathDir.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+						if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
+							className = uri+"."+className.substring(0, className.length()-6);
+							try {
+								Class<?> cls = qmlClassLoader.loadClass(className);
+								_package = cls.getPackage();
+								break;
+							} catch (Exception e) {
+							}
+						}
+					}
+				}
+				int version = 1;
+				if(_package!=null) {
+					QmlImportMajorVersion importMajorVersion = _package.getAnnotation(QmlImportMajorVersion.class);
+					if(importMajorVersion==null)
+						throw new QmlNoMajorVersionException("No QmlImportMajorVersion annotation in package "+_package.getName());
+					version = importMajorVersion.value();
+					registerPackage(_package, uri, version);
+				}
+				for(String qmlFile : directory.entryList(List.of("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+					QtQml.qmlRegisterType(new QUrl(directory.absoluteFilePath(qmlFile)), uri, version, 0, qmlFile.substring(0, qmlFile.length()-4));
+				}
+				QtQml.qmlRegisterModule(uri, version, 0);
+	        }
+		}
 	}
 }

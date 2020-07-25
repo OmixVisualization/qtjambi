@@ -10,12 +10,15 @@ HEADERS += qqmllistproperty.h \
     qmlcreateparentfunction.h \
     qmlattachedpropertiesfunction.h \
     qmlcreatorfunction.h \
+    qtjambi_jarimport.h \
     qtjambi_qml_repository.h
 SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
     qmlcreatorfunction.cpp \
     qmlcreateparentfunction.cpp \
     qmlattachedpropertiesfunction.cpp \
     qtjambi_qml_repository.cpp
+
+DEFINES += QTJAMBI_QML_EXPORT
 
 QT += core gui qml core-private
 

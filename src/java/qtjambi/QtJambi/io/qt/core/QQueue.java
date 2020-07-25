@@ -33,6 +33,7 @@ import static io.qt.core.QList.*;
 
 import io.qt.QtUninvokable;
 
+
 public class QQueue<T> extends io.qt.internal.QtJambiQueueObject<T>
 {
 

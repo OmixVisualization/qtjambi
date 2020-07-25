@@ -340,6 +340,7 @@ public class QtJambiInternal {
 	static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 	private static final Thread cleanupRegistrationThread;
 	private static File qtPrefix;
+	private static boolean noJarPlugins = Boolean.parseBoolean(System.getProperty("io.qt.no-plugins", "false"));
 	private static final Set<String> analyzedPaths = new HashSet<>();
 	private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
     static {
@@ -3990,40 +3991,42 @@ public class QtJambiInternal {
 	
 	private static QJsonObject loadMetaDataFromClass(Class<? extends QObject> pluginClass) {
 		QtPluginMetaData pluginMetaData = pluginClass.getAnnotation(QtPluginMetaData.class);
-		if(!pluginMetaData.file().isEmpty()) {
-			QFile pluginMetaDataFile = new QFile("classpath:"+pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
-			if(pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
-				FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());
-				if(result.document!=null)
-					return result.document.object();
-			}else {
-				try {
-					InputStream stream = pluginClass.getClassLoader().getResourceAsStream(pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
-					if(stream!=null) {
-						ByteArrayOutputStream bas = new ByteArrayOutputStream();
-						try{
-							byte[] buffer = new byte[1024];
-							int length = stream.read(buffer);
-							while(length>0) {
-								bas.write(buffer, 0, length);
-								length = stream.read(buffer);
+		if(pluginMetaData!=null) {
+			if(!pluginMetaData.file().isEmpty()) {
+				QFile pluginMetaDataFile = new QFile("classpath:"+pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
+				if(pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
+					FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());
+					if(result.document!=null)
+						return result.document.object();
+				}else {
+					try {
+						InputStream stream = pluginClass.getClassLoader().getResourceAsStream(pluginClass.getPackage().getName().replace('.', '/')+"/"+pluginMetaData.file());
+						if(stream!=null) {
+							ByteArrayOutputStream bas = new ByteArrayOutputStream();
+							try{
+								byte[] buffer = new byte[1024];
+								int length = stream.read(buffer);
+								while(length>0) {
+									bas.write(buffer, 0, length);
+									length = stream.read(buffer);
+								}
+							}finally {
+								stream.close();
 							}
-						}finally {
-							stream.close();
+							FromJsonResult result = QJsonDocument.fromJson(new QByteArray(bas.toByteArray()));
+							if(result.error==null || result.error.error()==ParseError.NoError)
+								return result.document.object();
+							else throw new IOException(result.error.errorString());
 						}
-						FromJsonResult result = QJsonDocument.fromJson(new QByteArray(bas.toByteArray()));
-						if(result.error==null || result.error.error()==ParseError.NoError)
-							return result.document.object();
-						else throw new IOException(result.error.errorString());
+					}catch(IOException t) {
+						Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "qRegisterPlugin", t);
 					}
-				}catch(IOException t) {
-					Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "qRegisterPlugin", t);
 				}
+			}else if(!pluginMetaData.json().isEmpty()) {
+				FromJsonResult result = QJsonDocument.fromJson(new QByteArray(pluginMetaData.json()));
+				if(result.document!=null)
+					return result.document.object();					
 			}
-		}else if(!pluginMetaData.json().isEmpty()) {
-			FromJsonResult result = QJsonDocument.fromJson(new QByteArray(pluginMetaData.json()));
-			if(result.document!=null)
-				return result.document.object();					
 		}
 		return new QJsonObject();
 	}
@@ -4098,18 +4101,17 @@ public class QtJambiInternal {
 	
 	private static native void qRegisterStaticPluginFunctionInstance(long instance, long metaData);
 	
-	private static native void qRegisterStaticPluginFunction(Supplier<Class<? extends QObject>> classSupplier, String className, String iid, long metaData);
+	private static native void qRegisterStaticPluginFunction(Supplier<Class<? extends QObject>> classSupplier, String className, String iid, long metaData, long pluginInfo);
 
 	@SuppressWarnings("unchecked")
 	public static void findPlugins(String location) {
-		QDir pluginsDir = new QDir(location);
-		if(!analyzedPaths.contains(pluginsDir.absolutePath()) && pluginsDir.exists()) {
-			analyzedPaths.add(pluginsDir.absolutePath());
-			for(String dir : pluginsDir.entryList(QDir.Filter.Dirs, QDir.Filter.NoDotAndDotDot)) {
-				QDir pluginDir = new QDir(location+"/"+dir);
+		if(!noJarPlugins) {
+			QDir pluginDir = new QDir(location+"/qtjambi");
+			if(!analyzedPaths.contains(pluginDir.absolutePath()) && pluginDir.exists()) {
+				analyzedPaths.add(pluginDir.absolutePath());
 				for(String plDir : pluginDir.entryList(QDir.Filter.Dirs, QDir.Filter.NoDotAndDotDot)) {
-					QDir pluginBundle = new QDir(location+"/"+dir+"/"+plDir);
-					QFile pluginMetaDataFile = new QFile(pluginBundle+"/plugin.json");
+					QDir pluginBundle = new QDir(pluginDir.absoluteFilePath(plDir));
+					QFile pluginMetaDataFile = new QFile(pluginBundle.absoluteFilePath("qtjambiplugin.json"));
 					if(pluginMetaDataFile.exists() && pluginMetaDataFile.open(QIODevice.OpenModeFlag.ReadOnly)) {
 						FromJsonResult result = QJsonDocument.fromJson(pluginMetaDataFile.readAll());
 						if(result.error==null || result.error.error()==ParseError.NoError) {
@@ -4117,7 +4119,10 @@ public class QtJambiInternal {
 							QJsonValue clsValue = pluginInfo.value("Class");
 							QJsonValue iidValue = pluginInfo.value("IID");
 							QJsonValue metaDataValue = pluginInfo.value("MetaData");
-							if(clsValue.isString() && iidValue.isString() && metaDataValue.isObject()) {
+							pluginInfo.remove("Class");
+							pluginInfo.remove("IID");
+							pluginInfo.remove("MetaData");
+							if(clsValue.isString() && iidValue.isString()) {
 								String className = clsValue.toString();
 								String iid = iidValue.toString();
 								QJsonObject metaData = metaDataValue.toObject();
@@ -4134,12 +4139,12 @@ public class QtJambiInternal {
 										try {
 											List<URL> urls = new ArrayList<URL>();
 											for(QJsonValue val : pluginInfo.value("ClassPaths").toArray()) {
-												File file = new File(QDir.toNativeSeparators(location+"/"+dir+"/"+plDir+"/"+val));
+												File file = new File(QDir.toNativeSeparators(location+"/qtjambi/"+plDir+"/"+val));
 												urls.add(file.toURI().toURL());
 											}
 											List<String> libraryPaths = new ArrayList<String>();
 											for(QJsonValue val : pluginInfo.value("LibraryPaths").toArray()) {
-												libraryPaths.add(QDir.toNativeSeparators(location+"/"+dir+"/"+plDir+"/"+val));
+												libraryPaths.add(QDir.toNativeSeparators(location+"/qtjambi/"+plDir+"/"+val));
 											}
 											String appendLibPath = QString.join(libraryPaths, File.pathSeparatorChar);
 											qRegisterStaticPluginFunction(()->{
@@ -4156,7 +4161,7 @@ public class QtJambiInternal {
 													Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
 													return null;
 												}
-											}, className, iid, nativeId(metaData));
+											}, className, iid, nativeId(metaData), nativeId(pluginInfo));
 										} catch (Throwable e) {
 											Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
 										}
@@ -4172,9 +4177,9 @@ public class QtJambiInternal {
 				}
 				for(String jar : pluginDir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
 					ByteArrayOutputStream bas = new ByteArrayOutputStream();
-					File file = new File(QDir.toNativeSeparators(location+"/"+dir+"/"+jar));
+					File file = new File(QDir.toNativeSeparators(pluginDir.absoluteFilePath(jar)));
 					try(JarFile jarFile = new JarFile(file)){
-						ZipEntry entry = jarFile.getEntry("plugin.json");
+						ZipEntry entry = jarFile.getEntry("qtjambiplugin.json");
 						try(InputStream stream = jarFile.getInputStream(entry)){
 							byte[] buffer = new byte[1024];
 							int length = stream.read(buffer);
@@ -4191,11 +4196,14 @@ public class QtJambiInternal {
 						if(result.error==null || result.error.error()==ParseError.NoError) {
 							QJsonObject pluginInfo = result.document.object();
 							QJsonValue clsValue = pluginInfo.value("Class");
-							QJsonValue iidValue = pluginInfo.value("IID");
+							QJsonValue interfaceValue = pluginInfo.value("IID");
 							QJsonValue metaDataValue = pluginInfo.value("MetaData");
-							if(clsValue.isString() && iidValue.isString() && metaDataValue.isObject()) {
+							pluginInfo.remove("Class");
+							pluginInfo.remove("IID");
+							pluginInfo.remove("MetaData");
+							if(clsValue.isString() && interfaceValue.isString()) {
 								String className = clsValue.toString();
-								String iid = iidValue.toString();
+								String iid = interfaceValue.toString();
 								QJsonObject metaData = metaDataValue.toObject();
 								if(!className.isEmpty() && !iid.isEmpty()) {
 									Class<? extends QObject> cls = null;
@@ -4222,7 +4230,7 @@ public class QtJambiInternal {
 													Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
 													return null;
 												}
-											}, className, iid, nativeId(metaData));
+											}, className, iid, nativeId(metaData), nativeId(pluginInfo));
 										} catch (Throwable e) {
 											Logger.getLogger("internal").throwing(QtJambiInternal.class.getName(), "findPlugins(String location)", e);
 										}

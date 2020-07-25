@@ -29,13 +29,9 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtUtilities;
-import io.qt.core.QByteArray;
-import io.qt.core.QCoreApplication;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
@@ -43,15 +39,11 @@ import io.qt.core.QPluginLoader;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.core.internal.QtPluginMetaData;
 import io.qt.gui.QGenericPlugin;
-import io.qt.gui.QIcon;
 import io.qt.gui.QIconEngine;
 import io.qt.gui.QIconEnginePlugin;
 import io.qt.gui.QImageIOHandler;
 import io.qt.gui.QImageIOPlugin;
-import io.qt.sql.QSqlDriver;
-import io.qt.sql.QSqlDriverPlugin;
 import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsLineItem;
 import io.qt.widgets.QGraphicsObject;
 import io.qt.widgets.QGraphicsWidget;
 import io.qt.widgets.QStyle;

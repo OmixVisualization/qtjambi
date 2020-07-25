@@ -1424,7 +1424,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_countEventLoops)
 
 QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType);
 
-void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& className, const QJsonObject& json, const QList<const char*>& iids){
+void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& className, const QJsonObject& metaData, const QList<const char*>& iids, QJsonObject pluginInfo = {}){
     for(const char* iid : iids){
         QStaticPlugin staticPlugin;
         staticPlugin.instance = instanceFunction;
@@ -1433,7 +1433,10 @@ void registerPlugin(QtPluginInstanceFunction instanceFunction, const QString& cl
             cborValue.insert(qint64(QtPluginMetaDataKeys::IID), iid);
         }
         cborValue.insert(qint64(QtPluginMetaDataKeys::ClassName), className);
-        cborValue.insert(qint64(QtPluginMetaDataKeys::MetaData), QCborMap::fromJsonObject(json));
+        cborValue.insert(qint64(QtPluginMetaDataKeys::MetaData), QCborMap::fromJsonObject(metaData));
+        for(const QString& key : pluginInfo.keys()){
+            cborValue.insert(QLatin1String(key.toLatin1()), QCborValue::fromJsonValue(pluginInfo[key]));
+        }
         QByteArray cborData = cborValue.toCborValue().toCbor();
         QByteArray rawMetaData;
         rawMetaData.reserve(16 + cborData.size());
@@ -1527,14 +1530,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_interna
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_qRegisterStaticPluginFunction)
 (JNIEnv *__jni_env,
- jclass, jobject classSupplier, jstring _className, jstring jiid, QtJambiNativeID metaData1)
+ jclass, jobject classSupplier, jstring _className, jstring jiid, QtJambiNativeID metaData1, QtJambiNativeID pluginInfo1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QString className = qtjambi_to_qstring(__jni_env, _className);
         QByteArray iid = qtjambi_to_qstring(__jni_env, jiid).toLatin1();
-        QList<const char*> iids{iid.data()};
-        QJsonObject json = qtjambi_value_from_nativeId<QJsonObject>(metaData1);
+        QJsonObject metaData = qtjambi_value_from_nativeId<QJsonObject>(metaData1);
+        QJsonObject pluginInfo = qtjambi_value_from_nativeId<QJsonObject>(pluginInfo1);
 
         struct Functor{
             JObjectWrapper m_classOrSupplier;
@@ -1576,8 +1579,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_interna
         };
 
         QtPluginInstanceFunction instanceFunction = qtjambi_function_pointer<16,QObject*()>(
-                    Functor(__jni_env, classSupplier), qHash(className) * 31 + qHash(json.value("Keys")));
-        registerPlugin(instanceFunction, className.replace(".", "::"), json, iids);
+                    Functor(__jni_env, classSupplier), qHash(className) * 31 + qHash(metaData.value("Keys")));
+        registerPlugin(instanceFunction, className.replace(".", "::"), metaData, {iid}, pluginInfo);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -1605,6 +1608,7 @@ extern "C" Q_DECL_EXPORT jclass JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_inter
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
+    return nullptr;
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL

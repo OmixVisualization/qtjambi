@@ -341,7 +341,7 @@ class QJarEntryEngine extends QAbstractFileEngine implements QClassPathEntry
 
             if (filterNames.size() > 0) {
                 if ((!isDir || !filters.isSet(QDir.Filter.AllDirs))
-                    && (!QDir.match(filterNames, entryName))) {
+                    && (!QDir.match(filterNames, entryName.substring(mentryName.length())))) {
                     continue;
                 }
             }

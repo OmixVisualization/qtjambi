@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="plugin-subdir" value="sqldrivers"/>
+    <property name="plugin-subdir" value="qtjambi"/>
     <property name="module-name" value="qsqljdbc"/>
     <property name="qtjambi-module-name" value="QtJambiSql"/>
     <path id="qtjambi.modulepath">

@@ -36,6 +36,7 @@ import java.util.List;
 
 import io.qt.QtUninvokable;
 
+
 public class QMultiHash<K,V> extends io.qt.internal.QtJambiMultiHashObject<K,V>
 {
 	static {

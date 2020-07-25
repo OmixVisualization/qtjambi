@@ -49,23 +49,23 @@ import io.qt.widgets.QCompleter;
 public class TestSignals extends QApplicationTest{
 	
 	public static class StaticMemberSignalOwner{
-		public static QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
+		public final static QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
 	}
 	
 	public static class NonStaticMemberSignalOwner{
-		public QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
+		public final QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
 	}
 	
 	public static class MemberSignalOwner extends QObject{
-		public Signal2<@QtPrimitiveType Integer, String> testSinal = new Signal2<>();
+		public final Signal2<@QtPrimitiveType Integer, String> testSinal = new Signal2<>();
 	}
 	
 	public static class InstanceMemberSignalOwnerQObject extends QObject implements QInstanceMemberSignals{
-		public QInstanceMemberSignals.Signal1<String> testSinal = new QInstanceMemberSignals.Signal1<>(this);
+		public final QInstanceMemberSignals.Signal1<String> testSinal = new QInstanceMemberSignals.Signal1<>(this);
 	}
 	
 	public static class DeclarableSignalOwnerQObject extends QObject{
-		public QDeclarableSignals.Signal1<String> testSinal = new QDeclarableSignals.Signal1<>(String.class);
+		public final QDeclarableSignals.Signal1<String> testSinal = new QDeclarableSignals.Signal1<>(String.class);
 	}
 	
 	@Test

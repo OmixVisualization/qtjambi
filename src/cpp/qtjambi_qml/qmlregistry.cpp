@@ -29,6 +29,7 @@
 
 #include <QtQml>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
+#include "qtjambi_jarimport.h"
 #include "qmlcreateparentfunction.h"
 #include "qmlattachedpropertiesfunction.h"
 #include "qmlcreatorfunction.h"
@@ -1297,3 +1298,9 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterUncreatabl
     return -1;
 }
 
+void qtjambi_qml_jarimport(const QUrl& baseUrl, const char * uri){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        Java::QtQml::QmlTypes.registerModule(env, qtjambi_cast<jobject>(env, baseUrl), env->NewStringUTF(uri));
+    }
+}

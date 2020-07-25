@@ -183,9 +183,9 @@
     <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
-        <delete file="${destdir}/plugins/${plugin-subdir}/${module}.jar" verbose="true"/>
-        <mkdir dir="${destdir}/plugins/${plugin-subdir}"/>
-        <jar destfile="${destdir}/plugins/${plugin-subdir}/${module}.jar" excludes="${jar.excludes}">
+        <delete file="${destdir}/plugins/qtjambi/${module}.jar" verbose="true"/>
+        <mkdir dir="${destdir}/plugins/qtjambi"/>
+        <jar destfile="${destdir}/plugins/qtjambi/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
