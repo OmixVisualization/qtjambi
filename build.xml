@@ -193,7 +193,7 @@ Further options:
     <target name="library.designer" depends="log, library.designer.bundle"
         description="Compiles and bundles the Qt Jambi designer libraries."/>
 
-    <target name="library" depends="log, library.native, library.java"
+    <target name="library" depends="log, library.native.compile, library.java, library.native.bundle"
         description="Compiles and bundles the Qt Jambi libraries.">
         <!--<copy file="${jardir}/qtjambi-util.jar"
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->

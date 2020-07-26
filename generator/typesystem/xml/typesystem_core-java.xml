@@ -3493,7 +3493,7 @@
         <modify-function signature="metaData() const">
             <modify-argument index="0">
                 <conversion-rule class="native">
-                for(QJsonObject&lt; obj : %in){
+                for(QJsonObject&amp; obj : %in){
                     if(obj["IID"].isString()){
                         if(jclass iface = getInterfaceByIID(%env, obj["IID"].toString().toUtf8())){
                             obj["interface"] = qtjambi_class_name(%env, iface);

@@ -1113,6 +1113,7 @@ public class PlatformJarTask extends Task {
             for(LibraryEntry with : libs) {
                 if(LibraryEntry.TYPE_PLUGIN.equals(with.getType()) 
                         || LibraryEntry.TYPE_FILE.equals(with.getType()) 
+                        || LibraryEntry.TYPE_PLUGIN_JAR.equals(with.getType()) 
                         || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(with.getType()) 
                         || LibraryEntry.TYPE_QMLPLUGIN.equals(with.getType()) 
                         || LibraryEntry.TYPE_FILESET.equals(with.getType())){
@@ -1124,6 +1125,7 @@ public class PlatformJarTask extends Task {
 
                 for(LibraryEntry change : libs) {
                     if(LibraryEntry.TYPE_FILE.equals(change.getType()) 
+                            || LibraryEntry.TYPE_PLUGIN_JAR.equals(with.getType()) 
                             || LibraryEntry.TYPE_FILESET.equals(change.getType())){
                         // never perform install_name_tool on files like "qmldir"
                         continue;

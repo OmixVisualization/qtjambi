@@ -108,6 +108,12 @@
   </target>
   
   <target name="library.native.bundle.platformjar">
+    <condition property="qsqljdbc.true">
+        <and>
+            <istrue arg="${qtjambi.sql.true}" />
+            <available file="${jardir}/plugins/qtjambi/qsqljdbc.jar"/>
+        </and>
+    </condition>
     <qtjambi-platform-jar cacheKey="${qtjambi.version.cachekey}"
                           outdir="${outputDir}/platform-output${platformjar.debug.suffix}"
                           debug="${platformjar.debug}">
@@ -264,7 +270,7 @@
         <library name="QtJambi3DLogic"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.qt3dlogic.true"/>
 
         <!-- QtJambi Plugins -->
-        <library name="qsqljdbc"                  load="never" type="plugin-jar"   rootPath="${jardir}/plugins" subdir="qtjambi" destSubdir="plugins" if="qtjambi.sql.true"/>
+        <library name="qsqljdbc"                  load="never" type="plugin-jar"   rootPath="${jardir}/plugins" subdir="qtjambi" destSubdir="plugins" if="qsqljdbc.true"/>
 
         <!-- Qt Plugins -->
         <library name="qtaccessiblewidgets"       load="never" type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible" destSubdir="plugins" if="qtjambi.plugins.accessible.qtaccessiblewidgets"/>
