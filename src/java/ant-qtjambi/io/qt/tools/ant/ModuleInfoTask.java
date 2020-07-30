@@ -37,12 +37,11 @@ import java.util.Set;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
 public class ModuleInfoTask extends Task {
     private String outputDirectory;
-    private String jarDirectory;
+    private String javaDirectory;
 
     private String msg = "";
     @Override
@@ -50,10 +49,9 @@ public class ModuleInfoTask extends Task {
         getProject().log(this, msg, Project.MSG_INFO);
 		java.io.File directory = new java.io.File(outputDirectory);
 		Set<String> modules = new HashSet<>();
-		String suffix = "-"+PropertyHelper.getProperty(getProject(), "qtjambi.soname.version.major") + "." + PropertyHelper.getProperty(getProject(), "qtjambi.soname.version.minor")+".jar";
-		for(String jar : new java.io.File(jarDirectory).list()) {
-			if(jar.startsWith("qtjambi-") && jar.endsWith(suffix) && !jar.endsWith("-src.jar")) {
-				modules.add(jar.substring(0, jar.length()-suffix.length()).replace('-', '.'));
+		for(java.io.File subdir : new java.io.File(javaDirectory).listFiles()) {
+			if(subdir.isDirectory() && subdir.getName().startsWith("qtjambi.")) {
+				modules.add(subdir.getName());
 			}
 		}
 		try(PrintWriter writer = new PrintWriter(new FileWriter(new java.io.File(directory, "module-info.java")));){
@@ -63,6 +61,7 @@ public class ModuleInfoTask extends Task {
 			writer.println("\trequires java.desktop;");
 			writer.println("\trequires junit;");
 			writer.println("\trequires org.hamcrest.core;");
+			writer.println("\trequires transitive qtjambi;");
 			
 			for(String pkg : modules){
 				if(!pkg.equals("io.qt.tools.designer")){
@@ -85,7 +84,7 @@ public class ModuleInfoTask extends Task {
         this.outputDirectory = outputDirectory;
     }
     
-    public void setJarDirectory(String jarDirectory) {
-        this.jarDirectory = jarDirectory;
+    public void setJavaDirectory(String javaDirectory) {
+        this.javaDirectory = javaDirectory;
     }
 }

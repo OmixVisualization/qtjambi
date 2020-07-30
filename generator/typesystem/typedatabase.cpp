@@ -644,6 +644,7 @@ TypeDatabase::TypeDatabase() : m_suppressWarnings(true), m_includeEclipseWarning
         removeFunction(entry, "insert(const QMap<Key, T> &)");
         rename(entry, "values()const", "allValues");
         rename(entry, "remove(const Key &)", "removeFirst");
+        removeFunction(entry, "unite(const QMultiMap<Key, T> &)");
 //        removeFunction(entry, "begin()");
 //        removeFunction(entry, "end()");
 //        protectedAccess(entry, "begin()");

@@ -114,7 +114,7 @@
         <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <module-info outputDirectory="${outputDir}/tests/autotest-generator/java" jarDirectory="${basedir}/jars"/>
+                <module-info outputDirectory="${outputDir}/tests/autotest-generator/java" javaDirectory="${outputDir}/java"/>
                 <javac destdir="${outputDir}/tests/java" debug="true"
                         includeantruntime="false"
                         source="${target.java.version}" target="${target.java.version}" encoding="UTF-8">

@@ -613,6 +613,7 @@
 	    use="true" 
         modulesourcepath="${basedir}/build/java-src"
         version="true"
+        stylesheetfile="${basedir}/docstyle.css"
         sourcefiles="${java.source.files.flat}">
           <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
 			<doctitle><![CDATA[
@@ -632,5 +633,10 @@
                         </font>
 					]]></bottom>
         </javadoc>
+        <echo>${jardir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip</echo>
+        <delete file="${jardir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip"/>
+        <zip destfile="${jardir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip">
+            <fileset dir="${basedir}/javadocs"/>
+        </zip>
   </target>
 </project>

@@ -2442,8 +2442,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const AbstractMetaFunctionL
                 }
                 s << INDENT << " * @return overloaded signal" << Qt::endl;
                 s << INDENT << " * @throws io.qt.QNoSuchSignalException if signal is not available" << Qt::endl;
-                s << INDENT << " */" << Qt::endl;
             }
+            s << INDENT << " */" << Qt::endl;
 
             if(signalTypesByArgs[it.key()].size()==1){
                 s << INDENT << annotations << "public final " << parameters << signalTypesByArgs[it.key()].begin().operator *() << parameters << " overload(" << classes.join(", ") << ") throws io.qt.QNoSuchSignalException{" << Qt::endl;
