@@ -158,6 +158,7 @@
     <rejection class="QVector" function-name="push_front"/>
     <rejection class="QVector" function-name="pop_back"/>
     <rejection class="QVector" function-name="pop_front"/>
+    <rejection class="QVector" function-name="freeData"/>
     <rejection class="QStack" function-name="back"/>
     <rejection class="QStack" function-name="empty"/>
     <rejection class="QStack" function-name="front"/>
