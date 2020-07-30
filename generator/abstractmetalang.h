@@ -759,6 +759,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         QString m_name;
         QString m_original_name;
         QString m_original_signature;
+        mutable QString m_cached_full_signature;
+        mutable QString m_cached_full_signature_no_name;
         mutable QString m_cached_minimal_signature;
         mutable QString m_cached_modified_name;
 

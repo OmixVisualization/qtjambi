@@ -435,6 +435,13 @@ QStringList AbstractMetaFunction::introspectionCompatibleSignatures(const QStrin
 }
 
 QString AbstractMetaFunction::signature(bool skipName) const {
+    if(!skipName){
+        if(!m_cached_full_signature.isEmpty())
+            return m_cached_full_signature;
+    }else{
+        if(!m_cached_full_signature_no_name.isEmpty())
+            return m_cached_full_signature_no_name;
+    }
     QString s(m_original_name);
 
     s += "(";
@@ -456,6 +463,10 @@ QString AbstractMetaFunction::signature(bool skipName) const {
     if (isConstant())
         s += " const";
 
+    if(!skipName)
+        m_cached_full_signature = s;
+    else
+        m_cached_full_signature_no_name = s;
     return s;
 }
 
@@ -1575,7 +1586,7 @@ AbstractMetaFunctionList AbstractMetaClass::virtualOverrideFunctions() const {
 
 void AbstractMetaClass::sortFunctions() {
     bool (*function_sorter)(AbstractMetaFunction *a, AbstractMetaFunction *b) = [](AbstractMetaFunction *a, AbstractMetaFunction *b) -> bool {
-        return a->originalSignature() < b->originalSignature();
+        return a->signature() < b->signature();
     };
     std::sort(m_functions.begin(), m_functions.end(), function_sorter);
     std::sort(m_invalidfunctions.begin(), m_invalidfunctions.end(), function_sorter);
@@ -1583,6 +1594,7 @@ void AbstractMetaClass::sortFunctions() {
 
 void AbstractMetaClass::setFunctions(const AbstractMetaFunctionList &functions) {
     m_functions = functions;
+    sortFunctions();
 
     // Functions must be sorted by name before next loop
     QString currentName;
@@ -1709,8 +1721,10 @@ bool AbstractMetaClass::hasDefaultToStringFunction() const {
 void AbstractMetaClass::addFunction(AbstractMetaFunction *function) {
     function->setOwnerClass(this);
 
-    if (!function->isDestructor())
+    if (!function->isDestructor()){
         m_functions << function;
+        sortFunctions();
+    }
 
     m_has_virtual_slots |= function->isVirtualSlot();
     m_has_virtuals |= !function->isFinal() || function->isVirtualSlot();
