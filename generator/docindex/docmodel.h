@@ -5,6 +5,10 @@
 #include "docclass.h"
 #include "docnamespace.h"
 
+class DocNamespace;
+class DocEnum;
+class DocClass;
+
 class DocModel: public QObject
 {
     Q_OBJECT
