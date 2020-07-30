@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides C++ classes for rendering web content in a QWidget based application.
+ */
 module qtjambi.webenginewidgets{
     requires java.base;
     requires transitive qtjambi;

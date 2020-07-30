@@ -31,15 +31,26 @@ package io.qt;
 
 import io.qt.internal.QtJambiInternal;
 
+/**
+ * The QtFlagEnumerator interface servers as a base for all qint32 enums available as QFlags.
+ * @see QFlags
+ */
 public interface QtFlagEnumerator extends QtEnumerator {
-	
+    /**
+     * This function should return an integer value for the enum
+     * values of the enumeration that implements this interface.
+     */
 	public default int value() {
 		int o = ordinal();
 		if(!QtJambiInternal.isSmallEnum(this))
 			return o;
 		return o==0 ? 0 : 0x01 << (o-1);
 	}
-	
+
+	/**
+	 * Create a QFlags of the enum entry.
+	 * @return QFlags
+	 */
 	public default QFlags<?> asFlags(){
 		return QtJambiInternal.asFlags(this, QFlags.ConcreteWrapper::new);
 	}

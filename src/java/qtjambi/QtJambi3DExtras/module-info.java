@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * The Qt 3D Extras module provides a set of prebuilt elements to help you get started with Qt 3D.
+ */
 module qtjambi.qt3dextras{
     requires java.base;
     requires transitive qtjambi;

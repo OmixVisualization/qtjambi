@@ -34,6 +34,10 @@ import java.util.Arrays;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 
+/**
+ * This class manages member access for interface default functions.
+ * @param <T> interface type
+ */
 public class QtJambiMemberAccess<T extends QtObjectInterface> {
 	
 	private final java.lang.ref.WeakReference<T> instanceRef;

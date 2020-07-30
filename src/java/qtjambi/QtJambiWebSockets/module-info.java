@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides WebSocket communication compliant with RFC 6455.
+ */
 module qtjambi.websockets{
     requires java.base;
     requires transitive qtjambi;

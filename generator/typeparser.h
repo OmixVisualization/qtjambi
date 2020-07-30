@@ -54,7 +54,7 @@ class TypeParser {
                 RReference
             };
 
-            Info() : reference_type(NoReference), is_constant(false), is_volatile(false), is_busted(false), indirections() { }
+            Info() : reference_type(NoReference), is_constant(false), is_volatile(false), is_variadics(false), is_busted(false), indirections() { }
 
             QStringList qualified_name;
             /**
@@ -65,6 +65,7 @@ class TypeParser {
             ReferenceType reference_type;
             uint is_constant : 1;
             uint is_volatile : 1;
+            uint is_variadics : 1;
             /**
              * If the type is not supported / valid
              */

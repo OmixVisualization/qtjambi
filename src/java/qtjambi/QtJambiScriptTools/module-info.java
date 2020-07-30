@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Additional components for applications that use Qt Script.
+ */
 module qtjambi.scripttools{
     requires java.base;
     requires transitive qtjambi;

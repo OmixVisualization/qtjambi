@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to Near-Field communication (NFC) hardware.
+ */
 module qtjambi.nfc{
     requires java.base;
     requires transitive qtjambi;

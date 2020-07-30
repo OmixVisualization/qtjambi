@@ -575,4 +575,62 @@
         </manifest>
     </jar>
   </target>
+  <target name="javadocs" depends="init.build" description="Generates the Java Doc pages for QtJambi">
+        <delete dir="${basedir}/javadocs" failonerror="no"/>
+		<tstamp>
+			<format property="year" pattern="yyyy"/>
+		</tstamp>
+        <path id="java.source.dirs">
+            <dirset dir="${basedir}/build/java-src" includes="qtjambi*"/>
+        </path>
+		<pathconvert pathsep=","             
+			property="java.source.dirs2"             
+			refid="java.source.dirs">
+		</pathconvert>
+        <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
+            <include name="**/*.java"/>
+            <exclude name="**/QtJambi_LibraryInitializer.java"/>
+        </multirootfileset>
+		<pathconvert pathsep="${line.separator}"             
+			property="java.source.files.flat"             
+			refid="java.source.files">
+		</pathconvert>
+        <javadoc 
+    	additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords"
+	    access="protected" 
+	    author="true" 
+	    destdir="${basedir}/javadocs" 
+	    windowtitle="QtJambi API"
+	    nodeprecated="false" 
+	    nodeprecatedlist="false" 
+	    noindex="false" 
+	    nonavbar="false" 
+	    notree="false" 
+	    source="${minimum.java.version}" 
+	    defaultexcludes="yes"
+        splitindex="true" 
+	    useexternalfile="true" 
+	    use="true" 
+        modulesourcepath="${basedir}/build/java-src"
+        version="true"
+        sourcefiles="${java.source.files.flat}">
+          <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
+			<doctitle><![CDATA[
+						<table border="0" width="100%">
+						<tr>
+						<td align="center"><h1>QtJambi ${qtjambi.version.bundle} Reference Documentation</h1></td>
+						</tr>
+						</table>
+					]]></doctitle>
+			<bottom><![CDATA[
+						<font size="-2">QtJambi Reference Documentation<br>
+                        The documentation provided herein is licensed under the terms of the 
+                        <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
+                        as published by the Free Software Foundation. 
+                        Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
+                        All other trademarks are property of their respective owners.
+                        </font>
+					]]></bottom>
+        </javadoc>
+  </target>
 </project>

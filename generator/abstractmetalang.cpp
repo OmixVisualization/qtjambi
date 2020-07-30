@@ -401,6 +401,8 @@ AbstractMetaFunction *AbstractMetaFunction::copy() const {
     cpy->setOriginalAttributes(originalAttributes());
     cpy->setDeclaringTemplate(declaringTemplate());
     cpy->setDeprecatedComment(deprecatedComment());
+    cpy->setHref(href());
+    cpy->setBrief(brief());
 
     for(const AbstractMetaArgument *arg : arguments())
         cpy->addArgument(arg->copy());
@@ -1230,10 +1232,6 @@ QString AbstractMetaFunction::targetLangSignature(bool minimal) const {
 }
 
 
-bool function_sorter(AbstractMetaFunction *a, AbstractMetaFunction *b) {
-    return a->signature() < b->signature();
-}
-
 /*******************************************************************************
  * AbstractMetaClass
  */
@@ -1366,6 +1364,8 @@ AbstractMetaClass *AbstractMetaClass::extractInterfaceImpl() {
         ifaceImpl->setHas_Q_GADGET(has_Q_GADGET());
         ifaceImpl->setHas_Q_OBJECT(has_Q_OBJECT());
         ifaceImpl->setBaseClassNames(this->baseClassNames());
+        ifaceImpl->setHref(href());
+        ifaceImpl->setBrief(brief());
         itype->origin()->setInclude(itype->include());
         itype->origin()->setExtraIncludes(itype->extraIncludes());
         itype->origin()->setExpensePolicy(itype->expensePolicy());
@@ -1574,15 +1574,17 @@ AbstractMetaFunctionList AbstractMetaClass::virtualOverrideFunctions() const {
 }
 
 void AbstractMetaClass::sortFunctions() {
+    bool (*function_sorter)(AbstractMetaFunction *a, AbstractMetaFunction *b) = [](AbstractMetaFunction *a, AbstractMetaFunction *b) -> bool {
+        return a->originalSignature() < b->originalSignature();
+    };
     std::sort(m_functions.begin(), m_functions.end(), function_sorter);
+    std::sort(m_invalidfunctions.begin(), m_invalidfunctions.end(), function_sorter);
 }
 
 void AbstractMetaClass::setFunctions(const AbstractMetaFunctionList &functions) {
     m_functions = functions;
 
     // Functions must be sorted by name before next loop
-    sortFunctions();
-
     QString currentName;
     bool hasVirtuals = false;
     AbstractMetaFunctionList final_functions;
@@ -1707,10 +1709,8 @@ bool AbstractMetaClass::hasDefaultToStringFunction() const {
 void AbstractMetaClass::addFunction(AbstractMetaFunction *function) {
     function->setOwnerClass(this);
 
-    if (!function->isDestructor()) {
+    if (!function->isDestructor())
         m_functions << function;
-        std::sort(m_functions.begin(), m_functions.end(), function_sorter);
-    }
 
     m_has_virtual_slots |= function->isVirtualSlot();
     m_has_virtuals |= !function->isFinal() || function->isVirtualSlot();
@@ -1732,7 +1732,6 @@ void AbstractMetaClass::addInvalidFunction(AbstractMetaFunction *function) {
 
     if (!function->isDestructor()) {
         m_invalidfunctions << function;
-        std::sort(m_invalidfunctions.begin(), m_invalidfunctions.end(), function_sorter);
     }
 }
 
@@ -1837,7 +1836,13 @@ QPropertySpec *AbstractMetaClass::propertySpecForReset(const QString &name) cons
     return nullptr;
 }
 
-
+QPropertySpec *AbstractMetaClass::propertySpecForNotify(const QString &name) const {
+    for (int i = 0; i < m_property_specs.size(); ++i) {
+        if (name == m_property_specs.at(i)->notify())
+            return m_property_specs.at(i);
+    }
+    return nullptr;
+}
 
 static bool functions_contains(const AbstractMetaFunctionList &l, const AbstractMetaFunction *func) {
     for(const AbstractMetaFunction *f : l) {
@@ -1847,7 +1852,9 @@ static bool functions_contains(const AbstractMetaFunctionList &l, const Abstract
     return false;
 }
 
-AbstractMetaField::AbstractMetaField() : m_getter(nullptr), m_setter(nullptr), m_class(nullptr) {
+AbstractMetaField::AbstractMetaField() :
+    AbstractMetaVariable(), AbstractMetaAttributes(),
+    m_getter(nullptr), m_setter(nullptr), m_class(nullptr) {
 }
 
 AbstractMetaField::~AbstractMetaField() {
@@ -1862,6 +1869,8 @@ AbstractMetaField *AbstractMetaField::copy() const {
     returned->setName(name());
     returned->setType(type()->copy());
     returned->setOriginalAttributes(originalAttributes());
+    returned->setHref(href());
+    returned->setBrief(brief());
 
     return returned;
 }
@@ -1876,7 +1885,8 @@ static QString upCaseFirst(const QString &str) {
 static AbstractMetaFunction *createXetter(const AbstractMetaField *g, const QString &name, uint type) {
     AbstractMetaFunction *f = new AbstractMetaFunction;
 
-
+    f->setBrief(g->brief());
+    f->setHref(g->href());
 
     f->setName(name);
     f->setOriginalName(name);

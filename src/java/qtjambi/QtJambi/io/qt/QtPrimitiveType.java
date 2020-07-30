@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,10 +39,11 @@ import java.lang.annotation.Target;
  * This annotation marks a boxed-typed signal parameter to be primitive.
  * Example:
  * <code>
- * Signal1&lt;@QtPrimitiveType Integer> intSignal = new Signal1&lt;>();
+ * Signal1&lt;@QtPrimitiveType Integer&gt; intSignal = new Signal1&lt;&gt;();
  * </code>
  * is considered to be of type int instead of Integer.
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)
 public @interface QtPrimitiveType {

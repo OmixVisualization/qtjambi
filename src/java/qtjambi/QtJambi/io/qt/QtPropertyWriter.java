@@ -30,8 +30,10 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyWriter annotates a method as being a setter for a property.
@@ -40,6 +42,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyWriter {
     /** Returns true if the property is enabled; otherwise, returns false. */
     boolean enabled() default true;

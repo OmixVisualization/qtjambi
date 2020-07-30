@@ -30,14 +30,17 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyResetter annotates a method as being a resetter for
  * a property.
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyResetter {
     /** Returns true if the property is enabled; otherwise, false. */
     boolean enabled() default false;

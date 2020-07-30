@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-script"/>
+    <property name="module-name" value="qtjambi.script"/>
     <property name="qtjambi-module-name" value="QtJambiScript"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar"/>

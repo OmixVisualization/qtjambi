@@ -46,10 +46,7 @@ import io.qt.internal.NativeAccess;
  * possible to disable this check by setting the VM runtime parameter
  * <code>io.qt.thread-check</code> to <code>false</code>.
  *
- * @See io.qt.core.QObject#thread()
- * @See <a href="../threads.html">Threading support in Qt</a>
- *
- * @author gunnar
+ * @see io.qt.core.QObject#thread()
  */
 public class QThreadAffinityException extends RuntimeException {
 

@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * The Qt 3D module contains functionality to support near-realtime simulation systems.
+ */
 module qtjambi.qt3dcore{
     requires java.base;
     requires transitive qtjambi;

@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-quickcontrols2"/>
+    <property name="module-name" value="qtjambi.quickcontrols"/>
     <property name="qtjambi-module-name" value="QtJambiQuickControls2"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar"/>

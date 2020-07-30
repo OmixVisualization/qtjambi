@@ -33,13 +33,16 @@
 
 package io.qt;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyRequired indicates that the property value is required. 
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyRequired {
 	/**
      * The value should be true or false depending on whether the

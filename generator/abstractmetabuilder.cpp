@@ -150,8 +150,18 @@ QString AbstractMetaBuilder::rename_operator(const QString &oper) {
 }
 
 AbstractMetaBuilder::AbstractMetaBuilder()
-        : m_current_class(nullptr) {
+        : m_current_class(nullptr), m_docModel(nullptr) {
 }
+
+AbstractMetaBuilder::~AbstractMetaBuilder() {
+    delete m_docModel;
+}
+
+void AbstractMetaBuilder::setDocDirectory(const QString &docsDir){
+    DocIndexReader reader;
+    m_docModel = reader.readDocIndexes(docsDir);
+}
+
 
 /**
  * This function is here, simply to print out warnings about
@@ -369,13 +379,11 @@ void AbstractMetaBuilder::fixQObjectForScope(TypeDatabase *types,
     }
 }
 
-static bool class_less_than(AbstractMetaClass *a, AbstractMetaClass *b) {
-    return a->name() < b->name();
-}
-
 
 void AbstractMetaBuilder::sortLists() {
-    std::sort(m_meta_classes.begin(), m_meta_classes.end(), class_less_than);
+    std::sort(m_meta_classes.begin(), m_meta_classes.end(), [](AbstractMetaClass *a, AbstractMetaClass *b) -> bool {
+                  return a->qualifiedCppName() < b->qualifiedCppName();
+              });
     for(AbstractMetaClass *cls : m_meta_classes) {
         cls->sortFunctions();
     }
@@ -577,8 +585,9 @@ bool AbstractMetaBuilder::build() {
 
     for(QHash<QString, NamespaceModelItem>::const_iterator i = m_dom->namespaceMap().begin(); i!=m_dom->namespaceMap().end(); i++){
         AbstractMetaClass *meta_class = traverseNamespace(i.value());
-        if (meta_class)
+        if (meta_class){
             m_meta_classes << meta_class;
+        }
     }
 
     // Some trickery to support global-namespace enums...
@@ -816,6 +825,183 @@ bool AbstractMetaBuilder::build() {
 
     sortLists();
 
+    if(m_docModel){
+        QHash<QString, QSharedPointer<AbstractMetaType>> analyzedTypes;
+        for(AbstractMetaClass *meta_class : m_meta_classes) {
+            if(meta_class->isNamespace() || meta_class->isFake()){
+                const DocNamespace* ns = m_docModel->getNamespace(meta_class->isFake() ? "" : meta_class->qualifiedCppName());
+                if(!ns && !meta_class->isFake()){
+                    QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
+                    if(!qualifiedCppName.isEmpty()){
+                        if(qualifiedCppName.last().startsWith("QtJambi")){
+                            qualifiedCppName.last().replace("QtJambi", "Q");
+                            ns = m_docModel->getNamespace(qualifiedCppName.join("::"));
+                        }
+                    }
+                }
+                if(ns){
+                    meta_class->setHref(ns->href());
+                    meta_class->setBrief(ns->brief());
+                    for(AbstractMetaFunction * meta_function : meta_class->functions()){
+                        QList<const DocFunction*> functions = ns->getFunctions(meta_function->originalName());
+                        for(const DocFunction* function : functions){
+                            if(meta_function->isConstant()==function->isConst()
+                                    && meta_function->isStatic()==function->isStatic()
+                                    && meta_function->arguments().size()==function->parameters().size()){
+                                bool ok = true;
+                                if(functions.size()>1){
+                                    for(int i=0; i<meta_function->arguments().size(); ++i){
+                                        AbstractMetaArgument *argument = meta_function->arguments()[i];
+                                        QString arg = function->parameters()[i];
+                                        if(arg.endsWith("...")){
+                                            arg.chop(3);
+                                            if(!meta_function->isVariadics()){
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                        QSharedPointer<AbstractMetaType> type = analyzedTypes[arg];
+                                        if(!type){
+                                            TypeInfo typeInfo = analyzeTypeInfo(meta_class, arg);
+                                            type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            analyzedTypes[arg] = type;
+                                        }
+                                        if(ok && type){
+                                            if(type->isConstant()!=argument->type()->isConstant()
+                                                    || type->getReferenceType()!=argument->type()->getReferenceType()
+                                                    || type->indirections()!=argument->type()->indirections()
+                                                    || type->typeEntry()!=argument->type()->typeEntry()){
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if(ok){
+                                    meta_function->setHref(function->href());
+                                    meta_function->setBrief(function->brief());
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }else{
+                const DocClass* cls = m_docModel->getClass(meta_class->qualifiedCppName());
+                if(!cls){
+                    QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
+                    if(!qualifiedCppName.isEmpty()){
+                        if(qualifiedCppName.last().startsWith("QtJambi")){
+                            qualifiedCppName.last().replace("QtJambi", "Q");
+                            cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                        }
+                    }
+                }
+                if(cls){
+                    meta_class->setHref(cls->href());
+                    meta_class->setBrief(cls->brief());
+                    for(AbstractMetaFunction * meta_function : meta_class->functions()){
+                        QList<const DocFunction*> functions = cls->getFunctions(meta_function->originalName());
+                        for(const DocFunction* function : functions){
+                            if(meta_function->isConstant()==function->isConst()
+                                    && meta_function->isStatic()==function->isStatic()
+                                    && meta_function->arguments().size()==function->parameters().size()){
+                                bool ok = true;
+                                if(functions.size()>1){
+                                    for(int i=0; i<meta_function->arguments().size(); ++i){
+                                        AbstractMetaArgument *argument = meta_function->arguments()[i];
+                                        QString arg = function->parameters()[i];
+                                        if(arg.endsWith("...")){
+                                            arg.chop(3);
+                                            if(!meta_function->isVariadics()){
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                        QSharedPointer<AbstractMetaType> type = analyzedTypes[arg];
+                                        if(!type){
+                                            TypeInfo typeInfo = analyzeTypeInfo(meta_class, arg);
+                                            type = QSharedPointer<AbstractMetaType>(translateType(typeInfo, &ok, ""));
+                                            analyzedTypes[arg] = type;
+                                        }
+                                        if(ok && type){
+                                            if(type->isConstant()!=argument->type()->isConstant()
+                                                    || type->getReferenceType()!=argument->type()->getReferenceType()
+                                                    || type->indirections()!=argument->type()->indirections()
+                                                    || type->typeEntry()!=argument->type()->typeEntry()){
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if(ok){
+                                    meta_function->setHref(function->href());
+                                    meta_function->setBrief(function->brief());
+                                    break;
+                                }
+                            }
+                        }
+                        if(meta_function->href().isEmpty() && meta_function->brief().isEmpty() && meta_function->propertySpec()){
+                                if(const DocProperty* prop = cls->getProperty(meta_function->propertySpec()->name())){
+                                    meta_function->setHref(prop->href());
+                                    meta_function->setBrief(prop->brief());
+                                }
+                        }
+                    }
+
+                    for(AbstractMetaField * meta_field : meta_class->fields()){
+                        if(const DocVariable* variable = cls->getVariable(meta_field->name())){
+                            meta_field->setHref(variable->href());
+                            meta_field->setBrief(variable->brief());
+                        }
+                    }
+                }
+
+                for(AbstractMetaEnum* meta_enum : meta_class->enums()){
+                    const DocEnum* docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
+                    if(!docEnum){
+                        docEnum = m_docModel->getEnum(meta_class->qualifiedCppName()+"::"+meta_enum->typeEntry()->name());
+                    }
+                    if(!docEnum){
+                        docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                    }
+                    if(docEnum){
+                        meta_enum->setHref(docEnum->href());
+                        meta_enum->setBrief(docEnum->brief());
+                    }
+                }
+            }
+        }
+        for(AbstractMetaFunctional *meta_class : m_meta_functionals) {
+            const DocClass* cls = m_docModel->getClass(meta_class->typeEntry()->qualifiedCppName());
+            if(!cls){
+                QStringList qualifiedCppName = meta_class->typeEntry()->qualifiedCppName().split("::");
+                if(!qualifiedCppName.isEmpty()){
+                    if(qualifiedCppName.last().startsWith("QtJambi")){
+                        qualifiedCppName.last().replace("QtJambi", "Q");
+                        cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                    }
+                }
+            }
+            if(cls){
+                meta_class->setHref(cls->href());
+                meta_class->setBrief(cls->brief());
+            }
+        }
+        for(AbstractMetaEnum* meta_enum : m_enums){
+            if(meta_enum->href().isEmpty() && meta_enum->brief().isEmpty()){
+                const DocEnum* docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
+                if(!docEnum){
+                    docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                }
+                if(docEnum){
+                    meta_enum->setHref(docEnum->href());
+                    meta_enum->setBrief(docEnum->brief());
+                }
+            }
+        }
+    }
     return true;
 }
 
@@ -2856,7 +3042,6 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     if(class_item.data()->classType()==CodeModel::Union){
         *meta_class += AbstractMetaAttributes::Final;
     }
-
     return meta_class;
 }
 
@@ -2983,6 +3168,10 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
                 } else if (QPropertySpec *reset =
                                meta_class->propertySpecForReset(meta_function->name())) {
                     *meta_function += AbstractMetaAttributes::PropertyResetter;
+                    meta_function->setPropertySpec(reset);
+                } else if (QPropertySpec *reset =
+                               meta_class->propertySpecForNotify(meta_function->name())) {
+                    *meta_function += AbstractMetaAttributes::PropertyNotify;
                     meta_function->setPropertySpec(reset);
                 }
             }
@@ -3452,6 +3641,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
     ReportHandler::debugMedium(QString(" - %2()").arg(function_name));
     meta_function->setName(function_name);
     meta_function->setOriginalName(function_item->name());
+    meta_function->setVariadics(function_item->isVariadics());
 
     if (function_item->isAbstract())
         *meta_function += AbstractMetaAttributes::Abstract;
@@ -3823,14 +4013,14 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         if (!array_of_unspecified_size) {
             TypeInfo newInfo;
             //newInfo.setArguments(typei.arguments());
-            newInfo.setIndirections(typei.indirections());
-            newInfo.setConstant(typei.isConstant());
-            newInfo.setFunctionPointer(typei.isFunctionPointer());
-            newInfo.setQualifiedName(typei.qualifiedName());
-            newInfo.setReferenceType(typei.getReferenceType());
-            newInfo.setVolatile(typei.isVolatile());
+            newInfo.setIndirections(typeInfo.indirections);
+            newInfo.setConstant(typeInfo.is_constant);
+            newInfo.setFunctionPointer(false);
+            newInfo.setQualifiedName(typeInfo.qualified_name);
+            newInfo.setReferenceType(TypeInfo::ReferenceType(typeInfo.reference_type));
+            newInfo.setVolatile(typeInfo.is_volatile);
 
-            AbstractMetaType *elementType = translateType(newInfo, ok, contextString, true, true, prependScope);
+            AbstractMetaType *elementType = translateType(newInfo, ok, contextString, true, resolveScope, prependScope);
             if (!elementType || !ok) {
                 if(prependScope)
                     ReportHandler::warning("Something has happened when trying to resolve type " + newInfo.toString());

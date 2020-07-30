@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for database integration using SQL.
+ */
 module qtjambi.sql{
     requires java.base;
     requires transitive qtjambi;

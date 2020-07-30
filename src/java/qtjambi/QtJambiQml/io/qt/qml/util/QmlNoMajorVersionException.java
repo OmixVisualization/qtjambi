@@ -30,6 +30,9 @@
 
 package io.qt.qml.util;
 
+/**
+ * Is thrown when {@link QmlImportMajorVersion} annotation is missed in a package.
+ */
 public class QmlNoMajorVersionException extends QmlTypeRegistrationException{
 
 	private static final long serialVersionUID = -3133621732946193943L;

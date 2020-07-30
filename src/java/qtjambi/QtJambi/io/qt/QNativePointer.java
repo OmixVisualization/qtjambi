@@ -82,7 +82,7 @@ import io.qt.internal.QtJambiInternal;
  *   <code>
  *      QNativePointer ptr = new QNativePointer(QNativePointer.Type.Int, 5);<br>
  *      for (int i = 0; i  &lt; 5, ++i)
- *      <pre>    ptr.setIntAt(i, i*i);</pre><br>
+ *          ptr.setIntAt(i, i*i);<br>
  *   </code>
  *   <p>
  *   If you are creating a multi dimensional array, you have two

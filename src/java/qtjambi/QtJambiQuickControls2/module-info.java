@@ -27,7 +27,10 @@
 **
 ****************************************************************************/
 
-module qtjambi.quickcontrols2{
+/**
+ * Provides lightweight QML types for creating performant user interfaces for desktop, embedded, and mobile devices. These types employ a simple styling architecture and are very efficient.
+ */
+module qtjambi.quickcontrols{
     requires java.base;
     requires transitive qtjambi;
     exports io.qt.quick.controls;

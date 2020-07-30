@@ -39,25 +39,24 @@ import io.qt.internal.NativeAccess;
 import io.qt.internal.QtJambiInternal;
 
 /**
- * QtArgument is used to initialize an interface type or a set of inherited interface types with their 
- * non-standard constructors.
+ * <p>QtArgument is used to initialize an interface type or a set of inherited interface types with their 
+ * non-standard constructors.</p>
  * 
- * Example:
+ * <p>Example:</p>
  * 
  * <code>
- * private static class SurfaceObject extends QObject implements QSurface{
- * 
- * 		// parameter parent is for QObject constructor
- * 		// parameter type is for QSurface constructor
- * 		public SurfaceObject(QObject parent, SurfaceClass type){
- * 			super((QPrivateConstructor)null);
- * 			// we need to use the private constructor and initialize the native portion of the object otherwise:
- * 			QtUtilities.initializeNativeObject(this,
- * 											QtArgument.begin(QObject.class).add(parent)
- * 													  .begin(QSurface.class).add(type)
- * 										);
- * 		}
- * 
+ * private static class SurfaceObject extends QObject implements QSurface{<br>
+ * <br>
+ * &nbsp;   // parameter parent is for QObject constructor<br>
+ * &nbsp;   // parameter type is for QSurface constructor<br>
+ * &nbsp;   public SurfaceObject(QObject parent, SurfaceClass type){<br>
+ * &nbsp;       super((QPrivateConstructor)null);<br>
+ * &nbsp;       // we need to use the private constructor and initialize the native portion of the object otherwise:<br>
+ * &nbsp;       QtUtilities.initializeNativeObject(this,<br>
+ * &nbsp;                                          QtArgument.begin(QObject.class).add(parent)<br>
+ * &nbsp;                                                    .begin(QSurface.class).add(type)<br>
+ * &nbsp;                                          );<br>
+ * &nbsp;   }<br>
  * }
  * </code>
  * 
@@ -69,6 +68,9 @@ public final class QtArgument {
 		return new Stream(type);
 	}
 	
+	/**
+	 * Argument stream.
+	 */
 	public final static class Stream{
 		private final Map<Class<?>,List<Arg>> arguments;
 		private List<Arg> currentList;

@@ -45,6 +45,15 @@ HEADERS += \
         $$GENERATORPATH/abstractmetalang.h \
         $$GENERATORPATH/prigenerator.h \
         $$GENERATORPATH/util.h \
+        $$GENERATORPATH/docindex/docindexreader.h \
+        $$GENERATORPATH/docindex/docclass.h \
+        $$GENERATORPATH/docindex/docelement.h \
+        $$GENERATORPATH/docindex/docenum.h \
+        $$GENERATORPATH/docindex/docfunction.h \
+        $$GENERATORPATH/docindex/docmodel.h \
+        $$GENERATORPATH/docindex/docvariable.h \
+        $$GENERATORPATH/docindex/docproperty.h \
+        $$PWD/docindex/docnamespace.h
 
 SOURCES += \
         $$GENERATORPATH/generator.cpp \
@@ -70,10 +79,19 @@ SOURCES += \
         $$GENERATORPATH/abstractmetalang.cpp \
         $$GENERATORPATH/prigenerator.cpp \
         $$GENERATORPATH/util.cpp \
+        $$GENERATORPATH/docindex/docindexreader.cpp \
+        $$GENERATORPATH/docindex/docclass.cpp \
+        $$GENERATORPATH/docindex/docelement.cpp \
+        $$GENERATORPATH/docindex/docenum.cpp \
+        $$GENERATORPATH/docindex/docfunction.cpp \
+        $$GENERATORPATH/docindex/docmodel.cpp \
+        $$GENERATORPATH/docindex/docvariable.cpp \
+        $$GENERATORPATH/docindex/docproperty.cpp \
+        $$PWD/docindex/docnamespace.cpp
 
 
 
-QT = core xml
+QT = core xml network
 
 win32{
         PRECOMPILED_HEADER = generator_pch.h

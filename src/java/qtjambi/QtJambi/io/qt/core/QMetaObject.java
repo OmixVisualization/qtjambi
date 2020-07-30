@@ -305,12 +305,36 @@ public final class QMetaObject {
     	return null;
     }
 	
+    /**
+     * Represents a handle to a signal-slot (or signal-functor) connection.
+     * 
+     * It can be used to check if the connection is valid and to disconnect it using {@link QObject#disconnect(Connection)}. 
+     * For a signal-functor connection without a context object, it is the only way to selectively disconnect that connection.
+     * 
+     * As Connection is just a handle, the underlying signal-slot connection is unaffected when Connection is destroyed or reassigned.
+     */
 	public static interface Connection{
+		/**
+		 * Returns true if the connection is valid.
+		 */
 		public boolean isConnected();
+		
+		/**
+		 * Provides the sender of the connected signal.
+		 * @return sender
+		 */
 		public QtSignalEmitterInterface sender();
+		
+		/**
+		 * Provides the receiver of the signal-slot connection.
+		 * @return receiver
+		 */
 		public Object receiver();
 	}
 	
+	/**
+	 * Enum representing meta calls.
+	 */
 	public enum Call implements QtEnumerator{
         InvokeMetaMethod(0),
         ReadProperty(1),
@@ -603,10 +627,23 @@ public final class QMetaObject {
 		return classInfo(metaObjectPointer, name);
 	}
 	
+	/**
+	 * Returns true if the class described by this QMetaObject inherits the type described by metaObject; otherwise returns false.
+	 * A type is considered to inherit itself.
+	 * @param metaObject
+	 * @return inherits
+	 */
 	public boolean inherits(QMetaObject metaObject){
 		return inherits(metaObjectPointer, metaObject.metaObjectPointer);
 	}
 	
+    /**
+     * Casts an object to the given <i>targetType</i>. Returns null if object is not instance of <i>targetType</i>.
+     * @param <T> type
+     * @param targetType
+     * @param object
+     * @return the object as targetType or null
+     */
 	public static <T extends QtObjectInterface> T cast(Class<T> targetType, QtObjectInterface object) {
 		io.qt.QtUtilities.initializePackage(targetType);
 		if(object==null || targetType.isInstance(object)) {
@@ -660,10 +697,38 @@ public final class QMetaObject {
 	
 	private static native boolean checkConnectArgsMethods(long signalMetaObjectPointer, int signalMethodIndex, long methodMetaObjectPointer, int methodMethodIndex);
 	
+	/**
+	 * Calling <code>invokeMethod(obj, AutoConnection, args)</code>.
+	 * @param obj object
+	 * @param member method name
+	 * @param args arguments
+	 * @return method result value if any - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 * @throws QNoSuchMethodException if method not available
+	 */
 	public static Object invokeMethod(QObject obj, String member, Object... args) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(obj, member, Qt.ConnectionType.AutoConnection, args);
 	}
 	
+	/**
+	 * <p>Invokes the given method on the given object and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+	 * @param obj object
+	 * @param member method name
+	 * @param args arguments
+	 * @return method result value if any - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 * @throws QNoSuchMethodException if method not available
+	 */
 	public static Object invokeMethod(QObject obj, String member, Qt.ConnectionType type, Object... args) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		Class<?>[] parameterTypes;
 		if(member.contains("(")) {
@@ -694,15 +759,41 @@ public final class QMetaObject {
 		return method.invoke(obj, type, args);
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection)</code>.
+	 * 
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <R> R invokeMethod(Method0<R> method) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <R> R invokeMethod(Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type);
@@ -774,15 +865,45 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,R> R invokeMethod(Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,R> R invokeMethod(Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+1) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1);
@@ -856,15 +977,49 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,R> R invokeMethod(Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,R> R invokeMethod(Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+2) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2);
@@ -939,15 +1094,53 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+3) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3);
@@ -1023,15 +1216,57 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+4) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4);
@@ -1108,15 +1343,61 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+5) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5);
@@ -1197,15 +1478,65 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+6) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
@@ -1284,15 +1615,69 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+7) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -1372,15 +1757,73 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+8) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -1461,15 +1904,77 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 	}
 	
+	/**
+	 * <p>Invokes the method and returns it's result value.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * <p>If the invocation is asynchronous, the return value cannot be evaluated.</p>
+	 * 
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The return type of the method.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	@SuppressWarnings("unchecked")
 	public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
-		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null && (info.reflectiveMethod!=null || info.signal!=null)) {
-			QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+		if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
+			QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 			if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+9) {
 				if(info.lambdaArgs.isEmpty()) {
 					return (R)qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -1551,16 +2056,36 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection)</code>.
+	 * @param method invoked method
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static void invokeMethod(Slot0 method) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static void invokeMethod(Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()) {
 					qmethod.invoke(info.qobject, type, info.lambdaArgs.toArray());
 					return;
@@ -1650,16 +2175,40 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A> void invokeMethod(Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A> void invokeMethod(Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+1) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1);
@@ -1756,16 +2305,44 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B> void invokeMethod(Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B> void invokeMethod(Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+2) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2);
@@ -1867,16 +2444,48 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+3) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3);
@@ -1975,16 +2584,52 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+4) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4);
@@ -2084,16 +2729,56 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+5) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5);
@@ -2194,16 +2879,60 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+6) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
@@ -2305,16 +3034,64 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+7) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
@@ -2417,16 +3194,68 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+8) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
@@ -2530,16 +3359,72 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(method, AutoConnection, ...)</code>.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+	 * @param method invoked method
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 	}
 	
+	/**
+	 * <p>Invokes the slot.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+	 * @param method invoked method
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke slot
+	 */
 	public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		QtJambiInternal.LambdaInfo info = QtJambiInternal.lamdaInfo(method);
 		QThread thread = null;
 		if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
-			if(info.reflectiveMethod!=null || info.signal!=null) {
-				QMetaMethod qmethod = info.reflectiveMethod!=null ? fromReflectedMethod(info.reflectiveMethod) : info.qobject.metaObject().methodByIndex(info.qobject.metaObject().metaObjectPointer, info.signal.methodIndex());
+			if(info.reflectiveMethod!=null) {
+				QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
 				if(qmethod!=null && qmethod.parameterTypes().size()==info.lambdaArgs.size()+9) {
 					if(info.lambdaArgs.isEmpty()) {
 						qmethod.invoke(info.qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
@@ -2644,10 +3529,29 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection)</code>.
+	 * @param signal invoked signal
+	 */
 	public static void invokeMethod(AbstractPrivateSignal0 signal) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static void invokeMethod(AbstractPrivateSignal0 signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2660,10 +3564,34 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+	 */
 	public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2676,10 +3604,38 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+	 */
 	public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2692,10 +3648,42 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+	 */
 	public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2708,10 +3696,46 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+	 */
 	public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2724,10 +3748,50 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+	 */
 	public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2740,10 +3804,53 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+	 */
 	public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2756,10 +3863,57 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+	 */
 	public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2772,10 +3926,61 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+	 */
 	public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2788,10 +3993,66 @@ public final class QMetaObject {
 		throw new QUnsuccessfulInvocationException("Unable to invoke method.");
 	}
 	
+	/**
+	 * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+	 */
 	public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 	}
 	
+	/**
+	 * <p>Invokes the signal.</p>
+	 * 
+	 * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+	 * <ul>
+	 * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+	 * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+	 * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+	 * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+	 * </ul>
+	 * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 * @param signal invoked signal
+	 * @param type synchronous or asynchronous invokation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+	 * @throws QUnsuccessfulInvocationException if not able to invoke signal
+	 */
 	public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
 		if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
 			QObject qobject = (QObject)signal.containingObject();
@@ -2827,7 +4088,7 @@ public final class QMetaObject {
 	}
 	
 	private final static class SignalAccess extends QtJambiSignals {
-		public static abstract class AbstractSignal extends QtJambiSignals.AbstractSignal {
+		static abstract class AbstractSignal extends QtJambiSignals.AbstractSignal {
 			
 			AbstractSignal(){}
 		
@@ -2884,21 +4145,44 @@ public final class QMetaObject {
 		SignalAccess.initialize();
 	}
 	
+	/**
+	 * Signal emitted when a {@link io.qt.QtObjectInterface} is being disposed.
+	 * @see QtObjectInterface#isDisposed()
+	 * @see QtObjectInterface#dispose()
+	 */
 	public static final class DisposedSignal extends AbstractSignal {
 		
 		private DisposedSignal(Class<?> declaringClass) {
 			super(declaringClass, true);
 		}
 		
+		/**
+		 * Internal
+		 */
 		@Override
 		protected final void checkConnection(Object receiver, boolean slotObject) {
 			SignalAccess.checkConnectionToDisposedSignal(this, receiver, slotObject);
         }
 	
-		public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
-	    	return addConnectionToSlotObject(slot, type);
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+		public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... connectionType) {
+	    	return addConnectionToSlotObject(slot, connectionType);
 	    }
 	
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -2908,156 +4192,517 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType      One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType      One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType      One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType      One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType      One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -3065,157 +4710,412 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 	
+	/**
+	 * Supertype of all signals in QtJambi.
+	 */
 	public static abstract class AbstractSignal extends SignalAccess.AbstractSignal {
 		
 		AbstractSignal(){}
@@ -3238,7 +5138,7 @@ public final class QMetaObject {
 	     *
 	     * @param receiver  The object that owns the method
 	     * @param method    The signature of the method excluding return type and argument names, such as "setText(String)".
-	     * @param type      One of the connection types defined in the Qt interface.
+	     * @param connectionType One of the connection types defined in the Qt interface.
 	     * @throws QNoSuchSlotException Raised if the method passed in the slot object was not found
 	     * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
 	     *                                    signatures of the signal and slot are incompatible.
@@ -3297,126 +5197,299 @@ public final class QMetaObject {
 	     * Removes the given connection from this signal.
 	     *
 		 * @param connection the connection to be removed
-	     * @return  True if the disconnection was successful.
+	     * @return true if the disconnection was successful.
 	     */
 	    public final boolean disconnect(QMetaObject.Connection connection) {
 	        return removeConnection(connection);
 	    }
 	}
 	
+	/**
+	 * Supertype of all slot handles.
+	 */
 	public static interface AbstractSlot extends Serializable{
 	}
 
+	/**
+	 * A generic slot handle to a method of variadic arguments.
+	 */
 	@FunctionalInterface
 	public static interface GenericSlot extends AbstractSlot{
 		public void invoke(Object... args) throws Throwable;
 	}
 
+	/**
+	 * A handle to parameterless slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot0 extends AbstractSlot{
 		public void invoke() throws Throwable;
 	}
 
+	/**
+	 * A handle to slot with one parameter.
+     * @param <A> The type of the first parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot1<A> extends AbstractSlot{
 		public void invoke(A a) throws Throwable;
 	}
 
+	/**
+	 * A handle to slot with two parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot2<A,B> extends AbstractSlot{
 		public void invoke(A a, B b) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with three parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot3<A,B,C> extends AbstractSlot{
 		public void invoke(A a, B b, C c) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with four parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot4<A,B,C,D> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with five parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot5<A,B,C,D,E> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d, E e) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with six parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot6<A,B,C,D,E,F> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d, E e, F f) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with seven parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot7<A,B,C,D,E,F,G> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d, E e, F f, G g) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with eight parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot8<A,B,C,D,E,F,G,H> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
 	}
 	
+	/**
+	 * A handle to slot with nine parameters.
+     * @param <A> The type of the first parameter of the slot.
+     * @param <B> The type of the second parameter of the slot.
+     * @param <C> The type of the third parameter of the slot.
+     * @param <D> The type of the fourth parameter of the slot.
+     * @param <E> The type of the fifth parameter of the slot.
+     * @param <F> The type of the sixth parameter of the slot.
+     * @param <G> The type of the seventh parameter of the slot.
+     * @param <H> The type of the eighth parameter of the slot.
+     * @param <I> The type of the ninth parameter of the slot.
+	 */
 	@FunctionalInterface
 	public static interface Slot9<A,B,C,D,E,F,G,H,I> extends AbstractSlot{
 		public void invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
 	}
 	
+	/**
+	 * A generic slot handle to a method of variadic arguments with return value.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface GenericMethod<R> extends AbstractSlot{
 		public R invoke(Object... args) throws Throwable;
 	}
 
+	/**
+	 * A handle to parameterless method with return value.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method0<R> extends AbstractSlot{
 		public R invoke() throws Throwable;
 	}
 
+	/**
+	 * A handle to method with onw parameter and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method1<A,R> extends AbstractSlot{
 		public R invoke(A a) throws Throwable;
 	}
 
+	/**
+	 * A handle to method with two parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method2<A,B,R> extends AbstractSlot{
 		public R invoke(A a, B b) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with three parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method3<A,B,C,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with four parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method4<A,B,C,D,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with five parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method5<A,B,C,D,E,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d, E e) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with six parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method6<A,B,C,D,E,F,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d, E e, F f) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with seven parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method7<A,B,C,D,E,F,G,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d, E e, F f, G g) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with eight parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method8<A,B,C,D,E,F,G,H,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d, E e, F f, G g, H h) throws Throwable;
 	}
 	
+	/**
+	 * A handle to method with nine parameters and return value.
+     * @param <A> The type of the first parameter of the method.
+     * @param <B> The type of the second parameter of the method.
+     * @param <C> The type of the third parameter of the method.
+     * @param <D> The type of the fourth parameter of the method.
+     * @param <E> The type of the fifth parameter of the method.
+     * @param <F> The type of the sixth parameter of the method.
+     * @param <G> The type of the seventh parameter of the method.
+     * @param <H> The type of the eighth parameter of the method.
+     * @param <I> The type of the ninth parameter of the method.
+     * @param <R> The type of the return value of the method.
+	 */
 	@FunctionalInterface
 	public static interface Method9<A,B,C,D,E,F,G,H,I,R> extends AbstractSlot{
 		public R invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
 	}
 
+	/**
+	 * Supertype for parameterless signals.
+	 */
 	public static abstract class AbstractPrivateSignal0 extends AbstractSignal {
 	    
 		AbstractPrivateSignal0(){super();}
@@ -3433,10 +5506,25 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 		public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -3446,156 +5534,489 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal1Default1<?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal2Default2<?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated @QtUninvokable.
+	     */
+	    public final QMetaObject.Connection connect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -3603,157 +6024,413 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QObject.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QStaticMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QInstanceMemberSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal1Default1<?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal2Default2<?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal3Default3<?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal4Default4<?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal5Default5<?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal6Default6<?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal7Default7<?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal8Default8<?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(QDeclarableSignals.Signal9Default9<?,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with one parameter.
+     * @param <A> The type of the first parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal1<A> extends AbstractSignal {
 	    
 		AbstractPrivateSignal1(){super();}
@@ -3770,18 +6447,48 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -3791,48 +6498,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal2Default1<A,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal2Default1<A,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal3Default2<A,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal3Default2<A,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal4Default3<A,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal4Default3<A,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal5Default4<A,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal5Default4<A,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal6Default5<A,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal6Default5<A,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default6<A,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default6<A,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default7<A,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default7<A,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default8<A,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default8<A,?,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -3840,49 +6628,117 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal2Default1<A,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal3Default2<A,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal4Default3<A,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal5Default4<A,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal6Default5<A,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default6<A,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default7<A,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default8<A,?,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with two parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal2<A, B> extends AbstractSignal {
 		AbstractPrivateSignal2(){super();}
 	
@@ -3898,26 +6754,71 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -3927,48 +6828,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal3Default1<A,B,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal3Default1<A,B,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal4Default2<A,B,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal4Default2<A,B,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal5Default3<A,B,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal5Default3<A,B,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal6Default4<A,B,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal6Default4<A,B,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default5<A,B,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default5<A,B,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default6<A,B,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default6<A,B,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default7<A,B,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default7<A,B,?,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -3976,49 +6958,118 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal3Default1<A,B,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal4Default2<A,B,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal5Default3<A,B,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal6Default4<A,B,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default5<A,B,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default6<A,B,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default7<A,B,?,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with three parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal3<A, B, C> extends AbstractSignal {
 	    
 		AbstractPrivateSignal3(){super();}
@@ -4035,34 +7086,94 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4072,48 +7183,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal4Default1<A,B,C,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal4Default1<A,B,C,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal5Default2<A,B,C,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal5Default2<A,B,C,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal6Default3<A,B,C,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal6Default3<A,B,C,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default4<A,B,C,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default4<A,B,C,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default5<A,B,C,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default5<A,B,C,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default6<A,B,C,?,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default6<A,B,C,?,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4121,49 +7313,119 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal4Default1<A,B,C,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal5Default2<A,B,C,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal6Default3<A,B,C,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default4<A,B,C,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default5<A,B,C,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default6<A,B,C,?,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal4<A, B, C, D> extends AbstractSignal {
 	    
 		AbstractPrivateSignal4(){super();}
@@ -4180,42 +7442,117 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4225,48 +7562,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal5Default1<A,B,C,D,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal5Default1<A,B,C,D,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal6Default2<A,B,C,D,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal6Default2<A,B,C,D,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default3<A,B,C,D,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default3<A,B,C,D,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default4<A,B,C,D,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default4<A,B,C,D,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default5<A,B,C,D,?,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default5<A,B,C,D,?,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4274,49 +7692,119 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal5Default1<A,B,C,D,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal6Default2<A,B,C,D,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default3<A,B,C,D,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default4<A,B,C,D,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default5<A,B,C,D,?,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal5<A, B, C, D, E> extends AbstractSignal {
 	    
 		AbstractPrivateSignal5(){super();}
@@ -4333,50 +7821,140 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4386,48 +7964,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal6Default1<A,B,C,D,E,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal6Default1<A,B,C,D,E,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default2<A,B,C,D,E,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default2<A,B,C,D,E,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default3<A,B,C,D,E,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default3<A,B,C,D,E,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default4<A,B,C,D,E,?,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default4<A,B,C,D,E,?,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4435,49 +8094,121 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal6Default1<A,B,C,D,E,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default2<A,B,C,D,E,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default3<A,B,C,D,E,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default4<A,B,C,D,E,?,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal6<A, B, C, D, E, F> extends AbstractSignal {
 	    
 		AbstractPrivateSignal6(){super();}
@@ -4494,58 +8225,163 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4555,48 +8391,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal7Default1<A,B,C,D,E,F,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal7Default1<A,B,C,D,E,F,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default2<A,B,C,D,E,F,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default2<A,B,C,D,E,F,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default3<A,B,C,D,E,F,?,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default3<A,B,C,D,E,F,?,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4604,49 +8521,122 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal7Default1<A,B,C,D,E,F,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default2<A,B,C,D,E,F,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default3<A,B,C,D,E,F,?,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal7<A, B, C, D, E, F, G> extends AbstractSignal {
 	    
 		AbstractPrivateSignal7(){super();}
@@ -4663,66 +8653,186 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4732,48 +8842,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal8Default1<A,B,C,D,E,F,G,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal8Default1<A,B,C,D,E,F,G,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default2<A,B,C,D,E,F,G,?,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default2<A,B,C,D,E,F,G,?,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4781,49 +8972,123 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal8Default1<A,B,C,D,E,F,G,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default2<A,B,C,D,E,F,G,?,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal8<A, B, C, D, E, F, G, H> extends AbstractSignal {
 		AbstractPrivateSignal8(){super();}
 		
@@ -4839,74 +9104,209 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -4916,48 +9316,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractSignal9Default1<A,B,C,D,E,F,G,H,?> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractSignal9Default1<A,B,C,D,E,F,G,H,?> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -4965,49 +9446,124 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractSignal9Default1<A,B,C,D,E,F,G,H,?> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
 	public static abstract class AbstractPrivateSignal9<A, B, C, D, E, F, G, H, I> extends AbstractSignal {
 		AbstractPrivateSignal9(){super();}
 		
@@ -5023,82 +9579,232 @@ public final class QMetaObject {
 			super(signalName, types);
 		}
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 	
+	    /**
+	     * Initializes a connection to the <i>slot</i>.
+	     * 
+	     * @param slot the slot to be connected
+	     * @param connectionType type of connection
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
+	     */
 	    public final QMetaObject.Connection connect(Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... type) {
 	    	return addConnectionToSlotObject(slot, type);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 		public final boolean disconnect(Slot0 slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot1<? super A> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot2<? super A,? super B> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 		
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
 	    
+	    /**
+	     * Removes the connection between the given <i>signal</i> and <i>slot</i>.
+	     * 
+	     * @param slot the slot to be disconnected
+	     * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
 	    	return removeConnectionToSlotObject(slot);
 	    }
@@ -5108,49 +9814,129 @@ public final class QMetaObject {
 	     * signal to be emitted as well.
 	     *
 	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
-	     * @param type      One of the connection types defined in the Qt interface.
-		 * @param unique    Unique connection.
-	     * @throws RuntimeException Raised if either of the signal objects could not be successfully be introspected or if their
-	     *                                    signatures are incompatible.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
 	     */
-	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    public final QMetaObject.Connection connect(AbstractPublicSignal0 signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal1<A> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal2<A,B> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal3<A,B,C> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal4<A,B,C,D> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal5<A,B,C,D,E> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	    
-	    public final QMetaObject.Connection connect(AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signalOut, Qt.ConnectionType... type) {
-	        return connect(signalOut::emit, type);
+	    /**
+	     * Creates a connection from this signal to another. Whenever this signal is emitted, it will cause the second
+	     * signal to be emitted as well.
+	     *
+	     * @param signalOut The second signal. This will be emitted whenever this signal is emitted.
+	     * @param connectionType One of the connection types defined in the Qt interface.
+	     * @return connection if successful or <code>null</code> otherwise
+	     * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
+	     */
+	    public final QMetaObject.Connection connect(AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signalOut, Qt.ConnectionType... connectionType) {
+	        return connect(signalOut::emit, connectionType);
 	    }
 	
 	    /**
@@ -5158,49 +9944,115 @@ public final class QMetaObject {
 	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
 	     *
 	     * @param signalOut The second signal.
-	     * @return true if the two signals were successfully disconnected, or false otherwise.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
 	     */
 	    public final boolean disconnect(AbstractPublicSignal0 signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal1<A> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal2<A,B> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal3<A,B,C> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal4<A,B,C,D> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal5<A,B,C,D,E> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal6<A,B,C,D,E,F> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal7<A,B,C,D,E,F,G> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal8<A,B,C,D,E,F,G,H> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	    
+	    /**
+	     * Disconnects a signal from another signal if the two were previously connected by a call to connect.
+	     * A call to this function will assure that the emission of the first signal will not cause the emission of the second.
+	     *
+	     * @param signalOut The second signal.
+	     * @return <code>true</code> if the two signals were successfully disconnected, or <code>false</code> otherwise.
+	     */
 	    public final boolean disconnect(AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signalOut) {
 	        return disconnect(signalOut::emit);
 	    }
 	}
 
+	/**
+	 * Supertype for all public parameterless signals.
+	 */
 	public static abstract class AbstractPublicSignal0 extends AbstractPrivateSignal0 {
 		AbstractPublicSignal0(){super();}
 		
@@ -5224,6 +10076,10 @@ public final class QMetaObject {
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with one parameter.
+     * @param <A> The type of the first parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal1<A> extends AbstractPrivateSignal1<A> {
 		AbstractPublicSignal1(){}
 		
@@ -5241,12 +10097,18 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
 	     */
 	    public final void emit(A arg1) {
 	        emitSignal(arg1);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with two parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal2<A,B> extends AbstractPrivateSignal2<A,B> {
 		AbstractPublicSignal2(){super();}
 		
@@ -5264,12 +10126,20 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
 	     */
 	    public final void emit(A arg1, B arg2) {
 	        emitSignal(arg1, arg2);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with three parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal3<A,B,C> extends AbstractPrivateSignal3<A,B,C> {
 		AbstractPublicSignal3(){super();}
 		
@@ -5287,12 +10157,22 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
 	     */
 	    public final void emit(A arg1, B arg2, C arg3) {
 	        emitSignal(arg1, arg2, arg3);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal4<A,B,C,D> extends AbstractPrivateSignal4<A,B,C,D> {
 		AbstractPublicSignal4(){super();}
 		
@@ -5310,12 +10190,24 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4) {
 	        emitSignal(arg1, arg2, arg3, arg4);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal5<A,B,C,D,E> extends AbstractPrivateSignal5<A,B,C,D,E> {
 		AbstractPublicSignal5(){super();}
 		
@@ -5333,12 +10225,26 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
+	     * @param arg5
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
 	        emitSignal(arg1, arg2, arg3, arg4, arg5);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal6<A,B,C,D,E,F> extends AbstractPrivateSignal6<A,B,C,D,E,F> {
 		AbstractPublicSignal6(){super();}
 		
@@ -5356,12 +10262,28 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
+	     * @param arg5
+	     * @param arg6
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
 	        emitSignal(arg1, arg2, arg3, arg4, arg5, arg6);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal7<A,B,C,D,E,F,G> extends AbstractPrivateSignal7<A,B,C,D,E,F,G> {
 		AbstractPublicSignal7(){super();}
 		
@@ -5379,12 +10301,30 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
+	     * @param arg5
+	     * @param arg6
+	     * @param arg7
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
 	        emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal8<A,B,C,D,E,F,G,H> extends AbstractPrivateSignal8<A,B,C,D,E,F,G,H> {
 		AbstractPublicSignal8(){super();}
 		
@@ -5402,12 +10342,32 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
+	     * @param arg5
+	     * @param arg6
+	     * @param arg7
+	     * @param arg8
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
 	        emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 	    }
 	}
 
+	/**
+	 * Supertype for all public signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
 	public static abstract class AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> extends AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> {
 		AbstractPublicSignal9(){super();}
 		
@@ -5425,12 +10385,26 @@ public final class QMetaObject {
 		
 		/**
 	     * Emits the signal.
+	     * @param arg1
+	     * @param arg2
+	     * @param arg3
+	     * @param arg4
+	     * @param arg5
+	     * @param arg6
+	     * @param arg7
+	     * @param arg8
+	     * @param arg9
 	     */
 	    public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) {
 	        emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with two parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+	 */
 	public static abstract class AbstractSignal2Default1<A, B> extends AbstractPublicSignal2<A, B> {
 		
 		AbstractSignal2Default1(Supplier<B> arg2Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5480,11 +10454,21 @@ public final class QMetaObject {
 		
 		private final Supplier<B> arg2Default;
 	    
+		/**
+	     * Emits the signal with default value for arg2.
+		 * @param arg1
+		 */
 	    public void emit(A arg1) {
 	   		emit(arg1, arg2Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with three parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 */
 	public static abstract class AbstractSignal3Default1<A, B, C> extends AbstractPublicSignal3<A, B, C> {
 		
 		AbstractSignal3Default1(Supplier<C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5525,11 +10509,22 @@ public final class QMetaObject {
 		
 		private final Supplier<C> arg3Default;
 	    
+		/**
+		 * Emits the signal with default value for arg3.
+		 * @param arg1
+		 * @param arg2
+		 */
 	    public void emit(A arg1, B arg2) {
 	   		emit(arg1, arg2, arg3Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with three parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+	 */
 	public static abstract class AbstractSignal3Default2<A, B, C> extends AbstractSignal3Default1<A, B, C> {
 		
 		AbstractSignal3Default2(Supplier<B> arg2Default, Supplier<C> arg3Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5570,11 +10565,22 @@ public final class QMetaObject {
 		
 		private final Supplier<B> arg2Default;
 	    
+		/**
+		 * Emits the signal with default value for arg2.
+		 * @param arg1
+		 */
 	    public void emit(A arg1) {
 	   		emit(arg1, arg2Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal4Default1<A, B, C, D> extends AbstractPublicSignal4<A, B, C, D> {
 		
 		AbstractSignal4Default1(Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5615,11 +10621,24 @@ public final class QMetaObject {
 		
 		private final Supplier<D> arg4Default;
 	    
+		/**
+		 * Emits the signal with default value for arg4.
+		 * @param arg1
+		 * @param arg2
+		 * @param arg3
+		 */
 	    public void emit(A arg1, B arg2, C arg3) {
 	   		emit(arg1, arg2, arg3, arg4Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal4Default2<A, B, C, D> extends AbstractSignal4Default1<A, B, C, D> {
 		
 		AbstractSignal4Default2(Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5660,11 +10679,23 @@ public final class QMetaObject {
 		
 		private final Supplier<C> arg3Default;
 	    
+		/**
+		 * Emits the signal with default value for arg3.
+		 * @param arg1
+		 * @param arg2
+		 */
 	    public void emit(A arg1, B arg2) {
 	   		emit(arg1, arg2, arg3Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal4Default3<A, B, C, D> extends AbstractSignal4Default2<A, B, C, D> {
 		
 		AbstractSignal4Default3(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5705,11 +10736,23 @@ public final class QMetaObject {
 		
 		private final Supplier<B> arg2Default;
 	    
+		/**
+		 * Emits the signal with default value for arg2.
+		 * @param arg1
+		 */
 	    public void emit(A arg1) {
 	   		emit(arg1, arg2Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal5Default1<A, B, C, D, E> extends AbstractPublicSignal5<A, B, C, D, E> {
 		
 		AbstractSignal5Default1(Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5750,11 +10793,26 @@ public final class QMetaObject {
 		
 		private final Supplier<E> arg5Default;
 	    
+		/**
+		 * Emits the signal with default value for arg5.
+		 * @param arg1
+		 * @param arg2
+		 * @param arg3
+		 * @param arg4
+		 */
 	    public void emit(A arg1, B arg2, C arg3, D arg4) {
 	   		emit(arg1, arg2, arg3, arg4, arg5Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal5Default2<A, B, C, D, E> extends AbstractSignal5Default1<A, B, C, D, E> {
 		
 		AbstractSignal5Default2(Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5795,11 +10853,25 @@ public final class QMetaObject {
 		
 		private final Supplier<D> arg4Default;
 	    
+		/**
+		 * Emits the signal with default value for arg4.
+		 * @param arg1
+		 * @param arg2
+		 * @param arg3
+		 */
 	    public void emit(A arg1, B arg2, C arg3) {
 	   		emit(arg1, arg2, arg3, arg4Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal5Default3<A, B, C, D, E> extends AbstractSignal5Default2<A, B, C, D, E> {
 		
 		AbstractSignal5Default3(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5840,11 +10912,24 @@ public final class QMetaObject {
 		
 		private final Supplier<C> arg3Default;
 	    
+		/**
+		 * Emits the signal with default value for arg3.
+		 * @param arg1
+		 * @param arg2
+		 */
 	    public void emit(A arg1, B arg2) {
 	   		emit(arg1, arg2, arg3Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal5Default4<A, B, C, D, E> extends AbstractSignal5Default3<A, B, C, D, E> {
 		
 		AbstractSignal5Default4(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5885,11 +10970,24 @@ public final class QMetaObject {
 		
 		private final Supplier<B> arg2Default;
 	    
+		/**
+		 * Emits the signal with default value for arg2.
+		 * @param arg1
+		 */
 	    public void emit(A arg1) {
 	   		emit(arg1, arg2Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal6Default1<A, B, C, D, E, F> extends AbstractPublicSignal6<A, B, C, D, E, F> {
 		
 		AbstractSignal6Default1(Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5930,11 +11028,28 @@ public final class QMetaObject {
 		
 		private final Supplier<F> arg6Default;
 	    
+		/**
+		 * Emits the signal with default value for arg6.
+		 * @param arg1
+		 * @param arg2
+		 * @param arg3
+		 * @param arg4
+		 * @param arg5
+		 */
 	    public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
 	   		emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
 	    }
 	}
 
+	/**
+	 * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal6Default2<A, B, C, D, E, F> extends AbstractSignal6Default1<A, B, C, D, E, F> {
 		
 		AbstractSignal6Default2(Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -5975,11 +11090,27 @@ public final class QMetaObject {
 		
 		private final Supplier<E> arg5Default;
 	    
+		/**
+		 * Emits the signal with default value for arg5.
+		 * @param arg1
+		 * @param arg2
+		 * @param arg3
+		 * @param arg4
+		 */
 	    public void emit(A arg1, B arg2, C arg3, D arg4) {
 	   		emit(arg1, arg2, arg3, arg4, arg5Default.get());
 	    }
 	}
 	
+	/**
+	 * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
 	public static abstract class AbstractSignal6Default3<A, B, C, D, E, F> extends AbstractSignal6Default2<A, B, C, D, E, F> {
     	
     	AbstractSignal6Default3(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6020,11 +11151,26 @@ public final class QMetaObject {
     	
     	private final Supplier<D> arg4Default;
         
+    	/**
+    	 * Emits the signal with default value for arg4.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 */
         public void emit(A arg1, B arg2, C arg3) {
        		emit(arg1, arg2, arg3, arg4Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
     public static abstract class AbstractSignal6Default4<A, B, C, D, E, F> extends AbstractSignal6Default3<A, B, C, D, E, F> {
     	
     	AbstractSignal6Default4(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6065,11 +11211,25 @@ public final class QMetaObject {
     	
     	private final Supplier<C> arg3Default;
         
+    	/**
+    	 * Emits the signal with default value for arg3.
+    	 * @param arg1
+    	 * @param arg2
+    	 */
         public void emit(A arg1, B arg2) {
        		emit(arg1, arg2, arg3Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+	 */
     public static abstract class AbstractSignal6Default5<A, B, C, D, E, F> extends AbstractSignal6Default4<A, B, C, D, E, F> {
     	
     	AbstractSignal6Default5(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6110,11 +11270,25 @@ public final class QMetaObject {
     	
     	private final Supplier<B> arg2Default;
         
+    	/**
+    	 * Emits the signal with default value for arg2.
+    	 * @param arg1
+    	 */
         public void emit(A arg1) {
        		emit(arg1, arg2Default.get());
         }
     }
 
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default1<A, B, C, D, E, F, G> extends AbstractPublicSignal7<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default1(Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6155,11 +11329,30 @@ public final class QMetaObject {
     	
     	private final Supplier<G> arg7Default;
         
+    	/**
+    	 * Emits the signal with default value for arg7.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default2<A, B, C, D, E, F, G> extends AbstractSignal7Default1<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default2(Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6196,11 +11389,29 @@ public final class QMetaObject {
     	
     	private final Supplier<F> arg6Default;
         
+    	/**
+    	 * Emits the signal with default value for arg6.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default3<A, B, C, D, E, F, G> extends AbstractSignal7Default2<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default3(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6237,11 +11448,28 @@ public final class QMetaObject {
     	
     	private final Supplier<E> arg5Default;
         
+    	/**
+    	 * Emits the signal with default value for arg5.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4) {
        		emit(arg1, arg2, arg3, arg4, arg5Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default4<A, B, C, D, E, F, G> extends AbstractSignal7Default3<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default4(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6278,11 +11506,27 @@ public final class QMetaObject {
     	
     	private final Supplier<D> arg4Default;
         
+    	/**
+    	 * Emits the signal with default value for arg4.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 */
         public void emit(A arg1, B arg2, C arg3) {
        		emit(arg1, arg2, arg3, arg4Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default5<A, B, C, D, E, F, G> extends AbstractSignal7Default4<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default5(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6319,11 +11563,26 @@ public final class QMetaObject {
     	
     	private final Supplier<C> arg3Default;
         
+    	/**
+    	 * Emits the signal with default value for arg3.
+    	 * @param arg1
+    	 * @param arg2
+    	 */
         public void emit(A arg1, B arg2) {
        		emit(arg1, arg2, arg3Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+	 */
     public static abstract class AbstractSignal7Default6<A, B, C, D, E, F, G> extends AbstractSignal7Default5<A, B, C, D, E, F, G> {
     	
     	AbstractSignal7Default6(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6360,11 +11619,26 @@ public final class QMetaObject {
     	
     	private final Supplier<B> arg2Default;
         
+    	/**
+    	 * Emits the signal with default value for arg2.
+    	 * @param arg1
+    	 */
         public void emit(A arg1) {
        		emit(arg1, arg2Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default1<A, B, C, D, E, F, G, H> extends AbstractPublicSignal8<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default1(Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6401,11 +11675,32 @@ public final class QMetaObject {
     	
     	private final Supplier<H> arg8Default;
         
+    	/**
+    	 * Emits the signal with default value for arg8.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 * @param arg7
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default2<A, B, C, D, E, F, G, H> extends AbstractSignal8Default1<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default2(Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6442,11 +11737,31 @@ public final class QMetaObject {
     	
     	private final Supplier<G> arg7Default;
         
+    	/**
+    	 * Emits the signal with default value for arg7.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default3<A, B, C, D, E, F, G, H> extends AbstractSignal8Default2<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default3(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6483,11 +11798,30 @@ public final class QMetaObject {
     	
     	private final Supplier<F> arg6Default;
         
+    	/**
+    	 * Emits the signal with default value for arg6.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default4<A, B, C, D, E, F, G, H> extends AbstractSignal8Default3<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default4(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
@@ -6524,11 +11858,29 @@ public final class QMetaObject {
     	
     	private final Supplier<E> arg5Default;
         
+    	/**
+    	 * Emits the signal with default value for arg5.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4) {
        		emit(arg1, arg2, arg3, arg4, arg5Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default5<A, B, C, D, E, F, G, H> extends AbstractSignal8Default4<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default5(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6565,11 +11917,28 @@ public final class QMetaObject {
     	
     	private final Supplier<D> arg4Default;
         
+    	/**
+    	 * Emits the signal with default value for arg4.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 */
         public void emit(A arg1, B arg2, C arg3) {
        		emit(arg1, arg2, arg3, arg4Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default6<A, B, C, D, E, F, G, H> extends AbstractSignal8Default5<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default6(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Class<?> declaringClass, boolean isDisposedSignal){
@@ -6606,11 +11975,27 @@ public final class QMetaObject {
     	
     	private final Supplier<C> arg3Default;
         
+    	/**
+    	 * Emits the signal with default value for arg3.
+    	 * @param arg1
+    	 * @param arg2
+    	 */
         public void emit(A arg1, B arg2) {
        		emit(arg1, arg2, arg3Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+	 */
     public static abstract class AbstractSignal8Default7<A, B, C, D, E, F, G, H> extends AbstractSignal8Default6<A, B, C, D, E, F, G, H> {
     	
     	AbstractSignal8Default7(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
@@ -6647,11 +12032,27 @@ public final class QMetaObject {
     	
     	private final Supplier<B> arg2Default;
         
+    	/**
+    	 * Emits the signal with default value for arg2.
+    	 * @param arg1
+    	 */
         public void emit(A arg1) {
        		emit(arg1, arg2Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> extends AbstractPublicSignal9<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default1(Supplier<I> arg9Default){
@@ -6688,11 +12089,34 @@ public final class QMetaObject {
     	
     	private final Supplier<I> arg9Default;
         
+    	/**
+    	 * Emits the signal with default value for arg9.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 * @param arg7
+    	 * @param arg8
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default1<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default2(Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6729,11 +12153,33 @@ public final class QMetaObject {
     	
     	private final Supplier<H> arg8Default;
         
+    	/**
+    	 * Emits the signal with default value for arg8.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 * @param arg7
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default3(Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6770,11 +12216,32 @@ public final class QMetaObject {
     	
     	private final Supplier<G> arg7Default;
         
+    	/**
+    	 * Emits the signal with default value for arg7.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 * @param arg6
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default4(Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6811,11 +12278,31 @@ public final class QMetaObject {
     	
     	private final Supplier<F> arg6Default;
         
+    	/**
+    	 * Emits the signal with default value for arg6.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 * @param arg5
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
        		emit(arg1, arg2, arg3, arg4, arg5, arg6Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default5(Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6852,11 +12339,30 @@ public final class QMetaObject {
     	
     	private final Supplier<E> arg5Default;
         
+    	/**
+    	 * Emits the signal with default value for arg5.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 * @param arg4
+    	 */
         public void emit(A arg1, B arg2, C arg3, D arg4) {
        		emit(arg1, arg2, arg3, arg4, arg5Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default6(Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6893,11 +12399,29 @@ public final class QMetaObject {
     	
     	private final Supplier<D> arg4Default;
         
+    	/**
+    	 * Emits the signal with default value for arg4.
+    	 * @param arg1
+    	 * @param arg2
+    	 * @param arg3
+    	 */
         public void emit(A arg1, B arg2, C arg3) {
        		emit(arg1, arg2, arg3, arg4Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default7(Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6934,11 +12458,28 @@ public final class QMetaObject {
     	
     	private final Supplier<C> arg3Default;
         
+    	/**
+    	 * Emits the signal with default value for arg3.
+    	 * @param arg1
+    	 * @param arg2
+    	 */
         public void emit(A arg1, B arg2) {
        		emit(arg1, arg2, arg3Default.get());
         }
     }
     
+	/**
+	 * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+	 */
     public static abstract class AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> {
     	
     	AbstractSignal9Default8(Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
@@ -6975,6 +12516,10 @@ public final class QMetaObject {
     	
     	private final Supplier<B> arg2Default;
         
+    	/**
+    	 * Emits the signal with default value for arg2.
+    	 * @param arg1
+    	 */
         public void emit(A arg1) {
        		emit(arg1, arg2Default.get());
         }

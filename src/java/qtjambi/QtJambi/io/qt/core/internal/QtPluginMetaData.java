@@ -39,8 +39,6 @@ import java.lang.annotation.Target;
  * This annotation specifies meta data for plug-in registration.
  * Either you specify a path to a json file relative to the package path of the class or you give properties as json code.
  * 
- * @author Dr. Peter Droste, Omix Visualization GmbH & Co. KG
- * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

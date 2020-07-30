@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * C++ implementations of SAX and DOM.
+ */
 module qtjambi.xml{
     requires java.base;
     requires transitive qtjambi;

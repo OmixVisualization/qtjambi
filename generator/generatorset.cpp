@@ -39,7 +39,9 @@
 GeneratorSet::GeneratorSet() :
         inDir("."),
         outDir("."),
-        printStdout(false) {}
+        printStdout(false),
+        docsUrl("@docRoot/")
+{}
 
 bool GeneratorSet::readParameters(const QMap<QString, QString> args) {
     if (args.contains("input-directory")) {

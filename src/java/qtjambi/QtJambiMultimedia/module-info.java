@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for audio, video, radio and camera functionality.
+ */
 module qtjambi.multimedia{
     requires java.base;
     requires transitive qtjambi;

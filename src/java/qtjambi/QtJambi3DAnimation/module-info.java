@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * The Qt 3D Animation modules provides a set of prebuilt elements to help you get started with Qt 3D.
+ */
 module qtjambi.qt3danimation{
     requires java.base;
     requires transitive qtjambi;

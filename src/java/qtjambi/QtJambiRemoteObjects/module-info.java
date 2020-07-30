@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides an easy to use mechanism for sharing a QObject's API (Properties/Signals/Slots) between processes or devices.
+ */
 module qtjambi.remoteobjects{
     requires java.base;
     requires transitive qtjambi;

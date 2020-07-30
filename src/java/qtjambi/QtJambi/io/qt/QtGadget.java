@@ -31,6 +31,9 @@ package io.qt;
 
 import io.qt.core.QMetaObject;
 
+/**
+ * Supertype for generic Q_GADGET types.
+ */
 public abstract class QtGadget extends QtObject {
 	
 	@io.qt.internal.NativeAccess
@@ -41,6 +44,9 @@ public abstract class QtGadget extends QtObject {
 		staticMetaObject = null;
 	}
 
+    /**
+     * @return the static meta-object of the gadget.
+     */
 	@io.qt.QtUninvokable
 	public QMetaObject staticMetaObject() {
 		return staticMetaObject;

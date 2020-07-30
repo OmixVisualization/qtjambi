@@ -41,7 +41,7 @@ import io.qt.internal.QtJambiObject;
 public abstract class QtObject extends QtJambiObject{
     
     /**
-     * @exclude
+     * This type is used as solo argument for internal constructors.
      */
     protected static final class QPrivateConstructor { private QPrivateConstructor() {} }
 
@@ -53,7 +53,8 @@ public abstract class QtObject extends QtJambiObject{
 	}
 
     /**
-     * @exclude
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
      */
 	protected QtObject(QPrivateConstructor p) {
 		super(p);

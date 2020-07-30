@@ -138,7 +138,7 @@ void QDocGenerator::writeOverload(QTextStream &s,
 
     uint included_attributes = NoBlockedSlot;
     uint excluded_attributes = 0;
-    setupForFunction(java_function, &included_attributes, &excluded_attributes);
+    setupForFunction(java_function, &included_attributes, &excluded_attributes, NoOption);
 
     if (arg_count < java_function->arguments().size()) {
         // see JavaGenerator::writeFunctionOverloads()
@@ -279,14 +279,14 @@ void QDocGenerator::writeSignal(QTextStream &s, const AbstractMetaFunction *java
 void QDocGenerator::write(QTextStream &s, const AbstractMetaField *java_field) {
     uint included_attributes = NoBlockedSlot;
     uint excluded_attributes = 0;
-    setupForFunction(java_field->getter(), &included_attributes, &excluded_attributes);
+    setupForFunction(java_field->getter(), &included_attributes, &excluded_attributes, NoOption);
     s << "<variablegetter java=\"" << protect(functionSignature(java_field->getter(), included_attributes, excluded_attributes).toUtf8())
     << "\"" << Qt::endl
     << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << Qt::endl;
 
     included_attributes = NoBlockedSlot;
     excluded_attributes = 0;
-    setupForFunction(java_field->setter(), &included_attributes, &excluded_attributes);
+    setupForFunction(java_field->setter(), &included_attributes, &excluded_attributes, NoOption);
     s << "<variablesetter java=\"" << protect(functionSignature(java_field->setter(), included_attributes, excluded_attributes).toUtf8())
     << "\"" << Qt::endl
     << "    cpp=\"" << protect(java_field->name().toUtf8()) << "\" />" << Qt::endl;

@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides support for OAuth-based authorization to online services.
+ */
 module qtjambi.networkauth{
     requires java.base;
     requires transitive qtjambi;

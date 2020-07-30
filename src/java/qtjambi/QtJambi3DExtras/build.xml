@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-qt3dextras"/>
+    <property name="module-name" value="qtjambi.qt3dextras"/>
     <property name="qtjambi-module-name" value="QtJambi3DExtras"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-qt3dcore-${qtjambi.jar.version}.jar qtjambi-qt3drender-${qtjambi.jar.version}.jar qtjambi-qt3dinput-${qtjambi.jar.version}.jar"/>

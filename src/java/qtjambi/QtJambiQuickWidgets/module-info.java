@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides a C++ widget class for displaying a Qt Quick user interface.
+ */
 module qtjambi.quickwidgets{
     requires java.base;
     requires transitive qtjambi;

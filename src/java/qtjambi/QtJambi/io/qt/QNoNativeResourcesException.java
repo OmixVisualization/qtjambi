@@ -51,6 +51,8 @@ package io.qt;
  * <p>
  * If you are encountering this exception, it is likely due to one of
  * the following reasons:
+ * </p>
+ * <ul>
  * <li>The object you are accessing is owned by Qt Jambi
  * and has been destroyed.</li>
  * <li>The object you are accessing is an object created by Qt Jambi and
@@ -59,10 +61,11 @@ package io.qt;
  * references to them.</li>
  * <li>You have manually called dispose() or disposeLater() on the object to delete
  * the native resources.</li>
- * </p>
+ * </ul>
  * <p>
  * It is possible to check if an object has a valid C++ part or not
- * by checking that the value of nativeId() is non-null.
+ * by checking isDisposed().
+ * </p>
  */
 public class QNoNativeResourcesException extends RuntimeException {
     private static final long serialVersionUID = 1L;

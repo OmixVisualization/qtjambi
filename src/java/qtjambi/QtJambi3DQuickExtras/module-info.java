@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Qt3DQuickExtras
+ */
 module qtjambi.qt3dquickextras{
     requires java.base;
     requires transitive qtjambi;

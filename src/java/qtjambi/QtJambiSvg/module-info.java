@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard.
+ */
 module qtjambi.svg{
     requires java.base;
     requires transitive qtjambi;

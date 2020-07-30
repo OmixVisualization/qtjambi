@@ -56,10 +56,14 @@ import io.qt.qml.QtQml;
 
 /**
  * This class allows to automatically load QML types from package.
- * @author Dr. Peter Droste, Omix Visualization GmbH & Co. KG
- *
  */
-public class QmlTypes {
+public final class QmlTypes {
+	
+	static {
+		io.qt.QtUtilities.initializePackage("io.qt.qml");
+	}
+	
+	private QmlTypes() throws java.lang.InstantiationError { throw new java.lang.InstantiationError("Cannot instantiate class QmlTypes."); }
 	
 	private static class QmlClassLoader extends URLClassLoader{
 		public QmlClassLoader() {
@@ -72,14 +76,32 @@ public class QmlTypes {
 	}
 	private static final QmlClassLoader qmlClassLoader = new QmlClassLoader();
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * The package needs to be annotated with {@link QmlImportMajorVersion}.
+	 * @param pkg java package and qml import namespace
+	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available
+	 */
 	public static void registerPackage(Package pkg) {
 		registerPackage(pkg, null);
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * @param pkg java package and qml import namespace
+	 * @param versionMajor major version for qml import
+	 */
 	public static void registerPackage(Package pkg, int versionMajor) {
 		registerPackage(pkg, null, versionMajor);
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * The package needs to be annotated with {@link QmlImportMajorVersion}.
+	 * @param pkg java package
+	 * @param uri qml import namespace
+	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available
+	 */
 	public static void registerPackage(Package pkg, String uri) {
 		QmlImportMajorVersion importMajorVersion = pkg.getAnnotation(QmlImportMajorVersion.class);
 		if(importMajorVersion==null)
@@ -87,6 +109,12 @@ public class QmlTypes {
 		registerPackage(pkg, uri, importMajorVersion.value());
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * @param pkg java package
+	 * @param uri qml import namespace
+	 * @param versionMajor major version for qml import
+	 */
 	public static void registerPackage(Package pkg, String uri, int versionMajor) {
 		if(uri==null)
 			uri = pkg.getName();
@@ -119,10 +147,23 @@ public class QmlTypes {
 		}
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * The package needs to be annotated with {@link QmlImportMajorVersion}.
+	 * @param pkg java package and qml import namespace
+	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available
+	 */
 	public static void registerPackage(String pkg) {
 		registerPackage(pkg, null);
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * The package needs to be annotated with {@link QmlImportMajorVersion}.
+	 * @param pkg java package
+	 * @param uri qml import namespace
+	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available
+	 */
 	public static void registerPackage(String pkg, String uri) {
 		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
 		if(_package==null) {
@@ -164,10 +205,21 @@ public class QmlTypes {
 		registerPackage(_package, uri);
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * @param pkg java package and qml import namespace
+	 * @param versionMajor major version for qml import
+	 */
 	public static void registerPackage(String pkg, int versionMajor) {
 		registerPackage(pkg, null, versionMajor);
 	}
 	
+	/**
+	 * Registers all scriptable classes and qml types in the given package.
+	 * @param pkg java package
+	 * @param uri qml import namespace
+	 * @param versionMajor major version for qml import
+	 */
 	public static void registerPackage(String pkg, String uri, int versionMajor) {
 		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
 		if(_package==null) {
@@ -185,6 +237,14 @@ public class QmlTypes {
 		registerPackage(_package, uri, versionMajor);
 	}
 	
+	/**
+	 * Registers the class as qml scriptable type.
+	 * The class package needs to be annotated with {@link QmlImportMajorVersion}.
+	 * @param type registered class
+	 * @return the new type id
+	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available in the package
+	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
+	 */
 	public static int registerType(Class<? extends QtObjectInterface> type) {
 		if(type.getPackage()==null)
 			throw new QmlTypeRegistrationException("Cannot register classes from default package.");
@@ -194,10 +254,25 @@ public class QmlTypes {
 		return registerType(type, importMajorVersion.value());
 	}
 	
+	/**
+	 * Registers the class as qml scriptable type.
+	 * @param type registered class
+	 * @param versionMajor major version for qml import
+	 * @return the new type id
+	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
+	 */
 	public static int registerType(Class<? extends QtObjectInterface> type, int versionMajor) {
 		return registerType(type, type.getPackage().getName(), versionMajor);
 	}
 	
+	/**
+	 * Registers the class as qml scriptable type.
+	 * @param type registered class
+	 * @param uri qml import namespace
+	 * @param versionMajor major version for qml import
+	 * @return the new type id
+	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
+	 */
 	public static int registerType(Class<? extends QtObjectInterface> type, String uri, int versionMajor) {
 		try {
 			return analyzeType(type, uri, versionMajor);

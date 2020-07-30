@@ -45,8 +45,6 @@
 package io.qt.internal;
 
 /**
- * @exclude
- *
  * Special debugging methods used by autoests which are only available
  * if Qt Jambi is compiled with QTJAMBI_DEBUG_TOOLS defined.
  *

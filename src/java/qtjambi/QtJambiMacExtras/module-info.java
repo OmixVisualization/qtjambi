@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides platform-specific APIs for macOS.
+ */
 module qtjambi.macextras{
     requires java.base;
     requires transitive qtjambi;

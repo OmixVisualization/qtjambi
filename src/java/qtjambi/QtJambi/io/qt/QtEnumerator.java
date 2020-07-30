@@ -37,7 +37,7 @@ import io.qt.internal.NativeAccess;
 /**
  * The QtEnumerator interface servers as a base for all qint32 enums.
  * Its sole purpose is to unify the access to the integer
- * value of enumerators and flags using the value() method.
+ * value of enumerators using the value() method.
  *
  * If you manually implement this class, your implementation must contain a method
  * with the following signature:

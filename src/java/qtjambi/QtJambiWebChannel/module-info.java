@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to QObject or QML objects from HTML clients for seamless integration of Qt applications with HTML/JavaScript clients.
+ */
 module qtjambi.webchannel{
     requires java.base;
     requires transitive qtjambi;

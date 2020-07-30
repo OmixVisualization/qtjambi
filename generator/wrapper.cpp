@@ -110,6 +110,15 @@ void Wrapper::handleArguments() {
     if (args.contains("qt-include-directory"))
         include_directory = args.value("qt-include-directory");
 
+    if (args.contains("qt-doc-directory"))
+        gs->docsDirectory = args.value("qt-doc-directory");
+
+    if (args.contains("qt-doc-url")){
+        gs->docsUrl = args.value("qt-doc-url");
+        if(!gs->docsUrl.endsWith("/"))
+            gs->docsUrl += "/";
+    }
+
     if (args.contains("include-paths")) {        // split on path
         QString arg = args.value("include-paths");
 #if defined(Q_OS_WIN32)

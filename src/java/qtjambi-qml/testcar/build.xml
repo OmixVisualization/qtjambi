@@ -1,7 +1,8 @@
 <project default="build">
     <property name="dir-name" value="testcar"/>
     <property name="module-name" value="io.qt.test.car"/>
-    <property name="module-dir" value="io/qt/test/car"/>
+    <property name="module-dir" value="${module-name}"/>
+    <stringreplace property="module-dir" target="." replacement="/"/>
     <property name="qtjambi-module-name" value="QtJambiQml"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-network-${qtjambi.jar.version}.jar,qtjambi-qml-${qtjambi.jar.version}.jar"/>

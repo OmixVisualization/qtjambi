@@ -30,8 +30,10 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyUser specifies that a property
@@ -41,6 +43,7 @@ import java.lang.annotation.RetentionPolicy;
  * This annotation should be used with the read method of the property.
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyUser {
 	/**
      * The value should be true or false depending on whether the

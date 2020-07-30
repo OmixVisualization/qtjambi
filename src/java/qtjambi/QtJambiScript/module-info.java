@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for making Qt applications scriptable. Deprecated in favor of the QJS* classes in the Qt QML module.
+ */
 module qtjambi.script{
     requires java.base;
     requires transitive qtjambi;

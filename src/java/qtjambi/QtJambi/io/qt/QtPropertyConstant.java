@@ -33,8 +33,10 @@
 
 package io.qt;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyConstant indicates that the property value is constant. 
@@ -44,6 +46,7 @@ import java.lang.annotation.RetentionPolicy;
  * A constant property cannot have a WRITE method or a NOTIFY signal.
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyConstant {
 	/**
      * The value should be true or false depending on whether the

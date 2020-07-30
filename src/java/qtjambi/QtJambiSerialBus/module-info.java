@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to serial industrial bus interface. Currently the module supports the CAN bus and Modbus protocols.
+ */
 module qtjambi.serialbus{
     requires java.base;
     requires transitive qtjambi;

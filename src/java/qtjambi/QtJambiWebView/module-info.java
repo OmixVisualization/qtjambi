@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Displays web content in a QML application by using APIs native to the platform, without the need to include a full web browser stack.
+ */
 module qtjambi.webview{
     requires java.base;
     requires transitive qtjambi;

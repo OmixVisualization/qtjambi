@@ -56,6 +56,7 @@ class Scanner {
             ConstToken,
             VolatileToken,
             Identifier,
+            EllipsisToken,
             NoToken
         };
 
@@ -108,7 +109,11 @@ Scanner::Token Scanner::nextToken() {
                     ++m_pos;
                     break;
                 default:
-                    if (c.isLetterOrNumber() || c == '_')
+                    if (c == '.' && m_pos+2 < m_length && m_chars[m_pos+1] == '.' && m_chars[m_pos+2] == '.'){
+                        ++m_pos;
+                        ++m_pos;
+                        tok = EllipsisToken;
+                    }else if (c.isLetterOrNumber() || c == '_')
                         tok = Identifier;
                     else
                         qFatal("Unrecognized character in lexer: %c", c.toLatin1());
@@ -171,7 +176,9 @@ TypeParser::Info TypeParser::parse(const QString &str) {
     while (tok != Scanner::NoToken) {
 
         switch (tok) {
-
+            case Scanner::EllipsisToken:
+                stack.top()->is_variadics = true;
+                break;
             case Scanner::StarToken:
                 //++stack.top()->indirections;
                 stack.top()->indirections << false;

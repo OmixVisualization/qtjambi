@@ -561,6 +561,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         getProject().log(this, Constants.QT_VERSION + " is " + s + qtVersionSource, Project.MSG_VERBOSE);
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION, s);
         AntUtil.setNewProperty(propertyHelper, Constants.VERSION, s); // this won't overwrite existing value
+        {
+        	File tryPath = new File(new File(new File(QTDIR).getParentFile().getParentFile(), "Docs"), "Qt-"+s);
+    		mySetProperty(-1, Constants.DOCSDIR, " (auto-detected)", tryPath.getAbsolutePath(), false);
+        }
 
         s = String.valueOf(qtMajorVersion);
         getProject().log(this, Constants.QT_VERSION_MAJOR + " is " + s, Project.MSG_VERBOSE);

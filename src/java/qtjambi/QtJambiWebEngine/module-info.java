@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes and functions for embedding web content in applications using the Chromium browser project.
+ */
 module qtjambi.webengine{
     requires java.base;
     requires transitive qtjambi;

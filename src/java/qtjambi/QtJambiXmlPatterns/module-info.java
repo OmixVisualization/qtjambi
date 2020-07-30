@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Support for XPath, XQuery, XSLT and XML schema validation.
+ */
 module qtjambi.xmlpatterns{
     requires java.base;
     requires transitive qtjambi;

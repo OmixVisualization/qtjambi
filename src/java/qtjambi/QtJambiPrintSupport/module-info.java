@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes to make printing easier and more portable.
+ */
 module qtjambi.printsupport{
     requires java.base;
     requires transitive qtjambi;

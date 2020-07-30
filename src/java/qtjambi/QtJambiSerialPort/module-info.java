@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to hardware and virtual serial ports.
+ */
 module qtjambi.serialport{
     requires java.base;
     requires transitive qtjambi;

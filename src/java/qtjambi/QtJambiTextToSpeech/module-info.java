@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides support for accessibility features such as text-to-speech.
+ */
 module qtjambi.texttospeech{
     requires java.base;
     requires transitive qtjambi;

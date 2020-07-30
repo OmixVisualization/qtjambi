@@ -85,7 +85,7 @@
     <enum-type name="QSGRendererInterface::ShaderCompilationType" flags="QSGRendererInterface::ShaderCompilationTypes" since="5.8.0" />
     <enum-type name="QSGRendererInterface::ShaderSourceType" flags="QSGRendererInterface::ShaderSourceTypes" since="5.8.0" />
 
-    <interface-type name="QSGRendererInterface" java-name="QSGRenderer" since="5.8.0">
+    <interface-type name="QSGRendererInterface" since="5.8.0">
         <extra-includes>
             <include file-name="QtCore/QTextCodec" location="global"/>
         </extra-includes>

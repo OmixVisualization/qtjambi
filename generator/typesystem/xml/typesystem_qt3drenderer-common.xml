@@ -552,7 +552,7 @@
     <object-type name="Qt3DRender::QLight" java-name="QLight" until="5.6">
     </object-type>
     <enum-type name="Qt3DRender::QLight::Type" until="5.6"/>
-    <interface-type name="Qt3DRender::PropertyReaderInterface" java-name="PropertyReader">
+    <interface-type name="Qt3DRender::PropertyReaderInterface" java-name="PropertyReaderInterface">
     </interface-type>
     <enum-type name="Qt3DRender::QShaderProgram::Status" since="5.9.0"/>
     <enum-type name="Qt3DRender::QShaderProgram::ShaderType"/>

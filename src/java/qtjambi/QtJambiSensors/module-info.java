@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to sensor hardware and motion gesture recognition.
+ */
 module qtjambi.sensors{
     requires java.base;
     requires transitive qtjambi;

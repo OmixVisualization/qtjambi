@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-serialbus"/>
+    <property name="module-name" value="qtjambi.serialbus"/>
     <property name="qtjambi-module-name" value="QtJambiSerialBus"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar"/>

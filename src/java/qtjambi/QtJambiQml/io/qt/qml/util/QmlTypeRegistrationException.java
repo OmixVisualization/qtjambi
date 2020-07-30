@@ -30,6 +30,9 @@
 
 package io.qt.qml.util;
 
+/**
+ * Is thrown when a class cannot be registered as qml type.
+ */
 public class QmlTypeRegistrationException extends RuntimeException{
 	private static final long serialVersionUID = 4953567883344704791L;
 

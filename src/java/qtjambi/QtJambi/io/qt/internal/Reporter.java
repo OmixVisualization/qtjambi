@@ -137,7 +137,7 @@ public class Reporter {
     /**
      * Extracts the last batch of reports made since the last time
      * this function was called.
-     * @returns The last batch of reprts...
+     * @return The last batch of reports...
      */
     public String recentReports() {
         String batch = buffer.toString();

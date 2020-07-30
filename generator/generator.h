@@ -98,6 +98,7 @@ class Generator : public QObject {
             OptionalScope                   = 0x100000000,
             SkipArray                       = 0x200000000,
             EnumFromInt                     = 0x400000000,
+            InFunctionComment               = 0x800000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };

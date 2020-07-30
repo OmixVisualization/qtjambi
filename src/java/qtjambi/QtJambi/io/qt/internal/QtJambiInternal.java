@@ -2177,10 +2177,6 @@ public class QtJambiInternal {
         ((QtJambiSignals.AbstractSignal) signal_object).addConnection(receiver, method);
     }
 
-    /**
-     * Dunno what to make of this, so I'm making it internal.
-     * @exclude
-     */
     public static void connectSlotsByName(QObject object) {
         List<QObject> children = object.findChildren();
         Class<?> objectClass = object.getClass();
@@ -2203,7 +2199,7 @@ public class QtJambiInternal {
     }
 
     /**
-     * Returns the closest superclass of <tt>obj's</tt> class which
+     * Returns the closest superclass of <code>obj's</code> class which
      * is a generated class, or null if no such class is found. 
      */
     @NativeAccess
@@ -2417,7 +2413,6 @@ public class QtJambiInternal {
      * object.
      * @return A long value which uniquely define the native resources
      * held by this object during their life time.
-     * @exclude
      */
 	public static long nativeId(QtJambiObject object) {
 		if(object!=null && object.nativeLink!=null) {
@@ -2464,7 +2459,6 @@ public class QtJambiInternal {
      * object.
      * @return A long value which uniquely define the native resources
      * held by this object during their life time.
-     * @exclude
      */
     public static long nativeId(QtObjectInterface object) {
     	NativeLink nativeLink = findInterfaceLink(object, true);
@@ -2483,7 +2477,6 @@ public class QtJambiInternal {
      * used when objects created in java are passed to C++ functions
      * that take ownership of the objects. Both the Java and C++ part
      * of the object will then be cleaned up by C++.
-     * @exclude
      */
     public static void setCppOwnership(QtObjectInterface object) {
 		setCppOwnership(nativeId(object));
@@ -2494,7 +2487,6 @@ public class QtJambiInternal {
      *
      * Forces Java ownership of both the Java object and its C++ resources.
      * The C++ resources will be cleaned up when the Java object is finalized.
-     * @exclude
      */
     public static void setJavaOwnership(QtObjectInterface object) {
 		setJavaOwnership(nativeId(object));
@@ -2507,7 +2499,6 @@ public class QtJambiInternal {
      * on objects for which disableGarbageCollection() has previously
      * been called. After calling this function, the object ownership will be
      * reset to default.
-     * @exclude
      */
     public static void setDefaultOwnership(QtObjectInterface object) {
 		setDefaultOwnership(nativeId(object));
@@ -2520,7 +2511,6 @@ public class QtJambiInternal {
      * used when objects created in java are passed to C++ functions
      * that take ownership of the objects. Both the Java and C++ part
      * of the object will then be cleaned up by C++.
-     * @exclude
      */
     public static void setCppOwnership(QtObject object) {
     	setCppOwnership(nativeId(object));
@@ -2531,7 +2521,6 @@ public class QtJambiInternal {
      *
      * Forces Java ownership of both the Java object and its C++ resources.
      * The C++ resources will be cleaned up when the Java object is finalized.
-     * @exclude
      */
     public static void setJavaOwnership(QtObject object) {
     	setJavaOwnership(nativeId(object));
@@ -2544,7 +2533,6 @@ public class QtJambiInternal {
      * on objects for which disableGarbageCollection() has previously
      * been called. After calling this function, the object ownership will be
      * reset to default.
-     * @exclude
      */
     public static void setDefaultOwnership(QtObject object) {
     	setDefaultOwnership(nativeId(object));
@@ -3153,7 +3141,7 @@ public class QtJambiInternal {
     }
     
     public static final class LambdaInfo{
-    	public LambdaInfo(Class<?> ownerClass, Object owner, QObject qobject, boolean isStatic, MethodHandle methodHandle, Method reflectiveMethod, QtJambiSignals.AbstractSignal signal, List<Object> lambdaArgs) {
+    	public LambdaInfo(Class<?> ownerClass, Object owner, QObject qobject, boolean isStatic, MethodHandle methodHandle, Method reflectiveMethod, List<Object> lambdaArgs) {
 			super();
 			this.ownerClass = ownerClass;
 			this.owner = owner;
@@ -3161,7 +3149,6 @@ public class QtJambiInternal {
 			this.isStatic = isStatic;
 			this.methodHandle = methodHandle;
 			this.reflectiveMethod = reflectiveMethod;
-			this.signal = signal;
 			this.lambdaArgs = lambdaArgs;
 		}
 		public final Class<?> ownerClass;
@@ -3170,7 +3157,6 @@ public class QtJambiInternal {
 		public final boolean isStatic;
 		public final MethodHandle methodHandle;
 		public final Method reflectiveMethod;
-		public final QtJambiSignals.AbstractSignal signal;
 		public final List<Object> lambdaArgs;
     }
     
@@ -3183,7 +3169,6 @@ public class QtJambiInternal {
 			Class<?> ownerClass = null;
 			Object owner = null;
 			QObject qobject = null;
-			QtJambiSignals.AbstractSignal signal = null;
 			List<Object> lambdaArgsList = Collections.emptyList();
 			if(methodHandle!=null){
 				reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
@@ -3205,7 +3190,7 @@ public class QtJambiInternal {
 							}
 						}
 					}
-					return new LambdaInfo(ownerClass, owner, qobject, true, methodHandle, reflectiveMethod, signal, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
+					return new LambdaInfo(ownerClass, owner, qobject, true, methodHandle, reflectiveMethod, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
 				}else if(serializedLambda.getCapturedArgCount()>0
 						&& ownerClass.isInstance(serializedLambda.getCapturedArg(0))){
 					if(serializedLambda.getCapturedArg(0) instanceof QObject)
@@ -3216,9 +3201,9 @@ public class QtJambiInternal {
 					for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
 						lambdaArgsList.add(serializedLambda.getCapturedArg(i));
 					}
-					return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod, signal, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
+					return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
 				}else if(serializedLambda.getCapturedArgCount()==0){
-					return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod, signal, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
+					return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod, lambdaArgsList==Collections.emptyList() ? lambdaArgsList : Collections.unmodifiableList(lambdaArgsList));
 				}
 			}
 		}

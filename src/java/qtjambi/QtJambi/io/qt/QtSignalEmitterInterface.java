@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * Interface supertype of all signal emitting types in Qt Jambi.
+ */
 public interface QtSignalEmitterInterface{
 	
 }

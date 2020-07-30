@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for QML and JavaScript languages.
+ */
 module qtjambi.qml{
     requires java.base;
     requires transitive qtjambi;

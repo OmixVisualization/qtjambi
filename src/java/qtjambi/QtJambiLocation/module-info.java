@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Displays map, navigation, and place content in a QML application.
+ */
 module qtjambi.location{
     requires java.base;
     requires transitive qtjambi;

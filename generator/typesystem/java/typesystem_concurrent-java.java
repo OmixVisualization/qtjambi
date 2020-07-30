@@ -218,7 +218,7 @@ class QtConcurrent___ extends QtConcurrent {
     public interface MapFunctor<T> {
     
         /**
-         * This function is called for each item in the Collection. The function is then free to alter <tt>object</tt> as it see fit.
+         * This function is called for each item in the Collection. The function is then free to alter <code>object</code> as it see fit.
          */
         @io.qt.internal.NativeAccess
         public void map(T object);
@@ -272,7 +272,7 @@ class QtConcurrent___ extends QtConcurrent {
         public default U defaultResult() { return null; }
     
         /**
-         *  Performs a reduce operation on <tt>intermediate</tt>. <tt>result</tt> is the result of the reduction.
+         *  Performs a reduce operation on <code>intermediate</code>. <code>result</code> is the result of the reduction.
          */
         @io.qt.internal.NativeAccess
         public void reduce(U result, T intermediate);
@@ -429,14 +429,14 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <U, T> U blockingFilteredReduced(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, int options);
     
     /**
-     * Executes the Callable <tt>callable</tt> through the QtConcurrent framework. The returned QFuture object's result will be the
-     * return value of <tt>callable</tt>.
+     * Executes the Callable <code>callable</code> through the QtConcurrent framework. The returned QFuture object's result will be the
+     * return value of <code>callable</code>.
      */
     public native static <T> QFuture<T> run(java.util.concurrent.Callable<T> callable);
     
     /**
-     * Executes the Callable <tt>callable</tt> through the QtConcurrent framework. The thread is taken from the QThreadPool pool. 
-     * The returned QFuture object's result will be the return value of <tt>callable</tt>.
+     * Executes the Callable <code>callable</code> through the QtConcurrent framework. The thread is taken from the QThreadPool pool. 
+     * The returned QFuture object's result will be the return value of <code>callable</code>.
      */
     public static <T> QFuture<T> run(QThreadPool threadPool, java.util.concurrent.Callable<T> callable){
         return run2(threadPool, callable);
@@ -445,7 +445,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T> QFuture<T> run2(QThreadPool threadPool, java.util.concurrent.Callable<T> callable);
     
     /**
-     * Executes the Runnable <tt>Void</tt> using the QtConcurrent framework.
+     * Executes the Runnable <code>Void</code> using the QtConcurrent framework.
      */
     public static QFutureVoid run(Runnable runnable) {
         return runVoid(runnable);
@@ -453,7 +453,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static QFutureVoid runVoid(Runnable runnable);
     
     /**
-     * Executes the Runnable <tt>Void</tt> using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
+     * Executes the Runnable <code>Void</code> using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static QFutureVoid run(QThreadPool threadPool, Runnable runnable) {
         return runVoid2(threadPool, runnable);

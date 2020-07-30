@@ -31,8 +31,10 @@
 package io.qt;
 
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * QtPropertyScriptable specifies whether a property
@@ -41,6 +43,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface QtPropertyScriptable {
     /**
      * The value should be true or false depending on whether the

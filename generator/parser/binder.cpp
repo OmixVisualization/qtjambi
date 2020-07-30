@@ -280,7 +280,24 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
         applyFunctionSpecifiers(node->function_specifiers, fun);
         if(fun->isDeprecated() && node->deprecationComment){
-            fun->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+            if(node->deprecationComment->literals){
+                QString comment;
+                const ListNode<std::size_t>* front = node->deprecationComment->literals->toFront();
+                const ListNode<std::size_t>* iter = front;
+                do{
+                    const Token &tk = tokenStream()->token(iter->element);
+                    const Token &end_tk = tokenStream()->token(iter->element+1);
+                    QString cmm = QString::fromLatin1(tk.text + int(tk.position), int(end_tk.position - tk.position));
+                    if(cmm.trimmed().startsWith("\"") && cmm.trimmed().endsWith("\"")){
+                        cmm = cmm.trimmed().chopped(1).mid(1);
+                    }
+                    comment += cmm;
+                    iter = iter->next;
+                }while(iter && iter!=front);
+                fun->setDeprecatedComment(comment);
+            }else{
+                fun->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+            }
         }
 
         // build the type
@@ -458,7 +475,24 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     applyFunctionSpecifiers(node->function_specifiers,
                             model_static_cast<FunctionModelItem>(_M_current_function));
     if(_M_current_function->isDeprecated() && node->deprecationComment){
-        _M_current_function->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+        if(node->deprecationComment->literals){
+            QString comment;
+            const ListNode<std::size_t>* front = node->deprecationComment->literals->toFront();
+            const ListNode<std::size_t>* iter = front;
+            do{
+                const Token &tk = tokenStream()->token(iter->element);
+                const Token &end_tk = tokenStream()->token(iter->element+1);
+                QString cmm = QString::fromLatin1(tk.text + int(tk.position), int(end_tk.position - tk.position));
+                if(cmm.trimmed().startsWith("\"") && cmm.trimmed().endsWith("\"")){
+                    cmm = cmm.trimmed().chopped(1).mid(1);
+                }
+                comment += cmm;
+                iter = iter->next;
+            }while(iter && iter!=front);
+            _M_current_function->setDeprecatedComment(comment);
+        }else{
+            _M_current_function->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+        }
     }
 
     _M_current_function->setVariadics(decl_cc.isVariadics());
@@ -868,8 +902,26 @@ void Binder::visitEnumerator(EnumeratorAST *node) {
     updateItemPosition(e->toItem(), node);
     e->setName(decode_symbol(node->id)->as_string());
     e->setDeprecated(node->isDeprecated);
-    if(node->deprecationComment)
-        e->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+    if(node->deprecationComment){
+        if(node->deprecationComment->literals){
+            QString comment;
+            const ListNode<std::size_t>* front = node->deprecationComment->literals->toFront();
+            const ListNode<std::size_t>* iter = front;
+            do{
+                const Token &tk = tokenStream()->token(iter->element);
+                const Token &end_tk = tokenStream()->token(iter->element+1);
+                QString cmm = QString::fromLatin1(tk.text + int(tk.position), int(end_tk.position - tk.position));
+                if(cmm.startsWith("\"") && cmm.endsWith("\"")){
+                    cmm = cmm.chopped(1).mid(1);
+                }
+                comment += cmm;
+                iter = iter->next;
+            }while(iter && iter!=front);
+            e->setDeprecatedComment(comment);
+        }else{
+            e->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+        }
+    }
 
     if (ExpressionAST *expr = node->expression) {
         const Token &start_token = _M_token_stream->token(expr->start_token);

@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for integrating documentation into applications, similar to Qt Assistant.
+ */
 module qtjambi.help{
     requires java.base;
     requires transitive qtjambi;

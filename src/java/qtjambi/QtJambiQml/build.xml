@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-qml"/>
+    <property name="module-name" value="qtjambi.qml"/>
     <property name="qtjambi-module-name" value="QtJambiQml"/>
     <path id="qtjambi.modulepath">
         <fileset dir="${jardir}" includes="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar"/>

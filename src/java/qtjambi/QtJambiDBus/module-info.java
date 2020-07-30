@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for inter-process communication over the D-Bus protocol.
+ */
 module qtjambi.dbus{
     requires java.base;
     requires transitive qtjambi;

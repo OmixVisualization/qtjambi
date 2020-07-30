@@ -105,7 +105,7 @@ class WrongSystemException extends DeploymentSpecException {
  * either right away or at a later time. There are three types of
  * libraries.
  *
- * <ll>
+ * <ul>
  *
  *   <li> System libraries; such as the system runtime
  *   libraries. These libraries are usually loaded automatically by
@@ -119,7 +119,7 @@ class WrongSystemException extends DeploymentSpecException {
  *   the native library manager, but are unpacked into the temporary
  *   folder so that Qt can find and load them from the file system.
  *
- * </ll>
+ * </ul>
  *
  * There are three possible deployment scenarios. The simplest and
  * most straightforward approach is when deploying a Pure Java
@@ -136,14 +136,14 @@ class WrongSystemException extends DeploymentSpecException {
  * The final option for deployment is when users have a C++
  * application which starts and makes use of Qt Jambi. In this case we
  * suggest that all dependent libraries are available in the file
- * system and via <code>-Djava.library.path<code>
+ * system and via <code>-Djava.library.path</code>
  *
  * To get runtime information about how library loading works, specify
  * the <code>-Dio.qt.verbose-loading</code> system property
  * to the Virtual Machine. It possible to specify that the native
  * library manager should load debug versions of libraries as
  * well. This is done by specifying the system property
- * </code>-Dio.qt.debug</code>
+ * <code>-Dio.qt.debug=debug</code>
  *
  */
 public class NativeLibraryManager {
@@ -807,11 +807,11 @@ public class NativeLibraryManager {
      * name for a given platform, so the name "qtjambi" will be
      * expanded like this:
      *
-     * <ll>
+     * <ul>
      *   <li> Windows: qtjambi.dll
      *   <li> Linux / Unix: libqtjambi.so
      *   <li> Mac OS X: libqtjambi.jnilib
-     * </ll>
+     * </ul>
      *
      * When using loading libraries from the filesystem, this method
      * simply calls <code>System.loadLibrary</code>.
@@ -875,16 +875,16 @@ public class NativeLibraryManager {
      * name for a given platform, so the name "QtCore" and version "4" and "5" will be
      * expanded like this:
      *
-     * <ll>
+     * <ul>
      *   <li> Windows: QtCore4.dll
      *   <li> Linux / Unix: libQtCore.so.4
      *   <li> Mac OS X: libQtCore.4.dylib
-     * </ll>
-     * <ll>
+     * </ul>
+     * <ul>
      *   <li> Windows: Qt5Core.dll
      *   <li> Linux / Unix: libQt5Core.so.5
      *   <li> Mac OS X: libQt5Core.5.dylib
-     * </ll>
+     * </ul>
      *
      * When using loading libraries from the filesystem, this method
      * simply calls <code>System.loadLibrary</code>.

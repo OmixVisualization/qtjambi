@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Contains classes that enable 2D and 3D rendering
+ */
 module qtjambi.qt3drender{
     requires java.base;
     requires transitive qtjambi;

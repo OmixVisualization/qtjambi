@@ -68,6 +68,8 @@ class GeneratorSet : public QObject {
         QString javaOutDir;
         QString outDir;
         bool printStdout;
+        QString docsDirectory;
+        QString docsUrl;
 };
 
 #endif // GENERATOR_SET_H

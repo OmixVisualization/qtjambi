@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * A declarative framework for building highly dynamic applications with custom user interfaces.
+ */
 module qtjambi.quick{
     requires java.base;
     requires transitive qtjambi;

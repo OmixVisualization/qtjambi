@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-qt3dinput"/>
+    <property name="module-name" value="qtjambi.qt3dinput"/>
     <property name="qtjambi-module-name" value="QtJambi3DInput"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-qt3dcore-${qtjambi.jar.version}.jar"/>

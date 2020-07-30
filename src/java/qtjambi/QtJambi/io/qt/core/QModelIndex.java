@@ -72,7 +72,7 @@ public final class QModelIndex
      * Queries the model for the parent of this item. This is equivalent to calling
      * <pre>
      * item.model().parent(item);
-     * </re>
+     * </pre>
      * @return The parent index for this model index.
      */
     @io.qt.QtUninvokable

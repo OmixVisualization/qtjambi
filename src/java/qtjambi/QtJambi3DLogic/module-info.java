@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * The Qt 3D Logic module enables synchronizing frames with the Qt 3D backend.
+ */
 module qtjambi.qt3dlogic{
     requires java.base;
     requires transitive qtjambi;

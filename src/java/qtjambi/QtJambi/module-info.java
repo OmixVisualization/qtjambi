@@ -27,6 +27,14 @@
 **
 ****************************************************************************/
 
+/**
+ * <p>QtJambi base module containing QtCore, QtGui and QtWidgets.</p>
+ * <ul>
+ * <li>QtCore - Core non-graphical classes used by other modules.</li>
+ * <li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.</li>
+ * <li>QtWidgets - Classes to extend Qt GUI with C++ widgets.</li>
+ * </ul>
+ */
 module qtjambi{
     requires java.base;
     requires transitive java.logging;
@@ -50,7 +58,7 @@ module qtjambi{
                               qtjambi.websockets,
                               qtjambi.core,
                               qtjambi.multimedia,
-                              qtjambi.quickcontrols2,
+                              qtjambi.quickcontrols,
                               qtjambi.test,
                               qtjambi.macextras,
                               qtjambi.webchannel,

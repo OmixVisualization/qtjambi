@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for unit testing Qt applications and libraries.
+ */
 module qtjambi.test{
     requires java.base;
     requires transitive qtjambi;

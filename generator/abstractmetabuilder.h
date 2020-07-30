@@ -45,6 +45,7 @@
 
 #include <QtCore/QSet>
 #include "typesystem/typedatabase.h"
+#include "docindex/docindexreader.h"
 
 struct Operator;
 
@@ -60,7 +61,7 @@ class AbstractMetaBuilder {
         };
 
         AbstractMetaBuilder();
-        virtual ~AbstractMetaBuilder() {}
+        virtual ~AbstractMetaBuilder();
 
         const AbstractMetaClassList& classes() const { return m_meta_classes; }
         const AbstractMetaFunctionalList& functionals() const { return m_meta_functionals; }
@@ -137,6 +138,7 @@ class AbstractMetaBuilder {
         const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
         void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
+        void setDocDirectory(const QString &docsDir);
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
@@ -189,6 +191,7 @@ class AbstractMetaBuilder {
         QString m_namespace_prefix;
 
         QSet<AbstractMetaClass *> m_setup_inheritance_done;
+        const DocModel* m_docModel;
 
         struct MissingIterator{
             MissingIterator(const IteratorTypeEntry* _iteratorType,

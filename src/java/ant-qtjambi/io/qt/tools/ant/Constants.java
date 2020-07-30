@@ -56,6 +56,7 @@ public abstract class Constants {
     public static final String LIBDIR                   = "qtjambi.qt.libdir";
     public static final String LIBEXECDIR               = "qtjambi.qt.libexecdir";
     public static final String INCLUDEDIR               = "qtjambi.qt.includedir";
+    public static final String DOCSDIR                  = "qtjambi.qt.docdir";
     public static final String PLUGINSDIR               = "qtjambi.qt.pluginsdir";
     public static final String IMPORTSDIR               = "qtjambi.qt.importsdir";
     public static final String QMLMODULESDIR            = "qtjambi.qt.qmlmodulesdir";

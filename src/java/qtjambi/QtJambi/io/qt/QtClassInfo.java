@@ -29,14 +29,15 @@
 ****************************************************************************/
 package io.qt;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Documented
+/**
+ * This annotation is equivalent to the Q_CLASSINFO() macro in C++ Qt.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Repeatable(QtClassInfos.class)

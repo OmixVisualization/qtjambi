@@ -60,10 +60,7 @@ QString strings_jobjectArray = QLatin1String("jobjectArray");
 //static void addRemoveFunctionToTemplates(TypeDatabase *db);
 
 bool TypeDatabase::defined(QString name){
-    if(m_defined){
-        return m_defined(name);
-    }
-    return false;
+    return m_defined && m_defined(name);
 }
 
 void TypeDatabase::setDefined(TypeDatabase::DefinedPtr function){

@@ -132,6 +132,7 @@ void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const 
     if (!outDir.isNull())
         builder.setOutputDirectory(outDir);
     builder.setFeatures(features);
+    builder.setDocDirectory(docsDirectory);
     builder.build();
 }
 
@@ -183,6 +184,7 @@ QString GeneratorSetJava::generate() {
             java_generator->setJavaOutputDirectory(javaOutDir);
         if (!outDir.isNull())
             java_generator->setLogOutputDirectory(outDir);
+        java_generator->setDocsUrl(docsUrl);
         generators << java_generator;
 
         contexts << "JavaGenerator";

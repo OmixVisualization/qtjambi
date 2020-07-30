@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides platform-specific APIs for Windows.
+ */
 module qtjambi.winextras{
     requires java.base;
     requires transitive qtjambi;

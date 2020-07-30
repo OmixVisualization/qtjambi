@@ -294,9 +294,11 @@
     <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
-        <delete file="${destdir}/${module}-${qtjambi.jar.version}.jar" verbose="true"/>
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
+        <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}.jar" verbose="true"/>
         <mkdir dir="${destdir}"/>
-        <jar destfile="${destdir}/${module}-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
+        <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
@@ -321,14 +323,16 @@
         </jar>
     </target>
     <target name="createsrcjar">
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir}"/>
         </antcall>
-        <delete file="${destdir}/${module}-${qtjambi.jar.version}-src.jar"/>
-        <jar destfile="${destdir}/${module}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
+        <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar"/>
+        <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
             </manifest>
@@ -336,6 +340,8 @@
         </jar>
     </target>
     <target name="createsrcjar2">
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
@@ -345,8 +351,8 @@
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir2}"/>
         </antcall>
-        <delete file="${destdir}/${module}-${qtjambi.jar.version}-src.jar"/>
-        <jar destfile="${destdir}/${module}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
+        <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar"/>
+        <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
             </manifest>
@@ -354,6 +360,8 @@
         </jar>
     </target>
     <target name="createsrcjar3">
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
@@ -366,8 +374,8 @@
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir3}"/>
         </antcall>
-        <delete file="${destdir}/${module}-${qtjambi.jar.version}-src.jar"/>
-        <jar destfile="${destdir}/${module}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
+        <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar"/>
+        <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
             </manifest>
@@ -375,6 +383,8 @@
         </jar>
     </target>
     <target name="createsrcjar6">
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
         <property name="destdir" value="${jardir}"/>
         <mkdir dir="${destdir}"/>
@@ -396,8 +406,8 @@
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir6}"/>
         </antcall>
-        <delete file="${destdir}/${module}-${qtjambi.jar.version}-src.jar"/>
-        <jar destfile="${destdir}/${module}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
+        <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar"/>
+        <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
             </manifest>

@@ -45,8 +45,7 @@ import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QWidget;
 
 /**
-This class contains static members that gives information and performs Qt Jambi
-related tasks.
+ * This class contains static members that gives information and performs Qt Jambi related tasks.
 */
 public class QtUtilities {
 	

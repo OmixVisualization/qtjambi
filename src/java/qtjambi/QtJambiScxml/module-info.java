@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides classes and tools for creating state machines from SCXML files and embedding them in applications.
+ */
 module qtjambi.scxml{
     requires java.base;
     requires transitive qtjambi;

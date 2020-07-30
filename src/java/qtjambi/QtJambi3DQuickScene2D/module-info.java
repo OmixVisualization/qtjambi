@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Qt 3D Scene2D Module
+ */
 module qtjambi.qt3dquickscene2d{
     requires java.base;
     requires transitive qtjambi;

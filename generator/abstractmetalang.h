@@ -89,7 +89,7 @@ class AbstractMetaClassList : public  QList<AbstractMetaClass *> {
 
 class AbstractMetaAttributes {
     public:
-        AbstractMetaAttributes() : m_attributes(0) { }
+        AbstractMetaAttributes() : m_attributes(0), m_originalAttributes(0), m_href(), m_brief() { }
 
         enum Attribute {
             None                        = 0x00000000,
@@ -129,7 +129,7 @@ class AbstractMetaAttributes {
 
             Annonymous                  = 0x00200000,
 
-            Deprecated                  = 0x00400000,
+            Deprecated                  = 0x01000000,
 
             Comment                     = 0x00800000,
 
@@ -178,10 +178,16 @@ class AbstractMetaAttributes {
         bool wasProtected() const { return m_originalAttributes & Protected; }
         bool wasPublic() const { return m_originalAttributes & Public; }
         bool wasFriendly() const { return m_originalAttributes & Friendly; }
+        void setHref(const QString& href) {m_href = href;}
+        void setBrief(const QString& brief) {m_brief = brief;}
+        const QString& href() const {return m_href;}
+        const QString& brief() const {return m_brief;}
 
     private:
         uint m_attributes;
         uint m_originalAttributes;
+        QString m_href;
+        QString m_brief;
 };
 
 
@@ -555,7 +561,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         };
 
         AbstractMetaFunction()
-                :
+                :AbstractMetaAttributes(),
                 m_original_name(),
                 m_original_signature(),
                 m_function_type(NormalFunction),
@@ -567,6 +573,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_interface_class(nullptr),
                 m_property_spec(nullptr),
                 m_constant(false),
+                m_variadics(false),
                 m_invalid(false),
                 m_actualMinimumArgumentCount(-1),
                 m_accessedField(nullptr),
@@ -745,6 +752,9 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
         const QString& deprecatedComment() const { return m_deprecatedComment; }
 
+        bool isVariadics() const { return m_variadics; }
+        void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
+
     private:
         QString m_name;
         QString m_original_name;
@@ -763,6 +773,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         AbstractMetaArgumentList m_arguments;
         AbstractMetaTemplateParameterList m_templateParameters;
         uint m_constant          : 1;
+        uint m_variadics         : 1;
         uint m_invalid           : 1;
         mutable int m_actualMinimumArgumentCount;
         const AbstractMetaField *m_accessedField;
@@ -813,7 +824,7 @@ class AbstractMetaEnumValueList : public QList<AbstractMetaEnumValue *> {
 
 class AbstractMetaEnum : public AbstractMetaAttributes {
     public:
-        AbstractMetaEnum() : m_type_entry(nullptr), m_class(nullptr), m_has_qenums_declaration(false) {}
+        AbstractMetaEnum() : AbstractMetaAttributes(), m_type_entry(nullptr), m_class(nullptr), m_has_qenums_declaration(false) {}
 
         const AbstractMetaEnumValueList& values() const { return m_enum_values; }
         void addEnumValue(AbstractMetaEnumValue *enumValue) { m_enum_values << enumValue; }
@@ -849,7 +860,7 @@ class AbstractMetaEnum : public AbstractMetaAttributes {
 
 class AbstractMetaFunctional : public AbstractMetaAttributes {
     public:
-        AbstractMetaFunctional() : m_base_type_name(), m_type_entry(nullptr), m_class(nullptr), m_type(nullptr), m_arguments(), m_isFunctionPointer(false) {}
+        AbstractMetaFunctional() : AbstractMetaAttributes(), m_base_type_name(), m_type_entry(nullptr), m_class(nullptr), m_type(nullptr), m_arguments(), m_isFunctionPointer(false) {}
 
         QString name() const { return m_type_entry->targetLangName(); }
         QString qualifier() const { return m_type_entry->javaQualifier(); }
@@ -930,7 +941,8 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         };
 
         AbstractMetaClass()
-                : m_namespace(false),
+                : AbstractMetaAttributes(),
+                  m_namespace(false),
                 m_qobject(false),
                 m_has_virtuals(false),
                 m_has_nonpublic(false),
@@ -1137,6 +1149,7 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         QPropertySpec *propertySpecForRead(const QString &name) const;
         QPropertySpec *propertySpecForWrite(const QString &name) const;
         QPropertySpec *propertySpecForReset(const QString &name) const;
+        QPropertySpec *propertySpecForNotify(const QString &name) const;
 
         QList<ReferenceCount> referenceCounts() const;
         QList<TemplateInstantiation> templateInstantiations() const;

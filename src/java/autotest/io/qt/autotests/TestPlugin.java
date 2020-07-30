@@ -29,13 +29,17 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.core.QPluginLoader;
+import io.qt.core.QSysInfo;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.core.internal.QtPluginMetaData;
 import io.qt.gui.QGenericPlugin;
@@ -78,6 +82,7 @@ public class TestPlugin extends QApplicationTest {
     
     @Test
     public void testStylePlugin() {
+    	Assume.assumeTrue(QOperatingSystemVersion.currentType()==OSType.Windows || QOperatingSystemVersion.currentType()==OSType.MacOS);
 		QFactoryLoader loader = new QFactoryLoader(QStylePlugin.class, "/styles");
 		Assert.assertFalse(loader.keyMap().isEmpty());
         Assert.assertFalse(loader.keyMap().get(0).isEmpty());

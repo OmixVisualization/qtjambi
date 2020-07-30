@@ -51,7 +51,7 @@ import io.qt.internal.NativeAccess;
 import io.qt.internal.QtJambiInternal;
 
 /**
- * This class manages a set of QtEnumerator values. Each enum value
+ * This class manages a set of QtFlagEnumerator values. Each enum value
  * is treated as a flag that is either set or unset. You can set and
  * clear flags, and query which flags are set.
  */
@@ -61,17 +61,25 @@ public abstract class QFlags<T extends QtFlagEnumerator>
                Cloneable
 {
      /**
-      * Creates a new QFlags where the flags in <tt>args</tt> are set.
+      * Creates a new QFlags where the flags in <code>args</code> are set.
+      * @param args enum entries
       */
      @SafeVarargs
 	 protected QFlags(T ... args) {
          set(args);
      }
      
+     /**
+      * Creates a new QFlags with given <code>value</code>.
+      * @param value
+      */
      protected QFlags(int value) {
          this.value = value;
      }
      
+     /**
+      * Clones the flags
+      */
      @SuppressWarnings("unchecked")
 	 public QFlags<T> clone(){
     	 try {
@@ -81,6 +89,11 @@ public abstract class QFlags<T extends QtFlagEnumerator>
 		}
      }
      
+     /**
+      * Combines this flags with enum entry.
+      * @param flag enum entry
+      * @return new flag
+      */
      public QFlags<T> combined(T flag){
     	 QFlags<T> result = clone();
     	 result.set(flag);
@@ -88,20 +101,29 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      }
 
      /**
-      * Sets the flag <tt>other</tt>
+      * Sets the flag <code>flag</code>
+      * @param other other entry
       */
-     public final void set(QFlags<T> other) {
-         value |= other.value();
+     public final void set(QFlags<T> flag) {
+         value |= flag.value();
      }
      
      /**
-      * Sets the flag <tt>other</tt>
+      * Sets the flag <code>flag</code>
+      * @param flag other entry
+      * @return this
       */
      public QFlags<T> setFlag(T flag) {
     	 value |= flag.value();
     	 return this;
      }
 
+     /**
+      * Sets or clears the flag <code>flag</code>
+      * @param flag other entry
+      * @param on set (true) or clear (false)
+      * @return this
+      */
      public QFlags<T> setFlag(T flag, boolean on) {
     	 if(on)
     		 value |= flag.value();
@@ -111,7 +133,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      }
 
      /**
-      * Sets the flags in <tt>ts</tt>.
+      * Sets the flags in <code>ts</code>.
       */
      @SafeVarargs
 	 public final void set(T ... ts) {
@@ -120,16 +142,18 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      }
 
     /**
-     * Returns true if flag <tt>other</tt> is set; otherwise, returns
-     * false.
+     * Tests if other flags are set.
+     * @param other other flags
+     * @return true if flag <code>other</code> is set
      */
      public final boolean isSet(QFlags<T> other) {
          return (value & other.value()) == other.value();
      }
 
      /**
-      * Returns true if all <tt>ts</tt> flags are set; otherwise,
-      * returns false.
+      * Tests if other flags are set.
+      * @param other other flags
+      * @return true if flag <code>other</code> is set
       */
      @SafeVarargs
 	 public final boolean isSet(T ... ts) {
@@ -141,22 +165,23 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      }
 
      /**
-      * Returns true if flag <tt>other</tt> is set; otherwise, returns
-      * false.
+      * Tests if other flag is set.
+      * @param other other flag
+      * @return true if flag <code>other</code> is set
       */
       public final boolean testFlag(T flag) {
           return (value & flag.value()) == flag.value();
       }
 
      /**
-      * Clears the flag <tt>other</tt>.
+      * Clears the flag <code>other</code>.
       */
      public final void clear(QFlags<T> other) {
          value &= ~other.value();
      }
 
      /**
-      * Clears all flags in <tt>ts</tt>.
+      * Clears all flags in <code>ts</code>.
       *
       */
      @SafeVarargs
@@ -174,6 +199,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
 
      /**
       * Sets the value of this QFlags.
+      * @param value new value
       */
      @NativeAccess
      public final void setValue(int value) {
@@ -182,6 +208,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
 
      /**
       * Returns the value of this QFlags.
+      * @return value
       */
      @NativeAccess
      public final int value() {
@@ -189,7 +216,8 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      }
      
      /**
-      * Returns an unmodifiable set of flag objects represented by this QFlags.
+      * Returns an array of flag objects represented by this QFlags.
+      * @return array of enum entries
       */
 	 public T[] flags() {
 		 return flags(QtJambiInternal.flagConstants(this));
@@ -197,6 +225,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
      
      /**
       * Returns an unmodifiable set of flag objects represented by this QFlags.
+      * @return array of enum entries
       */
      protected final T[] flags(T[] possibleValues){
     	 if(possibleValues==null || possibleValues.length==0)

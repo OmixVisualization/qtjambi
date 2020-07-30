@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Enables Qt applications to support the use of gamepad hardware.
+ */
 module qtjambi.gamepad{
     requires java.base;
     requires transitive qtjambi;

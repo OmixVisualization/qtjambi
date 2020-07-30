@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides public API shared by both modules {@code qtjambi.webengine} and {@code qtjambi.webenginewidgets}.
+ */
 module qtjambi.webenginecore{
     requires java.base;
     requires transitive qtjambi;

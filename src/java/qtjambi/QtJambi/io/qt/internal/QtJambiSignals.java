@@ -1803,9 +1803,8 @@ public abstract class QtJambiSignals {
 	/**
      * QSignalEmitter is a class used internally by Qt Jambi.
      * You should never have to concern yourself with this class.
-     * @exclude
      */
-    public static abstract class AbstractSignal {
+    protected static abstract class AbstractSignal {
     	private byte flags = 0;
     	private AbstractSignalCore core;
 		private Class<?> declaringClass;
@@ -1979,9 +1978,8 @@ public abstract class QtJambiSignals {
 		}
 
         /**
-         * Returns the object containing this signal
-         *
-         * @exclude
+         * Returns the object containing this signal.
+         * @return the signal containing object
          */
         @io.qt.QtUninvokable
         public QtSignalEmitterInterface containingObject() {
@@ -2308,9 +2306,6 @@ public abstract class QtJambiSignals {
             return QtJambiInternal.signalParameters(this);
         }
 
-        /**
-         * @exclude
-         */
         @io.qt.QtUninvokable
         protected synchronized final void emitSignal(final Object ... args) {
         	setInJavaEmission(true);
@@ -3112,8 +3107,6 @@ public abstract class QtJambiSignals {
 
         /**
          * Returns the object containing this signal
-         *
-         * @exclude
          */
         @io.qt.QtUninvokable
         public QtSignalEmitterInterface containingObject() {
@@ -3498,7 +3491,6 @@ public abstract class QtJambiSignals {
 
     /**
      * Contains book holding info about a single connection
-     * @exclude
      */
     private static class MetaMethodConnection extends AbstractConnection<WeakReference<Object>>{
         public final QMetaMethod slot;
@@ -3530,7 +3522,6 @@ public abstract class QtJambiSignals {
 
     /**
      * Contains book holding info about a single connection
-     * @exclude
      */
     private static abstract class AbstractReflectiveConnection<O> extends AbstractConnection<O>{
         public final Method slot;

@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * The Qt 3D Input module provides classes for handling user input in applications using Qt3D.
+ */
 module qtjambi.qt3dinput{
     requires java.base;
     requires transitive qtjambi;

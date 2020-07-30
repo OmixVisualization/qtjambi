@@ -872,7 +872,7 @@ public class MetaObjectTools {
     
     /**
      * This method is used from inside the native qtjambi method
-     * <tt>QtJambiTypeManager::resolveQFlags(const QString &amp;, const QString &amp;) const</tt>
+     * <code>QtJambiTypeManager::resolveQFlags(const QString &amp;, const QString &amp;) const</code>
      * @param cls a QFlags class
      * @return the type argument
      */

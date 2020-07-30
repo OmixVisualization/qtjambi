@@ -65,7 +65,9 @@ public class GeneratorTask extends Task {
     private String dir;
     private String options;
     private String qtIncludeDirectory;
-    private String qtLibDirectory;
+    private String qtDocDirectory;
+    private String qtDocUrl;
+	private String qtLibDirectory;
     private String qtBinDirectory;
     private String jambiDirectory;
     private String generatorDirectory;
@@ -184,6 +186,15 @@ public class GeneratorTask extends Task {
         	// replace path separator since linux/mac does not accept semicolon
         	commandList.add("--qt-include-directory=" + qtIncludeDirectory);
         }
+        
+        if(qtDocDirectory != null){
+        	// replace path separator since linux/mac does not accept semicolon
+        	commandList.add("--qt-doc-directory=" + qtDocDirectory);
+        }
+        
+        if(qtDocUrl != null) {
+			commandList.add("--qt-doc-url=" + qtDocUrl);
+        }
 
         // --input-directory: Don't test the value exists, since it might be a pathSeparator
         // spec, or just test each part and warn (not fail) when something does not exist
@@ -282,7 +293,7 @@ public class GeneratorTask extends Task {
         File dirExecute = null;
         if(dir != null)
             dirExecute = new File(dir);
-        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File("generator.out.txt"), new File("generator.err.txt"));
+        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File("build/generator/out/generator.out.txt"), new File("build/generator/out/generator.err.txt"));
     }
 
     public void setHeader(String header) {
@@ -311,7 +322,15 @@ public class GeneratorTask extends Task {
     public void setQtIncludeDirectory(String dir) {
         this.qtIncludeDirectory = dir;
     }
+    
+    public void setQtDocDirectory(String dir) {
+        this.qtDocDirectory = dir;
+    }
 
+	public void setQtDocUrl(String qtDocUrl) {
+		this.qtDocUrl = qtDocUrl;
+	}
+	
     /**
      * Used for LD_LIBRARY_PATH assurance only.
      */

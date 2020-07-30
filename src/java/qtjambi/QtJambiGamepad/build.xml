@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-gamepad"/>
+    <property name="module-name" value="qtjambi.gamepad"/>
     <property name="qtjambi-module-name" value="QtJambiGamepad"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar"/>

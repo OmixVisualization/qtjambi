@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Qt3DQuick Contains classes used for implementing QML functionality into Qt3D applications.
+ */
 module qtjambi.qt3dquick{
     requires java.base;
     requires transitive qtjambi;

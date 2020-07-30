@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes for writing multi-threaded programs without using low-level threading primitives.
+ */
 module qtjambi.concurrent{
     requires java.base;
     requires transitive qtjambi;

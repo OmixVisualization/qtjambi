@@ -15,6 +15,8 @@
                 typesystem="${generatorDir}/targets/build_all.xml"
                 header="${generatorDir}/targets/qtjambi_masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
+                qtdocdirectory="${qtjambi.qt.docdir}"
+                qtdocurl="${qt.docs}"
                 qtlibdirectory="${tools.qt.libdir}"
                 qtbindirectory="${tools.qt.bindir}"
                 targetJavaVersion="${target.java.version}"
@@ -30,6 +32,7 @@
          Only the cross platform settings are included in generator element
          above since QtJambi does not appear to need full header file
          qualification.
+          jdoc-enabled
       -->
 
     <target name="tools.generator.qmake" depends="init.build">

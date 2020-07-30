@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to Bluetooth hardware.
+ */
 module qtjambi.bluetooth{
     requires java.base;
     requires transitive qtjambi;

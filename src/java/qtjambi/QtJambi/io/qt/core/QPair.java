@@ -50,7 +50,7 @@ import io.qt.internal.NativeAccess;
 
 /**
   * QPair keeps two generic values. They are public with the names
-  * <tt>first</tt> and <tt>second</tt>.
+  * <code>first</code> and <code>second</code>.
   *
   */
 public class QPair <T, S> implements Cloneable {
@@ -75,7 +75,7 @@ public class QPair <T, S> implements Cloneable {
     /**
      * Returns true if this pair is the same as the other pair. If any
      * of the first or second members are null the result is false regardless.
-     * @param The other parameter
+     * @param o The other parameter
      * @return True if they are equal.
      */
     @Override

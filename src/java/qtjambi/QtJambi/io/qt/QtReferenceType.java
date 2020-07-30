@@ -29,6 +29,7 @@
 ****************************************************************************/
 package io.qt;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -37,6 +38,7 @@ import java.lang.annotation.Target;
 /**
  * This annotation marks a slot parameter to be non-const reference type.
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE_USE)
 public @interface QtReferenceType {

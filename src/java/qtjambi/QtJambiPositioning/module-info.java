@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides access to position, satellite and area monitoring classes.
+ */
 module qtjambi.positioning{
     requires java.base;
     requires transitive qtjambi;

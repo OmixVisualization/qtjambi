@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Provides platform-specific APIs for X11.
+ */
 module qtjambi.x11extras{
     requires java.base;
     requires transitive qtjambi;

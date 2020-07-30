@@ -30,6 +30,7 @@
 package io.qt;
 
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,6 +41,7 @@ import java.lang.annotation.Target;
  * can be accessed by QMetaMethod. The default is true.
  *
  */
+@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD})
 public @interface QtInvokable {

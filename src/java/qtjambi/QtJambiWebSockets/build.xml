@@ -1,5 +1,5 @@
 <project default="build">
-    <property name="module-name" value="qtjambi-websockets"/>
+    <property name="module-name" value="qtjambi.websockets"/>
     <property name="qtjambi-module-name" value="QtJambiWebSockets"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar"/>

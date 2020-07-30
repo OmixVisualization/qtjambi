@@ -2135,15 +2135,15 @@ class QWidget;
         <modify-function signature="setWmWindowTypeIdentifier()" remove="all"/>
         <modify-function signature="setWmWindowRoleIdentifier()" remove="all"/>
         <modify-function signature="setWmWindowIconTextIdentifier()" remove="all"/>
-        <modify-function signature="setParentRelativeBackPixmapIdentifier()" remove="all"/>
-        <modify-function signature="requestSystemTrayWindowDockIdentifier()" remove="all"/>
-        <modify-function signature="systemTrayWindowGlobalGeometryIdentifier()" remove="all"/>
+        <!--modify-function signature="setParentRelativeBackPixmapIdentifier()" remove="all"/-->
+        <!--modify-function signature="requestSystemTrayWindowDockIdentifier()" remove="all"/-->
+        <!--modify-function signature="systemTrayWindowGlobalGeometryIdentifier()" remove="all"/-->
         <modify-function signature="visualIdIdentifier()" remove="all"/>
-        <modify-function signature="setParentRelativeBackPixmap(const QWindow*)">
+        <!--modify-function signature="setParentRelativeBackPixmap(const QWindow*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
-        </modify-function>
+        </modify-function-->
         <modify-function signature="setWmWindowIconText(QWindow*,QString)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>

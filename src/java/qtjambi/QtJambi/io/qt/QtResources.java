@@ -44,20 +44,23 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * Access utility class to the QtJambi &quot;classpath:&quot; resource system.
+ */
 public final class QtResources {
 
 	private QtResources() {}
 
 	/**
-     * Adds <tt>path</tt> to the set of paths in which Qt Jambi should search for resources. 
-     * Resources can be accessed using the "classpath:" scheme.
+     * Adds <code>path</code> to the set of paths in which Qt Jambi should search for resources. 
+     * Resources can be accessed using the &quot;classpath:&quot; scheme.
      */
 	public static void addSearchPath(String path) {
         io.qt.internal.fileengine.QClassPathResourceManager.addSearchPath(path);
     }
     
     /**
-     * Removes <tt>path</tt> from the set of paths in which Qt Jambi searches
+     * Removes <code>path</code> from the set of paths in which Qt Jambi searches
      * for resources.
      */
 	public static void removeSearchPath(String path) {

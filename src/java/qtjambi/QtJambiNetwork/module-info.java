@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Classes to make network programming easier and more portable.
+ */
 module qtjambi.network{
     requires java.base;
     requires transitive qtjambi;

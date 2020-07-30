@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+/**
+ * Enables in-app purchase of products in Qt applications.
+ */
 module qtjambi.purchasing{
     requires java.base;
     requires transitive qtjambi;
