@@ -46,16 +46,14 @@ public class TestQmlPlugin extends QApplicationTest{
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
 		String prefix = io.qt.QtUtilities.qtPrefix();
-		if(System.getProperty("io.qt.debug", "").equals("debug")) {
-	        if(new QDir(prefix+"/debug/qml").exists()) {
-	        	qmlengine.addImportPath(prefix+"/qml");
-	        }
-		}else {
-			if(new QDir(prefix+"/release/qml").exists()) {
-	        	qmlengine.addImportPath(prefix+"/qml");
-	        }
+		if(new QDir(prefix+"/qml").exists()) {
+			qmlengine.addImportPath(prefix+"/qml");
 		}
-        qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/qml");
+		if(System.getProperty("io.qt.debug", "").equals("debug")) {
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/qml");
+		}else {
+			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/release/qml");
+		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);
 		QObject car = component.create();
