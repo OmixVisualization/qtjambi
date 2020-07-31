@@ -59,6 +59,7 @@ public class LibraryEntry extends Task {
     public static final String TYPE_QTJAMBI            = "qtjambi";
     public static final String TYPE_QTJAMBI_JNI        = "qtjambi-jni";
     public static final String TYPE_QTJAMBI_PLUGIN     = "qtjambi-plugin";
+    public static final String TYPE_QTJAMBI_QML        = "qtjambi-qml";
     public static final String TYPE_PLUGIN_JAR         = "plugin-jar";
     public static final String TYPE_UNVERSIONED_PLUGIN = "unversioned-plugin";
 
@@ -211,6 +212,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_QML.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -233,6 +235,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_QML.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -327,6 +330,10 @@ public class LibraryEntry extends Task {
         		name += ".jar";
 //        		this.setAbsolutePath(libInfix);
         		break;
+        	case TYPE_QTJAMBI_QML:
+                // MacOSX: uses *.dylib and _debug suffix
+                name = formatQtJambiQmlPluginName(name, debug, dsoVersion);
+                break;
         	case TYPE_QTJAMBI_PLUGIN:
                 // MacOSX: uses *.dylib and _debug suffix
                 name = formatQtJambiPluginName(name, debug, dsoVersion);
@@ -819,6 +826,43 @@ public class LibraryEntry extends Task {
             	 }else{
             		 return name + ".dll";
             	 }
+             case MacOS:
+                return "lib" + name + ".dylib";
+             case Android:
+             case Solaris:
+             case Linux:
+             case FreeBSD:
+                return "lib" + name + ".so";
+             case IOS: return "lib" + name + ".a";
+ 			default:
+				break;
+             }
+         }
+         throw new BuildException("unhandled case...");
+    }
+
+    public static String formatQtJambiQmlPluginName(String name, boolean debug, String versionString) {
+//        String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
+         if(debug) {
+            String tmpDebugSuffix = "_debug";
+             switch(OSInfo.crossOS()) {
+             case Windows:
+        		 return name + "d.dll";
+             case MacOS:
+                return "lib" + name + tmpDebugSuffix + ".dylib";
+             case Android:
+             case Solaris:
+             case Linux:
+             case FreeBSD:
+                return "lib" + name + tmpDebugSuffix + ".so";
+             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
+ 			default:
+				break;
+             }
+         } else {
+             switch(OSInfo.crossOS()) {
+             case Windows:
+        		 return name + ".dll";
              case MacOS:
                 return "lib" + name + ".dylib";
              case Android:
