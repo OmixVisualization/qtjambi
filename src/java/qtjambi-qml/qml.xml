@@ -299,7 +299,7 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.${qtjambi.version.bundle}dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.${qtjambi.version.bundle}.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </then>
                     <else>
                         <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport.${qtjambi.version.bundle}.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
