@@ -181,7 +181,7 @@
         <library name="libicudata"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicudata"/>
         <library name="libicuuc"                  dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicuuc"/>
         <library name="libicui18n"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="lib" if="qtjambi.libicui18n"/>
-        <library name="jarimport"                 dsoVersion="" type="dso" rootPath="${qtjambi.jambi.libdir}" destSubdir="qml/QtJambi" if="qtjambi.qml.true"/>
+        <library name="jarimport"                 dsoVersion="" type="qt" rootPath="${qtjambi.jambi.libdir}" destSubdir="qml/QtJambi" if="qtjambi.qml.true"/>
 
         <!-- QtJambi Libraries -->
         <library name="QtJambi"                   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="lib" if="qtjambi.core.true"/>
