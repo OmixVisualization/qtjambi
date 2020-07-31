@@ -4526,98 +4526,97 @@ class QObject___ extends QObject {
     }
     
     /**
-     * Creates a connection of the given @param type from the @param signal in
-     * the @param sender object to the @param method in the @param receiver object.
-     * Returns a handle to the connection that can be used to disconnect
-     * it later.
+     * <p>Creates a connection of the given <i>type</i> from the <i>signal</i> in
+     * the <i>sender</i> object to the <i>method</i> in the <i>receiver</i> object.</p>
+     * <p>Returns a handle to the connection that can be used to disconnect
+     * it later.</p>
      * 
      * <p><code>
-     * QLabel label = new QLabel();
-     * QScrollBar scrollBar = new QScrollBar();
-     * QObject.connect(scrollBar, "valueChanged(int)", label,  "setNum(int)");
+     * QLabel label = new QLabel();<br>
+     * QScrollBar scrollBar = new QScrollBar();<br>
+     * QObject.connect(scrollBar, "valueChanged(int)", label,  "setNum(int)");<br>
      * </code></p>
      * 
-     * This example ensures that the label always displays the current
+     * <p>This example ensures that the label always displays the current
      * scroll bar value. Note that the signal and slots parameters must not
      * contain any variable names, only the type. E.g. the following would
-     * not work and return false:
+     * not work and throw {@link QNoSuchSignalException}/{@link QNoSuchSlotException}:</p>
      * 
      * <p><code>
      * QObject.connect(scrollBar, "valueChanged(int value)", label,  "setNum(int value)");
      * </code></p>
      * 
-     * A signal can also be connected to another signal:
+     * <p>A signal can also be connected to another signal:</p>
      * 
      * <p><code>
-     * public class MyWidget extends QWidget
-     * {
-     *     public final Signal0 buttonClicked = new Signal0();
-     * 
-     *     public MyWidget(){
-     *         myButton = new QPushButton(this);
-     *         connect(myButton, "clicked()", this, "buttonClicked()");
-     *     }
-     * 
-     *     private QPushButton myButton;
+     * public class MyWidget extends QWidget {<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public final Signal0 buttonClicked = new Signal0();<br>
+     * <br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public MyWidget(){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;myButton = new QPushButton(this);<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;connect(myButton, "clicked()", this, "buttonClicked()");<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * <br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;private QPushButton myButton;<br>
      * }
      * </code></p>
      * 
-     * or alternatively:
+     * <p>or alternatively:</p>
      * 
      * <p><code>
      * clicked.connect(myButton.buttonClicked);
      * </code></p>
      * 
-     * In this example, the @code MyWidget constructor relays a signal from
+     * <p>In this example, the <i>MyWidget</i> constructor relays a signal from
      * a private member variable, and makes it available under a name
-     * that relates to @code MyWidget.
+     * that relates to <i>MyWidget</i>.</p>
      * 
-     * A signal can be connected to many slots and signals. Many signals
-     * can be connected to one slot.
+     * <p>A signal can be connected to many slots and signals. Many signals
+     * can be connected to one slot.</p>
      * 
-     * If a signal is connected to several slots, the slots are activated
+     * <p>If a signal is connected to several slots, the slots are activated
      * in the same order in which the connections were made, when the
-     * signal is emitted.
+     * signal is emitted.</p>
      * 
-     * In case the connection was successfully initialized the function returns 
+     * <p>In case the connection was successfully initialized the function returns 
      * a QMetaObject.Connection that represents a handle to this connection. 
      * The connection handle will be invalid
      * if it cannot create the connection, for example, if QObject is unable
-     * to verify the existence of either @param signal or @param method, or if their
+     * to verify the existence of either <i>signal</i> or <i>method</i>, or if their
      * signatures aren't compatible.
-     * In this case, the function returns null.
+     * In this case, the function returns null.</p>
      * 
-     * By default, a signal is emitted for every connection you make;
+     * <p>By default, a signal is emitted for every connection you make;
      * two signals are emitted for duplicate connections. You can break
      * all of these connections with a single disconnect() call.
-     * If you pass the Qt.ConnectionType.UniqueConnection @param type, the connection will only
+     * If you pass the Qt.ConnectionType.UniqueConnection <i>type</i>, the connection will only
      * be made if it is not a duplicate. If there is already a duplicate
      * (exact same signal to the exact same slot on the same objects),
-     * the connection will fail and connect will return null.
+     * the connection will fail and connect will return null.</p>
      * 
-     * Note: Qt.ConnectionType.UniqueConnections do not work for lambdas; 
-     * they only apply to connecting to member functions.
+     * <p>Note: Qt.ConnectionType.UniqueConnections do not work for lambdas; 
+     * they only apply to connecting to member functions.</p>
      * 
-     * The optional @param type parameter describes the type of connection
+     * <p>The optional <i>type</i> parameter describes the type of connection
      * to establish. In particular, it determines whether a particular
      * signal is delivered to a slot immediately or queued for delivery
      * at a later time. If the signal is queued, the parameters must be
      * of types that are known to Qt's meta-object system, because Qt
      * needs to copy the arguments to store them in an event behind the
      * scenes. If you try to use a queued connection and get the error
-     * message
+     * message</p>
      * 
      * <p><code>
      * QObject::connect: Cannot queue arguments of type 'MyType'
      * (Make sure 'MyType' is registered using qRegisterMetaType().)
      * </code></p>
      * 
-     * call QMetaType.qRegisterMetaType() to register the data type before you
-     * establish the connection.
+     * <p>call {@link QMetaType#registerMetaType(Class)} to register the data type before you
+     * establish the connection.</p>
      * 
      * @see #disconnect()
      * @see #sender()
-     * @see QMetaType#qRegisterMetaType()
+     * @see QMetaType#registerMetaType(Class)
      */
     public static QMetaObject.Connection connect(QObject sender, String signal, QObject receiver, String slot, Qt.ConnectionType... connectionType) {
         if(signal.isEmpty())
@@ -4640,17 +4639,17 @@ class QObject___ extends QObject {
     }
     
     /**
-     * Creates a connection of the given <code>type</code> from the <code>signal</code> in
+     * <p>Creates a connection of the given <code>type</code> from the <code>signal</code> in
      * the <code>sender</code> object to the <code>method</code> in the <code>receiver</code> object.
-     * Returns a handle to the connection that can be used to disconnect it later.
+     * Returns a handle to the connection that can be used to disconnect it later.</p>
      *
-     * The Connection handle will be invalid  if it cannot create the
+     * <p>The Connection handle will be invalid  if it cannot create the
      * connection, for example, the parameters were invalid.
-     * You can check if a QMetaObject.Connection is returned.
+     * You can check if a QMetaObject.Connection is returned.</p>
      *
-     * This function works in the same way as
+     * <p>This function works in the same way as
      * {@link #connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)}
-     * but it uses QMetaMethod to specify signal and method.
+     * but it uses QMetaMethod to specify signal and method.</p>
      *
      * @see #connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)
      */
@@ -4677,15 +4676,15 @@ class QObject___ extends QObject {
     }
     
     /**
-     * Disconnects <i>signal</i> in object sender from method in object
+     * <p>Disconnects <i>signal</i> in object sender from method in object
      * <i>receiver</i>. Returns <code>true</code> if the connection is successfully broken;
-     * otherwise returns <code>false</code>.
+     * otherwise returns <code>false</code>.</p>
      * 
-     * A signal-slot connection is removed when either of the objects
-     * involved are destroyed.
+     * <p>A signal-slot connection is removed when either of the objects
+     * involved are destroyed.</p>
      * 
-     * disconnect() is typically used in three ways, as the following
-     * examples demonstrate.
+     * <p>disconnect() is typically used in three ways, as the following
+     * examples demonstrate.</p>
      * <ol>
      * <li>Disconnect everything connected to an object's signals:
      * 
@@ -4713,24 +4712,24 @@ class QObject___ extends QObject {
      * </li>
      * </ol>
      * 
-     * 0 may be used as a wildcard, meaning "any signal", "any receiving
-     * object", or "any slot in the receiving object", respectively.
+     * <p>0 may be used as a wildcard, meaning "any signal", "any receiving
+     * object", or "any slot in the receiving object", respectively.</p>
      * 
-     * The <i>sender</i> may never be 0. (You cannot disconnect signals from
-     * more than one object in a single call.)
+     * <p>The <i>sender</i> may never be 0. (You cannot disconnect signals from
+     * more than one object in a single call.)</p>
      * 
-     * If <i>signal</i> is 0, it disconnects <i>receiver</i> and <i>method</i> from
-     * any signal. If not, only the specified signal is disconnected.
+     * <p>If <i>signal</i> is 0, it disconnects <i>receiver</i> and <i>method</i> from
+     * any signal. If not, only the specified signal is disconnected.</p>
      * 
-     * If <i>receiver</i> is 0, it disconnects anything connected to
+     * <p>If <i>receiver</i> is 0, it disconnects anything connected to
      * <i>signal</i>. If not, QMetaObject.Slots in objects other than <i>receiver</i> are not
-     * disconnected.
+     * disconnected.</p>
      * 
-     * If <i>method</i> is 0, it disconnects anything that is connected to
+     * <p>If <i>method</i> is 0, it disconnects anything that is connected to
      * <i>receiver</i>. If not, only slots named <i>method</i> will be disconnected,
      * and all other slots are left alone. The <i>method</i> must be 0 if 
      * <i>receiver</i> is left out, so you cannot disconnect a
-     * specifically-named slot on all objects.
+     * specifically-named slot on all objects.</p>
      * 
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
@@ -4754,16 +4753,16 @@ class QObject___ extends QObject {
     }
     
     /**
-     * Disconnects <i>signal</i> in object <i>sender</i> from <i>method</i> in object
+     * <p>Disconnects <i>signal</i> in object <i>sender</i> from <i>method</i> in object
      * <i>receiver</i> receiver. Returns <code>true</code> if the connection is successfully broken;
-     * otherwise returns <code>false</code>.
+     * otherwise returns <code>false</code>.</p>
      *
-     * This function provides the same possibilities like
+     * <p>This function provides the same possibilities like
      * {@link #disconnect(QObject, String, QObject, String)}
-     * but uses QMetaMethod to represent the signal and the method to be disconnected.
+     * but uses QMetaMethod to represent the signal and the method to be disconnected.</p>
      *
-     * Additionally this function returns false and no signals and slots disconnected
-     * if:
+     * <p>Additionally this function returns false and no signals and slots disconnected
+     * if:</p>
      * <ol>
      *
      *      <li><i>signal</i> is not a member of sender class or one of its parent classes.</li>
@@ -4774,9 +4773,9 @@ class QObject___ extends QObject {
      *
      * </ol>
      *
-     * QMetaMethod() may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
+     * <p><code>null</code> may be used as wildcard in the meaning "any signal" or "any slot in receiving object".
      * In the same way 0 can be used for <i>receiver</i> in the meaning "any receiving object". In this case
-     * method should also be QMetaMethod(). <i>sender</i> parameter should be never 0.
+     * method should also be <code>null</code>. <i>sender</i> parameter should be never 0.</p>
      *
      * @see #disconnect(QObject, String, QObject, String)
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
@@ -4798,10 +4797,10 @@ class QObject___ extends QObject {
     }
     
     /**
-     * Disconnect a connection.
+     * <p>Disconnect a connection.</p>
      * 
-     * If the connection is invalid or has already been disconnected, do nothing
-     * and return false.
+     * <p>If the connection is invalid or has already been disconnected, do nothing
+     * and return false.</p>
      * @param connection the connection
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      * 

@@ -47,16 +47,16 @@ import io.qt.internal.QtJambiInternal;
  * <code>
  * private static class SurfaceObject extends QObject implements QSurface{<br>
  * <br>
- * &nbsp;   // parameter parent is for QObject constructor<br>
- * &nbsp;   // parameter type is for QSurface constructor<br>
- * &nbsp;   public SurfaceObject(QObject parent, SurfaceClass type){<br>
- * &nbsp;       super((QPrivateConstructor)null);<br>
- * &nbsp;       // we need to use the private constructor and initialize the native portion of the object otherwise:<br>
- * &nbsp;       QtUtilities.initializeNativeObject(this,<br>
- * &nbsp;                                          QtArgument.begin(QObject.class).add(parent)<br>
- * &nbsp;                                                    .begin(QSurface.class).add(type)<br>
- * &nbsp;                                          );<br>
- * &nbsp;   }<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;// parameter parent is for QObject constructor<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;// parameter type is for QSurface constructor<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;public SurfaceObject(QObject parent, SurfaceClass type){<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;super((QPrivateConstructor)null);<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// we need to use the private constructor and initialize the native portion of the object otherwise:<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QtUtilities.initializeNativeObject(this,<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;QtArgument.begin(QObject.class).add(parent)<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.begin(QSurface.class).add(type)<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
  * }
  * </code>
  * 
