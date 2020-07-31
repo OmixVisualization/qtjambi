@@ -187,7 +187,7 @@
             <then>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="release"/>
-                    <param name="libisdebug" value="true"/>
+                    <param name="libisdebug" value="false"/>
                 </antcall>
                 <antcall target="createjarimpl">
                     <param name="subdir" value="debug"/>
