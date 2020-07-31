@@ -181,7 +181,7 @@ Further options:
     <target name="generator" depends="log, generator.make, generator.run"
         description="Compiles and runs the Qt Jambi Generator."/>
 
-    <target name="library.native" depends="log, library.native.bundle"
+    <target name="library.native" depends="log, library.native.compile, library.native.bundle"
         description="Compiles and bundles the Qt Jambi native libraries."/>
 
     <target name="library.java" depends="log, library.java.bundle"
