@@ -77,9 +77,8 @@
   </target>
   
   <target name="library.native.bundle.platformjar">
-    <condition property="qsqljdbc.true">
+    <condition property="qsqljdbc.true" value="true" else="false">
         <and>
-            <istrue value="${qtjambi.sql.true}" />
             <available file="${jardir}/plugins/qtjambi/qsqljdbc.jar"/>
         </and>
     </condition>

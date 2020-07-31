@@ -16,7 +16,6 @@ QT += core qml
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 
-TARGET = $$QTJAMBILIB
 macx:{
     QMAKE_EXTENSION_SHLIB = dylib
 }
@@ -24,7 +23,6 @@ macx:{
 win32*:{
         CONFIG(debug, debug|release) {
             QTJAMBI_QML_LIB_NAME = QtJambiQml_debug$$QT_MAJOR_VERSION
-            TARGET = $$member(TARGET, 0)d
         }else{
             QTJAMBI_QML_LIB_NAME = QtJambiQml$$QT_MAJOR_VERSION
         }
