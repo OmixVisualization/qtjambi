@@ -26,39 +26,8 @@
   <target name="library.native.compile" depends="library.native.qmake" description="Compiles the C++ Qt Jambi library">
       <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
   </target>
-  
-  <target name="library.native.bundle.solo" depends="init.build">
-    <if>
-        <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
-        <then>
-            <antcall target="library.native.bundle.release"/>
-            <antcall target="library.native.bundle.debug"/>
-        </then>
-      </if>
 
-      <if>
-        <equals arg1="${qtjambi.configuration}" arg2="release" />
-        <then>
-            <antcall target="library.native.bundle.release"/>
-        </then>
-      </if>
-
-      <if>
-        <equals arg1="${qtjambi.configuration}" arg2="test" />
-        <then>
-            <antcall target="library.native.bundle.release"/>
-        </then>
-      </if>
-
-      <if>
-        <equals arg1="${qtjambi.configuration}" arg2="debug" />
-        <then>
-            <antcall target="library.native.bundle.debug"/>
-        </then>
-      </if>
-  </target>
-
-  <target name="library.native.bundle" depends="library.native.compile" description="Creates a .jar file file containing native libraries.">
+  <target name="library.native.bundle" depends="init.build" description="Creates a .jar file file containing native libraries.">
       <if>
         <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
         <then>
@@ -616,14 +585,8 @@
         stylesheetfile="${basedir}/docstyle.css"
         sourcefiles="${java.source.files.flat}">
           <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
-			<doctitle><![CDATA[
-						<table border="0" width="100%">
-						<tr>
-						<td align="center"><h1>QtJambi ${qtjambi.version.bundle} Reference Documentation</h1></td>
-						</tr>
-						</table>
-					]]></doctitle>
-			<bottom><![CDATA[
+			<doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+            <bottom><![CDATA[
 						<font size="-2">QtJambi Reference Documentation<br>
                         The documentation provided herein is licensed under the terms of the 
                         <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>

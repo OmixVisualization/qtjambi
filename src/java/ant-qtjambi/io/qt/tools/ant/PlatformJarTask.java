@@ -1125,7 +1125,7 @@ public class PlatformJarTask extends Task {
 
                 for(LibraryEntry change : libs) {
                     if(LibraryEntry.TYPE_FILE.equals(change.getType()) 
-                            || LibraryEntry.TYPE_PLUGIN_JAR.equals(with.getType()) 
+                            || LibraryEntry.TYPE_PLUGIN_JAR.equals(change.getType()) 
                             || LibraryEntry.TYPE_FILESET.equals(change.getType())){
                         // never perform install_name_tool on files like "qmldir"
                         continue;

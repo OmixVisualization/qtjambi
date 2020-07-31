@@ -1744,26 +1744,29 @@ void CppImplGenerator::write(QTextStream &s, const AbstractMetaClass *java_class
 }
 
 void CppImplGenerator::generateFake(const AbstractMetaClass * java_class) {
-    if(!java_class->enums().isEmpty()){
-        QString fileName = fileNameForClass(java_class);
-        FileOut fileOut(resolveOutputDirectory() + "/" + subDirectoryForClass(java_class) + "/" + fileName);
-        QTextStream &s = fileOut.stream;
-        s << "#include <QtCore/QMetaType>" << Qt::endl
-          << "#include <QtCore/QDataStream>" << Qt::endl
-          << "#include <qtjambi/qtjambi_registry.h>" << Qt::endl
-          << "#include <qtjambi/qtjambi_templates.h>" << Qt::endl;
-        QSet<QString> included;
-        included << "<QtCore/QMetaType>"
-                 << "<QtCore/QDataStream>"
-                 << "<qtjambi/qtjambi_registry.h>"
-                 << "<qtjambi/qtjambi_templates.h>";
-        for(AbstractMetaEnum *cpp_enum : java_class->enums()){
-            writeInclude(s, cpp_enum->typeEntry()->include(), included);
+    for(AbstractMetaEnum *_enum : java_class->enums()){
+        if(_enum->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp){
+            QString fileName = fileNameForClass(java_class);
+            FileOut fileOut(resolveOutputDirectory() + "/" + subDirectoryForClass(java_class) + "/" + fileName);
+            QTextStream &s = fileOut.stream;
+            s << "#include <QtCore/QMetaType>" << Qt::endl
+              << "#include <QtCore/QDataStream>" << Qt::endl
+              << "#include <qtjambi/qtjambi_registry.h>" << Qt::endl
+              << "#include <qtjambi/qtjambi_templates.h>" << Qt::endl;
+            QSet<QString> included;
+            included << "<QtCore/QMetaType>"
+                     << "<QtCore/QDataStream>"
+                     << "<qtjambi/qtjambi_registry.h>"
+                     << "<qtjambi/qtjambi_templates.h>";
+            for(AbstractMetaEnum *cpp_enum : java_class->enums()){
+                writeInclude(s, cpp_enum->typeEntry()->include(), included);
+            }
+            s << Qt::endl;
+            writeMetaInfo(s, java_class, QMultiMap<int,AbstractMetaFunction *>(), QList<const AbstractMetaFunction *>(), QList<QString>(), QMap<QString,QList<const AbstractMetaFunction*>>(), false);
+            QString pro_file_name = MetaInfoGenerator::subDirectoryForClass(java_class, MetaInfoGenerator::CppDirectory) + "/generated.pri";
+            priGenerator->addSource(pro_file_name, fileNameForClass(java_class));
+            break;
         }
-        s << Qt::endl;
-        writeMetaInfo(s, java_class, QMultiMap<int,AbstractMetaFunction *>(), QList<const AbstractMetaFunction *>(), QList<QString>(), QMap<QString,QList<const AbstractMetaFunction*>>(), false);
-        QString pro_file_name = MetaInfoGenerator::subDirectoryForClass(java_class, MetaInfoGenerator::CppDirectory) + "/generated.pri";
-        priGenerator->addSource(pro_file_name, fileNameForClass(java_class));
     }
 }
 
@@ -9657,7 +9660,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *ow
     const QString qtEnumName = entry->qualifiedCppName();
     const QString javaEnumName = [owner,entry]()->QString{
         if(owner){
-            if(owner->typeEntry()->targetLangName()=="package_global"){
+            if(owner->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
                 if(owner->typeEntry()->javaPackage().isEmpty()){
                     return entry->targetLangName();
                 }else{
@@ -9684,7 +9687,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const AbstractMetaClass *ow
             const QString qtFlagName = fentry->qualifiedCppName();
             const QString javaFlagName = [owner,fentry]()->QString{
                 if(owner){
-                    if(owner->typeEntry()->targetLangName()=="package_global"){
+                    if(owner->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
                         if(owner->typeEntry()->javaPackage().isEmpty()){
                             return fentry->targetLangName();
                         }else{

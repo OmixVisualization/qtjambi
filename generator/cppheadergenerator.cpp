@@ -385,7 +385,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                     const QString qtEnumName = entry->qualifiedCppName();
                     const QString javaEnumName = [java_class,entry]()->QString{
                         if(java_class){
-                            if(java_class->typeEntry()->targetLangName()=="package_global"){
+                            if(java_class->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
                                 if(java_class->typeEntry()->javaPackage().isEmpty()){
                                     return entry->targetLangName();
                                 }else{
@@ -406,7 +406,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                         const QString qtFlagName = fentry->qualifiedCppName();
                         const QString javaFlagName = [java_class,fentry]()->QString{
                             if(java_class){
-                                if(java_class->typeEntry()->targetLangName()=="package_global"){
+                                if(java_class->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
                                     if(java_class->typeEntry()->javaPackage().isEmpty()){
                                         return fentry->targetLangName();
                                     }else{
