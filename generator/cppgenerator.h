@@ -84,7 +84,12 @@ public:
                && !java_class->isFake();
     }
 
-    bool shouldGenerate(const AbstractMetaFunctional *) const { return true; /*functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp;*/ }
+    bool shouldGenerate(const AbstractMetaFunctional *functional) const {
+        if(functional->enclosingClass()){
+            return shouldGenerate(functional->enclosingClass());
+        }
+        return true; /*functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp;*/
+    }
 
     static QString shellClassName(const AbstractMetaClass *java_class) {
         if(java_class->typeEntry()->designatedInterface()){

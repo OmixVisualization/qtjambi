@@ -901,7 +901,23 @@ bool AbstractMetaBuilder::build() {
                     meta_class->setHref(cls->href());
                     meta_class->setBrief(cls->brief());
                     for(AbstractMetaFunction * meta_function : meta_class->functions()){
-                        QList<const DocFunction*> functions = cls->getFunctions(meta_function->originalName());
+                        const DocClass* _cls = cls;
+                        if(meta_function->declaringClass()!=meta_class){
+                            const DocClass* __cls = m_docModel->getClass(meta_function->declaringClass()->qualifiedCppName());
+                            if(!__cls){
+                                QStringList qualifiedCppName = meta_function->declaringClass()->qualifiedCppName().split("::");
+                                if(!qualifiedCppName.isEmpty()){
+                                    if(qualifiedCppName.last().startsWith("QtJambi")){
+                                        qualifiedCppName.last().replace("QtJambi", "Q");
+                                        __cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                                    }
+                                }
+                            }
+                            if(__cls){
+                                _cls = __cls;
+                            }
+                        }
+                        QList<const DocFunction*> functions = _cls->getFunctions(meta_function->originalName());
                         for(const DocFunction* function : functions){
                             if(meta_function->isConstant()==function->isConst()
                                     && meta_function->isStatic()==function->isStatic()
@@ -943,7 +959,7 @@ bool AbstractMetaBuilder::build() {
                             }
                         }
                         if(meta_function->href().isEmpty() && meta_function->brief().isEmpty() && meta_function->propertySpec()){
-                                if(const DocProperty* prop = cls->getProperty(meta_function->propertySpec()->name())){
+                                if(const DocProperty* prop = _cls->getProperty(meta_function->propertySpec()->name())){
                                     meta_function->setHref(prop->href());
                                     meta_function->setBrief(prop->brief());
                                 }
@@ -3419,16 +3435,16 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
             return false;
         }
         if(base_class->isInterface()){
-            setupInheritance(const_cast<AbstractMetaClass *>(base_class->extractInterfaceImpl()));
+            setupInheritance(const_cast<AbstractMetaClass *>(base_class)->extractInterfaceImpl());
             if(!meta_class->interfaces().contains(base_class))
                 meta_class->addInterface(base_class);
         }else{
             setupInheritance(base_class);
             meta_class->setBaseClass(base_class);
             if(meta_class->typeEntry()->designatedInterface()
-                    && meta_class->extractInterface()
+                    && const_cast<AbstractMetaClass *>(meta_class)->extractInterface()
                     && base_class->typeEntry()->designatedInterface()
-                    && base_class->extractInterface()){
+                    && const_cast<AbstractMetaClass *>(base_class)->extractInterface()){
                 if(!meta_class->extractInterface()->interfaces().contains(base_class->extractInterface()))
                     meta_class->extractInterface()->addInterface(base_class->extractInterface());
             }
@@ -3462,7 +3478,7 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
             }
 
             if(base_class->isInterface()){
-                setupInheritance(const_cast<AbstractMetaClass *>(base_class->extractInterfaceImpl()));
+                setupInheritance(const_cast<AbstractMetaClass *>(base_class)->extractInterfaceImpl());
                 if(!meta_class->interfaces().contains(base_class)){
                     meta_class->addInterface(base_class);
                 }
@@ -3488,9 +3504,9 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
             }else{
                 setupInheritance(base_class);
                 if(meta_class->typeEntry()->designatedInterface()
-                        && meta_class->extractInterface()
+                        && const_cast<AbstractMetaClass *>(meta_class)->extractInterface()
                         && base_class->typeEntry()->designatedInterface()
-                        && base_class->extractInterface()){
+                        && const_cast<AbstractMetaClass *>(base_class)->extractInterface()){
                     if(!meta_class->extractInterface()->interfaces().contains(base_class->extractInterface())){
                         meta_class->extractInterface()->addInterface(base_class->extractInterface());
                     }

@@ -2991,7 +2991,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *ja
             commentStream << Qt::endl;
         writeDeprecatedComment(commentStream, java_function);
     }
-    if(!comment.trimmed().isEmpty()){
+    if(!comment.trimmed().isEmpty() && (option & InFunctionComment)==0){
         s << INDENT << "/**" << Qt::endl;
         commentStream.seek(0);
         while(!commentStream.atEnd()){
@@ -3476,8 +3476,14 @@ void JavaGenerator::writeEnumOverload(QTextStream &s, const AbstractMetaFunction
                                       uint include_attributes, uint exclude_attributes, Option _option) {
     const AbstractMetaArgumentList& arguments = java_function->arguments();
 
-    if ((java_function->implementingClass() != java_function->declaringClass())
-            || ((!java_function->isNormal() && !java_function->isConstructor()) || java_function->isEmptyFunction() || java_function->isAbstract())) {
+    const AbstractMetaClass *decl_class = java_function->declaringClass();
+    if ((java_function->implementingClass() != decl_class
+         && java_function->implementingClass()->baseClass()
+         && (decl_class->isInterface()
+             ? java_function->implementingClass()->baseClass()->inheritsFromInterface(decl_class)
+             : java_function->implementingClass()->baseClass()->inheritsFrom(decl_class)))
+            ||
+             ((!java_function->isNormal() && !java_function->isConstructor()) || java_function->isEmptyFunction() || java_function->isAbstract())) {
         return ;
     }
 
@@ -3627,15 +3633,16 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFun
         uint include_attributes, uint exclude_attributes, Option _option, const QString& alternativeFunctionName) {
     const AbstractMetaArgumentList& arguments = java_function->arguments();
 
-    QString comment;
-    QTextStream commentStream(&comment);
-
     // We only create the overloads for the class that actually declares the function
     // unless this is an interface, in which case we create the overloads for all
     // classes that directly implement the interface.
     const AbstractMetaClass *decl_class = java_function->declaringClass();
 
-    if (decl_class != java_function->implementingClass())
+    if (java_function->implementingClass() != decl_class
+         && java_function->implementingClass()->baseClass()
+         && (decl_class->isInterface()
+            ? java_function->implementingClass()->baseClass()->inheritsFromInterface(decl_class)
+            : java_function->implementingClass()->baseClass()->inheritsFrom(decl_class)))
         return;
 
     // Figure out how many functions we need to write out,
@@ -3655,6 +3662,9 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const AbstractMetaFun
         }
     }
     for (int i = 0; i < argumentCounts.size(); ++i) {
+        QString comment;
+        QTextStream commentStream(&comment);
+
         int used_arguments = argumentCounts[i];
 
         uint option = uint(_option);

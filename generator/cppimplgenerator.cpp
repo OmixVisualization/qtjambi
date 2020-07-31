@@ -5580,25 +5580,26 @@ void CppImplGenerator::writeJavaToQt(QTextStream &s,
         bool written = false;
         AbstractMetaEnum *java_enum = nullptr;
         if (java_type->isEnum()) {
-            java_enum = m_classes.findEnum(static_cast<const EnumTypeEntry *>(java_type->typeEntry()));
-            if (java_enum && (!java_enum->isPublic() || (option & EnumAsInts)==EnumAsInts)) {
+            const EnumTypeEntry * enumType = static_cast<const EnumTypeEntry *>(java_type->typeEntry());
+            java_enum = m_classes.findEnum(enumType);
+            if ((java_enum && !java_enum->isPublic()) || (option & EnumAsInts)==EnumAsInts) {
                 if((option & OptionalScope) == OptionalScope){
                     s << INDENT << "if(" << qtjambi_scope << " && !" << qt_name << "){" << Qt::endl;
-                    s << INDENT << "    qint" << java_enum->typeEntry()->size() << "* _" << qt_name << " = new qint" << java_enum->typeEntry()->size() << ";" << Qt::endl;
+                    s << INDENT << "    qint" << enumType->size() << "* _" << qt_name << " = new qint" << enumType->size() << ";" << Qt::endl;
                     s << INDENT << "    " << qt_name << " = _" << qt_name << ";" << Qt::endl;
                     s << INDENT << "    " << qtjambi_scope << "->addFinalAction([_" << qt_name << "](){delete _" << qt_name << ";});" << Qt::endl;
                     s << INDENT << "}" << Qt::endl;
                     s << INDENT << "if(!" << qt_name << ")" << Qt::endl << INDENT << "    return ConvertResponse::NotSuccessful;" << Qt::endl;
-                    s << INDENT << "*reinterpret_cast<qint" << java_enum->typeEntry()->size() << "*>(" << qt_name << ") = ";
+                    s << INDENT << "*reinterpret_cast<qint" << enumType->size() << "*>(" << qt_name << ") = ";
                 }else if((option & DirectReturn) == DirectReturn){
                     s << INDENT << "return ";
                 }else if((option & NoTmpVariable) == NoTmpVariable){
                     if(!qt_name.isEmpty())
                         s << INDENT << qt_name << " = ";
                 }else{
-                    s << INDENT << "qint" << java_enum->typeEntry()->size() << " " << qt_name << " = ";
+                    s << INDENT << "qint" << enumType->size() << " " << qt_name << " = ";
                 }
-                s << "qtjambi_cast<qint" << java_enum->typeEntry()->size() << ">(" << __jni_env << ", " << java_name << ")";
+                s << "qtjambi_cast<qint" << enumType->size() << ">(" << __jni_env << ", " << java_name << ")";
                 written = true;
             }
         }

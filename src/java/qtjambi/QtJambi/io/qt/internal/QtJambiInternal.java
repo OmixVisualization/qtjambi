@@ -3704,7 +3704,7 @@ public class QtJambiInternal {
 		private static native String qtTypeName(long native__id);
 		
 		QtJambiMemberAccess<?> getMemberAccess(Class<?> interfaceClass) {
-			return null;
+			throw new RuntimeException("Requesting member access of non-interface object is not permitted.");
 		}
 
 		void initialize(QtJambiObject obj) {
