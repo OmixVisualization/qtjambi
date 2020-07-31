@@ -266,10 +266,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/qmake-qtjambi/bin/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${outputDir}/qmake-qtjambi/bin/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/qmake-qtjambi/bin/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${outputDir}/qmake-qtjambi/bin/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </else>
                 </if>
             </then>
@@ -283,10 +283,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport.so.${qtjambi.version.bundle}" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.so.${qtjambi.version.bundle}" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.so.${qtjambi.version.bundle}" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport.so.${qtjambi.version.bundle}" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </else>
                 </if>
             </then>
@@ -299,10 +299,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport.${qtjambi.version.bundle}dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.${qtjambi.version.bundle}dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport_debug.${qtjambi.version.bundle}.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${outputDir}/qmake-qtjambi/lib/libjarimport.${qtjambi.version.bundle}.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </else>
                 </if>
             </then>
