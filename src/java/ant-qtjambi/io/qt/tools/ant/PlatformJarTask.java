@@ -44,9 +44,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.tools.ant.BuildException;
@@ -1102,14 +1104,8 @@ public class PlatformJarTask extends Task {
         File change_lib_paths = new File(outdir, "change_lib_paths.sh");
         try(PrintWriter stream = new PrintWriter(change_lib_paths)){
             stream.println("#!/bin/sh");
-            String cmd[] = new String[] {
-                "install_name_tool",
-                "-change",
-                null,       // Old install name
-                null,       // new install name
-                null        // library to update...
-            };
-
+            HashMap<String, List<String>> changes = new HashMap<>();
+            
             for(LibraryEntry with : libs) {
                 if(LibraryEntry.TYPE_PLUGIN.equals(with.getType()) 
                         || LibraryEntry.TYPE_FILE.equals(with.getType()) 
@@ -1130,62 +1126,68 @@ public class PlatformJarTask extends Task {
                         // never perform install_name_tool on files like "qmldir"
                         continue;
                     }
-                    String changeDestSubdir = change.getDestSubdir();
-                    String changeSubdir = change.getSubdir();
-                    StringBuilder builder = createDotDots(Util.pathCanon(new String[] { changeDestSubdir, changeSubdir }, "/"));
-                    String withDestSubdir = with.getDestSubdir();
-                    if(withDestSubdir != null)
-                        builder.append(withDestSubdir);
-                    String withSubdir = with.getSubdir();
-                    if(withSubdir == null)
-                        withSubdir = "";
-                    if("X".isEmpty()) {
-                        getProject().log(this, " change.Name       =  " + change.getName(), Project.MSG_VERBOSE);
-                        getProject().log(this, " change.Subdir     =  " + changeSubdir, Project.MSG_VERBOSE);
-                        getProject().log(this, " change.DestSubdir =  " + change.getDestSubdir(), Project.MSG_VERBOSE);
-                        getProject().log(this, " with.destSubdir   =  " + withDestSubdir, Project.MSG_VERBOSE);
-                        getProject().log(this, " with.Subdir       =  " + withSubdir, Project.MSG_VERBOSE);
-                        getProject().log(this, " with.Name         =  " + with.getName(), Project.MSG_VERBOSE);
+                    
+                    String to;
+                    String targetPath;
+                    {
+	                    String changeDestSubdir = change.getDestSubdir();
+	                    String changeSubdir = change.getSubdir();
+	                    StringBuilder builder = createDotDots(Util.pathCanon(new String[] { changeDestSubdir, changeSubdir }, "/"));
+	                    String withDestSubdir = with.getDestSubdir();
+	                    if(withDestSubdir != null)
+	                        builder.append(withDestSubdir);
+	                    String withSubdir = with.getSubdir();
+	                    if(withSubdir == null)
+	                        withSubdir = "";
+	                    if("X".isEmpty()) {
+	                        getProject().log(this, " change.Name       =  " + change.getName(), Project.MSG_VERBOSE);
+	                        getProject().log(this, " change.Subdir     =  " + changeSubdir, Project.MSG_VERBOSE);
+	                        getProject().log(this, " change.DestSubdir =  " + change.getDestSubdir(), Project.MSG_VERBOSE);
+	                        getProject().log(this, " with.destSubdir   =  " + withDestSubdir, Project.MSG_VERBOSE);
+	                        getProject().log(this, " with.Subdir       =  " + withSubdir, Project.MSG_VERBOSE);
+	                        getProject().log(this, " with.Name         =  " + with.getName(), Project.MSG_VERBOSE);
+	                    }
+	    //                File withTarget = new File(withSubdir, with.getName());
+	                    targetPath = Util.pathCanon(new String[] { changeDestSubdir, changeSubdir, change.getResolvedName() }, "/"); //change.relativePath();
+	                    String resolvedWithSubdir = resolveWithSubdir(builder.toString(), targetPath);
+	                    if(resolvedWithSubdir != null)
+	                        builder = new StringBuilder(resolvedWithSubdir);
+	                    if(builder.length() > 0)
+	                        builder.append("/");
+	                    builder.append(with.getResolvedName());
+	                    builder.insert(0, "@loader_path/");
+	                    to = builder.toString();
                     }
-    //                File withTarget = new File(withSubdir, with.getName());
-                    String targetPath = Util.pathCanon(new String[] { changeDestSubdir, changeSubdir, change.getResolvedName() }, "/"); //change.relativePath();
-                    String resolvedWithSubdir = resolveWithSubdir(builder.toString(), targetPath);
-                    if(resolvedWithSubdir != null)
-                        builder = new StringBuilder(resolvedWithSubdir);
-                    if(builder.length() > 0)
-                        builder.append("/");
-                    builder.append(with.getResolvedName());
-                    builder.insert(0, "@loader_path/");
 
-                    cmd[3] = builder.toString();
-                    cmd[4] = targetPath;
+                    List<String> commands = changes.get(targetPath);
+                    if(commands==null) {
+                    	commands = new ArrayList<>();
+                    	commands.add("install_name_tool");
+                    	changes.put(targetPath, commands);
+                    }
 
+                    String from;
                     // only name, when Qt is configured with -no-rpath
                     if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType())){
-                        cmd[2] = "@rpath/"+with.getName();
+                        from = "@rpath/"+with.getName();
                     }else{
-                        cmd[2] = with.getName();
+                        from = with.getName();
                     }
+                    
+                    commands.add("-change");
+                    commands.add(from);
+                    commands.add(to);
 
                     //getProject().log(this, " exec " + Arrays.toString(cmd) + " in " + outdir, Project.MSG_INFO);
-                    print(stream, cmd);//Exec.exec(cmd, outdir, getProject(), false);
-                    if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType()) && cmd[2].endsWith("_debug")){
-                        cmd[2] = cmd[2].substring(0, cmd[2].length()-6);
-                        //getProject().log(this, " exec " + Arrays.toString(cmd) + " in " + outdir, Project.MSG_INFO);
-                        print(stream, cmd);//Exec.exec(cmd, outdir, getProject(), false);
+                    if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType()) && from.endsWith("_debug")){
+                        from = from.substring(0, from.length()-6);
+                        commands.add("-change");
+                        commands.add(from);
+                        commands.add(to);
                     }
-
-                    // CHECKME: Is this needed since we started to use soname.major when deploying ?
-                    // full path, when Qt is configured with rpath
-                    if("libqtjambi.jnilib".equals(with.getName()))
-                        cmd[2] = "libqtjambi.1.jnilib";
-                    else if("libQt3D.dylib".equals(with.getName()))
-                        cmd[2] = "libQt3D.1.dylib";
-                    else if("libQt3DQuick.dylib".equals(with.getName()))
-                        cmd[2] = "libQt3DQuick.1.dylib";
-                    else
-                        cmd[2] = with.absoluteSourcePath();
-                    print(stream, cmd);//Exec.exec(cmd, outdir, getProject(), false);
+                    commands.add("-change");
+                    commands.add(with.absoluteSourcePath());
+                    commands.add(to);
                 }
                 
                 if(LibraryEntry.TYPE_QT.equals(with.getType())){
@@ -1215,18 +1217,26 @@ public class PlatformJarTask extends Task {
                                         builder.append("@loader_path/");
                                         builder.append(suffix);
                                         builder.append(with.getResolvedName());
-                                        cmd[3] = builder.toString();
-                                        cmd[4] = file.getAbsolutePath();
-                                        if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType())){
-                                            cmd[2] = "@rpath/"+with.getName();
-                                        }else{
-                                            cmd[2] = with.getName();
+                                        List<String> commands = changes.get(file.getAbsolutePath());
+                                        if(commands==null) {
+                                        	commands = new ArrayList<>();
+                                        	commands.add("install_name_tool");
+                                        	changes.put(file.getAbsolutePath(), commands);
                                         }
-                                        print(stream, cmd);//Exec.exec(cmd, outdir, getProject(), false);
-                                        if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType()) && cmd[2].endsWith("_debug")){
-                                            cmd[2] = cmd[2].substring(0, cmd[2].length()-6);
-                                            //getProject().log(this, " exec " + Arrays.toString(cmd) + " in " + outdir, Project.MSG_INFO);
-                                            print(stream, cmd);//Exec.exec(cmd, outdir, getProject(), false);
+                                        commands.add("-change");
+                                        String from;
+                                        if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType())){
+                                        	from = "@rpath/"+with.getName();
+                                        }else{
+                                        	from = with.getName();
+                                        }
+                                        commands.add(from);
+                                        commands.add(builder.toString());
+                                        if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType()) && from.endsWith("_debug")){
+                                        	from = from.substring(0, from.length()-6);
+                                            commands.add("-change");
+                                            commands.add(from);
+                                            commands.add(builder.toString());
                                         }
                                     }
                                 }
@@ -1239,16 +1249,25 @@ public class PlatformJarTask extends Task {
                         }
                     }
                 }
-                
-                if(useQtFrameworks && LibraryEntry.TYPE_QT.equals(with.getType())){
-                    print(stream,
-                            new String[] {
-                                "install_name_tool",
-                                "-id",
-                                with.getResolvedName(),
-                                "lib/"+with.getResolvedName()
-                            });
-                }
+            }
+            
+            for(Map.Entry<String, List<String>> entry : changes.entrySet()) {
+            	entry.getValue().add(entry.getKey());
+            	print(stream, entry.getValue().toArray(String[]::new));
+            }
+            
+            if(useQtFrameworks) {
+	            for(LibraryEntry with : libs) {
+	            	if(LibraryEntry.TYPE_QT.equals(with.getType())){
+	                    print(stream,
+	                            new String[] {
+	                                "install_name_tool",
+	                                "-id",
+	                                with.getResolvedName(),
+	                                "lib/"+with.getResolvedName()
+	                            });
+	                }
+	            }
             }
         }
         catch ( Exception e )

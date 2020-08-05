@@ -194,7 +194,7 @@ public class LibraryEntry extends Task {
                 debug = Boolean.FALSE;
         }
         String condition;
-        if(Boolean.TRUE.equals(debug)){
+        if(Boolean.TRUE.equals(debug) && !LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())){
             if(conditionProperty.endsWith(".true")){
                 conditionProperty = conditionProperty.substring(0, conditionProperty.length()-5)+".debug.true";
             }else{

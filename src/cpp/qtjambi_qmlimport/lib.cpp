@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qplugin.h>
+#include <qtjambi_qml/qtjambi_jarimport.h>
 
 QT_PLUGIN_METADATA_SECTION
 static constexpr unsigned char qt_pluginMetaData[] = {
@@ -48,8 +48,6 @@ static constexpr unsigned char qt_pluginMetaData[] = {
     'o',  'r',  't',
     0xff,
 };
-
-extern "C" QObject* qtjambi_qml_create_jarimport(quintptr);
 
 Q_EXTERN_C Q_DECL_EXPORT
 const char *qt_plugin_query_metadata()
