@@ -1,7 +1,7 @@
 QTJAMBILIB = jarimport
 TARGET = $$QTJAMBILIB
 
-VERSION = $$QT_VERSION
+#VERSION = $$QT_VERSION
 
 CONFIG += skip_target_version_ext
 
@@ -39,6 +39,7 @@ HEADERS +=
 SOURCES += lib.cpp
 
 DEFINES += QTJAMBI_QML_EXPORT
+DEFINES += QT_NO_VERSION_TAGGING
 
 QT -= core gui widgets
 

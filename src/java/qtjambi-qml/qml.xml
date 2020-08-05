@@ -283,7 +283,7 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </then>
                     <else>
                         <copy file="${outputDir}/platform-output/qml/QtJambi/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
@@ -299,7 +299,7 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </then>
                     <else>
                         <copy file="${outputDir}/platform-output/qml/QtJambi/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
