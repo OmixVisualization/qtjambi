@@ -1266,6 +1266,14 @@ public class PlatformJarTask extends Task {
 	                                with.getResolvedName(),
 	                                "lib/"+with.getResolvedName()
 	                            });
+	                }else if(LibraryEntry.TYPE_QTJAMBI_QML.equals(with.getType())) {
+	                    print(stream,
+	                            new String[] {
+	                                "install_name_tool",
+	                                "-id",
+	                                with.getName()+".dylib",
+	                                "lib/"+with.getResolvedName()
+	                            });	                	
 	                }
 	            }
             }
