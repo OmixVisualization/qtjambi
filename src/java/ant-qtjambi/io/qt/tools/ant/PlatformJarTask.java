@@ -1271,7 +1271,7 @@ public class PlatformJarTask extends Task {
 	                            new String[] {
 	                                "install_name_tool",
 	                                "-id",
-	                                with.getName()+".dylib",
+	                                "lib"+with.getName()+".dylib",
 	                                "lib/"+with.getResolvedName()
 	                            });	                	
 	                }
