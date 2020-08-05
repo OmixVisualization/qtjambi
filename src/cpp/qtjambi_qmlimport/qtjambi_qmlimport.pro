@@ -44,3 +44,8 @@ QT -= core gui widgets
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 
+macx:{
+    INCLUDEPATH += $$(QTDIR)/lib/QtCore.framework/Headers
+}
+INCLUDEPATH += $$(QTDIR)/include
+INCLUDEPATH += $$(QTDIR)/include/QtCore
