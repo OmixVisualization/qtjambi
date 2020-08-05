@@ -27,12 +27,33 @@
 **
 ****************************************************************************/
 
-#include "jarimport.h"
-#include <qtjambi_qml/qtjambi_jarimport.h>
+#include <QtCore/qplugin.h>
 
-Jarimport::Jarimport()
-    : QQmlExtensionPlugin() {}
+QT_PLUGIN_METADATA_SECTION
+static constexpr unsigned char qt_pluginMetaData[] = {
+    'Q', 'T', 'M', 'E', 'T', 'A', 'D', 'A', 'T', 'A', ' ', '!',
+    // metadata version, Qt version, architectural requirements
+    0, QT_VERSION_MAJOR, QT_VERSION_MINOR, qPluginArchRequirements(),
+    0xbf,
+    // "IID"
+    0x02,  0x78,  0x2e,  'o',  'r',  'g',  '.',  'q',
+    't',  '-',  'p',  'r',  'o',  'j',  'e',  'c',
+    't',  '.',  'Q',  't',  '.',  'Q',  'Q',  'm',
+    'l',  'E',  'n',  'g',  'i',  'n',  'e',  'E',
+    'x',  't',  'e',  'n',  's',  'i',  'o',  'n',
+    'I',  'n',  't',  'e',  'r',  'f',  'a',  'c',
+    'e',
+    // "className"
+    0x03,  0x69,  'J',  'a',  'r',  'i',  'm',  'p',
+    'o',  'r',  't',
+    0xff,
+};
 
-void Jarimport::registerTypes(const char * uri){
-    qtjambi_qml_jarimport(baseUrl(), uri);
+extern "C" QObject* qtjambi_qml_create_jarimport(quintptr);
+
+Q_EXTERN_C Q_DECL_EXPORT
+const char *qt_plugin_query_metadata()
+{ return reinterpret_cast<const char *>(qt_pluginMetaData); }
+Q_EXTERN_C Q_DECL_EXPORT QT_PREPEND_NAMESPACE(QObject) *qt_plugin_instance(){
+    return qtjambi_qml_create_jarimport(quintptr(&qt_plugin_instance));
 }

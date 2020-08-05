@@ -150,8 +150,6 @@ public class NativeLibraryManager {
 
     public static String DEPLOY_DESCRIPTOR_NAME = "qtjambi-deployment.xml";
 
-    private static final String DEBUG_SUFFIX = "_debug";
-
     private static final boolean VERBOSE_LOADING = Boolean.getBoolean("io.qt.verbose-loading");
 
     private static final int LOAD_TRUE = 1;
@@ -1467,7 +1465,7 @@ public class NativeLibraryManager {
         switch (operatingSystem()) {
         case Windows: 
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "d";
         	if(VERSION_MAJOR>=5){
         		return lib + version + ".dll";  // "foobar1.dll"
         	}else{
@@ -1475,12 +1473,12 @@ public class NativeLibraryManager {
         	}
         case MacOSX: 
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "_debug";
         	return "lib" + lib + dotVersion + ".jnilib";  // "libfoobar.1.jnilib"
         case Linux:
         case FreeBSD: 
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "_debug";
 			return "lib" + lib + ".so" + dotVersion;  // "libfoobar.so.1"
 		case SunOS:
 			break;
@@ -1503,7 +1501,7 @@ public class NativeLibraryManager {
         switch (operatingSystem()) {
         case Windows: {
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "d";
         	if(VERSION_MAJOR>=5){
         		return lib + version + ".dll";  // "foobar1.dll"
         	}else{
@@ -1512,12 +1510,12 @@ public class NativeLibraryManager {
         }
         case MacOSX: 
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "_debug";
         	return "lib" + lib + dotVersion + ".jnilib";  // "libfoobar.1.dylib"
         case Linux:
 		case FreeBSD: 
         	if (configuration == Configuration.Debug)
-                lib += DEBUG_SUFFIX;
+                lib += "_debug";
         return "lib" + lib + ".so" + dotVersion;  // "libfoobar.so.1"
 		case SunOS:
 			break;

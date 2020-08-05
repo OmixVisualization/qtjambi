@@ -11,11 +11,13 @@ HEADERS += qqmllistproperty.h \
     qmlattachedpropertiesfunction.h \
     qmlcreatorfunction.h \
     qtjambi_jarimport.h \
+    jarimport.h \
     qtjambi_qml_repository.h
 SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
     qmlcreatorfunction.cpp \
     qmlcreateparentfunction.cpp \
     qmlattachedpropertiesfunction.cpp \
+    jarimport.cpp \
     qtjambi_qml_repository.cpp
 
 DEFINES += QTJAMBI_QML_EXPORT

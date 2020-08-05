@@ -691,9 +691,9 @@ public class LibraryEntry extends Task {
             switch(OSInfo.crossOS()) {
             case Windows:{
             	if(iversion>=5){
-            		return name + tmpDebugSuffix + tmpVersionString + ".dll";
+            		return name + "d" + tmpVersionString + ".dll";
             	}else{
-            		return name + tmpDebugSuffix + ".dll";
+            		return name + "d.dll";
             	}
             }
             case MacOS:
@@ -748,9 +748,9 @@ public class LibraryEntry extends Task {
             switch(OSInfo.crossOS()) {
             case Windows:
                 if(iversion>=5){
-            		return name + tmpDebugSuffix + tmpVersionString + ".dll";
+            		return name + "d" + tmpVersionString + ".dll";
             	}else{
-            		return name + tmpDebugSuffix + ".dll";
+            		return name + "d.dll";
             	}
             case MacOS:
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".dylib";
@@ -803,9 +803,9 @@ public class LibraryEntry extends Task {
              switch(OSInfo.crossOS()) {
              case Windows:
             	 if(iversion>=5){
-            		 return name + tmpDebugSuffix + tmpVersionString + ".dll";
+            		 return name + "d" + tmpVersionString + ".dll";
             	 }else{
-            		 return name + tmpDebugSuffix + ".dll";
+            		 return name + "d.dll";
             	 }
              case MacOS:
                 return "lib" + name + tmpDebugSuffix + ".dylib";

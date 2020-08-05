@@ -2,7 +2,7 @@ include(qtjambi_base.pri)
 
 win32*:{
 	CONFIG(debug, debug|release) {
-                QTJAMBI_LIB_NAME = QtJambi_debug$$QT_MAJOR_VERSION
+                QTJAMBI_LIB_NAME = QtJambid$$QT_MAJOR_VERSION
 	}else{
                 QTJAMBI_LIB_NAME = QtJambi$$QT_MAJOR_VERSION
 	}

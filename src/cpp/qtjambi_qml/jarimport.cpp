@@ -27,19 +27,27 @@
 **
 ****************************************************************************/
 
-#ifndef JARIMPORT_H
-#define JARIMPORT_H
+#include <QHash>
+#include "jarimport.h"
+#include "qtjambi_jarimport.h"
+#include "qtjambi_qml_repository.h"
+#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_cast.h>
 
-#include <QtCore>
-#include <QtQml>
+Jarimport::Jarimport()
+    : QQmlExtensionPlugin() {}
 
-class Q_DECL_EXPORT Jarimport: public QQmlExtensionPlugin
-{
-        Q_OBJECT
-        Q_PLUGIN_METADATA(IID QQmlEngineExtensionInterface_iid)
-public:
-    Jarimport();
-    void registerTypes(const char *uri) override;
-};
+void Jarimport::registerTypes(const char * uri){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        Java::QtQml::QmlTypes.registerModule(env, qtjambi_cast<jobject>(env, baseUrl()), env->NewStringUTF(uri));
+    }
+}
 
-#endif // JARIMPORT_H
+
+extern "C" QObject* qtjambi_qml_create_jarimport(quintptr ptr){
+    static QHash<quintptr,QPointer<Jarimport>> hash;
+    if(!hash.contains(ptr) || hash[ptr].isNull())
+        hash[ptr] = new Jarimport();
+    return hash[ptr].data();
+}

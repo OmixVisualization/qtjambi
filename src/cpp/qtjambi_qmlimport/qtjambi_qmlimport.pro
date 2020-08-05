@@ -5,24 +5,11 @@ VERSION = $$QT_VERSION
 
 CONFIG += skip_target_version_ext
 
-include(../qtjambi/qtjambi_include.pri)
-
-HEADERS += \
-    jarimport.h
-SOURCES += \
-    jarimport.cpp
-
-QT += core qml
-
-msvc:QMAKE_CXXFLAGS += /bigobj
-
-macx:{
-    QMAKE_EXTENSION_SHLIB = dylib
-}
+include(../qtjambi/qtjambi_base.pri)
 
 win32*:{
         CONFIG(debug, debug|release) {
-            QTJAMBI_QML_LIB_NAME = QtJambiQml_debug$$QT_MAJOR_VERSION
+            QTJAMBI_QML_LIB_NAME = QtJambiQmld$$QT_MAJOR_VERSION
         }else{
             QTJAMBI_QML_LIB_NAME = QtJambiQml$$QT_MAJOR_VERSION
         }
@@ -48,12 +35,12 @@ macx:{
     }
 }
 
-TEMPLATE = lib
+HEADERS += 
+SOURCES += lib.cpp
 
-QT += core qml
+DEFINES += QTJAMBI_QML_EXPORT
 
-CONFIG += c++11
+QT -= core gui widgets
 
-HEADERS +=
-SOURCES +=
+msvc:QMAKE_CXXFLAGS += /bigobj
 

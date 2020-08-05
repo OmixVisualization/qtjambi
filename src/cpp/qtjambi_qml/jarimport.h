@@ -27,18 +27,18 @@
 **
 ****************************************************************************/
 
-#ifndef QTJAMBI_JARIMPORT_H
-#define QTJAMBI_JARIMPORT_H
+#ifndef JARIMPORT_H
+#define JARIMPORT_H
 
 #include <QtCore>
+#include <QtQml>
 
-#if defined(QTJAMBI_QML_EXPORT)
-#undef QTJAMBI_QML_EXPORT
-#  define QTJAMBI_QML_EXPORT Q_DECL_EXPORT
-#else
-#  define QTJAMBI_QML_EXPORT Q_DECL_IMPORT
-#endif
+class Q_DECL_EXPORT Jarimport: public QQmlExtensionPlugin
+{
+        Q_OBJECT
+public:
+    Jarimport();
+    void registerTypes(const char *uri) override;
+};
 
-Q_EXTERN_C QTJAMBI_QML_EXPORT QObject* qtjambi_qml_create_jarimport(quintptr);
-
-#endif // QTJAMBI_JARIMPORT_H
+#endif // JARIMPORT_H

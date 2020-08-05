@@ -23,9 +23,12 @@ TEMPLATE = lib
 DESTDIR = ../lib
 DLLDESTDIR = ../bin
 
-
 CONFIG(debug, debug|release) {
-    TARGET = $$member(TARGET, 0)_debug
+    win32:{
+        TARGET = $$member(TARGET, 0)d
+    }else{
+        TARGET = $$member(TARGET, 0)_debug
+    }
 }
 
 INCLUDEPATH += $$PWD/..
