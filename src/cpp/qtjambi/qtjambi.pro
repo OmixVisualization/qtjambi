@@ -8,6 +8,7 @@ SOURCES += \
     qnativepointer.cpp \
     qtjambi_core.cpp \
     qtjambi_functions.cpp \
+    qtjambi_plugin.cpp \
     qtjambi_registry.cpp \
     qtjambi_repository.cpp \
     qtjambi_typeinfo.cpp \
@@ -60,6 +61,7 @@ SOURCES += \
 HEADERS += \
     qtjambi_core.h \
     qtjambi_global.h \
+    qtjambi_plugin.h \
     qtjambi_qml.h \
     qtjambi_registry_p.h \
     qtjambi_repodefines.h \
@@ -109,6 +111,12 @@ win32-g++* {
         QMAKE_CXXFLAGS += -O3
     }
 }
+
+linux-g++*:{
+    LIBS += -ldl
+    QMAKE_RPATHDIR = $ORIGIN/.
+}
+
 linux-g++* | freebsd-g++* | macx | win32-g++* {
     QMAKE_CXXFLAGS += -ftemplate-depth=20000
 }
@@ -116,6 +124,9 @@ linux-g++* | freebsd-g++* | macx | win32-g++* {
 DEFINES += QTJAMBI_EXPORT=
 
 macx:CONFIG -= precompile_header
+macx:{
+    QMAKE_RPATHDIR = @loader_path/.
+}
 
 QT = core core-private
 

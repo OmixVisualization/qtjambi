@@ -2,7 +2,7 @@
     <property name="module-name" value="qtjambi.test"/>
     <property name="qtjambi-module-name" value="QtJambiTest"/>
     <path id="qtjambi.modulepath">
-        <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar"/>
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar"/>
     </path>
     <target name="build">
         <condition property="build.module" value="true">

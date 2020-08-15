@@ -30,13 +30,8 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import static io.qt.internal.NativeLibraryManager.isAvailableLibrary;
-import static io.qt.internal.NativeLibraryManager.loadLibrary;
 import static io.qt.internal.NativeLibraryManager.loadQtCore;
 import static io.qt.internal.NativeLibraryManager.loadQtJambiLibrary;
-import static io.qt.internal.NativeLibraryManager.loadSystemLibraries;
-
-import java.io.File;
 
 class QtJambi_LibraryInitializer {
 	
@@ -44,20 +39,8 @@ class QtJambi_LibraryInitializer {
 	
     static {
         try {
-            loadSystemLibraries();
-            if(isAvailableLibrary(null, "icudata", null, NativeLibraryManager.ICU_VERSION)){
-            	loadLibrary(QtJambi_LibraryInitializer.class, null, "icudata", null, NativeLibraryManager.ICU_VERSION);
-        	}
-        	if(isAvailableLibrary(null, "icuuc", null, NativeLibraryManager.ICU_VERSION)){
-        		loadLibrary(QtJambi_LibraryInitializer.class, null, "icuuc", null, NativeLibraryManager.ICU_VERSION);
-        	}
-        	if(isAvailableLibrary(null, "icui18n", null, NativeLibraryManager.ICU_VERSION)){
-        		loadLibrary(QtJambi_LibraryInitializer.class, null, "icui18n", null, NativeLibraryManager.ICU_VERSION);
-        	}
-        	File library = loadQtCore();
+        	loadQtCore();
         	loadQtJambiLibrary();
-        	File binLibFile = library.getParentFile();
-        	QtJambiInternal.setQtPrefix(binLibFile.getParentFile());
         	QtJambi_LibraryShutdown.initialize();
         } catch(RuntimeException | Error t) {
             throw t;

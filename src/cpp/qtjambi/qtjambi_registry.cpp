@@ -1136,8 +1136,6 @@ void registerMediaControlInfo(const std::type_info& typeId, const char *media_co
 }
 
 QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType){
-    QReadLocker locker(gLock());
-    Q_UNUSED(locker)
     QList<const char*> iids;
     QString className;
     if(javaType){
@@ -1149,6 +1147,8 @@ QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType){
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jclass interfaceClass = jclass(qtjambi_iterator_next(env, iterator));
                     className = qtjambi_class_name(env, interfaceClass).replace('.', '/');
+                    QReadLocker locker(gLock());
+                    Q_UNUSED(locker)
                     if(const char* iid = gTypeIIDHash->value(QLatin1String(className.toLatin1()), nullptr)){
                         iids << iid;
                     }
@@ -1157,6 +1157,8 @@ QList<const char*> getInterfaceIIDs(JNIEnv *env, jclass javaType){
         }
         while(javaType){
             className = qtjambi_class_name(env, javaType).replace('.', '/');
+            QReadLocker locker(gLock());
+            Q_UNUSED(locker)
             if(const char* iid = gTypeIIDHash->value(QLatin1String(className.toLatin1()), nullptr)){
                 iids << iid;
             }

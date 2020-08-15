@@ -48,7 +48,7 @@ import io.qt.unittests.support.FilterSQL;
 
 public class TestSql extends QApplicationTest {
 	
-	@BeforeClass
+    @BeforeClass
     public static void testInitialize() throws Exception {
         assumeTrue(FilterSQL.detectStatic());
         QApplicationTest.testInitialize();
@@ -60,12 +60,22 @@ public class TestSql extends QApplicationTest {
     	Assert.assertEquals("qt_sql_default_connection", defaultConnection);
     }
 	
-	@Test
+    @Test
     public void testSqlDriverPlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
 		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QSQLITE", "QSQLITE");
 		Assert.assertTrue(plugin!=null);
 		Assert.assertEquals("QSQLiteDriver", plugin.metaObject().className());
+		plugin.dispose();
+	}
+    
+    @Test
+    public void testSqlDriverPlugin_Jdbc() {
+		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
+		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QJDBC", "QJDBC");
+		Assert.assertTrue(plugin!=null);
+		Assert.assertEquals("io::qt::sql::jdbc::QJdbcSqlDriver", plugin.metaObject().className());
+		plugin.dispose();
 	}
     
     @Test

@@ -49,11 +49,13 @@ package io.qt.internal;
  * if Qt Jambi is compiled with QTJAMBI_DEBUG_TOOLS defined.
  *
  */
-public class QtJambiDebugTools {
+public final class QtJambiDebugTools {
 
 	static {
 		QtJambi_LibraryInitializer.init();
 	}
+	
+	private QtJambiDebugTools() { throw new RuntimeException();}
 
     /**
      * Returns true if the debug tools functions are compiled in and

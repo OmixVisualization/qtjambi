@@ -2,8 +2,44 @@
     <target name="build">
         <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <subant target="build" inheritall="true" verbose="true">
+            <filelist dir="${basedir}/src/java/qtjambi-plugins" files="qsqljdbc,deployer"/>
+        </subant>
+    </target>
+    <target name="bundle-plugins">
+        <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
+        <subant target="bundle-plugin" inheritall="true" verbose="true">
             <filelist dir="${basedir}/src/java/qtjambi-plugins" files="qsqljdbc"/>
         </subant>
+    </target>
+    <target name="bundle-plugin">
+        <if>
+            <os family="mac"/>
+            <then>
+                <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
+            </then>
+            <else>
+                <property name="XstartOnFirstThread" value="-Dx" />
+            </else>
+        </if>
+        <if>
+            <available file="${outputDir}/plugins/${plugin-subdir}/${module-name}.jar" type="file"/>
+            <then>
+                <java fork="true" classname="io.qt.qtjambi.plugindeployer.Main" failonerror="true">
+                    <jvmarg value="-Djava.library.path=${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/${target.lib.dir}"/>
+                    <jvmarg value="-Dio.qt.debug=${platformjar.conf}"/>
+                    <jvmarg value="${XstartOnFirstThread}"/>
+                    <arg value="--class-name=${class-name}" />
+                    <arg value="--dir=${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/plugins/${plugin-subdir}" />
+                    <arg value="--class-path=${outputDir}/plugins/${plugin-subdir}/${module-name}.jar" />
+                    <arg value="--meta-data=${meta-data}" />
+                    <arg value="--plugin-library-location=${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/utilities/" />
+                    <classpath>
+                        <pathelement location="${deploymentdir}/tools/qtjambi-plugindeployer-${qtjambi.jar.version}.jar"/>
+                        <fileset dir="${deploymentdir}" includes="qtjambi-*${qtjambi.jar.version}.jar"/>
+                    </classpath>
+                </java>
+            </then>
+        </if>
     </target>
     <target name="jar_init">
         <fail message="'module' is not set!">
@@ -42,7 +78,7 @@
 
     <target name="compile" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -80,7 +116,7 @@
     <!-- Same as "compile" target but with 2 sourcedirs -->
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -125,7 +161,7 @@
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile3" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -182,29 +218,25 @@
     
     <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
-        <delete file="${destdir}/plugins/qtjambi/${module}.jar" verbose="true"/>
-        <mkdir dir="${destdir}/plugins/qtjambi"/>
-        <jar destfile="${destdir}/plugins/qtjambi/${module}.jar" excludes="${jar.excludes}">
+        <property name="destdir" value="${outputDir}"/>
+        <delete file="${destdir}/plugins/${plugin-subdir}/${module}.jar" verbose="true"/>
+        <mkdir dir="${destdir}/plugins/${plugin-subdir}"/>
+        <jar destfile="${destdir}/plugins/${plugin-subdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
-                <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
+                <attribute name="Bundle-Description"      value="QtJambi Plugin"/>
                 <!-- TODO: qtjambi.png -->
                 <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
 <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
-                <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
+                <attribute name="Bundle-Name"             value="QtJambi Plugin"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
                 <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
-                <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
-                <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
-                <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
-                <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
             </manifest>
             <fileset dir="${java.outdir}/${module}"/>
         </jar>

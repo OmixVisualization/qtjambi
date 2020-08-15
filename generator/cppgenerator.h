@@ -87,7 +87,9 @@ public:
 
     bool shouldGenerate(const AbstractMetaFunctional *functional) const {
         if(functional->enclosingClass()){
-            return shouldGenerate(functional->enclosingClass());
+            return !functional->enclosingClass()->isFake()
+                    && functional->enclosingClass()->typeEntry()
+                    && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
         }
         return true; /*functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp;*/
     }

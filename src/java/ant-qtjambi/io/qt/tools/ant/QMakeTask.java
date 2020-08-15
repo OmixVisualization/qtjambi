@@ -184,6 +184,12 @@ public class QMakeTask extends Task {
                 parameters.add("DEFINES+=\"TARGET_JAVA_VERSION=" + javaVersion + "\"");
             }
 		}
+        if(OSInfo.isMacOS()) {
+        	PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
+        	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
+        		parameters.add("DEFINES+=\"QTJAMBI_NO_DEBUG_PLUGINS\"");
+        	}
+        }
 
         return parameters;
     }

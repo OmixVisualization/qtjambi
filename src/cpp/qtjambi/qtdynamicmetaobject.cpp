@@ -333,7 +333,7 @@ StaticMetaCallFunction create_static_metacall(const QtDynamicMetaObject* q, Stat
 class QtDynamicMetaObjectPrivate
 {
 public:
-    QtDynamicMetaObjectPrivate(QtDynamicMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object);
+    QtDynamicMetaObjectPrivate(QtDynamicMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler);
     ~QtDynamicMetaObjectPrivate();
 
     void initialize(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object);
@@ -380,7 +380,7 @@ private:
     mutable jweak m_javaInstance;
 };
 
-QtDynamicMetaObjectPrivate::QtDynamicMetaObjectPrivate(QtDynamicMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object)
+QtDynamicMetaObjectPrivate::QtDynamicMetaObjectPrivate(QtDynamicMetaObject *q, JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler)
     : q_ptr(q), m_this_ptr(q), m_method_count(-1), m_signal_count(0), m_constructor_count(0), m_property_count(0),
       m_clazz(getGlobalClassRef(env, java_class)),
       m_methods(), m_methodIndexes(), m_signals(), m_constructors(),
@@ -393,7 +393,7 @@ QtDynamicMetaObjectPrivate::QtDynamicMetaObjectPrivate(QtDynamicMetaObject *q, J
     try{
         initialize(env, java_class, original_meta_object);
     }catch(const JavaException& exn){
-        exn.raiseInJava(env);
+        exceptionHandler.addSuppressed(env, exn);
     }
 }
 
@@ -411,7 +411,8 @@ QtDynamicMetaObjectPrivate::~QtDynamicMetaObjectPrivate()
     }
     stringdataList.clear();
 
-    delete[] m_original_signatures;
+    if(m_original_signatures)
+        delete[] m_original_signatures;
 }
 
 template<class MethodInfoContainer>
@@ -954,8 +955,8 @@ void QtDynamicMetaObjectPrivate::invokeConstructor(JNIEnv *env, const JMethodInf
 }
 
 
-QtDynamicMetaObject::QtDynamicMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object)
-    : d_ptr(new QtDynamicMetaObjectPrivate(this, jni_env, java_class, original_meta_object)) {
+QtDynamicMetaObject::QtDynamicMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler)
+    : d_ptr(new QtDynamicMetaObjectPrivate(this, jni_env, java_class, original_meta_object, exceptionHandler)) {
 }
 
 QtDynamicMetaObject::~QtDynamicMetaObject()
@@ -1390,15 +1391,30 @@ const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass object_class
             QtDynamicMetaObject* dynamicResult = nullptr;
             if (Java::Private::QtJambi::QtJambiInternal.isGeneratedClass(env, object_class)) {
                 returned = original_meta_object_provider();
-                if(!returned)
-                    returned = dynamicResult = new QtDynamicMetaObject(env, object_class, nullptr);
+                if(!returned){
+                    JavaException exceptionHandler;
+                    dynamicResult = new QtDynamicMetaObject(env, object_class, nullptr, exceptionHandler);
+                    if(exceptionHandler.object()){
+                        dynamicResult->dispose();
+                        exceptionHandler.raise();
+                    }else{
+                        returned = dynamicResult;
+                    }
+                }
             } else {
                 const QMetaObject *original_meta_object = original_meta_object_provider();
 
                 if (original_meta_object==qt_getQtMetaObject()) {
                     returned = original_meta_object;
                 }else {
-                    returned = dynamicResult = new QtDynamicMetaObject(env, object_class, original_meta_object);
+                    JavaException exceptionHandler;
+                    dynamicResult = new QtDynamicMetaObject(env, object_class, original_meta_object, exceptionHandler);
+                    if(exceptionHandler.object()){
+                        dynamicResult->dispose();
+                        exceptionHandler.raise();
+                    }else{
+                        returned = dynamicResult;
+                    }
                 }
             }
             QWriteLocker locker(gMetaObjectsLock());

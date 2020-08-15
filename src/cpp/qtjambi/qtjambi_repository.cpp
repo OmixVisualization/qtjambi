@@ -530,6 +530,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(QtJambi,io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)V)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(loadPluginInstance,(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lio/qt/core/QObject;)
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(shutdown,()V)
 )
 

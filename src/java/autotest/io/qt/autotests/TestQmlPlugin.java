@@ -45,10 +45,6 @@ public class TestQmlPlugin extends QApplicationTest{
     public void run_testQmlPlugin() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-		if(new QDir(prefix+"/qml").exists()) {
-			qmlengine.addImportPath(prefix+"/qml");
-		}
 		if(System.getProperty("io.qt.debug", "").equals("debug")) {
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/qml");
 		}else {
@@ -88,10 +84,6 @@ public class TestQmlPlugin extends QApplicationTest{
     public void run_testQmlPlugin2() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; import io.qt.test.garage 2.0; Garage{Car{}}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	qmlengine.addImportPath(prefix+"/qml");
-        }
 		if(System.getProperty("io.qt.debug", "").equals("debug")) {
 			qmlengine.addImportPath(QDir.fromNativeSeparators(System.getProperty("user.dir", ""))+"/build/tests/debug/qml");
 		}else {

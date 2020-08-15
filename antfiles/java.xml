@@ -22,14 +22,13 @@
 
     <target name="jar.ant-qtjambi"
         description="Creates a .jar file containing all the Qt Jambi ant tasks.">
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makejar-ant">
+        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="compile-ant">
             <property name="module" value="ant-qtjambi"/>
-            <property name="destdir" value="${jardir}/nobundle"/>
             <property name="sourcedir" value="${java.srcdir}/ant-qtjambi"/>
         </ant>
-        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="makesrcjar">
+        <ant antfile="${basedir}/antfiles/jar.xml" inheritrefs="true" target="copy-resources">
             <property name="module" value="ant-qtjambi"/>
-            <property name="destdir" value="${jardir}/nobundle"/>
+            <property name="sourcedir" value="${java.srcdir}/ant-qtjambi"/>
         </ant>
     </target>
 

@@ -14,7 +14,6 @@
     </target>
 
     <target name="make.clean.global" depends="init, make.clean.global.make">
-        <delete file="${basedir}/version.properties" quiet="true"/>
         <delete dir="${qtjambi.builddir}" quiet="true"/>
     </target>
 
@@ -40,10 +39,8 @@
 
     <target name="clean" description="Cleans everything"
         depends="make.clean.global, make.clean.generator, make.clean.juic">
-        <delete quiet="true">
-            <fileset dir="${generator.xmlmerge.outputdir}" includes="*.xml"/>
-        </delete>
         <delete dir="${java.outdir}" quiet="true"/>
+        <delete dir="${deploymentdir}" quiet="true"/>
         <delete dir="${generator.outputdir}" quiet="true"/>
         <delete quiet="true">
             <fileset dir=".">
@@ -52,21 +49,17 @@
                 <include name="*.jar"/>
             </fileset>
         </delete>
-        <delete file="${java.srcdir}/qtjambi/org/qtjambi/qt/version.properties" quiet="true"/>
-        <delete dir="${outputDir}/platform-output" quiet="true"/>
-        <delete dir="${outputDir}/platform-output-debug" quiet="true"/>
-        <delete dir="${outputDir}/platform-output-test" quiet="true"/>
-        <delete file="${basedir}/qtjambi-${qtjambi.version}-src.zip" quiet="true"/>
+        <delete file="${java.srcdir}/qtjambi/org/qtjambi/qt/internal/version.properties" quiet="true"/>
         <delete dir="${basedir}/build" quiet="true"/>
+    </target>
+
+    <target name="library.native.clean" description="Cleans all native binaries for recompilation">
+        <delete dir="${qtjambi.builddir}" quiet="true" failonerror="false"/>
     </target>
 
     <target name="realclean" description="Cleans final outputs"
         depends="clean">
-        <delete dir="${jardir}" quiet="true"/>
-        <delete dir="${timestamp.dir}" quiet="true"/>
-        <!-- These two JARs can fail to delete on windows due to JAR file locking, as they open/mapped by process -->
-        <delete file="${basedir}/jars/nobundle/ant-qtjambi.jar" quiet="true"/>
-        <delete file="${basedir}/jars/qtjambi-util.jar" quiet="true"/>
+        <delete dir="${deploymentdir}" quiet="true"/>
     </target>
 
     <target name="distclean" description="Cleans really everything"

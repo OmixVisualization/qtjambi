@@ -36,7 +36,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QDir;
 import io.qt.core.QEventLoop;
 import io.qt.core.QMetaObject;
 import io.qt.core.QSize;
@@ -223,10 +222,6 @@ public class TestQuick extends QApplicationTest {
 		    timer.timeout.connect(loop::quit);
 			QQuickView component = new QQuickView();
 			component.setObjectName("testQuickView");
-			String prefix = io.qt.QtUtilities.qtPrefix();
-	        if(new QDir(prefix+"/qml").exists()) {
-	        	component.engine().addImportPath(prefix+"/qml");
-	        }
 		    QSurfaceFormat format = component.format();
 		    format.setSamples(16);
 		    component.setFormat(format);
@@ -270,10 +265,6 @@ public class TestQuick extends QApplicationTest {
 			QQuickWidget component = new QQuickWidget(mainWindow);
 			component.setObjectName("testQuickWidget");
 			mainWindow.setCentralWidget(component);
-			String prefix = io.qt.QtUtilities.qtPrefix();
-	        if(new QDir(prefix+"/qml").exists()) {
-	        	component.engine().addImportPath(prefix+"/qml");
-	        }
 		    QSurfaceFormat format = component.format();
 		    format.setSamples(16);
 		    component.setFormat(format);

@@ -89,7 +89,10 @@ import io.qt.internal.QtJambiSignals.SignalParameterType;
 /**
  * Methods to help construct the fake meta object.
  */
-public class MetaObjectTools {
+final class MetaObjectTools {
+	
+	private MetaObjectTools() { throw new RuntimeException();}
+	
     private static class Container {
         private enum AnnotationType {
             Reader,
@@ -811,14 +814,14 @@ public class MetaObjectTools {
     	return signal;
     }
 	
-	public static String cppSlotSignature(String signal) {
-		if(signal.length()>0) {
-			if(signal.charAt(0)!=io.qt.internal.QtJambiInternal.SignalPrefix
-					&& signal.charAt(0)!=io.qt.internal.QtJambiInternal.SlotPrefix) {
-				signal = io.qt.internal.QtJambiInternal.SlotPrefix + signal;
+	public static String cppSlotSignature(String slot) {
+		if(slot.length()>0) {
+			if(slot.charAt(0)!=io.qt.internal.QtJambiInternal.SignalPrefix
+					&& slot.charAt(0)!=io.qt.internal.QtJambiInternal.SlotPrefix) {
+				slot = io.qt.internal.QtJambiInternal.SlotPrefix + slot;
 			}
 		}
-    	return signal;
+    	return slot;
     }
     
 	public static QByteArray cppSignalSignature(QByteArray signal) {

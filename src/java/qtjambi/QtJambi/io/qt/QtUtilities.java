@@ -40,7 +40,6 @@ import java.io.File;
 
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
-import io.qt.internal.NativeLibraryManager;
 import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QWidget;
 
@@ -54,39 +53,35 @@ public class QtUtilities {
 	}
 	
     public static boolean isAvailableQtLibrary(String library) {
-        return NativeLibraryManager.isAvailableQtLibrary(library);
+        return QtJambiInternal.isAvailableQtLibrary(library);
     }
     
     public static boolean isAvailableUtilityLibrary(String library, String versionString) {
-        return NativeLibraryManager.isAvailableLibrary(null, library, null, versionString);
+        return QtJambiInternal.isAvailableLibrary(null, library, null, versionString);
     }
     
     public static void loadQtLibrary(String library) {
-    	NativeLibraryManager.loadQtLibrary(library);
+    	QtJambiInternal.loadQtLibrary(library);
     }
 
     public static void loadUtilityLibrary(String library, String version) {
-        NativeLibraryManager.loadUtilityLibrary(library, version);
+        QtJambiInternal.loadUtilityLibrary(library, version);
     }
 
     public static void loadQtJambiLibrary(String library) {
-        NativeLibraryManager.loadQtJambiLibrary(QtJambiInternal.callerClassProvider().get(), library);
+        QtJambiInternal.loadQtJambiLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
     
     public static void loadJambiLibrary(String library) {
-        NativeLibraryManager.loadJambiLibrary(QtJambiInternal.callerClassProvider().get(), null, library);
+        QtJambiInternal.loadJambiLibrary(QtJambiInternal.callerClassProvider().get(), null, library);
     }
 
     public static void loadLibrary(String lib) {
-        NativeLibraryManager.loadLibrary(lib);
+        QtJambiInternal.loadLibrary(lib);
     }
 
     public static File jambiTempDir() {
-        return NativeLibraryManager.jambiTempDir();
-    }
-    
-    public static String qtPrefix() {
-    	return QtJambiInternal.qtPrefix();
+        return QtJambiInternal.jambiTempDir();
     }
     
     public static boolean initializePackage(String packagePath){

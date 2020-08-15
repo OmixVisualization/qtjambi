@@ -29,47 +29,21 @@
 ****************************************************************************/
 package io.qt.generatortests;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
 import io.qt.QtUtilities;
-import io.qt.internal.NativeLibraryManager;
 
 public class TestUtilities {
-
-	private static String thisOs;
-	private static String configuration;
-	@SuppressWarnings("unused")
-	private File tmpDir;
-	@SuppressWarnings("unused")
-	private static String user;
-	@SuppressWarnings("unused")
-	private static String arch;
 
 	@org.junit.BeforeClass
 	public static void setUpClass() {
 		io.qt.QtUtilities.initializePackage("io.qt.internal");
-		user = System.getProperty("user.name");
-		arch = System.getProperty("os.arch");
-		thisOs = System.getProperty("os.name").toLowerCase();
-		configuration = System.getProperty("io.qt.debug");
 	}
 
-	@org.junit.Test
-	public void testJambiTempDir() {
-		// This test is only valid if we ran from unpacked JAR, this is more
-		//  of an integration test and a unit test.  We should re-instate when
-		//  we can control the launch environment for testing.
-		tmpDir = QtUtilities.jambiTempDir();
-		//assertTrue("tmpDir", tmpDir.getName().startsWith("QtJambi_" + user + "_" + arch + "_" + Utilities.VERSION_STRING));
-	}
-	
 	private static boolean loadQtJambiLibrary(String lib) {
         try {
-            NativeLibraryManager.loadQtJambiLibrary(TestUtilities.class, lib);
+            QtUtilities.loadQtJambiLibrary(lib);
             return true;
         } catch (Exception e) {
             java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
@@ -82,27 +56,4 @@ public class TestUtilities {
 		assertTrue("validLibrary", loadQtJambiLibrary("Core"));
 		assertFalse("falseLibrary", loadQtJambiLibrary("Kore"));
 	}
-
-	@org.junit.Test
-	public void testDecideOperatingSystem() {
-		if (thisOs.startsWith("linux"))
-			assertEquals("OperatingSystem.Linux", NativeLibraryManager.operatingSystem(), NativeLibraryManager.OperatingSystem.Linux);
-		else if (thisOs.startsWith("mac os x"))
-			assertEquals("OperatingSystem.MacOSX", NativeLibraryManager.operatingSystem(), NativeLibraryManager.OperatingSystem.MacOSX);
-		else if (thisOs.startsWith("windows"))
-			assertEquals("OperatingSystem.Windows", NativeLibraryManager.operatingSystem(), NativeLibraryManager.OperatingSystem.Windows);
-		else
-			assertFalse("true", true);
-	}
-
-	// This test is not valid anymore, the property io.qt.debug is no
-	//  longer the main mechanism for holding the Configuration type.
-	/**@org.junit.Test**/
-	public void testDecideConfiguration() {
-		if (configuration != null)
-			assertEquals("Configuration.Debug", NativeLibraryManager.configuration(), NativeLibraryManager.Configuration.Debug);
-		else
-			assertEquals("Configuration.Release", NativeLibraryManager.configuration(), NativeLibraryManager.Configuration.Release);
-	}
-
 }

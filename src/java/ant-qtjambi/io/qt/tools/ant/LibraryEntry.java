@@ -59,14 +59,9 @@ public class LibraryEntry extends Task {
     public static final String TYPE_QTJAMBI            = "qtjambi";
     public static final String TYPE_QTJAMBI_JNI        = "qtjambi-jni";
     public static final String TYPE_QTJAMBI_PLUGIN     = "qtjambi-plugin";
-    public static final String TYPE_QTJAMBI_QML        = "qtjambi-qml";
+    public static final String TYPE_QTJAMBI_UTILITY    = "qtjambi-utility";
     public static final String TYPE_PLUGIN_JAR         = "plugin-jar";
     public static final String TYPE_UNVERSIONED_PLUGIN = "unversioned-plugin";
-
-    public static final String LOAD_DEFAULT            = "default";
-    public static final String LOAD_YES                = "yes";
-    public static final String LOAD_NEVER              = "never";
-    public static final String LOAD_SYSTEM             = "system";
 
     /*
      *  set to specify where the plugins should be saved.
@@ -80,24 +75,35 @@ public class LibraryEntry extends Task {
      */
     private String type = TYPE_DEFAULT;
     private String name;         // name from configuration
-    private String targetName;
+    private String originalname;
+
+	private String targetName;
     private String absolutePath;
     private File rootPath;
     private String subdir;
     private String destSubdir;
-    private String load = LOAD_DEFAULT;
     private String srcPath;
     private String conditionProperty;
     private String dsoVersion;
     private Boolean debug;  // inherit
+    private FindCompiler.Compiler compiler;
     private boolean isPacked;
+    private boolean isPending;
 
-    public boolean isPacked() {
+    public boolean isPending() {
+		return isPending;
+	}
+
+	public void setPending(boolean isPending) {
+		this.isPending = isPending;
+	}
+
+	public boolean isPacked() {
 		return isPacked;
 	}
 
 	public void setPacked() {
-		this.isPacked = true;
+		this.isPacked = !type.equals(TYPE_QTJAMBI_UTILITY);
 	}
 
 	public String getResolvedName() {
@@ -109,12 +115,20 @@ public class LibraryEntry extends Task {
         return libraryName;
     }
 
-    public Boolean getDebug() {
+    Boolean getDebug() {
         return debug;
     }
-    public void setDebug(Boolean debug) {
+    void setDebug(Boolean debug) {
         this.debug = debug;
     }
+    
+	FindCompiler.Compiler getCompiler() {
+		return compiler;
+	}
+
+	void setCompiler(FindCompiler.Compiler compiler) {
+		this.compiler = compiler;
+	}
 
 	public String getType() {
         return type;
@@ -128,6 +142,7 @@ public class LibraryEntry extends Task {
     }
     public void setName(String name) {
         this.name = name;
+        this.originalname = name;
     }
     
     public String getTargetName() {
@@ -162,14 +177,6 @@ public class LibraryEntry extends Task {
         this.destSubdir = destSubdir;
     }
 
-    public String getLoad() {
-        return load;
-    }
-    public void setLoad(String load) {
-        this.load = load;
-    }
-
-
     public void setSrcPath(String srcPath) {
         this.srcPath = srcPath;
     }
@@ -193,8 +200,27 @@ public class LibraryEntry extends Task {
             else
                 debug = Boolean.FALSE;
         }
+        if(compiler == null) {
+            compiler = FindCompiler.Compiler.resolve(AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER));
+        }
         String condition;
-        if(Boolean.TRUE.equals(debug) && !LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())){
+        switch(compiler) {
+        case MinGW:
+        case MinGW_W64:
+        	if(LibraryEntry.TYPE_QT.equals(getType())
+        			|| LibraryEntry.TYPE_PLUGIN.equals(getType())
+        			|| LibraryEntry.TYPE_QMLPLUGIN.equals(getType())) {
+        		debug = Boolean.FALSE;
+        	}
+        	break;
+        	default:
+                
+        }
+    	if(Boolean.TRUE.equals(debug)
+        		&& !LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
+        		&& !LibraryEntry.TYPE_EXE.equals(getType())
+        		&& !LibraryEntry.TYPE_FILE.equals(getType())
+        		&& !LibraryEntry.TYPE_FILESET.equals(getType())){
             if(conditionProperty.endsWith(".true")){
                 conditionProperty = conditionProperty.substring(0, conditionProperty.length()-5)+".debug.true";
             }else{
@@ -212,7 +238,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
-                    || LibraryEntry.TYPE_QTJAMBI_QML.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -235,7 +261,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_PLUGIN_JAR.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
-                    || LibraryEntry.TYPE_QTJAMBI_QML.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -278,7 +304,8 @@ public class LibraryEntry extends Task {
         int qtMajorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
         int qtMinorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
         int qtPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_PATCHLEVEL));
-        boolean useQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_QT_FRAMEWORK));
+        boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK));
+        boolean convertQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK));
         String sonameVersion;
         if(qtMajorVersion<5){
         	sonameVersion = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_SONAME_VERSION_MAJOR);
@@ -330,7 +357,7 @@ public class LibraryEntry extends Task {
         		name += ".jar";
 //        		this.setAbsolutePath(libInfix);
         		break;
-        	case TYPE_QTJAMBI_QML:
+        	case TYPE_QTJAMBI_UTILITY:
                 // MacOSX: uses *.dylib and _debug suffix
                 name = formatQtJambiQmlPluginName(name, debug, dsoVersion);
                 break;
@@ -343,12 +370,16 @@ public class LibraryEntry extends Task {
         		break;
         	case TYPE_QT: {
 	                // MacOSX: uses *.dylib and _debug suffix
-	                String _name = name;
-	                name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-	                if(useQtFrameworks){
-	                    targetName = name;
-	                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-	                }
+	        		if(useFrameworks) {
+	        			name = formatQtNameAsFramework(name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+	        		}else {
+		                String _name = name;
+	                	name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+		                if(convertQtFrameworks){
+		                    targetName = name;
+		                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+		                }
+	        		}
 	            } 
 	        	break;
         	case TYPE_QT_NONVERSIONED:
@@ -356,11 +387,11 @@ public class LibraryEntry extends Task {
     			break;
         	case TYPE_QTJAMBI_JNI: // JNI
                 // MacOSX: uses *.jnilib and _debug suffix
-                name = formatQtJambiJniName(name, debug, dsoVersion);
+    			name = formatQtJambiJniName(name, debug, dsoVersion);
                 break;
         	case TYPE_QTJAMBI: // non-JNI base library
                 // MacOSX: uses *.dylib and _debug suffix
-                name = formatQtJambiName(name, debug, dsoVersion);
+    			name = formatQtJambiName(name, debug, dsoVersion);
                 break;
         	case TYPE_DSO: 
     		case TYPE_SYSTEM:
@@ -396,12 +427,11 @@ public class LibraryEntry extends Task {
             	break;
         	}
         }
-
-        if(!load.equals(LOAD_YES) && !load.equals(LOAD_NEVER) && !load.equals(LOAD_DEFAULT) && !load.equals(LOAD_SYSTEM))
-            load = LOAD_DEFAULT;
     }
 
     public String absoluteSourcePath() {
+    	if(isPending)
+    		return null;
     	if(getSubdir()!=null && !getSubdir().isEmpty()){
     		return getRootPath() + "/" + getSubdir() + "/" + getName();
     	}else{
@@ -675,7 +705,7 @@ public class LibraryEntry extends Task {
         }
         throw new BuildException("unhandled case...");
     }
-
+    
     public static String formatQtJambiJniName(String name, boolean debug, String versionString) {
         String tmpVersionString = (versionString != null) ? versionString : "";
     	int iversion = 0;
@@ -808,7 +838,7 @@ public class LibraryEntry extends Task {
             		 return name + "d.dll";
             	 }
              case MacOS:
-                return "lib" + name + tmpDebugSuffix + ".dylib";
+                return "lib" + name + ".dylib";
              case Android:
              case Solaris:
              case Linux:
@@ -877,4 +907,8 @@ public class LibraryEntry extends Task {
          }
          throw new BuildException("unhandled case...");
     }
+    
+    String getOriginalname() {
+		return originalname;
+	}
 }

@@ -30,6 +30,7 @@
 package io.qt.core;
 
 import static io.qt.core.QMetaMethod.fromReflectedMethod;
+import static io.qt.internal.QtJambiInternal.*;
 
 import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
@@ -428,15 +429,15 @@ public final class QMetaObject {
 	public QMetaMethod method(String name, Class<?>... parameterTypes) {
 		QMetaMethod method;
 		if(parameterTypes.length==0 && name.contains("(")) {
-			method = method(metaObjectPointer, io.qt.internal.MetaObjectTools.cppNormalizedSignature(name));
+			method = method(metaObjectPointer, cppNormalizedSignature(name));
 			if(method==null)
-				method = method(metaObjectPointer, io.qt.internal.MetaObjectTools.cppNormalizedSignature(name)+"const");
+				method = method(metaObjectPointer, cppNormalizedSignature(name)+"const");
 		}else {
 			StringBuilder args = new StringBuilder();
 			for(int i=0; i<parameterTypes.length; ++i) {
 				if(i!=0)
 					args.append(',');
-				String typeName = io.qt.internal.MetaObjectTools.internalNameOfArgumentType(parameterTypes[i]);
+				String typeName = internalNameOfArgumentType(parameterTypes[i]);
 				if(typeName.isEmpty())
 					args.append("QVariant");
 				else
@@ -468,7 +469,7 @@ public final class QMetaObject {
 		for(int i=0; i<parameterTypes.length; ++i) {
 			if(i!=0)
 				args.append(',');
-			String typeName = io.qt.internal.MetaObjectTools.internalNameOfArgumentType(parameterTypes[i]);
+			String typeName = internalNameOfArgumentType(parameterTypes[i]);
 			if(typeName.isEmpty())
 				args.append("QVariant");
 			else
@@ -686,7 +687,7 @@ public final class QMetaObject {
 	private static native List<QPair<String,String>> classInfos(long metaObjectPointer);
 	
 	public static boolean checkConnectArgs(String signal, String method) {
-		return checkConnectArgsString(io.qt.internal.QtJambiInternal.SignalPrefix+io.qt.internal.MetaObjectTools.cppNormalizedSignature(signal), io.qt.internal.QtJambiInternal.SlotPrefix+io.qt.internal.MetaObjectTools.cppNormalizedSignature(method));
+		return checkConnectArgsString(io.qt.internal.QtJambiInternal.SignalPrefix+cppNormalizedSignature(signal), io.qt.internal.QtJambiInternal.SlotPrefix+cppNormalizedSignature(method));
 	}
 	
 	private native static boolean checkConnectArgsString(String signal, String method);

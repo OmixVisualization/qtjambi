@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -146,16 +147,13 @@ class WrongSystemException extends DeploymentSpecException {
  * <code>-Dio.qt.debug=debug</code>
  *
  */
-public class NativeLibraryManager {
+final class NativeLibraryManager {
+	
+	private NativeLibraryManager() { throw new RuntimeException();}
 
     public static String DEPLOY_DESCRIPTOR_NAME = "qtjambi-deployment.xml";
 
     private static final boolean VERBOSE_LOADING = Boolean.getBoolean("io.qt.verbose-loading");
-
-    private static final int LOAD_TRUE = 1;
-    private static final int LOAD_SYSTEM = 2;
-    private static final int LOAD_FALSE = 3;
-    private static final int LOAD_NEVER = 4;
 
     private static final int[] versionA;
     public static final String VERSION_STRING;
@@ -168,6 +166,7 @@ public class NativeLibraryManager {
     private static final List<String> systemLibrariesList;
     private static final List<String> jniLibdirBeforeList;
     private static final List<String> jniLibdirList;
+    private static boolean isMinGWBuilt = false;
     
     static{
         int[] tmpVERSION_A = null;
@@ -342,23 +341,6 @@ public class NativeLibraryManager {
         return true;
     }
 
-    /** Enum for defining the operation system. */
-    public enum OperatingSystem {
-        Windows("Windows"),
-        MacOSX("MacOSX"),
-        Linux("Linux"),
-        FreeBSD("FreeBSD"),
-        SunOS("SunOS");
-
-        private OperatingSystem(String label) {
-            this.label = label;
-        }
-        public String toString() {
-            return label;
-        }
-        private String label;
-    }
-
     /** The operating system Qt Jambi is running on. */
     private static final OperatingSystem operatingSystem = decideOperatingSystem();
     private static final String osArchName;
@@ -411,36 +393,18 @@ public class NativeLibraryManager {
         if (osName.equals("sunos")) return OperatingSystem.SunOS;	// SunOS
         return OperatingSystem.Linux;
     }
-    
-    /** Defines whether Qt is build in Release or Debug. */
-    public enum Configuration {
-        Release("Release"),
-        Debug("Debug"),
-        Test("Test");
-
-        private Configuration(String label) {
-            this.label = label;
-        }
-        public String toString() {
-            return label;
-        }
-        private String label;
-    }
 
     /** The configuration of Qt Jambi. */
     private static Configuration configuration = decideConfiguration();
+    private static Boolean useFrameworks = operatingSystem==OperatingSystem.MacOSX ? null : Boolean.FALSE;
 	private static final Configuration DEFAULT_CONFIGURATION = Configuration.Release;
 	
-	public static Configuration configuration() {
+	static Configuration configuration() {
 		return configuration;
 	}
 	
-	public static String osArchName() {
-		return osArchName;
-	}
-    
     private static Configuration decideConfiguration() {
-        Configuration configuration = null;
+    	Configuration configuration = null;
 
         final String K_io_qt_debug = "io.qt.debug";
         String debugString = System.getProperty(K_io_qt_debug);
@@ -480,7 +444,7 @@ public class NativeLibraryManager {
     }
     
     private static Configuration decideDefaultConfiguration() {
-        Configuration configuration = null;
+    	Configuration configuration = null;
         String configurationSource = null;
         try {
             boolean error = false;
@@ -571,22 +535,8 @@ public class NativeLibraryManager {
 
     private static DeploymentSpec[] activeDeploymentSpecA;
 
-    public static String loadToString(int load) {
-        switch(load) {
-        case LOAD_TRUE:
-            return "load-true";
-        case LOAD_SYSTEM:
-            return "load-system";
-        case LOAD_NEVER:
-            return "load-never";
-        case LOAD_FALSE:
-            return "load-false";
-        }
-        return null;
-    }
-
     // FIXME: Remove this from public API
-    public static File jambiTempDir() {
+    static File jambiTempDir() {
         if(activeDeploymentSpecA == null)
             return null;
         // FIXME: move this into each DeploymentSpec making the path unique per DeploymentSpec
@@ -594,7 +544,7 @@ public class NativeLibraryManager {
     }
 
     // FIXME: This should be a read-only object
-    public static DeploymentSpec[] getActiveDeploymentSpec() {
+    private static DeploymentSpec[] getActiveDeploymentSpec() {
         return activeDeploymentSpecA;
     }
 
@@ -603,7 +553,7 @@ public class NativeLibraryManager {
      * the active from static values.
      * @return
      */
-    public static DeploymentSpec[] resetActiveDeploymentSpec() {
+    static DeploymentSpec[] resetActiveDeploymentSpec() {
         DeploymentSpec[] rv = activeDeploymentSpecA;
         activeDeploymentSpecA = null;
         return rv;
@@ -624,46 +574,58 @@ public class NativeLibraryManager {
                 }
                 spec.setKey(key);
                 reporter.report(" - cache key='", spec.getKey(), "'");
+                
+            } else if (name.equals("symlink")) {
+            	SymlinkEntry e = new SymlinkEntry();
+                e.setName(attributes.getValue("name"));
+                e.setTarget(attributes.getValue("target"));
+                if (e.getName() == null) {
+                    throw new DeploymentSpecException("<symlink> element missing required attribute \"name\"");
+                }
+                if (e.getTarget() == null) {
+                    throw new DeploymentSpecException("<symlink> element missing required attribute \"target\"");
+                }
 
-            } else if (name.equals("library")) {
+                e.setDeploymentSpec(spec);
+
+                String fileName = new File(e.getName()).getName();
+                // Add library name to the global map of libraries...
+                LibraryEntry old = libraryMap.get(fileName);
+                if (old != null) {
+                    throw new DeploymentSpecException("<symlink> '" + e.getName()
+                                                      + "' is duplicated. Present in both '"
+                                                      + spec.getSourceUrl() + "' and '"
+                                                      + old.getDeploymentSpec().getSourceUrl() + "'.");
+                }
+                reporter.report(" - adding '", fileName, "' to library map");
+                libraryMap.put(fileName, e);
+
+                spec.addLibraryEntry(e);
+                reporter.report(" - symlink: name='", e.getName(), "'");
+            	
+            } else if (name.equals("library") || name.equals("syslibrary")) {
                 LibraryEntry e = new LibraryEntry();
                 e.setName(attributes.getValue("name"));
                 if (e.getName() == null) {
                     throw new DeploymentSpecException("<library> element missing required attribute \"name\"");
                 }
 
-                String load = attributes.getValue("load");
-                e.setLoad(LOAD_FALSE);
-                if (load != null) {
-                    if (load.equals("true"))
-                        e.setLoad(LOAD_TRUE);
-                    else if (load.equals("never"))
-                        e.setLoad(LOAD_NEVER);
-                    else if (load.equals("system"))
-                        e.setLoad(LOAD_SYSTEM);
-                }
-
                 e.setDeploymentSpec(spec);
 
                 String fileName = new File(e.getName()).getName();
-                if (e.getLoad() == LOAD_NEVER) {
-                    neverLoad.put(fileName, e);
-
-                } else {
-                    // Add library name to the global map of libraries...
-                    LibraryEntry old = libraryMap.get(fileName);
-                    if (old != null) {
-                        throw new DeploymentSpecException("<library> '" + e.getName()
-                                                          + "' is duplicated. Present in both '"
-                                                          + spec.getSourceUrl() + "' and '"
-                                                          + old.getDeploymentSpec().getSourceUrl() + "'.");
-                    }
-                    reporter.report(" - adding '", fileName, "' to library map");
-                    libraryMap.put(fileName, e);
+                // Add library name to the global map of libraries...
+                LibraryEntry old = libraryMap.get(fileName);
+                if (old != null) {
+                    throw new DeploymentSpecException("<library> '" + e.getName()
+                                                      + "' is duplicated. Present in both '"
+                                                      + spec.getSourceUrl() + "' and '"
+                                                      + old.getDeploymentSpec().getSourceUrl() + "'.");
                 }
+                reporter.report(" - adding '", fileName, "' to library map");
+                libraryMap.put(fileName, e);
 
                 spec.addLibraryEntry(e);
-                reporter.report(" - library: name='", e.getName(), "', ", loadToString(e.getLoad()));
+                reporter.report(" - library: name='", e.getName(), "'");
 
             } else if (name.equals("plugin")) {
                 String path = attributes.getValue("path");
@@ -766,7 +728,7 @@ public class NativeLibraryManager {
      *
      * @return The list of plugin paths
      */
-    public static List<String> pluginPaths() {
+    static List<String> pluginPaths() {
         List<String> paths = new ArrayList<String>();
         for (DeploymentSpec spec : deploymentSpecs) {
             File root = spec.getBaseDir();
@@ -786,7 +748,7 @@ public class NativeLibraryManager {
      *
      * @return The list of plugin paths
      */
-    public static List<String> pluginDesignerPaths() {
+    static List<String> pluginDesignerPaths() {
         List<String> paths = new ArrayList<String>();
         for (DeploymentSpec spec : deploymentSpecs) {
             File root = spec.getBaseDir();
@@ -797,36 +759,9 @@ public class NativeLibraryManager {
         }
         return paths;
     }
-
-
-    /**
-     * Loads a library with name specified in <code>library</code>.
-     * The library name will be expanded to the JNI shared library
-     * name for a given platform, so the name "qtjambi" will be
-     * expanded like this:
-     *
-     * <ul>
-     *   <li> Windows: qtjambi.dll
-     *   <li> Linux / Unix: libqtjambi.so
-     *   <li> Mac OS X: libqtjambi.jnilib
-     * </ul>
-     *
-     * When using loading libraries from the filesystem, this method
-     * simply calls <code>System.loadLibrary</code>.
-     *
-     * When the system property <code>-Dio.qt.debug</code>
-     * is specified, the suffix <code>_debuglib</code> will be appended
-     * to the filename, replacing "qtjambi" above with "qtjambi_debuglib".
-     *
-     * @param library The name of the library..
-     */
-    public static void loadJniLibrary(Class<?> callerClass, String library, String version) {
-        String lib = jniLibraryName(library, version);
-        loadNativeLibrary(callerClass, lib);
-    }
     
-    public static void loadLibrary(String library) {
-    	switch (operatingSystem()) {
+    static void loadLibrary(String library) {
+    	switch (operatingSystem) {
         case Windows: 
         	loadNativeLibrary(Object.class, library + ".dll");
         	break;
@@ -848,15 +783,15 @@ public class NativeLibraryManager {
         }
     }
     
-    public static void loadQtJambiLibrary() {
+    static void loadQtJambiLibrary() {
     	loadJambiLibrary(NativeLibraryManager.class, null, "QtJambi");
     }
 
-    public static void loadQtJambiLibrary(Class<?> callerClass, String library) {
+    static void loadQtJambiLibrary(Class<?> callerClass, String library) {
     	loadJambiLibrary(callerClass, "QtJambi", library);
     }
 
-    public static void loadJambiLibrary(Class<?> callerClass, String prefix, String library) {
+    static void loadJambiLibrary(Class<?> callerClass, String prefix, String library) {
         String version;
         if(versionA[0]>=5){
         	version = "" + VERSION_MAJOR_STRING;
@@ -888,51 +823,129 @@ public class NativeLibraryManager {
      * simply calls <code>System.loadLibrary</code>.
      * @param library The name of the library..
      */
-    public static void loadQtLibrary(String library) {
+    static void loadQtLibrary(String library) {
     	findAndLoadLibrary(Object.class, "Qt", library, LIBINFIX, VERSION_MAJOR_STRING);
     }
     
-    public static void loadUtilityLibrary(String library, String version) {
+    static void loadUtilityLibrary(String library, String version) {
     	findAndLoadLibrary(Object.class, null, library, null, version);
     }
     
     static File loadQtCore() {
-    	return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
-    }
-    
-    public static void loadLibrary(Class<?> callerClass, String qtprefix, String library, String libInfix, String version) {
-    	findAndLoadLibrary(callerClass, qtprefix, library, libInfix, version);
-    }
-    
-    private static File findAndLoadLibrary(Class<?> callerClass, String qtprefix, String library, String libInfix, String version) {
-        String lib = qtLibraryName(qtprefix, library, libInfix, version);
-        try {
-			return loadNativeLibrary(callerClass, lib);
+    	loadSystemLibraries();
+        if(isAvailableLibrary(null, "icudata", null, NativeLibraryManager.ICU_VERSION)){
+        	loadLibrary(Object.class, null, "icudata", null, NativeLibraryManager.ICU_VERSION);
+    	}
+    	if(isAvailableLibrary(null, "icuuc", null, NativeLibraryManager.ICU_VERSION)){
+    		loadLibrary(Object.class, null, "icuuc", null, NativeLibraryManager.ICU_VERSION);
+    	}
+    	if(isAvailableLibrary(null, "icui18n", null, NativeLibraryManager.ICU_VERSION)){
+    		loadLibrary(Object.class, null, "icui18n", null, NativeLibraryManager.ICU_VERSION);
+    	}
+    	try{
+    		return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
 		} catch (RuntimeException e) {
-			if("Qt".equals(qtprefix) && "Core".equals(library) && configuration==Configuration.Release) {
+			if(configuration==Configuration.Release) {
 				// try to run qtjambi with debug libraries instead
 				configuration=Configuration.Debug;
-				lib = qtLibraryName(qtprefix, library, libInfix, version);
 				try {
-					return loadNativeLibrary(callerClass, lib);
+					return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
 				} catch (Throwable e1) {
+					e.addSuppressed(e1);
 					configuration=Configuration.Release;
-					throw e;
+					if(useFrameworks==null) {
+						useFrameworks = Boolean.TRUE;
+						try {
+							return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
+						} catch (Throwable e2) {
+							e.addSuppressed(e2);
+							configuration=Configuration.Debug;
+							try {
+								return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
+							} catch (Throwable e3) {
+								e.addSuppressed(e3);
+								configuration=Configuration.Release;
+								throw e;
+							}
+						}
+					}else{
+						throw e;
+					}
 				}
 			}else {
-				throw e;
+				if(useFrameworks==null) {
+					useFrameworks = Boolean.TRUE;
+					try {
+						return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
+					} catch (Throwable e1) {
+						e.addSuppressed(e1);
+						throw e;
+					}
+				}else{
+					if(!isMinGWBuilt && operatingSystem==OperatingSystem.Windows) {
+						Availability availability = getLibraryAvailability(null, "libstdc++-6", null, null, Configuration.Release);
+				    	if(availability.entry!=null){
+				    		isMinGWBuilt = true;
+				    	}else if(availability.file!=null){
+				    		isMinGWBuilt = new File(availability.file.getParentFile(), "Qt5Core.dll").isFile();
+				    	}
+				    	if(isMinGWBuilt) {
+				    		return findAndLoadLibrary(Object.class, "Qt", "Core", LIBINFIX, VERSION_MAJOR_STRING);
+				    	}
+			    	}
+					throw e;
+				}
+			}
+		}finally {
+			if(useFrameworks==null) {
+				useFrameworks = Boolean.FALSE;
 			}
 		}
     }
     
-    public static boolean isAvailableQtLibrary(String library) {
-    	return isAvailableLibrary("Qt", library, LIBINFIX, VERSION_MAJOR_STRING);
+    static void loadLibrary(Class<?> callerClass, String qtprefix, String library, String libInfix, String version) {
+    	findAndLoadLibrary(callerClass, qtprefix, library, libInfix, version);
+    }
+    
+    private static File findAndLoadLibrary(Class<?> callerClass, String qtprefix, String library, String libInfix, String version) {
+        String lib = qtLibraryName(qtprefix, library, libInfix, version, configuration);
+		return loadNativeLibrary(callerClass, lib);
+    }
+    
+    static boolean isAvailableQtLibrary(String library) {
+    	return getLibraryAvailability("Qt", library, LIBINFIX, VERSION_MAJOR_STRING, configuration).isAvailable();
+    }
+    
+    static boolean isAvailableLibrary(String qtprefix, String library, String libInfix, String version) {
+    	return getLibraryAvailability(qtprefix, library, libInfix, version, configuration).isAvailable();
+    }
+    
+    private static class Availability{
+    	public Availability(File file) {
+			super();
+			this.file = file;
+			this.entry = null;
+		}
+    	public Availability() {
+			super();
+			this.file = null;
+			this.entry = null;
+		}
+    	public Availability(LibraryEntry entry) {
+			super();
+			this.file = null;
+			this.entry = entry;
+		}
+		final File file;
+		final LibraryEntry entry;
+		boolean isAvailable() {
+			return file!=null || entry!=null;
+		}
     }
 
-    // FIXME: Use proper dependency tree to loadQtLibrary() but this will do for now
-    public static boolean isAvailableLibrary(String qtprefix, String library, String libInfix, String version) {
+    private static Availability getLibraryAvailability(String qtprefix, String library, String libInfix, String version, Configuration configuration) {
         unpack();
-    	String lib = qtLibraryName(qtprefix, library, libInfix, version);  // "QtDBus" => "libQtDBus.so.4"
+    	String lib = qtLibraryName(qtprefix, library, libInfix, version, configuration);  // "QtDBus" => "libQtDBus.so.4"
         // search active deploymentSpec for existance of library
         DeploymentSpec[] deploymentSpecA = getActiveDeploymentSpec();
         if(deploymentSpecA != null){
@@ -944,13 +957,13 @@ public class NativeLibraryManager {
 		                if(name == null)
 		                    continue;
 		                if(lib.equals(name))      // lib=="lib/libQtFoo.so.4"
-		                    return true;
+		                    return new Availability(libraryEntry);
 		                String[] pathA = name.split("\\/");
 		                if(pathA == null || pathA.length == 0)
 		                    continue;
 		                String lastPart = pathA[pathA.length - 1];
 		                if(lib.equals(lastPart))  // lib=="libQtFoo.so.4"
-		                    return true;
+		                	return new Availability(libraryEntry);
 		            }
 	            }
 	        }
@@ -963,7 +976,7 @@ public class NativeLibraryManager {
         List<String> paths = new ArrayList<>();
         if (libPaths != null)
         	paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
-        switch (operatingSystem()) {
+        switch (operatingSystem) {
         case Windows:
     		libPaths = System.getenv("PATH");
         	break;
@@ -979,13 +992,13 @@ public class NativeLibraryManager {
         for (String path : paths) {
             File f = new File(path, lib);
             if (f.exists()) {
-            	return true;
+            	return new Availability(f);
             }
         }
-        return false;
+        return new Availability();
     }
 
-    public static List<String> unpackPlugins() {
+    static List<String> unpackPlugins() {
         if(activeDeploymentSpecA != null) {
             List<String> paths = new ArrayList<String>();
 
@@ -1025,7 +1038,7 @@ public class NativeLibraryManager {
     }
 
     // Made this more vissible to allow unpacking earlier on the startup process
-    public static DeploymentSpec[] unpack() {
+    private static DeploymentSpec[] unpack() {
         if (unpacked)
             return activeDeploymentSpecA;
         try {
@@ -1145,12 +1158,7 @@ public class NativeLibraryManager {
 
         reporter.report("Loading library: '", lib, "'...");
 
-        // First of all verify that we're allowed to load this library...
-        LibraryEntry e = neverLoad.get(lib);
-        if (e != null) {
-            throw new RuntimeException("Library '" + lib + "' cannot be loaded, deploy spec");
-        }
-
+        LibraryEntry e;
         // Try to load via deploy spec...
         e = libraryMap.get(lib);
         ClassLoader callerClassLoader = callerClass.getClassLoader();
@@ -1187,7 +1195,7 @@ public class NativeLibraryManager {
             List<String> paths = new ArrayList<>();
             if (libPaths != null)
                 paths.addAll(Arrays.asList(libPaths.split("\\"+File.pathSeparator)));
-        	switch (operatingSystem()) {
+        	switch (operatingSystem) {
             case Windows:
         		libPaths = System.getenv("PATH");
             	break;
@@ -1217,8 +1225,11 @@ public class NativeLibraryManager {
             }
             if (!loaded) {
                 throw new RuntimeException("Library '" + lib +"' was not found in 'java.library.path="
-                                           + libPaths + "'");
+                                           + paths + "'");
             }
+        }
+        if(result!=null && useFrameworks!=null && useFrameworks) {
+        	result = result.getParentFile().getParentFile();
         }
         return result;
     }
@@ -1356,52 +1367,66 @@ public class NativeLibraryManager {
             List<LibraryEntry> libraries = spec.getLibraries();
             if (libraries != null) {
                 for (LibraryEntry e : libraries) {
-                    reporter.report(" - copying over: '", e.getName(), "'...");
-
-                    InputStream in = null;
-                    OutputStream out = null;
-                    try {
-                        Enumeration<URL> resources = classLoader().getResources(e.getName());
-                        while (resources.hasMoreElements()) {
-                            URL url = resources.nextElement();
-                            String eform = url.toExternalForm();
-                            if (eform.contains(jarName)) {
-                                in = url.openStream();
-                                reporter.report("    - matched url: ", url.toExternalForm());
-                            } else if (VERBOSE_LOADING) {
-                                reporter.report("    - unmatched .jar file: ", eform);
-                            }
-                        }
-
-                        if (in == null) {
-//                            throw new FileNotFoundException("Library '" + e.getName()
-//                                                            + "' specified in qtjambi-deployment.xml in '"
-//                                                            + jarName + "' does not exist");
-                            continue;
-                        }
-
-                        File outFile = new File(tmpDir, e.getName());
+                	if(!(e instanceof SymlinkEntry)) {
+	                    reporter.report(" - copying over: '", e.getName(), "'...");
+	
+	                    InputStream in = null;
+	                    OutputStream out = null;
+	                    try {
+	                        Enumeration<URL> resources = classLoader().getResources(e.getName());
+	                        while (resources.hasMoreElements()) {
+	                            URL url = resources.nextElement();
+	                            String eform = url.toExternalForm();
+	                            if (eform.contains(jarName)) {
+	                                in = url.openStream();
+	                                reporter.report("    - matched url: ", url.toExternalForm());
+	                            } else if (VERBOSE_LOADING) {
+	                                reporter.report("    - unmatched .jar file: ", eform);
+	                            }
+	                        }
+	
+	                        if (in == null) {
+	//                            throw new FileNotFoundException("Library '" + e.getName()
+	//                                                            + "' specified in qtjambi-deployment.xml in '"
+	//                                                            + jarName + "' does not exist");
+	                            continue;
+	                        }
+	
+	                        File outFile = new File(tmpDir, e.getName());
+	                        File outFileDir = outFile.getParentFile();
+	                        if (!outFileDir.exists()) {
+	                            reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
+	                            outFileDir.mkdirs();
+	                        }
+	
+	                        out = new FileOutputStream(new File(tmpDir, e.getName()));
+	                        try {
+	                            copy(in, out);
+	                        } finally {
+	                            in = null;    // copy() ALWAYS closes it for us
+	                            out = null;   // copy() ALWAYS closes it for us
+	                        }
+	                    } finally {
+	                        if(in != null) {
+	                            try {
+	                                in.close();
+	                            } catch(IOException eat) {
+	                            }
+	                        }
+	                    }
+                	}
+                }
+                for (LibraryEntry e : libraries) {
+                	if(e instanceof SymlinkEntry) {
+                		SymlinkEntry s = (SymlinkEntry)e;
+                		File outFile = new File(tmpDir, s.getName());
                         File outFileDir = outFile.getParentFile();
                         if (!outFileDir.exists()) {
                             reporter.report(" - creating directory: ", outFileDir.getAbsolutePath());
                             outFileDir.mkdirs();
                         }
-
-                        out = new FileOutputStream(new File(tmpDir, e.getName()));
-                        try {
-                            copy(in, out);
-                        } finally {
-                            in = null;    // copy() ALWAYS closes it for us
-                            out = null;   // copy() ALWAYS closes it for us
-                        }
-                    } finally {
-                        if(in != null) {
-                            try {
-                                in.close();
-                            } catch(IOException eat) {
-                            }
-                        }
-                    }
+                        Files.createSymbolicLink(outFile.toPath(), new File(tmpDir, s.getTarget()).toPath());
+                	}
                 }
             }
 
@@ -1419,18 +1444,10 @@ public class NativeLibraryManager {
             spec.setBaseUrl(new URL(deploymentSpec, path));
         }
 
-        // Load the libraries tagged for loading...
-        // FIXME: Like the unpack operation, this should be a separate API call to cause loading 
-        List<LibraryEntry> libraries = spec.getLibraries();
-        for (LibraryEntry e : libraries) {
-            if (e.getLoad() == LOAD_TRUE)
-                loadSystemLibrary(e.getName());
-        }
-
         return spec;
     }
 
-    public static boolean loadSystemLibrary(String name) {
+    private static boolean loadSystemLibrary(String name) {
         DeploymentSpec[] activeSpecA = getActiveDeploymentSpec();
         if(activeSpecA == null)
             throw new RuntimeException("No active deployment spec is set");
@@ -1454,40 +1471,6 @@ public class NativeLibraryManager {
         return true;
     }
 
-    private static String jniLibraryName(String lib, String version) {
-        String dotVersion;
-        if(version != null && !version.isEmpty()) {
-            dotVersion = "." + version;
-        } else {
-            version = "";
-            dotVersion = "";
-        }
-        switch (operatingSystem()) {
-        case Windows: 
-        	if (configuration == Configuration.Debug)
-                lib += "d";
-        	if(VERSION_MAJOR>=5){
-        		return lib + version + ".dll";  // "foobar1.dll"
-        	}else{
-        		return lib + ".dll";  // "foobar1.dll"
-        	}
-        case MacOSX: 
-        	if (configuration == Configuration.Debug)
-                lib += "_debug";
-        	return "lib" + lib + dotVersion + ".jnilib";  // "libfoobar.1.jnilib"
-        case Linux:
-        case FreeBSD: 
-        	if (configuration == Configuration.Debug)
-                lib += "_debug";
-			return "lib" + lib + ".so" + dotVersion;  // "libfoobar.so.1"
-		case SunOS:
-			break;
-		default:
-			break;
-        }
-        throw new RuntimeException("Unreachable statement");
-    }
-
     private static String jambiLibraryName(String prefix, String lib, String version) {
         String dotVersion;
         if(version != null) {
@@ -1498,7 +1481,7 @@ public class NativeLibraryManager {
         }
         if(prefix!=null)
         	lib = prefix + lib;
-        switch (operatingSystem()) {
+        switch (operatingSystem) {
         case Windows: {
         	if (configuration == Configuration.Debug)
                 lib += "d";
@@ -1526,7 +1509,7 @@ public class NativeLibraryManager {
     }
 
 
-    private static String qtLibraryName(String qtprefix, String lib, String libInfix, String version) {
+    private static String qtLibraryName(String qtprefix, String lib, String libInfix, String version, Configuration configuration) {
         String dotVersion;
         if(libInfix==null){
         	libInfix = "";
@@ -1537,28 +1520,34 @@ public class NativeLibraryManager {
             version = "";
             dotVersion = "";
         }
+        String _version = version;
+        String _lib = lib;
         if(qtprefix!=null){
-        	lib = qtprefix + version + lib;
-    		version = "";
+        	_lib = qtprefix + version + lib;
+    		_version = "";
     	}
-        String prefix = lib.startsWith("lib") ? "" : "lib";
-        switch (operatingSystem()) {
+        String prefix = _lib.startsWith("lib") ? "" : "lib";
+        switch (operatingSystem) {
         case Windows:
-            return configuration == Configuration.Debug
-                ? lib + libInfix + "d" + version + ".dll"  // "QtFood4.dll"
-                : lib + libInfix + version + ".dll";  // "QtFoo4.dll"
+            return configuration == Configuration.Debug && !isMinGWBuilt
+                ? _lib + libInfix + "d" + _version + ".dll"  // "QtFood4.dll"
+                : _lib + libInfix + _version + ".dll";  // "QtFoo4.dll"
         case MacOSX:
-        	if(versionA!=null && versionA.length>1 && versionA[0]>=5 && versionA[1]>=14) {
-        		return prefix + lib + libInfix + dotVersion + ".dylib";
+        	if(useFrameworks!=null && useFrameworks) {
+        		return String.format("%1$s%2$s.framework/Versions/%3$s/%1$s%2$s", qtprefix, lib, version);
         	}else {
-	            return configuration == Configuration.Debug
-	                ? prefix + lib + libInfix + "_debug" + dotVersion + ".dylib"  // "libQtFoo_debug.4.dylib"
-	                : prefix + lib + libInfix + dotVersion + ".dylib";  // "libQtFoo.4.dylib"
+	        	if(versionA!=null && versionA.length>1 && versionA[0]>=5 && versionA[1]>=14) {
+	        		return prefix + _lib + libInfix + dotVersion + ".dylib";
+	        	}else {
+		            return configuration == Configuration.Debug
+		                ? prefix + _lib + libInfix + "_debug" + dotVersion + ".dylib"  // "libQtFoo_debug.4.dylib"
+		                : prefix + _lib + libInfix + dotVersion + ".dylib";  // "libQtFoo.4.dylib"
+	        	}
         	}
         case Linux:
         case FreeBSD:
             // Linux doesn't have a dedicated "debug" library since 4.2
-            return prefix + lib + libInfix + ".so" + dotVersion;  // "libQtFoo.so.4"
+            return prefix + _lib + libInfix + ".so" + dotVersion;  // "libQtFoo.so.4"
 		case SunOS:
 			break;
 		default:
@@ -1609,13 +1598,12 @@ public class NativeLibraryManager {
         return bf;
     }
 
-    public static boolean isUsingDeploymentSpec() {
+    static boolean isUsingDeploymentSpec() {
         unpack();
         return deploymentSpecs != null && deploymentSpecs.size() != 0;
     }
 
     private static Map<String, LibraryEntry> libraryMap = new HashMap<String, LibraryEntry>();
-    private static Map<String, LibraryEntry> neverLoad = new HashMap<String, LibraryEntry>();
     private static List<DeploymentSpec> deploymentSpecs = new ArrayList<DeploymentSpec>();
     private static Reporter reporter = new Reporter();
     static {
@@ -1640,7 +1628,7 @@ public class NativeLibraryManager {
         return sb.toString();
     }
 
-    public static String convertAbsolutePathStringToFileUrlString(String pathString) {
+    private static String convertAbsolutePathStringToFileUrlString(String pathString) {
         if(File.separatorChar == '\\')
             pathString = stringCharReplace(pathString, '\\', '/');  // windows
         String schemePrefix;
@@ -1651,11 +1639,11 @@ public class NativeLibraryManager {
         return schemePrefix + pathString;
     }
 
-    public static String convertAbsolutePathStringToFileUrlString(File file) {
+    private static String convertAbsolutePathStringToFileUrlString(File file) {
         return convertAbsolutePathStringToFileUrlString(file.getAbsolutePath());
     }
 
-    public static int[] getVersion() {
+    static int[] getVersion() {
         return Arrays.copyOf(versionA, versionA.length);
     }
 
@@ -1689,7 +1677,7 @@ public class NativeLibraryManager {
      * @return Array of <code>new int[] { 1, 2, 3 };</code>
      * @throws NumberFormatException
      */
-    public static int[] getVersion(String versionString) {
+    static int[] getVersion(String versionString) {
         String[] sA = versionString.split("\\.");
         int[] vA = new int[sA.length];
         int i = 0;
@@ -1718,8 +1706,23 @@ public class NativeLibraryManager {
 
     }
 
-	public static OperatingSystem operatingSystem() {
-		return operatingSystem;
-	}
-
+    /** 
+     * Enum for defining the operation system.
+     */
+    private enum OperatingSystem {
+        Windows,
+        MacOSX,
+        Linux,
+        FreeBSD,
+        SunOS;
+    }
+    
+    /** 
+     * Enum for defining whether Qt is build in Release or Debug. 
+     */
+    enum Configuration {
+        Release,
+        Debug,
+        Test;
+    }
 }

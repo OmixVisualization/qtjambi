@@ -2,7 +2,7 @@
     <property name="module-name" value="qtjambi.quickwidgets"/>
     <property name="qtjambi-module-name" value="QtJambiQuickWidgets"/>
     <path id="qtjambi.modulepath">
-        <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar qtjambi-qml-${qtjambi.jar.version}.jar qtjambi-quick-${qtjambi.jar.version}.jar"/>
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar qtjambi-network-${qtjambi.jar.version}.jar qtjambi-qml-${qtjambi.jar.version}.jar qtjambi-quick-${qtjambi.jar.version}.jar"/>
     </path>
     <target name="build">
         <condition property="build.module" value="true">

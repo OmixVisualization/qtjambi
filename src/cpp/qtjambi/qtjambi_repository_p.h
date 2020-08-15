@@ -354,6 +354,7 @@ namespace Java{
                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(createAssociation)
                 QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(deleteAssociation)
                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
+                QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(loadPluginInstance)
                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(shutdown)
             )
 

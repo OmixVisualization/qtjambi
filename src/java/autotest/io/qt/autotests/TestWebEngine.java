@@ -46,6 +46,7 @@ import io.qt.widgets.QApplication;
 public class TestWebEngine extends QApplicationTest {
     @BeforeClass
     public static void testInitialize() throws Exception {
+    	QtWebEngine.initialize();
     	if(QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.MacOS)
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
         QApplicationTest.testInitialize();
@@ -58,7 +59,6 @@ public class TestWebEngine extends QApplicationTest {
 		} catch (ClassNotFoundException e) {
 		}
     	assumeThat(found, QApplicationTest.trueMatcher("QWebEngineView not available."));
-    	QtWebEngine.initialize();
     }
 
     @Test

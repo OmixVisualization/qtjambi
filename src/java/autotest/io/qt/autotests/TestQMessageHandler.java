@@ -31,8 +31,6 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -41,7 +39,6 @@ import io.qt.autotests.generated.MessageHandler;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QMessageHandler;
 import io.qt.core.QThread;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 
 public class TestQMessageHandler extends QMessageHandler {
@@ -76,7 +73,6 @@ public class TestQMessageHandler extends QMessageHandler {
         if(QCoreApplication.instance()==null) {
 			Utils.println(2, "QApplicationTest.testInitialize(): begin");
 		    io.qt.QtResources.addSearchPath(".");
-		    QCoreApplication.setLibraryPaths(Arrays.asList(QtJambiInternal.qtPrefix()+"/plugins"));
 		    QCoreApplication.setApplicationName("QtJambiUnitTest");
 		    QApplication.initialize(new String[]{});
 		    Utils.println(2, "QApplicationTest.testInitialize(): done");

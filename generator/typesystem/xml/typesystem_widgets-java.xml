@@ -1552,7 +1552,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                changedSignal = io.qt.internal.MetaObjectTools.cppSlotSignature(changedSignal);
+                changedSignal = cppSlotSignature(changedSignal);
             </inject-code>
         </modify-function>
     </object-type>
@@ -1837,7 +1837,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = io.qt.internal.MetaObjectTools.cppSlotSignature(member);
+                member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
         <modify-function signature="getRgba(uint,bool*,QWidget*)">
@@ -1869,7 +1869,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = io.qt.internal.MetaObjectTools.cppSlotSignature(member);
+                member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
         <modify-function signature="getInt(QWidget*,const QString &amp;,const QString &amp;,int,int,int,int,bool*,QFlags&lt;Qt::WindowType&gt;)">
@@ -1985,7 +1985,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = io.qt.internal.MetaObjectTools.cppSlotSignature(member);
+                member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
         <modify-function signature="getExistingDirectory(QWidget*,QString,QString,QFlags&lt;QFileDialog::Option&gt;)">
@@ -2125,7 +2125,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = io.qt.internal.MetaObjectTools.cppSlotSignature(member);
+                member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
         <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)">

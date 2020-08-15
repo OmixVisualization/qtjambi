@@ -53,7 +53,6 @@
     initialize_pre_and_post_routines();
     </inject-code>
     <inject-code class="java" position="end">
-    io.qt.internal.QtJambiInternal.findPlugins();
     QMessageHandler.initialize();
     QThread.initializeCurrentThread();
     </inject-code>
@@ -2037,7 +2036,7 @@
         <modify-function signature="receivers(const char*)const">
               <inject-code class="java">
                 <argument-map index="1" meta-name="%1"/>
-                      %1 = io.qt.internal.MetaObjectTools.cppSignalSignature(this, %1);
+                      %1 = cppSignalSignature(this, %1);
                       if(%1.isEmpty())
                         return 0;
               </inject-code>
@@ -2109,12 +2108,6 @@
                 <argument-map index="1" meta-name="%1"/>
                 if(%1!=null)
                     threadCheck(%1, "Cannot send posted events for objects in another thread");
-            </inject-code>
-      </modify-function>
-      <modify-function signature="addLibraryPath(QString)">
-            <inject-code class="java" position="end">
-                <argument-map index="1" meta-name="%1"/>
-                findPlugins(%1);
             </inject-code>
       </modify-function>
       <inject-code>
@@ -3062,12 +3055,12 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                signal = io.qt.internal.MetaObjectTools.cppSignalSignature(sender, signal);
+                signal = cppSignalSignature(sender, signal);
             </inject-code>
         </modify-function>
         <modify-function signature="setSignal(const QByteArray &amp;)">
             <inject-code class="java" position="beginning">
-                signal = io.qt.internal.MetaObjectTools.cppSignalSignature(signal);
+                signal = cppSignalSignature(signal);
             </inject-code>
         </modify-function>
     </object-type>
@@ -3080,7 +3073,7 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                signal = io.qt.internal.MetaObjectTools.cppSignalSignature(sender, signal);
+                signal = cppSignalSignature(sender, signal);
             </inject-code>
         </modify-function>
         <modify-function signature="assignProperty(QObject *, const char *, const QVariant &amp;)">
@@ -3444,6 +3437,26 @@
       </inject-code>
     </value-type>
     <value-type name="QCborMap" since="5.12.0">
+      <modify-function signature="insert(QString,QCborValue)">
+        <modify-argument index="return" replace-value="this">
+            <replace-type modified-type="io.qt.core.QCborMap" />
+        </modify-argument>
+      </modify-function>
+      <modify-function signature="insert(long long,QCborValue)">
+        <modify-argument index="return" replace-value="this">
+            <replace-type modified-type="io.qt.core.QCborMap" />
+        </modify-argument>
+      </modify-function>
+      <modify-function signature="insert(QCborValue,QCborValue)">
+        <modify-argument index="return" replace-value="this">
+            <replace-type modified-type="io.qt.core.QCborMap" />
+        </modify-argument>
+      </modify-function>
+      <modify-function signature="insert(QPair&lt;QCborValue,QCborValue&gt;)">
+        <modify-argument index="return" replace-value="this">
+            <replace-type modified-type="io.qt.core.QCborMap" />
+        </modify-argument>
+      </modify-function>
       <inject-code>
           <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QCborMap_java__" quote-before-line="}// class"/>
       </inject-code>

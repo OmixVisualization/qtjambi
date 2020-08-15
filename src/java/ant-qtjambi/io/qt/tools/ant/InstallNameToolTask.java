@@ -35,13 +35,21 @@
 
 package io.qt.tools.ant;
 
+import static io.qt.tools.ant.PlatformJarTask.getOtoolOut;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
+
+import io.qt.tools.ant.PlatformJarTask.OToolOut;
 
 public class InstallNameToolTask extends Task {
 
@@ -58,13 +66,13 @@ public class InstallNameToolTask extends Task {
         int qtMinorVersion = Integer.parseInt(""+PropertyHelper.getProperty(getProject(), "qtjambi.soname.version.minor"));
         String libInfix = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qt.libinfix");
         String qtlibdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qt.libdir");
-
+        
         String debugLib1 = debug ? "_debug" : "";
         String debugQtLib = debugLib1;
         if(qtMajorVersion==5 && qtMinorVersion>=14){
         	debugQtLib = "";
         }
-        String[] libraries = {"Network", "Core", "Gui", "Widgets", "Quick", "Sql", "Xml", "Qml"};
+        String[] libraries = {"Network", "Core", "Gui", "Widgets", "Quick", "Sql", "Xml", "Qml", "QmlModels"};
         File dirExecute = null;
         String libraryName = "lib"+appname+debugLib1+".jnilib";
         if(dir != null){
@@ -73,49 +81,91 @@ public class InstallNameToolTask extends Task {
                 return;
             }
         }
+        boolean no_otool = false;
+        try {
+        	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), dirExecute, getProject(), null, null, false);
+        	if(out.length<2 || out[0]==null || !out[0].contains("Apple")) {
+        		no_otool = true;
+        	}
+        } catch ( Exception e ) {
+        	no_otool = true;
+        }
+        OToolOut otoolOut = no_otool ? null : getOtoolOut(this, libraryName, dirExecute);
+        if(otoolOut==null && !no_otool) {
+        	getProject().log(this, "otool does not provide info for " + libraryName, Project.MSG_INFO);
+        }
         final List<String> command =  new ArrayList<String>();
         command.add("install_name_tool");
         command.add("-change");
         command.add("");
-        command.add("@loader_path/");
+        command.add("@rpath/");
         command.add(libraryName);
         for (String library : new String[]{
             "libQtJambi"+debugLib1+"."+qtMajorVersion+".jnilib"
         }) {
             command.set(2, library);
-            command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/"+library);
+            command.set(3, "@rpath/"+library);
             Exec.execute(this, command, dirExecute, getProject());
         }
         
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
-        boolean useQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_QT_FRAMEWORK));
-        if(useQtFrameworks){
+        boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK));
+        boolean convertQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK));
+        if(convertQtFrameworks){
             for (String library : libraries) {
                 command.set(2, "@rpath/Qt"+library+".framework/Versions/"+qtMajorVersion+"/Qt"+library);
-                command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
+                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
                 Exec.execute(this, command, dirExecute, getProject());
             }
-        }else{
-            for (String library : libraries) {
-                command.set(2, "libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-                command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-                Exec.execute(this, command, dirExecute, getProject());
-            }
+        }else {
+        	if(!useFrameworks) {
+	        	for (String library : libraries) {
+	                command.set(2, "libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
+	                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
+	                Exec.execute(this, command, dirExecute, getProject());
+	            }
+        	}
             if(qtlibdir!=null){
                 for (String library : new String[]{
                     "libQtJambi"+debugLib1+"."+qtMajorVersion+".jnilib"
                 }) {
                     command.set(2, qtlibdir+"/"+library);
-                    command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/"+library);
+                    command.set(3, "@rpath/"+library);
                     Exec.execute(this, command, dirExecute, getProject());
                 }
                 for (String library : libraries) {
                     command.set(2, qtlibdir+"/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-                    command.set(3, "@loader_path/../../platform-output" + ( debug ? "-debug" : "" ) + "/lib/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
+                    command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
                     Exec.execute(this, command, dirExecute, getProject());
                 }
             }
         }
+        Set<String> deleteCommands = new TreeSet<>();
+        String path = "@executable_path/../Frameworks";
+        if(otoolOut==null || otoolOut.rpaths.contains(path)) {
+        	deleteCommands.add(path);
+        }
+        path = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
+		if(otoolOut==null || otoolOut.rpaths.contains(path)) {
+			deleteCommands.add(path);
+		}
+		List<String> deletes = new ArrayList<>(deleteCommands);
+		while(!deletes.isEmpty()) {
+    		List<String> commands = new ArrayList<>();
+			commands.add("install_name_tool");
+    		for (int i = 0; i < 10 && i < deletes.size(); i++) 
+    		{
+                commands.add("-delete_rpath");
+				commands.add(deletes.remove(0));
+			}
+			commands.add(libraryName);
+			try{
+				Exec.exec(this, commands.toArray(new String[commands.size()]), dirExecute, getProject(), false);
+			} catch ( BuildException e )
+	        {
+	        	getProject().log(this, " - " + (e.getMessage()!=null && !e.getMessage().isEmpty() ? e.getMessage() : e), e, Project.MSG_INFO);
+	        }
+    	}
     }
 
     public void setMessage(String msg) {

@@ -34,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.QApplicationTest;
-import io.qt.core.QDir;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
 import io.qt.gui.QMatrix4x4;
@@ -59,10 +58,6 @@ public class TestQQmlListProperty extends QApplicationTest {
 		QtUtilities.initializePackage("io.qt.quick");
 		QtUtilities.initializePackage("io.qt.network");
 		engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 	    component = new QQmlComponent(engine);
 	    component.setData(
 	                "import QtQuick 2.5\n"+

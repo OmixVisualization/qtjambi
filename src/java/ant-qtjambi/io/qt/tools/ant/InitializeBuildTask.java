@@ -496,56 +496,24 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        detectMacosxSdk(wantedSdk);
         }
         {
-        	String trdir = AntUtil.getPropertyAsString(propertyHelper, Constants.TRANSLATIONSDIR);
-        	if(new File(trdir, "qtwebengine_locales").isDirectory()) {
-        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales", "true");
-        	}
-        }
-        {
             String privateIncludes = "";
             String generatorIncludepaths = AntUtil.getPropertyAsString(propertyHelper, Constants.GENERATOR_INCLUDEPATHS);
             if(OSInfo.isMacOS() && useQtFramework){
                 String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
-                boolean noResources = true;
-                boolean noWebEngineTool = true;
                 for(File frameworkDir : new File(libdir).listFiles()){
                     if(frameworkDir.isDirectory() && frameworkDir.getName().endsWith(".framework")){
                         String libName = frameworkDir.getName();
                         libName = libName.substring(0, libName.length()-10);
-                        if(libName.equals("QtWebEngineCore")) {
-                        	File resources = new File(frameworkDir, "/Resources");
-                        	if(resources.isDirectory()) {
-	                    		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", resources.getAbsolutePath());
-	                    		noResources = false;
-                        	}
-                        	File helper = new File(frameworkDir, "/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess");
-                        	if(helper.isFile()) {
-                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", helper.getParentFile().getAbsolutePath());
-                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess", "QtWebEngineProcess");
-                        		noWebEngineTool = false;
-                        	}
-                        }
                         File headers = new File(frameworkDir, "/Versions/" + qtMajorVersion + "/Headers");
                         if(privateModules.contains(libName)){
                             privateIncludes += headers.getAbsolutePath() + "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion +";";
                         }
                     }
                 }
-                if(noResources)
-                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
-                if(noWebEngineTool) {
-                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
-                }
             }else{
                 String includedir = AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR);
                 for(String privateModule : privateModules){
                     privateIncludes += new File(new File(includedir), privateModule + "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion).getAbsolutePath() + ";";
-                }
-                AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
-                if(OSInfo.isWindows()) {
-                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR));
-                }else {
-                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
                 }
             }
             if(generatorIncludepaths!=null)
@@ -967,6 +935,61 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        boolean quickShapesAvailable = quickAvailable
 	        		&& detectQtDsoExistAndSetProperty("qtjambi.quickshapes", "QtQuickShapes", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
+	        if(webengineCoreAvailable){
+	        	String trdir = AntUtil.getPropertyAsString(propertyHelper, Constants.TRANSLATIONSDIR);
+	        	if(new File(trdir, "qtwebengine_locales").isDirectory()) {
+	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales", "true");
+	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales.debug", "true");
+	        	}
+	        	if(OSInfo.isMacOS() && useQtFramework){
+	            	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
+		                String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
+		                boolean noResources = true;
+		                boolean noWebEngineTool = true;
+		                for(File frameworkDir : new File(libdir).listFiles()){
+		                    if(frameworkDir.isDirectory() && frameworkDir.getName().endsWith(".framework")){
+		                        String libName = frameworkDir.getName();
+		                        libName = libName.substring(0, libName.length()-10);
+		                        if(libName.equals("QtWebEngineCore")) {
+		                        	File resources = new File(frameworkDir, "/Resources");
+		                        	if(resources.isDirectory()) {
+			                    		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", resources.getAbsolutePath());
+			                    		noResources = false;
+		                        	}
+		                        	File helper = new File(frameworkDir, "/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess");
+		                        	if(helper.isFile()) {
+		                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", helper.getParentFile().getAbsolutePath());
+		                        		AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess", "QtWebEngineProcess");
+		                        		noWebEngineTool = false;
+		                        	}
+		                        }
+		                    }
+		                }
+		                if(noResources)
+		                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
+		                if(noWebEngineTool) {
+		                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
+		                }
+		                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "true");
+		                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "true");
+	            	}else {
+	            		AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "false");
+	            		AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "false");
+	            	}
+	            }else{
+	                String includedir = AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR);
+	                AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
+	                if(OSInfo.isWindows()) {
+	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR));
+	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.targetdir", "bin");
+	                }else {
+	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.LIBEXECDIR));
+	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.targetdir", "libexec");
+	                }
+	                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.true", "true");
+	                AntUtil.setProperty(propertyHelper, "qtjambi.webenginecore.resources.debug.true", "true");
+	            }
+	        }
 	        
         	detectQtPluginExistAndSetProperty(Constants.PLUGINS_ACCESSIBLE_QTACCESSIBLEWIDGETS, "accessible", "qtaccessiblewidgets", null, null, null);
 
@@ -1259,9 +1282,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        }
 	        
 	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBSTDC___6,     decideQtBinDso(Constants.PACKAGING_DSO_LIBSTDC___6,     "libstdc++-6", null, null, null));
-	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBGCC_S_DW2_1,  decideQtBinDso(Constants.PACKAGING_DSO_LIBGCC_S_DW2_1,  "libgcc_s_dw2-1", null, null, null));
-	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBGCC_S_SJLJ_1, decideQtBinDso(Constants.PACKAGING_DSO_LIBGCC_S_SJLJ_1, "libgcc_s_sjlj-1", null, null, null));
-	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_MINGWM10,        decideQtBinDso(Constants.PACKAGING_DSO_MINGWM10,        "mingwm10", null, null, null));
+	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_LIBGCC_S_SEH_1,  decideQtBinDso(Constants.PACKAGING_DSO_LIBGCC_S_SEH_1,  "libgcc_s_seh-1", null, null, null));
+	        AntUtil.setNewProperty(propertyHelper, Constants.PACKAGING_DSO_WINPTHREAD,        decideQtBinDso(Constants.PACKAGING_DSO_WINPTHREAD,        "libwinpthread-1", null, null, null));
 
 
 	        String packagingDsoLibeay32 = decideQtBinDso(Constants.PACKAGING_DSO_LIBEAY32, "libeay32", null, null, false);
@@ -2334,6 +2356,22 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         } else {
             dsoPath = doesQtLibOrBinExist(name, infix, majorVersion, minorVersion, patchVersion, Boolean.FALSE);
             dsoDebugPath = doesQtLibOrBinExist(name, infix, majorVersion, minorVersion, patchVersion, Boolean.TRUE);
+            if(dsoDebugPath==null && dsoPath!=null) {
+            	FindCompiler.Compiler compiler = FindCompiler.Compiler.resolve(AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER));
+                switch(compiler) {
+                case MinGW:
+                case MinGW_W64:
+                	File file = new File(dsoPath);
+                	String _name = file.getName()+".debug";
+                	file = new File(file.getParentFile().getParentFile(), "lib");
+                	file = new File(file, _name);
+                    if(file.exists()) {
+                    	AntUtil.setNewProperty(propertyHelper, propName + ".debug.true", "true");
+                    	dsoDebugPath = dsoPath;
+                    }
+                	default:
+                }
+            }
             //if(dsoPath != null && dsoPath.equals(dsoDebugPath))
             //    dsoDebugPath = null;  // same name on linux it can only be one kind
         }
@@ -2387,6 +2425,21 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             pluginDebugPath = doesQtPluginExist(pluginSubdir, name, Boolean.TRUE);
             //if(pluginPath != null && pluginPath.equals(pluginDebugPath))
             //    pluginDebugPath = null;  // same name on linux it can only be one kind
+        }
+        if(pluginDebugPath==null && pluginPath!=null) {
+        	FindCompiler.Compiler compiler = FindCompiler.Compiler.resolve(AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER));
+            switch(compiler) {
+            case MinGW:
+            case MinGW_W64:
+            	File file = new File(pluginPath);
+            	String _name = file.getName()+".debug";
+            	file = new File(file.getParentFile(), _name);
+                if(file.exists()) {
+                	AntUtil.setNewProperty(propertyHelper, propName + ".debug.true", "true");
+                	pluginDebugPath = pluginPath;
+                }
+            	default:
+            }
         }
 
         String pluginDebugFilename = null;
@@ -2453,6 +2506,21 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             qmlLibDebugPath = doesQtQmlModuleExist(qmlSubdir, name, Boolean.TRUE);
             //if(qmlLibPath != null && qmlLibPath.equals(qmlLibDebugPath))
             //    qmlLibDebugPath = null;  // same name on linux it can only be one kind
+        }
+        if(qmlLibDebugPath==null && qmlLibPath!=null) {
+        	FindCompiler.Compiler compiler = FindCompiler.Compiler.resolve(AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER));
+            switch(compiler) {
+            case MinGW:
+            case MinGW_W64:
+            	File file = new File(qmlLibPath);
+            	String _name = file.getName()+".debug";
+            	file = new File(file.getParentFile(), _name);
+                if(file.exists()) {
+                	AntUtil.setNewProperty(propertyHelper, propName + ".debug.true", "true");
+                	qmlLibDebugPath = qmlLibPath;
+                }
+            	default:
+            }
         }
 
         String qmlLibDebugFilename = null;
@@ -2746,7 +2814,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 								break loop;
 							}
 						}else if(OSInfo.isMacOS() && libfile.isDirectory() && fileName.equals("QtGui.framework")){
-                            mySetProperty(-1, Constants.MAC_OS_USE_QT_FRAMEWORK, " (as detected in lib directory)", "true", false);
+                            mySetProperty(-1, Constants.MAC_OS_USE_FRAMEWORK, " (as detected in lib directory)", "true", false);
                             useQtFramework = true;
                             break loop;
                         }

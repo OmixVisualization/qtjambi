@@ -27,7 +27,11 @@ CONFIG(debug, debug|release) {
     win32:{
         TARGET = $$member(TARGET, 0)d
     }else{
-        TARGET = $$member(TARGET, 0)_debug
+        macx:{
+            TARGET = $$member(TARGET, 0)_debug
+        }else{
+            TARGET = $$member(TARGET, 0)_debug
+        }
     }
 }
 

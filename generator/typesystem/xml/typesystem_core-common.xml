@@ -1151,7 +1151,13 @@
     <enum-type name="QCborValue::Type" since="5.12.0"/>
     <iterator-type name="QCborArray::ConstIterator" java-name="Iterator" since="5.12.0"/>
     <value-type name="QCborMap" since="5.12.0">
+        <modify-function signature="erase(QCborMap::Iterator)" remove="all"/>
+        <modify-function signature="extract(QCborMap::Iterator)" remove="all"/>
+        <modify-function signature="erase(QCborMap::ConstIterator)" remove="all"/>
+        <modify-function signature="extract(QCborMap::ConstIterator)" remove="all"/>
+        <modify-function signature="end()" remove="all"/>
         <modify-function signature="cend()const" remove="all"/>
+        <modify-function signature="begin()" remove="all"/>
         <modify-function signature="cbegin()const" remove="all"/>
         <modify-function signature="constEnd()const" remove="all"/>
         <modify-function signature="constBegin()const" remove="all"/>
@@ -1159,12 +1165,17 @@
         <modify-function signature="constFind(QString) const" remove="all"/>
         <modify-function signature="constFind(QLatin1String) const" remove="all"/>
         <modify-function signature="constFind(long long) const" remove="all"/>
+        <modify-function signature="find(QLatin1String)" remove="all"/>
         <modify-function signature="find(QLatin1String) const" remove="all"/>
+        <modify-function signature="find(QCborValue)" remove="all"/>
+        <modify-function signature="find(QString)" remove="all"/>
+        <modify-function signature="find(long long)" remove="all"/>
+        <modify-function signature="insert(QLatin1String,QCborValue)" remove="all"/>
         <modify-function signature="operator[](QLatin1String)" remove="all"/>
-        <modify-function signature="operator[](QLatin1String)const" remove="all"/>
         <modify-function signature="operator[](QString)" remove="all"/>
         <modify-function signature="operator[](long long)" remove="all"/>
         <modify-function signature="operator[](QCborValue)" remove="all"/>
+        <modify-function signature="operator[](QLatin1String)const" remove="all"/>
         <modify-function signature="operator[](QString)const" remove="all"/>
         <modify-function signature="operator[](QCborValue)const" remove="all"/>
         <modify-function signature="operator[](long long)const" remove="all"/>
@@ -1177,7 +1188,8 @@
             </modify-argument>
         </modify-function>
     </value-type>
-    <iterator-type name="QCborMap::ConstIterator" java-name="Iterator" since="5.12.0"/>
+    <iterator-type name="QCborMap::ConstIterator" since="5.12.0"/>
+    <iterator-type name="QCborMap::Iterator" since="5.12.0"/>
     <object-type name="QCborStreamReader">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="local"/>

@@ -47,7 +47,6 @@ package io.qt.internal;
 // Package private as we don't expose it outside the package.
 class LibraryEntry {
     private String name;
-    private int load;
     private DeploymentSpec deploymentSpec;
     private boolean loaded;
 
@@ -56,13 +55,6 @@ class LibraryEntry {
     }
     void setName(String name) {
         this.name = name;
-    }
-
-    public int getLoad() {
-        return load;
-    }
-    void setLoad(int load) {
-        this.load = load;
     }
 
     public DeploymentSpec getDeploymentSpec() {

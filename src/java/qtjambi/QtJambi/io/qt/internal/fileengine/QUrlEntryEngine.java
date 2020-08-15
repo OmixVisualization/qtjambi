@@ -44,7 +44,7 @@ import io.qt.core.QIODevice.OpenMode;
 import io.qt.core.QIODevice.OpenModeFlag;
 
 @Deprecated
-public class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine implements QClassPathEntry{
+class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine implements QClassPathEntry{
 	private final String classPathEntryFileName;
 	private final URLConnection connection;
 	private InputStream inputStream;

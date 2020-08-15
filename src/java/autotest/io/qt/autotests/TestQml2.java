@@ -39,7 +39,6 @@ import io.qt.QtClassInfo;
 import io.qt.QtPropertyReader;
 import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
-import io.qt.core.QDir;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
 import io.qt.internal.NativeAccess;
@@ -100,10 +99,6 @@ public class TestQml2 extends QApplicationTest{
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
 		QtQml.qmlRegisterType(TestObjects.class, "io.qt.test", 1, 0, "TestObjects");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" + 
 				"TestObjects {\n" + 
@@ -135,10 +130,6 @@ public class TestQml2 extends QApplicationTest{
 		QtQml.qmlClearTypeRegistrations();
 		QQuickItem.Flag.values();// ensures QtQuick to be loaded
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 	    QQmlComponent component = new QQmlComponent(engine);
 	    component.loadUrl(QUrl.fromClassPath("io/qt/autotests/qml/Root.qml"));
 	    QObject root = component.create();

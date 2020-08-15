@@ -44,7 +44,7 @@
 
 package io.qt.internal;
 
-public class Reporter {
+class Reporter {
 
     public void report(String a) {
         if (!report) return;

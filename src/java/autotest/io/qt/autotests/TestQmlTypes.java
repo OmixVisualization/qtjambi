@@ -32,7 +32,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QByteArray;
-import io.qt.core.QDir;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
@@ -49,10 +48,6 @@ public class TestQmlTypes extends QApplicationTest{
 		QmlTypes.registerPackage("io.qt.autotests.qmltypes");
 		QByteArray data = new QByteArray("import io.qt.autotests.qmltypes 5.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	qmlengine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(qmlengine);
 		component.setData(data, null);
 		QObject car = component.create();

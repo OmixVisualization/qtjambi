@@ -100,12 +100,12 @@ import io.qt.core.QDataStream;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QJsonDocument;
 import io.qt.core.QJsonDocument.FromJsonResult;
 import io.qt.core.QJsonObject;
 import io.qt.core.QJsonParseError.ParseError;
-import io.qt.core.internal.QtPluginMetaData;
 import io.qt.core.QJsonValue;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -115,13 +115,16 @@ import io.qt.core.QPair;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.QString;
 import io.qt.core.QThread;
+import io.qt.core.internal.QtPluginMetaData;
 import io.qt.gui.QPixmap;
 import io.qt.gui.QWindow;
 import io.qt.internal.QtJambiSignals.AbstractSignal;
 import io.qt.internal.QtJambiSignals.SignalParameterType;
 import io.qt.widgets.QWidget;
 
-public class QtJambiInternal {
+public final class QtJambiInternal {
+	
+	private QtJambiInternal() { throw new RuntimeException();}
 	
 	public static class RCList extends ArrayList<Object> {
 		private static final long serialVersionUID = -4010060446825990721L;
@@ -339,7 +342,6 @@ public class QtJambiInternal {
 	private final static boolean threadAsserts;
 	static final ReferenceQueue<Object> referenceQueue = new ReferenceQueue<>();
 	private static final Thread cleanupRegistrationThread;
-	private static File qtPrefix;
 	private static boolean noJarPlugins = Boolean.parseBoolean(System.getProperty("io.qt.no-plugins", "false"));
 	private static final Set<String> analyzedPaths = new HashSet<>();
 	private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
@@ -3925,14 +3927,6 @@ public class QtJambiInternal {
 	
 	private native static void unregisterDependentObject(long dependentObject, long owner);
 
-	public static String qtPrefix() {
-		return qtPrefix==null ? null : qtPrefix.getAbsolutePath().replace(File.separatorChar, '/');
-	}
-
-	static void setQtPrefix(File qtPrefix) {
-		QtJambiInternal.qtPrefix = qtPrefix;
-	}
-	
 	/**
 	 * This method converts a native std::exception to it's causing java exception if any. 
 	 * @param exception
@@ -4134,7 +4128,9 @@ public class QtJambiInternal {
 											String appendLibPath = QString.join(libraryPaths, File.pathSeparatorChar);
 											qRegisterStaticPluginFunction(()->{
 												try {
-													System.setProperty("java.library.path", System.getProperty("java.library.path", "")+File.pathSeparatorChar+appendLibPath);
+													if(!appendLibPath.isEmpty()) {
+														System.setProperty("java.library.path", System.getProperty("java.library.path", "")+File.pathSeparatorChar+appendLibPath);
+													}
 													Class<? extends QObject> _cls = null;
 													pluginClassLoader.addURLs(urls);
 													Class<?> foundClass = pluginClassLoader.loadClass(className);
@@ -4236,6 +4232,42 @@ public class QtJambiInternal {
 		for(String location : QCoreApplication.libraryPaths()) {
 			findPlugins(location);
 		}
+	}
+	
+	@NativeAccess
+	private static QObject loadPluginInstance(String libPath, String className, String pluginName) {
+		try {
+			QFileInfo libFile = new QFileInfo(QDir.fromNativeSeparators(libPath));
+			if(libFile.exists()) {
+				List<URL> urls = new ArrayList<URL>();
+				QDir dir = libFile.dir();
+				if(dir.exists(pluginName+".jar")) {
+					QFileInfo jarFile = new QFileInfo(dir.filePath(pluginName+".jar"));
+					if(jarFile.isFile()) {
+						urls.add(new File(QDir.toNativeSeparators(jarFile.absoluteFilePath())).toURI().toURL());
+					}
+				}else{
+					QDir subdir = new QDir(dir.filePath(pluginName));
+					if(subdir.exists()) {
+						for(String jar : subdir.entryList(Arrays.asList("*.jar"), QDir.Filter.Files)) {
+							urls.add(new File(QDir.toNativeSeparators(subdir.absoluteFilePath(jar))).toURI().toURL());
+						}
+						if(!urls.isEmpty()) {
+							System.setProperty("java.library.path", System.getProperty("java.library.path", "")+File.pathSeparatorChar+QDir.toNativeSeparators(subdir.absolutePath()));
+						}
+					}
+				}
+				if(!urls.isEmpty()) {
+					pluginClassLoader.addURLs(urls);
+					Class<?> foundClass = pluginClassLoader.loadClass(className);
+					MethodHandle constructor = QtJambiInternal.privateLookup(foundClass).unreflectConstructor(foundClass.getDeclaredConstructor());
+					return (QObject)constructor.invoke();
+				}
+			}
+		} catch (Throwable e) {
+			Logger.getLogger("internal").log(Level.WARNING, "Unable to instantiate plugin "+pluginName, e);
+		}
+		return null;
 	}
 	
 	public static int countEventLoops(QThread thread) {
@@ -4448,4 +4480,66 @@ public class QtJambiInternal {
 	public static Supplier<Class<?>> callerClassProvider(){
 		return RetroHelper.callerClassProvider();
 	}
+	
+	public static native String getInterfaceIID(Class<?> cls);
+	
+	public static String cppSlotSignature(Object receiver, String slot) {
+		return MetaObjectTools.cppSlotSignature(receiver, slot);
+	}
+	
+	public static String cppSlotSignature(String slot) {
+		return MetaObjectTools.cppSlotSignature(slot);
+	}
+	
+	public static String cppSignalSignature(QMetaObject.AbstractSignal signal) {
+		return MetaObjectTools.cppSignalSignature(signal);
+	}
+	
+	public static String cppSignalSignature(QtSignalEmitterInterface signalEmitter, String signalName) {
+		return MetaObjectTools.cppSignalSignature(signalEmitter, signalName);
+	}
+	
+	public static String cppNormalizedSignature(String signalName) {
+		return MetaObjectTools.cppNormalizedSignature(signalName);
+	}
+	
+	public static String internalNameOfArgumentType(Class<? extends Object> cls) {
+		return MetaObjectTools.internalNameOfArgumentType(cls);
+	}
+	
+	public static QByteArray cppSignalSignature(QByteArray signal) {
+		return MetaObjectTools.cppSignalSignature(signal);
+	}
+	
+	public static boolean isAvailableQtLibrary(String library) {
+		return NativeLibraryManager.isAvailableQtLibrary(library);
+	}
+	
+	public static boolean isAvailableLibrary(String qtprefix, String library, String libInfix, String version) {
+		return NativeLibraryManager.isAvailableLibrary(qtprefix, library, libInfix, version);
+	}
+	
+	public static void loadQtLibrary(String library) {
+		NativeLibraryManager.loadQtLibrary(library);
+    }
+
+    public static void loadUtilityLibrary(String library, String version) {
+    	NativeLibraryManager.loadUtilityLibrary(library, version);
+    }
+    
+    public static void loadLibrary(String lib) {
+    	NativeLibraryManager.loadLibrary(lib);
+    }
+
+    public static File jambiTempDir() {
+        return NativeLibraryManager.jambiTempDir();
+    }
+    
+    public static void loadQtJambiLibrary(Class<?> callerClass, String library) {
+    	NativeLibraryManager.loadQtJambiLibrary(callerClass, library);
+    }
+    
+    public static void loadJambiLibrary(Class<?> callerClass, String prefix, String library) {
+    	NativeLibraryManager.loadJambiLibrary(callerClass, prefix, library);
+    }
 }

@@ -53,7 +53,6 @@ import io.qt.QtPropertyWriter;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.TestInterface;
 import io.qt.core.QByteArray;
-import io.qt.core.QDir;
 import io.qt.core.QEvent;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -286,10 +285,6 @@ public class TestQml extends QApplicationTest{
 				"    testChildren: [TestChild{objectName: \"child1\"}, TestChild{objectName: \"child2\"}]\n" +
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -319,10 +314,6 @@ public class TestQml extends QApplicationTest{
 				"    id: test\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -350,10 +341,6 @@ public class TestQml extends QApplicationTest{
 		QQmlEngine engine = new QQmlEngine();
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -383,10 +370,6 @@ public class TestQml extends QApplicationTest{
 		QQmlEngine engine = new QQmlEngine();
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -415,10 +398,6 @@ public class TestQml extends QApplicationTest{
 		QQmlEngine engine = new QQmlEngine();
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -444,10 +423,6 @@ public class TestQml extends QApplicationTest{
 				"    id: test\n" + 
 				"}");
 		QQmlApplicationEngine engine = new QQmlApplicationEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		try {
 			engine.loadData(data);
 			Assert.assertTrue("Error expected to be thrown", false);
@@ -469,10 +444,6 @@ public class TestQml extends QApplicationTest{
 				"    exn: 'x'\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -497,10 +468,6 @@ public class TestQml extends QApplicationTest{
 				"    id: test\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -520,10 +487,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQmlAspectEngine component = new QQmlAspectEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	component.qmlEngine().addImportPath(prefix+"/qml");
-        }
 		try {
 			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
@@ -540,10 +503,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickWidget component = new QQuickWidget();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	component.engine().addImportPath(prefix+"/qml");
-        }
 		try {
 			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
@@ -560,10 +519,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickView component = new QQuickView();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	component.engine().addImportPath(prefix+"/qml");
-        }
 		try {
 			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
 			Assert.assertFalse("Error expected to be thrown", true);
@@ -590,10 +545,6 @@ public class TestQml extends QApplicationTest{
 				"	 testColor: \"blue\"\n" +
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -621,10 +572,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
 		QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" + 
 				"TestObject {\n" + 
@@ -643,10 +590,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
 		QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" + 
 				"TestObject {\n" + 
@@ -683,10 +626,6 @@ public class TestQml extends QApplicationTest{
 		Msg msg = new Msg();
 		
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		engine.rootContext().setContextProperty("msg", msg);
 		QByteArray data = new QByteArray("import QtQuick 2.0\n" + 
 				"Text {\n" + 
@@ -860,10 +799,6 @@ public class TestQml extends QApplicationTest{
 				"    author.email: AuthorSource.email\n" +  
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		engine.rootContext().setContextProperty("messageBoard", messageBoard);
 		component.setData(data, null);
@@ -915,10 +850,6 @@ public class TestQml extends QApplicationTest{
 				"    author.email: AuthorSource.email\n" +  
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		engine.rootContext().setContextProperty("messageBoard", messageBoard);
 		component.setData(data, null);
@@ -950,10 +881,6 @@ public class TestQml extends QApplicationTest{
 				"TestObject {\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
@@ -968,10 +895,6 @@ public class TestQml extends QApplicationTest{
 				"TestObject {\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
@@ -979,9 +902,6 @@ public class TestQml extends QApplicationTest{
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
 		QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
 		engine = new QQmlEngine();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -1032,10 +952,6 @@ public class TestQml extends QApplicationTest{
 				"    AttachTest.attached: 5\n" +
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -1056,10 +972,6 @@ public class TestQml extends QApplicationTest{
 				"Uncreatable {\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
@@ -1134,10 +1046,6 @@ public class TestQml extends QApplicationTest{
 				"    RandomNumberGenerator on number { maxValue: 300 }\n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -1156,10 +1064,6 @@ public class TestQml extends QApplicationTest{
     public void run_testQmlSignal() throws Exception {
 		QtQml.qmlClearTypeRegistrations();
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.loadUrl(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/RectangleMethodAndSignal.qml"));
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
@@ -1243,10 +1147,6 @@ public class TestQml extends QApplicationTest{
 				"    \n" + 
 				"}");
 		QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 		component.setData(data, null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());

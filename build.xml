@@ -25,7 +25,7 @@
     <property name="generatorDir" location="generator"/>
 
     <path id="java.compile.classpath">
-        <fileset dir="${jardir}" includes="*.jar"/>
+        <fileset dir="${deploymentdir}" includes="*.jar"/>
     </path>
 
     <!--
@@ -46,7 +46,7 @@
     <property name="java.srcdir"                   location="src/java"/>
     <property name="java.outdir"                   location="build/java"/>
     <property name="java.outsrcdir"                location="build/java-src"/>
-    <property name="jardir"                        location="jars"/>
+    <property name="deploymentdir"                 location="deployment"/>
 
     <property name="qtjambi.builddir"              location="build/qmake-qtjambi"/>
 
@@ -80,8 +80,7 @@
     <target name="init.taskdef" depends="log, jar.ant-qtjambi">
         <taskdef resource="io/qt/tools/ant/ant-qtjambi.xml">
             <classpath>
-                <pathelement path="${jardir}/qtjambi-util.jar"/>
-                <pathelement path="${jardir}/nobundle/ant-qtjambi.jar"/>
+                <pathelement path="${java.outdir}/ant-qtjambi"/>
             </classpath>
         </taskdef>
     </target>
@@ -139,12 +138,12 @@
     </target>
 
     <target name="library.designer.bundle" depends="log, jar.qtjambi-designer">
-        <copy file="${jardir}/qtjambi-designer.jar"
+        <copy file="${deploymentdir}/qtjambi-designer.jar"
             tofile="qtjambi-designer-${qtjambi.version}.jar"/>
     </target>
 
     <target name="examples.bundle" depends="log, jar.qtjambi-examples">
-        <copy file="${jardir}/qtjambi-examples.jar"
+        <copy file="${deploymentdir}/qtjambi-examples.jar"
             tofile="qtjambi-examples-${qtjambi.version}.jar"/>
     </target>
 
@@ -195,7 +194,7 @@ Further options:
 
     <target name="library" depends="log, library.native.compile, library.java, library.native.bundle"
         description="Compiles and bundles the Qt Jambi libraries.">
-        <!--<copy file="${jardir}/qtjambi-util.jar"
+        <!--<copy file="${deploymentdir}/qtjambi-util.jar"
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->
     </target>
 

@@ -1654,3 +1654,16 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_00024NativeLink_qtTy
     }
     return nullptr;
 }
+
+extern "C" Q_DECL_EXPORT jstring JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiInternal_getInterfaceIID)
+    (JNIEnv *env, jclass, jclass cls)
+{
+    try{
+        const char* iid = getInterfaceIID(env, cls);
+        return iid ? env->NewStringUTF(iid) : nullptr;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
+}

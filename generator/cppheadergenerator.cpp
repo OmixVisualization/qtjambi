@@ -37,6 +37,7 @@
 
 #include "cppheadergenerator.h"
 #include "metainfogenerator.h"
+#include "typesystem/typedatabase.h"
 
 #include <QtCore/QDir>
 

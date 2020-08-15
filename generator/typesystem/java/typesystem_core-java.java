@@ -4857,7 +4857,7 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final boolean inherits(Class<?> targetType){
-        return targetType.isInstance(this) || inherits(io.qt.internal.MetaObjectTools.internalNameOfArgumentType(targetType).replace("*", ""));
+        return targetType.isInstance(this) || inherits(internalNameOfArgumentType(targetType).replace("*", ""));
     }
     
     /**
@@ -4865,7 +4865,7 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     protected final int receivers(io.qt.core.QMetaObject.AbstractSignal signalObject){
-        String signal = io.qt.internal.MetaObjectTools.cppSignalSignature(signalObject);
+        String signal = cppSignalSignature(signalObject);
         if(signal.isEmpty())
           return 0;
         return __qt_QObject_receivers_const_char_ptr_constfct(checkedNativeId(this), signal);
@@ -5010,7 +5010,7 @@ class QSignalTransition___{
         constructorThreadCheck(this);
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            String signalSignature = io.qt.internal.MetaObjectTools.cppSignalSignature(signal);
+            String signalSignature = cppSignalSignature(signal);
             __qt_QSignalTransition_new_const_QObject_ptr_const_char_ptr_QState_ptr(this, sender, signalSignature, sourceState);
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
@@ -5024,7 +5024,7 @@ class QSignalTransition___{
     public final void setSignal(io.qt.core.QMetaObject.AbstractSignal signal){
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            String signalSignature = io.qt.internal.MetaObjectTools.cppSignalSignature(signal);
+            String signalSignature = cppSignalSignature(signal);
             __qt_QSignalTransition_setSenderObject_const_QObject_ptr(checkedNativeId(this), nativeId(sender));
             __qt_QSignalTransition_setSignal_cref_QByteArray(checkedNativeId(this), nativeId(new QByteArray(signalSignature)));
         }else {
@@ -5044,7 +5044,7 @@ class QState___{
     public final io.qt.core.QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, io.qt.core.QAbstractState target) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            String signalSignature = io.qt.internal.MetaObjectTools.cppSignalSignature(signal);
+            String signalSignature = cppSignalSignature(signal);
             return addTransition(sender, signalSignature, target);
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
@@ -5560,13 +5560,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
     try{
 #ifdef Q_OS_DARWIN
         if (!pthread_main_np()) {
-            qWarning("WARNING: QtJambi does not appear to be running on the main thread and will "
+            JavaException::raiseError(__jni_env, "QtJambi does not appear to be running on the main thread and will "
                      "most likely be unstable and crash. "
                      "Please make sure to launch your 'java' command with the "
                      "'-XstartOnFirstThread' command line option. For instance: "
-                     "java -XstartOnFirstThread any.vendor.MainClass");
-             JavaException::raiseError(__jni_env,
-                     "QtJambi does not appear to be running on the main() thread." QTJAMBI_STACKTRACEINFO );
+                     "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
         }
 #endif
         QCoreApplicationPrivate::theMainThread = QThread::currentThread();
@@ -6665,7 +6663,7 @@ class QCborArray_java__{
 class QCborArray_native__{
 
 // QCborArray::operator[](qsizetype i)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborArray__1_1qt_1QCborArray_1setValue_1qsizetype__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborArray__1_1qt_1QCborArray_1setValue_1qsizetype__JJLio_qt_core_QCborValue_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
@@ -6716,7 +6714,7 @@ class QCborMap_java__{
 class QCborMap_native__{
 
 // QCborMap::operator[](const QCborValue & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QCborValue__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QCborValue__JJLio_qt_core_QCborValue_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
@@ -6736,7 +6734,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
 }
 
 // QCborMap::operator[](const QString & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QString__JLjava_lang_String_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QString__JLjava_lang_String_2Lio_qt_core_QCborValue_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
@@ -6756,7 +6754,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
 }
 
 // QCborMap::operator[](long long key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1long_1long__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1long_1long__JJLio_qt_core_QCborValue_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,

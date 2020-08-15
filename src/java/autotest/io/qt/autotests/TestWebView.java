@@ -89,10 +89,6 @@ public class TestWebView extends QApplicationTest {
     @Test
     public void test() {
     	QQmlEngine engine = new QQmlEngine();
-		String prefix = io.qt.QtUtilities.qtPrefix();
-        if(new QDir(prefix+"/qml").exists()) {
-        	engine.addImportPath(prefix+"/qml");
-        }
 		QQmlComponent component = new QQmlComponent(engine);
 	    component.setData(
 	                "import QtQuick 2.5\n"+

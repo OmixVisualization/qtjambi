@@ -78,7 +78,8 @@ public abstract class Constants {
     public static final String JAVA_OSCPU               = "java.oscpu"; // build
     public static final String JAVA_OSCPU_TARGET        = "java.oscpu.target"; // target
     public static final String EXEC_STRIP               = "exec.strip";
-    public static final String MAC_OS_USE_QT_FRAMEWORK  = "macos.use.qt.frameworks";
+    public static final String MAC_OS_CONVERT_QT_FRAMEWORK  = "macos.convert.qt.frameworks";
+    public static final String MAC_OS_USE_FRAMEWORK     = "macos.frameworks";
     public static final String PRIVATE_MODULES          = "qtjambi.private.modules";
 
     public static final String QT_VERSION_MAJOR         = "qt.version.major";
@@ -354,9 +355,8 @@ public abstract class Constants {
     public static final String QML_QTAUDIOENGINE_DECLARATIVE_AUDIOENGINE = "qtjambi.QtAudioEngine.declarative_audioengine";
     
     public static final String PACKAGING_DSO_LIBSTDC___6     = "qtjambi.packaging.dso.libstdc++-6";     // Windows MinGW runtime pre-req
-    public static final String PACKAGING_DSO_LIBGCC_S_DW2_1  = "qtjambi.packaging.dso.libgcc_s_dw2-1";  // Windows MinGW runtime pre-req
-    public static final String PACKAGING_DSO_LIBGCC_S_SJLJ_1 = "qtjambi.packaging.dso.libgcc_s_sjlj-1"; // Windows MinGW-W64 runtime pre-req
-    public static final String PACKAGING_DSO_MINGWM10        = "qtjambi.packaging.dso.mingwm10";        // Windows older MinGW runtime pre-req
+    public static final String PACKAGING_DSO_LIBGCC_S_SEH_1  = "qtjambi.packaging.dso.libgcc_s_seh-1";  // Windows MinGW runtime pre-req
+    public static final String PACKAGING_DSO_WINPTHREAD        = "qtjambi.packaging.dso.libwinpthread-1";        // Windows older MinGW runtime pre-req
 
     public static final String PACKAGING_DSO_LIBZ      = "qtjambi.packaging.dso.libz";       // Linux
     public static final String PACKAGING_DSO_LIBSSL    = "qtjambi.packaging.dso.libssl";     // Linux

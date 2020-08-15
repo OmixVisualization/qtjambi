@@ -52,7 +52,7 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QFile;
 import io.qt.core.QObject;
-import io.qt.core.QRegExp;
+import io.qt.core.QRegularExpression;
 import io.qt.core.QThread;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.widgets.QApplication;
@@ -153,7 +153,7 @@ public class TestQObject extends QApplicationTest {
         }
 
         {
-            List<QObject> c = root.findChildren(QObject.class, new QRegExp("child"));
+            List<QObject> c = root.findChildren(QObject.class, new QRegularExpression("child"));
 
             assertEquals(c.size(), 4);
             assertTrue(c.contains(child11));

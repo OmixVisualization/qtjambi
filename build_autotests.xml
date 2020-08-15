@@ -86,7 +86,7 @@
                 includeantruntime="false"
                 source="1.8" target="1.8">
             <classpath>
-                <pathelement location="${basedir}/jars/qtjambi.jar" />
+                <pathelement location="${basedir}/deployment/qtjambi.jar" />
                 <pathelement location="." />
             </classpath>
         </javac> -->
@@ -123,7 +123,7 @@
                     <compilerarg value="--add-exports" />
                     <compilerarg value="qtjambi/io.qt.internal=qtjambi.autotest" />
                     <modulepath>
-                        <fileset dir="${basedir}/jars/">
+                        <fileset dir="${basedir}/deployment/">
                             <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
                         </fileset>
                         <pathelement location="${tests.junit}" />
@@ -173,7 +173,7 @@
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <classpath>
-                        <fileset dir="${basedir}/jars/">
+                        <fileset dir="${basedir}/deployment/">
                             <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
                         </fileset>
                         <pathelement location="${tests.junit}" />
@@ -227,9 +227,17 @@
 
     <target name="run.test" depends="init.test, check.junit">
         <qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
-        <qtjambi-resolve-path var="absQtLib"         path="${qtLib}" />
-        <qtjambi-resolve-path var="absQtTools"       path="${qtTools}" failonerror="false"/>
-        <qtjambi-resolve-path var="absJambiLib"      path="${jambiLib}" />
+        <if>
+            <os family="windows"/>
+            <then>
+                <qtjambi-resolve-path var="absQtPath"         path="${qtBin}" />
+                <qtjambi-resolve-path var="absJambiPath"      path="${jambiBin}" />
+            </then>
+            <else>
+                <qtjambi-resolve-path var="absQtPath"         path="${qtLib}" />
+                <qtjambi-resolve-path var="absJambiPath"      path="${jambiLib}" />
+            </else>
+        </if>
         <qtjambi-resolve-path var="absNativeBaseDir" path="${nativeBaseDir}" />
         <condition property="env.qtjambi.debug.trace" value="QTJAMBI_DEBUG_TRACE" else="QTJAMBI_DEBUG_TRACE_DISABLED">
             <istrue value="${qtjambi.debug.trace}"/>
@@ -247,21 +255,9 @@
             <os family="mac"/>
             <then>
                 <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
-                <property name="qtwebengine-process-path" value="${absQtTools}/QtWebEngineProcess" />
             </then>
             <else>
                 <property name="XstartOnFirstThread" value="-Dx" />
-                <if>
-                    <os family="windows"/>
-                    <then>
-                        <condition property="qtwebengine-process-path" value="${absQtTools}\QtWebEngineProcessd.exe" else="${absQtTools}\QtWebEngineProcess.exe">
-                            <equals arg1="${kind}" arg2="debug"/>
-                        </condition>
-                    </then>
-                    <else>
-                        <property name="qtwebengine-process-path" value="${absQtTools}/QtWebEngineProcess" />
-                    </else>
-                </if>
             </else>
         </if>
         <delete dir="${outputDir}/tests/junitxml-${kind}" />
@@ -275,9 +271,17 @@
         <copy todir="${outputDir}/tests/auto/io/qt/unittests">
             <fileset dir="src/java/autotest/io/qt/unittests" excludes="**/*.java"/>
         </copy>
+        <if>
+            <not>
+                <os family="windows"/>
+            </not>
+            <then>
+                <symlink link="${outputDir}/tests/${kind}/lib" resource="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${kind}/lib"/>
+            </then>
+        </if>
         <junit fork="yes" printsummary="true" haltonfailure="no" timeout="600000" showoutput="yes" logfailedtests="yes">
             <classpath>
-                <fileset dir="${basedir}/jars/">
+                <fileset dir="${basedir}/deployment/">
                     <include name="qtjambi-*${qtjambi.soname.version.minor}.jar"/>
                 </fileset>
                 <pathelement location="${tests.junit}" />
@@ -285,7 +289,7 @@
                 <pathelement location="${sqlite.jdbc}" />
                 <pathelement path="${absOutputDir}/tests/java" />
             </classpath>
-            <jvmarg value="-Djava.library.path=${absQtLib}${psep}${absJambiLib}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
+            <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
             <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
             <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
             <jvmarg value="-Dio.qt.debug.inhibitNativeResourceThread=true"/>
@@ -298,11 +302,10 @@
             not that useful for debugging. -->
             <jvmarg value="-Xcheck:jni"/>
             <env key="${env.qtjambi.debug.trace}" value="1"/>
-            <env key="PATH" path="${qtjambi.qt.bindir}${psep}${env.PATH}"/>
+            <!--env key="PATH" path="${qtjambi.qt.bindir}${psep}${env.PATH}"/-->
             <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
-            <env key="QTWEBENGINEPROCESS_PATH" value="${qtwebengine-process-path}"/>
-            <!--env key="QML_IMPORT_PATH" value="${absQtLib}/../qml"/>
-            <env key="QML2_IMPORT_PATH" value="${absQtLib}/../qml"/-->
+            <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
+            <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
 <!--            <jvmarg value="-verbose"/> -->
             <formatter type="xml" usefile="yes" />
             <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}">
@@ -341,17 +344,25 @@
                 </fileset>
             </batchtest>
         </junit>
+        <if>
+            <not>
+                <os family="windows"/>
+            </not>
+            <then>
+                <symlink action="delete" link="${outputDir}/tests/${kind}/lib"/>
+            </then>
+        </if>
     </target>
 
     <target name="run" depends="init">
         <if>
-            <available file="${outputDir}/platform-output-debug" type="dir"/>
+            <available file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug" type="dir"/>
             <then>
                 <antcall target="debug.run"/>
             </then>
             <else>
                 <if>
-                    <available file="${outputDir}/platform-output" type="dir"/>
+                    <available file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release" type="dir"/>
                     <then>
                         <antcall target="release.run"/>
                     </then>
@@ -365,14 +376,16 @@
     
     <target name="release.run" depends="init">
         <if>
-            <available file="${outputDir}/platform-output" type="dir"/>
+            <available file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="kind"          value="release"/>
-                    <param name="nativeBaseDir" value="${outputDir}/platform-output"/>
-                    <param name="qtLib"         value="${outputDir}/platform-output/lib"/>
-                    <param name="qtTools"       value="${outputDir}/platform-output/tools"/>
-                    <param name="jambiLib"      value="${outputDir}/platform-output/lib"/>
+                    <param name="nativeBaseDir" value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release"/>
+                    <param name="qtLib"         value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/lib"/>
+                    <param name="qtBin"         value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/bin"/>
+                    <param name="qtTools"       value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/tools"/>
+                    <param name="jambiLib"      value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/lib"/>
+                    <param name="jambiBin"      value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/bin"/>
                 </antcall>
                 <junitreport todir="${outputDir}/tests/junitxml-release">
                     <fileset dir="${outputDir}/tests/junitxml-release">
@@ -389,14 +402,16 @@
     
     <target name="debug.run" depends="init">
         <if>
-            <available file="${outputDir}/platform-output-debug" type="dir"/>
+            <available file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="kind"          value="debug"/>
-                    <param name="nativeBaseDir" value="${outputDir}/platform-output-debug"/>
-                    <param name="qtLib"         value="${outputDir}/platform-output-debug/lib"/>
-                    <param name="qtTools"       value="${outputDir}/platform-output-debug/tools"/>
-                    <param name="jambiLib"      value="${outputDir}/platform-output-debug/lib"/>
+                    <param name="nativeBaseDir" value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug"/>
+                    <param name="qtLib"         value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/lib"/>
+                    <param name="qtBin"         value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/bin"/>
+                    <param name="qtTools"       value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/tools"/>
+                    <param name="jambiLib"      value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/lib"/>
+                    <param name="jambiBin"      value="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/bin"/>
                 </antcall>
                 <junitreport todir="${outputDir}/tests/junitxml-debug">
                     <fileset dir="${outputDir}/tests/junitxml-debug">

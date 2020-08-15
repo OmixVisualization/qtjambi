@@ -39,7 +39,6 @@ import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.core.QPluginLoader;
-import io.qt.core.QSysInfo;
 import io.qt.core.internal.QFactoryLoader;
 import io.qt.core.internal.QtPluginMetaData;
 import io.qt.gui.QGenericPlugin;

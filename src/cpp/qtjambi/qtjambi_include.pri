@@ -16,7 +16,10 @@ win32*:{
 
 macx:{
     LIBS += $$PWD/../../../build/qmake-qtjambi/lib/lib$$member(QTJAMBI_LIB_NAME, 0).jnilib
+    QMAKE_SONAME_PREFIX = @rpath
+    QMAKE_RPATHDIR = @loader_path/.
 } else {
+    linux-g++*: QMAKE_RPATHDIR = $ORIGIN/.
     LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib
     android:{
         armeabi-v7a: LIBS += -l$$member(QTJAMBI_LIB_NAME, 0)_armeabi-v7a

@@ -30,6 +30,8 @@
 
 package io.qt.qml.util;
 
+import static io.qt.qml.util.RetroHelper.getDefinedPackage;
+
 import java.io.File;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
@@ -119,7 +121,7 @@ public final class QmlTypes {
 		if(uri==null)
 			uri = pkg.getName();
 		QDir classPath = new QDir("classpath:"+pkg.getName().replace('.', '/'));
-		for(String className : classPath.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+		for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 			if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 				className = pkg.getName()+"."+className.substring(0, className.length()-6);
 				try {
@@ -142,7 +144,7 @@ public final class QmlTypes {
 				}
 			}
 		}
-		for(String qmlFile : classPath.entryList(List.of("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+		for(String qmlFile : classPath.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 			QtQml.qmlRegisterType(QUrl.fromClassPath(pkg.getName().replace('.', '/')+"/"+qmlFile), uri, versionMajor, 0, qmlFile.substring(0, qmlFile.length()-4));
 		}
 	}
@@ -165,16 +167,16 @@ public final class QmlTypes {
 	 * @throws QmlNoMajorVersionException if {@link QmlImportMajorVersion} not available
 	 */
 	public static void registerPackage(String pkg, String uri) {
-		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
+		java.lang.Package _package = getDefinedPackage(qmlClassLoader, pkg);
 		if(_package==null) {
-			_package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+			_package = getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
 		}
 		if(_package==null) {
-			_package = Thread.currentThread().getContextClassLoader().getDefinedPackage(pkg);
+			_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null){
 			QDir classPath = new QDir("classpath:"+pkg.replace('.', '/'));
-			for(String className : classPath.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+			for(String className : classPath.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 				if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 					className = pkg+"."+className.substring(0, className.length()-6);
 					try {
@@ -221,15 +223,12 @@ public final class QmlTypes {
 	 * @param versionMajor major version for qml import
 	 */
 	public static void registerPackage(String pkg, String uri, int versionMajor) {
-		java.lang.Package _package = qmlClassLoader.getDefinedPackage(pkg);
+		java.lang.Package _package = getDefinedPackage(qmlClassLoader, pkg);
 		if(_package==null) {
-			_package = ClassLoader.getSystemClassLoader().getDefinedPackage(pkg);
+			_package = getDefinedPackage(ClassLoader.getSystemClassLoader(), pkg);
 		}
 		if(_package==null) {
-			_package = ClassLoader.getPlatformClassLoader().getDefinedPackage(pkg);
-		}
-		if(_package==null) {
-			_package = Thread.currentThread().getContextClassLoader().getDefinedPackage(pkg);
+			_package = getDefinedPackage(Thread.currentThread().getContextClassLoader(), pkg);
 		}
 		if(_package==null) {
 			throw new IllegalArgumentException("No such package "+pkg);
@@ -370,10 +369,10 @@ public final class QmlTypes {
 						Logger.getLogger("internal").throwing(QmlTypes.class.getName(), "registerTypes()", e);
 					}
 				}
-				java.lang.Package _package = qmlClassLoader.getDefinedPackage(uri);
+				java.lang.Package _package = getDefinedPackage(qmlClassLoader, uri);
 				if(_package==null){
 					QDir classPathDir = new QDir("classpath:"+uri.replace('.', '/'));
-					for(String className : classPathDir.entryList(List.of("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+					for(String className : classPathDir.entryList(Collections.singletonList("*.class"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 						if(className.endsWith(".class") && !className.endsWith("-info.class") && !className.contains("$")){
 							className = uri+"."+className.substring(0, className.length()-6);
 							try {
@@ -393,7 +392,7 @@ public final class QmlTypes {
 					version = importMajorVersion.value();
 					registerPackage(_package, uri, version);
 				}
-				for(String qmlFile : directory.entryList(List.of("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
+				for(String qmlFile : directory.entryList(Collections.singletonList("*.qml"), new QDir.Filters(QDir.Filter.Files, QDir.Filter.NoSymLinks))) {
 					QtQml.qmlRegisterType(new QUrl(directory.absoluteFilePath(qmlFile)), uri, version, 0, qmlFile.substring(0, qmlFile.length()-4));
 				}
 				QtQml.qmlRegisterModule(uri, version, 0);

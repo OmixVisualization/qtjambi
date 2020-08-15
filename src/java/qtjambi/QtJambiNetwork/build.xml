@@ -1,7 +1,7 @@
 <project default="build">
     <property name="module-name" value="qtjambi.network"/>
     <path id="qtjambi.modulepath">
-        <fileset dir="${jardir}" includes="qtjambi-${qtjambi.jar.version}.jar"/>
+        <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar"/>
     </path>
     <target name="build">
         <condition property="build.module" value="true">

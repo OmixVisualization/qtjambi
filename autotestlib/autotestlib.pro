@@ -62,10 +62,29 @@ win32 {
     PRECOMPILED_HEADER = global.h
     CONFIG += precompile_header
 }
+win32-g++* {
+    QMAKE_CXXFLAGS += -Wa,-mbig-obj
+    CONFIG(debug, debug|release) {
+        QMAKE_CXXFLAGS += -O3
+    }
+}
 
 linux-g++* | freebsd-g++* {
     QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+    CONFIG(debug, debug|release) {
+        QMAKE_RPATHDIR = $ORIGIN/../debug/lib
+    }else{
+        QMAKE_RPATHDIR = $ORIGIN/../release/lib
+    }
+}
+
+macx:{
+    CONFIG(debug, debug|release) {
+        QMAKE_RPATHDIR = @loader_path/../debug/lib
+    }else{
+        QMAKE_RPATHDIR = @loader_path/../release/lib
+    }
 }
 
 QT += sql xml network widgets qml quick

@@ -44,7 +44,13 @@
 ****************************************************************************/
 package io.qt.internal.fileengine;
 
-import static io.qt.internal.fileengine.QClassPathResourceManager.*;
+import static io.qt.internal.fileengine.QClassPathResourceManager.FileNameDelim;
+import static io.qt.internal.fileengine.QClassPathResourceManager.FileNamePrefix1;
+import static io.qt.internal.fileengine.QClassPathResourceManager.FileNamePrefix2;
+import static io.qt.internal.fileengine.QClassPathResourceManager.classPathDirs;
+import static io.qt.internal.fileengine.QClassPathResourceManager.makeUrl;
+import static io.qt.internal.fileengine.QClassPathResourceManager.pathToJarFiles;
+import static io.qt.internal.fileengine.QClassPathResourceManager.resolveUrlToMyJarFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,11 +70,10 @@ import io.qt.core.QDir;
 import io.qt.core.QFileDevice;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.internal.QAbstractFileEngine;
 import io.qt.core.internal.QAbstractFileEngineIterator;
 import io.qt.internal.NativeAccess;
-import io.qt.internal.NativeLibraryManager;
-import io.qt.internal.NativeLibraryManager.OperatingSystem;
 
 @Deprecated
 class QClassPathEngine extends QAbstractFileEngine {
@@ -457,7 +462,7 @@ class QClassPathEngine extends QAbstractFileEngine {
         // If it is a plain file on the disk, just read it from the disk
         if ("file".equals(url.getProtocol())) {
         	String path = url.getPath();  // All URL paths have "/" separators
-            if(NativeLibraryManager.operatingSystem()==OperatingSystem.Windows) {
+            if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
                 if(path.length() > 2 && path.charAt(2) == ':' && path.startsWith("/"))
                     path = path.substring(1);	// Convert "/C:/foobar/cp" => "C:/foobar/cp"
             }

@@ -287,7 +287,7 @@
         <modify-function signature="connectNotifySignal(QObject *, int) const" access="private"/>
         <modify-function signature="connectNotifySignal(QObject *, const char *) const">
             <inject-code class="java" position="beginning">
-                slot = io.qt.internal.MetaObjectTools.cppSlotSignature(dest, slot);
+                slot = cppSlotSignature(dest, slot);
             </inject-code>    
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>

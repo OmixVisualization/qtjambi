@@ -93,12 +93,8 @@ class Exec {
      * @throws BuildException Thrown if process exit value is not zero or IOException has been occurred.
      */
     public static void exec(Task task, String cmd[], File directory, Project project, boolean verbose) throws BuildException {
-    	{
-        	String log = "";
-        	for (String string : cmd) {
-    			log += " " + string;
-    		}
-        	log = "Executing: \"" +log.trim()+ "\" in directory " + ((directory != null) ? directory.toString() : "<notset>");
+    	if(verbose){
+        	String log = "Executing: \"" +join(cmd).trim()+ "\" in directory " + ((directory != null) ? directory.toString() : "<notset>");
         	project.log(task, log, Project.MSG_INFO);
     	}
         try {

@@ -42,7 +42,7 @@ class QtDynamicMetaObjectPrivate;
 class QtDynamicMetaObject: public QMetaObject
 {
 public:
-    QtDynamicMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object);
+    QtDynamicMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler);
 
     int invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;
     int readProperty(JNIEnv *env, jobject object, int _id, void **_a, bool direct = false) const;

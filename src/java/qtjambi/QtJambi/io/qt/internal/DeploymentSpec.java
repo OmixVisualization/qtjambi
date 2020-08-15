@@ -52,7 +52,7 @@ import java.util.Collections;
 import java.util.List;
 
 // NOTE the use of package level security on this class for any methods that may cause modification 
-public class DeploymentSpec {
+class DeploymentSpec {
     private String key;
     private URL sourceUrl;
     private File baseDir;

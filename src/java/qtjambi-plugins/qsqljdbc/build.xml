@@ -1,9 +1,9 @@
 <project default="build">
-    <property name="plugin-subdir" value="qtjambi"/>
+    <property name="plugin-subdir" value="sqldrivers"/>
     <property name="module-name" value="qsqljdbc"/>
     <property name="qtjambi-module-name" value="QtJambiSql"/>
     <path id="qtjambi.modulepath">
-        <filelist dir="${jardir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-sql-${qtjambi.jar.version}.jar"/>
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-sql-${qtjambi.jar.version}.jar"/>
     </path>
     <target name="build">
         <condition property="build.module" value="true">
@@ -18,5 +18,13 @@
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>
+    </target>
+    <target name="bundle-plugin">
+        <echo file="${outputDir}/plugins/${plugin-subdir}/plugin-metadata.json">{"Keys":["QJDBC"]}</echo>
+        <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="bundle-plugin">
+            <property name="class-name" value="io.qt.sql.jdbc.QJdbc"/>
+            <property name="meta-data" value="${outputDir}/plugins/${plugin-subdir}/plugin-metadata.json"/>
+        </ant>
+        <delete file="${outputDir}/plugins/${plugin-subdir}/plugin-metadata.json"/>
     </target>
 </project>

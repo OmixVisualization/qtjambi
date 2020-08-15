@@ -42,7 +42,7 @@
 
     <target name="compile" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -80,7 +80,7 @@
     <!-- Same as "compile" target but with 2 sourcedirs -->
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -125,7 +125,7 @@
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile3" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -227,7 +227,7 @@
     </target>
 
     <target name="createjarimpl">
-        <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${jardir}/${subdir}">
+        <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${deploymentdir}/${subdir}">
             <istrue value="${qtjambi.test.qmlmodule}"/>
         </condition>
         <delete file="${destdir}/qml/${module-dir}/${module}.jar" verbose="true"/>
@@ -266,10 +266,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/platform-output/qml/QtJambi/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </else>
                 </if>
             </then>
@@ -283,10 +283,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/platform-output/qml/QtJambi/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </else>
                 </if>
             </then>
@@ -299,10 +299,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${outputDir}/platform-output-debug/qml/QtJambi/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </then>
                     <else>
-                        <copy file="${outputDir}/platform-output/qml/QtJambi/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </else>
                 </if>
             </then>

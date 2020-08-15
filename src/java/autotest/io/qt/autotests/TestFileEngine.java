@@ -46,10 +46,10 @@ import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
-import io.qt.internal.NativeLibraryManager;
-import io.qt.internal.NativeLibraryManager.OperatingSystem;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QLabel;
 
 public class TestFileEngine extends QApplicationTest {
@@ -285,7 +285,7 @@ public class TestFileEngine extends QApplicationTest {
 		        }
 
 		        List<QFileInfo> dirTwoEntryInfoList = dirtwo.entryInfoList();
-		        if(NativeLibraryManager.operatingSystem()==OperatingSystem.Windows) {
+		        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
 		            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 		            assertEquals(dirTwoEntryInfoList.size(), 2);
 		        } else {
@@ -296,7 +296,7 @@ public class TestFileEngine extends QApplicationTest {
 	        QDir dir = new QDir("classpath:TestClassFunctionality_dir/");
 	        assertTrue(dir.exists());
 	
-	        if(NativeLibraryManager.operatingSystem()==OperatingSystem.Windows) {
+	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
 	            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 	            // "..", "TestClassFunctionality_dir2", "TestClassFunctionality_file_in_dir.txt"
 	            assertEquals(dir.entryList().size(), 3);
@@ -311,7 +311,7 @@ public class TestFileEngine extends QApplicationTest {
 	        assertTrue(found);
 	
 	        List<QFileInfo> entryInfoList = dir.entryInfoList();
-	        if(NativeLibraryManager.operatingSystem()==OperatingSystem.Windows) {
+	        if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
 	            // CHECKME FIXME On Windows we see ".." entry, we should explain why this is different and if necessary fix something
 	            // "..", "TestClassFunctionality_dir2", "TestClassFunctionality_file_in_dir.txt"
 	            assertEquals(entryInfoList.size(), 3);

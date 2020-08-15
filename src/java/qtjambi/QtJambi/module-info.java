@@ -94,5 +94,6 @@ module qtjambi{
                               qtjambi.qt3dquick,
                               qtjambi.qt3dlogic,
                               qtjambi.qt3danimation,
-                              qtjambi.qt3dquickscene2d;
+                              qtjambi.qt3dquickscene2d,
+                              qtjambi.plugindeployer;
 }

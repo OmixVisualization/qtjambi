@@ -32,7 +32,6 @@ package io.qt.autotests;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -110,7 +109,6 @@ public abstract class QApplicationTest {
 			if(QCoreApplication.instance()==null) {
 				Utils.println(2, "QApplicationTest.testInitialize(): begin");
 			    io.qt.QtResources.addSearchPath(".");
-			    QCoreApplication.setLibraryPaths(Arrays.asList(QtJambiInternal.qtPrefix()+"/plugins"));
 			    QCoreApplication.setApplicationName("QtJambiUnitTest");
 			    QApplication.initialize(new String[]{"arg1", "arg2", "arg3"});
 			    Utils.println(2, "QApplicationTest.testInitialize(): done");

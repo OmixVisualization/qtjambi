@@ -14,7 +14,7 @@
 
         Optionally, you may call this file with a "destdir" property as well
         (see the <makejar> target), which will change the destination directory
-        of the generated jar. It is set to ${jardir} by default (see
+        of the generated jar. It is set to ${deploymentdir} by default (see
         build.xml).
 
         See the main build.xml files for examples.
@@ -25,7 +25,7 @@
     -->
 
     <path id="java.compile.classpath">
-        <fileset dir="${jardir}" includes="*.jar"/>
+        <fileset dir="${deploymentdir}" includes="*.jar"/>
     </path>
 
     <!--
@@ -53,13 +53,13 @@
         compile: create the output directory and generate the class files into
         this directory.
 
-        Note that we need to mkdir ${jardir} here: an empty <classpath> is not
+        Note that we need to mkdir ${deploymentdir} here: an empty <classpath> is not
         supported...
     -->
 
     <target name="compile" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
@@ -75,7 +75,7 @@
 
     <target name="compile-ant" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <javac debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
@@ -92,7 +92,7 @@
     <!-- Same as "compile" target but with 2 sourcedirs -->
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
@@ -111,7 +111,7 @@
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile3" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
                 fork="true" memorymaximumsize="1024m" verbose="false"
@@ -181,7 +181,7 @@
 
     <target name="makejar" depends="compile, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -192,7 +192,7 @@
     
     <target name="makejar-ant" depends="compile-ant, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -203,7 +203,7 @@
 
     <target name="makesrcjar" depends="copy-src-resources">
         <echo message="Creating SRCJAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}-src.jar" excludes="${jar.excludes}">
             <manifest>
@@ -215,7 +215,7 @@
 
     <target name="makejar.qtjambi-util" depends="compile, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -227,7 +227,7 @@
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Examples Demos and Launcher Bundle"/>
-                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="JavaSE-${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.util;singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="Export-Package"          value="io.qt.qtjambi.osinfo"/>
@@ -237,7 +237,7 @@
 
     <target name="makesrcjar.qtjambi-util" depends="copy-src-resources">
         <echo message="Creating SRCJAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}-src.jar" excludes="${jar.excludes}">
             <manifest>
@@ -249,7 +249,7 @@
 
     <target name="makejar.qtjambi-examples" depends="compile2, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar basedir="${java.outdir}/${module}" destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -262,7 +262,7 @@
 <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Examples Demos and Launcher Bundle"/>
-                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="JavaSE-${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.examples;singleton:=true"/>
                 <attribute name="Bundle-Vendor"           value="www.qt-jambi.org"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
@@ -278,7 +278,7 @@
 
     <target name="makesrcjar.qtjambi-examples" depends="copy-src-resources">
         <echo message="Creating SRCJAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}-src.jar" excludes="${jar.excludes}">
             <manifest>
@@ -291,7 +291,7 @@
 
     <target name="makejar.qtjambi-designer" depends="compile2, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -304,7 +304,7 @@
 <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Designer Bundle"/>
-                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="JavaSE-${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="org.qtjambi.tools.designer.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
@@ -319,7 +319,7 @@
 
     <target name="makesrcjar.qtjambi-designer" depends="copy-src-resources">
         <echo message="Creating SRCJAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}-src.jar" excludes="${jar.excludes}">
             <manifest>
@@ -333,7 +333,7 @@
     <!-- Same as "makejar" target but uses compile2 to process 2 sourcedirs -->
     <target name="makejar.qtjambi" depends="compile3, copy-resources">
         <echo message="Creating JAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}.jar" excludes="${jar.excludes}">
             <manifest>
@@ -346,7 +346,7 @@
 <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
-                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="JavaSE-${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
                 <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
@@ -362,7 +362,7 @@
 
     <target name="makesrcjar.qtjambi" depends="copy-src-resources">
         <echo message="Creating SRCJAR file: ${module}.jar   excludes: ${jar.excludes}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <jar destfile="${destdir}/${module}-src.jar" excludes="${jar.excludes}">
             <manifest>

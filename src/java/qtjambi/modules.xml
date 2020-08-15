@@ -90,7 +90,7 @@
 
     <target name="compile" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -128,7 +128,7 @@
     <!-- Same as "compile" target but with 2 sourcedirs -->
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -173,7 +173,7 @@
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile3" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
@@ -224,7 +224,7 @@
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile6" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
-        <mkdir dir="${jardir}"/>
+        <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir}"/>
@@ -293,7 +293,7 @@
     
     <target name="createjar" depends="jar_init">
         <echo message="Creating JAR file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}.jar" verbose="true"/>
@@ -326,7 +326,7 @@
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir}"/>
@@ -343,7 +343,7 @@
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir}"/>
@@ -363,7 +363,7 @@
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir}"/>
@@ -386,7 +386,7 @@
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
-        <property name="destdir" value="${jardir}"/>
+        <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir}"/>
