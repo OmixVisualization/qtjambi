@@ -1,6 +1,6 @@
 <project default="build">
     <property name="module-name" value="qtjambi.nfc"/>
-    <property name="qtjambi-module-name" value="QtJambiNcf"/>
+    <property name="qtjambi-module-name" value="QtJambiNfc"/>
     <path id="qtjambi.modulepath">
         <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar"/>
     </path>
