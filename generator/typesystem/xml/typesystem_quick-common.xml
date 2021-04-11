@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,16 +44,39 @@
 ****************************************************************************-->
 <typesystem qt-library="QtQuick">
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_mipmap_filtering"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_filtering"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_horizontal_wrap"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_vertical_wrap"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_anisotropy_level"/>
+    <rejection class="QSGOpaqueTextureMaterial" field-name="m_reserved"/>
     <rejection class="QQuickWindow" enum-name="NativeObjectType"/>
     <rejection class="QQuickWindow" function-name="createTextureFromNativeObject"/>
     <rejection class="QSGMaterialRhiShader::RenderState" function-name="rhi"/>
     <rejection class="QSGMaterialRhiShader::RenderState" function-name="resourceUpdateBatch"/>
+    <rejection class="QSGMaterialRhiShader" function-name="setShader"/>
+    <rejection class="QSGMaterialShader::RenderState" function-name="rhi"/>
+    <rejection class="QSGMaterialShader::RenderState" function-name="resourceUpdateBatch"/>
+    <rejection class="QSGMaterialShader" function-name="setShader"/>
     <rejection class="QSGTexture" function-name="updateRhiTexture"/>
     <rejection class="QSGTexture" function-name="setWorkResourceUpdateBatch"/>
-    <rejection class="QSGMaterialRhiShader" function-name="setShader"/>
+    <rejection class="QSGTexture" function-name="rhiTexture"/>
+    <rejection class="QSGTexture" function-name="removedFromAtlas"/>
+    <rejection class="QSGTexture" function-name="commitTextureOperations"/>
+    <rejection class="QQuickRenderTarget" function-name="fromNativeTexture"/>
+    <rejection class="QQuickRenderTarget" function-name="fromRhiRenderTarget"/>
+    <rejection class="QQuickRenderTarget" function-name="fromD3D11Texture"/>
+    <rejection class="QQuickRenderTarget" function-name="fromMetalTexture"/>
+    <rejection class="QQuickRenderTarget" function-name="fromVulkanImage"/>
     <rejection class="PtrShaderCreateFunc"/>
     <rejection class="QSGTexture::NativeTexture"/>
     <rejection class="QSGTexture" function-name="nativeTexture"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceObjects"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromPhysicalDevice"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromAdapter"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndContext"/>
+    <rejection class="QQuickGraphicsDevice" function-name="fromDeviceAndCommandQueue"/>
+
     <enum-type name="QQuickItem::Flag" flags="QQuickItem::Flags"/>
     <enum-type name="QQuickItem::ItemChange"/>
     <enum-type name="QQuickItem::TransformOrigin"/>
@@ -79,15 +102,22 @@
     <enum-type name="QQuickWindow::RenderStage"/>
     <enum-type name="QQuickWindow::TextRenderType" since="5.10.0" />
     <!--enum-type name="QQuickWindow::NativeObjectType" since="5.14.0"/--><!--rejected above-->
-    <enum-type name="QSGRendererInterface::GraphicsApi" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::GraphicsApi" since="5.8.0">
+        <reject-enum-value name="OpenGLRhi" since="6.0.0" />
+        <reject-enum-value name="Direct3D11Rhi" since="6.0.0" />
+        <reject-enum-value name="VulkanRhi" since="6.0.0" />
+        <reject-enum-value name="MetalRhi" since="6.0.0" />
+        <reject-enum-value name="NullRhi" since="6.0.0" />
+    </enum-type>
     <enum-type name="QSGRendererInterface::Resource" since="5.8.0" />
     <enum-type name="QSGRendererInterface::ShaderType" since="5.8.0" />
+    <enum-type name="QSGRendererInterface::RenderMode" since="6.0.0" />
     <enum-type name="QSGRendererInterface::ShaderCompilationType" flags="QSGRendererInterface::ShaderCompilationTypes" since="5.8.0" />
     <enum-type name="QSGRendererInterface::ShaderSourceType" flags="QSGRendererInterface::ShaderSourceTypes" since="5.8.0" />
 
     <interface-type name="QSGRendererInterface" since="5.8.0">
         <extra-includes>
-            <include file-name="QtCore/QTextCodec" location="global"/>
+            <include file-name="QtCore/QTextCodec" location="global" until="5.*"/>
         </extra-includes>
         <modify-function signature="getResource(QQuickWindow *, QSGRendererInterface::Resource) const" remove="java"/>
         <modify-function signature="getResource(QQuickWindow *, const char *) const" remove="java">
@@ -103,6 +133,8 @@
             </modify-argument>
         </modify-function>
     </interface-type>
+    <namespace-type name="QQuickOpenGLUtils" since="6.0.0">
+    </namespace-type>
     <object-type name="QQuickRenderControl">
     </object-type>
     <object-type name="QSGContextPlugin">
@@ -169,11 +201,6 @@
         <modify-function signature="wheelEvent(QWheelEvent*)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-        <modify-function signature="updatePaintNode(QSGNode*,QQuickItem::UpdatePaintNodeData*)">
-            <modify-argument index="1" invalidate-after-use="yes">
-                <define-ownership class="java" owner="invalidate"/>
-            </modify-argument>
-        </modify-function>
     </object-type>
     <object-type name="QQuickPaintedItem">
         <modify-function signature="antialiasing()const" rename="paintAntialiasing"/>
@@ -221,28 +248,28 @@
             </inject-code>
             <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
         </modify-function>
-        <modify-function signature="setSource(const QUrl &amp;)">
+        <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes">
             <inject-code class="native" position="beginning">
             QTJAMBI_BLOCK_EXCEPTIONS(true)
             </inject-code>
             <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
         </modify-function>
-        <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
-            <modify-argument index="2">
+        <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <reference-count action="set" variable-name="__rcQmlComponent" />
             </modify-argument>
-            <modify-argument index="3">
+            <modify-argument index="3" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QQuickWindow">
-        <modify-function signature="setRenderTarget(QOpenGLFramebufferObject*)" thread-affine="no">
+        <modify-function signature="setRenderTarget(QOpenGLFramebufferObject*)" thread-affine="no" until="5.*">
             <modify-argument index="1">
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="setRenderTarget(uint, const QSize &amp;)" thread-affine="no">
+        <modify-function signature="setRenderTarget(uint, const QSize &amp;)" thread-affine="no" until="5.*">
         </modify-function>
         <modify-function signature="rendererInterface() const" thread-affine="no">
         </modify-function>
@@ -271,7 +298,7 @@
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="createTextureFromId(uint,QSize,QFlags&lt;QQuickWindow::CreateTextureOption>)const" thread-affine="no">
+        <modify-function signature="createTextureFromId(uint,QSize,QFlags&lt;QQuickWindow::CreateTextureOption>)const" thread-affine="no" until="5.*">
             <modify-argument index="0">
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
@@ -424,7 +451,14 @@
     <object-type name="QSGDynamicTexture">
     </object-type>
     <object-type name="QSGFlatColorMaterial">
-        <modify-function signature="createShader() const" no-except="yes">
+        <modify-function signature="createShader() const" no-except="yes" until="5.*">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createShader(QSGRendererInterface::RenderMode) const" no-except="yes" since="6.0.0">
             <modify-argument index="0">
                 <no-null-pointer/>
                 <define-ownership class="shell" owner="cplusplus"/>
@@ -450,7 +484,14 @@
         <modify-function signature="compare(const QSGMaterial*)const">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-        <modify-function signature="createShader() const" no-except="yes">
+        <modify-function signature="createShader() const" no-except="yes" until="5.*">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createShader(QSGRendererInterface::RenderMode) const" no-except="yes" since="6.0.0">
             <modify-argument index="0">
                 <no-null-pointer/>
                 <define-ownership class="shell" owner="cplusplus"/>
@@ -459,13 +500,20 @@
         </modify-function>
     </object-type>
     <object-type name="QSGMaterialShader">
-        <modify-function signature="updateState(QSGMaterialShader::RenderState,QSGMaterial*,QSGMaterial*)">
+        <modify-function signature="updateState(QSGMaterialShader::RenderState,QSGMaterial*,QSGMaterial*)" until="5.*">
             <modify-argument index="2" invalidate-after-use="yes" />
             <modify-argument index="3" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
     <object-type name="QSGOpaqueTextureMaterial">
-        <modify-function signature="createShader() const" no-except="yes">
+        <modify-function signature="createShader() const" no-except="yes" until="5.*">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createShader(QSGRendererInterface::RenderMode) const" no-except="yes" since="6.0.0">
             <modify-argument index="0">
                 <no-null-pointer/>
                 <define-ownership class="shell" owner="cplusplus"/>
@@ -485,7 +533,14 @@
     <object-type name="QSGTexture">
     </object-type>
     <object-type name="QSGTextureMaterial">
-        <modify-function signature="createShader() const" no-except="yes">
+        <modify-function signature="createShader() const" no-except="yes" until="5.*">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createShader(QSGRendererInterface::RenderMode) const" no-except="yes" since="6.0.0">
             <modify-argument index="0">
                 <no-null-pointer/>
                 <define-ownership class="shell" owner="cplusplus"/>
@@ -494,7 +549,14 @@
         </modify-function>
     </object-type>
     <object-type name="QSGVertexColorMaterial">
-        <modify-function signature="createShader() const" no-except="yes">
+        <modify-function signature="createShader() const" no-except="yes" until="5.*">
+            <modify-argument index="0">
+                <no-null-pointer/>
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createShader(QSGRendererInterface::RenderMode) const" no-except="yes" since="6.0.0">
             <modify-argument index="0">
                 <no-null-pointer/>
                 <define-ownership class="shell" owner="cplusplus"/>
@@ -542,18 +604,16 @@
             <reference-count action="ignore"/>
         </modify-field>
     </object-type>
-    <value-type name="QSGMaterialShader::RenderState">
-    </value-type>
     <object-type name="QSGMaterialType">
     </object-type>
     <value-type name="QSGGeometry::TexturedPoint2D">
     </value-type>
     
     <object-type name="QQuickItemGrabResult">
-        <modify-function signature="saveToFile(const QString &amp;)" remove="all" since="5.9.0"/>
+        <modify-function signature="saveToFile(const QString &amp;)" remove="all" since="5.9.0" until="5.*"/>
     </object-type>
     
-    <object-type name="QSGAbstractRenderer">
+    <object-type name="QSGAbstractRenderer" until="5.*">
         <modify-function signature="nodeChanged(QSGNode*,QFlags&lt;QSGNode::DirtyStateBit&gt;)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
@@ -564,10 +624,10 @@
         </modify-function>
     </object-type>
     
-    <enum-type name="QSGAbstractRenderer::ClearModeBit" flags="QSGAbstractRenderer::ClearMode"/>
-    <enum-type name="QSGAbstractRenderer::MatrixTransformFlag" flags="QSGAbstractRenderer::MatrixTransformFlags" since="5.14.0"/>
+    <enum-type name="QSGAbstractRenderer::ClearModeBit" flags="QSGAbstractRenderer::ClearMode" until="5.*"/>
+    <enum-type name="QSGAbstractRenderer::MatrixTransformFlag" flags="QSGAbstractRenderer::MatrixTransformFlags" since="5.14.0" until="5.*"/>
     
-    <object-type name="QSGEngine">
+    <object-type name="QSGEngine" until="5.*">
         <modify-function signature="createImageNode()const">
             <modify-argument index="0">
                 <define-ownership class="native" owner="java"/>
@@ -600,7 +660,7 @@
         </modify-function>
     </object-type>
     
-    <enum-type name="QSGEngine::CreateTextureOption" flags="QSGEngine::CreateTextureOptions"/>
+    <enum-type name="QSGEngine::CreateTextureOption" flags="QSGEngine::CreateTextureOptions" until="5.*"/>
     
     <rejection class="QSGSimpleMaterial"/>
     <rejection class="QSGSimpleMaterialComparableMaterial"/>
@@ -639,20 +699,46 @@
             <modify-argument invalidate-after-use="yes" index="1" />
         </modify-function>
     </object-type>
-    <object-type name="QSGMaterialRhiShader" since="5.14.0">
+    <value-type name="QQuickGraphicsDevice" since="6.0.0">
+        <modify-function signature="operator=(QQuickGraphicsDevice)" remove="all"/>
+    </value-type>
+    <value-type name="QQuickRenderTarget" since="6.0.0">
+        <modify-function signature="operator=(QQuickRenderTarget)" remove="all"/>
+    </value-type>
+    <object-type name="QSGMaterialRhiShader" since="5.14.0" until="5.*">
     </object-type>
-    <enum-type name="QSGMaterialRhiShader::Flag" flags="QSGMaterialRhiShader::Flags" since="5.14.0"/>
-    <enum-type name="QSGMaterialRhiShader::Stage" since="5.14.0"/>
-    <value-type name="QSGMaterialRhiShader::RenderState" since="5.14.0">
+    <enum-type name="QSGMaterialRhiShader::Flag" flags="QSGMaterialRhiShader::Flags" since="5.14.0" until="5.*"/>
+    <enum-type name="QSGMaterialRhiShader::Stage" since="5.14.0" until="5.*"/>
+    <value-type name="QSGMaterialRhiShader::RenderState" since="5.14.0" until="5.*">
         <modify-function signature="uniformData()" remove="all"/>
     </value-type>
-    <value-type name="QSGMaterialRhiShader::GraphicsPipelineState" since="5.14.0">
+    <value-type name="QSGMaterialRhiShader::GraphicsPipelineState" since="5.14.0" until="5.*">
     </value-type>
-    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::BlendFactor" since="5.14.0"/>
-    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialRhiShader::GraphicsPipelineState::ColorMask" since="5.14.0"/>
-    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::CullMode" since="5.14.0"/>
-    
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::BlendFactor" since="5.14.0" until="5.*"/>
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialRhiShader::GraphicsPipelineState::ColorMask" since="5.14.0" until="5.*"/>
+    <enum-type name="QSGMaterialRhiShader::GraphicsPipelineState::CullMode" since="5.14.0" until="5.*"/>
+    <enum-type name="QSGMaterialShader::Flag" flags="QSGMaterialShader::Flags" since="6.0.0"/>
+    <enum-type name="QSGMaterialShader::Stage" since="6.0.0"/>
+    <value-type name="QSGMaterialShader::RenderState">
+        <modify-function signature="uniformData()" remove="all" since="6.0.0"/>
+    </value-type>
+    <value-type name="QSGMaterialShader::GraphicsPipelineState" since="6.0.0">
+    </value-type>
+    <value-type name="QQuickGraphicsConfiguration" since="6.0.0">
+        <modify-function signature="operator=(QQuickGraphicsConfiguration)" remove="all"/>
+    </value-type>
+    <enum-type name="QSGMaterialShader::GraphicsPipelineState::BlendFactor" since="6.0.0"/>
+    <enum-type name="QSGMaterialShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialShader::GraphicsPipelineState::ColorMask" since="6.0.0"/>
+    <enum-type name="QSGMaterialShader::GraphicsPipelineState::CullMode" since="6.0.0"/>
+    <namespace-type name="QNativeInterface" since="6.0.0"/>
+    <interface-type name="QNativeInterface::QSGOpenGLTexture" pp-condition="QT_CONFIG(opengl)" since="6.0.0"/>
+    <interface-type name="QNativeInterface::QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" since="6.0.0"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'Vk*'" />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QSG*." />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickWindow::GraphicsStateInfo." />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickGraphicsDevice." />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQuickGraphicsConfiguration." />
 </typesystem>

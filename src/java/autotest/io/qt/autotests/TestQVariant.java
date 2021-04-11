@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,14 +45,18 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Consumer;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.QtEnumerator;
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
+import io.qt.QtUtilities;
 import io.qt.autotests.generated.Tulip;
 import io.qt.autotests.generated.Variants;
 import io.qt.core.QAbstractEventDispatcher;
@@ -65,35 +69,46 @@ import io.qt.core.QDate;
 import io.qt.core.QDateTime;
 import io.qt.core.QDir;
 import io.qt.core.QEasingCurve;
+import io.qt.core.QEvent;
 import io.qt.core.QFileInfo;
+import io.qt.core.QHash;
 import io.qt.core.QJsonArray;
 import io.qt.core.QJsonDocument;
 import io.qt.core.QJsonObject;
 import io.qt.core.QJsonValue;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QLine;
 import io.qt.core.QLineF;
+import io.qt.core.QList;
 import io.qt.core.QLocale;
+import io.qt.core.QMap;
 import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaMethod.MethodType;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaType;
 import io.qt.core.QModelIndex;
+import io.qt.core.QMultiHash;
+import io.qt.core.QMultiMap;
 import io.qt.core.QObject;
 import io.qt.core.QPair;
 import io.qt.core.QPersistentModelIndex;
 import io.qt.core.QPoint;
 import io.qt.core.QPointF;
+import io.qt.core.QQueue;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
-import io.qt.core.QRegExp;
 import io.qt.core.QRegularExpression;
+import io.qt.core.QRunnable;
+import io.qt.core.QSet;
 import io.qt.core.QSize;
 import io.qt.core.QSizeF;
+import io.qt.core.QStack;
+import io.qt.core.QStringList;
 import io.qt.core.QThread;
 import io.qt.core.QTime;
 import io.qt.core.QUrl;
 import io.qt.core.QUuid;
 import io.qt.core.QVariant;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.gui.QBitmap;
 import io.qt.gui.QBrush;
@@ -105,6 +120,8 @@ import io.qt.gui.QImage;
 import io.qt.gui.QKeySequence;
 import io.qt.gui.QMatrix4x4;
 import io.qt.gui.QPageSize;
+import io.qt.gui.QPaintDevice;
+import io.qt.gui.QPaintEngine;
 import io.qt.gui.QPainter;
 import io.qt.gui.QPalette;
 import io.qt.gui.QPen;
@@ -122,8 +139,10 @@ import io.qt.gui.QVector4D;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QComboBox;
 import io.qt.widgets.QGraphicsItem;
+import io.qt.widgets.QGraphicsItemGroup;
 import io.qt.widgets.QGraphicsObject;
 import io.qt.widgets.QGraphicsPixmapItem;
+import io.qt.widgets.QGraphicsSimpleTextItem;
 import io.qt.widgets.QGraphicsWidget;
 import io.qt.widgets.QLabel;
 import io.qt.widgets.QSizePolicy;
@@ -132,6 +151,8 @@ import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
 public class TestQVariant extends QApplicationTest {
+	
+	private static boolean convertToQList = QLibraryInfo.version().compareTo(new QVersionNumber(6, 1, 0)) >= 0;
 	
     @Test
     public void testQVariant() {
@@ -187,7 +208,6 @@ public class TestQVariant extends QApplicationTest {
     	assertEquals(QMetaType.Type.QQuaternion.value(), QMetaType.metaTypeId(QQuaternion.class));
     	assertEquals(QMetaType.Type.QRect.value(), QMetaType.metaTypeId(QRect.class));
     	assertEquals(QMetaType.Type.QRectF.value(), QMetaType.metaTypeId(QRectF.class));
-    	assertEquals(QMetaType.Type.QRegExp.value(), QMetaType.metaTypeId(QRegExp.class));
     	assertEquals(QMetaType.Type.QRegion.value(), QMetaType.metaTypeId(QRegion.class));
     	assertEquals(QMetaType.Type.QRegularExpression.value(), QMetaType.metaTypeId(QRegularExpression.class));
     	assertEquals(QMetaType.Type.QQuaternion.value(), QMetaType.metaTypeId(QQuaternion.class));
@@ -207,11 +227,11 @@ public class TestQVariant extends QApplicationTest {
     	assertEquals(QMetaType.Type.QVariant.value(), QMetaType.metaTypeId(QVariant.class));
     	assertEquals(QMetaType.Type.QObjectStar.value(), QMetaType.metaTypeId(QObject.class));
     	assertEquals(QMetaType.Type.Nullptr.value(), QMetaType.metaTypeId(null));
-    	assertEquals("JObjectWrapper", QMetaType.typeName(QMetaType.metaTypeId(Object.class)));
-    	assertEquals("JCollectionWrapper", QMetaType.typeName(QMetaType.metaTypeId(List.class)));
-    	assertEquals("JMapWrapper", QMetaType.typeName(QMetaType.metaTypeId(Map.class)));
-    	assertEquals("JEnumWrapper", QMetaType.typeName(QMetaType.metaTypeId(Enum.class)));
-    	assertEquals("QWidget*", QMetaType.typeName(QMetaType.metaTypeId(QWidget.class)));
+    	assertEquals("JObjectWrapper", QMetaType.fromType(Object.class).name().toString());
+    	assertEquals("JCollectionWrapper", QMetaType.fromType(List.class).name().toString());
+    	assertEquals("JMapWrapper", QMetaType.fromType(Map.class).name().toString());
+    	assertEquals("JEnumWrapper", QMetaType.fromType(Enum.class).name().toString());
+    	assertEquals("QWidget*", QMetaType.fromType(QWidget.class).name().toString());
     	assertEquals(new QSize(5, 5), QVariant.convert(new QSizeF(5, 5), QSize.class));
     	assertEquals(new QLine(6, 5, 8, 1), QVariant.convert(new QLineF(5.8, 5.2, 8.3, 1.2), QLine.class));
     	Tulip tulip = new Tulip();
@@ -220,117 +240,78 @@ public class TestQVariant extends QApplicationTest {
     }
     
     @Test
-    public void testQVariant_IntVector() {
-    	Object variant = Variants.getIntVector();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
-    }
-    
-    @Test
-    public void testQVariant_IntLinkedList() {
-    	Object variant = Variants.getIntLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
-    }
-    
-    @Test
     public void testQVariant_IntList() {
     	Object variant = Variants.getIntList();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList(1, 2, 3, 4), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
+    	assertEquals(QList.of(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntSet() {
     	Object variant = Variants.getIntSet();
-    	assertTrue(variant instanceof HashSet);
-    	assertEquals(new TreeSet<>(Arrays.asList(1, 2, 3, 4)), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
+    	assertEquals(QSet.of(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntQueue() {
     	Object variant = Variants.getIntQueue();
-    	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QQueue);
+    	assertEquals(QQueue.of(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_IntStack() {
     	Object variant = Variants.getIntStack();
-    	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList(1, 2, 3, 4), new ArrayList<>((ArrayDeque<?>)variant));
-    }
-    
-    @Test
-    public void testQVariant_StringVector() {
-    	Object variant = Variants.getStringVector();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
-    }
-    
-    @Test
-    public void testQVariant_StringLinkedList() {
-    	Object variant = Variants.getStringLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QStack);
+    	assertEquals(QStack.of(1, 2, 3, 4), variant);
     }
     
     @Test
     public void testQVariant_StringList() {
     	Object variant = Variants.getStringList();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
+    	assertEquals(new QStringList("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_StringSet() {
     	Object variant = Variants.getStringSet();
-    	assertTrue(variant instanceof HashSet);
-    	assertEquals(new TreeSet<>(Arrays.asList("S1", "S2", "S3", "S4")), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
+    	if(QLibraryInfo.version().majorVersion()<6) {
+    		assertEquals(new HashSet<>(Arrays.asList("S1", "S2", "S3", "S4")), new HashSet<>((Collection<?>)variant));
+    	} else {
+    		assertEquals(QSet.of("S1", "S2", "S3", "S4"), variant);	
+		}
     }
     
     @Test
     public void testQVariant_StringQueue() {
     	Object variant = Variants.getStringQueue();
-    	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QQueue);
+    	assertEquals(QQueue.of("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_StringStack() {
     	Object variant = Variants.getStringStack();
-    	assertTrue(variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList("S1", "S2", "S3", "S4"), new ArrayList<>((ArrayDeque<?>)variant));
-    }
-    
-    @Test
-    public void testQVariant_UnknownEnumVector() {
-    	Object variant = Variants.getUnknownEnumVector();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(4, ((Collection<?>)variant).size());
-    	int i = 101;
-    	for(Object e : (Collection<?>)variant) {
-    		assertTrue(e instanceof QtEnumerator);
-    		assertEquals(i++, ((QtEnumerator)e).value());
-    	}
-    }
-    
-    @Test
-    public void testQVariant_UnknownEnumLinkedList() {
-    	Object variant = Variants.getUnknownEnumLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	assertEquals(4, ((Collection<?>)variant).size());
-    	int i = 101;
-    	for(Object e : (Collection<?>)variant) {
-    		assertTrue(e instanceof QtEnumerator);
-    		assertEquals(i++, ((QtEnumerator)e).value());
-    	}
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QStack);
+    	assertEquals(QStack.of("S1", "S2", "S3", "S4"), variant);
     }
     
     @Test
     public void testQVariant_UnknownEnumList() {
     	Object variant = Variants.getUnknownEnumList();
-    	assertTrue(variant instanceof ArrayList);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
     	assertEquals(4, ((Collection<?>)variant).size());
     	int i = 101;
     	for(Object e : (Collection<?>)variant) {
@@ -342,20 +323,22 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_UnknownEnumSet() {
     	Object variant = Variants.getUnknownEnumSet();
-    	assertTrue(variant instanceof HashSet);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
     	assertEquals(4, ((Collection<?>)variant).size());
-    	HashSet<Integer> values = new HashSet<Integer>();
+    	QSet<Integer> values = new QSet<>(int.class);
     	for(Object e : (Collection<?>)variant) {
     		assertTrue(e instanceof QtEnumerator);
     		values.add(((QtEnumerator)e).value());
     	}
-    	assertEquals(new TreeSet<>(Arrays.asList(101, 102, 103, 104)), values);
+    	assertEquals(QSet.of(101, 102, 103, 104), values);
     }
     
     @Test
     public void testQVariant_UnknownEnumQueue() {
     	Object variant = Variants.getUnknownEnumQueue();
-    	assertTrue(variant instanceof ArrayDeque);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QQueue);
     	assertEquals(4, ((Collection<?>)variant).size());
     	int i = 101;
     	for(Object e : (Collection<?>)variant) {
@@ -367,7 +350,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_UnknownEnumStack() {
     	Object variant = Variants.getUnknownEnumStack();
-    	assertTrue(variant instanceof ArrayDeque);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QStack);
     	assertEquals(4, ((Collection<?>)variant).size());
     	int i = 101;
     	for(Object e : (Collection<?>)variant) {
@@ -377,31 +361,18 @@ public class TestQVariant extends QApplicationTest {
     }
     
     @Test
-    public void testQVariant_DirVector() {
-    	Object variant = Variants.getDirVector();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
-    }
-    
-    @Test
-    public void testQVariant_DirLinkedList() {
-    	Object variant = Variants.getDirLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
-    }
-    
-    @Test
     public void testQVariant_DirList() {
     	Object variant = Variants.getDirList();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
+    	assertEquals(QList.of(new QDir("/"), new QDir("/home")), variant);
     }
     
     @Test
     public void testQVariant_DirSet() {
     	Object variant = Variants.getDirSet();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashSet);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
     	assertEquals(new HashSet<>(Arrays.asList(new QDir("/"), new QDir("/home"))), variant);
     }
     
@@ -409,23 +380,23 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_DirQueue() {
     	Object variant = Variants.getDirQueue();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertTrue(variant.getClass().getName(), variant instanceof Queue);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((Queue<?>)variant));
     }
     
     @Test
     public void testQVariant_DirStack() {
     	Object variant = Variants.getDirStack();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof ArrayDeque);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((ArrayDeque<?>)variant));
+    	assertTrue(variant.getClass().getName(), variant instanceof Deque);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((Deque<?>)variant));
     }
     
-    @Test
+	@Test
     public void testQVariant_ColorHash() {
     	Object variant = Variants.getColorHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QHash);
     	for(Map.Entry<?,?> entry : ((Map<?,?>)variant).entrySet()) {
         	assertTrue(entry.getKey() instanceof QColor);
         	assertTrue(entry.getValue() instanceof String);
@@ -440,10 +411,10 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_IntMap() {
     	Object variant = Variants.getIntMap();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
-    	for(Map.Entry<?,?> entry : ((Map<?,?>)variant).entrySet()) {
-        	assertTrue(entry.getKey() instanceof Integer);
-        	assertTrue(entry.getValue() instanceof String);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMap);
+    	for(QPair<?,?> entry : (QMap<?,?>)variant) {
+        	assertTrue(entry.first instanceof Integer);
+        	assertTrue(entry.second instanceof String);
     	}
     	assertEquals(3, ((Map<?,?>)variant).size());
     	assertEquals("Seven", ((Map<?,?>)variant).get(7));
@@ -455,7 +426,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_UnknownEnumMap() {
     	Object variant = Variants.getUnknownEnumMap();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMap);
     	for(Map.Entry<?,?> entry : ((Map<?,?>)variant).entrySet()) {
         	assertTrue(entry.getKey() instanceof QtEnumerator);
         	assertEquals(entry.getValue(), ( (QtEnumerator)entry.getKey() ).value()-100);
@@ -466,14 +437,14 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_UnknownEnumHash() {
     	Object variant = Variants.getUnknownEnumHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QHash);
     	for(Map.Entry<?,?> entry : ((Map<?,?>)variant).entrySet()) {
         	assertTrue(entry.getKey() instanceof QtEnumerator);
         	assertEquals(entry.getValue(), ( (QtEnumerator)entry.getKey() ).value()-100);
     	}
     }
     
-    private final Consumer<Collection<?>> variantConsumer = collection -> {
+    static final Consumer<Collection<?>> variantConsumer = collection -> {
     	assertEquals(4, collection.size());
 		int i=1;
 		for (Object object : collection) {
@@ -489,34 +460,22 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_DirHash() {
     	Object variant = Variants.getDirHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
-    }
-    
-    @Test
-    public void testQVariant_TestObjectVector() {
-    	Object variant = Variants.getTestObjectVector();
-    	assertTrue(variant instanceof ArrayList);
-    	variantConsumer.accept((ArrayList<?>)variant);
-    }
-    
-    @Test
-    public void testQVariant_TestObjectLinkedList() {
-    	Object variant = Variants.getTestObjectLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	variantConsumer.accept((LinkedList<?>)variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QHash);
     }
     
     @Test
     public void testQVariant_TestObjectList() {
     	Object variant = Variants.getTestObjectList();
-    	assertTrue(variant instanceof ArrayList);
-    	variantConsumer.accept((ArrayList<?>)variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
+    	variantConsumer.accept((List<?>)variant);
     }
     
     @Test
     public void testQVariant_TestObjectSet() {
     	Object variant = Variants.getTestObjectSet();
-    	assertTrue(variant instanceof HashSet);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
     	assertEquals(4, ((Collection<?>)variant).size());
     	for(Object o : (Collection<?>)variant) {
     		assertTrue(o instanceof QObject);
@@ -528,28 +487,40 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_QObjectSet() {
     	Object variant = Variants.getQObjectSet();
-    	assertTrue(variant instanceof HashSet);
-    	assertEquals(new HashSet<>(Arrays.asList(QCoreApplication.instance(), QThread.currentThread(), QAbstractEventDispatcher.instance())), variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QSet);
+    	Set<?> set = (Set<?>)variant;
+    	set.size();
+    	HashSet<?> eqSet = new HashSet<>(Arrays.asList(QCoreApplication.instance(), QThread.currentThread(), QAbstractEventDispatcher.instance()));
+    	set.equals(eqSet);
+    	java.util.Iterator<?> iter = set.iterator();
+    	if(iter.hasNext()) {
+    		iter.next();
+    	}
+    	assertEquals(eqSet, variant);
     }
     
     @Test
     public void testQVariant_TestObjectLinkedQueue() {
     	Object variant = Variants.getTestObjectQueue();
-    	assertTrue(variant instanceof ArrayDeque);
-    	variantConsumer.accept((ArrayDeque<?>)variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QQueue);
+    	variantConsumer.accept((Queue<?>)variant);
     }
     
     @Test
     public void testQVariant_TestObjectStack() {
     	Object variant = Variants.getTestObjectStack();
-    	assertTrue(variant instanceof ArrayDeque);
-    	variantConsumer.accept((ArrayDeque<?>)variant);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QStack);
+    	variantConsumer.accept((Deque<?>)variant);
     }
     
     @Test
     public void testQVariant_TestObjectMap() {
     	Object variant = Variants.getTestObjectMap();
-    	assertTrue(variant instanceof TreeMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMap);
     	assertEquals(4, ((Map<?,?>)variant).size());
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QObject);
@@ -568,7 +539,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_TestObjectHash() {
     	Object variant = Variants.getTestObjectHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QHash);
     	assertEquals(4, ((Map<?,?>)variant).size());
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QObject);
@@ -580,35 +551,14 @@ public class TestQVariant extends QApplicationTest {
     }
     
     @Test
-    public void testQVariant_UnknownValueVector() {
-    	Object variant = Variants.getUnknownValueVector();
-    	assertTrue(variant instanceof ArrayList);
-    	assertEquals(1, ((Collection<?>)variant).size());
-    	for(Object o : (Collection<?>)variant) {
-    		assertTrue(o instanceof QMetaType.GenericValue);
-    		assertEquals("UnknownValue", QMetaType.typeName(((QMetaType.GenericTypeInterface)o).metaType()));
-    	}
-    }
-    
-    @Test
     public void testQVariant_UnknownValueList() {
     	Object variant = Variants.getUnknownValueList();
-    	assertTrue(variant instanceof ArrayList);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QList);
     	assertEquals(1, ((Collection<?>)variant).size());
     	for(Object o : (Collection<?>)variant) {
     		assertTrue(o instanceof QMetaType.GenericValue);
-    		assertEquals("UnknownValue", QMetaType.typeName(((QMetaType.GenericTypeInterface)o).metaType()));
-    	}
-    }
-    
-    @Test
-    public void testQVariant_UnknownValueLinkedList() {
-    	Object variant = Variants.getUnknownValueLinkedList();
-    	assertTrue(variant instanceof LinkedList);
-    	assertEquals(1, ((Collection<?>)variant).size());
-    	for(Object o : (Collection<?>)variant) {
-    		assertTrue(o instanceof QMetaType.GenericValue);
-    		assertEquals("UnknownValue", QMetaType.typeName(((QMetaType.GenericTypeInterface)o).metaType()));
+    		assertEquals("UnknownValue", ((QMetaType.GenericTypeInterface)o).metaType().name().toString());
     	}
     }
     
@@ -616,11 +566,11 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_UnknownValueHash() {
     	Object variant = Variants.getUnknownValueHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof Map);
     	assertEquals(1, ((Map<?,?>)variant).size());
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QMetaType.GenericValue);
-    		assertEquals("UnknownValue", QMetaType.typeName(((QMetaType.GenericTypeInterface)entry.getKey()).metaType()));
+    		assertEquals("UnknownValue", ((QMetaType.GenericTypeInterface)entry.getKey()).metaType().name().toString());
     		assertEquals(1, entry.getValue());
     	}
     }
@@ -628,11 +578,12 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_UnknownValueMap() {
     	Object variant = Variants.getUnknownValueMap();
-    	assertTrue(variant instanceof TreeMap);
+    	assertTrue(variant!=null);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMap);
     	assertEquals(1, ((Map<?,?>)variant).size());
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QMetaType.GenericValue);
-    		assertEquals("UnknownValue", QMetaType.typeName(((QMetaType.GenericTypeInterface)entry.getKey()).metaType()));
+    		assertEquals("UnknownValue", ((QMetaType.GenericTypeInterface)entry.getKey()).metaType().name().toString());
     		assertEquals(1, entry.getValue());
     	}
     }
@@ -640,12 +591,13 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_StringMultiMap() {
     	Object variant = Variants.getStringMultiMap();
-    	assertTrue(variant instanceof TreeMap);
-    	assertEquals(4, ((Map<?,?>)variant).size());
-    	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
-    		assertTrue(entry.getKey() instanceof String);
-    		assertTrue(entry.getKey().toString().startsWith("TEST"));
-    		assertTrue(entry.getValue() instanceof List);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
+    	assertEquals(8, ((QMultiMap<?,?>)variant).size());
+    	for(Map.Entry<?, ?> entry : ((QMultiMap<?,?>)variant).entrySet()) {
+    		assertTrue(""+entry.getKey(), entry.getKey() instanceof String);
+    		assertTrue(""+entry.getKey(), entry.getKey().toString().startsWith("TEST"));
+    		assertTrue(""+entry.getValue(), entry.getValue() instanceof List);
     		List<?> list = (List<?>)entry.getValue();
     		assertEquals(2, list.size());
     		for (Object object : list) {
@@ -658,8 +610,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_TestObjectMultiMap() {
     	Object variant = Variants.getTestObjectMultiMap();
-    	assertTrue("variant is null", variant!=null);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QObject);
     		assertEquals("VariantTestObject", ((QObject)entry.getKey()).metaObject().className());
@@ -677,8 +629,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_Int16MultiMap() {
     	Object variant = Variants.getInt16MultiMap();
-    	assertTrue("variant is null", variant!=null);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof Short);
     		assertTrue(Short.valueOf((short)3).equals(entry.getKey()) || Short.valueOf((short)7).equals(entry.getKey()));
@@ -699,7 +651,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_StringMultiHash() {
     	Object variant = Variants.getStringMultiHash();
-    	assertTrue(variant instanceof HashMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof String);
     		assertTrue(entry.getValue() instanceof List);
@@ -716,7 +669,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_String64MultiHash() {
     	Object variant = Variants.getString64MultiHash();
-    	assertTrue(variant instanceof HashMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof String);
     		assertTrue(entry.getValue() instanceof List);
@@ -733,7 +687,8 @@ public class TestQVariant extends QApplicationTest {
     @Test
     public void testQVariant_String16MultiHash() {
     	Object variant = Variants.getString16MultiHash();
-    	assertTrue(variant instanceof HashMap);
+    	assertNotNull(variant);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof String);
     		assertTrue(entry.getValue() instanceof List);
@@ -751,7 +706,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_String8MultiHash() {
     	Object variant = Variants.getString8MultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof String);
     		assertTrue(entry.getValue() instanceof List);
@@ -769,7 +724,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_TestObjectMultiHash() {
     	Object variant = Variants.getTestObjectMultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QObject);
     		assertTrue(entry.getValue() instanceof List);
@@ -787,7 +742,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_UnknownEnumMultiHash() {
     	Object variant = Variants.getUnknownEnumMultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QtEnumerator);
 			assertTrue(Integer.valueOf(101).equals(((QtEnumerator)entry.getKey()).value()) 
@@ -809,7 +764,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_ColorMultiHash() {
     	Object variant = Variants.getColorMultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QColor);
 			assertTrue(new QColor(Qt.GlobalColor.red).equals(entry.getKey()) 
@@ -831,7 +786,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_ColorMultiMap() {
     	Object variant = Variants.getColorMultiMap();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QColor);
 			assertTrue(new QColor(Qt.GlobalColor.red).equals(entry.getKey()) 
@@ -853,7 +808,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_Int64MultiHash() {
     	Object variant = Variants.getInt64MultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof Long);
 			assertTrue(Long.valueOf(3).equals(entry.getKey()) 
@@ -875,7 +830,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_Int16MultiHash() {
     	Object variant = Variants.getInt16MultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof Short);
 			assertTrue(Short.valueOf((short)3).equals(entry.getKey()) 
@@ -897,7 +852,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_CharMultiHash() {
     	Object variant = Variants.getCharMultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof Byte);
 			assertTrue(Byte.valueOf((byte)'a').equals(entry.getKey()) 
@@ -919,7 +874,7 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_UnknownEnumMultiMap() {
     	Object variant = Variants.getUnknownEnumMultiMap();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof QtEnumerator);
 			assertTrue(Integer.valueOf(101).equals(((QtEnumerator)entry.getKey()).value()) 
@@ -941,14 +896,14 @@ public class TestQVariant extends QApplicationTest {
     public void testQVariant_RectFMultiHash() {
     	Object variant = Variants.getRectFMultiHash();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof HashMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);
     }
     	
     @Test
     public void testQVariant_CharMultiMap() {
     	Object variant = Variants.getCharMultiMap();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof TreeMap);
+    	assertTrue(variant.getClass().getName(), variant instanceof QMultiMap);
     	for(Map.Entry<?, ?> entry : ((Map<?,?>)variant).entrySet()) {
     		assertTrue(entry.getKey() instanceof Byte);
 			assertTrue(Byte.valueOf((byte)'a').equals(entry.getKey()) 
@@ -983,15 +938,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of('t', 'h', 'i', 's', ' ', 'i', 's', ' ', 'm', 'y', ' ', 's', 't', 'r', 'i', 'n', 'g');
 
         testQVariant("Normal string", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray, false, expectedChar,
-                false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false, expectedRegExp, false,
-                expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
+                expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1011,21 +967,22 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of((byte)'t', (byte)'h', (byte)'i', (byte)'s', (byte)' ', (byte)'i', (byte)'s', (byte)' ', (byte)'m', (byte)'y', (byte)' ', (byte)'s', (byte)'t', (byte)'r', (byte)'i', (byte)'n', (byte)'g');
 
         testQVariant("QByteArray", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
     public void run_QVariantObject() {
         Object variant = new QObject();
-        String expectedString = "";
+        String expectedString = variant.toString();
         double expectedDouble = 0.0;
         QByteArray expectedByteArray = new QByteArray("");
         int expectedInt = 0;
@@ -1039,15 +996,14 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
 
         testQVariant("java.lang.Object", variant, expectedDouble, false, expectedString, true, expectedByteArray, false, expectedInt, false, expectedBool, false,
                 expectedBitArray, false, expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false,
-                expectedRectF, false, expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedRectF, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
     }
 
     @Test
@@ -1067,15 +1023,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of('1', '2', '3', '.', '4', '5', '6');
 
         testQVariant("String double", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1095,15 +1052,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of((byte)'4', (byte)'5', (byte)'6', (byte)'.', (byte)'7', (byte)'8', (byte)'9');
 
         testQVariant("Byte array double", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true,
                 expectedBitArray, false, expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false,
-                expectedRectF, false, expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedRectF, false, expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1123,15 +1081,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of('3', '2', '1');
 
         testQVariant("String integer", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1151,15 +1110,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of('F', 'a', 'L', 's', 'E');
 
         testQVariant("String boolean", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray,
                 false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1179,15 +1139,16 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
+        if(convertToQList)
+        	expectedList = QList.of('t', 'R', 'U', 'e');
 
         testQVariant("String boolean (true)", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true,
                 expectedBitArray, false, expectedChar, false, expectedDate, true, expectedTime, true, expectedDateTime, true, expectedPoint, false, expectedPointF, false, expectedRect, false,
-                expectedRectF, false, expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedRectF, false, expectedSize, false, expectedSizeF, false, expectedList, convertToQList, expectedMap, false);
     }
 
     @Test
@@ -1207,15 +1168,14 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
 
         testQVariant("Double", variant, expectedDouble, true, expectedString, true, expectedByteArray, true, expectedInt, true, expectedBool, true, expectedBitArray, false,
                 expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
     }
 
     @Test
@@ -1235,54 +1195,70 @@ public class TestQVariant extends QApplicationTest {
         QPointF expectedPointF = new QPointF();
         QRect expectedRect = new QRect();
         QRectF expectedRectF = new QRectF();
-        QRegExp expectedRegExp = new QRegExp();
         QSize expectedSize = new QSize();
         QSizeF expectedSizeF = new QSizeF();
-        List<Object> expectedList = new ArrayList<Object>();
-        Map<String, Object> expectedMap = new HashMap<String, Object>();
+        List<Object> expectedList = QList.createVariantList();
+        Map<String, Object> expectedMap = QMap.createVariantMap();
 
         testQVariant("Null", variant, expectedDouble, false, expectedString, true, expectedByteArray, true, expectedInt, false, expectedBool, false, expectedBitArray, false,
                 expectedChar, false, expectedDate, false, expectedTime, false, expectedDateTime, false, expectedPoint, false, expectedPointF, false, expectedRect, false, expectedRectF, false,
-                expectedRegExp, false, expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
+                expectedSize, false, expectedSizeF, false, expectedList, false, expectedMap, false);
 
     }
 
-    public void testQVariant(String name, Object object, Double expectedDouble, Boolean canConvertDouble, String expectedString, Boolean canConvertString, QByteArray expectedByteArray,
-            Boolean canConvertByteArray, Integer expectedInt, Boolean canConvertInt, Boolean expectedBool, Boolean canConvertBool, QBitArray expectedBitArray, Boolean canConvertBitArray,
-            Character expectedChar, Boolean canConvertChar, QDate expectedDate, Boolean canConvertDate, QTime expectedTime, Boolean canConvertTime, QDateTime expectedDateTime,
-            Boolean canConvertDateTime, QPoint expectedPoint, Boolean canConvertPoint, QPointF expectedPointF, Boolean canConvertPointF, QRect expectedRect, Boolean canConvertRect,
-            QRectF expectedRectF, Boolean canConvertRectF, QRegExp expectedRegExp, Boolean canConvertRegExp, QSize expectedSize, Boolean canConvertSize, QSizeF expectedSizeF, Boolean canConvertSizeF,
-            List<?> expectedList, Boolean canConvertList, Map<?, ?> expectedMap, Boolean canConvertMap) {
+    public void testQVariant(String name, Object object, double expectedDouble, boolean canConvertDouble, String expectedString, boolean canConvertString, QByteArray expectedByteArray,
+            boolean canConvertByteArray, int expectedInt, boolean canConvertInt, boolean expectedBool, boolean canConvertBool, QBitArray expectedBitArray, boolean canConvertBitArray,
+            char expectedChar, boolean canConvertChar, QDate expectedDate, boolean canConvertDate, QTime expectedTime, boolean canConvertTime, QDateTime expectedDateTime,
+            boolean canConvertDateTime, QPoint expectedPoint, boolean canConvertPoint, QPointF expectedPointF, boolean canConvertPointF, QRect expectedRect, boolean canConvertRect,
+            QRectF expectedRectF, boolean canConvertRectF, QSize expectedSize, boolean canConvertSize, QSizeF expectedSizeF, boolean canConvertSizeF,
+            List<?> expectedList, boolean canConvertList, Map<?, ?> expectedMap, boolean canConvertMap) {
+
+        assertEquals("Can convert String", canConvertString, QVariant.canConvertToString(object));
+        assertEquals("Can convert Double", canConvertDouble, QVariant.canConvertToDouble(object));
+        assertEquals("Can convert ByteArray", canConvertByteArray, QVariant.canConvertToByteArray(object));
+        assertEquals("Can convert Int", canConvertInt, QVariant.canConvertToInt(object));
+        assertEquals("Can convert Bool", canConvertBool, QVariant.canConvertToBoolean(object));
+        assertEquals("Can convert BitArray", canConvertBitArray, QVariant.canConvertToBitArray(object));
+        assertEquals("Can convert Char", canConvertChar, QVariant.canConvertToChar(object));
+        assertEquals("Can convert Date", canConvertDate, QVariant.canConvertToDate(object));
+        assertEquals("Can convert Time", canConvertTime, QVariant.canConvertToTime(object));
+        assertEquals("Can convert DateTime", canConvertDateTime, QVariant.canConvertToDateTime(object));
+        assertEquals("Can convert Point", canConvertPoint, QVariant.canConvertToPoint(object));
+        assertEquals("Can convert PointF", canConvertPointF, QVariant.canConvertToPointF(object));
+        assertEquals("Can convert Rect", canConvertRect, QVariant.canConvertToRect(object));
+        assertEquals("Can convert RectF", canConvertRectF, QVariant.canConvertToRectF(object));
+        assertEquals("Can convert Size", canConvertSize, QVariant.canConvertToSize(object));
+        assertEquals("Can convert SizeF", canConvertSizeF, QVariant.canConvertToSizeF(object));
+        assertEquals("Can convert List", canConvertList, QVariant.canConvertToList(object));
+        assertEquals("Can convert Map", canConvertMap, QVariant.canConvertToMap(object));
 
         assertEquals(expectedString, QVariant.toString(object));
-        assertEquals((double)expectedDouble, (double)QVariant.toDouble(object), 0.0);
-        assertEquals((double)expectedInt, (int)QVariant.toInt(object), 0.0);
+        assertEquals(expectedDouble, QVariant.toDouble(object), 0.0);
+        assertEquals(expectedInt, QVariant.toInt(object), 0.0);
         assertEquals(expectedBool, QVariant.toBoolean(object));
-        assertTrue(QVariant.toBitArray(object).equals(expectedBitArray));
-        assertEquals((char)QVariant.toChar(object), (char)expectedChar);
-        assertTrue(QVariant.toDate(object).equals(expectedDate));
-        assertTrue(QVariant.toTime(object).equals(expectedTime));
-        assertTrue(QVariant.toDateTime(object).equals(expectedDateTime));
-        QVariant.toDateTime(object);
-        assertEquals(QVariant.toPoint(object).x(), expectedPoint.x());
-        assertEquals(QVariant.toPoint(object).y(), expectedPoint.y());
-        assertEquals(QVariant.toPointF(object).x(), expectedPointF.x(), 0.0);
-        assertEquals(QVariant.toPointF(object).y(), expectedPointF.y(), 0.0);
-        assertEquals(QVariant.toRect(object).left(), expectedRect.left());
-        assertEquals(QVariant.toRect(object).top(), expectedRect.top());
-        assertEquals(QVariant.toRect(object).right(), expectedRect.right());
-        assertEquals(QVariant.toRect(object).bottom(), expectedRect.bottom());
-        assertEquals(QVariant.toRectF(object).left(), expectedRectF.left(), 0.0);
-        assertEquals(QVariant.toRectF(object).top(), expectedRectF.top(), 0.0);
-        assertEquals(QVariant.toRectF(object).bottom(), expectedRectF.bottom(), 0.0);
-        assertEquals(QVariant.toRectF(object).right(), expectedRectF.right(), 0.0);
-        assertTrue(QVariant.toRegExp(object).equals(expectedRegExp));
-        assertEquals(QVariant.toSize(object).width(), expectedSize.width());
-        assertEquals(QVariant.toSize(object).height(), expectedSize.height());
-        assertEquals(QVariant.toSizeF(object).width(), expectedSizeF.width(), 0.0);
-        assertEquals(QVariant.toSizeF(object).height(), expectedSizeF.height(), 0.0);
-        assertEquals(QVariant.toList(object), expectedList);
-        assertEquals(QVariant.toMap(object), expectedMap);
+        assertEquals(expectedBitArray, QVariant.toBitArray(object));
+        assertEquals(expectedChar, QVariant.toChar(object));
+        assertEquals(expectedDate, QVariant.toDate(object));
+        assertEquals(expectedTime, QVariant.toTime(object));
+        assertEquals(expectedDateTime, QVariant.toDateTime(object));
+        assertEquals(expectedPoint.x(), QVariant.toPoint(object).x());
+        assertEquals(expectedPoint.y(), QVariant.toPoint(object).y());
+        assertEquals(expectedPointF.x(), QVariant.toPointF(object).x(), 0.0);
+        assertEquals(expectedPointF.y(), QVariant.toPointF(object).y(), 0.0);
+        assertEquals(expectedRect.left(), QVariant.toRect(object).left());
+        assertEquals(expectedRect.top(), QVariant.toRect(object).top());
+        assertEquals(expectedRect.right(), QVariant.toRect(object).right());
+        assertEquals(expectedRect.bottom(), QVariant.toRect(object).bottom());
+        assertEquals(expectedRectF.left(), QVariant.toRectF(object).left(), 0.0);
+        assertEquals(expectedRectF.top(), QVariant.toRectF(object).top(), 0.0);
+        assertEquals(expectedRectF.bottom(), QVariant.toRectF(object).bottom(), 0.0);
+        assertEquals(expectedRectF.right(), QVariant.toRectF(object).right(), 0.0);
+        assertEquals(expectedSize.width(), QVariant.toSize(object).width());
+        assertEquals(expectedSize.height(), QVariant.toSize(object).height());
+        assertEquals(expectedSizeF.width(), QVariant.toSizeF(object).width(), 0.0);
+        assertEquals(expectedSizeF.height(), QVariant.toSizeF(object).height(), 0.0);
+        assertEquals(expectedList, QVariant.toList(object));
+        assertEquals(expectedMap, QVariant.toMap(object));
         {
             QByteArray ba = QVariant.toByteArray(object);
             assertEquals(expectedByteArray.size(), ba.size());
@@ -1290,26 +1266,6 @@ public class TestQVariant extends QApplicationTest {
                 assertEquals(expectedByteArray.at(i), ba.at(i));
             }
         }
-
-        assertEquals(QVariant.canConvertToString(object), canConvertString);
-        assertEquals(QVariant.canConvertToDouble(object), canConvertDouble);
-        assertEquals(QVariant.canConvertToByteArray(object), canConvertByteArray);
-        assertEquals(QVariant.canConvertToInt(object), canConvertInt);
-        assertEquals(QVariant.canConvertToBoolean(object), canConvertBool);
-        assertEquals(QVariant.canConvertToBitArray(object), canConvertBitArray);
-        assertEquals(QVariant.canConvertToChar(object), canConvertChar);
-        assertEquals(QVariant.canConvertToDate(object), canConvertDate);
-        assertEquals(QVariant.canConvertToTime(object), canConvertTime);
-        assertEquals(QVariant.canConvertToDateTime(object), canConvertDateTime);
-        assertEquals(QVariant.canConvertToPoint(object), canConvertPoint);
-        assertEquals(QVariant.canConvertToPointF(object), canConvertPointF);
-        assertEquals(QVariant.canConvertToRect(object), canConvertRect);
-        assertEquals(QVariant.canConvertToRectF(object), canConvertRectF);
-        assertEquals(QVariant.canConvertToRegExp(object), canConvertRegExp);
-        assertEquals(QVariant.canConvertToSize(object), canConvertSize);
-        assertEquals(QVariant.canConvertToSizeF(object), canConvertSizeF);
-        assertEquals(QVariant.canConvertToList(object), canConvertList);
-        assertEquals(QVariant.canConvertToMap(object), canConvertMap);
     }
 
     @Test
@@ -1492,7 +1448,7 @@ public class TestQVariant extends QApplicationTest {
         Object pushedObject = v.pushThrough(flags);
         assertEquals(flags, pushedObject);
         assertEquals(flags.value(), v.currentToInt());
-        assertEquals(flags.toString(), v.currentToString());
+//        assertEquals(flags.toString(), v.currentToString());
     }
 	
 	@Test
@@ -1614,11 +1570,20 @@ public class TestQVariant extends QApplicationTest {
     public void testRuntimeMetaTypes() {
     	QObject object = Variants.createInternalObject(null);
     	try {
+    		Class<?> qvecClass = QList.class;
+    		if(QLibraryInfo.version().majorVersion()<6) {
+    			try {
+					qvecClass = Class.forName(qvecClass.getName().replace("QList", "QVector"));
+				} catch (ClassNotFoundException e) {
+				}
+    		}
 	    	Map<String,Object> sentArguments = new TreeMap<>();
 	    	sentArguments.put("test1", Arrays.asList(new QPair<>("file1", new QFileInfo(QDir.currentPath())), new QPair<>("file2", new QFileInfo(QDir.rootPath()))));
 	    	sentArguments.put("test2", new QPair<>("file", Arrays.asList(new QFileInfo(QDir.rootPath()))));
-	    	sentArguments.put("test3", Arrays.asList("STRG", 9, 4.5));
-	    	sentArguments.put("test4", new LinkedList<>(Arrays.asList(new QColor(Qt.GlobalColor.red), new QColor(Qt.GlobalColor.green), new QColor(Qt.GlobalColor.blue))));
+	    	sentArguments.put("test3", Arrays.asList("STRG", 9, 4.5, new Object(), new QObject()));
+	    	if(QLibraryInfo.version().majorVersion()<6) {
+	    		sentArguments.put("test4", new LinkedList<>(Arrays.asList(new QColor(Qt.GlobalColor.red), new QColor(Qt.GlobalColor.green), new QColor(Qt.GlobalColor.blue))));
+	    	}
 	    	sentArguments.put("test5", new HashSet<>(Arrays.asList(new QPoint(1,2), new QPoint(3,4))));
 	    	sentArguments.put("test6", new HashSet<>(Arrays.asList(object, QApplication.instance())));
 	    	sentArguments.put("test7", new HashSet<>(Arrays.asList(new QComboBox(), new QComboBox(), new QComboBox(), new QComboBox())));
@@ -1630,17 +1595,20 @@ public class TestQVariant extends QApplicationTest {
 	    	sentArguments.put("test13", mapOf((byte)5, Arrays.asList(2,4,6,8), (byte)9, Arrays.asList(3,5,7,9)));
 	    	sentArguments.put("test14", mapOf(new QUrl.FormattingOptions(QUrl.FormattingOption.DecodeReserved), Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
 	    	sentArguments.put("test15", new ArrayDeque<>(Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
+	    	sentArguments.put("test16", Arrays.asList(new QPair<>("object1", QApplication.instance()), new QPair<>("object2", object)));
+	    	sentArguments.put("test17", Arrays.asList(new QGraphicsItemGroup(), new QGraphicsSimpleTextItem()));
+	    	sentArguments.put("test18", mapOf(new QUrl.FormattingOptions(QUrl.FormattingOption.DecodeReserved), Arrays.asList(Arrays.asList(2,4,6,8), Arrays.asList(3,5,7,9))));
 	
 	        Map<String,Object> receivedArguments = new TreeMap<>();
 	    	for(QMetaMethod m : object.metaObject().methods()) {
-	    		System.out.println(m);
-	    		if(m.methodType()==MethodType.Signal && m.parameterTypes().size()==1) {
+//	    		System.out.println(m.cppMethodSignature() + " = " + m.methodSignature());
+	    		if(m.methodType()==QMetaMethod.MethodType.Signal && m.parameterTypes().size()==1) {
 	    			QMetaObject.AbstractPrivateSignal1<?> signal = (QMetaObject.AbstractPrivateSignal1<?>)m.toSignal(object);
-	    			String name = m.name();
-	    			signal.connect(p->receivedArguments.put(name, p));    			
+	    			String name = m.name().toString();
+	    			signal.connect(p->receivedArguments.put(name, p));
 	    		}
-	    		if(m.name().startsWith("_") && sentArguments.containsKey(m.name().substring(1))) {
-	    			m.invoke(object, sentArguments.get(m.name().substring(1)));
+	    		if(m.name().startsWith("_") && sentArguments.containsKey(m.name().toString().substring(1))) {
+	    			m.invoke(object, sentArguments.get(m.name().toString().substring(1)));
 	    		}
 	    	}
 	    	if(sentArguments.containsKey("test1")) {
@@ -1651,33 +1619,33 @@ public class TestQVariant extends QApplicationTest {
 		    	assertTrue(receivedArguments.get("test2")!=null);
 		    	assertEquals(QPair.class, receivedArguments.get("test2").getClass());
 		    	assertEquals(((QPair<?,?>)sentArguments.get("test2")).first, ((QPair<?,?>)receivedArguments.get("test2")).first);
-		    	assertEquals(ArrayDeque.class, ((QPair<?,?>)receivedArguments.get("test2")).second.getClass());
+		    	assertEquals(QQueue.class, ((QPair<?,?>)receivedArguments.get("test2")).second.getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((QPair<?,?>)sentArguments.get("test2")).second).toArray(), ((Collection<?>)((QPair<?,?>)receivedArguments.get("test2")).second).toArray()));
 	    	}
 	    	
 	    	if(sentArguments.containsKey("test3")) {
 		    	assertTrue(receivedArguments.get("test3")!=null);
-		    	assertEquals(ArrayDeque.class, receivedArguments.get("test3").getClass());
+		    	assertEquals(QQueue.class, receivedArguments.get("test3").getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)sentArguments.get("test3")).toArray(), ((Collection<?>)receivedArguments.get("test3")).toArray()));
 	    	}
 	    	if(sentArguments.containsKey("test4")) {
-		    	assertEquals(sentArguments.get("test4"), receivedArguments.get("test4"));
-		    	assertEquals(sentArguments.get("test5"), receivedArguments.get("test5"));
-		    	assertEquals(sentArguments.get("test6"), receivedArguments.get("test6"));
-		    	assertEquals(sentArguments.get("test7"), receivedArguments.get("test7"));
+		    	assertTrue(Arrays.equals(((Collection<?>)sentArguments.get("test4")).toArray(), ((Collection<?>)receivedArguments.get("test4")).toArray()));
 	    	}
+	    	assertEquals(sentArguments.get("test5"), receivedArguments.get("test5"));
+	    	assertEquals(sentArguments.get("test6"), receivedArguments.get("test6"));
+	    	assertEquals(sentArguments.get("test7"), receivedArguments.get("test7"));
 	    	if(sentArguments.containsKey("test8")) {
 		    	assertTrue(receivedArguments.get("test8")!=null);
-		    	assertEquals(ArrayDeque.class, receivedArguments.get("test8").getClass());
+		    	assertEquals(QStack.class, receivedArguments.get("test8").getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)sentArguments.get("test8")).toArray(), ((Collection<?>)receivedArguments.get("test8")).toArray()));
 	    	}
 	    	if(sentArguments.containsKey("test9")) {
 		    	assertTrue(receivedArguments.get("test9")!=null);
-		    	assertEquals(ArrayList.class, receivedArguments.get("test9").getClass());
+		    	assertEquals(QList.class, receivedArguments.get("test9").getClass());
 		    	assertEquals(((List<?>)sentArguments.get("test9")).size(), ((List<?>)receivedArguments.get("test9")).size());
-		    	assertEquals(ArrayDeque.class, ((List<?>)receivedArguments.get("test9")).get(0).getClass());
+		    	assertEquals(QStack.class, ((List<?>)receivedArguments.get("test9")).get(0).getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentArguments.get("test9")).get(0)).toArray(), ((Collection<?>)((List<?>)receivedArguments.get("test9")).get(0)).toArray()));
-		    	assertEquals(ArrayDeque.class, ((List<?>)receivedArguments.get("test9")).get(1).getClass());
+		    	assertEquals(QStack.class, ((List<?>)receivedArguments.get("test9")).get(1).getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentArguments.get("test9")).get(1)).toArray(), ((Collection<?>)((List<?>)receivedArguments.get("test9")).get(1)).toArray()));
 	    	}
 	    	if(sentArguments.containsKey("test10")) {
@@ -1685,62 +1653,367 @@ public class TestQVariant extends QApplicationTest {
 	    	}
 	    	if(sentArguments.containsKey("test11")) {
 		    	assertTrue(receivedArguments.get("test11")!=null);
-		    	assertEquals(ArrayList.class, receivedArguments.get("test11").getClass());
+		    	assertEquals(qvecClass, receivedArguments.get("test11").getClass());
 		    	assertEquals(((List<?>)sentArguments.get("test11")).size(), ((List<?>)receivedArguments.get("test11")).size());
-		    	assertEquals(ArrayDeque.class, ((List<?>)receivedArguments.get("test11")).get(0).getClass());
+		    	assertEquals(QStack.class, ((List<?>)receivedArguments.get("test11")).get(0).getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentArguments.get("test11")).get(0)).toArray(), ((Collection<?>)((List<?>)receivedArguments.get("test11")).get(0)).toArray()));
-		    	assertEquals(ArrayDeque.class, ((List<?>)receivedArguments.get("test11")).get(1).getClass());
+		    	assertEquals(QStack.class, ((List<?>)receivedArguments.get("test11")).get(1).getClass());
 		    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentArguments.get("test11")).get(1)).toArray(), ((Collection<?>)((List<?>)receivedArguments.get("test11")).get(1)).toArray()));
 	    	}
 	    	if(sentArguments.containsKey("test12")) {
-		    	assertTrue(receivedArguments.get("test12")!=null);
-		    	assertEquals(TreeMap.class, receivedArguments.get("test12").getClass());
-		    	assertEquals(((Map<?,?>)sentArguments.get("test12")).size(), ((Map<?,?>)receivedArguments.get("test12")).size());
+	    		Object received = receivedArguments.get("test12");
+		    	assertTrue(received!=null);
+		    	assertEquals(QMap.class, received.getClass());
+		    	assertEquals(((Map<?,?>)sentArguments.get("test12")).size(), ((Map<?,?>)received).size());
 		    	for(Object key : ((Map<?,?>)sentArguments.get("test12")).keySet()) {
-			    	assertTrue(((Map<?,?>)receivedArguments.get("test12")).containsKey(key));
-			    	assertEquals(ArrayDeque.class, ((Map<?,?>)receivedArguments.get("test12")).get(key).getClass());
-			    	assertTrue(Arrays.equals(((Collection<?>)((Map<?,?>)sentArguments.get("test12")).get(key)).toArray(), ((Collection<?>)((Map<?,?>)receivedArguments.get("test12")).get(key)).toArray()));
+			    	assertTrue(((Map<?,?>)received).containsKey(key));
+			    	Object value = ((Map<?,?>)received).get(key);
+			    	assertTrue(value!=null);
+			    	assertEquals(QStack.class, value.getClass());
+			    	assertTrue(Arrays.equals(((Collection<?>)((Map<?,?>)sentArguments.get("test12")).get(key)).toArray(), ((Collection<?>)((Map<?,?>)received).get(key)).toArray()));
 		    	}
 	    	}
 	    	if(sentArguments.containsKey("test13")) {
-		    	assertTrue(receivedArguments.get("test13")!=null);
-		    	assertEquals(HashMap.class, receivedArguments.get("test13").getClass());
-		    	assertEquals(((Map<?,?>)sentArguments.get("test13")).size(), ((Map<?,?>)receivedArguments.get("test13")).size());
+	    		Object received = receivedArguments.get("test13");
+		    	assertTrue(received!=null);
+		    	assertEquals(QHash.class, received.getClass());
+		    	assertEquals(((Map<?,?>)sentArguments.get("test13")).size(), ((Map<?,?>)received).size());
 		    	for(Object key : ((Map<?,?>)sentArguments.get("test13")).keySet()) {
-			    	assertTrue(((Map<?,?>)receivedArguments.get("test13")).containsKey(key));
-			    	assertEquals(ArrayDeque.class, ((Map<?,?>)receivedArguments.get("test13")).get(key).getClass());
-			    	assertTrue(Arrays.equals(((Collection<?>)((Map<?,?>)sentArguments.get("test13")).get(key)).toArray(), ((Collection<?>)((Map<?,?>)receivedArguments.get("test13")).get(key)).toArray()));
+			    	assertTrue(((Map<?,?>)received).containsKey(key));
+			    	Object value = ((Map<?,?>)received).get(key);
+			    	assertTrue(value!=null);
+			    	assertEquals(QStack.class, value.getClass());
+			    	assertTrue(Arrays.equals(((Collection<?>)((Map<?,?>)sentArguments.get("test13")).get(key)).toArray(), ((Collection<?>)((Map<?,?>)received).get(key)).toArray()));
 		    	}
 	    	}
 	    	if(sentArguments.containsKey("test14")) {
-		    	assertTrue(receivedArguments.get("test14")!=null);
-		    	assertEquals(HashMap.class, receivedArguments.get("test14").getClass());
-		    	assertEquals(((Map<?,?>)sentArguments.get("test14")).size(), ((Map<?,?>)receivedArguments.get("test14")).size());
+	    		Object received = receivedArguments.get("test14");
+	    		assertTrue(received!=null);
+		    	assertEquals(QMultiHash.class, received.getClass());
+		    	assertEquals(((Map<?,?>)sentArguments.get("test14")).size(), ((QMultiHash<?,?>)received).entrySet().size());
 		    	for(Object key : ((Map<?,?>)sentArguments.get("test14")).keySet()) {
 		    		assertTrue(key instanceof QUrl.FormattingOptions);
-			    	assertTrue(((Map<?,?>)receivedArguments.get("test14")).containsKey(key));
+			    	assertTrue(((Map<?,?>)received).containsKey(key));
 			    	Object sentValue = ((Map<?,?>)sentArguments.get("test14")).get(key);
-			    	Object receivedValue = ((Map<?,?>)receivedArguments.get("test14")).get(key);
+			    	Object receivedValue = ((Map<?,?>)received).get(key);
 			    	assertTrue(receivedValue instanceof Collection<?>);
-			    	assertEquals(ArrayDeque.class, ((List<?>)receivedValue).get(0).getClass());
+			    	assertTrue(((List<?>)receivedValue).get(0)!=null);
+			    	assertTrue(((List<?>)receivedValue).get(1)!=null);
+			    	assertEquals(QStack.class, ((List<?>)receivedValue).get(0).getClass());
 			    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentValue).get(0)).toArray(), ((Collection<?>)((List<?>)receivedValue).get(0)).toArray()));
-			    	assertEquals(ArrayDeque.class, ((List<?>)receivedValue).get(1).getClass());
+			    	assertEquals(QStack.class, ((List<?>)receivedValue).get(1).getClass());
 			    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentValue).get(1)).toArray(), ((Collection<?>)((List<?>)receivedValue).get(1)).toArray()));
 		    	}
 	    	}
 	    	if(sentArguments.containsKey("test15")) {
-		    	assertTrue(receivedArguments.get("test15")!=null);
-		    	assertEquals(ArrayDeque.class, receivedArguments.get("test15").getClass());
-		    	assertEquals(((Deque<?>)sentArguments.get("test15")).size(), ((Deque<?>)receivedArguments.get("test15")).size());
-		    	assertEquals(ArrayDeque.class, ((Deque<?>)receivedArguments.get("test15")).getFirst().getClass());
-		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((Deque<?>)receivedArguments.get("test15")).getFirst()).toArray()));
-		    	((Deque<?>)receivedArguments.get("test15")).pop();
+	    		Object received = receivedArguments.get("test15");
+		    	assertTrue(received!=null);
+		    	assertEquals(QStack.class, received.getClass());
+		    	assertEquals(((Deque<?>)sentArguments.get("test15")).size(), ((Deque<?>)received).size());
+		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
+		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((Deque<?>)received).getFirst()).toArray()));
+		    	((QStack<?>)received).pop();
 		    	((Deque<?>)sentArguments.get("test15")).pop();
-		    	assertEquals(ArrayDeque.class, ((Deque<?>)receivedArguments.get("test15")).getFirst().getClass());
-		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((Deque<?>)receivedArguments.get("test15")).getFirst()).toArray()));
+		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
+		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((QStack<?>)received).getFirst()).toArray()));
+	    	}
+	    	
+	    	if(sentArguments.containsKey("test16")) {
+	    		assertEquals(sentArguments.get("test16"), receivedArguments.get("test16"));
+	    	}
+	    	if(sentArguments.containsKey("test17")) {
+	    		Object received = receivedArguments.get("test17");
+	    		assertTrue(received!=null);
+		    	assertEquals(QStack.class, received.getClass());
+		    	QStack<?> stack = (QStack<?>)received;
+	    		assertEquals(sentArguments.get("test17"), stack);
+	    	}
+	    	if(sentArguments.containsKey("test18")) {
+	    		Object received = receivedArguments.get("test18");
+	    		assertTrue(received!=null);
+		    	assertEquals(QMultiMap.class, received.getClass());
+		    	assertEquals(((Map<?,?>)sentArguments.get("test18")).size(), ((QMultiMap<?,?>)received).entrySet().size());
+		    	for(Object key : ((Map<?,?>)sentArguments.get("test18")).keySet()) {
+		    		assertTrue(key instanceof QUrl.FormattingOptions);
+			    	assertTrue(((Map<?,?>)received).containsKey(key));
+			    	Object sentValue = ((Map<?,?>)sentArguments.get("test18")).get(key);
+			    	Object receivedValue = ((Map<?,?>)received).get(key);
+			    	assertTrue(receivedValue instanceof Collection<?>);
+			    	assertTrue(((List<?>)receivedValue).get(0)!=null);
+			    	assertTrue(((List<?>)receivedValue).get(1)!=null);
+			    	assertEquals(QQueue.class, ((List<?>)receivedValue).get(0).getClass());
+			    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentValue).get(0)).toArray(), ((Collection<?>)((List<?>)receivedValue).get(0)).toArray()));
+			    	assertEquals(QQueue.class, ((List<?>)receivedValue).get(1).getClass());
+			    	assertTrue(Arrays.equals(((Collection<?>)((List<?>)sentValue).get(1)).toArray(), ((Collection<?>)((List<?>)receivedValue).get(1)).toArray()));
+		    	}
 	    	}
     	}finally {
     		object.dispose();
+    	}
+    }
+    
+    @Test 
+    public void testVariantGC() throws Exception {
+    	QObject carrier = new QObject();
+    	{
+	    	boolean[] destroyed = {false};
+	    	{
+	    		QObject prop = new QObject();
+	    		prop.destroyed.connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+	    	carrier.setProperty("customProperty", null);
+    	}
+    	{
+	    	boolean[] destroyed = {false};
+	    	{
+	    		QColor prop = new QColor(0xff23ad);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertTrue(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		QColor prop = new QColor(0xff23ab){};
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded);
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded){};
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		class Prop extends QObject implements QRunnable, QPaintDevice{
+					@Override
+					public QPaintEngine paintEngine() {
+						return null;
+					}
+
+					@Override
+					public void run() {
+					}
+	    		}
+	    		Prop prop = new Prop();
+	    		prop.destroyed.connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		class Prop extends QEvent implements QRunnable, QPaintDevice{
+					public Prop() {
+						super(QEvent.Type.User);
+					}
+
+					@Override
+					public QPaintEngine paintEngine() {
+						return null;
+					}
+
+					@Override
+					public void run() {
+					}
+	    		}
+	    		Prop prop = new Prop();
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		QRunnable prop = ()->{};
+	    		prop.isDisposed();
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		QPaintDevice prop = ()->null;
+	    		prop.isDisposed();
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
+    	}
+    	{
+        	boolean[] destroyed = {false};
+	    	{
+	    		class Prop extends QtObject implements QRunnable, QPaintDevice{
+					public Prop() {
+						super();
+					}
+
+					@Override
+					public QPaintEngine paintEngine() {
+						return null;
+					}
+
+					@Override
+					public void run() {
+					}
+	    		}
+	    		Prop prop = new Prop();
+	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed[0] = true);
+	    		carrier.setProperty("customProperty", prop);
+	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
+	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchPaintDeviceProperty(carrier, "customProperty"));
+	    		assertEquals(prop, Variants.fetchRunnableProperty(carrier, "customProperty"));
+	    	}
+	    	for (int i = 0; i < 5; i++) {
+	        	System.gc();
+	        	synchronized (carrier) {
+					Thread.sleep(100);
+				}
+				QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose);			
+			}
+	    	assertFalse(destroyed[0]);
+			carrier.setProperty("customProperty", null);
     	}
     }
     
@@ -1754,6 +2027,14 @@ public class TestQVariant extends QApplicationTest {
     	Map<K,V> map = new HashMap<>();
     	map.put(k2, v2);
     	return map;
+    }
+    
+    @Test
+    public void testConvertInterface() {
+    	QGraphicsObject object = new QGraphicsWidget();
+    	QMetaType.fromType(QGraphicsObject.class);
+    	QGraphicsItem item = io.qt.autotests.generated.Variants.convertInterface(object);
+    	Assert.assertTrue(item==object);
     }
 
     public static void main(String args[]) {

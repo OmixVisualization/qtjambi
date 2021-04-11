@@ -15,6 +15,10 @@ const QString& DocElement::name() const{
     return m_name;
 }
 
+const QString& DocElement::url() const{
+    return m_url;
+}
+
 const QString& DocElement::fullName() const{
     return m_fullName.isEmpty() ? m_name : m_fullName;
 }
@@ -33,6 +37,10 @@ const QDir& DocElement::subdir() const{
 
 void DocElement::setName(const QString& name){
     m_name = name;
+}
+
+void DocElement::setUrl(const QString& url){
+    m_url = url;
 }
 
 void DocElement::setFullName(const QString& fullName){

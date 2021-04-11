@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,9 +43,10 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QStaticMemberSignals;
-import io.qt.widgets.QAction;
-import io.qt.widgets.QCompleter;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
+@SuppressWarnings("unused")
 public class TestSignals extends QApplicationTest{
 	
 	public static class StaticMemberSignalOwner{
@@ -309,6 +310,23 @@ public class TestSignals extends QApplicationTest{
     	sender.toggled.disconnect(receiver::toggled);
     	sender.toggled.emit(false);
     	assertEquals(true, receiver.toggled);
+    }
+    
+    @Test
+    public void testVirtualSlotOverrideByNonSlot() {
+    	QMetaMethod method = QMetaMethod.fromMethod(QWizard::setVisible);
+    	Assert.assertTrue(method.isValid());
+    	class Object extends QObject{
+    		public final Signal1<Boolean> visibility = new Signal1<>();
+    	}
+    	Object object = new Object();
+    	QWidget widget = new QWidget();
+    	object.visibility.connect(widget::setVisible);
+    	widget = new QWizard();
+    	object.visibility.connect(widget::setVisible);
+    	QWizard wizard = new QWizard();
+    	object.visibility.connect(wizard, "setVisible(boolean)");
+    	object.visibility.connect(wizard::setVisible);
     }
 
     public static void main(String args[]) {

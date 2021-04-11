@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HelpWidget</class>
+ <widget class="QHelpSearchQueryWidget" name="HelpSearchQueryWidget">
+ </widget>
+</ui>

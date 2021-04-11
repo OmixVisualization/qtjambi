@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,7 +43,447 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.tools.designer" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.designer" default-superclass="io.qt.QtObject">
     <primitive-type name="qdesigner_internal::FlagType" java-name="int" preferred-conversion="no" jni-name="jint" />
     <primitive-type name="qdesigner_internal::EnumType" java-name="int" preferred-conversion="no" jni-name="jint" />
+    <object-type name="QExtensionFactory">
+        <modify-function signature="createExtension(QObject *, QString, QObject *) const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QAbstractFormBuilder">
+        <modify-function signature="addMenuAction(QAction*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="load(QIODevice *, QWidget *)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createAction(QObject*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createActionGroup(QObject*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createLayout(QString,QObject*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createWidget(QString,QWidget*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QDesignerCustomWidgetCollectionInterface"/>
+    <interface-type name="QDesignerCustomWidgetInterface">
+        <modify-function signature="createWidget(QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QDesignerIntegrationInterface">
+        <modify-function signature="createResourceBrowser(QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setupFormWindow(QDesignerFormWindowInterface*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QDesignerOptionsPageInterface">
+        <modify-function signature="createPage(QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QDesignerWidgetFactoryInterface">
+        <modify-function signature="createLayout(QWidget*,QLayout*,int)const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createWidget(QString,QWidget*)const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerIntegration">
+        <modify-function signature="createResourceBrowser(QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setupFormWindow(QDesignerFormWindowInterface*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QFormBuilder">
+        <modify-function signature="createLayout(QString,QObject*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createWidget(QString,QWidget*,QString)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QDesignerWidgetDataBaseItemInterface">
+        <modify-function signature="extends() const" rename="getExtends"/>
+    </interface-type>
+    <object-type name="QDesignerFormWindowToolInterface">
+        <modify-function signature="handleEvent(QWidget*,QWidget*,QEvent*)">
+            <modify-argument index="3" invalidate-after-use="yes"/>
+        </modify-function>
+    </object-type>
+    <interface-type name="QAbstractExtensionManager">
+        <modify-function signature="registerExtensions(QAbstractExtensionFactory *, QString)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcExtension" />
+                <define-ownership class="native" owner="cpp" />
+                <define-ownership class="shell" owner="java" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="unregisterExtensions(QAbstractExtensionFactory *, QString)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcExtension" />
+                <define-ownership class="native" owner="default" />
+                <define-ownership class="shell" owner="default" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QExtensionManager">
+        <modify-function signature="registerExtensions(QAbstractExtensionFactory *, QString)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcExtension"/>
+                <define-ownership class="native" owner="cpp" />
+                <define-ownership class="shell" owner="java" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="unregisterExtensions(QAbstractExtensionFactory *, QString)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcExtension"/>
+                <define-ownership class="native" owner="default" />
+                <define-ownership class="shell" owner="default" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerFormWindowInterface">
+        <inject-code class="shell-declaration">
+public:
+    inline QtResourceSet *resourceSet() const override {return m_resourceSet;}
+    inline void setResourceSet(QtResourceSet *resourceSet) override { m_resourceSet = resourceSet; }
+private:
+    QtResourceSet * m_resourceSet = nullptr;
+        </inject-code>
+        <modify-function signature="cursor() const" rename="cursorInterface"/>
+        <modify-function signature="registerTool(QDesignerFormWindowToolInterface *)">
+            <modify-argument index="1">
+                <define-ownership class="native" owner="cplusplus"/>
+                <define-ownership class="shell" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setContents(QIODevice*,QString*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setMainContainer(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcMainContainer" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="layoutDefault(int*,int*)">
+            <modify-argument index="1">
+                <array-type min-length="1"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="layoutFunction(QString*,QString*)">
+            <modify-argument index="1">
+                <array-type min-length="1"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="activateResourceFilePaths(QStringList,int*,QString*)">
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+            <modify-argument index="3">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerNewFormWidgetInterface">
+        <modify-function signature="createNewFormWidget(QDesignerFormEditorInterface*,QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="currentTemplate(QString*)">
+            <modify-argument index="1">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QDesignerContainerExtension">
+        <modify-function signature="addWidget(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertWidget(int,QWidget*)">
+            <modify-argument index="2">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="QDesignerLayoutDecorationExtension">
+        <modify-function signature="insertWidget(QWidget*,std::pair&lt;int,int>)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcWidgets" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertWidget(QWidget*,QPair&lt;int,int>)" until="5.*">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcWidgets" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeWidget(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcWidgets" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="indexOf(QLayoutItem*)const">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QDesignerMetaDataBaseInterface">
+        <modify-function signature="add(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcObjects" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcObjects" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerObjectInspectorInterface">
+        <modify-function signature="setFormWindow(QDesignerFormWindowInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcFormWindow" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerPropertyEditorInterface">
+        <modify-function signature="setObject(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcObject" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerActionEditorInterface">
+        <modify-function signature="setFormWindow(QDesignerFormWindowInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcFormWindow" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QDesignerWidgetDataBaseInterface">
+        <modify-function signature="insert(int,QDesignerWidgetDataBaseItemInterface*)">
+            <modify-argument index="2">
+                <reference-count action="ignore" />
+                <define-ownership class="native" owner="cplusplus"/>
+                <define-ownership class="shell" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="append(QDesignerWidgetDataBaseItemInterface*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+                <define-ownership class="native" owner="cplusplus"/>
+                <define-ownership class="shell" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="indexOf(QDesignerWidgetDataBaseItemInterface*)const">
+            <modify-argument index="1" invalidate-after-use="yes">
+                <reference-count action="ignore" />
+                <define-ownership class="native" owner="ignore"/>
+                <define-ownership class="shell" owner="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QDesignerPromotionInterface::PromotedClass">
+        <modify-field name="baseItem">
+            <reference-count action="ignore"/>
+        </modify-field>
+        <modify-field name="promotedItem">
+            <reference-count action="ignore"/>
+        </modify-field>
+    </value-type>
+    <interface-type name="QDesignerFormWindowCursorInterface">
+        <modify-function signature="setWidgetProperty(QWidget*,QString,QVariant)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="QDesignerPromotionInterface">
+        <modify-function signature="addPromotedClass(QString,QString,QString,QString*)">
+            <modify-argument index="4">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="changePromotedClassName(QString,QString,QString*)">
+            <modify-argument index="3">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPromotedClassIncludeFile(QString,QString,QString*)">
+            <modify-argument index="3">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removePromotedClass(QString,QString*)">
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <object-type name="QDesignerFormEditorInterface">
+        <modify-function signature="setActionEditor(QDesignerActionEditorInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcActionEditor" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setExtensionManager(QExtensionManager*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcExtensionManager" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setIntegration(QDesignerIntegrationInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIntegration" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setMetaDataBase(QDesignerMetaDataBaseInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcMetaDataBase" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setObjectInspector(QDesignerObjectInspectorInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcObjectInspector" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPromotion(QDesignerPromotionInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcPromotion" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPropertyEditor(QDesignerPropertyEditorInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcPropertyEditor" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSettingsManager(QDesignerSettingsInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSettingsManager" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setWidgetDataBase(QDesignerWidgetDataBaseInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcWidgetDataBase" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setWidgetFactory(QDesignerWidgetFactoryInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcWidgetFactory" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setWidgetBox(QDesignerWidgetBoxInterface*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcWidgetBox" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setTopLevel(QWidget*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <interface-type name="QDesignerLanguageExtension">
+        <modify-function signature="createFormWindowSettingsDialog(QDesignerFormWindowInterface*,QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createPromotionDialog(QDesignerFormEditorInterface*,QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createPromotionDialog(QDesignerFormEditorInterface*,QString,QString*,QWidget*)">
+            <modify-argument index="3">
+                <array-type min-length="1"/>
+            </modify-argument>
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createResourceBrowser(QWidget*)">
+            <modify-argument index="return">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
 </typesystem>

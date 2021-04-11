@@ -6,55 +6,55 @@
 #include <QtLocation/QtLocation>
 #include <qtjambi_positioning/qtjambi_positioning_hashes.h>
 
-inline uint qHash(const QPlaceUser &value)
+inline hash_type qHash(const QPlaceUser &value)
 {
-    uint hashCode = qHash(value.name());
+    hash_type hashCode = qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.userId());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceContentRequest &value)
+inline hash_type qHash(const QPlaceContentRequest &value)
 {
-    uint hashCode = qHash(value.placeId());
+    hash_type hashCode = qHash(value.placeId());
     hashCode = hashCode * 31 + qHash(value.limit());
     hashCode = hashCode * 31 + qHash(value.contentType());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceRatings &value)
+inline hash_type qHash(const QPlaceRatings &value)
 {
-    uint hashCode = qHash(value.isEmpty());
+    hash_type hashCode = qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.count());
     hashCode = hashCode * 31 + qHash(value.average());
     hashCode = hashCode * 31 + qHash(value.maximum());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceIcon &value)
+inline hash_type qHash(const QPlaceIcon &value)
 {
-    uint hashCode = qHash(value.isEmpty());
+    hash_type hashCode = qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.url());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceSearchResult &value)
+inline hash_type qHash(const QPlaceSearchResult &value)
 {
-    uint hashCode = qHash(value.icon());
+    hash_type hashCode = qHash(value.icon());
     hashCode = hashCode * 31 + qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.title());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceContactDetail &value)
+inline hash_type qHash(const QPlaceContactDetail &value)
 {
-    uint hashCode = qHash(value.label());
+    hash_type hashCode = qHash(value.label());
     hashCode = hashCode * 31 + qHash(value.value());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceCategory &value)
+inline hash_type qHash(const QPlaceCategory &value)
 {
-    uint hashCode = qHash(value.icon());
+    hash_type hashCode = qHash(value.icon());
     hashCode = hashCode * 31 + qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.categoryId());
@@ -62,17 +62,17 @@ inline uint qHash(const QPlaceCategory &value)
     return hashCode;
 }
 
-inline uint qHash(const QPlaceAttribute &value)
+inline hash_type qHash(const QPlaceAttribute &value)
 {
-    uint hashCode = qHash(value.text());
+    hash_type hashCode = qHash(value.text());
     hashCode = hashCode * 31 + qHash(value.label());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceSupplier &value)
+inline hash_type qHash(const QPlaceSupplier &value)
 {
-    uint hashCode = qHash(value.url());
+    hash_type hashCode = qHash(value.url());
     hashCode = hashCode * 31 + qHash(value.icon());
     hashCode = hashCode * 31 + qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.supplierId());
@@ -80,9 +80,9 @@ inline uint qHash(const QPlaceSupplier &value)
     return hashCode;
 }
 
-inline uint qHash(const QGeoRouteRequest &value)
+inline hash_type qHash(const QGeoRouteRequest &value)
 {
-    uint hashCode = qHash(value.waypoints());
+    hash_type hashCode = qHash(value.waypoints());
     hashCode = hashCode * 31 + qHash(value.travelModes());
     hashCode = hashCode * 31 + qHash(value.excludeAreas());
     hashCode = hashCode * 31 + qHash(value.featureTypes());
@@ -94,9 +94,9 @@ inline uint qHash(const QGeoRouteRequest &value)
     return hashCode;
 }
 
-inline uint qHash(const QPlace &value)
+inline hash_type qHash(const QPlace &value)
 {
-    uint hashCode = qHash(value.icon());
+    hash_type hashCode = qHash(value.icon());
     hashCode = hashCode * 31 + qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.placeId());
@@ -116,15 +116,15 @@ inline uint qHash(const QPlace &value)
     return hashCode;
 }
 
-inline uint qHash(const QPlaceMatchRequest &value)
+inline hash_type qHash(const QPlaceMatchRequest &value)
 {
-    uint hashCode = qHash(value.places());
+    hash_type hashCode = qHash(value.places());
     return hashCode;
 }
 
-inline uint qHash(const QPlaceSearchRequest &value)
+inline hash_type qHash(const QPlaceSearchRequest &value)
 {
-    uint hashCode = qHash(value.limit());
+    hash_type hashCode = qHash(value.limit());
     hashCode = hashCode * 31 + qHash(value.categories());
     hashCode = hashCode * 31 + qHash(value.searchArea());
     hashCode = hashCode * 31 + qHash(value.searchTerm());
@@ -134,20 +134,20 @@ inline uint qHash(const QPlaceSearchRequest &value)
     return hashCode;
 }
 
-inline uint qHash(const QPlaceContent &value)
+inline hash_type qHash(const QPlaceContent &value)
 {
-    uint hashCode = qHash(value.type());
+    hash_type hashCode = qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.user());
     hashCode = hashCode * 31 + qHash(value.supplier());
     hashCode = hashCode * 31 + qHash(value.attribution());
     return hashCode;
 }
 
-inline uint qHash(const QGeoManeuver &value)
+inline hash_type qHash(const QGeoManeuver &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.position());
+    hash_type hashCode = qHash(value.position());
     hashCode = hashCode * 31 + qHash(value.waypoint());
     hashCode = hashCode * 31 + qHash(value.instructionText());
     hashCode = hashCode * 31 + qHash(value.timeToNextInstruction());
@@ -155,11 +155,11 @@ inline uint qHash(const QGeoManeuver &value)
     return hashCode;
 }
 
-inline uint qHash(const QGeoRouteSegment &value)
+inline hash_type qHash(const QGeoRouteSegment &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.path());
+    hash_type hashCode = qHash(value.path());
     hashCode = hashCode * 31 + qHash(value.maneuver());
     hashCode = hashCode * 31 + qHash(value.travelTime());
     hashCode = hashCode * 31 + qHash(value.distance());
@@ -167,9 +167,9 @@ inline uint qHash(const QGeoRouteSegment &value)
     return hashCode;
 }
 
-inline uint qHash(const QGeoRoute &value)
+inline hash_type qHash(const QGeoRoute &value)
 {
-    uint hashCode = qHash(value.path());
+    hash_type hashCode = qHash(value.path());
     hashCode = hashCode * 31 + qHash(value.bounds());
     hashCode = hashCode * 31 + qHash(value.request());
     hashCode = hashCode * 31 + qHash(value.routeId());

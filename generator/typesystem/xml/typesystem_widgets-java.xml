@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -102,15 +102,20 @@
         </insert-template>
     </template>
 
-    <object-type name="QGraphicsTextItem">
-    </object-type>
-
     <value-type name="QPainterPath">
        <modify-function signature="operator&amp;=(QPainterPath)" remove="all" />
         <modify-function signature="operator+=(QPainterPath)" remove="all" />
         <modify-function signature="operator-=(QPainterPath)" remove="all" />
         <modify-function signature="operator|=(QPainterPath)" remove="all" />
     </value-type>
+
+    <object-type name="QFileSystemModel" until="5.*">
+        <modify-function signature="setIconProvider(QFileIconProvider*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIconProvider"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
 
     <object-type name="QTreeWidget" implements="Iterable&lt;io.qt.widgets.QTreeWidgetItem>">
         <inject-code>
@@ -203,6 +208,7 @@
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QGraphicsItem___" quote-before-line="}// class"/>
         </inject-code>
         <modify-function signature="QGraphicsItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
             if (%1 != null)
@@ -261,8 +267,8 @@
             </inject-code>
         </modify-function>
 
-        <modify-function signature="setParentItem(QGraphicsItem*)">
-            <modify-argument index="1">
+        <modify-function signature="setParentItem(QGraphicsItem*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
             <inject-code position="end">
@@ -285,14 +291,32 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QGraphicsItem$BlockedByModalPanelInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QGraphicsItem$BlockedByModalPanelInfo.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jobject>(%env, modalPanel));
+                    jobject %out = Java::QtWidgets::QGraphicsItem$BlockedByModalPanelInfo::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jobject>(%env, modalPanel));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </interface-type>
     
+    <object-type name="QGraphicsTextItem">
+        <modify-function signature="QGraphicsTextItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (%1 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QGraphicsTextItem(const QString &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
+            <inject-code position="end">
+                <argument-map index="2" meta-name="%2"/>
+                if (%2 != null) setCppOwnership(this);
+            </inject-code>
+        </modify-function>
+    </object-type>
+
     <object-type name="QGraphicsObject">
         <modify-function signature="QGraphicsObject(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null &amp;&amp; %1.toGraphicsObject() == null) setCppOwnership(this);
@@ -304,7 +328,8 @@
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="setParentItem(QGraphicsItem*)">
+        <modify-function signature="setParentItem(QGraphicsItem*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
             <modify-argument index="1">
                 <!-- Handled by injected code in QGraphicsItem -->
                 <reference-count action="ignore" />
@@ -319,6 +344,7 @@
 
     <object-type name="QAbstractGraphicsShapeItem">
         <modify-function signature="QAbstractGraphicsShapeItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
             if (%1 != null) setCppOwnership(this);
@@ -328,19 +354,30 @@
 
 
     <object-type name="QAbstractItemView">
-        <modify-function signature="setIndexWidget(const QModelIndex &amp;,QWidget *)">
+        <modify-function signature="initViewItemOption(QStyleOptionViewItem *) const" since="6.0.0">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.widgets.QStyleOptionViewItem"/>
+                <conversion-rule class="native">
+                    QStyleOptionViewItem* %out = qtjambi_cast&lt;QStyleOptionViewItem*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setIndexWidget(const QModelIndex &amp;,QWidget *)" thread-affine="yes">
             <modify-argument index="2">
                 <!-- Safe to ignore because view reparents widget -->
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setItemDelegate(QAbstractItemDelegate *)">
-            <modify-argument index="1">
+        <modify-function signature="setItemDelegate(QAbstractItemDelegate *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="set" variable-name="__rcItemDelegate"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setModel(QAbstractItemModel *)">
-            <modify-argument index="1">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="set" variable-name="__rcItemModel"/>
             </modify-argument>
             <inject-code class="java" position="end">
@@ -348,19 +385,19 @@
                 setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, "__rcItemSelectionModel", false, false, null);
             </inject-code>
         </modify-function>
-        <modify-function signature="setSelectionModel(QItemSelectionModel *)">
-            <modify-argument index="1">
+        <modify-function signature="setSelectionModel(QItemSelectionModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="set" variable-name="__rcItemSelectionModel"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setItemDelegateForColumn(int,QAbstractItemDelegate*)">
-            <modify-argument index="2">
+        <modify-function signature="setItemDelegateForColumn(int,QAbstractItemDelegate*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <reference-count action="put" key-argument="1" variable-name="__rcDelegatesForColumns"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setItemDelegateForRow(int,QAbstractItemDelegate*)">
-            <modify-argument index="2">
+        <modify-function signature="setItemDelegateForRow(int,QAbstractItemDelegate*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <reference-count action="put" key-argument="1" variable-name="__rcDelegatesForRows"/>
             </modify-argument>
         </modify-function>
@@ -368,8 +405,8 @@
 
 
     <object-type name="QActionGroup">
-        <modify-function signature="addAction(QAction*)">
-            <modify-argument index="1">
+        <modify-function signature="addAction(QAction*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="add" variable-name="__rcActions"/>
             </modify-argument>
             <inject-code position="end">
@@ -377,7 +414,7 @@
                 setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
             </inject-code>
         </modify-function>
-        <modify-function signature="removeAction(QAction*)">
+        <modify-function signature="removeAction(QAction*)" thread-affine="yes">
             <modify-argument index="1">
                 <reference-count action="remove" variable-name="__rcActions"/>
             </modify-argument>
@@ -395,6 +432,9 @@
                 <conversion-rule class="native">
                     QStyleOptionTabWidgetFrame* %out = qtjambi_cast&lt;QStyleOptionTabWidgetFrame*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -406,15 +446,12 @@
                 <conversion-rule class="native">
                     QStyleOptionDockWidget* %out = qtjambi_cast&lt;QStyleOptionDockWidget*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
-    
-    <value-type name="QStyleOption">
-        <inject-code>
-            private Object __rcStyleObject;
-        </inject-code>
-    </value-type>
     
     <object-type name="QFocusFrame">
         <modify-function signature="initStyleOption(QStyleOption*)const">
@@ -422,6 +459,9 @@
                 <replace-type modified-type="io.qt.widgets.QStyleOption"/>
                 <conversion-rule class="native">
                     QStyleOption* %out = qtjambi_cast&lt;QStyleOption*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -434,6 +474,9 @@
                 <conversion-rule class="native">
                     QStyleOptionFrame* %out = qtjambi_cast&lt;QStyleOptionFrame*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -444,6 +487,9 @@
                 <replace-type modified-type="io.qt.widgets.QStyleOptionComboBox"/>
                 <conversion-rule class="native">
                     QStyleOptionComboBox* %out = qtjambi_cast&lt;QStyleOptionComboBox*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -456,6 +502,20 @@
                 <conversion-rule class="native">
                     QStyleOptionHeader* %out = qtjambi_cast&lt;QStyleOptionHeader*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="initStyleOptionForIndex(QStyleOptionHeader *, int) const" since="6.0.0">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.widgets.QStyleOptionHeader"/>
+                <conversion-rule class="native">
+                    QStyleOptionHeader* %out = qtjambi_cast&lt;QStyleOptionHeader*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -467,24 +527,30 @@
                 <conversion-rule class="native">
                     QStyleOptionButton* %out = qtjambi_cast&lt;QStyleOptionButton*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
 
     <object-type name="QGraphicsEllipseItem">
         <modify-function signature="QGraphicsEllipseItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsEllipseItem(const QRectF &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsEllipseItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
                 if (%5 != null) setCppOwnership(this);
@@ -494,42 +560,55 @@
 
     <object-type name="QGraphicsItemGroup">
         <modify-function signature="QGraphicsItemGroup(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
-        <modify-function signature="addToGroup(QGraphicsItem*)">
-            <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+        <modify-function signature="addToGroup(QGraphicsItem*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
             </modify-argument>
+            <inject-code position="begin">
+                <argument-map index="1" meta-name="%1"/>
+                boolean _hasParent = %1.parentItem()!=null;
+            </inject-code>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if (!_hasParent &amp;&amp; (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
+                    setCppOwnership(%1);
+            </inject-code>
         </modify-function>
-        <modify-function signature="removeFromGroup(QGraphicsItem*)">
-            <modify-argument index="1">
+        <modify-function signature="removeFromGroup(QGraphicsItem*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1.parentItem() == null &amp;&amp; (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
-                setDefaultOwnership(%1);
+                    setDefaultOwnership(%1);
             </inject-code>
         </modify-function>
     </object-type>
 
     <object-type name="QGraphicsLineItem">
         <modify-function signature="QGraphicsLineItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsLineItem(const QLineF &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsLineItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
                 if (%5 != null) setCppOwnership(this);
@@ -539,12 +618,14 @@
 
     <object-type name="QGraphicsPathItem">
         <modify-function signature="QGraphicsPathItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPathItem(const QPainterPath &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
@@ -554,12 +635,14 @@
 
     <object-type name="QGraphicsPixmapItem">
         <modify-function signature="QGraphicsPixmapItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPixmapItem(const QPixmap &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
@@ -569,12 +652,14 @@
 
     <object-type name="QGraphicsPolygonItem">
         <modify-function signature="QGraphicsPolygonItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPolygonItem(const QPolygonF &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
@@ -585,18 +670,21 @@
 
     <object-type name="QGraphicsRectItem">
         <modify-function signature="QGraphicsRectItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsRectItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
+            <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
                 if (%5 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsRectItem(const QRectF &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
@@ -606,24 +694,18 @@
 
     <object-type name="QGraphicsSimpleTextItem">
         <modify-function signature="QGraphicsSimpleTextItem(QGraphicsItem*)">
+            <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 != null) setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsSimpleTextItem(const QString &amp;,QGraphicsItem*)">
+            <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if (%2 != null) setCppOwnership(this);
             </inject-code>
-        </modify-function>
-    </object-type>
-
-    <object-type name="QItemEditorFactory">
-        <modify-function signature="setDefaultFactory(QItemEditorFactory*)">
-            <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
         </modify-function>
     </object-type>
 
@@ -641,7 +723,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 {
 #ifdef Q_OS_OSX
     QMenu* __qt_this = qtjambi_cast&lt;QMenu*>(__jni_env, __this);
-    Q_ASSERT(__qt_this);
+    qtjambi_check_resource(__jni_env, __qt_this);
     __qt_this->setAsDockMenu();
 #else
     Q_UNUSED(__jni_env)
@@ -741,12 +823,18 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionMenuItem* %out = qtjambi_cast&lt;QStyleOptionMenuItem*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
 
 
     <object-type name="QMenuBar">
+        <extra-includes>
+            <include file-name="io.qt.gui.*" location="java" since="6.0.0"/>
+        </extra-includes>
         <inject-code>
             <insert-template name="gui.addAction">
                 <replace from="%POST_CALL" to=""/>
@@ -768,6 +856,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionMenuItem* %out = qtjambi_cast&lt;QStyleOptionMenuItem*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -778,6 +869,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="io.qt.widgets.QStyleOptionProgressBar"/>
                 <conversion-rule class="native">
                     QStyleOptionProgressBar* %out = qtjambi_cast&lt;QStyleOptionProgressBar*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -790,12 +884,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionButton* %out = qtjambi_cast&lt;QStyleOptionButton*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
 
 
-    <object-type name="QShortcut">
+    <object-type name="QShortcut" until="5.*">
         <modify-function signature="QShortcut(QKeySequence,QWidget*,const char*,const char*,Qt::ShortcutContext)">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
@@ -816,11 +913,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionToolButton* %out = qtjambi_cast&lt;QStyleOptionToolButton*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
 
-    <object-type name="QUndoStack">
+    <object-type name="QUndoStack" until="5.*">
         <modify-function signature="push(QUndoCommand *)">
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -830,8 +930,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
 
     <object-type name="QWidgetAction">
-        <modify-function signature="setDefaultWidget(QWidget*)">
-            <modify-argument index="1">
+        <modify-function signature="setDefaultWidget(QWidget*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
@@ -1064,6 +1164,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-field name="wid" rename="widget" read="no" write="yes">
             <reference-count action="set" variable-name="__rcWidget"/>
         </modify-field>
+        <inject-code position="end">
+        @io.qt.QtUninvokable
+        static native boolean hasWidgetItemV2(QWidget widget);
+        </inject-code>
     </object-type>
     <object-type name="QLayout">
         <inject-code>
@@ -1081,12 +1185,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="addWidget(QWidget *)" access="private" rename="__qt_addWidget">
-            <modify-argument index="1">
+        <modify-function signature="addWidget(QWidget *)" access="friendly,non-final" rename="add_widget" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count variable-name="__rcLayoutedObjects" action="add" condition="%1.parent()==null"/>
                 <!-- A Layout never owns the QWidget* but retains a reference to it -->
             </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
         <modify-function signature="addItem(QLayoutItem *)">
             <modify-argument index="1" invalidate-after-use="yes">
@@ -1117,13 +1225,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="addChildLayout(QLayout *)">
-            <modify-argument index="1">
+        <modify-function signature="addChildLayout(QLayout *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="addChildLayout(QLayout *)">
-            <modify-argument index="1">
+        <modify-function signature="addChildLayout(QLayout *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
@@ -1191,6 +1299,29 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
+        <modify-function signature="addWidget(QWidget *, int, QFlags&lt;Qt::AlignmentFlag&gt;)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <no-null-pointer/>
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
+                <!-- A Layout never owns the QWidget* but retains a reference to it -->
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-default-expression/>
+            </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+        </modify-function>
+        <modify-function signature="insertWidget(int,QWidget*,int,QFlags&lt;Qt::AlignmentFlag&gt;)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%2.parent()==null"/>
+            </modify-argument>
+            <inject-code position="begin"><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+        </modify-function>
     </object-type>
 
     <object-type name="QStackedLayout">
@@ -1206,11 +1337,25 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="addWidget(QWidget *)" rename="stackWidget">
-            <modify-argument index="1">
+        <modify-function signature="addWidget(QWidget *)" rename="stackWidget" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
+            <!--inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code-->
+        </modify-function>
+        <modify-function signature="insertWidget(int,QWidget*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <no-null-pointer/>
+                <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%2.parent()==null"/>
+            </modify-argument>
+            <inject-code position="begin"><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
         <modify-function signature="addItem(QLayoutItem *)">
             <modify-argument index="1" invalidate-after-use="yes">
@@ -1223,6 +1368,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
+        <inject-code position="end">
+            @io.qt.QtUninvokable
+            void add_widget(QWidget widget){
+                stackWidget(widget);
+            }
+        </inject-code>
     </object-type>
 
     <object-type name="QFormLayout">
@@ -1266,7 +1417,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo.newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1288,7 +1439,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo.newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1310,7 +1461,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QFormLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo.newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
+                    jobject %out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast&lt;jobject>(%env, %3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1331,48 +1482,62 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="addRow(QWidget*,QWidget*)">
-            <modify-argument index="1">
+        <modify-function signature="addRow(QWidget*,QWidget*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
-            <modify-argument index="2">
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%2.parent()==null"/>
             </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" /><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
-        <modify-function signature="addRow(QLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="addRow(QLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="removeRow(QLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="removeRow(QLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="takeRow(QLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="takeRow(QLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="addRow(QWidget*,QLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="addRow(QWidget*,QLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
-            <modify-argument index="2">
+            <modify-argument index="2" thread-affine="yes">
                 <reference-count action="ignore" />
             </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
-        <modify-function signature="addRow(QWidget*)">
-            <modify-argument index="1">
+        <modify-function signature="addRow(QWidget*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
         <modify-function signature="removeRow(QWidget*)">
             <modify-argument index="1">
@@ -1386,70 +1551,96 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <reference-count action="remove" declare-variable="QLayout" variable-name="__rcLayoutedObjects"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="addRow(QString,QLayout*)">
-            <modify-argument index="2">
+        <modify-function signature="addRow(QString,QLayout*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="addRow(QString,QWidget*)">
-            <modify-argument index="2">
+        <modify-function signature="addRow(QString,QWidget*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
+            <inject-code position="begin"><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
         </modify-function>
-        <modify-function signature="insertRow(int,QLayout*)">
-            <modify-argument index="2">
+        <modify-function signature="insertRow(int,QLayout*)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QWidget*,QLayout*)">
-            <modify-argument index="2">
+        <modify-function signature="insertRow(int,QWidget*,QLayout*)" thread-affine="yes">
+            <inject-code position="begin"><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
-            <modify-argument index="3">
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QWidget*,QWidget*)">
-            <modify-argument index="2">
+        <modify-function signature="insertRow(int,QWidget*,QWidget*)" thread-affine="yes">
+            <inject-code position="begin"><argument-map index="3" meta-name="%3" /><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%3))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
-            <modify-argument index="3">
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QWidget*)">
-            <modify-argument index="2">
+        <modify-function signature="insertRow(int,QWidget*)" thread-affine="yes">
+            <inject-code position="begin"><argument-map index="2" meta-name="%2" />
+            if(QWidgetItem.hasWidgetItemV2(%2))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+            <modify-argument index="2" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QString,QLayout*)">
-            <modify-argument index="3">
+        <modify-function signature="insertRow(int,QString,QLayout*)" thread-affine="yes">
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QString,QWidget*)">
-            <modify-argument index="3">
+        <modify-function signature="insertRow(int,QString,QWidget*)" thread-affine="yes">
+            <inject-code position="begin"><argument-map index="3" meta-name="%3" />
+            if(QWidgetItem.hasWidgetItemV2(%3))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setLayout(int,QFormLayout::ItemRole,QLayout*)">
-            <modify-argument index="3">
+        <modify-function signature="setLayout(int,QFormLayout::ItemRole,QLayout*)" thread-affine="yes">
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="setWidget(int,QFormLayout::ItemRole,QWidget*)">
-            <modify-argument index="3">
+        <modify-function signature="setWidget(int,QFormLayout::ItemRole,QWidget*)" thread-affine="yes">
+            <inject-code position="begin"><argument-map index="3" meta-name="%3" />
+            if(QWidgetItem.hasWidgetItemV2(%3))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+            <modify-argument index="3" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%arg.parent()==null"/>
             </modify-argument>
@@ -1475,8 +1666,26 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="addWidget(QWidget *)" remove="all">
-            <modify-argument index="1">
+        <modify-function signature="addWidget(QWidget*,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
+            </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addWidget(QWidget*,int,int,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count declare-variable="QLayout" action="add" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
+            </modify-argument>
+            <inject-code position="begin"><argument-map index="1" meta-name="%1" />
+            if(QWidgetItem.hasWidgetItemV2(%1))
+                throw new IllegalArgumentException("Widget is already a layout member.");
+            </inject-code>
+        </modify-function>
+        <modify-function signature="addWidget(QWidget *)" remove="all" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <no-null-pointer/>
                 <reference-count action="add" declare-variable="QLayout" variable-name="__rcLayoutedObjects" condition="%1.parent()==null"/>
             </modify-argument>
@@ -1535,7 +1744,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QGridLayout$ItemInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QGridLayout$ItemInfo.newInstance(%env, %2, %3, %4, %5);
+                    jobject %out = Java::QtWidgets::QGridLayout$ItemInfo::newInstance(%env, %2, %3, %4, %5);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1544,7 +1753,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </inject-code>
     </object-type>
     <object-type name="QWizardPage">
-        <modify-function signature="registerField(const QString &amp;, QWidget *, const char *, const char *)">
+        <modify-function signature="registerField(const QString &amp;, QWidget *, const char *, const char *)" thread-affine="ui">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
@@ -1558,7 +1767,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
     </object-type>
     
     <object-type name="QGraphicsView">
-        <modify-function signature="drawItems(QPainter*,int,QGraphicsItem**,const QStyleOptionGraphicsItem*)">
+        <modify-function signature="drawItems(QPainter*,int,QGraphicsItem**,const QStyleOptionGraphicsItem*)" thread-affine="yes">
             <modify-argument index="1" invalidate-after-use="yes" />
             <modify-argument index="3">
                 <array-type length-parameter="2"/>
@@ -1607,22 +1816,27 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
     <object-type name="QMessageBox">
         <modify-function signature="open(QObject*,const char*)" remove="all" />
+        <modify-function signature="information(QWidget *, QString, QString, QFlags&lt;QMessageBox::StandardButton>, QMessageBox::StandardButton)" thread-affine="ui"/>
+        <modify-function signature="question(QWidget *, QString, QString, QFlags&lt;QMessageBox::StandardButton>, QMessageBox::StandardButton)" thread-affine="ui"/>
+        <modify-function signature="warning(QWidget *, QString, QString, QFlags&lt;QMessageBox::StandardButton>, QMessageBox::StandardButton)" thread-affine="ui"/>
+        <modify-function signature="critical(QWidget *, QString, QString, QFlags&lt;QMessageBox::StandardButton>, QMessageBox::StandardButton)" thread-affine="ui"/>
+        <modify-function signature="about(QWidget *, QString, QString)" thread-affine="ui"/>
+        <modify-function signature="aboutQt(QWidget *, QString)" thread-affine="ui"/>
     </object-type>
 
     <object-type name="QWidget">
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QWidget___" quote-before-line="}// class"/>
         </inject-code>
-        <modify-function signature="paintEvent(QPaintEvent*)">
+        <modify-function signature="paintEvent(QPaintEvent*)" thread-affine="ui">
             <inject-code class="shell" position="beginning">
             QTJAMBI_ABOUT_TO_PAINT(%env, __java_this)
             </inject-code>
         </modify-function>
-        <modify-function signature="setWindowTitle(const QString &amp;)">
+        <modify-function signature="setWindowTitle(const QString &amp;)" thread-affine="ui">
             <inject-code class="java">
                 <argument-map index="1" meta-name="%1"/>
             if (this instanceof QMessageBox) {
-                threadCheck(this);
                 __qt_QMessageBox_setWindowTitle(nativeId(this), %1);
                 return ;
             }
@@ -1630,28 +1844,27 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </modify-function>
 
 
-        <modify-function signature="setWindowModality(Qt::WindowModality)">
+        <modify-function signature="setWindowModality(Qt::WindowModality)" thread-affine="ui">
             <inject-code class="java">
                 <argument-map index="1" meta-name="%1"/>
             if (this instanceof QMessageBox) {
-                threadCheck(this);
                 __qt_QMessageBox_setWindowModality(nativeId(this), %1.value());
                 return ;
             }
             </inject-code>
         </modify-function>
-        <modify-function signature="grabGesture(Qt::GestureType, QFlags&lt;Qt::GestureFlag&gt;)">
+        <modify-function signature="grabGesture(Qt::GestureType, QFlags&lt;Qt::GestureFlag&gt;)" thread-affine="ui">
             <modify-argument index="2">
               <replace-default-expression with="new io.qt.core.Qt.GestureFlag[0]"/>
             </modify-argument>
         </modify-function>
         
-        <modify-function signature="grab(const QRect &amp;)">
+        <modify-function signature="grab(const QRect &amp;)" thread-affine="ui">
             <modify-argument index="1">
               <replace-default-expression with="new io.qt.core.QRect(new io.qt.core.QPoint(0, 0), new io.qt.core.QSize(-1, -1))"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getContentsMargins(int*,int*,int*,int*)const">
+        <modify-function signature="getContentsMargins(int*,int*,int*,int*)const" until="5.*" thread-affine="ui">
             <inject-code position="beginning">
                 <argument-map index="1" meta-name="%1" />
                 if(%1.length&lt;4) throw new IllegalArgumentException("An array of length 4 expected.");
@@ -1691,6 +1904,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionSpinBox* %out = qtjambi_cast&lt;QStyleOptionSpinBox*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -1711,6 +1927,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="io.qt.widgets.QStyleOptionSpinBox"/>
                 <conversion-rule class="native">
                     QStyleOptionSpinBox* %out = qtjambi_cast&lt;QStyleOptionSpinBox*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1784,6 +2003,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionSlider* %out = qtjambi_cast&lt;QStyleOptionSlider*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -1829,10 +2051,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QColorDialog__java_" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QColorDialog__native_" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="open(QObject*,const char*)">
+        <modify-function signature="getColor(const QColor &amp;, QWidget *, const QString &amp;, QFlags&lt;QColorDialog::ColorDialogOption>)" thread-affine="ui">
+            <modify-argument index="1">
+                <replace-default-expression with="new io.qt.gui.QColor(io.qt.core.Qt.GlobalColor.white)"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="open(QObject*,const char*)" thread-affine="yes">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
@@ -1840,7 +2064,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
-        <modify-function signature="getRgba(uint,bool*,QWidget*)">
+        <modify-function signature="getRgba(uint,bool*,QWidget*)" thread-affine="ui" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Integer"/>
                 <conversion-rule class="native">
@@ -1861,10 +2085,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QInputDialog__java_" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QInputDialog__native_" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="open(QObject*,const char*)">
+        <modify-function signature="open(QObject*,const char*)" thread-affine="yes">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
@@ -1872,7 +2093,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
-        <modify-function signature="getInt(QWidget*,const QString &amp;,const QString &amp;,int,int,int,int,bool*,QFlags&lt;Qt::WindowType&gt;)">
+        <modify-function signature="getInt(QWidget*,const QString &amp;,const QString &amp;,int,int,int,int,bool*,QFlags&lt;Qt::WindowType&gt;)" thread-affine="ui">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Integer"/>
                 <conversion-rule class="native">
@@ -1889,7 +2110,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </modify-function>
 
         <!-- This API is double even on ARM -->
-        <modify-function signature="getDouble(QWidget *, const QString &amp;, const QString &amp;, double, double, double, int, bool *, QFlags&lt;Qt::WindowType&gt;)">
+        <modify-function signature="getDouble(QWidget *, const QString &amp;, const QString &amp;, double, double, double, int, bool *, QFlags&lt;Qt::WindowType&gt;)" thread-affine="ui" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Double"/>
                 <conversion-rule class="native">
@@ -1905,7 +2126,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
         
-        <modify-function signature="getDouble(QWidget *, const QString &amp;, const QString &amp;, double, double, double, int, bool *, QFlags&lt;Qt::WindowType&gt;, double)">
+        <modify-function signature="getDouble(QWidget *, const QString &amp;, const QString &amp;, double, double, double, int, bool *, QFlags&lt;Qt::WindowType&gt;, double)" thread-affine="ui">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.Double"/>
                 <conversion-rule class="native">
@@ -1921,7 +2142,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
         
-        <modify-function signature="getItem(QWidget*,QString,QString,QStringList&lt;QString>,int,bool,bool*,QFlags&lt;Qt::WindowType>,QFlags&lt;Qt::InputMethodHint>)">
+        <modify-function signature="getItem(QWidget*,QString,QString,QStringList,int,bool,bool*,QFlags&lt;Qt::WindowType>,QFlags&lt;Qt::InputMethodHint>)" thread-affine="ui">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
@@ -1937,7 +2158,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="getText(QWidget *, const QString &amp;, const QString &amp;, QLineEdit::EchoMode, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)">
+        <modify-function signature="getText(QWidget *, const QString &amp;, const QString &amp;, QLineEdit::EchoMode, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)" thread-affine="ui">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
@@ -1953,7 +2174,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
         
-        <modify-function signature="getMultiLineText(QWidget *, const QString &amp;, const QString &amp;, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)">
+        <modify-function signature="getMultiLineText(QWidget *, const QString &amp;, const QString &amp;, const QString &amp;, bool *, QFlags&lt;Qt::WindowType&gt;,QFlags&lt;Qt::InputMethodHint>)" thread-affine="ui">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
@@ -1977,10 +2198,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFileDialog__java_" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFileDialog__native_" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="open(QObject*,const char*)">
+        <modify-function signature="open(QObject*,const char*)" thread-affine="yes">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
@@ -1988,21 +2206,21 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
-        <modify-function signature="getExistingDirectory(QWidget*,QString,QString,QFlags&lt;QFileDialog::Option&gt;)">
+        <modify-function signature="getExistingDirectory(QWidget*,QString,QString,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
                     jobject %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jstring>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getExistingDirectoryUrl(QWidget*,QString,QUrl,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
+        <modify-function signature="getExistingDirectoryUrl(QWidget*,QString,QUrl,QFlags&lt;QFileDialog::Option&gt;,QStringList)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
                     jobject %out = %in.isEmpty() ? nullptr : qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getOpenFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
+        <modify-function signature="getOpenFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2015,12 +2233,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getOpenFileNames(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
+        <modify-function signature="getOpenFileNames(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2033,13 +2251,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="getSaveFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)">
+        <modify-function signature="getSaveFileName(QWidget*,QString,QString,QString,QString*,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2052,13 +2270,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         
-        <modify-function signature="getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
+        <modify-function signature="getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2071,12 +2289,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
+        <modify-function signature="getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2089,12 +2307,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList&lt;QString&gt;)">
+        <modify-function signature="getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags&lt;QFileDialog::Option&gt;,QStringList)" thread-affine="ui">
             <modify-argument index="5">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -2107,9 +2325,25 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(!%in.isEmpty()){
-                        %out = Java::QtWidgets::QFileDialog$Result.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
+                        %out = Java::QtWidgets::QFileDialog$Result::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, %5));
                     }
                 </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="getOpenFileContent(QString, std::function&lt;void(const QString&amp;,const QByteArray&amp;)>)" thread-affine="ui"/>
+        <modify-function signature="setIconProvider(QAbstractFileIconProvider *)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIconProvider"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setIconProvider(QFileIconProvider*)" until="5.*">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIconProvider"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setItemDelegate(QAbstractItemDelegate*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcItemDelegate"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -2117,10 +2351,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFontDialog__java_" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QFontDialog__native_" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="open(QObject*,const char*)">
+        <modify-function signature="open(QObject*,const char*)" thread-affine="yes">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
@@ -2128,7 +2359,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 member = cppSlotSignature(member);
             </inject-code>
         </modify-function>
-        <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)">
+        <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
                     jobject %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
@@ -2142,7 +2373,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getFont(bool*,QWidget*)">
+        <modify-function signature="getFont(bool*,QWidget*)" thread-affine="ui">
             <modify-argument index="0">
                 <conversion-rule class="native">
                     jobject %out = ok ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
@@ -2164,6 +2395,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionTab* %out = qtjambi_cast&lt;QStyleOptionTab*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -2174,6 +2408,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionButton* %out = qtjambi_cast&lt;QStyleOptionButton*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -2183,6 +2420,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="io.qt.widgets.QStyleOptionSlider"/>
                 <conversion-rule class="native">
                     QStyleOptionSlider* %out = qtjambi_cast&lt;QStyleOptionSlider*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2201,6 +2441,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="io.qt.widgets.QStyleOptionRubberBand"/>
                 <conversion-rule class="native">
                     QStyleOptionRubberBand* %out = qtjambi_cast&lt;QStyleOptionRubberBand*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2230,7 +2473,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.widgets.QSplitter$Range"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWidgets::QSplitter$Range.newInstance(%env, %2, %3);
+                    jobject %out = Java::QtWidgets::QSplitter$Range::newInstance(%env, %2, %3);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2242,6 +2485,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionGroupBox* %out = qtjambi_cast&lt;QStyleOptionGroupBox*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -2251,6 +2497,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="io.qt.widgets.QStyleOptionSlider"/>
                 <conversion-rule class="native">
                     QStyleOptionSlider* %out = qtjambi_cast&lt;QStyleOptionSlider*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2265,18 +2514,24 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <conversion-rule class="native">
                     QStyleOptionFrame* %out = qtjambi_cast&lt;QStyleOptionFrame*>(%env, %in);
                 </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QToolBar">
         <extra-includes>
-        <include file-name="io.qt.gui.*" location="java"/>
+            <include file-name="io.qt.gui.*" location="java"/>
         </extra-includes>
         <modify-function signature="initStyleOption(QStyleOptionToolBar*)const">
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.widgets.QStyleOptionToolBar"/>
                 <conversion-rule class="native">
                     QStyleOptionToolBar* %out = qtjambi_cast&lt;QStyleOptionToolBar*>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2308,8 +2563,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QAction___" quote-before-line="}// class"/>
         </inject-code>
 
-        <modify-function signature="setActionGroup(QActionGroup*)">
-            <modify-argument index="1">
+        <modify-function signature="setActionGroup(QActionGroup*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
             <inject-code position="end">
@@ -2337,7 +2592,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="QApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
             <inject-code class="native" position="beginning">
-                if(!Java::QtCore::QCoreApplication.__qt_isInitializing(%env)){
+                if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
                     JavaException::raiseIllegalAccessError(%env, "Not allowed to instantiate QApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
                     return;
                 }
@@ -2360,7 +2615,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <remove-argument/>
             </modify-argument>
             <inject-code class="native" position="end">
-                __qt_this->setUserData(ApplicationData::id(), applicationData.take());
+                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.take());
             </inject-code>
         </modify-function>
         <!-- We implement a custom Java wrapper to this -->
@@ -2378,7 +2633,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setFont(QFont,const char*)">
+        <modify-function signature="setFont(QFont,const char*)" thread-affine="ui">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
@@ -2389,18 +2644,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setPalette(QPalette,const char*)">
+        <modify-function signature="setPalette(QPalette,const char*)" thread-affine="ui">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="notify(QObject *, QEvent *)">
-            <inject-code class="java" position="beginning">
-                <argument-map index="1" meta-name="%1"/>
-                if(%1!=null)
-                    threadCheck(%1, "Cannot send posted events for objects in another thread");
-            </inject-code>
+            <modify-argument index="1" thread-affine="yes"/>
         </modify-function>
+        <modify-function signature="aboutQt()" thread-affine="ui"/>
     </object-type>
 
     <interface-type name="QGraphicsLayoutItem">
@@ -2423,8 +2675,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                     setCppOwnership(%this);
             </inject-code>
         </modify-function>
-        <modify-function signature="setParentLayoutItem(QGraphicsLayoutItem*)">
-            <modify-argument index="1">
+        <modify-function signature="setParentLayoutItem(QGraphicsLayoutItem*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore" />
             </modify-argument>
             <inject-code>
@@ -2651,8 +2903,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
     </object-type>
     
     <object-type name="QGraphicsProxyWidget">
-    <modify-function signature="setWidget(QWidget*)">
-        <modify-argument index="1">
+    <modify-function signature="setWidget(QWidget*)" thread-affine="yes">
+        <modify-argument index="1" thread-affine="yes">
             <reference-count action="ignore" />
         </modify-argument>
         <inject-code>
@@ -2665,8 +2917,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
     </modify-function>
     </object-type>
     <object-type name="QGraphicsWidget">
-        <modify-function signature="setLayout(QGraphicsLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="setLayout(QGraphicsLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
             <inject-code position="beginning">
@@ -2794,8 +3046,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="setLayout(QGraphicsLayout*)">
-            <modify-argument index="1">
+        <modify-function signature="setLayout(QGraphicsLayout*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
@@ -2817,9 +3069,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
     <object-type name="QListWidget">
         <modify-function signature="addItem(const QString &amp;)" remove="all" />
-        <modify-function signature="addItems(const QStringList&lt;QString&gt; &amp;)" remove="all" />
+        <modify-function signature="addItems(const QStringList &amp;)" remove="all" />
         <modify-function signature="insertItem(int, const QString &amp;)" remove="all" />
-        <modify-function signature="insertItems(int, const QStringList&lt;QString&gt; &amp;)" remove="all" />
+        <modify-function signature="insertItems(int, const QStringList &amp;)" remove="all" />
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QListWidget___" quote-before-line="}// class" />
         </inject-code>
@@ -2853,15 +3105,6 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </modify-argument>
         </modify-function>
     </object-type>
-    
-    <value-type name="QGestureRecognizer">
-        <modify-function signature="registerRecognizer(QGestureRecognizer*)" access="private" />
-        <inject-code>
-        public static io.qt.core.Qt.GestureType registerRecognizer(QGestureRecognizer recognizer)    {
-            return registerRecognizer(recognizer!=null ? io.qt.QNativePointer.fromObject(recognizer) : null);
-        }
-        </inject-code>
-    </value-type>
     
     <object-type name="QTouchEvent">
       <modify-function signature="QTouchEvent(QEvent::Type,QTouchEvent::DeviceType,QFlags&lt;Qt::KeyboardModifier&gt;,QFlags&lt;Qt::TouchPointState&gt;,const QList&lt;QTouchEvent::TouchPoint&gt; &amp;)">
@@ -2970,7 +3213,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <include file-name="io.qt.gui.*" location="java"/>
         </extra-includes>
     </object-type>
+    
+    <value-type name="QStyleOptionViewItem">
+        <modify-field name="widget">
+            <reference-count action="set" variable-name="__rcWidget" />
+        </modify-field>
+    </value-type>
 
-
-    <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcItems' in 'io.qt.widgets.QGraphicsGridLayout' but not both" />
+    <suppress-warning text="WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcItems' in 'QGraphicsGridLayout' but not both." />
 </typesystem>

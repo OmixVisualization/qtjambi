@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,13 +47,13 @@ class GeneratorSetJava : public GeneratorSet {
     public:
         GeneratorSetJava();
 
-        QString usage();
-        bool readParameters(const QMap<QString, QString> args);
+        QString usage() override;
+        bool readParameters(const QMap<QString, QString> args) override;
 
-        void buildModel(const QMap<QString, QString>& features, const QString pp_file);
-        void dumpObjectTree();
+        void buildModel(const QMap<QString, QString>& features, const QString pp_file) override;
+        void dumpObjectTree() override;
 
-        QString generate();
+        void generate() override;
 
     private:
 

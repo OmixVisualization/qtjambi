@@ -132,7 +132,21 @@ QString EnumTypeEntry::javaQualifier() const {
 }
 
 QString ContainerTypeEntry::javaPackage() const {
-    if (m_type == PairContainer)
+    if (m_type == PairContainer
+            || m_type == StringListContainer
+            || m_type == ListContainer
+            || m_type == ByteArrayListContainer
+            || m_type == LinkedListContainer
+            || m_type == VectorContainer
+            || m_type == StackContainer
+            || m_type == QueueContainer
+            || m_type == SetContainer
+            || m_type == MapContainer
+            || m_type == HashContainer
+            || m_type == MultiMapContainer
+            || m_type == MultiHashContainer
+            || m_type == QBindableContainer
+            || m_type == QPropertyBindingContainer)
         return "io.qt.core";
     if (m_type == QDBusReplyContainer)
         return "io.qt.dbus";
@@ -155,24 +169,29 @@ QString ContainerTypeEntry::targetLangName() const {
         case QVector2DArrayContainer: return "List"; // new since Qt3D
         case QVector3DArrayContainer: return "List"; // new since Qt3D
         case QVector4DArrayContainer: return "List"; // new since Qt3D
-        case StringListContainer: return "List";
-        case ByteArrayListContainer: return "List";
-        case ListContainer: return "List";
+        case StringListContainer: return "QStringList";
+        case ByteArrayListContainer: return "QList";
+        case ListContainer: return "QList";
+        case std_vector: return "List";
         case InitializerListContainer: return "List";
-        case LinkedListContainer: return "LinkedList";
-        case VectorContainer: return "List";
+        case QModelRoleDataSpanContainer: return "Map";
+        case QPropertyBindingContainer: return "QPropertyBinding";
+        case QBindableContainer: return "QBindable";
+        case LinkedListContainer: return "QLinkedList";
+        case VectorContainer: return "QVector";
         case QArrayDataContainer: return "Collection";
         case QTypedArrayDataContainer: return "Collection";
-        case StackContainer: return "Deque";
-        case QueueContainer: return "Queue";
-        case SetContainer: return "Set";
-        case MapContainer: return "NavigableMap";
+        case StackContainer: return "QStack";
+        case QueueContainer: return "QQueue";
+        case SetContainer: return "QSet";
+        case MapContainer: return "QMap";
         case QDBusReplyContainer: return "QDBusReply";
-        case MultiMapContainer: return "NavigableMap";
-        case HashContainer: return "Map";
-        case MultiHashContainer: return "Map";
+        case MultiMapContainer: return "QMultiMap";
+        case HashContainer: return "QHash";
+        case MultiHashContainer: return "QMultiHash";
             //     case MultiHashCollectio: return "MultiHash";
         case PairContainer: return "QPair";
+        case std_optional: return "Optional";
         case QDeclarativeListPropertyContainer: return "QDeclarativeListProperty"; // new for QDeclarative module but not yet implemented
         case QQmlListPropertyContainer: return "QQmlListProperty"; // new for QtQml module
         default:
@@ -188,7 +207,7 @@ QString ContainerTypeEntry::collectionWrapperClass()const{
         case QArrayDataContainer: return "QtJambiCollectionObject";
         case QTypedArrayDataContainer: return "QtJambiCollectionObject";
         case LinkedListContainer: return "QtJambiLinkedListObject";
-        case VectorContainer: return "QtJambiVectorObject";
+        case VectorContainer: return "QtJambiListObject";
         case StackContainer: return "QtJambiStackObject";
         case QueueContainer: return "QtJambiQueueObject";
         case SetContainer: return "QtJambiSetObject";
@@ -211,6 +230,8 @@ QString ContainerTypeEntry::qualifiedCppName() const {
         return "QByteArrayList";
     if (m_type == QArrayContainer)
         return "QArray";  // new since Qt3D
+    if (m_type == QModelRoleDataSpanContainer)
+        return "QModelRoleDataSpan";
     if (m_type == QVector2DArrayContainer)
         return "QVector2DArray";  // new since Qt3D
     if (m_type == QVector3DArrayContainer)
@@ -290,16 +311,6 @@ bool ComplexTypeEntry::hasFunctionCodeInjections(const QString &methodSignature,
         }
     }
     return false;
-}
-
-QList<ArgumentModification> ComplexTypeEntry::functionArgumentModifications(const QString &signature) const {
-    QList<ArgumentModification> lst;
-    for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == signature) {
-            lst << mod.argument_mods;
-        }
-    }
-    return lst;
 }
 
 FunctionModificationList ComplexTypeEntry::functionModifications(const QString &signature) const {

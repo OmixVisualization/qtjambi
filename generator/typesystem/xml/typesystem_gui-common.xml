@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,11 +47,6 @@
     <rejection class="*" function-name="d_func"/>
     <rejection class="*" field-name="d_ptr"/>
     <rejection class="*" field-name="d"/>
-    <rejection class="QOpenGLFunctions_*Backend"/>
-    <rejection class="PFNGL*"/>
-    <rejection class="GLDEBUGPROCAMD"/>
-    <rejection class="GLDEBUGPROCARB"/>
-    <rejection class="GLVULKANPROCNV"/>
     <rejection class="QColor::CT"/>
     <rejection class="QWindowsWindowFunctions::SetTouchWindowTouchType"/>
     <rejection class="QWindowsWindowFunctions::SetHasBorderInFullScreen"/>
@@ -65,14 +60,7 @@
     <rejection class="QEGLNativeContext"/>
     <rejection class="QGLXNativeContext"/>
     <rejection class="QWGLNativeContext"/>
-    <rejection class="QOpenGLVersionFunctionsStorage"/>
-    <rejection class="QOpenGLVersionFunctionsBackend" enum-name="Version"/>
-    <rejection class="QOpenGLVersionFunctionsBackend" field-name="refs"/>
-    <rejection class="QOpenGLVersionFunctionsBackend"/>
     <rejection class="QInputMethodQueryEvent::QueryPair"/>
-    <rejection class="QOpenGLExtraFunctionsPrivate"/>
-    <rejection class="QOpenGLFunctionsPrivate"/>
-    <rejection class="QAbstractOpenGLFunctionsPrivate"/>
     <rejection class="QImageCleanupFunction"/>
     <rejection class="QAccessible2"/>
     <rejection class="PaintDeviceAccess"/>
@@ -125,7 +113,6 @@
     <rejection class="QSupportedWritingSystems"/>
     <rejection class="QTabletEvent" field-name="mExtra"/>
     <rejection class="QTextFrameLayoutData"/>
-    <rejection class="QOpenGLTextureHelper" />
     <rejection class="QPixelFormat" function-name="get"/>
     <rejection class="QPixelFormat" function-name="set"/>
     <rejection class="QWheelEvent" enum-name="enum_1"/>
@@ -136,7 +123,6 @@
     <rejection class="QTouchEvent" field-name="_touchPointStates"/>
     <rejection class="QTouchEvent" field-name="_touchPoints"/>
     <rejection class="QEglFSFunctions" function-name="vsp2AddBlendListener"/>
-    <rejection class="QAccessibleEvent" field-name="m_object"/>
     <rejection class="QImageReader" function-name="tr"/>
     <rejection class="QImageReader" function-name="trUtf8"/>
     <rejection class="QImageWriter" function-name="tr"/>
@@ -150,7 +136,23 @@
     <rejection class="QVulkanWindowRenderer" since="5.10.0"/>
     <rejection class="QGradient" enum-name="Type"/><!--this enum is covered by actual java class types-->
     <rejection class="QGradient" function-name="type"/>
+    <rejection class="QActionGroup" function-name="selected" since="6.0.0"/>
+    <rejection class="QAction" function-name="associatedGraphicsWidgets" since="6.0.0"/>
+    <rejection class="QAction" function-name="associatedWidgets" since="6.0.0"/>
+    <rejection class="QAction" function-name="parentWidget" since="6.0.0"/>
+    <rejection class="QImage" function-name="convertToFormat_helper" since="6.0.0"/>
+    <rejection class="QImage" function-name="convertToFormat_inplace" since="6.0.0"/>
+    <rejection class="QImage" function-name="rgbSwapped_inplace" since="6.0.0"/>
+    <rejection class="QImage" function-name="rgbSwapped_helper" since="6.0.0"/>
+    <rejection class="QImage" function-name="mirrored_inplace" since="6.0.0"/>
+    <rejection class="QImage" function-name="mirrored_helper" since="6.0.0"/>
+    <rejection class="QAction" function-name="menu" since="6.0.0"/>
+    <rejection class="QAction" function-name="setMenu" since="6.0.0"/>
 
+    <enum-type name="QAction::ActionEvent" since="6.0.0"/>
+    <enum-type name="QAction::MenuRole" since="6.0.0"/>
+    <enum-type name="QAction::Priority" since="6.0.0"/>
+    <enum-type name="QActionGroup::ExclusionPolicy" since="6.0.0"/>
     <enum-type name="QContextMenuEvent::Reason"/>
     <enum-type name="QInputMethodEvent::AttributeType"/>
     <enum-type name="QClipboard::Mode">
@@ -158,7 +160,6 @@
     </enum-type>
     <enum-type name="QColor::Spec"/>
     <enum-type name="QPagedPaintDevice::PdfVersion" since="5.10.0"/>
-    <enum-type name="QOpenGLWindow::UpdateBehavior"/>
     <!--enum-type name="QColormap::Mode"/-->
     <enum-type name="QDoubleValidator::Notation"/>
     <enum-type name="QFont::Capitalization" />
@@ -195,25 +196,6 @@
     <enum-type name="QMovie::CacheMode"/>
     <enum-type name="QMovie::MovieState"/>
     <enum-type name="QSurface::SurfaceType" />
-    <enum-type name="QOpenGLBuffer::Access" />
-    <enum-type name="QOpenGLBuffer::Type" />
-    <enum-type name="QOpenGLBuffer::RangeAccessFlag" flags="QOpenGLBuffer::RangeAccessFlags" />
-    <enum-type name="QOpenGLBuffer::UsagePattern" />
-    <enum-type name="QOpenGLDebugLogger::LoggingMode" />
-    <enum-type name="QOpenGLDebugMessage::Severity" flags="QOpenGLDebugMessage::Severities">
-        <reject-enum-value name="LastSeverity"/>
-    </enum-type>
-    <enum-type name="QOpenGLDebugMessage::Source" flags="QOpenGLDebugMessage::Sources">
-        <reject-enum-value name="LastSource"/>
-    </enum-type>
-    <enum-type name="QOpenGLDebugMessage::Type" flags="QOpenGLDebugMessage::Types">
-        <reject-enum-value name="LastType"/>
-    </enum-type>
-
-    <enum-type name="QOpenGLFramebufferObject::Attachment" />
-    <enum-type name="QOpenGLFramebufferObject::FramebufferRestorePolicy" />
-    <enum-type name="QOpenGLFunctions::OpenGLFeature" flags="QOpenGLFunctions::OpenGLFeatures" />
-    <enum-type name="QOpenGLShader::ShaderTypeBit" flags="QOpenGLShader::ShaderType" />
     <enum-type name="QPaintDevice::PaintDeviceMetric"/>
     <enum-type name="QPaintEngine::DirtyFlag" flags="QPaintEngine::DirtyFlags"/>
     <enum-type name="QPaintEngine::PaintEngineFeature" flags="QPaintEngine::PaintEngineFeatures"/>
@@ -274,13 +256,13 @@
         <reject-enum-value name="FirstFontProperty"/>
         <reject-enum-value name="LastFontProperty"/>
     </enum-type>
-    <enum-type name="QTouchDevice::CapabilityFlag" flags="QTouchDevice::Capabilities"/>
-    <enum-type name="QTouchDevice::DeviceType"/>
+    <enum-type name="QTouchDevice::CapabilityFlag" flags="QTouchDevice::Capabilities" until="5.*"/>
+    <enum-type name="QTouchDevice::DeviceType" until="5.*"/>
     <enum-type name="QTransform::TransformationType"/>
     <enum-type name="QValidator::State"/>
     <enum-type name="QWindow::AncestorMode"/>
     <enum-type name="QWindow::Visibility"/>
-    <enum-type name="QTouchEvent::TouchPoint::InfoFlag" flags="QTouchEvent::TouchPoint::InfoFlags"/>
+    <enum-type name="QTouchEvent::TouchPoint::InfoFlag" flags="QTouchEvent::TouchPoint::InfoFlags" until="5.*"/>
     <enum-type name="QGradient::Spread" lower-bound="QGradient.PadSpread" upper-bound="QGradient.RepeatSpread" />
     <enum-type name="QGradient::CoordinateMode"/>
     <enum-type name="QGradient::Preset"/>
@@ -298,26 +280,7 @@
         <reject-enum-value name="Background"/>
     </enum-type>
 
-    <enum-type name="QOpenGLTexture::BindingTarget"/>
-    <enum-type name="QOpenGLTexture::DepthStencilMode"/>
-    <enum-type name="QOpenGLTexture::CoordinateDirection"/>
-    <enum-type name="QOpenGLTexture::Feature" flags="QOpenGLTexture::Features"/>
-    <enum-type name="QOpenGLTexture::CubeMapFace"/>
-    <enum-type name="QOpenGLTexture::Filter"/>
-    <enum-type name="QOpenGLTexture::MipMapGeneration"/>
-    <enum-type name="QOpenGLTexture::PixelFormat"/>
-    <enum-type name="QOpenGLTexture::PixelType"/>
-    <enum-type name="QOpenGLTexture::SwizzleComponent"/>
-    <enum-type name="QOpenGLTexture::SwizzleValue"/>
-    <enum-type name="QOpenGLTexture::Target"/>
-    <enum-type name="QOpenGLTexture::TextureFormat"/>
-    <enum-type name="QOpenGLTexture::TextureUnitReset"/>
-    <enum-type name="QOpenGLTexture::WrapMode"/>
-    <enum-type name="QOpenGLTexture::TextureFormatClass"/>
-    <enum-type name="QOpenGLTexture::ComparisonFunction"/>
-    <enum-type name="QOpenGLTexture::ComparisonMode"/>
     <enum-type name="QColor::NameFormat"/>
-    <enum-type name="QOpenGLContext::OpenGLModuleType"/>
     <enum-type name="QTextCharFormat::FontPropertiesInheritanceBehavior"/>
     <enum-type name="QPageLayout::Mode"/>
     <enum-type name="QPageLayout::Orientation"/>
@@ -351,10 +314,20 @@
             return new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);
     }
         </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QInputMethodEvent::Attribute(copy-&gt;type, copy-&gt;start, copy-&gt;length, copy-&gt;value);
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QInputMethodEvent::Attribute(QInputMethodEvent::TextFormat, 0, 0);
+        </custom-constructor>
     </value-type>
     <value-type name="QPageLayout">
         <modify-function signature="operator=(const QPageLayout&amp;)" remove="all"/>
     </value-type>
+    <namespace-type name="QColorConstants">
+    </namespace-type>
+    <namespace-type name="QColorConstants::Svg">
+    </namespace-type>
 
 <!-- START ACCESSIBILITY CLASSES -->
     <enum-type name="QAccessible::Event"/>
@@ -371,7 +344,6 @@
     <enum-type name="QAccessible::Text"/>
     <enum-type name="QAccessibleTableModelChangeEvent::ModelChangeType"/>
     <enum-type name="QSurfaceFormat::ColorSpace"/>
-    <enum-type name="QOpenGLVersionStatus::OpenGLStatus"/>
     <!--enum-type name="QAccessible::Action">
         <reject-enum-value name="FirstStandardAction"/>
         <reject-enum-value name="LastStandardAction"/>
@@ -380,6 +352,12 @@
     <object-type name="QAccessible">
         <!--modify-function signature="initialize()" remove="all"/-->
         <modify-function signature="cleanup()" remove="all"/>
+        <modify-function signature="registerAccessibleInterface(QAccessibleInterface *)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <define-ownership class="native" owner="cpp" />
+            </modify-argument>
+        </modify-function>
         <modify-function signature="installActivationObserver(QAccessible::ActivationObserver*)">
             <modify-argument index="1">
                 <reference-count action="add" variable-name="__rcActivationObserver"/>
@@ -397,7 +375,7 @@
         </modify-function>
         <modify-function signature="queryAccessibleInterface(QObject *)">
             <modify-argument index="return">
-                <define-ownership class="java" owner="java" />
+                <define-ownership class="native" owner="cpp" />
             </modify-argument>
         </modify-function>
     </object-type>
@@ -427,6 +405,7 @@
         </inject-code>
     </object-type>
     <interface-type name="QIconEngineFactoryInterface"/>
+    <interface-type name="QUrlResourceProvider" since="6.1.0"/>
     <object-type name="QAccessibleBridge">
         <modify-function signature="setRootObject(QAccessibleInterface *)">
             <modify-argument index="1">
@@ -487,10 +466,32 @@
 <!-- END ACCESSIBILITY -->
 
 
-    <object-type name="QInputMethodEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::InputMethod"/>
+    <object-type name="QInputMethodEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::InputMethod">
+        <modify-function signature="operator=(const QInputMethodEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QActionEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ActionAdded || %1-&gt;type() == QEvent::ActionRemoved || %1-&gt;type() == QEvent::ActionChanged">
+        <modify-function signature="operator=(const QActionEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QNativeGestureEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::NativeGesture">
+        <modify-function signature="operator=(const QNativeGestureEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
         <modify-field name="mGestureType" read="no" write="yes" rename="gestureType"/>
         <modify-field name="mLocalPos" read="no" write="yes" rename="localPos"/>
         <modify-field name="mWindowPos" read="no" write="yes" rename="windowPos"/>
@@ -498,19 +499,63 @@
         <modify-field name="mRealValue" read="no" write="yes" rename="value"/>
         <modify-field name="mSequenceId" read="no" write="yes" rename="sequenceId"/>
         <modify-field name="mIntValue" read="no" write="yes" rename="intValue"/>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QCloseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Close"/>
+    <object-type name="QCloseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Close">
+        <modify-function signature="operator=(const QCloseEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
     <object-type name="QContextMenuEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ContextMenu">
         <modify-field name="p" read="no" write="yes" rename="pos"/>
         <modify-field name="gp" read="no" write="yes" rename="globalPos"/>
         <modify-field name="reas" read="no" write="yes" rename="reason"/>
+        <modify-function signature="operator=(const QContextMenuEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QInputEvent" polymorphic-id-expression="typeid(*%1) == typeid(QInputEvent)">
         <modify-function signature="modifiers()const" access="non-final"/>
         <modify-field name="modState" read="no" write="no"/>
         <modify-field name="ts" read="no" write="no"/>
+        <modify-field name="m_timeStamp" read="no" write="no"/>
+        <modify-field name="m_reserved" read="no" write="no"/>
+        <modify-field name="m_modState" read="no" write="no"/>
+        <modify-field name="m_dev" read="no" write="yes" rename="device">
+            <reference-count action="set" variable-name="__rcDevice"/>
+        </modify-field>
+        <modify-function signature="operator=(const QInputEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QInputMethodQueryEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::InputMethodQuery"/>
+    <object-type name="QInputMethodQueryEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::InputMethodQuery">
+        <modify-function signature="operator=(const QInputMethodQueryEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QMouseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::MouseButtonDblClick || %1-&gt;type() == QEvent::MouseButtonPress || %1-&gt;type() == QEvent::MouseButtonRelease || %1-&gt;type() == QEvent::MouseMove">
         <modify-field name="l" read="no" write="no"/>
         <modify-field name="w" read="no" write="yes" rename="windowPos"/>
@@ -519,32 +564,75 @@
         <modify-field name="mouseState" read="no" write="yes" rename="buttons"/>
         <modify-field name="caps" read="yes" write="yes"/>
         <modify-field name="velocity" read="yes" write="yes"/>
+        <modify-function signature="operator=(const QMouseEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QMoveEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Move">
         <modify-field name="p" read="no" write="yes" rename="pos"/>
         <modify-field name="oldp" read="no" write="yes" rename="oldPos"/>
+        <modify-function signature="operator=(const QMoveEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QResizeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Resize">
         <modify-field name="s" read="no" write="yes" rename="size"/>
         <modify-field name="olds" read="no" write="yes" rename="oldSize"/>
+        <modify-function signature="operator=(const QResizeEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QShortcutEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Shortcut">
-            <!-- All these have const overloads that are used instead -->
-            <modify-function signature="isAmbiguous()const">
-                <remove/>
-            </modify-function>
-            <modify-function signature="shortcutId()const">
-                <remove/>
-            </modify-function>
-            <modify-function signature="key()const">
-                <remove/>
-            </modify-function>
-            <modify-field name="sequence" read="no" write="yes" rename="key"/>
-            <modify-field name="ambig" read="no" write="yes" rename="ambiguous"/>
-            <modify-field name="sid" read="no" write="yes" rename="shortcutId"/>
+        <modify-field name="sequence" read="no" write="yes" rename="key"/>
+        <modify-field name="ambig" read="no" write="yes" rename="ambiguous"/>
+        <modify-field name="sid" read="no" write="yes" rename="shortcutId"/>
+        <modify-field name="m_sequence" read="no" write="yes" rename="key"/>
+        <modify-field name="m_ambiguous" read="no" write="yes" rename="ambiguous"/>
+        <modify-field name="m_shortcutId" read="no" write="yes" rename="shortcutId"/>
+        <modify-function signature="operator=(const QShortcutEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QShowEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Show"/>
-    <object-type name="QStatusTipEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StatusTip"/>
+    <object-type name="QShowEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Show">
+        <modify-function signature="operator=(const QShowEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
+    <object-type name="QStatusTipEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StatusTip">
+        <modify-function signature="operator=(const QStatusTipEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QTabletEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::TabletMove || %1-&gt;type() == QEvent::TabletPress || %1-&gt;type() == QEvent::TabletRelease">
         <modify-field name="mPos" read="no" write="yes" rename="posF"/>
         <modify-field name="mGPos" read="no" write="yes" rename="globalPosF"/>
@@ -558,6 +646,16 @@
         <modify-field name="mRot" read="no" write="yes" rename="rotation"/>
         <modify-field name="mUnique" read="no" write="yes" rename="uniqueId"/>
         <modify-field name="mExtra" read="no" write="no"/>
+        <modify-field name="m_tangential" read="no" write="yes" rename="tangentialPressure"/>
+        <modify-function signature="operator=(const QTabletEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QWheelEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Wheel">
         <modify-field name="p" read="no" write="yes" rename="posF"/>
@@ -571,16 +669,74 @@
         <modify-field name="src" read="no" write="yes" rename="source"/>
         <modify-field name="invertedScrolling" read="no" write="yes" rename="inverted"/>
         <modify-field name="reserved" read="no" write="no"/>
+        <modify-function signature="operator=(const QWheelEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QWindowStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::WindowStateChange"/>
-    <object-type name="QWhatsThisClickedEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::WhatsThisClicked"/>
+    <object-type name="QWindowStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::WindowStateChange">
+        <modify-function signature="operator=(const QWindowStateChangeEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QWhatsThisClickedEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::WhatsThisClicked">
+        <modify-function signature="operator=(const QWhatsThisClickedEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QPaintEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Paint">
         <modify-field name="m_rect" read="no" write="yes" rename="rect"/>
         <modify-field name="m_region" read="no" write="yes" rename="region"/>
         <modify-field name="m_erased" read="yes" write="yes" rename="erased"/>
+        <modify-function signature="operator=(const QPaintEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QScrollEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Scroll"/>
-    <object-type name="QScrollPrepareEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ScrollPrepare"/>
+    <object-type name="QScrollEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Scroll">
+        <modify-function signature="operator=(const QScrollEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QScrollPrepareEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ScrollPrepare">
+        <modify-function signature="operator=(const QScrollPrepareEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
 
     <value-type name="QAbstractTextDocumentLayout::PaintContext">
         <include file-name="QAbstractTextDocumentLayout" location="global"/>
@@ -602,9 +758,9 @@
         </modify-function>
 
     </object-type>
-    <value-type name="QBitmap">
+    <value-type name="QBitmap" thread-affine="pixmap">
         <modify-function signature="operator=(const QPixmap &amp;)" remove="all"/>
-        <modify-function signature="operator=(const QBitmap &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QBitmap &amp;)" remove="all" until="5.*"/>
     </value-type>
 
     <object-type name="QBackingStore">
@@ -626,7 +782,7 @@
         </extra-includes>
         <modify-function signature="setMimeData(QMimeData *, QClipboard::Mode)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -640,7 +796,7 @@
         <modify-function signature="QColor(QColor::Spec)" remove="all"/>
         <modify-function signature="QColor(QLatin1String)" remove="all" since="5.8.0"/>
         <modify-function signature="QColor(QStringView)" remove="all" since="5.8.0"/>
-        <modify-function signature="operator=(QColor)" remove="all" since="5.8.0"/>
+        <modify-function signature="operator=(QColor)" remove="all" since="5.8.0" until="5.*"/>
         <modify-function signature="operator=(Qt::GlobalColor)" remove="all"/>
         <modify-function signature="setNamedColor(QLatin1String)" remove="all" since="5.8.0"/>
         <modify-function signature="setNamedColor(QStringView)" remove="all" since="5.8.0"/>
@@ -651,46 +807,55 @@
             <remove/>
         </modify-function>
 
-        <modify-function signature="getCmyk(int*,int*,int*,int*,int*)">
+        <modify-function signature="getCmyk(int*,int*,int*,int*,int*)" until="5.*">
             <remove/>
         </modify-function>
         <modify-function signature="getCmyk(int*,int*,int*,int*,int*) const">
             <remove/>
         </modify-function>
 
-        <modify-function signature="getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*)">
+        <modify-function signature="getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*)" until="5.*">
             <remove/>
         </modify-function>
-        <modify-function signature="getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*) const">
+        <modify-function signature="getCmykF(qreal*,qreal*,qreal*,qreal*,qreal*) const" until="5.*">
+            <remove/>
+        </modify-function>
+        <modify-function signature="getCmykF(float*,float*,float*,float*,float*) const" since="6.0.0">
             <remove/>
         </modify-function>
 
         <modify-function signature="getHsv(int*,int*,int*,int*)const">
             <remove/>
         </modify-function>
-
-        <modify-function signature="getHsvF(qreal*,qreal*,qreal*,qreal*)const">
+        <modify-function signature="getHsvF(qreal*,qreal*,qreal*,qreal*)const" until="5.*">
+            <remove/>
+        </modify-function>
+        <modify-function signature="getHsvF(float*,float*,float*,float*) const" since="6.0.0">
             <remove/>
         </modify-function>
         
         <modify-function signature="getHsl(int*,int*,int*,int*)const">
             <remove/>
         </modify-function>
-        
-        <modify-function signature="getHslF(qreal*,qreal*,qreal*,qreal*)const">
+        <modify-function signature="getHslF(qreal*,qreal*,qreal*,qreal*)const" until="5.*">
+            <remove/>
+        </modify-function>
+        <modify-function signature="getHslF(float*,float*,float*,float*) const" since="6.0.0">
             <remove/>
         </modify-function>
 
         <modify-function signature="getRgb(int*,int*,int*,int*)const">
             <remove/>
         </modify-function>
-
-        <modify-function signature="getRgbF(qreal*,qreal*,qreal*,qreal*)const">
+        <modify-function signature="getRgbF(qreal*,qreal*,qreal*,qreal*)const" until="5.*">
+            <remove/>
+        </modify-function>
+        <modify-function signature="getRgbF(float*,float*,float*,float*) const" since="6.0.0">
             <remove/>
         </modify-function>
 
-        <modify-function signature="dark(int)const" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="light(int)const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="dark(int)const" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="light(int)const" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
     </value-type>
 
     <value-type name="QConicalGradient" polymorphic-id-expression="%1-&gt;type() == QGradient::ConicalGradient">
@@ -701,12 +866,23 @@
             return new(placement) QConicalGradient();
     }
         </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QConicalGradient(copy-&gt;center(), copy-&gt;angle());
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QConicalGradient();
+        </custom-constructor>
     </value-type>
 
-    <value-type name="QCursor" delete-in-main-thread="yes">
+    <value-type name="QCursor" thread-affine="pixmap">
         <extra-includes>
             <include file-name="QPixmap" location="global"/>
         </extra-includes>
+        <modify-function signature="QCursor()" thread-affine="pixmap"/>
+        <modify-function signature="QCursor(QCursor)" thread-affine="pixmap"/>
+        <modify-function signature="QCursor(QPixmap, int, int)" thread-affine="pixmap"/>
+        <modify-function signature="QCursor(Qt::CursorShape)" thread-affine="pixmap"/>
+        <modify-function signature="QCursor(QBitmap, QBitmap, int, int)" thread-affine="pixmap"/>
         <modify-function signature="operator=(QCursor)" remove="all"/>
         <modify-function signature="setPos(QScreen*,QPoint)">
             <modify-argument index="1">
@@ -743,51 +919,163 @@
         </extra-includes>
         <modify-function signature="setMimeData(QMimeData*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="start(QFlags&lt;Qt::DropAction&gt;)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="start(QFlags&lt;Qt::DropAction&gt;)" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
     </object-type>
 
-    <object-type name="QDragEnterEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragEnter"/>
-    <object-type name="QDragLeaveEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragLeave"/>
+    <object-type name="QDragEnterEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragEnter">
+        <modify-function signature="operator=(const QDragEnterEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
+    <object-type name="QDragLeaveEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragLeave">
+        <modify-function signature="operator=(const QDragLeaveEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
     <object-type name="QDragMoveEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragMove">
+        <modify-function signature="operator=(const QDragMoveEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
         <modify-function signature="accept()" remove="all"/>
         <modify-function signature="ignore()" remove="all"/>
         <modify-field name="rect" read="no" write="yes" rename="answerRect"/>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QDropEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Drop">
+        <modify-function signature="operator=(const QDropEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
         <modify-field name="p" read="no" write="yes" rename="posF"/>
+        <modify-field name="m_pos" read="no" write="yes" rename="position"/>
         <modify-field name="mouseState" read="no" write="yes" rename="mouseButtons"/>
+        <modify-field name="m_mouseState" read="no" write="yes" rename="mouseButtons"/>
         <modify-field name="modState" read="no" write="yes" rename="keyboardModifiers"/>
+        <modify-field name="m_modState" read="no" write="yes" rename="keyboardModifiers"/>
         <modify-field name="act" read="no" write="yes" rename="possibleActions"/>
+        <modify-field name="m_actions" read="no" write="yes" rename="possibleActions"/>
+        <modify-field name="m_dropAction" read="no" write="no"/>
         <modify-field name="drop_action" read="no" write="no"/>
         <modify-field name="default_action" read="no" write="yes" rename="proposedAction"/>
-        <modify-field name="mdata" read="no" write="yes" rename="mimeData"/>
+        <modify-field name="m_defaultAction" read="no" write="yes" rename="proposedAction"/>
+        <modify-field name="mdata" read="no" write="yes" rename="mimeData">
+            <reference-count action="set" variable-name="__rcMimeData" />
+        </modify-field>
+        <modify-field name="m_data" read="no" write="yes" rename="mimeData">
+            <reference-count action="set" variable-name="__rcMimeData" />
+        </modify-field>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QEnterEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Enter">
+        <modify-function signature="operator=(const QEnterEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
         <modify-field name="l" read="no" write="yes" rename="localPos"/>
         <modify-field name="w" read="no" write="yes" rename="windowPos"/>
         <modify-field name="s" read="no" write="yes" rename="screenPos"/>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QExposeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Expose">
+        <modify-function signature="operator=(const QExposeEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
         <modify-field name="rgn" read="no" write="yes" rename="region"/>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QPlatformSurfaceEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::PlatformSurface">
         <modify-field name="m_surfaceEventType" read="no" write="yes" rename="surfaceEventType"/>
+        <modify-function signature="operator=(const QPlatformSurfaceEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <enum-type name="QPlatformSurfaceEvent::SurfaceEventType"/>
-    <object-type name="QFileOpenEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::FileOpen"/>
+    <object-type name="QFileOpenEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::FileOpen">
+        <modify-function signature="operator=(const QFileOpenEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QFocusEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::FocusIn || %1-&gt;type() == QEvent::FocusOut">
+        <modify-function signature="operator=(const QFocusEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QHelpEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ToolTip || %1-&gt;type() == QEvent::WhatsThis"/>
-    <object-type name="QHideEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Hide"/>
+    <object-type name="QHelpEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ToolTip || %1-&gt;type() == QEvent::WhatsThis">
+        <modify-function signature="operator=(const QHelpEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QHideEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Hide">
+        <modify-function signature="operator=(const QHideEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
     <object-type name="QHoverEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::HoverEnter || %1-&gt;type() == QEvent::HoverLeave || %1-&gt;type() == QEvent::HoverMove">
-        <modify-field name="p" read="no" write="yes" rename="posF"/>
-        <modify-field name="op" read="no" write="yes" rename="oldPosF"/>
+        <modify-field name="p" read="no" write="yes" rename="posF" until="5.*"/>
+        <modify-field name="op" read="no" write="yes" rename="oldPosF" until="5.*"/>
+        <modify-field name="m_oldPos" read="no" write="no" since="6.0.0"/>
+        <modify-field name="m_reserved" read="no" write="no" since="6.0.0"/>
+        <modify-function signature="operator=(const QHoverEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
-    <object-type name="QIconDragEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::IconDrag"/>
+    <object-type name="QIconDragEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::IconDrag">
+        <modify-function signature="operator=(const QIconDragEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+    </object-type>
     <object-type name="QKeyEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::KeyPress || %1-&gt;type() == QEvent::KeyRelease">
         <modify-field name="txt" read="no" write="yes" rename="text"/>
         <modify-field name="k" read="no" write="yes" rename="key"/>
@@ -795,37 +1083,81 @@
         <modify-field name="nVirtualKey" read="no" write="yes" rename="nativeVirtualKey"/>
         <modify-field name="nModifiers" read="no" write="yes" rename="nativeModifiers"/>
         <modify-field name="c" read="no" write="yes" rename="count"/>
+        <modify-field name="m_count" read="no" write="yes" rename="count"/>
         <modify-field name="autor" read="no" write="yes" rename="autoRepeat"/>
+        <modify-field name="m_autoRepeat" read="no" write="yes" rename="autoRepeat">
+            <replace-type modified-type="boolean"/>
+        </modify-field>
+        <modify-function signature="operator=(const QKeyEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QTouchEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::TouchBegin || %1-&gt;type() == QEvent::TouchUpdate || %1-&gt;type() == QEvent::TouchEnd">
-        <modify-function signature="setDevice(QTouchDevice*)">
+        <modify-function signature="operator=(const QTouchEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-field name="m_reserved" read="no" write="no"/>
+        <modify-field name="m_touchPointStates" read="no" write="yes" rename="touchPointStates"/>
+        <modify-field name="m_target" read="no" write="yes" rename="target">
+            <reference-count action="set" variable-name="__rcTarget" />
+        </modify-field>
+        <modify-function signature="setDevice(QTouchDevice*)" until="5.*">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count action="set" variable-name="__rcDevice" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="setTarget(QObject*)">
+        <modify-function signature="setTarget(QObject*)" until="5.*">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count action="set" variable-name="__rcTarget" />
             </modify-argument>
         </modify-function>
-        <modify-function signature="setWindow(QWindow*)">
+        <modify-function signature="setWindow(QWindow*)" until="5.*">
             <modify-argument index="1">
-                <reference-count action="ignore"/>
+                <reference-count action="set" variable-name="__rcWidget" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
             </modify-argument>
         </modify-function>
     </object-type>
     <enum-type name="QAccessibleEvent::Event"/>
-    <object-type name="QAccessibleEvent" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QAccessible::InvalidEvent"/>
-    <object-type name="QAccessibleValueChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::ValueChanged"/>
-    <object-type name="QAccessibleStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::StateChanged"/>
-    <object-type name="QAccessibleTextSelectionEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextSelectionChanged"/>
-    <object-type name="QAccessibleTextUpdateEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextUpdated"/>
-    <object-type name="QAccessibleTextRemoveEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextRemoved"/>
-    <object-type name="QAccessibleTextInsertEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextInserted"/>
-    <object-type name="QAccessibleTextCursorEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextCaretMoved"/>
-    <object-type name="QAccessibleTableModelChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TableModelChanged"/>
+    <object-type name="QAccessibleEvent" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QAccessible::InvalidEvent">
+        <modify-function signature="operator=(const QAccessibleEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-field name="m_type" read="false" write="false"/>
+        <modify-field name="m_object" read="false" write="false"/>
+        <modify-field name="m_child" read="false" write="false"/>
+        <modify-field name="m_uniqueId" read="false" write="false"/>
+    </object-type>
+    <object-type name="QAccessibleValueChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::ValueChanged">
+    </object-type>
+    <object-type name="QAccessibleStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::StateChanged">
+        <modify-field name="m_changedStates" read="false" write="yes" rename="changedStates"/>
+    </object-type>
+    <object-type name="QAccessibleTextSelectionEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextSelectionChanged">
+    </object-type>
+    <object-type name="QAccessibleTextUpdateEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextUpdated">
+    </object-type>
+    <object-type name="QAccessibleTextRemoveEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextRemoved">
+    </object-type>
+    <object-type name="QAccessibleTextInsertEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextInserted">
+    </object-type>
+    <object-type name="QAccessibleTextCursorEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TextCaretMoved">
+    </object-type>
+    <object-type name="QAccessibleTableModelChangeEvent" polymorphic-id-expression="%1-&gt;type() == QAccessible::TableModelChanged">
+    </object-type>
 
-    <value-type name="QFontInfo" delete-in-main-thread="yes" expense-cost="1" expense-limit="1000">
+    <value-type name="QFontInfo" expense-cost="1" expense-limit="1000">
         <custom-constructor>
     if(copy){
             return new(placement) QFontInfo(*copy);
@@ -833,25 +1165,31 @@
             return new(placement) QFontInfo(QFont());
     }
         </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QFontInfo(*copy);
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QFontInfo(QFont());
+        </custom-constructor>
         <modify-function signature="operator=(QFontInfo)" remove="all"/>
 
     </value-type>
 
-    <value-type name="QFont" delete-in-main-thread="yes" expense-cost="1" expense-limit="1000">
+    <value-type name="QFont" expense-cost="1" expense-limit="1000">
         <extra-includes>
             <include file-name="QStringList" location="global"/>
         </extra-includes>
         <modify-function signature="operator=(QFont)" remove="all"/>
-        <modify-function signature="QFont(const QFont &amp;, QPaintDevice*)" remove="all" since="5.12.0"/>
+        <modify-function signature="QFont(const QFont &amp;, QPaintDevice*)" remove="all" since="5.12.0" until="5.*"/>
     </value-type>
 
-    <value-type name="QFontDatabase" delete-in-main-thread="yes">
+    <value-type name="QFontDatabase">
         <extra-includes>
             <include file-name="QStringList" location="global"/>
         </extra-includes>
     </value-type>
 
-    <value-type name="QFontMetricsF" delete-in-main-thread="yes" expense-cost="1" expense-limit="1000">
+    <value-type name="QFontMetricsF" expense-cost="1" expense-limit="1000">
         <custom-constructor>
     if(copy){
             return new(placement) QFontMetricsF(*copy);
@@ -859,19 +1197,31 @@
             return new(placement) QFontMetricsF(QFont());
     }
         </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QFontMetricsF(*copy);
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QFontMetricsF(QFont());
+        </custom-constructor>
         <modify-function signature="operator!=(const QFontMetricsF &amp;)const" remove="all"/>
         <modify-function signature="operator==(const QFontMetricsF &amp;)const" access="private"/>
         <modify-function signature="operator=(QFontMetrics)" remove="all"/>
         <modify-function signature="operator=(QFontMetricsF)" remove="all"/>
     </value-type>
 
-    <value-type name="QFontMetrics" delete-in-main-thread="yes" expense-cost="1" expense-limit="1000">
+    <value-type name="QFontMetrics" expense-cost="1" expense-limit="1000">
         <custom-constructor>
     if(copy){
             return new(placement) QFontMetrics(*copy);
     }else{
             return new(placement) QFontMetrics(QFont());
     }
+        </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QFontMetrics(*copy);
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QFontMetrics(QFont());
         </custom-constructor>
         <modify-function signature="operator!=(const QFontMetrics &amp;)const" remove="all"/>
         <modify-function signature="operator==(const QFontMetrics &amp;)const" access="private"/>
@@ -927,6 +1277,9 @@
         <modify-function signature="topLevelAt(const QPoint &amp;)">
             <rename to="topLevelWindowAt"/>
         </modify-function>
+        <modify-function signature="setPalette(QPalette)" thread-affine="ui"/>
+        <modify-function signature="setLayoutDirection(Qt::LayoutDirection)" thread-affine="ui"/>
+        <modify-function signature="setWindowIcon(QIcon)" thread-affine="ui"/>
 
         <!-- Bug#114 - Was missing signature="clipboard()" and define-ownership -->
         <modify-function signature="clipboard()">
@@ -935,18 +1288,21 @@
                 QApplication so the pointer/reference you only get to borrow
                 to make use of and let cplusplus manage it.
                 TODO Java should also try to share the same Java object -->
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
 
-    <value-type name="QIcon" delete-in-main-thread="yes">
-        <modify-function signature="operator=(QIcon)" remove="all"/>
+    <value-type name="QIcon" thread-affine="pixmap">
+        <modify-function signature="QIcon()" thread-affine="pixmap"/>
+        <modify-function signature="QIcon(QIcon)" thread-affine="pixmap"/>
+        <modify-function signature="QIcon(QString)" thread-affine="pixmap"/>
         <modify-function signature="QIcon(QIconEngine *)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus" />
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="operator=(QIcon)" remove="all"/>
     </value-type>
 
     <object-type name="QIconEngine">
@@ -990,8 +1346,10 @@
         <modify-function signature="operator=(QImage)" remove="all"/>
         <modify-function signature="QImage(unsigned char *, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="all"/>
         <modify-function signature="QImage(const unsigned char *, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="java"/>
-        <modify-function signature="QImage(unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="all"/>
-        <modify-function signature="QImage(const unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="all"/>
+        <modify-function signature="QImage(unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="all" until="5.*"/>
+        <modify-function signature="QImage(unsigned char *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)" remove="all" since="6.0.0"/>
+        <modify-function signature="QImage(const unsigned char *, int, int, int, QImage::Format, QImageCleanupFunction, void *)" remove="all" until="5.*"/>
+        <modify-function signature="QImage(const unsigned char *, int, int, qsizetype, QImage::Format, QImageCleanupFunction, void *)" remove="all" since="6.0.0"/>
     </value-type>
 
     <object-type name="QImageWriter">
@@ -1000,8 +1358,8 @@
             <reference-count action="set" variable-name="__rcDevice"/>
         </modify-argument>
     </modify-function>
-        <modify-function signature="description()const" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setDescription(QString)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="description()const" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="setDescription(QString)" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
     </object-type>
 
     <object-type name="QImageIOHandler">
@@ -1011,24 +1369,7 @@
         <modify-function signature="setFormat(const QByteArray &amp;)const">
             <remove/>
         </modify-function>
-        <modify-function signature="setDevice(QIODevice*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcDevice"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="read(QImage*)">
-            <modify-argument index="1" invalidate-after-use="yes">
-                <replace-type modified-type="io.qt.gui.QImage"/>
-                <conversion-rule class="shell">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                QImage* %out = qtjambi_cast&lt;QImage*>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-
-        <modify-function signature="name()const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="name()const" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
     </object-type>
 
     <object-type name="QImageReader">
@@ -1097,6 +1438,9 @@
         <modify-function signature="operator=(QKeySequence)" remove="all"/>
         <modify-function signature="operator[](uint)const" access="private"/>
     </value-type>
+    <value-type name="QKeyCombination" since="6.0.0">
+    <modify-function signature="operator int() const" remove="all"/>
+    </value-type>
 
     <value-type name="QLinearGradient" polymorphic-id-expression="%1-&gt;type() == QGradient::LinearGradient">
         <custom-constructor>
@@ -1109,25 +1453,26 @@
             return new(placement) QLinearGradient();
         }
         </custom-constructor>
+        <custom-constructor type="copy">
+            QLinearGradient *lg = new(placement) QLinearGradient(copy-&gt;start(), copy-&gt;finalStop());
+            lg-&gt;setSpread(copy-&gt;spread());
+            lg-&gt;setStops(copy-&gt;stops());
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QLinearGradient();
+        </custom-constructor>
     </value-type>
 
-    <value-type name="QtJambiMatrix4x3" java-name="QMatrix4x3"/>
-    <value-type name="QtJambiMatrix4x2" java-name="QMatrix4x2"/>
-    <value-type name="QtJambiMatrix3x4" java-name="QMatrix3x4"/>
-    <value-type name="QtJambiMatrix3x3" java-name="QMatrix3x3"/>
-    <value-type name="QtJambiMatrix3x2" java-name="QMatrix3x2"/>
-    <value-type name="QtJambiMatrix2x4" java-name="QMatrix2x4"/>
-    <value-type name="QtJambiMatrix2x3" java-name="QMatrix2x3"/>
-    <value-type name="QtJambiMatrix2x2" java-name="QMatrix2x2"/>
+    <value-type name="QMatrix4x3"/>
+    <value-type name="QMatrix4x2"/>
+    <value-type name="QMatrix3x4"/>
+    <value-type name="QMatrix3x3"/>
+    <value-type name="QMatrix3x2"/>
+    <value-type name="QMatrix2x4"/>
+    <value-type name="QMatrix2x3"/>
+    <value-type name="QMatrix2x2"/>
 
-    <value-type name="QMatrix4x3" generate="no"/>
-    <value-type name="QMatrix4x2" generate="no"/>
-    <value-type name="QMatrix3x4" generate="no"/>
-    <value-type name="QMatrix3x3" generate="no"/>
-    <value-type name="QMatrix3x2" generate="no"/>
-    <value-type name="QMatrix2x4" generate="no"/>
-    <value-type name="QMatrix2x3" generate="no"/>
-    <value-type name="QMatrix2x2" generate="no"/>
+    <enum-type name="QMatrix4x4::Flag" flags="QMatrix4x4::Flags" since="6.0.0"/>
     <value-type name="QMatrix4x4">
         <!--modify-function signature="normalMatrix()const" remove="all" /-->
         <modify-function signature="data()" remove="all" />
@@ -1167,7 +1512,12 @@
 
     <object-type name="QOffscreenSurface">
         <interface-polymorphy interface="QSurface" condition="%1->surfaceClass()==QSurface::Offscreen" />
-        <modify-function signature="QOffscreenSurface(QScreen *)">
+        <modify-function signature="QOffscreenSurface(QScreen *)" until="5.*">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcScreen"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QOffscreenSurface(QScreen *,QObject*)" since="6.0.0">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcScreen"/>
             </modify-argument>
@@ -1177,199 +1527,9 @@
                 <reference-count action="set" variable-name="__rcScreen"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="nativeHandle() const" remove="java" since="5.9.0"/>
-        <modify-function signature="setNativeHandle(void *)" remove="java" since="5.9.0"/>
+        <modify-function signature="nativeHandle() const" remove="java" since="5.9.0" until="5.*"/>
+        <modify-function signature="setNativeHandle(void *)" remove="java" since="5.9.0" until="5.*"/>
     </object-type>
-    <value-type name="QOpenGLBuffer">
-            <modify-function signature="operator=(const QOpenGLBuffer &amp;)" remove="all"/>
-      </value-type>
-
-    <object-type name="QOpenGLContext">
-        <modify-function signature="openGLModuleHandle()" remove="all"/>
-        <extra-includes>
-            <include file-name="QSet" location="global"/>
-        </extra-includes>
-        <modify-function signature="setScreen(QScreen*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setShareContext(QOpenGLContext*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-    </object-type>
-
-    <object-type name="QOpenGLContextGroup">
-    </object-type>
-
-    <object-type name="QOpenGLDebugLogger">
-    </object-type>
-
-    <value-type name="QOpenGLDebugMessage">
-        <modify-function signature="operator=(const QOpenGLDebugMessage&amp;)" remove="all"/>
-    </value-type>
-
-    <value-type name="QOpenGLFramebufferObjectFormat">
-    <modify-function signature="operator!=(const QOpenGLFramebufferObjectFormat &amp;) const" remove="all"/>
-    <modify-function signature="operator=(const QOpenGLFramebufferObjectFormat &amp;)" remove="all"/>
-    <modify-function signature="operator==(const QOpenGLFramebufferObjectFormat &amp;) const" access="private"/>
-    </value-type>
-
-    <object-type name="QOpenGLFramebufferObject">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions">
-    </object-type>
-    <object-type name="QLinuxFbFunctions">
-    </object-type>
-    <object-type name="QOpenGLExtraFunctions">
-    </object-type>
-    
-    <functional-type name="GLDEBUGPROC" package="io.qt.gui.gl" count="1">
-        <extra-includes>
-            <include file-name="QtGui/QOpenGLExtraFunctions" location="global"/>
-        </extra-includes>
-    </functional-type>
-    
-    <object-type name="QAbstractOpenGLFunctions" polymorphic-base="yes" polymorphic-id-expression="false">
-        <modify-function signature="setOwningContext(const QOpenGLContext*)">
-            <modify-argument index="1">
-                <reference-count action="ignore" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="QAbstractOpenGLFunctions()" remove="all">
-        </modify-function>
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_0)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_1)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_2" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_2)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_3" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_3)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_4" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_4)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_1_5" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_1_5)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_2_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_2_0)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_2_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_2_1)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_0)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_1)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_2_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_2_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_3_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_3_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_3_3_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_0_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_0_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_0_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_0_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_1_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_1_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_1_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_1_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_2_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_2_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_3_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_3_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_4_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_4_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_4_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_4_Core)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_5_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_5_Compatibility)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLFunctions_4_5_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_4_5_Core)" target-type="final class">
-    </object-type>
-    
-    <object-type name="QOpenGLFunctions_ES2" pp-condition="defined(QT_OPENGL_ES_2)" polymorphic-id-expression="typeid(*%1) == typeid(QOpenGLFunctions_ES2)" target-type="final class">
-    </object-type>
-
-    <object-type name="QOpenGLPaintDevice">
-        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::OpenGL" />
-        <modify-function signature="devType() const" remove="all" />
-        <!--modify-function signature="operator=(QOpenGLPaintDevice)" remove="all" />
-        <modify-function signature="QOpenGLPaintDevice(const QOpenGLPaintDevice&amp;)" remove="all" /-->
-    </object-type>
-
-    <object-type name="QOpenGLShader">
-        <modify-function signature="compileSourceCode ( const char *)" remove="all"/>
-    </object-type>
-
-    <object-type name="QOpenGLShaderProgram">
-        <!-- Should be disambiguated later by fixing the native pointer API -->
-        <modify-function signature="addCacheableShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all" />
-        <modify-function signature="uniformLocation(const char *) const" remove="all" />
-        <modify-function signature="setUniformValue(int, GLuint)" remove="all" />
-        <modify-function signature="setUniformValue(const char*, GLuint)" remove="all" />
-        <modify-function signature="setUniformValue(int, Array)" remove="all" />
-        <modify-function signature="setUniformValue(const char*, Array)" remove="all" />
-        <modify-function signature="setUniformValueArray(int, const GLuint *, int)" remove="all" />
-        <modify-function signature="setUniformValueArray(const char*, const GLuint *, int)" remove="all" />
-        <modify-function signature="addShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all"/>
-        <modify-function signature="attributeLocation(const char *)const" remove="all"/>
-        <modify-function signature="bindAttributeLocation(const char *, int)" remove="all"/>
-        <modify-function signature="addShader(QOpenGLShader*)">
-            <modify-argument index="1">
-                <reference-count action="add" variable-name="__rcSharers" />
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="removeShader(QOpenGLShader*)">
-            <modify-argument index="1">
-                <reference-count action="remove" variable-name="__rcSharers" />
-            </modify-argument>
-        </modify-function>
-    </object-type>
-
-    <object-type name="QOpenGLTimeMonitor" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)">
-    </object-type>
-
-    <value-type name="QOpenGLVersionProfile">
-    <modify-function signature="operator=(const QOpenGLVersionProfile &amp;)" remove="all"/>
-    </value-type>
-
-    <object-type name="QOpenGLVertexArrayObject">
-    </object-type>
-
     <interface-type name="QPaintDevice">
         <modify-field name="painters" read="false" write="false"/>
         <modify-function signature="devType() const" remove="all" />
@@ -1381,7 +1541,7 @@
     <interface-type name="QPagedPaintDevice">
         <interface-polymorphy interface="QPaintDevice" condition="typeid(*%1) == typeid(QPagedPaintDevice)" />
         <modify-function signature="devType() const" remove="all" />
-        <modify-function signature="devicePageLayout()" remove="all"/>
+        <modify-function signature="devicePageLayout()" remove="all" until="5.*"/>
     </interface-type>
 
     <value-type name="QPagedPaintDevice::Margins">
@@ -1405,7 +1565,13 @@
         <modify-function signature="setPaintDevice(QPaintDevice*)">
             <remove/>
         </modify-function>
+        <modify-field name="active" read="false" write="false"/>
+        <modify-field name="selfDestruct" read="false" write="false"/>
+        <modify-field name="gccaps" read="yes" write="yes" rename="features"/>
         <modify-field name="state" read="false" write="false"/>
+        <modify-field name="extended" read="false" write="yes">
+                <replace-type modified-type="boolean" />
+        </modify-field>
     </object-type>
 
     <object-type name="QPaintEngineState">
@@ -1441,40 +1607,43 @@
             <include file-name="QPixmap" location="global"/>
             <include file-name="qtjambi_gui/qtjambi_gui.h" location="global"/>
         </extra-includes>
-    <inject-code class="shell">
-class QWidget;
-    </inject-code>
-
         <modify-function signature="drawText(const QPointF &amp;, const QString &amp;, int, int)" remove="all" />
-        <modify-function signature="drawLines(const QVector&lt;QPoint&gt; &amp;)">
+        <modify-function signature="drawLines(const QVector&lt;QPoint&gt; &amp;)" until="5.*">
             <rename to="drawLinesFromPoints"/>
         </modify-function>
-        <modify-function signature="drawLines(const QVector&lt;QPointF&gt; &amp;)">
+        <modify-function signature="drawLines(const QVector&lt;QPointF&gt; &amp;)" until="5.*">
             <rename to="drawLinesFromPointsF"/>
         </modify-function>
-        <modify-function signature="drawLines(const QVector&lt;QLineF&gt; &amp;)">
+        <modify-function signature="drawLines(const QVector&lt;QLineF&gt; &amp;)" until="5.*">
             <rename to="drawLinesF"/>
         </modify-function>
-        <modify-function signature="drawRects(const QVector&lt;QRectF&gt; &amp;)">
+        <modify-function signature="drawRects(const QVector&lt;QRectF&gt; &amp;)" until="5.*">
+            <rename to="drawRectsF"/>
+        </modify-function>
+        <modify-function signature="drawLines(const QList&lt;QPoint&gt; &amp;)" since="6.0.0">
+            <rename to="drawLinesFromPoints"/>
+        </modify-function>
+        <modify-function signature="drawLines(const QList&lt;QPointF&gt; &amp;)" since="6.0.0">
+            <rename to="drawLinesFromPointsF"/>
+        </modify-function>
+        <modify-function signature="drawLines(const QList&lt;QLineF&gt; &amp;)" since="6.0.0">
+            <rename to="drawLinesF"/>
+        </modify-function>
+        <modify-function signature="drawRects(const QList&lt;QRectF&gt; &amp;)" since="6.0.0">
             <rename to="drawRectsF"/>
         </modify-function>
 
-        <modify-function signature="begin(QPaintDevice *)">
+        <modify-function signature="initFrom(const QPaintDevice *)" until="5.*">
             <modify-argument index="1">
                 <no-null-pointer/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="initFrom(const QPaintDevice *)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setRedirected(const QPaintDevice *, QPaintDevice *, const QPoint &amp;)">
+        <modify-function signature="setRedirected(const QPaintDevice *, QPaintDevice *, const QPoint &amp;)" until="5.*">
             <modify-argument index="1">
                 <no-null-pointer />
             </modify-argument>
         </modify-function>
-        <modify-function signature="restoreRedirected(const QPaintDevice *)">
+        <modify-function signature="restoreRedirected(const QPaintDevice *)" until="5.*">
             <modify-argument index="1">
                 <no-null-pointer />
             </modify-argument>
@@ -1489,12 +1658,12 @@ class QWidget;
         <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::Picture" />
         <modify-function signature="devType() const" remove="all" />
         <modify-function signature="operator=(QPicture)" remove="all"/>
-        <modify-function signature="pictureFormat(QString)">
+        <modify-function signature="pictureFormat(QString)" until="5.*">
             <remove/>
         </modify-function>
     </value-type>
 
-    <object-type name="QPictureIO">
+    <object-type name="QPictureIO" until="5.*">
         <modify-function signature="QPictureIO(QIODevice*,const char*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcDevice"/>
@@ -1506,7 +1675,7 @@ class QWidget;
             </modify-argument>
         </modify-function>
     </object-type>
-    <functional-type name="picture_io_handler" java-name="QPictureIOHandler">
+    <functional-type name="picture_io_handler" java-name="QPictureIOHandler" until="5.*">
         <extra-includes>
             <include file-name="QtGui/QPictureIO" location="global"/>
         </extra-includes>
@@ -1530,7 +1699,7 @@ class QWidget;
         <modify-function signature="operator&amp;=(QRect)" remove="all" />
         <modify-function signature="operator+=(QRect)" remove="all" />
     </value-type>
-    <iterator-type name="QRegion::const_iterator" java-name="Iterator"/>
+    <iterator-type name="QRegion::const_iterator"/>
 
     <object-type name="QPdfWriter">
         <interface-polymorphy interface="QPaintDevice" condition="dynamic_cast&lt;const QPdfWriter*>(%1)" />
@@ -1550,21 +1719,21 @@ class QWidget;
         <modify-function signature="operator=(QPixmapCache::Key)" remove="all"/>
     </value-type>
 
-    <value-type name="QPixmap" delete-in-main-thread="yes">
+    <value-type name="QPixmap" thread-affine="pixmap">
         <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::Pixmap" />
         <modify-function signature="devType() const" remove="all" />
         <modify-function signature="operator=(QPixmap)" remove="all"/>
-        <modify-function signature="fill(const QPaintDevice *, const QPoint &amp;)" remove="all"/>
-        <modify-function signature="fill(const QPaintDevice *, int, int)" remove="all"/>
+        <modify-function signature="fill(const QPaintDevice *, const QPoint &amp;)" remove="all" until="5.*"/>
+        <modify-function signature="fill(const QPaintDevice *, int, int)" remove="all" until="5.*"/>
         <modify-function signature="operator!()const" remove="all"/>
         <modify-function signature="fromImageInPlace(QImage &amp;, QFlags&lt;Qt::ImageConversionFlag>)" remove="all"/>
     </value-type>
 
     <object-type name="QPixmapCache">
-        <modify-function signature="find(QString)">
+        <modify-function signature="find(QString)" until="5.*">
             <remove/>
         </modify-function>
-        <modify-function signature="find(QString,QPixmap&amp;)" remove="all" />
+        <modify-function signature="find(QString,QPixmap&amp;)" remove="all" until="5.*"/>
     </object-type>
 
 <!-- according to the documentation QPlatformSystemTrayIcon is part of the public API but
@@ -1577,15 +1746,14 @@ class QWidget;
 -->
 
     <value-type name="QPolygon">
-        <modify-function signature="QPolygon(int, const int *)" remove="all"/>
-        <modify-function signature="operator=(const QPolygon &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QPolygon &amp;)" remove="all" until="5.*"/>
         <!--modify-function signature="operator+(QVector&lt;QPoint&gt;)const" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QPoint)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QVector&lt;QPoint&gt;)" remove="all"/-->
     </value-type>
 
     <value-type name="QPolygonF">
-        <modify-function signature="operator=(const QPolygonF &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QPolygonF &amp;)" remove="all" until="5.*"/>
         <!--modify-function signature="operator+(QVector&lt;QPointF&gt;)const" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QPointF)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QVector&lt;QPointF&gt;)" remove="all"/-->
@@ -1602,6 +1770,12 @@ class QWidget;
         else
             return new(placement) QRadialGradient();
         </custom-constructor>
+        <custom-constructor type="copy">
+            new(placement) QRadialGradient(copy-&gt;center(), copy-&gt;radius(), copy-&gt;focalPoint());
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QRadialGradient();
+        </custom-constructor>
     </value-type>
 
     <object-type name="QRegExpValidator"/>
@@ -1611,9 +1785,9 @@ class QWidget;
 
     <object-type name="QStandardItem">
         <modify-function signature="operator=(QStandardItem)" remove="all"/>
-        <modify-function signature="operator&lt;(QStandardItem)const" rename="hasLessTextThan">
+        <!--modify-function signature="operator&lt;(QStandardItem)const" rename="hasLessTextThan">
             <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
+        </modify-function-->
         <modify-function signature="read(QDataStream&amp;)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
@@ -1751,8 +1925,8 @@ class QWidget;
     <value-type name="QTextCharFormat">
         <modify-function signature="isValid()const" access="non-final"/>
 
-        <modify-function signature="anchorName()const" remove="all"/> <!--### Obsolete in 4.3-->
-        <modify-function signature="setAnchorName(QString)" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="anchorName()const" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="setAnchorName(QString)" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
     </value-type>
     <value-type name="QTextFormat">
         <modify-function signature="operator=(QTextFormat)" remove="all"/>
@@ -1765,7 +1939,7 @@ class QWidget;
         <include file-name="QTextFrame" location="global"/>
         <modify-function signature="operator++(int)" remove="all"/>
         <modify-function signature="operator--(int)" remove="all"/>
-        <modify-function signature="operator=(QTextFrame::iterator)" remove="all"/>
+        <modify-function signature="operator=(QTextFrame::iterator)" remove="all" until="5.*"/>
         <modify-function signature="operator++()" rename="next">
             <modify-argument index="return">
                 <replace-type modified-type="void" />
@@ -1794,12 +1968,12 @@ class QWidget;
         </modify-function>
         <modify-function signature="operator++(int)" remove="all"/>
         <modify-function signature="operator--(int)" remove="all"/>
-        <modify-function signature="operator=(QTextBlock::iterator)" remove="all"/>
+        <modify-function signature="operator=(QTextBlock::iterator)" remove="all" until="5.*"/>
         <modify-function signature="QTextBlock::iterator()" remove="all"/>
         <modify-function signature="QTextBlock::iterator(const QTextBlock::iterator &amp;)" remove="all"/>
     </value-type>
 
-    <value-type name="QTextCursor" delete-in-owner-thread="yes" owner="%1->isNull() ? nullptr : %1->document()">
+    <value-type name="QTextCursor" thread-affine="%1->isNull() ? nullptr : %1->document()">
         <extra-includes>
             <include file-name="QTextBlock" location="global"/>
             <include file-name="QTextDocumentFragment" location="global"/>
@@ -1842,7 +2016,7 @@ class QWidget;
     <object-type name="QTextList">
         <modify-function signature="format()const" rename="textListFormat"/>
 
-        <modify-function signature="isEmpty()const" remove="all"/> <!--### Obsolete in 4.3-->
+        <modify-function signature="isEmpty()const" remove="all" until="5.*"/>
     </object-type>
     <object-type name="QTextObject"/>
     <interface-type name="QTextObjectInterface">
@@ -1871,7 +2045,7 @@ class QWidget;
         </extra-includes>
         <modify-function signature="setDocumentLayout(QAbstractTextDocumentLayout*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="createObject(QTextFormat)">
@@ -1888,7 +2062,7 @@ class QWidget;
     </object-type>
 
     <object-type name="QTextDocumentWriter">
-        <modify-function signature="setCodec(QTextCodec*)">
+        <modify-function signature="setCodec(QTextCodec*)" until="5.*">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcCodec" />
             </modify-argument>
@@ -1965,37 +2139,72 @@ class QWidget;
     <value-type name="QVector2D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <!--modify-function signature="operator=(QVector2D)" remove="all"/-->
+        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-(QVector2D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator+(QVector2D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(QVector2D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(QVector2D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
     </value-type>
     <value-type name="QVector3D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <!--modify-function signature="operator=(QVector3D)" remove="all"/-->
+        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-(QVector3D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator+(QVector3D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(QVector3D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(QVector3D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
     </value-type>
     <value-type name="QVector4D">
         <modify-function signature="operator[](int)" remove="all"/>
         <modify-function signature="operator[](int)const" remove="all"/>
-        <!--modify-function signature="operator=(QVector4D)" remove="all"/-->
+        <modify-function signature="operator-()" remove="all" since="6.0.0"/>
+        <modify-function signature="operator-(QVector4D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator+(QVector4D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(QVector4D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator*(float)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(QVector4D)" remove="all" since="6.0.0"/>
+        <modify-function signature="operator/(float)" remove="all" since="6.0.0"/>
     </value-type>
 
     <object-type name="QWindow">
+        <modify-function signature="setVisible(bool)" thread-affine="yes"/>
+        <modify-function signature="setCursor(QCursor)" thread-affine="yes"/>
+        <modify-function signature="setIcon(QIcon)" thread-affine="yes"/>
+        <modify-function signature="show()" thread-affine="yes"/>
+        <modify-function signature="hide()" thread-affine="yes"/>
+        <modify-function signature="showFullScreen()" thread-affine="yes"/>
+        <modify-function signature="showMaximized()" thread-affine="yes"/>
+        <modify-function signature="showMinimized()" thread-affine="yes"/>
+        <modify-function signature="showNormal()" thread-affine="yes"/>
+        <modify-function signature="setWindowState(Qt::WindowState)" thread-affine="yes"/>
+        <modify-function signature="setWindowStates(QFlags&lt;Qt::WindowState>)" thread-affine="yes"/>
         <interface-polymorphy interface="QSurface" condition="%1->surfaceClass()==QSurface::Window" />
-        <modify-function signature="nativeEvent(const QByteArray &amp;, void *, long *)" remove="all" />
+        <modify-function signature="nativeEvent(const QByteArray &amp;, void *, long *)" remove="all" until="5.*"/>
+        <modify-function signature="nativeEvent(const QByteArray &amp;, void *, qintptr *)" remove="all" since="6.0.0"/>
         <modify-function signature="setVulkanInstance(QVulkanInstance *)" remove="all" since="5.10.0" />
         <modify-function signature="vulkanInstance() const" remove="all" since="5.10.0" />
-        <modify-function signature="parent()const" rename="parentWindow" />
-        <modify-function signature="setParent(QWindow*)">
+        <modify-function signature="parent()const" rename="parentWindow" until="5.*"/>
+        <modify-function signature="parent(QWindow::AncestorMode)const" since="6.0.0">
             <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setParent(QWindow*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setScreen(QScreen*)">
-            <modify-argument index="1">
+        <modify-function signature="setScreen(QScreen*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setTransientParent(QWindow*)">
-            <modify-argument index="1">
+        <modify-function signature="setTransientParent(QWindow*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
@@ -2049,63 +2258,35 @@ class QWidget;
         </modify-function>
     </object-type>
 
-    <object-type name="QOpenGLVertexArrayObject::Binder">
-    </object-type>
-
-    <value-type name="QTouchEvent::TouchPoint">
+    <value-type name="QTouchEvent::TouchPoint" until="5.*">
         <modify-function signature="operator=(QTouchEvent::TouchPoint)" remove="all"/>
     </value-type>
+    <object-type name="QRangeCollection" since="6.0.0"/>
+    <object-type name="QRegularExpressionValidator"/>
 
     <object-type name="QSessionManager"/>
-    <enum-type name="QOpenGLTextureBlitter::Origin" since="5.8.0"/>
-    <object-type name="QOpenGLTextureBlitter" since="5.8.0"/>
-    <object-type name="QRegularExpressionValidator"/>
-    <value-type name="QOpenGLVersionStatus">
-        <custom-constructor>
-            return new(placement) QOpenGLVersionStatus(copy->version.first, copy->version.second, copy->status);
-        </custom-constructor>
-    </value-type>
-
 <!-- The QRasterPaintEngine class enables hardware acceleration of painting operations in Qt for Embedded Linux. -->
     <object-type name="QRasterPaintEngine">
     </object-type>
-
-    <object-type name="QOpenGLTexture">
-        <modify-function signature="createTextureView(QOpenGLTexture::Target, QOpenGLTexture::TextureFormat, int, int, int, int) const">
-            <modify-argument index="return">
-                <define-ownership owner="java" class="native"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="borderColor(int *) const" remove="all"/>
-        <modify-function signature="borderColor(float *) const" remove="all"/>
-        <modify-function signature="borderColor(unsigned int *) const" remove="all"/>
-        <modify-function signature="setBorderColor(uint, uint, uint, uint)" remove="all"/>
-        <modify-function signature="setCompressedData(int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setCompressedData(int, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setCompressedData(int, int, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-        <modify-function signature="setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
-    </object-type>
-    <value-type name="QOpenGLPixelTransferOptions">
-        <modify-function signature="operator=(const QOpenGLPixelTransferOptions&amp;)" remove="all"/>
-    </value-type>
     <value-type name="QPageSize">
         <modify-function signature="operator=(const QPageSize&amp;)" remove="all"/>
+    </value-type>
+    <value-type name="QPageRanges" since="6.0.0">
+        <modify-function signature="operator=(const QPageRanges&amp;)" remove="all"/>
+    </value-type>
+    <value-type name="QPageRanges::Range" since="6.0.0">
     </value-type>
     <value-type name="QPixelFormat">
         <custom-constructor>
         if(copy) return new(placement) QPixelFormat(*copy); else return new(placement) QPixelFormat();
         </custom-constructor>
+        <custom-constructor type="copy">
+        new(placement) quint64(*reinterpret_cast&lt;const quint64*>(copy));
+        </custom-constructor>
+        <custom-constructor type="move">
+        new(placement) quint64(std::move(*reinterpret_cast&lt;quint64*>(copy)));
+        </custom-constructor>
     </value-type>
-    
-    <object-type name="QOpenGLTimerQuery" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)">
-    </object-type>
-    
-    <object-type name="QOpenGLWindow">
-    </object-type>
     <object-type name="QRasterWindow">
     </object-type>
     <object-type name="QPaintDeviceWindow">
@@ -2125,13 +2306,33 @@ class QWidget;
     <rejection class="QPlatformSystemTrayIcon"/>
     <value-type name="QPointingDeviceUniqueId" since="5.8.0">
     </value-type>
-    <object-type name="QApplicationStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ApplicationStateChange"/>
-    <object-type name="QScreenOrientationChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::OrientationChange"/>
+    <object-type name="QApplicationStateChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ApplicationStateChange">
+        <modify-function signature="operator=(const QApplicationStateChangeEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QScreenOrientationChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::OrientationChange">
+        <modify-function signature="operator=(const QScreenOrientationChangeEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
     
-    <enum-type name="QXcbWindowFunctions::WmWindowType" />
-    <enum-type name="QWindowsWindowFunctions::TouchWindowTouchType" flags="QWindowsWindowFunctions::TouchWindowTouchTypes" />
-    <enum-type name="QWindowsWindowFunctions::WindowActivationBehavior" />
-    <namespace-type name="QXcbWindowFunctions" since="5.11.0">
+    <enum-type name="QXcbWindowFunctions::WmWindowType" until="5.*"/>
+    <enum-type name="QWindowsWindowFunctions::TouchWindowTouchType" flags="QWindowsWindowFunctions::TouchWindowTouchTypes" until="5.*"/>
+    <enum-type name="QWindowsWindowFunctions::WindowActivationBehavior" until="5.*"/>
+    <namespace-type name="QXcbWindowFunctions" since="5.11.0" until="5.*">
         <modify-function signature="setWmWindowTypeIdentifier()" remove="all"/>
         <modify-function signature="setWmWindowRoleIdentifier()" remove="all"/>
         <modify-function signature="setWmWindowIconTextIdentifier()" remove="all"/>
@@ -2160,10 +2361,10 @@ class QWidget;
             </modify-argument>
         </modify-function>
     </namespace-type>
-    <namespace-type name="QXcbScreenFunctions" since="5.11.0">
+    <namespace-type name="QXcbScreenFunctions" since="5.11.0" until="5.*">
         <modify-function signature="virtualDesktopNumberIdentifier()" remove="all"/>
     </namespace-type>
-    <namespace-type name="QWindowsWindowFunctions" since="5.11.0">
+    <namespace-type name="QWindowsWindowFunctions" since="5.11.0" until="5.*">
         <modify-function signature="setTouchWindowTouchTypeIdentifier()" remove="all"/>
         <modify-function signature="setHasBorderInFullScreenIdentifier()" remove="all"/>
         <modify-function signature="setWindowActivationBehaviorIdentifier()" remove="all"/>
@@ -2179,13 +2380,13 @@ class QWidget;
             </modify-argument>
         </modify-function>
     </namespace-type>
-    <namespace-type name="QXcbIntegrationFunctions" since="5.11.0">
+    <namespace-type name="QXcbIntegrationFunctions" since="5.11.0" until="5.*">
         <modify-function signature="xEmbedSystemTrayVisualHasAlphaChannelIdentifier()" remove="all"/>
     </namespace-type>
-    <namespace-type name="QCocoaWindowFunctions" since="5.11.0">
+    <namespace-type name="QCocoaWindowFunctions" since="5.11.0" until="5.*">
         <modify-function signature="bottomLeftClippedByNSWindowOffsetIdentifier()" remove="all"/>
     </namespace-type>
-    <namespace-type name="QWaylandWindowFunctions" since="5.11.0">
+    <namespace-type name="QWaylandWindowFunctions" since="5.11.0" until="5.*">
         <modify-function signature="setSyncIdentifier()" remove="all"/>
         <modify-function signature="setDeSyncIdentifier()" remove="all"/>
         <modify-function signature="isSyncIdentifier()" remove="all"/>
@@ -2200,7 +2401,7 @@ class QWidget;
             </modify-argument>
         </modify-function>
     </namespace-type>
-    <namespace-type name="QEglFSFunctions" since="5.11.0">
+    <namespace-type name="QEglFSFunctions" since="5.11.0" until="5.*">
         <modify-function signature="loadKeymapTypeIdentifier()" remove="all"/>
         <modify-function signature="vsp2AddLayerTypeIdentifier()" remove="all"/>
         <modify-function signature="vsp2RemoveLayerTypeIdentifier()" remove="all"/>
@@ -2243,73 +2444,512 @@ class QWidget;
             </modify-argument>
         </modify-function>
     </object-type>
-    <!--
-    <object-type name="QPlatformGraphicsBuffer">
-    </object-type>
-    <enum-type name="QPlatformGraphicsBuffer::AccessType" flags="QPlatformGraphicsBuffer::AccessTypes"/>
-    <enum-type name="QPlatformGraphicsBuffer::Origin"/>
-    -->
     
-    <!--object-type name="QTextCodecPlugin" /-->
-    <!--interface-type name="QPictureFormatInterface" java-name="QAbstractPictureFormat" /-->
-    <!--interface-type name="QTextCodecFactoryInterface" java-name="QAbstractTextCodecFactory" /-->
-
-<!--
-    since Qt5 QMatrix is deprecated
-
-    <value-type name="QMatrix">
-        <extra-includes>
-            <include file-name="QPainterPath" location="global"/>
-        </extra-includes>
-
-        <modify-function signature="map(int,int,int*,int*)const" remove="all"/>
-        <modify-function signature="map(qreal,qreal,qreal*,qreal*)const" remove="all"/>
-        <modify-function signature="operator=(QMatrix)" remove="all"/>
-
-        <modify-function signature="operator*(QMatrix)const" access="private"/>
-        <modify-function signature="operator*=(QMatrix)" access="private"/>
-        <modify-function signature="rotate(qreal)" access="private" rename="rotate_private"/>
-        <modify-function signature="scale(qreal,qreal)" access="private" rename="scale_private"/>
-        <modify-function signature="shear(qreal,qreal)" access="private" rename="shear_private"/>
-        <modify-function signature="translate(qreal,qreal)" access="private" rename="translate_private"/>
-
-        <modify-function signature="inverted(bool*)const">
-            <access modifier="private"/>
-            <modify-argument index="1">
-                <remove-default-expression/>
+    <object-type name="QActionGroup" since="6.0.0"/>
+    <object-type name="QAction" since="6.0.0">
+    </object-type>
+    <object-type name="QUndoCommand" since="6.0.0">
+        <modify-function signature="mergeWith(const QUndoCommand*)">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+    </object-type>
+    <object-type name="QUndoStack" since="6.0.0">
+        <modify-function signature="createUndoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
-
-        <inject-code>
-        <insert-template name="core.unary_other_type">
-            <replace from="%FUNCTION_NAME" to="rotate"/>
-            <replace from="%OUT_TYPE" to="QMatrix"/>
-            <replace from="%IN_TYPE" to="%JAVA_QREAL_type"/>
-        </insert-template>
-
-        <insert-template name="core.private_function_return_self">
-            <replace from="%RETURN_TYPE" to="QMatrix"/>
-            <replace from="%FUNCTION_NAME" to="scale"/>
-            <replace from="%ARGUMENTS" to="%JAVA_QREAL_type sx, %JAVA_QREAL_type sy"/>
-            <replace from="%ARGUMENT_NAMES" to="sx, sy"/>
-        </insert-template>
-
-        <insert-template name="core.private_function_return_self">
-            <replace from="%RETURN_TYPE" to="QMatrix"/>
-            <replace from="%FUNCTION_NAME" to="shear"/>
-            <replace from="%ARGUMENTS" to="%JAVA_QREAL_type sh, %JAVA_QREAL_type sv"/>
-            <replace from="%ARGUMENT_NAMES" to="sh, sv"/>
-        </insert-template>
-
-        <insert-template name="core.private_function_return_self">
-            <replace from="%RETURN_TYPE" to="QMatrix"/>
-            <replace from="%FUNCTION_NAME" to="translate"/>
-            <replace from="%ARGUMENTS" to="%JAVA_QREAL_type dx, %JAVA_QREAL_type dy"/>
-            <replace from="%ARGUMENT_NAMES" to="dx, dy"/>
-        </insert-template>
-        </inject-code>
+        <modify-function signature="createRedoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QUndoGroup" since="6.0.0">
+        <modify-function signature="createUndoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createRedoAction(QObject *, const QString &amp;) const">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addStack(QUndoStack*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcStacks"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeStack(QUndoStack*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcStacks"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setActiveStack(QUndoStack*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QShortcut" since="6.0.0">
+    </object-type>
+    <object-type name="QFileSystemModel" since="6.0.0">
+    </object-type>
+    <enum-type name="QFileSystemModel::Roles" since="6.0.0"/>
+    <enum-type name="QFileSystemModel::Option" flags="QFileSystemModel::Options" since="6.0.0"/>
+    <enum-type name="QInputDevice::DeviceType" flags="QInputDevice::DeviceTypes" since="6.0.0">
+    </enum-type>
+    <enum-type name="QInputDevice::Capability" flags="QInputDevice::Capabilities" since="6.0.0">
+    </enum-type>
+    <object-type name="QInputDevice" since="6.0.0">
+    </object-type>
+    <enum-type name="QPointingDevice::PointerType" flags="QPointingDevice::PointerTypes" since="6.0.0">
+    </enum-type>
+    <enum-type name="QPointingDevice::GrabTransition" since="6.0.0">
+    </enum-type>
+    <object-type name="QPointingDevice" since="6.0.0">
+        <modify-function signature="setType(QInputDevice::DeviceType)" remove="all"/>
+        <modify-function signature="setCapabilities(QFlags&lt;QInputDevice::Capability>)" remove="all"/>
+        <modify-function signature="setMaximumTouchPoints(int)" remove="all"/>
+    </object-type>
+    <value-type name="QEventPoint" since="6.0.0">
+        <modify-function signature="operator=(QEventPoint)" rename="set">
+            <modify-argument index="return">
+                <replace-type modified-type="void" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="pos() const" remove="all"/>
+        <modify-function signature="startPos() const" remove="all"/>
+        <modify-function signature="scenePos() const" remove="all"/>
+        <modify-function signature="startScenePos() const" remove="all"/>
+        <modify-function signature="screenPos() const" remove="all"/>
+        <modify-function signature="startScreenPos() const" remove="all"/>
+        <modify-function signature="startNormalizedPos() const" remove="all"/>
+        <modify-function signature="normalizedPos() const" remove="all"/>
+        <modify-function signature="lastPos() const" remove="all"/>
+        <modify-function signature="lastScenePos() const" remove="all"/>
+        <modify-function signature="lastScreenPos() const" remove="all"/>
+        <modify-function signature="lastNormalizedPos() const" remove="all"/>
+        <modify-field name="m_parent" read="yes" write="yes" rename="parent"/>
+        <modify-field name="m_pos" read="no" write="yes" rename="position"/>
+        <modify-field name="m_scenePos" read="no" write="yes" rename="scenePosition"/>
+        <modify-field name="m_globalPos" read="no" write="yes" rename="globalPosition"/>
+        <modify-field name="m_globalPressPos" read="no" write="yes" rename="globalPressPosition"/>
+        <modify-field name="m_globalGrabPos" read="no" write="yes" rename="globalGrabPosition"/>
+        <modify-field name="m_globalLastPos" read="no" write="yes" rename="globalLastPosition"/>
+        <modify-field name="m_rotation" read="no" write="yes" rename="rotation"/>
+        <modify-field name="m_ellipseDiameters" read="no" write="yes" rename="ellipseDiameters"/>
+        <modify-field name="m_velocity" read="no" write="yes" rename="velocity"/>
+        <modify-field name="m_timestamp" read="no" write="yes" rename="timestamp"/>
+        <modify-field name="m_pressTimestamp" read="no" write="yes" rename="pressTimestamp"/>
+        <modify-field name="m_uniqueId" read="no" write="yes" rename="uniqueId"/>
+        <modify-field name="m_pointId" read="no" write="yes" rename="id"/>
+        <modify-field name="m_state" read="no" write="yes" rename="state"/>
+        <modify-field name="m_accept" read="no" write="yes" rename="accept"/>
+        <modify-field name="m_pressure" read="no" write="yes" rename="pressure"/>
+        <modify-field name="m_stationaryWithModifiedProperty" read="yes" write="yes" rename="stationaryWithModifiedProperty"/>
     </value-type>
--->
+    <object-type name="QPointerEvent" polymorphic-id-expression="typeid(*%1) == typeid(QPointerEvent)" since="6.0.0">
+        <modify-function signature="operator=(const QPointerEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QSinglePointEvent" polymorphic-id-expression="typeid(*%1) == typeid(QSinglePointEvent)" since="6.0.0">
+        <modify-function signature="operator=(const QSinglePointEvent &amp;)" rename="set">
+            <modify-argument index="return" replace-type="void"/>
+        </modify-function>
+        <modify-field name="m_reserved" read="no" write="no"/>
+        <modify-field name="m_reserved2" read="no" write="no"/>
+        <modify-field name="m_point" read="no" write="yes" rename="point"/>
+        <modify-field name="m_button" read="no" write="yes" rename="button"/>
+        <modify-field name="m_mouseState" read="no" write="yes" rename="buttons"/>
+        <modify-field name="m_phase" read="yes" write="yes" rename="phaseFlag"/>
+        <modify-field name="m_source" read="yes" write="yes" rename="sourceFlag"/>
+        <modify-field name="m_doubleClick" read="yes" write="yes" rename="doubleClick">
+            <replace-type modified-type="boolean"/>
+        </modify-field>
+        <modify-field name="m_invertedScrolling" read="yes" write="yes" rename="invertedScrolling">
+            <replace-type modified-type="boolean"/>
+        </modify-field>
+        <modify-function signature="clone()const" since="6.0.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    
+    <enum-type name="QEventPoint::State" flags="QEventPoint::States" since="6.0.0">
+    </enum-type>
+    
+    <rejection class="QOpenGLFunctions_*Backend" until="5.*"/>
+    <rejection class="PFNGL*" until="5.*"/>
+    <rejection class="GLDEBUGPROCAMD" until="5.*"/>
+    <rejection class="GLDEBUGPROCARB" until="5.*"/>
+    <rejection class="GLVULKANPROCNV" until="5.*"/>
+    <rejection class="GLDEBUGPROCKHR" since="6.1.0"/>
+    <rejection class="QOpenGLVersionFunctionsStorage" until="5.*"/>
+    <rejection class="QOpenGLVersionFunctionsBackend" enum-name="Version" until="5.*"/>
+    <rejection class="QOpenGLVersionFunctionsBackend" field-name="refs" until="5.*"/>
+    <rejection class="QOpenGLVersionFunctionsBackend" until="5.*"/>
+    <rejection class="QOpenGLExtraFunctionsPrivate"/>
+    <rejection class="QOpenGLFunctionsPrivate"/>
+    <rejection class="QAbstractOpenGLFunctionsPrivate" until="5.*"/>
+    <rejection class="QOpenGLTextureHelper"  until="5.*"/>
+    <enum-type name="QOpenGLWindow::UpdateBehavior" until="5.*"/>
+    <enum-type name="QOpenGLBuffer::Access"  until="5.*"/>
+    <enum-type name="QOpenGLBuffer::Type"  until="5.*"/>
+    <enum-type name="QOpenGLBuffer::RangeAccessFlag" flags="QOpenGLBuffer::RangeAccessFlags"  until="5.*"/>
+    <enum-type name="QOpenGLBuffer::UsagePattern"  until="5.*"/>
+    <enum-type name="QOpenGLDebugLogger::LoggingMode"  until="5.*"/>
+    <enum-type name="QOpenGLDebugMessage::Severity" flags="QOpenGLDebugMessage::Severities" until="5.*">
+        <reject-enum-value name="LastSeverity"/>
+    </enum-type>
+    <enum-type name="QOpenGLDebugMessage::Source" flags="QOpenGLDebugMessage::Sources" until="5.*">
+        <reject-enum-value name="LastSource"/>
+    </enum-type>
+    <enum-type name="QOpenGLDebugMessage::Type" flags="QOpenGLDebugMessage::Types" until="5.*">
+        <reject-enum-value name="LastType"/>
+    </enum-type>
+
+    <enum-type name="QOpenGLFramebufferObject::Attachment"  until="5.*"/>
+    <enum-type name="QOpenGLFramebufferObject::FramebufferRestorePolicy"  until="5.*"/>
+    <enum-type name="QOpenGLFunctions::OpenGLFeature" flags="QOpenGLFunctions::OpenGLFeatures"/>
+    <enum-type name="QOpenGLShader::ShaderTypeBit" flags="QOpenGLShader::ShaderType"  until="5.*"/>
+    <enum-type name="QOpenGLTexture::BindingTarget" until="5.*"/>
+    <enum-type name="QOpenGLTexture::DepthStencilMode" until="5.*"/>
+    <enum-type name="QOpenGLTexture::CoordinateDirection" until="5.*"/>
+    <enum-type name="QOpenGLTexture::Feature" flags="QOpenGLTexture::Features" until="5.*"/>
+    <enum-type name="QOpenGLTexture::CubeMapFace" until="5.*"/>
+    <enum-type name="QOpenGLTexture::Filter" until="5.*"/>
+    <enum-type name="QOpenGLTexture::MipMapGeneration" until="5.*"/>
+    <enum-type name="QOpenGLTexture::PixelFormat" until="5.*"/>
+    <enum-type name="QOpenGLTexture::PixelType" until="5.*"/>
+    <enum-type name="QOpenGLTexture::SwizzleComponent" until="5.*"/>
+    <enum-type name="QOpenGLTexture::SwizzleValue" until="5.*"/>
+    <enum-type name="QOpenGLTexture::Target" until="5.*"/>
+    <enum-type name="QOpenGLTexture::TextureFormat" until="5.*"/>
+    <enum-type name="QOpenGLTexture::TextureUnitReset" until="5.*"/>
+    <enum-type name="QOpenGLTexture::WrapMode" until="5.*"/>
+    <enum-type name="QOpenGLTexture::TextureFormatClass" until="5.*"/>
+    <enum-type name="QOpenGLTexture::ComparisonFunction" until="5.*"/>
+    <enum-type name="QOpenGLTexture::ComparisonMode" until="5.*"/>
+    <enum-type name="QOpenGLContext::OpenGLModuleType"/>
+    <enum-type name="QOpenGLVersionStatus::OpenGLStatus" until="5.*"/>
+
+    <value-type name="QOpenGLBuffer" until="5.*">
+            <modify-function signature="operator=(const QOpenGLBuffer &amp;)" remove="all"/>
+      </value-type>
+
+    <object-type name="QOpenGLContext">
+        <modify-function signature="makeCurrent(QSurface *)" thread-affine="yes"/>
+        <modify-function signature="openGLModuleHandle()" remove="all" until="5.*"/>
+        <extra-includes>
+            <include file-name="QSet" location="global"/>
+        </extra-includes>
+        <modify-function signature="setScreen(QScreen*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setShareContext(QOpenGLContext*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QOpenGLContextGroup">
+    </object-type>
+    <object-type name="QAbstractFileIconProvider" since="6.0.0">
+    </object-type>
+    <enum-type name="QAbstractFileIconProvider::IconType" since="6.0.0"/>
+    <enum-type name="QAbstractFileIconProvider::Option" flags="QAbstractFileIconProvider::Options" since="6.0.0"/>
+
+    <object-type name="QOpenGLDebugLogger" until="5.*">
+    </object-type>
+
+    <value-type name="QOpenGLDebugMessage" until="5.*">
+        <modify-function signature="operator=(const QOpenGLDebugMessage&amp;)" remove="all"/>
+    </value-type>
+
+    <value-type name="QOpenGLFramebufferObjectFormat" until="5.*">
+    <modify-function signature="operator!=(const QOpenGLFramebufferObjectFormat &amp;) const" remove="all"/>
+    <modify-function signature="operator=(const QOpenGLFramebufferObjectFormat &amp;)" remove="all"/>
+    <modify-function signature="operator==(const QOpenGLFramebufferObjectFormat &amp;) const" access="private"/>
+    </value-type>
+
+    <object-type name="QOpenGLFramebufferObject" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+    <object-type name="QLinuxFbFunctions">
+    </object-type>
+    <object-type name="QOpenGLExtraFunctions">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+    
+    <functional-type name="GLDEBUGPROC" package="io.qt.gui.gl" count="1">
+        <extra-includes>
+            <include file-name="QtGui/QOpenGLExtraFunctions" location="global"/>
+        </extra-includes>
+    </functional-type>
+    
+    <object-type name="QAbstractOpenGLFunctions" polymorphic-base="yes" polymorphic-id-expression="false" until="5.*">
+        <modify-function signature="setOwningContext(const QOpenGLContext*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QAbstractOpenGLFunctions()" remove="all">
+        </modify-function>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_0*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_1*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_2" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_2*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_3" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_3*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_4" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_4*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_5" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_5*>(%1)" target-type="final class" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_2_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_0*>(%1)" target-type="final class" until="5.*">
+        <extra-includes>
+            <include file-name="QtCore/QSharedPointer" location="global"/>
+        </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_2_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_1*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_0*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_1*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_0_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_0_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_1_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_1_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_4_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_4_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_5_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Compatibility*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_5_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Core*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+    
+    <object-type name="QOpenGLFunctions_ES2" pp-condition="defined(QT_OPENGL_ES_2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_ES2*>(%1)" target-type="final class" until="5.*">
+    <extra-includes>
+        <include file-name="QtCore/QSharedPointer" location="global"/>
+    </extra-includes>
+    </object-type>
+
+    <object-type name="QOpenGLPaintDevice" until="5.*">
+        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::OpenGL" />
+        <modify-function signature="devType() const" remove="all" />
+        <!--modify-function signature="operator=(QOpenGLPaintDevice)" remove="all" />
+        <modify-function signature="QOpenGLPaintDevice(const QOpenGLPaintDevice&amp;)" remove="all" /-->
+    </object-type>
+
+    <object-type name="QOpenGLShader" until="5.*">
+        <modify-function signature="compileSourceCode ( const char *)" remove="all"/>
+    </object-type>
+
+    <object-type name="QOpenGLShaderProgram" until="5.*">
+        <!-- Should be disambiguated later by fixing the native pointer API -->
+        <modify-function signature="addCacheableShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all" />
+        <modify-function signature="uniformLocation(const char *) const" remove="all" />
+        <modify-function signature="setUniformValue(int, GLuint)" remove="all" />
+        <modify-function signature="setUniformValue(const char*, GLuint)" remove="all" />
+        <modify-function signature="setUniformValue(int, Array)" remove="all" />
+        <modify-function signature="setUniformValue(const char*, Array)" remove="all" />
+        <modify-function signature="setUniformValueArray(int, const GLuint *, int)" remove="all" />
+        <modify-function signature="setUniformValueArray(const char*, const GLuint *, int)" remove="all" />
+        <modify-function signature="addShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all"/>
+        <modify-function signature="attributeLocation(const char *)const" remove="all"/>
+        <modify-function signature="bindAttributeLocation(const char *, int)" remove="all"/>
+        <modify-function signature="addShader(QOpenGLShader*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcSharers" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeShader(QOpenGLShader*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcSharers" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QOpenGLTimeMonitor" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" until="5.*">
+    </object-type>
+
+    <value-type name="QOpenGLVersionProfile" until="5.*">
+    <modify-function signature="operator=(const QOpenGLVersionProfile &amp;)" remove="all"/>
+    </value-type>
+
+    <object-type name="QOpenGLVertexArrayObject" until="5.*">
+    </object-type>
+
+    <object-type name="QOpenGLVertexArrayObject::Binder" until="5.*">
+    </object-type>
+    <enum-type name="QOpenGLTextureBlitter::Origin" since="5.8.0" until="5.*"/>
+    <object-type name="QOpenGLTextureBlitter" since="5.8.0" until="5.*"/>
+    <value-type name="QOpenGLVersionStatus" until="5.*">
+        <custom-constructor>
+            return new(placement) QOpenGLVersionStatus(copy->version.first, copy->version.second, copy->status);
+        </custom-constructor>
+    </value-type>
+
+    <object-type name="QOpenGLTexture" until="5.*">
+        <modify-function signature="createTextureView(QOpenGLTexture::Target, QOpenGLTexture::TextureFormat, int, int, int, int) const">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="borderColor(int *) const" remove="all"/>
+        <modify-function signature="borderColor(float *) const" remove="all"/>
+        <modify-function signature="borderColor(unsigned int *) const" remove="all"/>
+        <modify-function signature="setBorderColor(uint, uint, uint, uint)" remove="all"/>
+        <modify-function signature="setCompressedData(int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setCompressedData(int, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setCompressedData(int, int, int, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+        <modify-function signature="setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, void *, const QOpenGLPixelTransferOptions *const)" remove="all"/>
+    </object-type>
+    <value-type name="QOpenGLPixelTransferOptions" until="5.*">
+        <modify-function signature="operator=(const QOpenGLPixelTransferOptions&amp;)" remove="all"/>
+    </value-type>
+    
+    <object-type name="QOpenGLTimerQuery" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !defined(QT_OPENGL_ES_2)" until="5.*">
+    </object-type>
+    
+    <object-type name="QOpenGLWindow" until="5.*">
+    </object-type>
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QImageTextKeyLang*'"/>
@@ -2358,6 +2998,7 @@ class QWidget;
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QOpenGLVersionFunctionsBackend\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleTableCellInterface\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractOpenGLFunctions\*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileIconProviderPrivate\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'TYPE\*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QOpenGLFunctions_*' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: QPainter.draw*(const QVector*) mostly equal to QPainter.draw*(const QVector*)"/>
@@ -2380,4 +3021,22 @@ class QWidget;
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'setVulkanInstance(QVulkanInstance*)' for function modification in 'QWindow' not found.*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'vulkanInstance()const' for function modification in 'QWindow' not found.*"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * '*', unmatched *type 'QVulkan*'"/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QColorTransform."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QFontDatabase."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QFontInfo."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QFormLayout::TakeRowResult."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QIcon."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QIconEngine::ScaledPixmapArgument."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QInputMethodEvent::Attribute."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QPainter::PixmapFragment."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QPicture."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTextLine."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTextInlineObject."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTextEdit::ExtraSelection."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTextDocumentFragment."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTextBoundaryFinder."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QOpenGLBuffer."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QOpenGLPixelTransferOptions."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QPagedPaintDevice::Margins."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTouchEvent::TouchPoint."/>
 </typesystem>

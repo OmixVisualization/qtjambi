@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,12 +32,13 @@
 #define QTJAMBI_WIDGETS_CORE_H
 
 #include <QtWidgets/QtWidgets>
+#include <qtjambi/qtjambi_global.h>
 
-inline uint qHash(const QScrollerProperties & value)
+inline hash_type qHash(const QScrollerProperties & value)
 {
     class ScrollerProperties : public QScrollerProperties{
     public:
-        inline uint hashCode() const{
+        inline hash_type hashCode() const{
             return qHash(qintptr(d.get()));
         }
     };

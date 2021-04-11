@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,67 +29,13 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.lang.ref.PhantomReference;
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import io.qt.autotests.generated.DestroyCounter;
-import io.qt.autotests.generated.OrdinaryDestroyed;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEvent;
-import io.qt.core.QThread;
-import io.qt.core.Qt;
-import io.qt.gui.QTextCursor;
-import io.qt.gui.QTextDocument;
-import io.qt.internal.QtJambiDebugTools;
-import io.qt.widgets.QApplication;
-
-class MyOrdinaryDestroyed extends OrdinaryDestroyed {
-    public final Integer id;
-
-    MyOrdinaryDestroyed(DisposeCounter counter, Integer id) {
-    	super(counter);
-        this.id = id;
-        io.qt.QtUtilities.getSignalOnDispose(this).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
-        Utils.println(5, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    @Override
-    public OrdinaryDestroyed virtualGetObjectCppOwnership(DestroyCounter counter) {
-        MyOrdinaryDestroyed o = new MyOrdinaryDestroyed((DisposeCounter)counter, TestDestruction.getIdNext());
-        TestDestruction.accountingForNewObject(o);
-        return o;
-    }
-
-    @Override
-    public OrdinaryDestroyed virtualGetObjectJavaOwnership(DestroyCounter counter) {
-        MyOrdinaryDestroyed o = new MyOrdinaryDestroyed((DisposeCounter)counter, TestDestruction.getIdNext());
-        TestDestruction.accountingForNewObject(o);
-        return o;
-    }
-
-    @Override
-    public void virtualSetDefaultOwnership(OrdinaryDestroyed arg__1) {
-    	TestDestruction.accountingForNewObject(arg__1);
-        // nothing
-    }
-}
+import static org.junit.Assert.*;
+import java.lang.ref.*;
+import java.util.*;
+import org.junit.*;
+import io.qt.autotests.generated.*;
+import io.qt.core.*;
+import io.qt.internal.*;
 
 public class TestDestruction extends QApplicationTest {
     private static ReferenceQueue<OrdinaryDestroyed> weakReferenceQueue = new ReferenceQueue<>();
@@ -104,13 +50,13 @@ public class TestDestruction extends QApplicationTest {
     public void setUp() {
         // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM
         assertEquals("getObjectCacheMode != DEFAULT", QtJambiDebugTools.getObjectCacheMode(), QtJambiDebugTools.OBJECT_CACHE_MODE_DEFAULT);
-        QApplication.processEvents();
+        QCoreApplication.processEvents();
         clearGcReferences();
     }
 
     @After
     public void tearDown() {
-        QApplication.processEvents();
+        QCoreApplication.processEvents();
         QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 
         System.gc();
@@ -192,9 +138,9 @@ public class TestDestruction extends QApplicationTest {
         int currentDestroyedCount;
         boolean loop = true;
         String debugPrefix = " gcAndWait(" + timeLimitMillis +
-            ", " + Utils.toStringOrNull(excessLimitMillis) +
-            ", " + Utils.toStringOrNull(disposedCount) +
-            ", " + Utils.toStringOrNull(destroyedCount) + ")";
+            ", " + excessLimitMillis +
+            ", " + disposedCount +
+            ", " + destroyedCount + ")";
         while(loop) {
             try {
 //                if(needsEventProcessing()) {
@@ -273,12 +219,8 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
         if(Utils.isDebugLevel(4)) {
             // Print array format [1, 2, 3]
             synchronized(TestDestruction.class) {
-                String aliveString = Utils.listToString(alive);
-                String aliveAndUnderTestString = Utils.listToString(aliveAndUnderTest);
-                String weakReferenceMapString = Utils.mapValueToString(weakReferenceMap);
-                String phantomReferenceMapString = Utils.mapValueToString(phantomReferenceMap);
-                Utils.println(4, "elapsed=" + elapsed + "; alive=" + aliveString + "; aliveAndUnderTest=" + aliveAndUnderTestString +
-                        "; weakReferenceMapSize=" + weakReferenceMapString + "; phantomReferenceMapSize=" + phantomReferenceMapString);
+                Utils.println(4, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                        "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
             }
         }
 
@@ -506,53 +448,42 @@ Utils.println(15, debugPrefix + ": elapsed=" + elapsed + "; loop="+loop+"; obtai
         }
     }
     
-    @Test
-    public void testOwnedValueObjectThreadedDisposeWithoutCrash() throws InterruptedException {
-    	for (int k = 0; k < 20; k++) {
-    		Utils.println(5, "running test "+(k+1));
-    		QTextDocument document = new QTextDocument();
-        	List<QThread> threads = new ArrayList<>();
-        	List<List<QTextCursor>> threadDatas = new ArrayList<>();
-        	int numberOfThreads = 20;
-        	int numberOfCursors = 1000;
-        	Utils.println(5, "create QTextCursors");
-        	for (int i = 0; i < numberOfThreads; i++) {
-        		List<QTextCursor> cursors = new ArrayList<>();
-        		for (int j = 0; j < numberOfCursors; j++) {
-        			QTextCursor c = new QTextCursor(document);
-        			cursors.add(c);
-        			cursors.add(c.clone());
-    			}
-        		threadDatas.add(cursors);
-    		}
-        	Utils.println(5, "create deleter threads");
-        	for (List<QTextCursor> cursors : threadDatas) {
-        		threads.add(QThread.create(()->{
-        			for(QTextCursor c : cursors) {
-        				c.dispose();
-        		    	QThread.yieldCurrentThread();
-        			}
-        		}));
-    		}
-        	Utils.println(5, "start deleter threads");
-        	for (QThread thread : threads) {
-    			thread.start();
-    		}
-        	QThread.sleep(2);
-        	Utils.println(5, "delete QTextDocument");
-        	document.dispose();
-        	QThread.yieldCurrentThread();
-        	Utils.println(5, "wait for finished deleting");
-	    	System.gc();
-	    	System.runFinalization();
-    		QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-        	for (QThread thread : threads) {
-    			thread.join();
-    		}
-		}
-    }
-    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestDestruction.class.getName());
+    }
+    
+    private static class MyOrdinaryDestroyed extends OrdinaryDestroyed {
+        public final Integer id;
+
+        MyOrdinaryDestroyed(DisposeCounter counter, Integer id) {
+        	super(counter);
+            this.id = id;
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
+            Utils.println(5, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
+        }
+
+        public Integer getId() {
+            return id;
+        }
+
+        @Override
+        public OrdinaryDestroyed virtualGetObjectCppOwnership(DestroyCounter counter) {
+            MyOrdinaryDestroyed o = new MyOrdinaryDestroyed((DisposeCounter)counter, TestDestruction.getIdNext());
+            TestDestruction.accountingForNewObject(o);
+            return o;
+        }
+
+        @Override
+        public OrdinaryDestroyed virtualGetObjectJavaOwnership(DestroyCounter counter) {
+            MyOrdinaryDestroyed o = new MyOrdinaryDestroyed((DisposeCounter)counter, TestDestruction.getIdNext());
+            TestDestruction.accountingForNewObject(o);
+            return o;
+        }
+
+        @Override
+        public void virtualSetDefaultOwnership(OrdinaryDestroyed arg__1) {
+        	TestDestruction.accountingForNewObject(arg__1);
+            // nothing
+        }
     }
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,25 +36,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiMultiHashObject<K, V> extends QtJambiAbstractMultiMapObject<K, V> {
 
-	protected QtJambiMultiHashObject(Class<K> keyType, Class<V> valueType) {
-		super(keyType, valueType);
+	protected QtJambiMultiHashObject() {
+		super();
 	}
 
-	protected QtJambiMultiHashObject(QPrivateConstructor p, Class<K> keyType, Class<V> valueType) {
-		super(p, keyType, valueType);
+	protected QtJambiMultiHashObject(QPrivateConstructor p) {
+		super(p);
 	}
 	
 	@Override
-	public Set<K> keySet() {
+    @QtUninvokable
+	public final Set<K> keySet() {
 		return new HashSet<>(keys());
 	}
 	
 	@Override
-	public Set<Entry<K, List<V>>> entrySet() {
+    @QtUninvokable
+	public final Set<Entry<K, List<V>>> entrySet() {
 		Set<Entry<K, List<V>>> entrySet = new HashSet<>();
 		if(!this.isEmpty()) {
 			K currentKey = null;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -77,7 +77,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     private String versionSuffix;       // beta4
     private String libInfix = "";
 
-    private final List<String> generatorPreProcStageOneList = new ArrayList<>();
+    private final List<String> generatorPreProcDefinesList = new ArrayList<>();
     private final Set<String> skippedModules = new HashSet<>();
     
 
@@ -394,6 +394,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         
         mySetProperty(-1, Constants.EXEC_STRIP, null, null, false);  // report value
 
+        decideJava8HomeTarget();
         String javaHomeTarget = decideJavaHomeTarget();
         if(javaHomeTarget == null)
             throw new BuildException("Unable to determine JAVA_HOME_TARGET, setup environment variable JAVA_HOME (or JAVA_HOME_TARGET) or edit build.properties");
@@ -505,6 +506,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                         String libName = frameworkDir.getName();
                         libName = libName.substring(0, libName.length()-10);
                         File headers = new File(frameworkDir, "/Versions/" + qtMajorVersion + "/Headers");
+                        if(!headers.isDirectory())
+                        	headers = new File(frameworkDir, "/Versions/A/Headers");
+                        if(!headers.isDirectory())
+                        	headers = new File(frameworkDir, "/Versions/Current/Headers");
+                        if(!headers.isDirectory())
+                        	headers = new File(frameworkDir, "/Headers");
                         if(privateModules.contains(libName)){
                             privateIncludes += headers.getAbsolutePath() + "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion +";";
                         }
@@ -536,6 +543,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 
         s = String.valueOf(qtMajorVersion);
         getProject().log(this, Constants.QT_VERSION_MAJOR + " is " + s, Project.MSG_VERBOSE);
+        AntUtil.setNewProperty(propertyHelper, "qtjambi.isqt"+s, "true");
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_MAJOR, s);
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_MAJOR_NEXT, String.valueOf(qtMajorVersion + 1));
         AntUtil.setNewProperty(propertyHelper, Constants.QT_VERSION_MINOR,      String.valueOf(qtMinorVersion));
@@ -686,13 +694,28 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 
 	        boolean guiAvailable = detectQtDsoExistAndSetProperty(Constants.GUI, "QtGui", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "gui");
 	        
+	        boolean openglAvailable = qtMajorVersion>=6 && detectQtDsoExistAndSetProperty(Constants.OPENGL, "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "opengl");
+	        
 	        boolean widgetsAvailable = guiAvailable 
 	        		&& detectQtDsoExistAndSetProperty(Constants.WIDGETS, "QtWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "widgets");
+	        
+	        boolean openglwidgetsAvailable = qtMajorVersion>=6 && openglAvailable && widgetsAvailable
+	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGLWIDGETS, "QtOpenGLWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "openglwidgets");
 	    	
 	        boolean dbusAvailable = detectQtDsoExistAndSetProperty(Constants.DBUS, "QtDBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "dbus");
 
 			boolean luceneAvailable = detectQtDsoExistAndSetProperty(Constants.CLUCENE, "QtCLucene", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
+	        boolean iopluginAvailable = widgetsAvailable
+	        		&& detectQtDsoExistAndSetProperty(Constants.UIPLUGIN, "QtUiPlugin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uiplugin");
+	        
+	        boolean iotoolsAvailable = openglwidgetsAvailable
+	        		&& detectQtDsoExistAndSetProperty(Constants.UITOOLS, "QtUiTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uitools");
+	        
+	        boolean chartsAvailable = detectQtDsoExistAndSetProperty(Constants.CHARTS, "QtCharts", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "charts");
+	        
+	        boolean datavisAvailable = detectQtDsoExistAndSetProperty(Constants.DATA_VISUALIZATION, "QtDataVisualization", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "datavisualization");
+	        
 	        boolean designerAvailable = xmlAvailable && widgetsAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.DESIGNER, "QtDesigner", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "designer");
 
@@ -715,8 +738,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        boolean scriptToolsAvailable = scriptAvailable && widgetsAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.SCRIPTTOOLS, "QtScriptTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scripttools");
 
-	        boolean svgAvailable = widgetsAvailable
+	        boolean svgAvailable = (widgetsAvailable || qtMajorVersion>=6)
 	        		&& detectQtDsoExistAndSetProperty(Constants.SVG, "QtSvg", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svg");
+	        
+	        boolean svgWidgetsAvailable = widgetsAvailable
+	        		&& svgAvailable
+	        		&& detectQtDsoExistAndSetProperty(Constants.SVGWIDGETS, "QtSvgWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svgwidgets");
 
 	        boolean testAvailable = detectQtDsoExistAndSetProperty(Constants.TEST, "QtTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "test");
 			
@@ -754,19 +781,30 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			
 	        boolean webengineWidgetsAvailable = webengineCoreAvailable && quickWidgetsAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.WEBENGINEWIDGETS, "QtWebEngineWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginewidgets");
+	        
+	        detectQtDsoExistAndSetProperty("qtjambi.purchasing", "QtPurchasing", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "purchasing");
 			
 	        boolean bodymovinAvailable = guiAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.bodymovin", "QtBodymovin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        		&& detectQtDsoExistAndSetProperty("qtjambi.bodymovin", "QtBodymovin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bodymovin");
 	        
 	        boolean webViewAvailable = quickAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.WEBVIEW, "QtWebView", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webview");
-			
+	        
 			boolean labTemplatesAvailable = detectQtDsoExistAndSetProperty(Constants.LABSTEMPLATES, "QtLabsTemplates", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "labstemplates");
 			
 			boolean angleAvailable = detectQtDsoExistAndSetProperty(Constants.ANGLE, "QtANGLE", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "angle");
 
 	        boolean xmlPatternsAvailable = networkAvailable 
 	        		&& detectQtDsoExistAndSetProperty(Constants.XMLPATTERNS, "QtXmlPatterns", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "xmlpatterns");
+	        
+	        detectQtDsoExistAndSetProperty("qtjambi.virtualkeyboard", "QtVirtualKeyboard", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "virtualkeyboard");
+	        
+	        boolean quick3dAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick3d");
+	        boolean quick3dAssetImportAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dRenderAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dUtilsAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "QtQuick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dRuntimeRenderAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean shaderToolsAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.shadertools", "QtShaderTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean eglDeviceIntegrationAvailable = detectQtDsoExistAndSetProperty(Constants.EGLDEVICEINTEGRATION, "QtEglDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
@@ -910,13 +948,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        boolean nfcAvailable = dbusAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.NFC, "QtNfc", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "nfc");
 	        
-	        boolean openGlAvailability = widgetsAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGL, "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean openGl5Availability = !openglAvailable && widgetsAvailable 
+	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGL+".util", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean multimediaWidgetsAvailability = multimediaAvailable 
 	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS, "QtMultimediaWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimediawidgets");
 	        
-	        if(!openGlAvailability && multimediaWidgetsAvailability){
+	        if(!openglAvailable && !openGl5Availability && multimediaWidgetsAvailability){
 	            detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS+".opengl", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        }
 	        
@@ -1008,7 +1046,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GRAPHICSSYSTEMS_GLGRAPHICSSYSTEM,    "graphicssystems", "qglgraphicssystem", null, null, null);
 	        detectQtPluginExistAndSetProperty(Constants.PLUGINS_GRAPHICSSYSTEMS_TRACEGRAPHICSSYSTEM, "graphicssystems", "qtracegraphicssystem", null, null, null);
 
-	        if(widgetsAvailable && svgAvailable) {
+	        if(svgAvailable) {
 	        	detectQtPluginExistAndSetProperty(Constants.PLUGINS_ICONENGINES_SVGICON, "iconengines", "qsvgicon", null, null, null);
 	        }
 
@@ -1176,12 +1214,14 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		        detectQtPluginExistAndSetProperty("qtjambi.plugins.webview.qtwebview_webengine",        "webview",        "qtwebview_webengine", null, null, null);
 	        }
 	        
+	        if(designerAvailable) {
+		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qquickwidget",              "designer",      "qquickwidget", null, null, null);
+		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qwebengineview",            "designer",      "qwebengineview", null, null, null);
+	        }
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtpassthrucanbus",            "canbus",        "qtpassthrucanbus", null, null, null);
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtpeakcanbus",                "canbus",        "qtpeakcanbus", null, null, null);
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qttinycanbus",                "canbus",        "qttinycanbus", null, null, null);
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.canbus.qtvirtualcanbus",             "canbus",        "qtvirtualcanbus", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qquickwidget",              "designer",      "qquickwidget", null, null, null);
-//		        detectQtPluginExistAndSetProperty("qtjambi.plugins.designer.qwebengineview",            "designer",      "qwebengineview", null, null, null);
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geometryloaders.defaultgeometryloader",     "geometryloaders",      "defaultgeometryloader", null, null, null);
 //		        detectQtPluginExistAndSetProperty("qtjambi.plugins.geometryloaders.gltfgeometryloader",     "geometryloaders",      "gltfgeometryloader", null, null, null);
 
@@ -1212,9 +1252,20 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		        if(positioningAvailable) {
 		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTPOSITIONING_DECLARATIVE_POSITIONING,					"QtPositioning",			    "declarative_positioning", null, null, null);
 		        }
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.animation",											"Qt/labs/animation",			    "labsanimationplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.folderlistmodel",										"Qt/labs/folderlistmodel",			    "qmlfolderlistmodelplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.settings",											"Qt/labs/settings",			    "qmlsettingsplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.platform",											"Qt/labs/platform",			    "qtlabsplatformplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.qmlmodels",											"Qt/labs/qmlmodels",			    "labsmodelsplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.sharedimage",											"Qt/labs/sharedimage",			    "sharedimageplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.Qt.labs.wavefrontmesh",										"Qt/labs/wavefrontmesh",			    "qmlwavefrontmeshplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.qmlplugin",												"QtQml",			    "qmlplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_MODELS_MODELSPLUGIN,								"QtQml/Models",			    "modelsplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_MODELS_2_MODELSPLUGIN,								"QtQml/Models.2",			    "modelsplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQML_STATEMACHINE_QTQMLSTATEMACHINE,					"QtQml/StateMachine",			"qtqmlstatemachine", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQml.WorkerScript.workerscriptplugin",						"QtQml/WorkerScript",			"workerscriptplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_2_QTQUICK2PLUGIN,								"QtQuick.2",			    	"qtquick2plugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_QTQUICK2PLUGIN,								    "QtQuick",			    	"qtquick2plugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Controls.2.qtquickcontrols2plugin",					"QtQuick/Controls.2",			"qtquickcontrols2plugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Controls.qtquickcontrolsplugin",					    "QtQuick/Controls",			    "qtquickcontrolsplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_CONTROLS_STYLES_FLAT_QTQUICKEXTRASFLATPLUGIN,	"QtQuick/Controls/Styles/Flat", "qtquickextrasflatplugin", null, null, null);
@@ -1226,6 +1277,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_LAYOUTS_QQUICKLAYOUTSPLUGIN,						"QtQuick/Layouts",			    "qquicklayoutsplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_LOCALSTORAGE_QMLLOCALSTORAGEPLUGIN,				"QtQuick/LocalStorage",			"qmllocalstorageplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PARTICLES_2_PARTICLESPLUGIN,						"QtQuick/Particles.2",			"particlesplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PARTICLES_PARTICLESPLUGIN,						"QtQuick/Particles",			"particlesplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_PRIVATEWIDGETS_WIDGETSPLUGIN,					"QtQuick/PrivateWidgets",		"widgetsplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Scene2D.qtquickscene2dplugin",	    				"QtQuick/Scene2D",				"qtquickscene2dplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_SCENE3D_QTQUICKSCENE3DPLUGIN,					"QtQuick/Scene3D",				"qtquickscene3dplugin", null, null, null);
@@ -1233,6 +1285,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.Templates.2.qtquicktemplates2plugin",					"QtQuick/Templates.2",			"qtquicktemplates2plugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty("qtjambi.QtQuick.VirtualKeyboard.qtquickvirtualkeyboardplugin",		"QtQuick/VirtualKeyboard",		"qtquickvirtualkeyboardplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_WINDOW_2_WINDOWPLUGIN,							"QtQuick/Window.2",				"windowplugin", null, null, null);
+		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_WINDOW_WINDOWPLUGIN,							    "QtQuick/Window",				"windowplugin", null, null, null);
 		        detectQtQmlModuleExistAndSetProperty(Constants.QML_QTQUICK_XMLLISTMODEL_QMLXMLLISTMODELPLUGIN,				"QtQuick/XmlListModel",			"qmlxmllistmodelplugin", null, null, null);
 		        if(sensorsAvailable) {
 		        	detectQtQmlModuleExistAndSetProperty(Constants.QML_QTSENSORS_DECLARATIVE_SENSORS,							"QtSensors",					"declarative_sensors", null, null, null);
@@ -1512,9 +1565,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		
         if(!decideGeneratorPreProc())
             throw new BuildException("Unable to determine generator pre-processor settings");
-        s = listToString(generatorPreProcStageOneList);
-        getProject().log(this, Constants.GENERATOR_PREPROC_STAGE1 + " is " + ((s != null) ? s : "<unset>"), Project.MSG_VERBOSE);
-        AntUtil.setNewProperty(propertyHelper, Constants.GENERATOR_PREPROC_STAGE1, listJoinToString(generatorPreProcStageOneList, ","));
+        s = listToString(generatorPreProcDefinesList);
+        getProject().log(this, Constants.GENERATOR_PREPROC_DEFINES + " is " + ((s != null) ? s : "<unset>"), Project.MSG_VERBOSE);
+        AntUtil.setNewProperty(propertyHelper, Constants.GENERATOR_PREPROC_DEFINES, listJoinToString(generatorPreProcDefinesList, ","));
     }
     
     public static String listToString(Collection<?> list) {
@@ -2036,238 +2089,300 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             return false;
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.GUI+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_GUI");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_GUI");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.OPENGL+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_OPENGL");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WIDGETS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WIDGETS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WIDGETS");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.OPENGLWIDGETS+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_OPENGLWIDGETS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QML+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QML");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QML");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICK+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QUICK");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICK");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICKCONTROLS2+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QUICKCONTROLS2");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICKCONTROLS2");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QUICKWIDGETS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QUICKWIDGETS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICKWIDGETS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.XML+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_XML");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_XML");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NETWORK+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_NETWORK");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_NETWORK");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.CONCURRENT+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_CONCURRENT");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_CONCURRENT");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SQL+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SQL");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SQL");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.PRINTSUPPORT+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_PRINTSUPPORT");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_PRINTSUPPORT");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NETWORKAUTH+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_NETWORKAUTH");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_NETWORKAUTH");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.XMLPATTERNS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_XMLPATTERNS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_XMLPATTERNS");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.virtualkeyboard.any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_VIRTUAL_KEYBOARD");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.quick3d.any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QUICK3D");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.MACEXTRAS+".any.true"))){
 			if(skippedModules.contains("macextras")) {
-				generatorPreProcStageOneList.add("-DQTJAMBI_NO_MACEXTRAS");
+				generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
 			}else {
 				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
 				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(generatorIxtraIncludes==null){
-					generatorIxtraIncludes = qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
-				}else{
-					generatorIxtraIncludes += ";"+qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
+				if(new File(new File(qtdir), "qtmacextras").isDirectory()
+						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtmacextras").isDirectory()
+								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtmacextras").listFiles().length>0)) {
+					if(generatorIxtraIncludes==null){
+						generatorIxtraIncludes = qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
+					}else{
+						generatorIxtraIncludes += ";"+qtdir+"/qtmacextras/include;"+qtdir+"/../Src/qtmacextras/include";
+					}
+					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
+				}else {
+					generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
 				}
-				AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
 			}
 		}else if(skippedModules.contains("macextras")) {
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_MACEXTRAS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_MACEXTRAS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WINEXTRAS+".any.true"))){
 			if(skippedModules.contains("winextras")) {
-				generatorPreProcStageOneList.add("-DQTJAMBI_NO_WINEXTRAS");
+				generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
 			}else {
 				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
 				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(generatorIxtraIncludes==null){
-					generatorIxtraIncludes = qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
-				}else{
-					generatorIxtraIncludes += ";"+qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
+				if(new File(new File(qtdir), "qtwinextras").isDirectory()
+						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtwinextras").isDirectory()
+								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtwinextras").listFiles().length>0)) {
+					if(generatorIxtraIncludes==null){
+						generatorIxtraIncludes = qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
+					}else{
+						generatorIxtraIncludes += ";"+qtdir+"/qtwinextras/include;"+qtdir+"/../Src/qtwinextras/include";
+					}
+					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
+				}else {
+					generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
 				}
-				AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
 			}
 		}else if(skippedModules.contains("winextras")) {
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WINEXTRAS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WINEXTRAS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.X11EXTRAS+".any.true"))){
 			if(skippedModules.contains("x11extras")) {
-				generatorPreProcStageOneList.add("-DQTJAMBI_NO_X11EXTRAS");
+				generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 			}else {
 				String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
 				String qtdir = AntUtil.getPropertyAsString(propertyHelper, "QTDIR");
-				if(generatorIxtraIncludes==null){
-					generatorIxtraIncludes = qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
-				}else{
-					generatorIxtraIncludes += ";"+qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
+				if(new File(new File(qtdir), "qtx11extras").isDirectory()
+						|| (new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtx11extras").isDirectory()
+								&& new File(new File(qtdir), ".."+File.separator+"Src"+File.separator+"qtx11extras").listFiles().length>0)) {
+					if(generatorIxtraIncludes==null){
+						generatorIxtraIncludes = qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
+					}else{
+						generatorIxtraIncludes += ";"+qtdir+"/qtx11extras/include;"+qtdir+"/../Src/qtx11extras/include";
+					}
+					AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
+				}else {
+					generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 				}
-				AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes, false);
 			}
 		}else if(skippedModules.contains("x11extras")) {
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_X11EXTRAS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_X11EXTRAS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SERIALPORT+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SERIALPORT");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SERIALPORT");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.serialbus.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SERIALBUS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SERIALBUS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.sensors.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SENSORS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SENSORS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.location.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_LOCATION");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_LOCATION");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.positioning.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_POSITIONING");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_POSITIONING");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.bluetooth.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_BLUETOOTH");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_BLUETOOTH");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCRIPT+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SCRIPT");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SCRIPT");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCRIPTTOOLS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SCRIPTTOOLS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SCRIPTTOOLS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.MULTIMEDIA+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_MULTIMEDIA");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_MULTIMEDIA");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SVG+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SVG");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SVG");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SVGWIDGETS+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SVGWIDGETS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DBUS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_DBUS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_DBUS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.TEST+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_TEST");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_TEST");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.HELP+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_HELP");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_HELP");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DCORE+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DCORE");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DCORE");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DRENDER+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DRENDER");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DRENDER");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DINPUT+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DINPUT");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DINPUT");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICK+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DQUICK");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICK");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKRENDER+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DQUICKRENDER");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKRENDER");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKSCENE2D+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DQUICKSCENE2D");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKSCENE2D");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DQUICKEXTRAS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DQUICKEXTRAS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DQUICKEXTRAS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DEXTRAS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DEXTRAS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DEXTRAS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DLOGIC+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DLOGIC");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DLOGIC");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.QT3DANIMATION+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_QT3DANIMATION");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_QT3DANIMATION");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBSOCKETS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WEBSOCKETS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBSOCKETS");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBCHANNEL+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WEBCHANNEL");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBCHANNEL");
 		}
 
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINE+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WEBENGINE");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINE");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBVIEW+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_WEBVIEW");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBVIEW");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.UITOOLS+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_UITOOLS");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.bodymovin.any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_LOTTIE");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DATA_VISUALIZATION+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_DATA_VISUALIZATION");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.CHARTS+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_CHARTS");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.UIPLUGIN+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_UIPLUGIN");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.DESIGNER+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_DESIGNER");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.REMOTEOBJECTS+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_REMOTEOBJECTS");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_REMOTEOBJECTS");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.GAMEPAD+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_GAMEPAD");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_GAMEPAD");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCXML+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_SCXML");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_SCXML");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NFC+".any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_NFC");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_NFC");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.texttospeech.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_TEXTTOSPEECH");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_TEXTTOSPEECH");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.purchasing.any.true"))){
-			generatorPreProcStageOneList.add("-DQTJAMBI_NO_PURCHASING");
+			generatorPreProcDefinesList.add("QTJAMBI_NO_PURCHASING");
 		}
 
         return true;
@@ -2313,8 +2428,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         }
         File testForFile = new File(new File(path.toString()), filename);
         getProject().log(this, "Checking " + testForFile + " " + testForFile.exists(), Project.MSG_VERBOSE);
-        if(testForFile.exists())
-            return testForFile.getAbsolutePath();
+        if(testForFile.exists()) {
+        	try {
+				return testForFile.getCanonicalPath();
+			} catch (IOException e) {
+				return testForFile.getAbsolutePath();
+			}
+        }
         return null;
     }
 

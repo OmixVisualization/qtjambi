@@ -76,7 +76,7 @@ class PriGenerator : public Generator {
     private:
         QHash<QString, Pri> priHash;
         QString m_cpp_out_dir;
-
+        QReadWriteLock m_lock;
 };
 #endif // PRIGENERATOR_H
 

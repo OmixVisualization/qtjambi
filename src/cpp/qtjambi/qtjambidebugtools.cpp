@@ -34,7 +34,9 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtCore>
+#include <QtCore/QByteArray>
+#include <QtCore/QHash>
+#include <QtCore/QReadWriteLock>
 
 #include "qtjambidebugtools_p.h"
 

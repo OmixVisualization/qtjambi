@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,6 +48,21 @@ class QAbstractAspect___java extends QAbstractAspect {
     @io.qt.QtUninvokable
     protected final void unregisterBackendType(Class<? extends io.qt.core.QObject> type)    {
         unregisterBackendType(io.qt.core.QMetaObject.forType(type));
+    }
+    
+}// class
+
+class QEntity__ {
+
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.qt3d.core.QComponent> io.qt.core.QList<T> componentsOfType(Class<T> type)
+    {
+        io.qt.core.QList<T> matchComponents = new io.qt.core.QList<T>(type);
+        for (io.qt.qt3d.core.QComponent component : components()) {
+            if (type.isInstance(component))
+                matchComponents.append(type.cast(component));
+        }
+        return matchComponents;
     }
     
 }// class

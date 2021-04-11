@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,7 +44,10 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.svg" default-superclass="io.qt.QtObject">
-    <object-type name="QGraphicsSvgItem">
+    <inject-code position="2" since="6.0.0">
+        io.qt.QtUtilities.initializePackage("io.qt.gui");
+    </inject-code>
+    <object-type name="QGraphicsSvgItem" until="5.*">
         <!--<modify-function signature="setGroup(QGraphicsItemGroup*)">
             <modify-argument index="1">-->
                 <!-- Handled by injected code in QGraphicsItem -->
@@ -59,7 +62,7 @@
         </modify-function>-->
         <modify-function signature="setSharedRenderer(QSvgRenderer*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus" />
+                <define-ownership class="native" owner="cplusplus" />
             </modify-argument>
             <inject-code position="beginning">
                 QSvgRenderer oldRenderer = renderer();

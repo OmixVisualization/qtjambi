@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,9 +36,10 @@ import static org.junit.Assert.assertTrue;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
@@ -47,7 +48,11 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.qt.QFlags;
 import io.qt.QNoImplementationException;
+import io.qt.QtEnumerator;
+import io.qt.QtFlagEnumerator;
+import io.qt.QtInvokable;
 import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.GraphicsSceneSubclass;
 import io.qt.autotests.generated.OrdinaryDestroyed;
@@ -61,7 +66,6 @@ import io.qt.core.QDate;
 import io.qt.core.QElapsedTimer;
 import io.qt.core.QEvent;
 import io.qt.core.QFileInfo;
-import io.qt.core.QList;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QRect;
@@ -70,113 +74,10 @@ import io.qt.core.QSize;
 import io.qt.core.QTimer;
 import io.qt.core.QUuid;
 import io.qt.core.Qt;
-import io.qt.gui.QColor;
-import io.qt.gui.QGuiApplication;
-import io.qt.gui.QIcon;
-import io.qt.gui.QKeySequence;
-import io.qt.gui.QPaintEvent;
-import io.qt.gui.QPainter;
-import io.qt.gui.QPen;
-import io.qt.gui.QPixmap;
-import io.qt.gui.QResizeEvent;
-import io.qt.gui.QValidator;
+import io.qt.gui.*;
 import io.qt.internal.QtJambiInternal;
 import io.qt.internal.QtJambiObject;
-import io.qt.network.QHostAddress;
-import io.qt.widgets.QAction;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QCalendarWidget;
-import io.qt.widgets.QDoubleSpinBox;
-import io.qt.widgets.QFileDialog;
-import io.qt.widgets.QGraphicsEllipseItem;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsView;
-import io.qt.widgets.QStyleOption;
-import io.qt.widgets.QStyleOptionButton;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QTableWidget;
-import io.qt.widgets.QWidget;
-
-class OrdinarySubclass extends OrdinaryDestroyed {
-    public OrdinarySubclass(DisposeCounter destroyCounter) {
-    	super(destroyCounter);
-    	io.qt.QtUtilities.getSignalOnDispose(this).connect(destroyCounter::onDisposed, Qt.ConnectionType.DirectConnection);
-    }
-}
-
-class QObjectSubclass extends QObjectDestroyed {
-    public QObjectSubclass(DisposeCounter counter, QObject parent) {
-        super(counter, parent);
-        destroyed.connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
-    }
-}
-
-class GeneralObject {
-    public String data;
-}
-
-class CustomEvent extends QEvent {
-	public String s;
-    public CustomEvent(String param) {
-        super(customType);
-        s = param;
-    }
-    
-    private static QEvent.Type customType = QEvent.Type.resolve(QEvent.registerEventType());
-    
-	public static QEvent.Type customType() {
-		return customType;
-	}
-}
-
-class EventReceiver extends QWidget {
-    public String myString = null;
-    public String customEventString = null;
-    public QSize resizeEventSize = null;
-    public QSize resizeEventOldSize = null;
-    public QEvent.Type customEventType;
-    public QEvent.Type resizeEventType;
-    public QEvent.Type paintEventType;
-    public boolean paintEventCastWorked = false;
-    public boolean paintRectMatched = false;
-
-    public EventReceiver(QWidget parent, String str) {
-        super(parent);
-        myString = str;
-    }
-
-    @Override
-    public boolean event(QEvent event) {
-        if (event instanceof QResizeEvent) {
-            QResizeEvent rs = (QResizeEvent) event;
-            resizeEventType = event.type();
-            resizeEventSize = rs.size();
-            resizeEventOldSize = rs.oldSize();
-        } else if (event instanceof CustomEvent) {
-            CustomEvent ce = (CustomEvent) event;
-            customEventType = event.type();
-            customEventString = ce.s;
-        } else if (event.type() == QEvent.Type.Paint) {
-            QtJambiObject new_event = event; /*null;
-            try {
-                new_event = QtJambiObject.reassignNativeResources(event, QPaintEvent.class);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }*/
-
-            if (new_event != null && new_event instanceof QPaintEvent) {
-                paintEventCastWorked = true;
-                QPaintEvent paintEvent = (QPaintEvent) new_event;
-                paintEventType = paintEvent.type();
-                QRect paintRect = paintEvent.rect();
-                paintRectMatched = paintRect.width() == width();
-                paintRectMatched = paintRectMatched && paintRect.height() == height();
-            }
-        }
-
-        return false;
-    }
-}
+import io.qt.widgets.*;
 
 public class TestClassFunctionality extends QApplicationTest {
     @Before
@@ -205,7 +106,7 @@ public class TestClassFunctionality extends QApplicationTest {
             GraphicsSceneSubclassSubclass.items = items;
             GraphicsSceneSubclassSubclass.options = options;
 
-            options[1].setLevelOfDetail(3.0);
+            options[1].setExposedRect(new QRectF(5,7,9,1));
             super.drawItems(painter, items, options, widget);
         }
 
@@ -294,11 +195,11 @@ public class TestClassFunctionality extends QApplicationTest {
 
         QStyleOption option = gsss.firstStyleOption();
         assertTrue(option instanceof QStyleOptionGraphicsItem);
-        assertEquals(((QStyleOptionGraphicsItem) option).levelOfDetail(), 1.0, 0.0001);
+        assertEquals(new QRectF(2,3,4,5), ((QStyleOptionGraphicsItem) option).exposedRect());
 
         option = gsss.secondStyleOption();
         assertTrue(option instanceof QStyleOptionGraphicsItem);
-        assertEquals(((QStyleOptionGraphicsItem) option).levelOfDetail(), 3.0, 0.0001);
+        assertEquals(new QRectF(5,7,9,1), ((QStyleOptionGraphicsItem) option).exposedRect());
 
         GraphicsSceneSubclassSubclass.tearDown();
         view.hide();
@@ -324,56 +225,6 @@ public class TestClassFunctionality extends QApplicationTest {
     }
 
     @Test
-    public void testEquals()
-    {
-        QHostAddress address1 = new QHostAddress(QHostAddress.SpecialAddress.LocalHost);
-        QHostAddress address2 = new QHostAddress(QHostAddress.SpecialAddress.LocalHost);
-        QHostAddress address3 = new QHostAddress(QHostAddress.SpecialAddress.Broadcast);
-        QByteArray array = new QByteArray("127.0.0.1");
-
-        assertFalse(address1 == address2);
-        assertFalse(address2 == address3);
-        assertTrue(address1.equals(address2));
-        assertTrue(address2.equals(address1));
-        assertTrue(address3.equals(address3));
-        assertEquals(false, address1.equals(address3));
-        assertFalse(address2.equals(array));
-    }
-
-    @Test
-    public void testHashCodeAndEquals()
-    {
-        Hashtable<QHostAddress, QByteArray> address_hash = new Hashtable<QHostAddress, QByteArray>();
-
-        QHostAddress address1 = new QHostAddress(QHostAddress.SpecialAddress.LocalHost);
-        QHostAddress address2 = new QHostAddress(QHostAddress.SpecialAddress.LocalHost);
-        QHostAddress address3 = new QHostAddress(QHostAddress.SpecialAddress.Broadcast);
-
-        QByteArray ba_address1 = new QByteArray("127.0.0.1 - 1");
-        QByteArray ba_address2 = new QByteArray("127.0.0.1 - 2");
-        QByteArray ba_address3 = new QByteArray("255.255.255.255");
-
-        address_hash.put(address1, ba_address1);
-        assertFalse(address_hash.containsKey(new QHostAddress(QHostAddress.SpecialAddress.Broadcast)));
-        assertTrue(address_hash.containsKey(new QHostAddress(QHostAddress.SpecialAddress.LocalHost)));
-        assertTrue(address_hash.get(new QHostAddress(QHostAddress.SpecialAddress.LocalHost)) == ba_address1);
-
-        address_hash.put(address2, ba_address2); // overwrites the first entry of this type
-        address_hash.put(address3, ba_address3);
-        assertTrue(address_hash.containsKey(address1));
-        assertTrue(address_hash.containsKey(new QHostAddress(QHostAddress.SpecialAddress.Broadcast)));
-
-        QHostAddress lookup_key1 = new QHostAddress(QHostAddress.SpecialAddress.LocalHost);
-        QHostAddress lookup_key2 = new QHostAddress(QHostAddress.SpecialAddress.Broadcast);
-
-        QByteArray value = address_hash.get(lookup_key1);
-        assertTrue(value == ba_address2);
-
-        value = address_hash.get(lookup_key2);
-        assertTrue(value == ba_address3);
-    }
-
-    @Test
     public void testToString()
     {
         QByteArray ba = new QByteArray("Pretty flowers æøå");
@@ -394,7 +245,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
         Method method = null;
         try {
-            method = QtJambiInternal.class.getDeclaredMethod("fetchSignal", Object.class, Field.class, boolean.class);
+            method = QtJambiInternal.class.getDeclaredMethod("fetchFieldNative", Object.class, Field.class, boolean.class);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             assertEquals(e, null);
@@ -410,26 +261,16 @@ public class TestClassFunctionality extends QApplicationTest {
             assertEquals(e, null);
         }
 
-        long method_long = 0;
+        Method slotMethod = null;
         try {
-            method = QtJambiInternal.class.getDeclaredMethod("resolveSlot", Method.class);
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-            assertEquals(e, null);
-        }
-
-        try {
-            Method slotMethod = TestQObject.class.getDeclaredMethod("slot", (Class[]) null);
-            method.setAccessible(true);
-            method_long = (Long) method.invoke(null, slotMethod);
-            assertTrue(method_long != 0);
+            slotMethod = TestQObject.class.getDeclaredMethod("slot", (Class[]) null);
         } catch (Exception e) {
             e.printStackTrace();
             assertEquals(e, null);
         }
 
         try {
-            method = QtJambiInternal.class.getDeclaredMethod("invokeSlot", Object.class, Long.TYPE, Byte.TYPE, Object[].class, int[].class);
+            method = QtJambiInternal.class.getDeclaredMethod("invokeMethod", Object.class, Method.class, boolean.class, Byte.TYPE, Object[].class, byte[].class);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             assertEquals(e, null);
@@ -438,7 +279,7 @@ public class TestClassFunctionality extends QApplicationTest {
         assertEquals(test_qobject.slot_called, false);
         try {
             method.setAccessible(true);
-            method.invoke(null, test_qobject, method_long, (byte) 'V', new Object[] {}, new int[] {});
+            method.invoke(null, test_qobject, slotMethod, Modifier.isStatic(slotMethod.getModifiers()), (byte) 'V', new Object[] {}, new byte[] {});
         } catch (Exception e) {
             e.printStackTrace();
             assertEquals(e, null);
@@ -617,6 +458,135 @@ public class TestClassFunctionality extends QApplicationTest {
             msec = timeouted.elapsed();
         }
     }
+    
+	@SuppressWarnings("unused")
+    private static class MocTest extends QObject {
+    	private int index;
+		public int getIndex() {
+			return index;
+		}
+		public void setIndex(int index) {
+			this.index = index;
+		}
+		private String text;
+
+		public String getText() {
+			return text;
+		}
+		public void setText(String text) {
+			this.text = text;
+		}
+		
+		private QColor color;
+		public QColor getColor() {
+			return color;
+		}
+		public void setColor(QColor color) {
+			this.color = color;
+		}
+		
+		private double[] array;
+		public double[] getArray() {
+			return array;
+		}
+		public void setArray(double[] array) {
+			this.array = array;
+		}
+		public final Signal0 sig0 = null;
+    	public final Signal1<Boolean> sig1 = null;
+    	public final Signal2<QObject,QColor> sig2 = null;
+    	@QtInvokable
+    	public MocTest(QObject p){super(p);}
+    	public int int0() {
+    		return 0;
+    	}
+    	public void void1D(double d) {
+    		
+    	}
+    	public float F2CI(char c, int[] i) {
+    		return 0;
+    	}
+    	
+    	public enum E implements QtEnumerator{
+    		A,B,C,D,E
+    	}
+    	
+    	public enum Ef implements QtFlagEnumerator{
+    		A,B,C,D,E
+    	}
+    	
+    	public final class Flag extends QFlags<Ef>{
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Flag clone() {
+				return (Flag)super.clone();
+			}
+
+			@Override
+			public Flag combined(Ef flag) {
+				return (Flag)super.combined(flag);
+			}
+
+			@Override
+			public Flag setFlag(Ef flag) {
+				return (Flag)super.setFlag(flag);
+			}
+
+			@Override
+			public Flag setFlag(Ef flag, boolean on) {
+				return (Flag)super.setFlag(flag, on);
+			}
+
+			@Override
+			public Ef[] flags() {
+				return super.flags();
+			}
+
+			public Flag(Ef... args) {
+				super(args);
+			}
+    	}
+    }
+    
+    @Test
+    public void mocTest() {
+    	QMetaObject mo = QMetaObject.forType(MocTest.class);
+    	mo.enumerators().forEach(enm->{
+    		System.out.println("enumName: "+enm.enumName());
+    		System.out.println("type: "+enm.type());
+    		System.out.println("scope: "+enm.scope());
+    		System.out.println("entries: "+Arrays.toString(enm.entries()));
+    		System.out.println("isFlag: "+enm.isFlag());
+    		System.out.println("flags: "+enm.flags(3));
+    		System.out.println("name: "+enm.name());
+    	});
+    	mo.constructors().forEach(m->{
+    		System.out.println(m.returnClassType() + " " + m.methodSignature() + " = "+m.cppMethodSignature());
+    		System.out.println(m.toReflectedConstructor());
+    	});
+    	mo.methods().forEach(m->{
+    		if(m.enclosingMetaObject()==mo) {
+	    		System.out.println(m.returnClassType() + " " + m.methodSignature() + " = "+m.cppMethodSignature());
+//	    		System.out.print("3.: "+m.name()+"(");
+//	    		for (int i = 0; i < m.parameterCount(); i++) {
+//	    			if(i > 0) {
+//	    				System.out.print(",");
+//	    			}
+//					System.out.print(m.parameterMetaType(i).name());
+//				}
+//	    		System.out.println(")");
+	    		switch(m.methodType()) {
+				case Method:
+				case Slot:
+					System.out.println(m.toReflectedMethod());
+					break;
+				default:
+					break;
+	    		}
+    		}
+    	});
+    }
 
     @Test
     public void run_senderNotNull() {
@@ -726,7 +696,7 @@ public class TestClassFunctionality extends QApplicationTest {
         TestDialog dialog = new TestDialog();
         dialog.show();
         int i = 0;
-        QList<QObject> children = dialog.children();
+        List<QObject> children = dialog.children();
         for (QObject o : children) {
     		assertTrue("class at index "+i+" unexpected: "+o.getClass().getName(), o.getClass().getName().endsWith(childrenClassList[i]));
             ++i;
@@ -735,15 +705,7 @@ public class TestClassFunctionality extends QApplicationTest {
     }
 
     @Test
-    public void run_injectedCode() {
-        QObject obj = new QObject();
-        QAction act = new QAction(obj);
-        act.setShortcut("Ctrl+A");
-        QKeySequence seq = act.shortcut();
-
-        assertEquals(seq.count(), 1);
-        assertEquals(seq.at(0), Qt.KeyboardModifier.ControlModifier.value() | Qt.Key.Key_A.value());
-
+    public void test_timeout() {
         SenderTester tester = new SenderTester();
         QTimer.singleShot(1000, tester::timeoutSlot);
 
@@ -985,5 +947,86 @@ public class TestClassFunctionality extends QApplicationTest {
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestClassFunctionality.class.getName());
+    }
+}
+
+class OrdinarySubclass extends OrdinaryDestroyed {
+    public OrdinarySubclass(DisposeCounter destroyCounter) {
+    	super(destroyCounter);
+    	io.qt.QtUtilities.getSignalOnDispose(this).connect(destroyCounter::onDisposed, Qt.ConnectionType.DirectConnection);
+    }
+}
+
+class QObjectSubclass extends QObjectDestroyed {
+    public QObjectSubclass(DisposeCounter counter, QObject parent) {
+        super(counter, parent);
+        destroyed.connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
+    }
+}
+
+class GeneralObject {
+    public String data;
+}
+
+class CustomEvent extends QEvent {
+	public String s;
+    public CustomEvent(String param) {
+        super(customType);
+        s = param;
+    }
+    
+    private static QEvent.Type customType = QEvent.Type.resolve(QEvent.registerEventType());
+    
+	public static QEvent.Type customType() {
+		return customType;
+	}
+}
+
+class EventReceiver extends QWidget {
+    public String myString = null;
+    public String customEventString = null;
+    public QSize resizeEventSize = null;
+    public QSize resizeEventOldSize = null;
+    public QEvent.Type customEventType;
+    public QEvent.Type resizeEventType;
+    public QEvent.Type paintEventType;
+    public boolean paintEventCastWorked = false;
+    public boolean paintRectMatched = false;
+
+    public EventReceiver(QWidget parent, String str) {
+        super(parent);
+        myString = str;
+    }
+
+    @Override
+    public boolean event(QEvent event) {
+        if (event instanceof QResizeEvent) {
+            QResizeEvent rs = (QResizeEvent) event;
+            resizeEventType = event.type();
+            resizeEventSize = rs.size();
+            resizeEventOldSize = rs.oldSize();
+        } else if (event instanceof CustomEvent) {
+            CustomEvent ce = (CustomEvent) event;
+            customEventType = event.type();
+            customEventString = ce.s;
+        } else if (event.type() == QEvent.Type.Paint) {
+            QtJambiObject new_event = event; /*null;
+            try {
+                new_event = QtJambiObject.reassignNativeResources(event, QPaintEvent.class);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }*/
+
+            if (new_event != null && new_event instanceof QPaintEvent) {
+                paintEventCastWorked = true;
+                QPaintEvent paintEvent = (QPaintEvent) new_event;
+                paintEventType = paintEvent.type();
+                QRect paintRect = paintEvent.rect();
+                paintRectMatched = paintRect.width() == width();
+                paintRectMatched = paintRectMatched && paintRect.height() == height();
+            }
+        }
+
+        return false;
     }
 }

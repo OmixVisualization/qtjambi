@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,6 +42,7 @@ public interface QtObjectInterface{
      * the object will be garbage collected, it is not safe to
      * reference the object after it has been disposed.
      */
+	@io.qt.QtDeclaredFinal
 	public default void dispose() {
 		QtJambiInternal.disposeObject(this);
 	}
@@ -50,6 +51,7 @@ public interface QtObjectInterface{
      * Is java object connected to native object?
      * @return true if disposed
      */
+	@io.qt.QtDeclaredFinal
 	public default boolean isDisposed() {
 		return QtJambiInternal.isObjectDisposed(this);
 	}

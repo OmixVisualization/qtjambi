@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -69,63 +69,63 @@ public final class QQmlListProperty<T extends QObject> extends io.qt.QtObject
 
     @QtUninvokable
     public final void append(T object)    {
-        __qt_append_QObject(io.qt.internal.QtJambiInternal.checkedNativeId(this), object);
+        __qt_append_QObject(io.qt.internal.QtJambiInternal.nativeId(this), object);
     }
     @QtUninvokable
     native void __qt_append_QObject(long __this__nativeId, T object);
 
     @QtUninvokable
     public final T at(int index)    {
-        return __qt_at_int(io.qt.internal.QtJambiInternal.checkedNativeId(this), index);
+        return __qt_at_int(io.qt.internal.QtJambiInternal.nativeId(this), index);
     }
     @QtUninvokable
     native T __qt_at_int(long __this__nativeId, int index);
 
     @QtUninvokable
     public final boolean canAppend()    {
-        return __qt_canAppend(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_canAppend(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native boolean __qt_canAppend(long __this__nativeId);
 
     @QtUninvokable
     public final boolean canAt()    {
-        return __qt_canAt(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_canAt(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native boolean __qt_canAt(long __this__nativeId);
 
     @QtUninvokable
     public final boolean canClear()    {
-        return __qt_canClear(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_canClear(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native boolean __qt_canClear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean canCount()    {
-        return __qt_canCount(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_canCount(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native boolean __qt_canCount(long __this__nativeId);
 
     @QtUninvokable
     public final void clear()    {
-        __qt_clear(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        __qt_clear(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native void __qt_clear(long __this__nativeId);
 
     @QtUninvokable
     public final int count()    {
-        return __qt_count(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_count(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native int __qt_count(long __this__nativeId);
 
     @QtUninvokable
     public final io.qt.core.QObject object()    {
-        return __qt_object(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        return __qt_object(io.qt.internal.QtJambiInternal.nativeId(this));
     }
     @QtUninvokable
     native io.qt.core.QObject __qt_object(long __this__nativeId);
@@ -140,7 +140,7 @@ public final class QQmlListProperty<T extends QObject> extends io.qt.QtObject
         if(list!=null) {
         	return new QQmlListProperty<>(object(), list);
         }else {
-        	return __qt_clone(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+        	return __qt_clone(io.qt.internal.QtJambiInternal.nativeId(this));
         }
     }
     private native QQmlListProperty<T> __qt_clone(long __this_nativeId);

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,18 +37,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.qt.QtUtilities;
-import io.qt.core.QMetaObject;
 import io.qt.core.QByteArray;
 import io.qt.core.QDateTime;
-import io.qt.core.QIODevice.OpenMode;
-import io.qt.core.QIODevice.OpenModeFlag;
+import io.qt.core.QIODevice;
 
 @Deprecated
 class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine implements QClassPathEntry{
 	private final String classPathEntryFileName;
 	private final URLConnection connection;
 	private InputStream inputStream;
-	private final QMetaObject.DisposedSignal disposed = QtUtilities.getSignalOnDispose(this);
 	
     public QUrlEntryEngine(URLConnection connection, String classPathEntryFileName) {
 		super();
@@ -69,8 +66,8 @@ class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine implements
 	public boolean close() {
 		try {
 			if(inputStream!=null){
+				QtUtilities.getSignalOnDispose(this).disconnect(inputStream::close);
 				inputStream.close();
-				disposed.disconnect(inputStream::close);
 			}
 			return true;
 		} catch (Exception e) {
@@ -97,11 +94,11 @@ class QUrlEntryEngine extends io.qt.core.internal.QAbstractFileEngine implements
 	}
 	
 	@Override
-	public boolean open(OpenMode openMode) {
-		if(openMode.isSet(OpenModeFlag.ReadOnly) && this.inputStream==null){
+	public boolean open(QIODevice.OpenMode openMode) {
+		if(openMode.isSet(QIODevice.OpenModeFlag.ReadOnly) && this.inputStream==null){
 			try{
 				this.inputStream = connection.getInputStream();
-				disposed.connect(inputStream::close);
+				QtUtilities.getSignalOnDispose(this).connect(inputStream::close);
 				return true;
 			} catch (Exception e) {
 				Logger.getAnonymousLogger().log(Level.SEVERE, "", e);

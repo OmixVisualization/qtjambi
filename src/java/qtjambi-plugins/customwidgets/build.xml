@@ -1,0 +1,27 @@
+<project default="build">
+    <property name="plugin-subdir" value="designer"/>
+    <property name="module-name" value="customwidgets"/>
+    <property name="qtjambi-module-name" value="QtJambiDesigner"/>
+    <path id="qtjambi.modulepath">
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-designer-${qtjambi.jar.version}.jar"/>
+    </path>
+    <target name="build">
+        <if>
+            <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+            <then>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar1">
+                    <property name="module" value="${module-name}"/>
+                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}"/>
+                    <property name="jar.excludes" value=""/>
+                    <property name="module.excludes" value=""/>
+                </ant>
+                <echo file="${outputDir}/tmp/plugin-metadata.json">{"Keys":["CustomWidgets"]}</echo>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="bundle-plugin">
+                    <property name="class-name" value="io.qt.designer.customwidgets.QCustomWidgetsPlugin"/>
+                    <property name="meta-data" value="${outputDir}/tmp/plugin-metadata.json"/>
+                </ant>
+                <delete file="${outputDir}/tmp/plugin-metadata.json"/>
+            </then>
+        </if>
+    </target>
+</project>

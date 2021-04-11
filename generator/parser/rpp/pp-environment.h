@@ -70,7 +70,7 @@ namespace rpp {
             typedef std::vector<pp_macro*>::const_iterator const_iterator;
 
         public:
-            pp_environment(const std::function<void(std::string,std::string)>& featureRegistry):
+            pp_environment(const std::function<void(std::string,std::string,std::string)>& featureRegistry):
                     current_line(0),
                     _M_hash_size(4093),
                     _M_featureRegistry(featureRegistry){
@@ -127,7 +127,7 @@ namespace rpp {
             std::vector<pp_macro*> _M_macros;
             pp_macro **_M_base;
             std::size_t _M_hash_size;
-            std::function<void(std::string,std::string)> _M_featureRegistry;
+            std::function<void(std::string,std::string,std::string)> _M_featureRegistry;
     };
 
 } // namespace rpp

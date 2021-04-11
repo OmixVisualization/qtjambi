@@ -45,6 +45,9 @@
 #ifndef MEMORYMANAGEMENT_H
 #define MEMORYMANAGEMENT_H
 
+#include <QtCore/QSharedPointer>
+#include <QtCore/QObject>
+
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
 #endif

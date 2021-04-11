@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,7 +35,7 @@ import io.qt.internal.QtJambiInternal;
  * The QtFlagEnumerator interface servers as a base for all qint32 enums available as QFlags.
  * @see QFlags
  */
-public interface QtFlagEnumerator extends QtEnumerator {
+public interface QtFlagEnumerator extends QtEnumerator, QtAbstractFlagEnumerator {
     /**
      * This function should return an integer value for the enum
      * values of the enumeration that implements this interface.

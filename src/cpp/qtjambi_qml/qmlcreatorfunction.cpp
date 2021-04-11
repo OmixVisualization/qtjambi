@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,25 +27,28 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QtGlobal>
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QSharedPointer>
 #include <QtCore/private/qobject_p.h>
 #include <QtQml/QQmlParserStatus>
 #include <QtQml/QQmlPropertyValueSource>
-#include "qmlcreatorfunction.h"
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_repository.h>
 #include <qtjambi/qtjambi_exceptions.h>
 #include <qtjambi/qtjambi_functionpointer.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <qtjambi/qtjambi_qml.h>
+#include "qmlcreatorfunction.h"
 
 class QmlParserStatus : public QQmlParserStatus{
-    inline void classBegin(){}
-    inline void componentComplete(){}
+    inline void classBegin()override{}
+    inline void componentComplete()override{}
 };
 
 class QmlPropertyValueSource : public QQmlPropertyValueSource{
-    inline void setTarget(const QQmlProperty &){}
+    inline void setTarget(const QQmlProperty &)override{}
 };
 
 class ErrorDummyObject : public QObject{
@@ -88,6 +91,7 @@ private:
     int viCast;
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast){
     uint hash = 1;
     hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
@@ -96,17 +100,17 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
     hash = 31 * hash + qHash(vsCast);
     hash = 31 * hash + qHash(viCast);
     JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<64 /*=4096 options*/,void(void*)>([clazzWrapper, meta_object, constructor, objectSize, psCast, vsCast, viCast](void* placement){
+    return qtjambi_function_pointer<64,void(void*)>([clazzWrapper, meta_object, constructor, objectSize, psCast, vsCast, viCast](void* placement){
         memset(placement, 0, objectSize);
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             try{
-                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor.newInstance(env, clazzWrapper.object(), jlong(placement));
+                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(), jlong(placement));
                 try{
                     env->NewObject(jclass(clazzWrapper.object()), constructor, declarativeConstructor);
                     qtjambi_throw_java_exception(env)
                 }catch(const JavaException& exn){
-                    jlong pl = Java::QtCore::QObject$QDeclarativeConstructor.placement(env, declarativeConstructor);
+                    jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                     if(pl==0){
                         QObject* obj = reinterpret_cast<QObject*>(placement);
                         obj->deleteLater();
@@ -116,7 +120,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                         throw exn;
                     }
                 }
-                jlong pl = Java::QtCore::QObject$QDeclarativeConstructor.placement(env, declarativeConstructor);
+                jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                 if(pl!=0){
                     QString className = qtjambi_class_name(env, jclass(clazzWrapper.object()));
                     JavaException::raiseRuntimeException(env, qPrintable(QString("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className)) QTJAMBI_STACKTRACEINFO );
@@ -140,3 +144,70 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
         }
     }, hash);
 }
+#else
+
+typedef QHash<hash_type,QSharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
+Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
+
+void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast){
+    hash_type hash = 1;
+    hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
+    hash = 31 * hash + qHash(qint64(constructor));
+    hash = 31 * hash + qHash(psCast);
+    hash = 31 * hash + qHash(vsCast);
+    hash = 31 * hash + qHash(viCast);
+    if(gMetaDataHash->contains(hash)){
+        return (*gMetaDataHash)[hash];
+    }else{
+        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), {env, clazz}, meta_object, constructor, objectSize, psCast, vsCast, viCast});
+        return (*gMetaDataHash)[hash];
+    }
+}
+
+void createQmlObject(void* placement,void* _metaData){
+    if(CreatorFunctionMetaData* metaData = reinterpret_cast<CreatorFunctionMetaData*>(_metaData)){
+        memset(placement, 0, metaData->objectSize);
+        if(JNIEnv * env = qtjambi_current_environment()){
+            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            try{
+                jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazzWrapper.object(), jlong(placement));
+                try{
+                    env->NewObject(jclass(metaData->clazzWrapper.object()), metaData->constructor, declarativeConstructor);
+                    qtjambi_throw_java_exception(env)
+                }catch(const JavaException& exn){
+                    jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
+                    if(pl==0){
+                        QObject* obj = reinterpret_cast<QObject*>(placement);
+                        obj->deleteLater();
+                        qtjambi_push_blocked_exception(env, exn);
+                        return;
+                    }else{
+                        throw exn;
+                    }
+                }
+                jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
+                if(pl!=0){
+                    QString className = qtjambi_class_name(env, jclass(metaData->clazzWrapper.object()));
+                    JavaException::raiseRuntimeException(env, qPrintable(QString("Irreguar implementation of declarative constructor in class %1. Please call super constructor by submitting QDeclarativeConstructor object.").arg(className)) QTJAMBI_STACKTRACEINFO );
+                }
+            }catch(const JavaException& exn){
+                QObject* obj = reinterpret_cast<QObject*>(placement);
+                if(QObjectPrivate::get(obj) != nullptr){
+                    obj->~QObject();
+                }
+                obj = createQmlErrorDummyObject(metaData->meta_object, placement, metaData->vsCast, metaData->viCast);
+                if(!obj)
+                    obj = new (placement) ErrorDummyObject(metaData->psCast, metaData->vsCast, metaData->viCast);
+                obj->deleteLater();
+                qtjambi_push_blocked_exception(env, exn);
+            }
+        }else{
+            QObject* obj = createQmlErrorDummyObject(metaData->meta_object, placement, metaData->vsCast, metaData->viCast);
+            if(!obj)
+                obj = new (placement) ErrorDummyObject(metaData->psCast, metaData->vsCast, metaData->viCast);
+            obj->deleteLater();
+        }
+    }
+}
+
+#endif

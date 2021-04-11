@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,9 +29,6 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.util.Arrays;
-
-import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 
 /**
@@ -60,17 +57,4 @@ public class QtJambiMemberAccess<T extends QtObjectInterface> {
 			return result;
 		}
 	}
-	
-	protected void disposedCheck(T obj){
-		try {
-			QtJambiInternal.disposedCheck(obj);
-		} catch (QNoNativeResourcesException e) {
-			StackTraceElement[] st = e.getStackTrace();
-			st = Arrays.copyOfRange(st, 2, st.length-2);
-			if(st[0].getMethodName().startsWith("access$"))
-				st = Arrays.copyOfRange(st, 1, st.length-1);
-			e.setStackTrace(st);
-			throw e;
-		}
-    }
 }

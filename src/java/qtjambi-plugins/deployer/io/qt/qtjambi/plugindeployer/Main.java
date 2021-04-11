@@ -39,266 +39,285 @@ public class Main {
 	
 	private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
 
-	public static void main(String[] args) throws MalformedURLException {
+	public static void main(String[] args) throws MalformedURLException, InterruptedException {
 		QCoreApplication.initialize("QtJambiPluginDeployer", args);
-		String iid = null;
-		String className = null;
-		String pluginName = null;
-		QDir dir = null;
-		QJsonObject metaData = null;
-		List<String> classPath = new ArrayList<>();
-		List<Map.Entry<String,String>> libraries = new ArrayList<>();
-		if(args.length==0) {
-			System.err.println("No arguments given.");
-			showInfo();
-			System.exit(-1);
-		}
-		for (int i = 0; i < args.length; i++) {
-			if(args[i].startsWith("--help") 
-					|| args[i].startsWith("-h")
-					|| args[i].startsWith("-?")) {
-				showInfo();
-				return;
-			}else if(args[i].startsWith("--iid=")) {
-				iid = args[i].substring(6);
-			}else if(args[i].startsWith("--dir=")) {
-				dir = new QDir(QDir.fromNativeSeparators(args[i].substring(6)));
-			}else if(args[i].startsWith("--class-name=")) {
-				className = args[i].substring(13);
-			}else if(args[i].startsWith("--plugin-name=")) {
-				pluginName = args[i].substring(14);
-			}else if(args[i].startsWith("--class-path=")) {
-				Collections.addAll(classPath, args[i].substring(13).split(File.pathSeparator));
-			}else if(args[i].startsWith("--plugin-library=")) {
-				String[] libinfo = args[i].substring(19).split(File.pathSeparator);
-				if(libinfo.length==2){
-					if(!new File(libinfo[1]).isFile()) {
-						System.err.println("Specified qtjambiplugin library does not exist: "+libinfo[1]);
-						System.exit(-1);
-					}
-					libraries.add(new SimpleEntry<>(libinfo[0], libinfo[1]));
-				}else {
-					String os = null;
-					if(libinfo[0].endsWith(".dll")) {
-						os = "windows";
-					}else if(libinfo[0].endsWith(".dylib")) {
-						os = "macos";
-					}else if(libinfo[0].endsWith(".so")) {
-						os = "linux";
-					}
-					if(os!=null) {
-						if(!new File(libinfo[0]).isFile()) {
-							System.err.println("Specified qtjambiplugin library does not exist: "+libinfo[0]);
-							System.exit(-1);							
-						}
-						libraries.add(new SimpleEntry<>(os, libinfo[0]));
-					}else {
-						System.err.println("Unable to determine platform for library "+libinfo[0]+". Please use --plugin-library=<platform>"+File.pathSeparatorChar+"<path to library>");
-						System.exit(-1);
-					}
-				}
-			}else if(args[i].startsWith("--plugin-library-location=")) {
-				QDir location = new QDir(args[i].substring(26));
-				for(String entry : location.entryList(QDir.Filter.Files)) {
-					String os = null;
-					if(entry.endsWith(".dll")) {
-						os = "windows";
-					}else if(entry.endsWith(".dylib")) {
-						os = "macos";
-					}else if(entry.endsWith(".so")) {
-						os = "linux";
-					}
-					if(os!=null) {
-						libraries.add(new SimpleEntry<>(os, location.absoluteFilePath(entry)));
-					}
-				}
-			}else if(args[i].startsWith("--meta-data=")) {
-				String _metaData = args[i].substring(12);
-				if(_metaData.startsWith("\"") && _metaData.endsWith("\"")) {
-					_metaData = _metaData.substring(1, _metaData.length()-2);
-				}
-				QByteArray data;
-				if(_metaData.startsWith("{") && _metaData.endsWith("}")) {
-					data = new QByteArray(_metaData.replace("''", "\""));
-				}else{
-					QFile file = new QFile(_metaData);
-					if(file.exists() && file.open(QIODevice.OpenModeFlag.ReadOnly)) {
-						data = file.readAll();
-					}else {
-						data = null;
-					}
-				}
-				if(data!=null) {
-					QJsonDocument.FromJsonResult result = QJsonDocument.fromJson(data);
-					if(result.error.error()==ParseError.NoError && result.document.isObject()) {
-						metaData = result.document.object();
-					}
-				}
-			}else {
-				System.err.println("Unknown arguments "+args[i]);
+		{
+			String iid = null;
+			String className = null;
+			String pluginName = null;
+			QDir dir = null;
+			QJsonObject metaData = null;
+			List<String> classPath = new ArrayList<>();
+			List<Map.Entry<String,String>> libraries = new ArrayList<>();
+            Boolean isDebug = null;
+			if(args.length==0) {
+				System.err.println("No arguments given.");
 				showInfo();
 				System.exit(-1);
 			}
-		}
-		if(className==null || className.isEmpty()) {
-			System.err.println("Missing class name. Please use --class-name=...");
-			System.exit(-1);
-		}
-		if(dir==null) {
-			System.err.println("Missing target directory. Please use --dir=...");
-			System.exit(-1);
-		}
-		if(classPath.isEmpty()) {
-			System.err.println("Missing classpath. Please use --class-path=...");
-			System.exit(-1);
-		}
-		if(libraries.isEmpty()) {
-			System.err.println("Missing paths to qtjambiplugin library. Please use --plugin-library=<path to library> or --plugin-library=<platform>"+File.pathSeparatorChar+"<path to library>");
-			System.exit(-1);
-		}
-		if(pluginName==null) {
-			if(classPath.size()==1) {
-				QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(classPath.get(0)));
-				String path = file.fileName();
-				if(path.endsWith(".jar")) {
-					pluginName = path.substring(0, path.length()-4);
-				}
-			}
-		}
-		if(pluginName==null) {
-			System.err.println("Missing plugin name. Please use --plugin-name=...");
-			System.exit(-1);
-		}
-		if(iid==null) {
-			List<URL> urls = new ArrayList<>();
-			List<File> libraryPath = new ArrayList<>();
-			for(String path : classPath) {
-				File file = new File(path);
-				if(file.exists()) {
-					if(file.isFile() && !file.getName().endsWith(".jar")) {
-						libraryPath.add(file.getParentFile());
+			for (int i = 0; i < args.length; i++) {
+				if(args[i].startsWith("--help") 
+						|| args[i].startsWith("-h")
+						|| args[i].startsWith("-?")) {
+					showInfo();
+					return;
+				}else if(args[i].startsWith("--iid=")) {
+					iid = args[i].substring(6);
+				}else if(args[i].startsWith("--configuration=")) {
+					String conf = args[i].substring(16);
+                    isDebug = "debug".equals(conf);
+				}else if(args[i].startsWith("--dir=")) {
+					dir = new QDir(QDir.fromNativeSeparators(args[i].substring(6)));
+				}else if(args[i].startsWith("--class-name=")) {
+					className = args[i].substring(13);
+				}else if(args[i].startsWith("--plugin-name=")) {
+					pluginName = args[i].substring(14);
+				}else if(args[i].startsWith("--class-path=")) {
+					Collections.addAll(classPath, args[i].substring(13).split(File.pathSeparator));
+				}else if(args[i].startsWith("--plugin-library=")) {
+					String[] libinfo = args[i].substring(19).split(File.pathSeparator);
+					if(libinfo.length==2){
+						if(!new File(libinfo[1]).isFile()) {
+							System.err.println("Specified qtjambiplugin library does not exist: "+libinfo[1]);
+							System.exit(-1);
+						}
+						libraries.add(new SimpleEntry<>(libinfo[0], libinfo[1]));
 					}else {
-						urls.add(file.toURI().toURL());
+						String os = null;
+						if(libinfo[0].endsWith(".dll")) {
+							os = "windows";
+						}else if(libinfo[0].endsWith(".dylib")) {
+							os = "macos";
+						}else if(libinfo[0].endsWith(".so")) {
+							os = "linux";
+						}
+						if(os!=null) {
+							if(!new File(libinfo[0]).isFile()) {
+								System.err.println("Specified qtjambiplugin library does not exist: "+libinfo[0]);
+								System.exit(-1);							
+							}
+							libraries.add(new SimpleEntry<>(os, libinfo[0]));
+						}else {
+							System.err.println("Unable to determine platform for library "+libinfo[0]+". Please use --plugin-library=<platform>"+File.pathSeparatorChar+"<path to library>");
+							System.exit(-1);
+						}
+					}
+				}else if(args[i].startsWith("--plugin-library-location=")) {
+					QDir location = new QDir(args[i].substring(26));
+                    if(isDebug==null){
+                        System.err.println("Please specify --configuration=debug or --configuration=release prior to --plugin-library-location");
+                        System.exit(-1);
+                    }
+					for(String entry : location.entryList(QDir.Filter.Files)) {
+                        String os = null;
+                        if(isDebug){
+                            if(entry.equals("qtjambiplugind.dll")) {
+                                os = "windows";
+                            }else if(entry.equals("libqtjambiplugin_debug.dylib")) {
+                                os = "macos";
+                            }else if(entry.equals("libqtjambiplugin_debug.so")) {
+                                os = "linux";
+                            }
+                        }else{
+                            if(entry.equals("qtjambiplugin.dll")) {
+                                os = "windows";
+                            }else if(entry.equals("libqtjambiplugin.dylib")) {
+                                os = "macos";
+                            }else if(entry.equals("libqtjambiplugin.so")) {
+                                os = "linux";
+                            }
+                        }
+                        if(os!=null && entry.contains("qtjambiplugin")) {
+                            libraries.add(new SimpleEntry<>(os, location.absoluteFilePath(entry)));
+                        }
+					}
+				}else if(args[i].startsWith("--meta-data=")) {
+					String _metaData = args[i].substring(12);
+					if(_metaData.startsWith("\"") && _metaData.endsWith("\"")) {
+						_metaData = _metaData.substring(1, _metaData.length()-2);
+					}
+					QByteArray data;
+					if(_metaData.startsWith("{") && _metaData.endsWith("}")) {
+						data = new QByteArray(_metaData.replace("''", "\""));
+					}else{
+						QFile file = new QFile(_metaData);
+						if(file.exists() && file.open(QIODevice.OpenModeFlag.ReadOnly)) {
+							data = file.readAll();
+						}else {
+							data = null;
+						}
+					}
+					if(data!=null) {
+						QJsonDocument.FromJsonResult result = QJsonDocument.fromJson(data);
+						if(result.error.error()==ParseError.NoError && result.document.isObject()) {
+							metaData = result.document.object();
+						}
 					}
 				}else {
-					System.err.println("Classpath not a file or directory: "+path);
+					System.err.println("Unknown arguments "+args[i]);
+					showInfo();
 					System.exit(-1);
 				}
 			}
-			StringBuilder lp = new StringBuilder(System.getProperty("java.library.path", ""));
-			if(!libraryPath.isEmpty()) {
-				for(File file : libraryPath) {
-					if(lp.length()!=0) {
-						lp.append(File.pathSeparator);
+			if(className==null || className.isEmpty()) {
+				System.err.println("Missing class name. Please use --class-name=...");
+				System.exit(-1);
+			}
+			if(dir==null) {
+				System.err.println("Missing target directory. Please use --dir=...");
+				System.exit(-1);
+			}
+			if(classPath.isEmpty()) {
+				System.err.println("Missing classpath. Please use --class-path=...");
+				System.exit(-1);
+			}
+			if(libraries.isEmpty()) {
+				System.err.println("Missing paths to qtjambiplugin library. Please use --plugin-library=<path to library>, --plugin-library=<platform>"+File.pathSeparatorChar+"<path to library> or --plugin-library-location=<path> in combination with --configuration=debug/release");
+				System.exit(-1);
+			}
+			if(pluginName==null) {
+				if(classPath.size()==1) {
+					QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(classPath.get(0)));
+					String path = file.fileName();
+					if(path.endsWith(".jar")) {
+						pluginName = path.substring(0, path.length()-4);
 					}
-					lp.append(file.getAbsolutePath());
 				}
-				System.setProperty("java.library.path", lp.toString());
 			}
-			pluginClassLoader.addURLs(urls);
-			Class<?> cls;
-			try {
-				cls = pluginClassLoader.loadClass(className);
-			} catch (ClassNotFoundException | NoClassDefFoundError e) {
-				System.err.println("Unable to find class: "+className);
-				e.printStackTrace();
-				System.exit(-1);
-				return;
-			}
-			iid = QtJambiInternal.getInterfaceIID(cls);
-		}
-		if(iid!=null && className!=null) {
-			QCborMap cborValue = new QCborMap();
-			cborValue.setValue(/*QtPluginMetaDataKeys::IID*/ 2, new QCborValue(iid));
-			cborValue.setValue(/*QtPluginMetaDataKeys::ClassName*/ 3, new QCborValue(className.replace(".", "::")));
-			cborValue.setValue(/*QtPluginMetaDataKeys::MetaData*/ 4, new QCborValue(QCborMap.fromJsonObject(metaData)));
-			cborValue.setValue(0x0_CAFEBABE_0L, new QCborValue(pluginName));
-			QByteArray cborData = cborValue.toCborValue().toCbor();
-			if(cborData.size()>1024) {
-				System.err.println("Plugin metadata exceeds mximum size of 1024 byte.");
+			if(pluginName==null) {
+				System.err.println("Missing plugin name. Please use --plugin-name=...");
 				System.exit(-1);
 			}
-			if(classPath.size()==1) {
-				QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(classPath.get(0)));
-				String newFile = dir.absoluteFilePath(file.fileName());
-				QFile.copy(file.absoluteFilePath(), newFile);
-			}else {
-				dir.mkdir(pluginName);
-				QDir subdir = dir.clone();
-				subdir.cd(pluginName);
-				for (String path : classPath) {
-					QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(path));
+			if(iid==null) {
+				//System.out.println("Analyzing IID...");
+				//System.out.flush();
+				List<URL> urls = new ArrayList<>();
+				List<File> libraryPath = new ArrayList<>();
+				for(String path : classPath) {
+					File file = new File(path);
+					if(file.exists()) {
+						if(file.isFile() && !file.getName().endsWith(".jar")) {
+							libraryPath.add(file.getParentFile());
+						}else {
+							urls.add(file.toURI().toURL());
+						}
+					}else {
+						System.err.println("Classpath not a file or directory: "+path);
+						System.exit(-1);
+					}
+				}
+				StringBuilder lp = new StringBuilder(System.getProperty("java.library.path", ""));
+				if(!libraryPath.isEmpty()) {
+					for(File file : libraryPath) {
+						if(lp.length()!=0) {
+							lp.append(File.pathSeparator);
+						}
+						lp.append(file.getAbsolutePath());
+					}
+					System.setProperty("java.library.path", lp.toString());
+				}
+				pluginClassLoader.addURLs(urls);
+				Class<?> cls;
+				try {
+					cls = pluginClassLoader.loadClass(className);
+				} catch (ClassNotFoundException | NoClassDefFoundError e) {
+					System.err.println("Unable to find class: "+className);
+					e.printStackTrace();
+					System.exit(-1);
+					return;
+				}
+				iid = QtJambiInternal.getInterfaceIID(cls);
+			}
+			if(iid!=null && className!=null) {
+				//System.out.println("Collecting metadata...");
+				//System.out.flush();
+				QCborMap cborValue = new QCborMap();
+				cborValue.setValue(/*QtPluginMetaDataKeys::IID*/ 2, new QCborValue(iid));
+				cborValue.setValue(/*QtPluginMetaDataKeys::ClassName*/ 3, new QCborValue(className.replace(".", "::")));
+				cborValue.setValue(/*QtPluginMetaDataKeys::MetaData*/ 4, new QCborValue(QCborMap.fromJsonObject(metaData)));
+				cborValue.setValue(0x0_CAFEBABE_0L, new QCborValue(pluginName));
+				QByteArray cborData = cborValue.toCborValue().toCbor();
+				if(cborData.size()>1024) {
+					System.err.println("Plugin metadata exceeds mximum size of 1024 byte.");
+					System.exit(-1);
+				}
+				System.gc();
+				if(classPath.size()==1) {
+                    QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(classPath.get(0)));
+                    dir.remove(file.fileName());
 					String newFile = dir.absoluteFilePath(file.fileName());
 					QFile.copy(file.absoluteFilePath(), newFile);
+				}else {
+					dir.mkdir(pluginName);
+					//QDir subdir = dir.clone();
+					dir.cd(pluginName);
+					for (String path : classPath) {
+						QFileInfo file = new QFileInfo(QDir.fromNativeSeparators(path));
+                        dir.remove(file.fileName());
+						String newFile = dir.absoluteFilePath(file.fileName());
+						QFile.copy(file.absoluteFilePath(), newFile);
+					}
 				}
-			}
-			for(Map.Entry<String,String> entry : libraries) {
-				String os = entry.getKey();
-				if(os!=null) {
-					switch(os.toLowerCase()) {
-					case "win32":
-					case "win64":
-					case "windows":
-						{
-							QFile file = new QFile(QDir.fromNativeSeparators(entry.getValue()));
-							QFile newFile = new QFile(dir.absoluteFilePath(pluginName + (file.fileName().endsWith("d.dll") ? "d.dll" : ".dll")));
-							if(file.open(QIODevice.OpenModeFlag.ReadOnly)) {
-								QByteArray libData = file.readAll();
-								file.close();
-								int idx = libData.indexOf("QTMETADATA !");
-								if(idx>0) {
-									if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
-										newFile.write(libData);
-										newFile.seek(idx+16);
-										newFile.write(cborData);
-										newFile.close();
-									}
-								}
-							}
+				
+				final QByteArray QTMETADATA = new QByteArray("QTMETADATA !");
+				
+				for(Map.Entry<String,String> entry : libraries) {
+					String os = entry.getKey();
+					if(os!=null) {
+                        QFile file = new QFile(QDir.fromNativeSeparators(entry.getValue()));
+						QFile newFile;
+                        switch(os.toLowerCase()) {
+						case "win32":
+						case "win64":
+						case "windows":
+                            if(isDebug==null){
+								newFile = new QFile(dir.absoluteFilePath(pluginName + (file.fileName().endsWith("d.dll") ? "d.dll" : ".dll")));
+							}else{
+								newFile = new QFile(dir.absoluteFilePath(pluginName + (isDebug ? "d.dll" : ".dll")));
+                            }
+							System.gc();
+							break;
+						case "macos":
+						case "osx":
+                            if(isDebug==null){
+								newFile = new QFile(dir.absoluteFilePath("lib" + pluginName + (file.fileName().endsWith("_debug.dylib") ? "_debug.dylib" : ".dylib")));
+							}else{
+								newFile = new QFile(dir.absoluteFilePath("lib" + pluginName + (isDebug ? "_debug.dylib" : ".dylib")));
+                            }
+                            break;
+						case "linux":
+						case "linux32":
+						case "linux64":
+                            if(isDebug==null){
+								newFile = new QFile(dir.absoluteFilePath("lib" + pluginName + (file.fileName().endsWith("_debug.so") ? "_debug.so" : ".so")));
+							}else{
+								newFile = new QFile(dir.absoluteFilePath("lib" + pluginName + (isDebug ? "_debug.so" : ".so")));
+                            }
+							break;
+							default: continue;
 						}
-						break;
-					case "macos":
-					case "osx":
-						{
-							QFile file = new QFile(QDir.fromNativeSeparators(entry.getValue()));
-							QFile newFile = new QFile(dir.absoluteFilePath("lib"+pluginName + ".dylib"));
-							if(file.open(QIODevice.OpenModeFlag.ReadOnly)) {
-								QByteArray libData = file.readAll();
-								file.close();
-								int idx = libData.indexOf("QTMETADATA !");
-								if(idx>0) {
-									if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
-										newFile.write(libData);
-										newFile.seek(idx+16);
-										newFile.write(cborData);
-										newFile.close();
-									}
-								}
-							}
-						}
-						break;
-					case "linux":
-					case "linux32":
-					case "linux64":
-						{
-							QFile file = new QFile(QDir.fromNativeSeparators(entry.getValue()));
-							QFile newFile = new QFile(dir.absoluteFilePath("lib"+pluginName + (file.fileName().endsWith("_debug.so") ? "_debug.so" : ".so")));
-							if(file.open(QIODevice.OpenModeFlag.ReadOnly)) {
-								QByteArray libData = file.readAll();
-								file.close();
-								int idx = libData.indexOf("QTMETADATA !");
-								if(idx>0) {
-									if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
-										newFile.write(libData);
-										newFile.seek(idx+16);
-										newFile.write(cborData);
-										newFile.close();
-									}
-								}
-							}
-						}
-						break;
-						default:
+                        if(file.open(QIODevice.OpenModeFlag.ReadOnly)) {
+                            QByteArray libData = file.readAll();
+                            file.close();
+                            long idx = libData.indexOf(QTMETADATA);
+                            if(idx>0) {
+                                if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
+                                    System.out.println("Using library "+file.fileName()+"...");
+                                    System.out.println("Writing metadata to library "+newFile.fileName()+"...");
+                                    System.out.flush();
+                                    newFile.write(libData);
+                                    newFile.seek((int)idx+16);
+                                    newFile.write(cborData);
+                                    newFile.close();
+                                }else{
+                                    System.err.println("Unable to write file "+newFile.fileName());
+                                    System.exit(-1);
+                                }
+                            }
+                        }else{
+                            System.err.println("Unable to read file "+file.fileName());
+                            System.exit(-1);
+                        }
 					}
 				}
 			}

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,12 +40,11 @@ import org.junit.Test;
 import io.qt.concurrent.QtConcurrent;
 import io.qt.core.QFuture;
 import io.qt.core.QFutureSynchronizer;
-import io.qt.core.QFutureVoid;
-import io.qt.core.QFutureWatcher;
+import io.qt.core.QVoidFuture;
 
 public class TestConcurrent extends QApplicationTest {
 
-    private static final int COUNT = 100;
+    static final int COUNT = 100;
 
     static class MutableString {
         public String value;
@@ -70,16 +69,10 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT; ++i)
             strings.add(new MutableString("" + i));
 
-        QFutureVoid future = QtConcurrent.map(strings,
-                new QtConcurrent.MapFunctor<MutableString>() {
-
-                    public void map(MutableString object) {
-                        object.value += " foobar";
-                    }
-                }
-        );
+        QVoidFuture future = QtConcurrent.map(strings, object -> { object.value += " foobar"; } );
 
         future.waitForFinished();
+        assertEquals(COUNT, strings.size());
         for (int i=0; i<COUNT; ++i)
             assertEquals("" + i + " foobar", strings.get(i).value);
     }
@@ -91,15 +84,9 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT; ++i)
             strings.add(new MutableString("" + i));
 
-        QtConcurrent.blockingMap(strings,
-                new QtConcurrent.MapFunctor<MutableString>() {
+        QtConcurrent.blockingMap(strings, object -> { object.value += " foobar"; } );
 
-                    public void map(MutableString object) {
-                        object.value += " foobar";
-                    }
-                }
-        );
-
+        assertEquals(COUNT, strings.size());
         for (int i=0; i<COUNT; ++i)
             assertEquals("" + i + " foobar", strings.get(i).value);
     }
@@ -110,16 +97,11 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT; ++i)
             strings.add("" + (i*i));
 
-        QFuture<Integer> future = QtConcurrent.mapped(strings,
-                new QtConcurrent.MappedFunctor<Integer, String>() {
-                    public Integer map(String object) {
-                        return Integer.parseInt(object);
-                    }
-                }
-        );
+        QFuture<Integer> future = QtConcurrent.mapped(strings, Integer::parseInt);
 
         future.waitForFinished();
         List<Integer> results = future.results();
+        assertEquals(COUNT, strings.size());
         assertEquals(COUNT, results.size());
 
         for (int i=0; i<results.size(); ++i)
@@ -132,14 +114,9 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT; ++i)
             strings.add("" + (i*i));
 
-        List<Integer> results = QtConcurrent.blockingMapped(strings,
-                new QtConcurrent.MappedFunctor<Integer, String>() {
-                    public Integer map(String object) {
-                        return Integer.parseInt(object);
-                    }
-                }
-        );
+        List<Integer> results = QtConcurrent.blockingMapped(strings, Integer::parseInt);
 
+        assertEquals(COUNT, strings.size());
         assertEquals(COUNT, results.size());
         for (int i=0; i<results.size(); ++i)
             assertEquals(i*i, (int) results.get(i));
@@ -147,16 +124,11 @@ public class TestConcurrent extends QApplicationTest {
 
     @Test
     public void testMappedReduced() {
-        List<Integer> strings = new ArrayList<Integer>();
+        List<Integer> ints = new ArrayList<Integer>();
         for (int i=0; i<COUNT; ++i)
-            strings.add(i);
+            ints.add(i);
 
-        QFuture<MutableString> future = QtConcurrent.mappedReduced(strings,
-                new QtConcurrent.MappedFunctor<String, Integer>() {
-                    public String map(Integer i) {
-                        return ((Integer)(i*i)).toString();
-                    }
-                },
+        QFuture<MutableString> future = QtConcurrent.mappedReduced(ints, i->((Integer)(i*i)).toString(),
                 new QtConcurrent.ReducedFunctor<MutableString, String>() {
                     public MutableString defaultResult() {
                         return new MutableString("5");
@@ -168,6 +140,7 @@ public class TestConcurrent extends QApplicationTest {
                     }
                 }
         );
+        assertEquals(COUNT, ints.size());
 
         int n=5;
         for (int i=0; i<COUNT;++i)
@@ -180,16 +153,12 @@ public class TestConcurrent extends QApplicationTest {
 
     @Test
     public void testBlockingMappedReduced() {
-        List<Integer> strings = new ArrayList<Integer>();
+        List<Integer> ints = new ArrayList<Integer>();
         for (int i=0; i<COUNT; ++i)
-            strings.add(i);
+            ints.add(i);
 
-        MutableString result = QtConcurrent.blockingMappedReduced(strings,
-                new QtConcurrent.MappedFunctor<String, Integer>() {
-                    public String map(Integer i) {
-                        return ((Integer)(i*i)).toString();
-                    }
-                },
+        MutableString result = QtConcurrent.blockingMappedReduced(ints,
+        		i->((Integer)(i*i)).toString(),
                 new QtConcurrent.ReducedFunctor<MutableString, String>() {
                     public MutableString defaultResult() {
                         return new MutableString("5");
@@ -201,6 +170,7 @@ public class TestConcurrent extends QApplicationTest {
                     }
                 }
         );
+        assertEquals(COUNT, ints.size());
 
         int n=5;
         for (int i=0; i<COUNT;++i)
@@ -215,15 +185,10 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        QFuture<Integer> future = QtConcurrent.filtered(ints,
-                new QtConcurrent.FilteredFunctor<Integer>() {
-                    public boolean filter(Integer i) {
-                        return (i >= COUNT);
-                    }
-                }
-        );
+        QFuture<Integer> future = QtConcurrent.filtered(ints, i->i >= COUNT);
 
         future.waitForFinished();
+        assertEquals(COUNT*2, ints.size());
         assertEquals(COUNT, future.resultCount());
 
         List<Integer> lst = future.results();
@@ -237,17 +202,39 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        List<Integer> lst = QtConcurrent.blockingFiltered(ints,
-                new QtConcurrent.FilteredFunctor<Integer>() {
-                    public boolean filter(Integer i) {
-                        return (i >= COUNT);
-                    }
-                }
-        );
+        List<Integer> lst = QtConcurrent.blockingFiltered(ints, i->i >= COUNT);
 
+        assertEquals(COUNT*2, ints.size());
         assertEquals(COUNT, lst.size());
         for (int i=0; i<lst.size(); ++i)
             assertEquals(i+COUNT, (int) lst.get(i));
+    }
+    
+    @Test
+    public void testBlockingFilter() {
+        List<Integer> ints = new ArrayList<Integer>();
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
+
+        QtConcurrent.blockingFilter(ints, i->i >= COUNT);
+
+        assertEquals(COUNT, ints.size());
+        for (int i=0; i<ints.size(); ++i)
+            assertEquals(i+COUNT, (int) ints.get(i));
+    }
+    
+    @Test
+    public void testFilter() {
+        List<Integer> ints = new ArrayList<Integer>();
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
+
+        QVoidFuture future = QtConcurrent.filter(ints, i->i >= COUNT);
+        future.waitForFinished();
+
+        assertEquals(COUNT, ints.size());
+        for (int i=0; i<ints.size(); ++i)
+            assertEquals(i+COUNT, (int) ints.get(i));
     }
 
 
@@ -264,11 +251,7 @@ public class TestConcurrent extends QApplicationTest {
             ints.add(i);
 
         QFuture<MutableInteger> future = QtConcurrent.filteredReduced(ints,
-                new QtConcurrent.FilteredFunctor<Integer>() {
-                    public boolean filter(Integer i) {
-                        return (i >= COUNT);
-                    }
-                },
+        		i->i >= COUNT,
                 new QtConcurrent.ReducedFunctor<MutableInteger, Integer>() {
                     public MutableInteger defaultResult() {
                         return new MutableInteger(3);
@@ -281,6 +264,7 @@ public class TestConcurrent extends QApplicationTest {
         );
 
         future.waitForFinished();
+        assertEquals(COUNT*2, ints.size());
         assertEquals(1, future.resultCount());
 
         int n=3;
@@ -299,11 +283,7 @@ public class TestConcurrent extends QApplicationTest {
             ints.add(i);
 
         MutableInteger result = QtConcurrent.blockingFilteredReduced(ints,
-                new QtConcurrent.FilteredFunctor<Integer>() {
-                    public boolean filter(Integer i) {
-                        return (i >= COUNT);
-                    }
-                },
+        		i->i >= COUNT,
                 new QtConcurrent.ReducedFunctor<MutableInteger, Integer>() {
                     public MutableInteger defaultResult() {
                         return new MutableInteger(3);
@@ -315,6 +295,7 @@ public class TestConcurrent extends QApplicationTest {
                 }
 
         );
+        assertEquals(COUNT*2, ints.size());
 
         int n=3;
         for (int i=COUNT; i<COUNT*2; ++i)
@@ -335,7 +316,7 @@ public class TestConcurrent extends QApplicationTest {
     @Test
     public void testRunVoid() {
         MutableInteger i = new MutableInteger(321);
-        QFutureVoid v = QtConcurrent.run(()->this.method(i));
+        QVoidFuture v = QtConcurrent.run(()->this.method(i));
 
         v.waitForFinished();
         assertEquals(444, i.value);
@@ -377,46 +358,39 @@ public class TestConcurrent extends QApplicationTest {
     @Test
     public void testRunVoidWithPrimitiveTypes() {
         MutableInteger i = new MutableInteger(0);
-        QFutureVoid future = QtConcurrent.run(()->this.method4(i, 123, 321));
+        QVoidFuture future = QtConcurrent.run(()->this.method4(i, 123, 321));
 
         future.waitForFinished();
         assertEquals(444, i.value);
     }
 
     @Test
-    public void testResultAt() {
+    public void testResultAt_mapped() {
         List<Integer> ints = new ArrayList<Integer>();
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
         {
-            QFuture<Integer> result = QtConcurrent.mapped(ints,
-                    new QtConcurrent.MappedFunctor<Integer, Integer>() {
-                        public Integer map(Integer i) {
-                            return i + 1;
-                        }
-                    }
-            );
+            QFuture<Integer> result = QtConcurrent.mapped(ints, i->i+1);
 
             result.waitForFinished();
+            assertEquals(COUNT*2, ints.size());
             assertEquals(COUNT*2, result.resultCount());
             for (int i=0; i<result.resultCount(); ++i)
                 assertEquals(i+1, (int) result.resultAt(i));
         }
+    }
 
+    @Test
+    public void testResultAt_filtered() {
+        List<Integer> ints = new ArrayList<Integer>();
+        for (int i=0; i<COUNT*2; ++i)
+            ints.add(i);
         {
-            QFuture<Integer> future = QtConcurrent.filtered(ints,
-                    new QtConcurrent.FilteredFunctor<Integer>() {
-                        public boolean filter(Integer i) {
-                            return (i >= COUNT);
-                        }
-                    }
-            );
-        	QFutureWatcher<Integer> watcher = new 	QFutureWatcher<>();
-        	watcher.setFuture(future);
-        	future = watcher.future();
+            QFuture<Integer> future = QtConcurrent.filtered(ints, i->i >= COUNT );
 
             future.waitForFinished();
+            assertEquals(COUNT*2, ints.size());
             assertEquals(COUNT, future.resultCount());
             for (int i=0; i<future.resultCount(); ++i)
                 assertEquals(i+COUNT, (int) future.resultAt(i));
@@ -429,21 +403,9 @@ public class TestConcurrent extends QApplicationTest {
     	List<Integer> ints = new ArrayList<Integer>();
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
-    	QFutureSynchronizer<Integer> synchronizer = new QFutureSynchronizer<>();
-        synchronizer.addFuture(QtConcurrent.mapped(ints,
-                new QtConcurrent.MappedFunctor<Integer, Integer>() {
-                    public Integer map(Integer i) {
-                        return i + 1;
-                    }
-                }
-        ));
-        synchronizer.addFuture(QtConcurrent.filtered(ints,
-                new QtConcurrent.FilteredFunctor<Integer>() {
-                    public boolean filter(Integer i) {
-                        return (i >= COUNT);
-                    }
-                }
-        ));
+    	QFutureSynchronizer<QFuture<Integer>> synchronizer = new QFutureSynchronizer<>();
+        synchronizer.addFuture(QtConcurrent.mapped(ints, i->i+1));
+        synchronizer.addFuture(QtConcurrent.filtered(ints, i->i >= COUNT));
     	List<QFuture<Integer>> futures = synchronizer.futures();
     	assertEquals(2, futures.size());
     	synchronizer.waitForFinished();

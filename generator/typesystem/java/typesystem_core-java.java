@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -221,7 +221,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final java.util.List<QObject> findChildren() {
+    public final QList<QObject> findChildren() {
         return findChildren(QObject.class, (String)null, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
     }
     
@@ -236,7 +236,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl) {
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl) {
         return findChildren(cl, (String)null, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
     }
     
@@ -249,7 +249,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, String name) {
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name) {
         return findChildren(cl, name, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
     }
     
@@ -262,7 +262,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, String name, Qt.FindChildOption... options) {
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name, Qt.FindChildOption... options) {
         return findChildren(cl, name, new Qt.FindChildOptions(options));
     }
     
@@ -294,12 +294,12 @@ class QObject___ extends QObject {
      * @see #findChild()
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, String name, Qt.FindChildOptions options){
-        return findChildrenString(nativeId(this), java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, name, options.value());
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name, Qt.FindChildOptions options){
+        return findChildrenString(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, name, options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> java.util.List<T> findChildrenString(long nativeId, Class < T > cl, long metaObjectPointer, String name, int options);
+    private native final <T extends QObject> QList<T> findChildrenString(long nativeId, long metaObjectPointer, String name, int options);
     
     /**
      * <p>Overloaded function for {@link #findChildren(Class,QRegularExpression,Qt.FindChildOptions)}
@@ -310,7 +310,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegularExpression re) {
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re) {
         return findChildren(cl, re, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
     }
     
@@ -323,7 +323,7 @@ class QObject___ extends QObject {
      * @return found children
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOption... options) {
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOption... options) {
         return findChildren(cl, re, new Qt.FindChildOptions(options));
     }
     
@@ -341,65 +341,12 @@ class QObject___ extends QObject {
      * @see #findChildren()
      */
     @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOptions options){
-        return findChildrenQRegularExpression(nativeId(this), java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, nativeId(re), options.value());
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOptions options){
+        return findChildrenQRegularExpression(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, nativeId(re), options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> java.util.List<T> findChildrenQRegularExpression(long nativeId, Class < T > cl, long metaObjectPointer, long re, int options);
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @return found children
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegExp regExp) {
-        return findChildren(cl, regExp, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}
-     * with: <code>options = FindChildrenRecursively</code>.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @param options search options
-     * @return found children
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOption... options) {
-        return findChildren(cl, regExp, new Qt.FindChildOptions(options));
-    }
-    
-    /**
-     * <p>This function overloads {@link #findChildren()}.</p>
-     * <p>Returns the children of this object that are instance of <i>cl</i> 
-     * and that have names matching the regular expression <i>regExp</i>, 
-     * or an empty list if there are no such objects. 
-     * The search is performed recursively, unless <i>options</i> specifies the option <i>FindDirectChildrenOnly</i>.</p>
-     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
-     * @param <T> type of children
-     * @param cl type of children
-     * @param regExp regular expression
-     * @param options search options
-     * @return found children
-     * @see #findChildren()
-     */
-    @Deprecated
-    @io.qt.QtUninvokable
-    public final <T extends QObject> java.util.List<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOptions options){
-        return findChildrenQRegExp(nativeId(this), java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, nativeId(regExp), options.value());
-    }
-    
-    @io.qt.QtUninvokable
-    private native final <T extends QObject> java.util.List<T> findChildrenQRegExp(long nativeId, Class < T > cl, long metaObjectPointer, long regExp, int options);
+    private native final <T extends QObject> QList<T> findChildrenQRegularExpression(long nativeId, long metaObjectPointer, long re, int options);
     
     /**
      * Declare and instantiate a field of this class in your
@@ -4655,8 +4602,8 @@ class QObject___ extends QObject {
      */
     public static QMetaObject.Connection connect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
         java.util.Objects.requireNonNull(signal);
-        long sender_id = checkedNativeId(sender);
-        long receiver_id = checkedNativeId(receiver);
+        long sender_id = checkedNativeId(java.util.Objects.requireNonNull(sender));
+        long receiver_id = checkedNativeId(java.util.Objects.requireNonNull(receiver));
         java.util.Objects.requireNonNull(slot);
         byte flags = 0;
         if(connectionType!=null && connectionType.length>0) {
@@ -4781,11 +4728,8 @@ class QObject___ extends QObject {
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
     public static boolean disconnect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot) {
-        long sender_id = checkedNativeId(sender);
-        long receiver_id = 0;
-        if(receiver!=null) {
-            receiver_id = checkedNativeId(receiver);
-        }
+        long sender_id = checkedNativeId(java.util.Objects.requireNonNull(sender));
+        long receiver_id = checkedNativeId(receiver);
         return QMetaObject.disconnectMethods(
                 sender_id,
                 signal==null ? -1 : signal.methodIndex(),
@@ -4835,8 +4779,11 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final QMetaObject metaObject() {
-        return QMetaObject.forQObject(checkedNativeId(this));
+        return metaObject(nativeId(this));
     }
+    
+    @io.qt.QtUninvokable
+    private static native QMetaObject metaObject(long nativeId);
     
     /**
      * Casts an object to the given <i>targetType</i>. Returns null if object is not instance of <i>targetType</i>.
@@ -4868,129 +4815,3069 @@ class QObject___ extends QObject {
         String signal = cppSignalSignature(signalObject);
         if(signal.isEmpty())
           return 0;
-        return __qt_QObject_receivers_const_char_ptr_constfct(checkedNativeId(this), signal);
+        return __qt_QObject_receivers_const_char_ptr_constfct(nativeId(this), signal);
     }
 }// class
 
-class QObject_native__{
+class QObject_6__ extends QObject {
 
-// QObject::findChild(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChild__JLjava_lang_Class_2JLjava_lang_String_2I)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- jclass cl0,
- jlong metaObjectPointer1,
- jobject name2,
- jint options3)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChild(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    try{
-        QObject *__qt_this = qtjambi_object_from_nativeId<QObject>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        QString __qt_name2(qtjambi_to_qstring(__jni_env, jstring(name2)));
-        QObject * __qt_return = qt_qFindChild_helper(__qt_this, __qt_name2, *__qt_metaObjectPointer1, Qt::FindChildOptions(options3));
-        return qtjambi_from_qobject(__jni_env, __qt_return, cl0);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
+    private static Runnable NO_SIGNAL = ()->{};
+    
+    private static QMetaMethod findNotifySignalByBindables(QObject object, java.lang.reflect.Field reflectedField, QUntypedPropertyData property) {
+        for(QMetaProperty metaProperty : object.metaObject().properties()) {
+            if(metaProperty.isBindable()) {
+                QUntypedBindable bindable = metaProperty.bindable(object);
+                if(bindable.data()==property) {
+                    QMetaObject.AbstractSignal.registerPropertyField(metaProperty, reflectedField);
+                    QMetaMethod notifySignal = metaProperty.notifySignal();
+                    if(notifySignal.isValid() && notifySignal.parameterCount()==0) {
+                        return notifySignal;
+                    }else {
+                        return null;
+                    }
+                }
+            }
+        }
+        return null;
     }
-}
+    
+    private class EmitSignal implements Runnable{
+        @Override
+        public void run() {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(QObject.this), methodIndex); 
+            }catch(QNoNativeResourcesException e){}
+        }
 
-// QObject::findChildren(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenString__JLjava_lang_Class_2JLjava_lang_String_2I)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- jclass cl0,
- jlong metaObjectPointer1,
- jobject name2,
- jint options3)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QString &name = QString(), Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    try{
-        QObject *__qt_this = qtjambi_object_from_nativeId<QObject>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        QString __qt_name2(qtjambi_to_qstring(__jni_env, jstring(name2)));
-        QList<void *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_name2, *__qt_metaObjectPointer1, &list, Qt::FindChildOptions(options3));
-        JObjectWrapper cl0Wrapper(__jni_env, cl0);
-        return qtjambi_to_ArrayList<QList, void *>(
-                __jni_env, 
-                list, 
-                [cl0Wrapper](JNIEnv *__jni_env, void *const& p) -> jobject {
-                    return qtjambi_from_qobject(__jni_env, reinterpret_cast<const QObject *>(p), jclass(cl0Wrapper.object()));
-                });
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
+        private final int methodIndex;
 
-// QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenQRegExp__JLjava_lang_Class_2JJI)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- jclass cl0,
- jlong metaObjectPointer1,
- QtJambiNativeID regExp2,
- jint options3)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QRegExp &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    try{
-        QObject *__qt_this = qtjambi_object_from_nativeId<QObject>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        const QRegExp& __qt_regExp2 = qtjambi_value_from_nativeId<QRegExp>(regExp2);
-        QList<void *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_regExp2, *__qt_metaObjectPointer1, &list, Qt::FindChildOptions(options3));
-        JObjectWrapper cl0Wrapper(__jni_env, cl0);
-        return qtjambi_to_ArrayList<QList, void *>(
-                __jni_env, 
-                list, 
-                [cl0Wrapper](JNIEnv *__jni_env, void * const & p) -> jobject {
-                    return qtjambi_from_qobject(__jni_env, reinterpret_cast<const QObject *>(p), jclass(cl0Wrapper.object()));
-                });
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
+        public EmitSignal(int methodIndex) {
+            super();
+            this.methodIndex = methodIndex;
+        }
     }
-}
+    
+    private static abstract class AbstractPropertyCore<T>{
+        abstract QMetaType valueMetaType(QProperty<T> property);
+        abstract void initialize(QProperty<T> property);
+        abstract void emitSignal(QProperty<T> property);
+        abstract boolean hasSignal(QProperty<T> property);
+        abstract T value(QBindingStorage bindingStorage, QProperty<T> property);
+        abstract QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create);
+        abstract boolean setValueBypassingBindings(QProperty<T> property, Object val);
+    }
+    
+    private static class PropertyCore<T> extends AbstractPropertyCore<T>{
+        PropertyCore(QMetaType metaType) {
+            super();
+            this.metaType = metaType;
+        }
+        final QMetaType valueMetaType(QProperty<T> property) { return metaType; }
+        final void initialize(QProperty<T> property) {}
+        void emitSignal(QProperty<T> property) {}
+        boolean hasSignal(QProperty<T> property) { return false; }
+        final T value(QBindingStorage bindingStorage, QProperty<T> property){
+            bindingStorage.maybeUpdateBindingAndRegister(property);
+            return io.qt.core.QProperty.getValueBypassingBindings(nativeId(property), checkedNativeId(metaType));
+        }
+        final QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create) {
+            return bindingStorage.bindingData(property, create);
+        }
+        boolean setValueBypassingBindings(QProperty<T> property, Object val) {
+            return io.qt.core.QProperty.setValueBypassingBindings(nativeId(property), checkedNativeId(metaType), val);
+        }
+        private final QMetaType metaType;
+    }
+    
+    private final static class SignalPropertyCore<T> extends PropertyCore<T>{
+        public SignalPropertyCore(QMetaType metaType, int methodIndex) {
+            super(metaType);
+            this.methodIndex = methodIndex;
+        }
+        void emitSignal(QProperty<T> property) {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(java.util.Objects.requireNonNull(property.owner())), methodIndex); 
+            }catch(QNoNativeResourcesException e){}
+        }
+        boolean hasSignal(QProperty<T> property) { return true; }
+        private final int methodIndex;
+    }
+    
+    private static class RCPropertyCore<T> extends PropertyCore<T>{
+        @SuppressWarnings("unused")
+        private Object __rcValue;
+        RCPropertyCore(QMetaType metaType) {
+            super(metaType);
+        }
+        final boolean setValueBypassingBindings(QProperty<T> property, Object val) {
+            if(super.setValueBypassingBindings(property, val)) {
+                __rcValue = val;
+                return true;
+            }
+            else return false;
+        }
+    }
+    
+    private final static class RCSignalPropertyCore<T> extends RCPropertyCore<T>{
+        public RCSignalPropertyCore(QMetaType metaType, int methodIndex) {
+            super(metaType);
+            this.methodIndex = methodIndex;
+        }
+        void emitSignal(QProperty<T> property) {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(java.util.Objects.requireNonNull(property.owner())), methodIndex); 
+            }catch(QNoNativeResourcesException e){}
+        }
+        boolean hasSignal(QProperty<T> property) { return true; }
+        private final int methodIndex;
+    }
+    
+    private static class InitializingPropertyCore<T> extends AbstractPropertyCore<T>{
+        QMetaType valueMetaType(QProperty<T> property) {
+            initialize(property);
+            return property.core.valueMetaType(property);
+        }
+        void initialize(QProperty<T> property) {
+            initialize(property, null);
+        }
+        final void initialize(QProperty<T> property, T val) {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(property.owner(), property);
+            if(result.property!=null) {
+                if(result.notifySignal==null) {
+                    if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                        property.core = new RCPropertyCore<>(result.metaType);
+                    }else {
+                        property.core = new PropertyCore<>(result.metaType);
+                    }
+                }else {
+                    if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                        property.core = new RCSignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex());
+                    }else {
+                        property.core = new SignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex());
+                    }
+                }
+                io.qt.core.QProperty.__qt_new(property, result.metaType, val);
+            }else {
+                property.core = new PropertyCore<>(result.metaType);
+                io.qt.core.QProperty.__qt_new(property, result.metaType, val);
+                QMetaMethod notifySignal = findNotifySignalByBindables(property.owner(), result.reflectedField, property);
+                if(notifySignal!=null) {
+                    if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
+                        property.core = new RCSignalPropertyCore<>(result.metaType, notifySignal.methodIndex());
+                    }else {
+                        property.core = new SignalPropertyCore<>(result.metaType, notifySignal.methodIndex());
+                    }
+                }
+            }
+        }
+        final T value(QBindingStorage bindingStorage, QProperty<T> property){
+            initialize(property);
+            return property.core.value(bindingStorage, property);
+        }
+        final QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create) {
+            return property.core.bindingData(bindingStorage, property, create);
+        }
+        void emitSignal(QProperty<T> property) {
+            initialize(property);
+            property.core.emitSignal(property);
+        }
+        boolean hasSignal(QProperty<T> property) {
+            initialize(property);
+            return property.core.hasSignal(property);
+        }
+        boolean setValueBypassingBindings(QProperty<T> property, Object val) {
+            initialize(property);
+            return property.core.setValueBypassingBindings(property, val);
+        }
+    }
+    
+    private final static class ValueInitializingPropertyCore<T> extends InitializingPropertyCore<T>{
+        public ValueInitializingPropertyCore(T val) {
+            super();
+            this.val = val;
+        }
+        
+        void initialize(QProperty<T> property) {
+            super.initialize(property, val);
+        }
+    
+        private final T val;
+    }
+    
+    private final static class BindingInitializingPropertyCore<T> extends InitializingPropertyCore<T>{
+        public BindingInitializingPropertyCore(QUntypedPropertyBinding binding) {
+            super();
+            this.binding = binding;
+        }
+        
+        void initialize(QProperty<T> property) {
+            super.initialize(property, null);
+            property.bindingData().setBinding(binding, property);
+        }
+    
+        private final QUntypedPropertyBinding binding;
+    }
+    
+    /**
+     * <p>The <code>QProperty</code> class enables automatic property bindings.
+     * The Java type <code>QProperty</code> corresponds to the C++ type <code><a href="https://doc.qt.io/qt/qobjectbindableproperty.html">QObjectBindableProperty</a></code>.</p>
+     * <p>It is only allowed to use <code>QProperty</code> as <code>final</code>-declared member variable of a <code>QObject</code> subtype.</p>
+     * <p>Example:</p>
+     * <code>
+     * public class MyObject extends QObject{<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;private final QProperty&lt;QColor> color = new QProperty&lt;>();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public final Signal0 colorChanged = new Signal0();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public QColor color(){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return color.value();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public void setColor(QColor color){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;color.setValue(color);<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public QBindable&lt;QColor> bindableColor(){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return new QBindable&lt;>(color);<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * }
+     * </code>
+     * <p><code>QProperty</code> fields should meet the following naming conventions to let
+     * metaobject system identify them as accessible property. For a property called "<code>foo</code>"
+     * call the <code>QProperty</code> field either "<code>foo</code>", "<code>fooProp</code>" or "<code>fooProperty</code>".
+     * Then, QtJambi will identify the method "<code>public T foo()</code>" as it's getter,
+     * "<code>public void setFoo(T)</code>" as it's setter,
+     * "<code>public final Signal0 fooChanged</code>" as it's notify signal and 
+     * "<code>public QBindable&lt;T> bindableFoo()</code>" as it's bindable supplier.
+     * </p>
+     * <p>Instead of meeting these naming conventions you can use the <code>io.qt.QtProperty...</code> annotations
+     * to make the fields and methods identified as property:</p>
+     * <code>
+     * public class MyObject extends QObject{<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;@QtPropertyMember(name="color")<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;private final QProperty&lt;QColor> _c = new QProperty&lt;>();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;@QtPropertyNotify(name="color")<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public final Signal0 colorChangeAppeared = new Signal0();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;@QtPropertyReader(name="color")<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public QColor get_color(){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return _c.value();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;@QtPropertyWriter(name="color")<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public void change_color(QColor color){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;_c.setValue(color);<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;@QtPropertyBindable(name="color")<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public QBindable&lt;QColor> get_bindable_color(){<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return new QBindable&lt;>(_c);<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+     * }
+     * </code>
+     * <p>By declaring a <code>QProperty</code> field <code>public</code> 
+     * or by using the <code>QtPropertyMember</code> annotation
+     * QtJambi identifies a readable, writable and bindable property 
+     * without the need to specify getter, setter and bindable methods:</p>
+     * <code>
+     * public class MyObject extends QObject{<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public final QProperty&lt;QColor> color = new QProperty&lt;>();<br>
+     * &nbsp;&nbsp;&nbsp;&nbsp;public final Signal0 colorChanged = new Signal0();<br>
+     * }
+     * </code>
+     * <p>For primitive-typed implementations see:</p>
+     * <ul>
+     * <li>{@link QBooleanProperty}</li>
+     * <li>{@link QByteProperty}</li>
+     * <li>{@link QShortProperty}</li>
+     * <li>{@link QIntProperty}</li>
+     * <li>{@link QLongProperty}</li>
+     * <li>{@link QFloatProperty}</li>
+     * <li>{@link QDoubleProperty}</li>
+     * <li>{@link QCharProperty}</li>
+     * </ul>
+     */
+    public final class QProperty<T> extends QPropertyData<T> {
+        
+        QObject owner() {
+            return QObject.this;
+        }
+    
+        /**
+         * <p>Constructs a property whose type is taken from it's field declaration.</p>
+         */
+        public QProperty() {
+            super(null);
+            core = new InitializingPropertyCore<>();
+        }
+    
+        /**
+         * <p>Constructs a property with the provided <code>initialValue</code>.</p>
+         * <p>The property type is taken from it's field declaration. 
+         * The <code>initialValue</code> has to be assignable to the property type. Otherwise, a default value is used.</p>
+         * @param initialValue
+         */
+        public QProperty(T initialValue) {
+            super(null);
+            core = new ValueInitializingPropertyCore<>(initialValue);
+        }
+        
+        /**
+         * <p>Constructs a property with the provided binding.</p>
+         * <p>The property type is taken from it's field declaration. 
+         * The <code>binding</code>'s type has to be assignable to the property type. Otherwise, a default value is used.</p>
+         * @param binding
+         */
+        public QProperty(QUntypedPropertyBinding binding) {
+            super(null);
+            core = new BindingInitializingPropertyCore<>(binding);
+        }
+        
+        /**
+         * <p>Constructs a property bound to the provided <code>functor</code>.</p>
+         * <p>The property type is taken from it's field declaration. 
+         * The <code>functor</code>'s return type ({@link QtUtilities.Supplier#get()}) has to be assignable to the property type. 
+         * Otherwise, a default value is used.</p>
+         * @param functor
+         */
+        public QProperty(QtUtilities.Supplier<T> functor) {
+            this(new QPropertyBinding<>(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public T value()
+        {
+            return core.value(bindingStorage(), this);
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @SuppressWarnings("unchecked")
+        @QtUninvokable
+        public void setValue(T newValue)
+        {
+            QMetaType valueMetaType = core.valueMetaType(this);
+            if(newValue!=null && !QVariant.canConvert(newValue, valueMetaType))
+                throw new ClassCastException("Cannot cast value to "+valueMetaType.name());
+            
+            if(newValue==null && !valueMetaType.flags().isSet(QMetaType.TypeFlag.IsPointer))
+                newValue = (T)valueMetaType.create();
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (core.setValueBypassingBindings(this, newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be equals to the property's type <code>T</code>, 
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @SuppressWarnings("unchecked")
+        @QtUninvokable
+        public QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding)
+        {
+            if(newBinding!=null && !io.qt.core.QProperty.checkType(core.valueMetaType(this), newBinding.valueMetaType()))
+                return new QPropertyBinding<>();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QPropertyBinding)
+                return (QPropertyBinding<T>)oldBinding;
+            else
+                return new QPropertyBinding<>(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be equals to the property's type <code>T</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(newBinding!=null && !io.qt.core.QProperty.checkType(core.valueMetaType(this), newBinding.valueMetaType()))
+                return false;
+            QPropertyBindingData bd = bindingData();
+            bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            return true;
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link QtUtilities.Supplier#get()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor)
+        {
+            return setBinding(new QPropertyBinding<>(functor));
+        }
+        
+        @QtUninvokable
+        private QPropertyBinding<T> makeBinding()
+        {
+            core.initialize(this);
+            return new QPropertyBinding<>(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() {
+            QPropertyBindingData bd = core.bindingData(bindingStorage(), this, false);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QPropertyBinding&lt;T>} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QPropertyBinding<T> binding()
+        {
+            return new QPropertyBinding<>(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QPropertyBinding<T> takeBinding()
+        {
+            return setBinding(new QPropertyBinding<>());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() {
+            return core.bindingData(bindingStorage(), this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            core.emitSignal(this);
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            core.emitSignal(this);
+        }
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return core.hasSignal(this);
+        }
+        
+        QMetaType valueMetaType() {
+            return core.valueMetaType(this);
+        }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @QtUninvokable
+        @Override
+        public final T getValueBypassingBindings() {
+            long metaTypeId = checkedNativeId(core.valueMetaType(this));
+            return io.qt.core.QProperty.getValueBypassingBindings(nativeId(this), metaTypeId);
+        }
+        
+        /**
+         * {@inheritDoc}
+         */
+        @QtUninvokable
+        @Override
+        public final boolean setValueBypassingBindings(T val) {
+            return core.setValueBypassingBindings(this, val);
+        }
+        
+        private AbstractPropertyCore<T> core;
+    }
+    
+    /**
+     * QBooleanProperty is primitive-typed version of QProperty&lt;Boolean&gt;.
+     * @see QProperty
+     */
+    public class QBooleanProperty extends QBooleanPropertyData {
+    
+        /**
+         * Constructs a <code>boolean</code>-typed property.
+         */
+        public QBooleanProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>boolean</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QBooleanProperty(boolean initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>boolean</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QBooleanProperty(QBooleanPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>boolean</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QBooleanProperty(QPropertyBinding<@QtPrimitiveType Boolean> binding) {
+            super();
+            if(io.qt.core.QBooleanProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>boolean</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QBooleanProperty(java.util.function.BooleanSupplier functor) {
+            this(new QBooleanPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public boolean value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(boolean newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBooleanPropertyBinding setBinding(QBooleanPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QBooleanPropertyBinding)
+                return (QBooleanPropertyBinding)oldBinding;
+            else
+                return new QBooleanPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>boolean</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Boolean> newBinding)
+        {
+            if(!io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType()))
+                return new QBooleanPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QBooleanPropertyBinding)
+                return (QBooleanPropertyBinding)oldBinding;
+            else
+                return new QBooleanPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>boolean</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.BooleanSupplier#getAsBoolean()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBooleanPropertyBinding setBinding(java.util.function.BooleanSupplier functor)
+        {
+            return setBinding(new QBooleanPropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QBooleanPropertyBinding makeBinding()
+        {
+            return new QBooleanPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QBooleanPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QBooleanPropertyBinding binding()
+        {
+            return new QBooleanPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QBooleanPropertyBinding takeBinding()
+        {
+            return setBinding(new QBooleanPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QByteProperty is primitive-typed version of QProperty&lt;Byte&gt;.
+     * @see QProperty
+     */
+    public class QByteProperty extends QBytePropertyData {
+        
+        /**
+         * Constructs a <code>byte</code>-typed property.
+         */
+        public QByteProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>byte</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QByteProperty(byte initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>byte</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QByteProperty(QBytePropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>byte</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QByteProperty(QPropertyBinding<@QtPrimitiveType Byte> binding) {
+            super();
+            if(io.qt.core.QByteProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>byte</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QByteProperty(io.qt.QtUtilities.ByteSupplier functor) {
+            this(new QBytePropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public byte value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(byte newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBytePropertyBinding setBinding(QBytePropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QBytePropertyBinding)
+                return (QBytePropertyBinding)oldBinding;
+            else
+                return new QBytePropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>byte</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Byte> newBinding)
+        {
+            if(!io.qt.core.QByteProperty.checkType(newBinding.valueMetaType()))
+                return new QBytePropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QBytePropertyBinding)
+                return (QBytePropertyBinding)oldBinding;
+            else
+                return new QBytePropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>byte</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QByteProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.ByteSupplier#getAsByte()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QBytePropertyBinding setBinding(io.qt.QtUtilities.ByteSupplier functor)
+        {
+            return setBinding(new QBytePropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QBytePropertyBinding makeBinding()
+        {
+            return new QBytePropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QBytePropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QBytePropertyBinding binding()
+        {
+            return new QBytePropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QBytePropertyBinding takeBinding()
+        {
+            return setBinding(new QBytePropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QShortProperty is primitive-typed version of QProperty&lt;Short&gt;.
+     * @see QProperty
+     */
+    public class QShortProperty extends QShortPropertyData {
+        
+        /**
+         * Constructs a <code>short</code>-typed property.
+         */
+        public QShortProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>short</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QShortProperty(short initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>short</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QShortProperty(QShortPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>short</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QShortProperty(QPropertyBinding<@QtPrimitiveType Short> binding) {
+            super();
+            if(io.qt.core.QShortProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>short</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QShortProperty(QtUtilities.ShortSupplier functor) {
+            this(new QShortPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public short value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(short newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QShortPropertyBinding setBinding(io.qt.QtUtilities.ShortSupplier functor)
+        {
+            return setBinding(new QShortPropertyBinding(functor));
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>short</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QShortPropertyBinding setBinding(QShortPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QShortPropertyBinding)
+                return (QShortPropertyBinding)oldBinding;
+            else
+                return new QShortPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>short</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QShortPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Short> newBinding)
+        {
+            if(!io.qt.core.QShortProperty.checkType(newBinding.valueMetaType()))
+                return new QShortPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QShortPropertyBinding)
+                return (QShortPropertyBinding)oldBinding;
+            else
+                return new QShortPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>short</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QShortProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        @QtUninvokable
+        private QShortPropertyBinding makeBinding()
+        {
+            return new QShortPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QShortPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QShortPropertyBinding binding()
+        {
+            return new QShortPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QShortPropertyBinding takeBinding()
+        {
+            return setBinding(new QShortPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QIntProperty is primitive-typed version of QProperty&lt;Integer&gt;.
+     * @see QProperty
+     */
+    public class QIntProperty extends QIntPropertyData {
+        
+        /**
+         * Constructs an <code>int</code>-typed property.
+         */
+        public QIntProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs an <code>int</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QIntProperty(int initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs an <code>int</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QIntProperty(QIntPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs an <code>int</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QIntProperty(QPropertyBinding<@QtPrimitiveType Integer> binding) {
+            super();
+            if(io.qt.core.QIntProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs an <code>int</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QIntProperty(java.util.function.IntSupplier functor) {
+            this(new QIntPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public int value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(int newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QIntPropertyBinding setBinding(QIntPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QIntPropertyBinding)
+                return (QIntPropertyBinding)oldBinding;
+            else
+                return new QIntPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>int</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Integer> newBinding)
+        {
+            if(!io.qt.core.QIntProperty.checkType(newBinding.valueMetaType()))
+                return new QIntPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QIntPropertyBinding)
+                return (QIntPropertyBinding)oldBinding;
+            else
+                return new QIntPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>int</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QIntProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.IntSupplier#getAsInt()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QIntPropertyBinding setBinding(java.util.function.IntSupplier functor)
+        {
+            return setBinding(new QIntPropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QIntPropertyBinding makeBinding()
+        {
+            return new QIntPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QIntPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QIntPropertyBinding binding()
+        {
+            return new QIntPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QIntPropertyBinding takeBinding()
+        {
+            return setBinding(new QIntPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QLongProperty is primitive-typed version of QProperty&lt;Long&gt;.
+     * @see QProperty
+     */
+    public class QLongProperty extends QLongPropertyData {
+        
+        /**
+         * Constructs a <code>long</code>-typed property.
+         */
+        public QLongProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>long</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QLongProperty(long initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>long</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QLongProperty(QLongPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>long</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QLongProperty(QPropertyBinding<@QtPrimitiveType Long> binding) {
+            super();
+            if(io.qt.core.QLongProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>long</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QLongProperty(java.util.function.LongSupplier functor) {
+            this(new QLongPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public long value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(long newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QLongPropertyBinding setBinding(QLongPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QLongPropertyBinding)
+                return (QLongPropertyBinding)oldBinding;
+            else
+                return new QLongPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>long</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Long> newBinding)
+        {
+            if(!io.qt.core.QLongProperty.checkType(newBinding.valueMetaType()))
+                return new QLongPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QLongPropertyBinding)
+                return (QLongPropertyBinding)oldBinding;
+            else
+                return new QLongPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>long</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QLongProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.LongSupplier#getAsLong()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QLongPropertyBinding setBinding(java.util.function.LongSupplier functor)
+        {
+            return setBinding(new QLongPropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QLongPropertyBinding makeBinding()
+        {
+            return new QLongPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QLongPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QLongPropertyBinding binding()
+        {
+            return new QLongPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QLongPropertyBinding takeBinding()
+        {
+            return setBinding(new QLongPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QFloatProperty is primitive-typed version of QProperty&lt;Float&gt;.
+     * @see QProperty
+     */
+    public class QFloatProperty extends QFloatPropertyData {
+        
+        /**
+         * Constructs a <code>float</code>-typed property.
+         */
+        public QFloatProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>float</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QFloatProperty(float initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>float</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QFloatProperty(QFloatPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>float</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QFloatProperty(QPropertyBinding<@QtPrimitiveType Float> binding) {
+            super();
+            if(io.qt.core.QFloatProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>float</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QFloatProperty(io.qt.QtUtilities.FloatSupplier functor) {
+            this(new QFloatPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public float value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(float newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QFloatPropertyBinding setBinding(QFloatPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QFloatPropertyBinding)
+                return (QFloatPropertyBinding)oldBinding;
+            else
+                return new QFloatPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>float</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Float> newBinding)
+        {
+            if(!io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType()))
+                return new QFloatPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QFloatPropertyBinding)
+                return (QFloatPropertyBinding)oldBinding;
+            else
+                return new QFloatPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>float</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link io.qt.QtUtilities.FloatSupplier#getAsFloat()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QFloatPropertyBinding setBinding(io.qt.QtUtilities.FloatSupplier functor)
+        {
+            return setBinding(new QFloatPropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QFloatPropertyBinding makeBinding()
+        {
+            return new QFloatPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QFloatPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QFloatPropertyBinding binding()
+        {
+            return new QFloatPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QFloatPropertyBinding takeBinding()
+        {
+            return setBinding(new QFloatPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QDoubleProperty is primitive-typed version of QProperty&lt;Double&gt;.
+     * @see QProperty
+     */
+    public class QDoubleProperty extends QDoublePropertyData {
+        
+        /**
+         * Constructs a <code>double</code>-typed property.
+         */
+        public QDoubleProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>double</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QDoubleProperty(double initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>double</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QDoubleProperty(QDoublePropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>double</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QDoubleProperty(QPropertyBinding<@QtPrimitiveType Double> binding) {
+            super();
+            if(io.qt.core.QDoubleProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>double</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QDoubleProperty(java.util.function.DoubleSupplier functor) {
+            this(new QDoublePropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public double value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(double newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QDoublePropertyBinding setBinding(QDoublePropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QDoublePropertyBinding)
+                return (QDoublePropertyBinding)oldBinding;
+            else
+                return new QDoublePropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>double</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Double> newBinding)
+        {
+            if(!io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType()))
+                return new QDoublePropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QDoublePropertyBinding)
+                return (QDoublePropertyBinding)oldBinding;
+            else
+                return new QDoublePropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>double</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.DoubleSupplier#getAsDouble()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QDoublePropertyBinding setBinding(java.util.function.DoubleSupplier functor)
+        {
+            return setBinding(new QDoublePropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QDoublePropertyBinding makeBinding()
+        {
+            return new QDoublePropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QDoublePropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QDoublePropertyBinding binding()
+        {
+            return new QDoublePropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QDoublePropertyBinding takeBinding()
+        {
+            return setBinding(new QDoublePropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    /**
+     * QCharProperty is primitive-typed version of QProperty&lt;Character&gt;.
+     * @see QProperty
+     */
+    public class QCharProperty extends QCharPropertyData {
+        
+        /**
+         * Constructs a <code>char</code>-typed property.
+         */
+        public QCharProperty() {
+            super();
+        }
+    
+        /**
+         * Constructs a <code>char</code>-typed property with the provided initialValue.
+         * @param initialValue
+         */
+        public QCharProperty(char initialValue) {
+            super(initialValue);
+        }
+        
+        /**
+         * Constructs a <code>char</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QCharProperty(QCharPropertyBinding binding) {
+            super();
+            bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * Constructs a <code>char</code>-typed property with the provided binding.
+         * @param binding
+         */
+        public QCharProperty(QPropertyBinding<@QtPrimitiveType Character> binding) {
+            super();
+            if(io.qt.core.QCharProperty.checkType(binding.valueMetaType()))
+                bindingData().setBinding(binding, this);
+        }
+        
+        /**
+         * <p>Constructs a <code>char</code>-typed property bound to the provided <code>functor</code>.</p>
+         * @param functor
+         */
+        public QCharProperty(io.qt.QtUtilities.CharSupplier functor) {
+            this(new QCharPropertyBinding(functor));
+        }
+        
+        /**
+         * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
+         * @return value
+         */
+        @QtUninvokable
+        public char value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return this.getValueBypassingBindings();
+        }
+        
+        /**
+         * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
+         * @param newValue
+         */
+        @QtUninvokable
+        public void setValue(char newValue)
+        {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            if(bd!=null)
+                bd.removeBinding();
+            if (this.setValueBypassingBindings(newValue))
+                notifyProperty(bd);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QCharPropertyBinding setBinding(QCharPropertyBinding newBinding)
+        {
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QCharPropertyBinding)
+                return (QCharPropertyBinding)oldBinding;
+            else
+                return new QCharPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>char</code>,
+         * otherwise the property remains unchanged.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param newBinding
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Character> newBinding)
+        {
+            if(!io.qt.core.QCharProperty.checkType(newBinding.valueMetaType()))
+                return new QCharPropertyBinding();
+            QPropertyBindingData bd = bindingData();
+            QUntypedPropertyBinding oldBinding = bd.setBinding(newBinding, this);
+            notifyProperty(bd);
+            if(oldBinding instanceof QCharPropertyBinding)
+                return (QCharPropertyBinding)oldBinding;
+            else
+                return new QCharPropertyBinding(oldBinding);
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>newBinding</code> expression.</p>
+         * <p>The binding's value type ({@link QUntypedPropertyBinding#valueMetaType()}) has to be <code>char</code>, 
+         * otherwise the property remains unchanged and the method returns <code>false</code>.</p>
+         * <p>The first time the property value is read, the binding is evaluated. 
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * <p>Returns true if the type of this property is the same as the type the binding function returns; false otherwise.</p>
+         * @param newBinding
+         * @return true if types match, false otherwise.
+         */
+        @QtUninvokable
+        public boolean setBinding(QUntypedPropertyBinding newBinding)
+        {
+            if(io.qt.core.QCharProperty.checkType(newBinding.valueMetaType())) {
+                QPropertyBindingData bd = bindingData();
+                bd.setBinding(newBinding, this);
+                notifyProperty(bd);
+                return true;
+            }else {
+                return false;
+            }
+        }
+        
+        /**
+         * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link io.qt.QtUtilities.CharSupplier#getAsChar()} of <code>functor</code>.
+         * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
+         * @param functor
+         * @return oldBinding
+         */
+        @QtUninvokable
+        public QCharPropertyBinding setBinding(io.qt.QtUtilities.CharSupplier functor)
+        {
+            return setBinding(new QCharPropertyBinding(functor));
+        }
+        
+        @QtUninvokable
+        private QCharPropertyBinding makeBinding()
+        {
+            return new QCharPropertyBinding(this::value);
+        }
+        
+        /**
+         * Checks if the property has a binding.
+         * @return true if the property has a binding, false otherwise.
+         */
+        @QtUninvokable
+        public boolean hasBinding() { 
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            return bd!=null && bd.hasBinding(); 
+        }
+        
+        /**
+         * Returns the binding expression that is associated with this property. 
+         * A default constructed {@link QCharPropertyBinding} will be returned if no such association exists.
+         * @return binding
+         */
+        @QtUninvokable
+        public QCharPropertyBinding binding()
+        {
+            return new QCharPropertyBinding(this);
+        }
+        
+        /**
+         * <p>Disassociates the binding expression from this property and returns it.</p>
+         * <p>After calling this function, the value of the property will only change if you assign a new value to it, or when a new binding is set.</p>
+         * @return the removed binding
+         */
+        @QtUninvokable
+        public QCharPropertyBinding takeBinding()
+        {
+            return setBinding(new QCharPropertyBinding());
+        }
+        
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        private void notifyProperty(QPropertyBindingData binding){
+            if (binding!=null)
+                binding.notifyObservers(this);
+            emitSignal();
+        }
+        
+        private Runnable signal = () -> {
+            io.qt.internal.QtJambiPropertyInfo result = QMetaObject.AbstractSignal.analyzeProperty(QObject.this, this);
+            QMetaMethod notifySignal;
+            if(result.property!=null) {
+                notifySignal = result.notifySignal;
+            }else {
+                notifySignal = findNotifySignalByBindables(QObject.this, result.reflectedField, this);
+            }
+            if(notifySignal==null) {
+                this.signal = NO_SIGNAL;
+            }else{
+                int methodIndex = notifySignal.methodIndex();
+                this.signal = new EmitSignal(methodIndex);
+            }
+            this.signal.run();
+        };
+        
+        @QtUninvokable
+        private boolean hasSignal() {
+            return this.signal != NO_SIGNAL;
+        }
+        
+        @QtUninvokable
+        private void emitSignal() {
+            this.signal.run();
+        }
+    }
+    
+    private abstract class QAbstractComputedProperty extends QUntypedPropertyData {
+        @QtUninvokable
+        public final boolean hasBinding() { return false; }
+                
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the property changes.</p>
+         * <p>The returned property change handler object keeps track of the registration. 
+         * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         */
+        @QtUninvokable
+        public final QPropertyChangeHandler onValueChanged(Runnable f)
+        {
+            return new QPropertyChangeHandler(bindingData(), f);
+        }
+    
+        /**
+         * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
+         * @param f
+         * @return property change handler
+         * @see QPropertyChangeHandler
+         * @see #onValueChanged(Runnable)
+         */
+        @QtUninvokable
+        public final QPropertyChangeHandler subscribe(Runnable f)
+        {
+            f.run();
+            return onValueChanged(f);
+        }
+        
+        @QtUninvokable
+        final QPropertyBindingData bindingData() { 
+            return bindingStorage().bindingData(this, true);
+        }
+        
+        @QtUninvokable
+        public abstract QMetaType valueMetaType();
+    }
+    
+    /**
+     * <p>The <code>QComputedProperty</code> class is a template class for externally computed/stored values.
+     * Create an instance of <code>QComputedProperty</code> by providing a value supplier.</p>
+     * <p>Example:</p>
+     * <code>
+     * private final QComputedProperty&lt;QColor> color = new QComputedProperty&lt;>(this::computeOptimalColor);
+     * </code>
+     * <p>The Java type <code>QComputedProperty</code> corresponds to the C++ type <code>QObjectComputedProperty</code>.</p>
+     * <p>For primitive-typed implementations see:</p>
+     * <ul>
+     * <li>{@link QComputedBooleanProperty}</li>
+     * <li>{@link QComputedByteProperty}</li>
+     * <li>{@link QComputedShortProperty}</li>
+     * <li>{@link QComputedIntProperty}</li>
+     * <li>{@link QComputedLongProperty}</li>
+     * <li>{@link QComputedFloatProperty}</li>
+     * <li>{@link QComputedDoubleProperty}</li>
+     * <li>{@link QComputedCharProperty}</li>
+     * </ul>
+     */
+    public final class QComputedProperty<T> extends QAbstractComputedProperty {
+        
+        private final QtUtilities.Supplier<T> getter;
+        
+        /**
+         * Constructs a computed-value property whose type corresponds to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedProperty(QtUtilities.Supplier<T> getter) {
+            super();
+            QPropertyBinding.analyzeMetaType(getter);
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public T value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.get();
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return QPropertyBinding.analyzeMetaType(getter);
+        }
+    }
+    
+    /**
+     * QComputedBooleanProperty is primitive-typed version of QComputedProperty&lt;Boolean&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedBooleanProperty extends QAbstractComputedProperty {
+        
+        private final java.util.function.BooleanSupplier getter;
+    
+        /**
+         * Constructs a <code>boolean</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedBooleanProperty(java.util.function.BooleanSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public boolean value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsBoolean();
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.Bool);
+        }
+    }
+    
+    /**
+     * QComputedByteProperty is primitive-typed version of QComputedProperty&lt;Byte&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedByteProperty extends QAbstractComputedProperty {
+        
+        private final QtUtilities.ByteSupplier getter;
+    
+        /**
+         * Constructs a <code>byte</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedByteProperty(QtUtilities.ByteSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public byte value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsByte();
+        }
+        
+        @QtUninvokable
+        private QBytePropertyBinding makeBinding()
+        {
+            return new QBytePropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.SChar);
+        }
+    }
+    
+    /**
+     * QComputedShortProperty is primitive-typed version of QComputedProperty&lt;Short&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedShortProperty extends QAbstractComputedProperty {
+        
+        private final QtUtilities.ShortSupplier getter;
+    
+        /**
+         * Constructs a <code>short</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedShortProperty(QtUtilities.ShortSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public short value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsShort();
+        }
+        
+        @QtUninvokable
+        private QShortPropertyBinding makeBinding()
+        {
+            return new QShortPropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.Short);
+        }
+    }
+    
+    /**
+     * QComputedIntProperty is primitive-typed version of QComputedProperty&lt;Integer&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedIntProperty extends QAbstractComputedProperty {
+        
+        private final java.util.function.IntSupplier getter;
+    
+        /**
+         * Constructs a <code>int</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedIntProperty(java.util.function.IntSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public int value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsInt();
+        }
+        
+        @QtUninvokable
+        private QIntPropertyBinding makeBinding()
+        {
+            return new QIntPropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.Int);
+        }
+    }
+    
+    /**
+     * QComputedLongProperty is primitive-typed version of QComputedProperty&lt;Long&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedLongProperty extends QAbstractComputedProperty {
+        
+        private final java.util.function.LongSupplier getter;
+    
+        /**
+         * Constructs a <code>long</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedLongProperty(java.util.function.LongSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public long value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsLong();
+        }
+        
+        @QtUninvokable
+        private QLongPropertyBinding makeBinding()
+        {
+            return new QLongPropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.LongLong);
+        }
+    }
+    
+    /**
+     * QComputedFloatProperty is primitive-typed version of QComputedProperty&lt;Float&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedFloatProperty extends QAbstractComputedProperty {
+        
+        private final QtUtilities.FloatSupplier getter;
+    
+        /**
+         * Constructs a <code>float</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedFloatProperty(QtUtilities.FloatSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public float value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsFloat();
+        }
+        
+        @QtUninvokable
+        private QFloatPropertyBinding makeBinding()
+        {
+            return new QFloatPropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.Float);
+        }
+    }
+    
+    /**
+     * QComputedDoubleProperty is primitive-typed version of QComputedProperty&lt;Double&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedDoubleProperty extends QAbstractComputedProperty {
+        
+        private final java.util.function.DoubleSupplier getter;
+    
+        /**
+         * Constructs a <code>double</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedDoubleProperty(java.util.function.DoubleSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public double value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsDouble();
+        }
+        
+        @QtUninvokable
+        private QDoublePropertyBinding makeBinding()
+        {
+            return new QDoublePropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.Double);
+        }
+    }
+    
+    /**
+     * QComputedCharProperty is primitive-typed version of QComputedProperty&lt;Character&gt;.
+     * @see QComputedProperty
+     */
+    public class QComputedCharProperty extends QAbstractComputedProperty {
+        
+        private final QtUtilities.CharSupplier getter;
+    
+        /**
+         * Constructs a <code>char</code>-typed computed-value property according to the given value supplier.
+         * @param getter supplying the computed value
+         */
+        public QComputedCharProperty(QtUtilities.CharSupplier getter) {
+            super();
+            this.getter = getter;
+        }
+    
+        /**
+         * Returns the value of the property computed by the given getter.
+         * @return value
+         */
+        @QtUninvokable
+        public char value()
+        {
+            bindingStorage().maybeUpdateBindingAndRegister(this);
+            return getter.getAsChar();
+        }
+        
+        @QtUninvokable
+        private QCharPropertyBinding makeBinding()
+        {
+            return new QCharPropertyBinding(this::value);
+        }
+        
+        @QtUninvokable
+        public final QMetaType valueMetaType() {
+            return new QMetaType(QMetaType.Type.QChar);
+        }
+    }
 
-// QObject::findChildren(const QRegularExpression &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_findChildrenQRegularExpression__JLjava_lang_Class_2JJI)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- jclass cl0,
- jlong metaObjectPointer1,
- QtJambiNativeID regExp2,
- jint options3)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QObject::findChildren(const QRegularExpression &regExp, Qt::FindChildOptions options = Qt::FindChildrenRecursively) const")
-    try{
-        QObject *__qt_this = qtjambi_object_from_nativeId<QObject>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QMetaObject *__qt_metaObjectPointer1 = reinterpret_cast<const QMetaObject *>(metaObjectPointer1);
-        const QRegularExpression& __qt_regExp2 = qtjambi_value_from_nativeId<QRegularExpression>(regExp2);
-        QList<void *> list;
-        qt_qFindChildren_helper(__qt_this, __qt_regExp2, *__qt_metaObjectPointer1, &list, Qt::FindChildOptions(options3));
-        JObjectWrapper cl0Wrapper(__jni_env, cl0);
-        return qtjambi_to_ArrayList<QList, void *>(
-                __jni_env, 
-                list, 
-                [cl0Wrapper](JNIEnv *__jni_env, void * const & p) -> jobject {
-                    return qtjambi_from_qobject(__jni_env, reinterpret_cast<const QObject *>(p), jclass(cl0Wrapper.object()));
-                });
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
+}// class
+    
+class QObject_5__ extends QObject {
+    /**
+     * <p>This function overloads {@link #findChildren()}.</p>
+     * <p>Returns the children of this object that are instance of <i>cl</i> 
+     * and that have names matching the regular expression <i>regExp</i>, 
+     * or an empty list if there are no such objects. 
+     * The search is performed recursively, unless <i>options</i> specifies the option <i>FindDirectChildrenOnly</i>.</p>
+     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
+     * @param <T> type of children
+     * @param cl type of children
+     * @param regExp regular expression
+     * @param options search options
+     * @return found children
+     * @see #findChildren()
+     */
+    @Deprecated
+    @io.qt.QtUninvokable
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOptions options){
+        return findChildrenQRegExp(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, nativeId(regExp), options.value());
     }
-}
- 
+    
+    @io.qt.QtUninvokable
+    private native final <T extends QObject> QList<T> findChildrenQRegExp(long nativeId, long metaObjectPointer, long regExp, int options);
+    
+    /**
+     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}.</p>
+     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
+     * @param <T> type of children
+     * @param cl type of children
+     * @param regExp regular expression
+     * @return found children
+     */
+    @Deprecated
+    @io.qt.QtUninvokable
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp) {
+        return findChildren(cl, regExp, new Qt.FindChildOptions(Qt.FindChildOption.FindChildrenRecursively));
+    }
+    
+    /**
+     * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}
+     * with: <code>options = FindChildrenRecursively</code>.</p>
+     * @deprecated Use {@link #findChildren(Class, QRegularExpression, Qt.FindChildOptions)} instead.
+     * @param <T> type of children
+     * @param cl type of children
+     * @param regExp regular expression
+     * @param options search options
+     * @return found children
+     */
+    @Deprecated
+    @io.qt.QtUninvokable
+    public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOption... options) {
+        return findChildren(cl, regExp, new Qt.FindChildOptions(options));
+    }
+    
 }// class
 
 class QSignalTransition___{
@@ -5007,7 +7894,6 @@ class QSignalTransition___{
      */
     public QSignalTransition(io.qt.core.QMetaObject.AbstractSignal signal, io.qt.core.QState sourceState) {
         super((QPrivateConstructor)null);
-        constructorThreadCheck(this);
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
@@ -5025,8 +7911,8 @@ class QSignalTransition___{
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
-            __qt_QSignalTransition_setSenderObject_const_QObject_ptr(checkedNativeId(this), nativeId(sender));
-            __qt_QSignalTransition_setSignal_cref_QByteArray(checkedNativeId(this), nativeId(new QByteArray(signalSignature)));
+            __qt_QSignalTransition_setSenderObject_const_QObject_ptr(nativeId(this), checkedNativeId(sender));
+            __qt_QSignalTransition_setSignal_cref_QByteArray(nativeId(this), nativeId(new QByteArray(signalSignature)));
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -5045,7 +7931,7 @@ class QState___{
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
-            return addTransition(sender, signalSignature, target);
+            return __qt_QState_addTransition_const_QObject_ptr_const_char_ptr_QAbstractState_ptr(nativeId(this), checkedNativeId(sender), signalSignature, checkedNativeId(target));
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -5208,15 +8094,15 @@ abstract class QUrl___ extends QUrl{
         return toEncoded(options.value());
     }
 
-    public static java.util.List<java.lang.String> toStringList(java.util.List<io.qt.core.QUrl> uris, FormattingOptions options){
+    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris, FormattingOptions options){
         return toStringList(uris, options.value());
     }
     
-    public static java.util.List<java.lang.String> toStringList(java.util.List<io.qt.core.QUrl> uris, FormattingOption... options){
+    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris, FormattingOption... options){
         return toStringList(uris, new FormattingOptions(options).value());
     }
     
-    public static java.util.List<java.lang.String> toStringList(java.util.List<io.qt.core.QUrl> uris){
+    public static QStringList toStringList(java.util.Collection<io.qt.core.QUrl> uris){
         return toStringList(uris, ComponentFormattingOption.PrettyDecoded.value());
     }
     
@@ -5425,6 +8311,13 @@ class QCoreApplication___ extends QCoreApplication {
     private static native void preinit();
 
     /**
+     * <p>Overloaded function for {@link #sendPostedEvents(io.qt.core.QObject, int)}</p>
+     */
+    public static void sendPostedEvents(io.qt.core.QObject receiver, QEvent.Type event_type){
+        sendPostedEvents(receiver, event_type.value());
+    }
+
+    /**
      * Initializes the QCoreApplication with the given arguments.
      * @param args
      * @return QCoreApplication instance
@@ -5550,108 +8443,26 @@ class QCoreApplication___ extends QCoreApplication {
     public native static void removePostRoutine(Runnable cleanUpFunction);
 }// class
 
-class QCoreApplication_native__ {
-
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_preinit)
-(JNIEnv *__jni_env, jclass)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCoreApplication::preinit()")
-    try{
-#ifdef Q_OS_DARWIN
-        if (!pthread_main_np()) {
-            JavaException::raiseError(__jni_env, "QtJambi does not appear to be running on the main thread and will "
-                     "most likely be unstable and crash. "
-                     "Please make sure to launch your 'java' command with the "
-                     "'-XstartOnFirstThread' command line option. For instance: "
-                     "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
-        }
-#endif
-        QCoreApplicationPrivate::theMainThread = QThread::currentThread();
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-typedef QList<JObjectWrapper> RoutineList;
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gRoutineLock, (QReadWriteLock::Recursive))
-Q_GLOBAL_STATIC(RoutineList, gPreRoutines)
-Q_GLOBAL_STATIC(RoutineList, gPostRoutines)
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_addPreRoutine)
-(JNIEnv *__jni_env, jclass, jobject cleanUpFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qAddPostRoutine(QtCleanUpFunction)")
-    
-    if (QCoreApplication::instance()){
-        Java::Runtime::Runnable.run(__jni_env, cleanUpFunction);
-    }else if(!gPreRoutines.isDestroyed()){
-        QWriteLocker locker(gRoutineLock());
-        gPreRoutines->append(JObjectWrapper(__jni_env, cleanUpFunction));
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_addPostRoutine)
-(JNIEnv *__jni_env, jclass, jobject cleanUpFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qAddPostRoutine(QtCleanUpFunction)")
-    if(!gPostRoutines.isDestroyed()){
-        QWriteLocker locker(gRoutineLock());
-        gPostRoutines->prepend(JObjectWrapper(__jni_env, cleanUpFunction));
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCoreApplication_removePostRoutine)
-(JNIEnv *__jni_env, jclass, jobject cleanUpFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qAddPostRoutine(QtCleanUpFunction)")
-    if(!gPostRoutines.isDestroyed()){
-        QWriteLocker locker(gRoutineLock());
-        gPostRoutines->removeAll(JObjectWrapper(__jni_env, cleanUpFunction));
-    }
-}
-
-void initialize_pre_and_post_routines()
-{
-    qAddPreRoutine([](){
-        if(JNIEnv *__jni_env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(__jni_env, 400)
-            for(const JObjectWrapper& cleanUpFunction : *gPreRoutines){
-                try{
-                    Java::Runtime::Runnable.run(__jni_env, cleanUpFunction.object());
-                }catch(const JavaException& exn){
-                    exn.report(__jni_env);
-                }
-            }
-        }
-        gPreRoutines->clear();
-    });
-    qAddPostRoutine([](){
-        if(JNIEnv *__jni_env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(__jni_env, 400)
-            for(const JObjectWrapper& cleanUpFunction : *gPreRoutines){
-                try{
-                    Java::Runtime::Runnable.run(__jni_env, cleanUpFunction.object());
-                }catch(const JavaException& exn){
-                    exn.report(__jni_env);
-                }
-            }
-        }
-        gPostRoutines->clear();
-    });
-}
-
+class QTranslator___ extends QTranslator {
 }// class
 
-class QTranslator___ extends QTranslator {
+class QItemSelection_6__ extends QItemSelection {
+    
+    public QItemSelection() {
+        super((QPrivateConstructor)null);
+        __qt_QItemSelection_new(this, null);
+    }
+    
 }// class
 
 class QItemSelection___ extends QItemSelection {
     
-    public QItemSelection(java.util.Collection<io.qt.core.QItemSelectionRange> collection){
-        this();
-        append(collection);
+    public QItemSelection(java.util.Collection<QItemSelectionRange> other) {
+        super((QPrivateConstructor)null);
+        __qt_QItemSelection_new(this, other);
     }
+    
+    private native static <T> void __qt_QItemSelection_new(Object instance, java.util.Collection<QItemSelectionRange> other);
 }// class
 
 class QXmlStreamAttributes___ extends QXmlStreamAttributes {
@@ -5662,9 +8473,361 @@ class QXmlStreamAttributes___ extends QXmlStreamAttributes {
     }
 }// class
 
+class autoclosedelete {
+    @Override
+    public void close(){
+        dispose();
+    }
+}// class
+
+class QDebug___ extends QDebug {
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug endl(){
+        endl(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void endl(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug flush(){
+        flush(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void flush(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug reset(){
+        reset(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void reset(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug bin(){
+        bin(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void bin(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug oct(){
+        oct(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void oct(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug hex(){
+        hex(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void hex(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug dec(){
+        dec(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void dec(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug showbase(){
+        showbase(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void showbase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug forcesign(){
+        forcesign(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void forcesign(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug forcepoint(){
+        forcepoint(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void forcepoint(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug noshowbase(){
+        noshowbase(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noshowbase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug noforcesign(){
+        noforcesign(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noforcesign(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug noforcepoint(){
+        noforcepoint(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void noforcepoint(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug uppercasebase(){
+        uppercasebase(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void uppercasebase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug uppercasedigits(){
+        uppercasedigits(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void uppercasedigits(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug lowercasebase(){
+        lowercasebase(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void lowercasebase(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug lowercasedigits(){
+        lowercasedigits(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void lowercasedigits(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug fixed(){
+        fixed(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void fixed(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug scientific(){
+        scientific(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void scientific(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug left(){
+        left(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void left(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug right(){
+        right(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void right(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug center(){
+        center(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void center(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug bom(){
+        bom(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void bom(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug ws(){
+        ws(nativeId(this));
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void ws(long __this__nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug qSetFieldWidth(int width){
+        setFieldWidth(nativeId(this), width);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setFieldWidth(long __this__nativeId, int width);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug qSetRealNumberPrecision(int precision){
+        setRealNumberPrecision(nativeId(this), precision);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setRealNumberPrecision(long __this__nativeId, int precision);
+    
+    /**
+     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug qSetPadChar(char ch){
+        setPadChar(nativeId(this), ch);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setPadChar(long __this__nativeId, char ch);
+    
+    /**
+     * <p>See <a href="@docRoot/qdebug.html#QDebug-1">QDebug::QDebug(QString*)</a></p>
+     */
+    @SuppressWarnings("hiding")
+    public <String extends Object & Appendable & CharSequence> QDebug(String string){
+        this(new QTextStream.StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), io.qt.core.QIODevice.OpenModeFlag.WriteOnly.asFlags()));
+    }
+    
+    @io.qt.QtUninvokable
+    public final io.qt.core.QDebug append(java.lang.Object obj){
+        QMetaType metaType = QList.getMetaType(obj);
+        debugStream(nativeId(this), nativeId(metaType), obj);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    private native static void debugStream(long debug, long metaType, Object value);
+}// class
+
 class QTextStream___ extends QTextStream {
     public CharSequence string() {
-        QIODevice device = __qt_QTextStream_device_constfct(checkedNativeId(this));
+        QIODevice device = __qt_QTextStream_device_constfct(nativeId(this));
         if(device instanceof StringDevice) {
             flush();
             return ((StringDevice<?>) device).string;
@@ -5724,8 +8887,12 @@ class QTextStream___ extends QTextStream {
     }
     
     @SuppressWarnings("hiding")
-    private static final class StringDevice<String extends Object & Appendable & CharSequence> extends QIODevice{
-        public StringDevice(String string, io.qt.core.QIODevice.OpenMode openMode) {
+    static final class StringDevice<String extends Object & Appendable & CharSequence> extends QIODevice{
+        StringDevice(String string, io.qt.core.QIODevice.OpenModeFlag... openMode) {
+            this(string, io.qt.core.QIODevice.OpenModeFlag.flags(openMode));
+        }
+        
+        StringDevice(String string, io.qt.core.QIODevice.OpenMode openMode) {
             super();
             this.string = string;
             this.open(openMode);
@@ -5787,9 +8954,12 @@ class QBitArray___ extends QBitArray {
     
     @io.qt.QtUninvokable
     public final boolean[] toBitArray() {
-        boolean[] res = new boolean[size()];
+        long size = size();
+        if(size>Integer.MAX_VALUE)
+            throw new RuntimeException("Size of QBitArray exceeds max array size.");
+        boolean[] res = new boolean[(int)size];
 
-        for (int i = 0; i < size(); i++) {
+        for (int i = 0; i < size; i++) {
             res[i] = testBit(i);
         }
         return res;
@@ -5827,23 +8997,26 @@ class QDate___ extends QDate {
 }// class
 
 class QByteArray_5_12__ extends QByteArray {
-    
+
+    @io.qt.QtUninvokable
     public final int compare(byte[] b) {
-        return compare(java.nio.ByteBuffer.wrap(b));
+        return compare(new QByteArray(b));
     }
 
+    @io.qt.QtUninvokable
     public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
-        return compare(java.nio.ByteBuffer.wrap(b), cs);
+        return compare(new QByteArray(b), cs);
     }
     
+    @io.qt.QtUninvokable
     public final int compare(String str) {
         return compare(new QByteArray(str));
     }
 
+    @io.qt.QtUninvokable
     public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
         return compare(new QByteArray(str), cs);
     }
-    
 }// class
 
 class QByteArray_5_15__ extends QByteArray {
@@ -5863,145 +9036,600 @@ class QByteArray_5_15__ extends QByteArray {
 
 class QByteArray___ extends QByteArray {
     
+    public QByteArray(byte data[]) {
+        this(java.nio.ByteBuffer.wrap(data), data.length);
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray prepend(byte[] data) {
+        this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    public native static QByteArray join(java.util.Collection<QByteArray> stringList);
+    
+    @io.qt.QtUninvokable
+    public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
+    
+    @io.qt.QtUninvokable
+    public static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep) {
+        return join(stringList, checkedNativeId(sep));
+    }
+    
+    @io.qt.QtUninvokable
+    private native static QByteArray join(java.util.Collection<QByteArray> stringList, long sep);
+    
+}// class
+
+class QByteArray_5__ extends QByteArray {
+    
     public QByteArray(String s) {
         this();
         append(s);
     }
 
-    public QByteArray(byte data[]) {
-        this(java.nio.ByteBuffer.wrap(data), data.length);
-    }
-
     public QByteArray(byte data[], int size) {
         this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
-
-    public final boolean contains(String str) {
-        return contains(new QByteArray(str));
-    }
-
-    public final boolean contains(byte data[]) {
-        return contains(java.nio.ByteBuffer.wrap(data));
-    }
-
-    public final int count(String str) {
-        return count(new QByteArray(str));
-    }
-
+    
+    @io.qt.QtUninvokable
     public final int count(byte data[]) {
         return count(java.nio.ByteBuffer.wrap(data));
     }
 
-    public final boolean endsWith(String str) {
-        return endsWith(new QByteArray(str));
+    @io.qt.QtUninvokable
+    public final boolean contains(byte data[]) {
+        return contains(java.nio.ByteBuffer.wrap(data));
     }
 
-    public final QByteArray prepend(String str) {
-        return prepend(new QByteArray(str));
-    }
-
-    public final QByteArray replace(QByteArray before, String after) {
-        return replace(before, new QByteArray(after));
-    }
-
-    public final QByteArray replace(String before, String after) {
-        return replace(new QByteArray(before), new QByteArray(after));
-    }
-
+    @io.qt.QtUninvokable
     public final boolean startsWith(String str) {
         return startsWith(new QByteArray(str));
     }
 
-    public final QByteArray prepend(byte[] data) {
-        this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
+    @io.qt.QtUninvokable
+    public final boolean contains(String str) {
+        return contains(new QByteArray(str));
     }
 
+    @io.qt.QtUninvokable
+    public final int count(String str) {
+        return count(new QByteArray(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean endsWith(String str) {
+        return endsWith(new QByteArray(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray prepend(String str) {
+        return prepend(new QByteArray(str));
+    }
+
+    @io.qt.QtUninvokable
     public final QByteArray replace(int index, int len, byte[] data) {
         this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
 
+    @io.qt.QtUninvokable
     public final QByteArray insert(int i, byte[] data) {
         this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
         return this;
     }
     
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList);
-    
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
-    
-    public static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep) {
-        return join(stringList, checkedNativeId(sep));
+    @io.qt.QtUninvokable
+    public final QByteArray replace(QByteArray before, String after) {
+        return replace(before, new QByteArray(after));
     }
-    
-    private native static QByteArray join(java.util.Collection<QByteArray> stringList, long sep);
-    
-}// class
 
-class QByteArray__native_ extends QByteArray {
-
-// QByteArrayList::join()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArray_join__Ljava_util_Collection_2)
-(JNIEnv *__jni_env,
- jclass,
- jobject list0)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QByteArrayList::join(const QByteArray & sep)")
-    try{
-        QtJambiScope __qtjambi_scope;
-        const QByteArrayList&  __qt_list0 = qtjambi_cast<const QByteArrayList& >(__jni_env, __qtjambi_scope, list0);
-        QByteArray __qt_return_value = __qt_list0.join();
-        return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
+    @io.qt.QtUninvokable
+    public final QByteArray replace(String before, String after) {
+        return replace(new QByteArray(before), new QByteArray(after));
     }
-    return nullptr;
-}
-
-// QByteArrayList::join(char sep)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArray_join__Ljava_util_Collection_2B)
-(JNIEnv *__jni_env,
- jclass,
- jobject list0,
- jbyte sep1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QByteArrayList::join(const QByteArray & sep)")
-    try{
-        QtJambiScope __qtjambi_scope;
-        const QByteArrayList&  __qt_list0 = qtjambi_cast<const QByteArrayList& >(__jni_env, __qtjambi_scope, list0);
-        QByteArray __qt_return_value = __qt_list0.join(char(sep1));
-        return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
-
-// QByteArrayList::join(const QByteArray & sep)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArray_join__Ljava_util_Collection_2J)
-(JNIEnv *__jni_env,
- jclass,
- jobject list0,
- QtJambiNativeID sep1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QByteArrayList::join(const QByteArray & sep)")
-    try{
-        QtJambiScope __qtjambi_scope;
-        const QByteArrayList&  __qt_list0 = qtjambi_cast<const QByteArrayList& >(__jni_env, __qtjambi_scope, list0);
-        const QByteArray&  __qt_sep1 = qtjambi_value_from_nativeId<QByteArray>(sep1);
-        QByteArray __qt_return_value = __qt_list0.join(__qt_sep1);
-        return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
 
 }// class
 
-class QIODevice_java__ extends QIODevice {
+class QByteArray_6__ extends QByteArray {
+
+    private static byte[] getBytes(String s) {
+        try {
+            return s.getBytes("UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return s.getBytes();
+        }
+    }
+
+    public QByteArray(String s) {
+        this(getBytes(s));
+    }
+
+    public QByteArray(byte data[], long size) {
+        this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean contains(String str) {
+        return contains(new QByteArrayView(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final long count(String str) {
+        return count(new QByteArrayView(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean endsWith(String str) {
+        return endsWith(new QByteArrayView(str));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(byte[] str) {
+        return endsWith(new QByteArrayView(str));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean endsWith(java.nio.ByteBuffer str) {
+        return endsWith(new QByteArrayView(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray prepend(String str) {
+        return prepend(getBytes(str));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean startsWith(String str) {
+        return startsWith(new QByteArrayView(str));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(byte[] str) {
+        return startsWith(new QByteArrayView(str));
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean startsWith(java.nio.ByteBuffer str) {
+        return startsWith(new QByteArrayView(str));
+    }
+    
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray append(byte[] a){
+        return append(java.nio.ByteBuffer.wrap(a), a.length);
+    }
+    
+    @io.qt.QtUninvokable
+    public final io.qt.core.QByteArray append(String a){
+        return append(getBytes(a));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(String str) {
+        return compare(str, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+    }
+
+    @io.qt.QtUninvokable
+    public final int compare(String str, io.qt.core.Qt.CaseSensitivity cs) {
+        return compare(new QByteArrayView(str), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(byte data[]) {
+        return count(new QByteArrayView(data));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean contains(byte data[]) {
+        return contains(new QByteArrayView(data));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(byte[] b) {
+        return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+    }
+
+    @io.qt.QtUninvokable
+    public final int compare(byte[] b, io.qt.core.Qt.CaseSensitivity cs) {
+        return compare(new QByteArrayView(b), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long count(java.nio.ByteBuffer data) {
+        return count(new QByteArrayView(data));
+    }
+
+    @io.qt.QtUninvokable
+    public final boolean contains(java.nio.ByteBuffer data) {
+        return contains(new QByteArrayView(data));
+    }
+    
+    @io.qt.QtUninvokable
+    public final int compare(java.nio.ByteBuffer b) {
+        return compare(b, io.qt.core.Qt.CaseSensitivity.CaseSensitive);
+    }
+
+    @io.qt.QtUninvokable
+    public final int compare(java.nio.ByteBuffer b, io.qt.core.Qt.CaseSensitivity cs) {
+        return compare(new QByteArrayView(b), cs);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(String strg) {
+        return indexOf(strg, (int)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(String strg, long from){
+        return indexOf(new io.qt.core.QByteArrayView(strg), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(byte[] other) {
+        return indexOf(other, (int)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(byte[] other, long from){
+        return indexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(java.nio.ByteBuffer other) {
+        return indexOf(other, (int)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(java.nio.ByteBuffer other, long from){
+        return indexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(QByteArray other) {
+        return indexOf(other, (long)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long indexOf(QByteArray other, long from){
+        return indexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(String strg) {
+        return lastIndexOf(strg, (long)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(String strg, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(strg), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(byte[] other) {
+        return lastIndexOf(other, (long)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(byte[] other, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(java.nio.ByteBuffer other) {
+        return lastIndexOf(other, (long)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(java.nio.ByteBuffer other, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(QByteArray other) {
+        return lastIndexOf(other, (long)0);
+    }
+    
+    @io.qt.QtUninvokable
+    public final long lastIndexOf(QByteArray other, long from){
+        return lastIndexOf(new io.qt.core.QByteArrayView(other), from);
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray replace(long index, long len, byte[] data) {
+        this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
+        return this;
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray insert(long i, byte[] data) {
+        this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
+        return this;
+    }
+    
+    @io.qt.QtUninvokable
+    public final QByteArray replace(QByteArray before, String after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+
+    @io.qt.QtUninvokable
+    public final QByteArray replace(String before, String after) {
+        return replace(new QByteArrayView(before), new QByteArrayView(after));
+    }
+
+}// class
+
+class QByteArrayView___ extends QByteArray {
+    
+    public QByteArrayView(byte[] data){
+        super((QPrivateConstructor)null);
+        Long[] pointerOut = {null};
+        __qt_QByteArrayView_newBytes(this, data, pointerOut);
+        if(pointerOut[0]!=null) {
+            long pointer = pointerOut[0];
+            purgeTask = ()->__qt_QByteArrayView_purgeBytes(pointer);
+            getSignalOnDispose(this, true).connect(purgeTask::run);        		
+        }
+    }
+    private native static void __qt_QByteArrayView_newBytes(Object instance, byte[] data, Long[] pointerOut);
+    private native static void __qt_QByteArrayView_purgeBytes(long pointer);
+    
+    public QByteArrayView(String data){
+        super((QPrivateConstructor)null);
+        Long[] pointerOut = {null};
+        __qt_QByteArrayView_newString(this, data, pointerOut);
+        if(pointerOut[0]!=null) {
+            long pointer = pointerOut[0];
+            purgeTask = ()->__qt_QByteArrayView_purgeString(pointer);
+            getSignalOnDispose(this, true).connect(purgeTask::run);        		
+        }
+    }
+    private native static void __qt_QByteArrayView_newString(Object instance, String data, Long[] pointerOut);
+    private native static void __qt_QByteArrayView_purgeString(long pointer);
+    
+    public QByteArrayView(java.nio.ByteBuffer data){
+        super((QPrivateConstructor)null);
+        if(data.isDirect()) {
+            __qt_QByteArrayView_newDirectBuffer(this, data);
+            purgeTask = data::hashCode;
+            getSignalOnDispose(this, true).connect(purgeTask::run);
+        }else {
+            Long[] pointerOut = {null};
+            __qt_QByteArrayView_newBuffer(this, data, pointerOut);
+            if(pointerOut[0]!=null) {
+                long pointer = pointerOut[0];
+                purgeTask = ()->__qt_QByteArrayView_purgeBuffer(pointer);
+                getSignalOnDispose(this, true).connect(purgeTask::run);
+            }
+        }
+    }
+    private native static void __qt_QByteArrayView_newDirectBuffer(Object instance, java.nio.ByteBuffer data);
+    private native static void __qt_QByteArrayView_newBuffer(Object instance, java.nio.Buffer data, Long[] pointerOut);
+    private native static void __qt_QByteArrayView_purgeBuffer(long pointer);
+    
+    public QByteArrayView(QByteArray data){
+        super((QPrivateConstructor)null);
+        if(data!=null) {
+            __qt_QByteArrayView_newByteArray(this, data);
+            purgeTask = data::isDisposed;
+            getSignalOnDispose(this, true).connect(purgeTask::run);
+        }else {
+            __qt_QByteArrayView_new(this);
+        }
+    }
+    private native static void __qt_QByteArrayView_newByteArray(Object instance, QByteArray data);
+    
+    private Runnable purgeTask;
+    
+}// class
+
+class QIODevice_prefix__ extends QIODevice {
         public native static QIODevice fromDirectBuffer(java.nio.Buffer buffer);
+        
+        public static QIODevice fromInputStream(java.io.InputStream stream) {
+            return new QIODevice() {
+                @Override
+                public boolean atEnd() {
+                    return super.atEnd();
+                }
+
+                @Override
+                public long bytesAvailable() {
+                    try {
+                        return stream.available();
+                    } catch (java.io.IOException e) {
+                        return 0;
+                    }
+                }
+
+                @Override
+                public long bytesToWrite() {
+                    return 0;
+                }
+
+                @Override
+                public boolean canReadLine() {
+                    return false;
+                }
+
+                @Override
+                public void close() {
+                    try {
+                        stream.close();
+                    } catch (java.io.IOException e) {
+                    }
+                    super.close();
+                }
+
+                @Override
+                public boolean isSequential() {
+                    return true;
+                }
+
+                @Override
+                public boolean open(OpenMode mode) {
+                    if(mode.value()==OpenModeFlag.ReadOnly.value())
+                        return super.open(mode);
+                    else return false;
+                }
+
+                @Override
+                public long pos() {
+                    return super.pos();
+                }
+
+                @Override
+                protected int readLineData(byte[] data) {
+                    return 0;
+                }
+
+                @Override
+                public boolean reset() {
+                    try {
+                        stream.reset();
+                    } catch (java.io.IOException e) {
+                        return false;
+                    }
+                    return super.reset();
+                }
+
+                @Override
+                public boolean seek(long pos) {
+                    return false;
+                }
+
+                @Override
+                public long size() {
+                    return super.size();
+                }
+}// QIODevice_prefix__
+
+class QIODevice_6_1__ {
+
+                @Override
+                protected long skipData(long maxSize) {
+                    try {
+                        stream.skip(maxSize);
+                    } catch (java.io.IOException e) {
+                        return 0;
+                    }
+                    return super.skipData(maxSize);
+                }
+}// QIODevice_6_1__
+
+class QIODevice_infix__ {
+
+                @Override
+                protected int writeData(byte[] data) {
+                    return 0;
+                }
+                
+                @Override
+                protected int readData(byte[] data) {
+                    try {
+                        return stream.read(data);
+                    } catch (java.io.IOException e) {
+                        return 0;
+                    }
+                }
+            };
+        }
+        
+        public static QIODevice fromOutputStream(java.io.OutputStream stream) {
+            return new QIODevice() {
+                @Override
+                public boolean atEnd() {
+                    return super.atEnd();
+                }
+
+                @Override
+                public long bytesAvailable() {
+                    return 0;
+                }
+
+                @Override
+                public long bytesToWrite() {
+                    return 0;
+                }
+
+                @Override
+                public boolean canReadLine() {
+                    return false;
+                }
+
+                @Override
+                public void close() {
+                    try {
+                        stream.close();
+                    } catch (java.io.IOException e) {
+                    }
+                    super.close();
+                }
+
+                @Override
+                public boolean isSequential() {
+                    return true;
+                }
+
+                @Override
+                public boolean open(OpenMode mode) {
+                    if(mode.value()==OpenModeFlag.WriteOnly.value())
+                        return super.open(mode);
+                    else return false;
+                }
+
+                @Override
+                public long pos() {
+                    return super.pos();
+                }
+
+                @Override
+                protected int readLineData(byte[] data) {
+                    return 0;
+                }
+
+                @Override
+                public boolean reset() {
+                    return false;
+                }
+
+                @Override
+                public boolean seek(long pos) {
+                    return false;
+                }
+
+                @Override
+                public long size() {
+                    return super.size();
+                }
+}// QIODevice_infix__
+
+class QIODevice_6_2__ {
+
+                @Override
+                protected long skipData(long maxSize) {
+                    return 0;
+                }
+}// QIODevice_6_2__
+
+class QIODevice_suffix__ {
+
+                @Override
+                protected int writeData(byte[] data) {
+                    try {
+                        stream.write(data);
+                        return data.length;
+                    } catch (java.io.IOException e) {
+                        return 0;
+                    }
+                }
+                
+                @Override
+                protected int readData(byte[] data) {
+                    return 0;
+                }
+            };
+        }
 }// class
 
 class QIODevice_cpp__{
@@ -6016,14 +9644,6 @@ class QBuffer___ extends QBuffer {
 class QCalendar___ extends QCalendar {
     public static final int Unspecified = unspecified();
     private static native int unspecified();
-}// class
-
-class QCalendar__native_ extends QCalendar {
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCalendar_unspecified__)
-(JNIEnv *, jclass)
-{
-    return jint(QCalendar::Unspecified);
-}
 }// class
 
 class QSignalMapper___ extends QSignalMapper {
@@ -6058,53 +9678,946 @@ class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_Un
     }
 }// class
 
-class QFutureWatcher___ extends QFutureWatcher {
+class QFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QFutureInterface<T> futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
     
-    public final QFuture<T> future() {
-        long nativeId = nativeId(this);
-        if (nativeId == 0)
-            throw new io.qt.QNoNativeResourcesException("Function call on incomplete object of type: " + getClass().getName());
-        return __qt_future(nativeId);
+    @io.qt.QtUninvokable
+    private native io.qt.core.QFutureInterface<T> futureInterface(long __this__nativeId);
+}// class
+
+class QVoidFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QFutureInterfaceBase futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QFutureInterfaceBase futureInterface(long __this__nativeId);
+}// class
+
+class QBooleanFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QBooleanFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QBooleanFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QByteFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QByteFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QByteFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QShortFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QShortFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QShortFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QIntFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QIntFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QIntFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QLongFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QLongFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QLongFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QFloatFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QFloatFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QFloatFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QDoubleFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QDoubleFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QDoubleFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QCharFuture___ extends QFuture {
+    @io.qt.QtUninvokable
+    final io.qt.core.QCharFutureInterface futureInterface() {
+    	return futureInterface(nativeId(this));
+	}
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QCharFutureInterface futureInterface(long __this__nativeId);
+}// class
+
+class QFuture_6__ extends QFuture {
+
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(java.util.function.Function<QFuture<T>, R> function){
+        return then(nativeId(this), function);
     }
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> then(long __this_nativeId, java.util.function.Function<QFuture<T>, R> function);
+    
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QtFuture.Launch policy, java.util.function.Function<QFuture<T>, R> function){
+        return thenLaunch(nativeId(this), policy.value(), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenLaunch(long __this_nativeId, int policy, java.util.function.Function<QFuture<T>, R> function);
+    
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QThreadPool pool, java.util.function.Function<QFuture<T>, R> function){
+        return thenPool(nativeId(this), nativeId(pool), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenPool(long __this_nativeId, long pool, java.util.function.Function<QFuture<T>, R> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(java.util.function.Consumer<QFuture<T>> function){
+        return thenVoid(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenVoid(long __this_nativeId, java.util.function.Consumer<QFuture<T>> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QtFuture.Launch policy, java.util.function.Consumer<QFuture<T>> function){
+        return thenLaunchVoid(nativeId(this), policy.value(), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenLaunchVoid(long __this_nativeId, int policy, java.util.function.Consumer<QFuture<T>> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QThreadPool pool, java.util.function.Consumer<QFuture<T>> function){
+        return thenPoolVoid(nativeId(this), nativeId(pool), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenPoolVoid(long __this_nativeId, long pool, java.util.function.Consumer<QFuture<T>> function);
+    
+    @io.qt.QtUninvokable
+    public QFuture<T> onFailed(java.util.function.Function<Throwable, T> function){
+        return onFailed(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onFailed(long __this_nativeId, java.util.function.Function<Throwable, T> function);
+    
+    @io.qt.QtUninvokable
+    public QFuture<T> onCanceled(java.util.function.Supplier<T> function){
+        return onCanceled(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onCanceled(long __this_nativeId, java.util.function.Supplier<T> function);
+}// class
+
+class QFuture_6_1__ extends QFuture {
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QObject context, java.util.function.Function<QFuture<T>, R> function){
+        return thenPool(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QFuture<T>, R> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QObject context, java.util.function.Consumer<QFuture<T>> function){
+        return thenPoolVoid(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QFuture<T>> function);
+    
+    @io.qt.QtUninvokable
+    public QFuture<T> onFailed(QObject context, java.util.function.Function<Throwable, T> function){
+        return onFailedContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onFailedContext(long __this_nativeId, long contextId, java.util.function.Function<Throwable, T> function);
+    
+    @io.qt.QtUninvokable
+    public QFuture<T> onCanceled(QObject context, java.util.function.Supplier<T> function){
+        return onCanceledContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T> QFuture<T> onCanceledContext(long __this_nativeId, long contextId, java.util.function.Supplier<T> function);
+}// class
+
+class QVoidFuture_6_1__ extends QFuture {
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QObject context, java.util.function.Function<QVoidFuture,R> function){
+        return thenContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QVoidFuture,R> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QObject context, java.util.function.Consumer<QVoidFuture> function){
+        return thenContextVoid(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QVoidFuture> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture onFailed(QObject context, java.util.function.Consumer<Throwable> function){
+        return onFailedContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static QVoidFuture onFailedContext(long __this_nativeId, long contextId, java.util.function.Consumer<Throwable> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture onCanceled(QObject context, java.lang.Runnable function){
+        return onCanceledContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
+    }
+    @io.qt.QtUninvokable
+    private native static QVoidFuture onCanceledContext(long __this_nativeId, long contextId, java.lang.Runnable function);
+}// class
+
+class QVoidFuture_6__ extends QFuture {
+
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(java.util.function.Function<QVoidFuture,R> function){
+        return then(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <R> QFuture<R> then(long __this_nativeId, java.util.function.Function<QVoidFuture,R> function);
+    
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QtFuture.Launch policy, java.util.function.Function<QVoidFuture,R> function){
+        return thenLaunch(nativeId(this), policy.value(), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <R> QFuture<R> thenLaunch(long __this_nativeId, int policy, java.util.function.Function<QVoidFuture,R> function);
+    
+    @io.qt.QtUninvokable
+    public <R> QFuture<R> then(QThreadPool pool, java.util.function.Function<QVoidFuture,R> function){
+        return thenPool(nativeId(this), nativeId(pool), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <R> QFuture<R> thenPool(long __this_nativeId, long pool, java.util.function.Function<QVoidFuture,R> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(java.util.function.Consumer<QVoidFuture> function){
+        return thenVoid(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenVoid(long __this_nativeId, java.util.function.Consumer<QVoidFuture> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QtFuture.Launch policy, java.util.function.Consumer<QVoidFuture> function){
+        return thenLaunchVoid(nativeId(this), policy.value(), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenLaunchVoid(long __this_nativeId, int policy, java.util.function.Consumer<QVoidFuture> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture then(QThreadPool pool, java.util.function.Consumer<QVoidFuture> function){
+        return thenPoolVoid(nativeId(this), nativeId(pool), function);
+    }
+    @io.qt.QtUninvokable
+    private native static <T,R> QVoidFuture thenPoolVoid(long __this_nativeId, long pool, java.util.function.Consumer<QVoidFuture> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture onFailed(java.util.function.Consumer<Throwable> function){
+        return onFailed(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static QVoidFuture onFailed(long __this_nativeId, java.util.function.Consumer<Throwable> function);
+    
+    @io.qt.QtUninvokable
+    public QVoidFuture onCanceled(java.lang.Runnable function){
+        return onCanceled(nativeId(this), function);
+    }
+    @io.qt.QtUninvokable
+    private native static QVoidFuture onCanceled(long __this_nativeId, java.lang.Runnable function);
+}// class
+
+class QFutureInterfaceBase___ {
+    
+    @io.qt.QtUninvokable
+    public final void reportException(Throwable e) {
+        reportException(nativeId(this), java.util.Objects.requireNonNull(e));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void reportException(long nativeId, Throwable e);
+    
+    @io.qt.QtUninvokable
+    protected final void setContinuation(java.util.function.Consumer<QFutureInterfaceBase> continuation) {
+        setContinuation(nativeId(this), continuation);
+    }
+    @io.qt.QtUninvokable
+    private native void setContinuation(long nativeId, java.util.function.Consumer<QFutureInterfaceBase> continuation);
+}// class
+
+class QtJambiFutureWatcher__{
+    
+    /**
+     * <p>See <a href="@docRoot/qfuturewatcher.html#future">QFutureWatcher::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QFuture<T> future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QFuture<T> __qt_future(long nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qfuturewatcher.html#result">QFutureWatcher::result() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final T result(){
+        return future().result();
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qfuturewatcher.html#resultAt">QFutureWatcher::resultAt(int index) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final T resultAt(int index){
+        return future().resultAt(index);
+    }
+    
+}// class
+
+class QtJambiFutureInterface__{
+    @io.qt.QtUninvokable
+    public final boolean reportFinished(T result){
+        boolean resultReported = reportResult(result);
+        reportFinished();
+        return resultReported;
+    }
+}// class
+
+function future__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QFuture<T> future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
     private native QFuture<T> __qt_future(long nativeId);
 
 }// class
 
-class QFutureWatcherVoid___ extends QFutureWatcherVoid {
+function futurevoid__ {
     
-    public final QFutureVoid future() {
-        long nativeId = nativeId(this);
-        if (nativeId == 0)
-            throw new io.qt.QNoNativeResourcesException("Function call on incomplete object of type: " + getClass().getName());
-        return __qt_future(nativeId);
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QVoidFuture future() {
+        return __qt_future(nativeId(this));
     }
+    @io.qt.QtUninvokable
+    private native QVoidFuture __qt_future(long nativeId);
 
-    private native QFutureVoid __qt_future(long nativeId);
+}// class
 
+function futureboolean__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QBooleanFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QBooleanFuture __qt_future(long nativeId);
+
+}// class
+
+function futurebyte__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QByteFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QByteFuture __qt_future(long nativeId);
+
+}// class
+
+function futureshort__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QShortFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QShortFuture __qt_future(long nativeId);
+
+}// class
+
+function futureint__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QIntFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QIntFuture __qt_future(long nativeId);
+
+}// class
+
+function futurelong__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QLongFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QLongFuture __qt_future(long nativeId);
+
+}// class
+
+function futurefloat__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QFloatFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QFloatFuture __qt_future(long nativeId);
+
+}// class
+
+function futurechar__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QCharFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QCharFuture __qt_future(long nativeId);
+
+}// class
+
+function futuredouble__ {
+    
+    /**
+     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QDoubleFuture future() {
+        return __qt_future(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    private native QDoubleFuture __qt_future(long nativeId);
+
+}// class
+
+class QtFuture___ {
+
+    @io.qt.QtUninvokable
+    public static QVoidFuture connect(QMetaObject.AbstractPrivateSignal0 signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QVoidFutureInterface promise = new QVoidFutureInterface();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect(()->{
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A> QFuture<A> connect(QMetaObject.AbstractPrivateSignal1<A> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<A> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect(value->{
+                promise.reportResult(value);
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B> QFuture<QPair<A,B>> connect(QMetaObject.AbstractPrivateSignal2<A,B> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<QPair<A,B>> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b)->{
+                promise.reportResult(new QPair<>(a,b));
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal3<A,B,C> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c)->{
+                promise.reportResult(new Object[] {a,b,c});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal4<A,B,C,D> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d)->{
+                promise.reportResult(new Object[] {a,b,c,d});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D,E> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d,e)->{
+                promise.reportResult(new Object[] {a,b,c,d,e});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D,E,F> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d,e,f)->{
+                promise.reportResult(new Object[] {a,b,c,d,e,f});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D,E,F,G> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d,e,f,g)->{
+                promise.reportResult(new Object[] {a,b,c,d,e,f,g});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D,E,F,G,H> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d,e,f,g,h)->{
+                promise.reportResult(new Object[] {a,b,c,d,e,f,g,h});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> QFuture<Object[]> connect(QMetaObject.AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
+        if(signal.containingObject() instanceof QObject) {
+            QObject sender = (QObject)signal.containingObject();
+            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            promise.reportStarted();
+            QMetaObject.Connection[] connections = {null, null};
+            connections[0] = signal.connect((a,b,c,d,e,f,g,h,i)->{
+                promise.reportResult(new Object[] {a,b,c,d,e,f,g,h,i});
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            connections[1] = sender.destroyed.connect(()->{
+                promise.reportCanceled();
+                promise.reportFinished();
+                QObject.disconnect(connections[0]);
+                QObject.disconnect(connections[1]);
+            });
+            return promise.future();
+        }
+        return null;
+    }
+    
+}// class
+
+class QtFuture_6_1__ {
+    @io.qt.QtUninvokable
+    public static <T> QFuture<T> makeReadyFuture(java.util.Collection<T> values)
+    {
+        QFutureInterface<T> promise = new QFutureInterface<>();
+        promise.reportStarted();
+        promise.reportResults(values);
+        promise.reportFinished();
+        return promise.future();
+    }
+    
+    @io.qt.QtUninvokable
+    public static QVoidFuture makeReadyFuture()
+    {
+        QVoidFutureInterface promise = new QVoidFutureInterface();
+        promise.reportStarted();
+        promise.reportFinished();
+        return promise.future();
+    }
+    
+    @io.qt.QtUninvokable
+    public static QVoidFuture makeExceptionalFuture(Throwable exception)
+    {
+        QVoidFutureInterface promise = new QVoidFutureInterface();
+        promise.reportStarted();
+        promise.reportException(exception);
+        promise.reportFinished();
+        return promise.future();
+    }
 }// class
 
 class QFutureSynchronizer___ extends QFutureSynchronizer {
     
-    public final java.util.List<QFuture<T>> futures() {
-        long nativeId = nativeId(this);
-        if (nativeId == 0)
-            throw new io.qt.QNoNativeResourcesException("Function call on incomplete object of type: " + getClass().getName());
-        return __qt_futures(nativeId);
+    /**
+     * <p>See <a href="@docRoot/qfuturesynchronizer.html#futures">QFutureSynchronizer::futures() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QList<QFuture<T>> futures() {
+        return __qt_futures(nativeId(this));
     }
-    private native java.util.List<QFuture<T>> __qt_futures(long nativeId);
+    @io.qt.QtUninvokable
+    private native QList<QFuture<T>> __qt_futures(long nativeId);
 
 }// class
 
 class QFutureSynchronizerVoid___ extends QFutureSynchronizerVoid {
     
-    public final java.util.List<QFutureVoid> futures() {
-        long nativeId = nativeId(this);
-        if (nativeId == 0)
-            throw new io.qt.QNoNativeResourcesException("Function call on incomplete object of type: " + getClass().getName());
-        return __qt_futures(nativeId);
+    /**
+     * <p>See <a href="@docRoot/qfuturesynchronizer.html#futures">QFutureSynchronizer::futures() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final QList<QVoidFuture> futures() {
+        return __qt_futures(nativeId(this));
     }
-    private native java.util.List<QFutureVoid> __qt_futures(long nativeId);
+    @io.qt.QtUninvokable
+    private native QList<QVoidFuture> __qt_futures(long nativeId);
 
+}// class
+
+class QVoidPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final void setException(Throwable e) {
+        setException(nativeId(this), java.util.Objects.requireNonNull(e));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void setException(long nativeId, Throwable e);
+    
+}// class
+
+class QPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(T result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(T result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, T result, int index);
+    
+}// class
+
+class QBooleanPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(boolean result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(boolean result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, boolean result, int index);
+    
+}// class
+
+class QBytePromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(byte result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(byte result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, byte result, int index);
+    
+}// class
+
+class QShortPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(short result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(short result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, short result, int index);
+    
+}// class
+
+class QIntPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(int result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(int result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, int result, int index);
+    
+}// class
+
+class QLongPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(long result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(long result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, long result, int index);
+    
+}// class
+
+class QCharPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(char result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(char result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, char result, int index);
+    
+}// class
+
+class QFloatPromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(float result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(float result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, float result, int index);
+    
+}// class
+
+class QDoublePromise___ {
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(double result) {
+        return addResult(nativeId(this), result, -1);
+    }
+    
+    @io.qt.QtUninvokable
+    public final boolean addResult(double result, int index) {
+        return addResult(nativeId(this), result, index);
+    }
+    
+    @io.qt.QtUninvokable
+    private native boolean addResult(long nativeId, double result, int index);
+    
 }// class
 
 class QXmlStreamWriter___ extends QXmlStreamWriter {
@@ -6125,19 +10638,35 @@ class QJsonDocument___{
         public final io.qt.core.QJsonDocument document;
         public final io.qt.core.QJsonParseError error;
     }
+}// class
+
+
+class QJsonDocument_5__{
     
+    /**
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     */
     public static io.qt.core.QJsonDocument fromRawData(String data) {
         return fromRawData(data, io.qt.core.QJsonDocument.DataValidation.Validate);
     }
     
+    /**
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     */
     public static io.qt.core.QJsonDocument fromRawData(String data, io.qt.core.QJsonDocument.DataValidation validation) {
         return fromRawData(data.getBytes(), validation);
     }
     
+    /**
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     */
     public static io.qt.core.QJsonDocument fromRawData(byte[] data) {
         return fromRawData(data, io.qt.core.QJsonDocument.DataValidation.Validate);
     }
     
+    /**
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, io.qt.core.QJsonDocument.DataValidation)}.</p>
+     */
     public static io.qt.core.QJsonDocument fromRawData(byte[] data, io.qt.core.QJsonDocument.DataValidation validation) {
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
         return fromRawData(buffer, buffer.capacity(), validation);
@@ -6146,6 +10675,10 @@ class QJsonDocument___{
 }// class
 
 class QLockFile__{
+
+    /**
+     * Result class for {@link #getLockInfo()}
+     */
     public static class LockInfo {
             private LockInfo(long pid, String hostname, String appname) {
                 this.pid = pid;
@@ -6162,35 +10695,257 @@ class QLockFile__{
 
 class QPropertyAnimation___ extends QPropertyAnimation {
     
+    /**
+     * <p>Overloaded constructor for {@link #QPropertyAnimation(io.qt.core.QObject,io.qt.core.QByteArray,io.qt.core.QObject)}
+     * with <code>parent = null</code>.</p>
+     */
     public QPropertyAnimation(io.qt.core.QObject target, String propertyName){
         this(target, new io.qt.core.QByteArray(propertyName), null);
     }
     
+    /**
+     * <p>Overloaded constructor for {@link #QPropertyAnimation(io.qt.core.QObject,io.qt.core.QByteArray,io.qt.core.QObject)}.</p>
+     */
     public QPropertyAnimation(io.qt.core.QObject target, String propertyName, io.qt.core.QObject parent){
         this(target, new io.qt.core.QByteArray(propertyName), parent);
     }
     
+    /**
+     * <p>Overloaded function for {@link #setPropertyName(io.qt.core.QByteArray)}.</p>
+     */
     public final void setPropertyName(String propertyName)    {
         setPropertyName(new io.qt.core.QByteArray(propertyName));
     }
     
 }// class
 
+class QMetaType_6__ extends QMetaType {
+    
+    public static io.qt.core.QMetaType fromName(String name){
+        return fromName(new io.qt.core.QByteArrayView(name));
+    }
+    
+    public static io.qt.core.QMetaType fromName(QByteArray name){
+        return fromName(new io.qt.core.QByteArrayView(name));
+    }
+    
+    public static io.qt.core.QMetaType fromName(byte[] name){
+        return fromName(new io.qt.core.QByteArrayView(name));
+    }
+    
+}// class
+
 class QMetaType___ extends QMetaType {
     
-    public static int registerMetaType(Class<?> clazz){
-        return io.qt.internal.QtJambiInternal.registerMetaType(clazz);
+    /**
+     * Overloaded constructor for {@link #QMetaType(int)}.
+     * @param type
+     */
+    public QMetaType(QMetaType.Type type){
+        this(type.value());
     }
     
-    public static int metaTypeId(Class<?> clazz){
+    /**
+     * <p>Overloaded function for {@link #create(Object)}
+     * with <code>copy = null</code>.</p>
+     * @return new instance
+     */
+    public final Object create() {
+        return io.qt.internal.QtJambiInternal.createMetaType(id(), javaType(), null);
+    }
+    
+    /**
+     * <p>Returns a copy of <i>copy</i>, assuming it is of the type that this <code>QMetaType</code> instance was created for.</p>
+     * <p>If copy is <code>null</code>, creates a default constructed instance.</p>
+     * <p>See <a href="@docRoot/qmetatype.html#create">QMetaType::create(int, const void *)</a></p>
+     * @param copy
+     * @return new instance
+     */
+    public final Object create(Object copy) {
+        return io.qt.internal.QtJambiInternal.createMetaType(id(), javaType(), copy);
+    }
+    
+    /**
+     * Returns the type name associated with this <code>QMetaType</code> as {@link String}.
+     * @return type name
+     */
+    @Override
+    @io.qt.QtUninvokable
+    public final String toString() {
+        return ""+name();
+    }
+    
+    /**
+     * <p>Returns the <code>QMetaType</code> corresponding to the given class.</p>
+     * <p>If the class has never been registered as meta type <code>UnknownType</code> is returned.</p>
+     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
+     * specify the template instantiations to be used in the registered template type.</p>
+     * <p>See <a href="@docRoot/qmetatype.html#fromType">QMetaMethod::fromType&lt;T&gt;()</a></p>
+     * @param clazz the class to be registered
+     * @param instantiations optional instantiations for generics (templates)
+     * @return meta type ID
+     */
+    public static QMetaType fromType(Class<?> clazz, QMetaType... instantiations){
+        return new QMetaType(registerMetaType(clazz, instantiations));
+    }
+    
+    /**
+     * <p>Registers the given class as meta type. Returns the internal ID used by <code>QMetaType</code>.</p>
+     * <p>After a type has been registered, you can create and destroy objects of that type dynamically at run-time.</p>
+     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
+     * specify the template instantiations to be used in the registered template type.</p>
+     * <p>See <a href="@docRoot/qmetatype.html#qRegisterMetaType">qRegisterMetaType&lt;T&gt;()</a></p>
+     * @param clazz the class to be registered
+     * @param instantiations optional instantiations for generics (templates)
+     * @return meta type ID
+     */
+    public static int registerMetaType(Class<?> clazz, QMetaType... instantiations){
+        int registeredId = metaTypeId(clazz, instantiations);
+        if(registeredId!=0)
+            return registeredId;
+        Object[] typeParameters = clazz.getTypeParameters();
+        if(typeParameters.length>0) {
+            if(typeParameters.length!=instantiations.length) {
+                throw new IllegalArgumentException("Number of instantiations does not correspond to number of type parameters.");
+            }
+            if(QList.class.isAssignableFrom(clazz)) {
+                if(instantiations[0].id()==Type.QString.value()) {
+                    return Type.QStringList.value();
+                }else if(instantiations[0].id()==Type.QByteArray.value()) {
+                    return Type.QByteArrayList.value();
+                }else{
+                    if(instantiations[0].id()==Type.QVariant.value()) {
+                        return Type.QVariantList.value();
+                    }
+                }
+            }else if(QMap.class.isAssignableFrom(clazz)) {
+                if(instantiations[0].id()==Type.QString.value()) {
+                    if(instantiations[1].id()==Type.QVariant.value()) {
+                        return Type.QVariantMap.value();
+                    }
+                }
+            }
+            else if(QHash.class.isAssignableFrom(clazz)) {
+                if(instantiations[0].id()==Type.QString.value()) {
+                    if(instantiations[1].id()==Type.QVariant.value()) {
+                        return Type.QVariantHash.value();
+                    }
+                }
+            }
+            int[] _instantiations = new int[instantiations.length];
+            for (int i = 0; i < _instantiations.length; i++) {
+                _instantiations[i] = instantiations[i].id();
+                if(_instantiations[i]==0)
+                    throw new IllegalArgumentException("Invalid instantiation.");
+            }
+            return io.qt.internal.QtJambiInternal.registerMetaType(clazz, _instantiations);
+        }else {
+            if(instantiations.length>0) {
+                throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
+            }
+            return io.qt.internal.QtJambiInternal.registerMetaType(clazz);
+        }
+    }
+    
+    /**
+     * <p>Returns the meta type id of goven class at compile time.</p>
+     * <p>If the class has never been registered as meta type <code>UnknownType</code> is returned.</p>
+     * <p>If given class is generic (e.g. {@link io.qt.core.QList}, {@link io.qt.core.QPair}, {@link io.qt.core.QMap}) 
+     * specify the template instantiations to be used in the registered template type.</p>
+     * <p>See <a href="@docRoot/qmetatype.html#qMetaTypeId">qMetaTypeId&lt;T&gt;()</a></p>
+     * @param clazz the class to be registered
+     * @param instantiations optional instantiations for generics (templates)
+     * @return meta type ID
+     */
+    public static int metaTypeId(Class<?> clazz, QMetaType... instantiations){
+        if(clazz==null)
+            return QMetaType.Type.Nullptr.value();
+        initializePackage(clazz);
+        Object[] typeParameters = clazz.getTypeParameters();
+        if(typeParameters.length>0) {
+            if(typeParameters.length!=instantiations.length) {
+                if(instantiations.length==0) {
+                    int result = io.qt.internal.QtJambiInternal.metaTypeId(clazz);
+                    if(result!=0)
+                        return result;
+                }
+                throw new IllegalArgumentException("Number of instantiations does not correspond to number of type parameters.");
+            }
+            for (QMetaType instantiation : instantiations) {
+                if(instantiation.id()==0)
+                    throw new IllegalArgumentException("Invalid instantiation.");
+            }
+            switch(typeParameters.length) {
+            case 1:
+                if(instantiations[0].id()!=Type.Void.value()) {
+                    if(clazz==java.util.Set.class) {
+                        return type(String.format("QSet<%1$s>", instantiations[0].name()));
+                    }else if(clazz==java.util.Queue.class) {
+                        return type(String.format("QQueue<%1$s>", instantiations[0].name()));
+                    }else if(clazz==java.util.Deque.class) {
+                        return type(String.format("QStack<%1$s>", instantiations[0].name()));
+                    }else if(clazz.isInterface() && java.util.List.class.isAssignableFrom(clazz)) {
+                        return type(String.format("QList<%1$s>", instantiations[0].name()));
+                    }
+                }
+                break;
+            case 2:
+                if(instantiations[0].id()!=QMetaType.Type.Void.value() && instantiations[1].id()!=QMetaType.Type.Void.value()) {
+                    if(clazz==java.util.Map.class) {
+                        return type(String.format("QHash<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
+                    }else if(clazz==java.util.TreeMap.class) {
+                        return type(String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
+                    }else if(clazz==java.util.HashMap.class) {
+                        return type(String.format("QHash<%1$s>", instantiations[0].name(), instantiations[1].name()));
+                    }else if(clazz.isInterface() && java.util.NavigableMap.class.isAssignableFrom(clazz)) {
+                        return type(String.format("QMap<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name()));
+                    }
+                }
+                break;
+            }
+            if(io.qt.QtObjectInterface.class.isAssignableFrom(clazz)) {
+                String name = clazz.getSimpleName();
+                QStringList _instantiations = new QStringList();
+                for (QMetaType instantiation : instantiations) {
+                    _instantiations.add(instantiation.name().toString());
+                }
+                return type(String.format("%1$s<%2$s>", name, _instantiations.join(',')));
+            }
+        }else {
+            if(instantiations.length>0) {
+                throw new IllegalArgumentException("Type "+clazz.getName()+" does not accept instantiations.");
+            }
+        }
         return io.qt.internal.QtJambiInternal.metaTypeId(clazz);
     }
-
-    public interface GenericTypeInterface{
-        @io.qt.QtUninvokable
-        public int metaType();
+    
+    /**
+     * Returns the Java class for this meta type.
+     * @return java class
+     */
+    public final Class<?> javaType(){
+        return io.qt.internal.QtJambiInternal.javaTypeForMetaTypeId(id());
     }
     
+    /**
+     * Returns the Java class for the given meta type ID.
+     * @return java class
+     */
+    public static Class<?> javaType(int metaTypeId){
+        return io.qt.internal.QtJambiInternal.javaTypeForMetaTypeId(metaTypeId);
+    }
+
+    /**
+     * Interface super type for all generic classes representing a QMetaType-registered but Java-unknown value type.
+     */
+    public interface GenericTypeInterface{
+        @io.qt.QtUninvokable
+        public QMetaType metaType();
+    }
+    
+    /**
+     * This class represents a QMetaType-registered but Java-unknown enumerator type which can be used in QFlags.
+     */
     public static final class GenericFlag implements io.qt.QtFlagEnumerator{
         private GenericFlag(int value) {
             super();
@@ -6214,6 +10969,9 @@ class QMetaType___ extends QMetaType {
         public Class<? extends io.qt.QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown QFlags type.
+     */
     public static final class GenericFlags extends io.qt.QFlags<GenericFlag> implements GenericTypeInterface{
         private static final long serialVersionUID = -7659504264600507749L;
     
@@ -6226,8 +10984,8 @@ class QMetaType___ extends QMetaType {
         private final int type;
         
         @Override
-        public final int metaType() {
-            return type;
+        public final QMetaType metaType() {
+            return new QMetaType(type);
         }
         
         public GenericFlag[] flags(){
@@ -6245,6 +11003,9 @@ class QMetaType___ extends QMetaType {
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown enumerator.
+     */
     private abstract static class AbstractGenericEnumerator implements io.qt.QtAbstractEnumerator, GenericTypeInterface{
         @io.qt.internal.NativeAccess
         private AbstractGenericEnumerator(int type, int index, String name) {
@@ -6260,8 +11021,8 @@ class QMetaType___ extends QMetaType {
     
         
         @Override
-        public final int metaType() {
-            return type;
+        public final QMetaType metaType() {
+            return new QMetaType(type);
         }
     
         @Override
@@ -6314,6 +11075,9 @@ class QMetaType___ extends QMetaType {
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown 32 Bit enumerator.
+     */
     public final static class GenericEnumerator extends AbstractGenericEnumerator implements io.qt.QtEnumerator{
         @io.qt.internal.NativeAccess
         private GenericEnumerator(int type, int index, int value, String name) {
@@ -6360,6 +11124,9 @@ class QMetaType___ extends QMetaType {
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown 8 Bit enumerator.
+     */
     public final static class GenericByteEnumerator extends AbstractGenericEnumerator implements io.qt.QtByteEnumerator{
         @io.qt.internal.NativeAccess
         private GenericByteEnumerator(int type, int index, byte value, String name) {
@@ -6406,6 +11173,9 @@ class QMetaType___ extends QMetaType {
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown 16 Bit enumerator.
+     */
     public final static class GenericShortEnumerator extends AbstractGenericEnumerator implements io.qt.QtShortEnumerator{
         @io.qt.internal.NativeAccess
         private GenericShortEnumerator(int type, int index, short value, String name) {
@@ -6452,6 +11222,9 @@ class QMetaType___ extends QMetaType {
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown 64 Bit enumerator.
+     */
     public final static class GenericLongEnumerator extends AbstractGenericEnumerator implements io.qt.QtLongEnumerator{
         @io.qt.internal.NativeAccess
         private GenericLongEnumerator(int type, int index, long value, String name) {
@@ -6498,22 +11271,51 @@ class QMetaType___ extends QMetaType {
         }
     }
     
-    public final static class GenericValue extends io.qt.QtObject implements GenericTypeInterface{
+    /**
+     * This class represents a QMetaType-registered but Java-unknown value type.
+     */
+    public final static class GenericValue extends io.qt.QtObject implements Cloneable, GenericTypeInterface{
+        @io.qt.internal.NativeAccess
         private GenericValue(QPrivateConstructor p) { super(p); }
+        
+        private static native GenericValue clone(long _this, int type);
+        
+        @Override
+        public GenericValue clone() {
+            return clone(nativeId(this), type);
+        }
+
+        @io.qt.internal.NativeAccess
+        private final int type = QMetaType.Type.UnknownType.value();
+        
+        @io.qt.QtUninvokable
+        public QMetaType metaType() {
+            return new QMetaType(type);
+        }
+        
+        public java.nio.ByteBuffer buffer(){
+            return QMetaType.buffer(nativeId(this), type);
+        }
+    }
+    
+    /**
+     * This class represents a QMetaType-registered but Java-unknown object type.
+     */
+    public final static class GenericObject extends io.qt.QtObject implements GenericTypeInterface{
+        private GenericObject(QPrivateConstructor p) { super(p); }
         
         @io.qt.internal.NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
         @io.qt.QtUninvokable
-        public int metaType() {
-            return type;
-        }
-        
-        public java.nio.ByteBuffer buffer(){
-            return QMetaType.buffer(checkedNativeId(this), type);
+        public QMetaType metaType() {
+            return new QMetaType(type);
         }
     }
     
+    /**
+     * This class represents a QMetaType-registered but Java-unknown gadget type.
+     */
     public final static class GenericGadget extends io.qt.QtGadget implements GenericTypeInterface{
         private GenericGadget(QPrivateConstructor p) {super(p);}
         
@@ -6521,38 +11323,550 @@ class QMetaType___ extends QMetaType {
         private final int type = QMetaType.Type.UnknownType.value();
         
         @io.qt.QtUninvokable
-        public int metaType() {
-            return type;
-        }
-        
-        public java.nio.ByteBuffer buffer(){
-            return QMetaType.buffer(checkedNativeId(this), type);
+        public QMetaType metaType() {
+            return new QMetaType(type);
         }
     }
 
     private static native java.nio.ByteBuffer buffer(long __this__nativeId, int type);
 }// class
 
-class QMetaType_native__ extends QMetaType {
-
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_buffer)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID nativeId,
- jint type0)
-{
-    try{
-        if(void* ptr = qtjambi_from_nativeId(nativeId)){
-            jlong size = QMetaType::sizeOf(type0);
-            if(size>0){
-                return __jni_env->NewDirectByteBuffer(ptr, size);
+class QMetaMethod___ {
+    private Class<?> returnClassType;
+    private java.util.List<Class<?>> parameterClassTypes;
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#parameterTypes">QMetaMethod::parameterTypes() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final java.util.List<Class<?>> parameterClassTypes() {
+        if(parameterClassTypes==null) {
+            parameterClassTypes = java.util.Collections.unmodifiableList(parameterClassTypes(nativeId(this)));
+        }
+        return parameterClassTypes;
+    }
+    
+    @io.qt.QtUninvokable
+    private static native final java.util.List<Class<?>> parameterClassTypes(long __this_nativeId);
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#parameterType">QMetaMethod::parameterType(int index) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Class<?> parameterClassType(int index) {
+        return parameterClassTypes().get(index);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#returnType">QMetaMethod::returnType() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Class<?> returnClassType(){
+        if(returnClassType==null)
+            returnClassType = returnClassType(nativeId(this));
+        return returnClassType;
+    }
+    
+    @io.qt.QtUninvokable
+    private static native final Class<?> returnClassType(long __this_nativeId);
+        
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#methodSignature">QMetaMethod::methodSignature() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final String methodSignature() {
+        StringBuilder args = new StringBuilder();
+        java.util.List<Class<?>> parameterClassTypes = parameterClassTypes();
+        for(int i=0; i<parameterClassTypes.size(); ++i) {
+            if(i!=0)
+                args.append(',');
+            Class<?> parameterType = parameterClassTypes.get(i);
+            if(parameterType!=null){
+                if(parameterType.isArray()) {
+                    int arrayDepth = 1;
+                    Class<?> componentType = parameterType.getComponentType();
+                    while(true) {
+                        if(componentType.isArray()) {
+                            ++arrayDepth;
+                            componentType = componentType.getComponentType();
+                        }else {
+                            args.append(componentType.getName());
+                            for (int j = 0; j < arrayDepth; j++) {
+                                args.append("[]");
+                            }
+                            break;
+                        }
+                    }
+                }else {
+                    args.append(parameterType.getName());
+                }
+            }else {
+                args.append("<unknown type>");
             }
         }
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
+        return String.format("%1$s(%2$s)", name(), args);
     }
-    return nullptr;
-}
+    
+    @Override
+    @io.qt.QtUninvokable
+    public final String toString() {
+        return methodSignature();
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#invoke-1">QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object invoke(QObject object, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+        return invoke(object, Qt.ConnectionType.AutoConnection, args);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#invoke">QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+        if(!isValid())
+            throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
+        long object_id = checkedNativeId(java.util.Objects.requireNonNull(object));
+        if(parameterCount() != args.length) {
+            throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
+        }
+        {
+            QMetaObject enclosingMetaObject = enclosingMetaObject();
+            QMetaObject objectMO = object.metaObject();
+            if(objectMO!=enclosingMetaObject && !objectMO.inherits(enclosingMetaObject)) {
+                throw new IllegalArgumentException(String.format("Given object is not an instance of %1$s", enclosingMetaObject.className()));
+            }
+        }
+        if(connection==Qt.ConnectionType.BlockingQueuedConnection && object.thread()==QThread.currentThread()) {
+            throw new io.qt.QUnsuccessfulInvocationException("Blocking-queued invocation on object whose thread is the current thread is not allowed.");
+        }
+        Class<?>[] argClassTypes = new Class<?>[1+parameterCount()];
+        Class<?> returnType = returnClassType();
+        argClassTypes[0] = returnType==null ? void.class : returnType;
+        if(argClassTypes[0]!=void.class && argClassTypes[0]!=Void.class) {
+            if(connection==Qt.ConnectionType.QueuedConnection) {
+                throw new io.qt.QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections.");
+            }else if(connection==Qt.ConnectionType.AutoConnection) {
+                if(QThread.currentThread() != object.thread()) {
+                    throw new io.qt.QUnsuccessfulInvocationException("Unable to invoke methods with return values in queued connections (auto connection with different threads).");
+                }
+            }
+        }
+        java.util.List<Class<?>> parameterClassTypes = parameterClassTypes();
+        for(int i=0; i<parameterClassTypes.size(); ++i) {
+            argClassTypes[i+1] = parameterClassTypes.get(i);
+        }
+        return _invoke(object_id, nativeId(this), argClassTypes, connection.ordinal(), args);
+    }
+    
+    @io.qt.QtUninvokable
+    private static native Object _invoke(long object__id, long metaMethodId, Class<?>[] argClassTypes, int connection, Object[] args);
+    
+    /**
+     * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget">QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object invokeOnGadget(Object object, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
+        if(!isValid())
+            throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
+        if(parameterCount() != args.length) {
+            throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
+        }
+        long object_id = 0;
+        if(object instanceof io.qt.QtObjectInterface){
+            object_id = checkedNativeId((io.qt.QtObjectInterface)object);
+        }
+        {
+            QMetaObject enclosingMetaObject = enclosingMetaObject();
+            QMetaObject objectMO = QMetaObject.forGadget(object);
+            if(objectMO!=enclosingMetaObject && !objectMO.inherits(enclosingMetaObject)) {
+                throw new IllegalArgumentException(String.format("Given gadget is not an instance of %1$s", enclosingMetaObject.className()));
+            }
+        }
+        Class<?>[] argClassTypes = new Class<?>[1+parameterCount()];
+        Class<?> returnType = returnClassType();
+        argClassTypes[0] = returnType==null ? void.class : returnType;
+        java.util.List<Class<?>> parameterClassTypes = parameterClassTypes();
+        for(int i=0; i<parameterClassTypes.size(); ++i) {
+            argClassTypes[i+1] = parameterClassTypes.get(i);
+        }
+        return _invokeOnGadget(object_id, object, nativeId(this), argClassTypes, args);
+    }
+    
+    @io.qt.QtUninvokable
+    private static native Object _invokeOnGadget(long object_id, Object object, long metaMethodId, Class<?>[] argClassTypes, Object[] args);
+    
+    @io.qt.QtUninvokable
+    public final java.lang.reflect.Method toReflectedMethod() {
+        if(isValid()) {
+            switch(methodType()) {
+            case Method:
+            case Slot:
+                java.lang.reflect.AccessibleObject reflected = toReflected(nativeId(this));
+                if(reflected instanceof java.lang.reflect.Method){
+                    return (java.lang.reflect.Method)reflected;
+                }
+                try {
+                    java.util.List<Class<?>> parameterTypes = parameterClassTypes();
+                    return this.enclosingMetaObject().type().getDeclaredMethod(name().toString(), parameterTypes.toArray(new Class<?>[parameterTypes.size()]));
+                } catch (NoSuchMethodException | SecurityException e) {
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Method " + this + " is a " + methodType().name().toLowerCase() + ".");
+            }
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    private static native java.lang.reflect.AccessibleObject toReflected(long object_id);
+    
+    @io.qt.QtUninvokable
+    public final java.lang.reflect.Constructor<?> toReflectedConstructor() {
+        if(isValid()) {
+            if(methodType()==MethodType.Constructor) {
+                java.lang.reflect.AccessibleObject reflected = toReflected(nativeId(this));
+                if(reflected instanceof java.lang.reflect.Constructor<?>){
+                    return (java.lang.reflect.Constructor<?>)reflected;
+                }
+                try {
+                    java.util.List<Class<?>> parameterTypes = parameterClassTypes();
+                    return this.enclosingMetaObject().type().getDeclaredConstructor(parameterTypes.toArray(new Class<?>[parameterTypes.size()]));
+                } catch (NoSuchMethodException | SecurityException e) {
+                }
+            }else {
+                throw new IllegalArgumentException("Method " + this + " is not a constructor.");
+            }
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public final QMetaObject.AbstractSignal toSignal(QObject sender) {
+        if(isValid()) {
+            if(methodType()==MethodType.Signal) {
+                return findSignal(sender, name().toString(), parameterClassTypes().toArray(new Class[parameterCount()]));
+            }else {
+                throw new IllegalArgumentException("Method " + this + " is not a signal.");
+            }
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public static QMetaMethod fromSignal(QMetaObject.AbstractSignal signal) {
+        QMetaMethod method = null;
+        io.qt.QtSignalEmitterInterface containingObject = signal.containingObject();
+        if(containingObject instanceof QObject) {
+            if(signal.methodIndex()>=0) {
+                method = ((QObject)containingObject).metaObject().methodByIndex(signal.methodIndex());
+            }else{
+                java.util.List<Class<?>> signalTypeClasses = signal.argumentTypes();
+                method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));
+            }
+        }
+        return method;
+    }
+    
+    public static QMetaMethod fromReflectedConstructor(java.lang.reflect.Constructor<?> constructor) {
+        QMetaObject mo = QMetaObject.forType(constructor.getDeclaringClass());
+        if(mo!=null) {
+            return mo.constructor(constructor.getParameterTypes());
+        }
+        return null;
+    }
+    
+    public static QMetaMethod fromReflectedMethod(java.lang.reflect.Method method) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        QMetaMethod qmethod = null;
+        QMetaObject mo = QMetaObject.forType(declaringClass);
+        if(mo!=null) {
+            Object[] ok = {method};
+            qmethod = methodFromMethod(mo.metaObjectPointer, ok);
+            if(qmethod==null && ok[0]==null) {
+                qmethod = mo.method(method.getName(), method.getParameterTypes());
+            }
+        }
+        return qmethod;
+    }
+    
+    private static native QMetaMethod methodFromMethod(long metaObjectPointer, Object[] method);
+    
+    private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
+        LambdaInfo info = lamdaInfo(method);
+        if(info!=null && info.lambdaArgs.isEmpty()) {
+            if(info.reflectiveMethod!=null)
+                return fromReflectedMethod(info.reflectiveMethod);
+            if(info.reflectiveConstructor!=null)
+                return fromReflectedConstructor(info.reflectiveConstructor);
+        }
+        return null;
+    }
+    
+    public static <R> QMetaMethod fromMethod(QMetaObject.Method0<R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,R> QMetaMethod fromMethod(QMetaObject.Method1<A,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,R> QMetaMethod fromMethod(QMetaObject.Method2<A,B,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,R> QMetaMethod fromMethod(QMetaObject.Method3<A,B,C,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,R> QMetaMethod fromMethod(QMetaObject.Method4<A,B,C,D,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,R> QMetaMethod fromMethod(QMetaObject.Method5<A,B,C,D,E,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,R> QMetaMethod fromMethod(QMetaObject.Method6<A,B,C,D,E,F,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G,R> QMetaMethod fromMethod(QMetaObject.Method7<A,B,C,D,E,F,G,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G,H,R> QMetaMethod fromMethod(QMetaObject.Method8<A,B,C,D,E,F,G,H,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G,H,I,R> QMetaMethod fromMethod(QMetaObject.Method9<A,B,C,D,E,F,G,H,I,R> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static QMetaMethod fromMethod(QMetaObject.Slot0 method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A> QMetaMethod fromMethod(QMetaObject.Slot1<A> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B> QMetaMethod fromMethod(QMetaObject.Slot2<A,B> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C> QMetaMethod fromMethod(QMetaObject.Slot3<A,B,C> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D> QMetaMethod fromMethod(QMetaObject.Slot4<A,B,C,D> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E> QMetaMethod fromMethod(QMetaObject.Slot5<A,B,C,D,E> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F> QMetaMethod fromMethod(QMetaObject.Slot6<A,B,C,D,E,F> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G> QMetaMethod fromMethod(QMetaObject.Slot7<A,B,C,D,E,F,G> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G,H> QMetaMethod fromMethod(QMetaObject.Slot8<A,B,C,D,E,F,G,H> method) {
+        return fromMethodImpl(method);
+    }
+    
+    public static <A,B,C,D,E,F,G,H,I> QMetaMethod fromMethod(QMetaObject.Slot9<A,B,C,D,E,F,G,H,I> method) {
+        return fromMethodImpl(method);
+    }
+}// class
+
+class QMetaProperty___{
+    
+    @io.qt.QtUninvokable
+    public final QMetaObject.AbstractSignal notifySignal(QObject object) {
+        QMetaMethod notifySignal = notifySignal();
+        return notifySignal==null ? null : notifySignal.toSignal(object);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetaproperty.html#resetOnGadget">QMetaProperty::resetOnGadget(const void *) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean resetOnGadget(Object object){
+        return resetOnGadget(nativeId(this), object);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetaproperty.html#readOnGadget">QMetaProperty::readOnGadget(const void *) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Object readOnGadget(Object object) {
+        return readOnGadget(nativeId(this), object);
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &) const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final boolean writeOnGadget(Object object, Object value) {
+        return writeOnGadget(nativeId(this), object, value);
+    }
+    
+    @io.qt.QtUninvokable
+    private static native boolean resetOnGadget(long nativeId, Object object);
+    
+    @io.qt.QtUninvokable
+    private static native boolean writeOnGadget(long nativeId, Object object, Object value);
+    
+    @io.qt.QtUninvokable
+    private static native Object readOnGadget(long nativeId, Object object);
+    
+    @Override
+    @io.qt.QtUninvokable
+    public final String toString() {
+        return name();
+    }
+    
+    private Class<?> classType;
+    
+    /**
+     * <p>See <a href="@docRoot/qmetaproperty.html#metaType">QMetaProperty::metaType() const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final Class<?> classType(){
+        if(classType==null)
+            classType = classType(nativeId(this));
+        if(classType==null)
+            classType = QMetaType.javaType(this.userType());
+        return classType;
+    }
+    
+    @io.qt.QtUninvokable
+    private static native final Class<?> classType(long __this_nativeId);
+}// class
+
+class QMetaEnum___{
+    
+    @Override
+    @io.qt.QtUninvokable
+    public final String toString() {
+        return name();
+    }
+
+    @io.qt.QtUninvokable
+    public Integer keysToValue(String... keys) {
+        return keysToValue(new QStringList(keys).join('|'));
+    }
+    
+    @io.qt.QtUninvokable
+    public Integer keysToValue(java.util.Collection<String> keys) {
+        return keysToValue((keys instanceof QStringList ? (QStringList)keys : new QStringList(keys)).join('|'));
+    }
+
+    @io.qt.QtUninvokable
+    public io.qt.QtAbstractEnumerator[] entries() {
+        return enclosingMetaObject().enumEntries(this);
+    }
+    
+    @io.qt.QtUninvokable
+    public io.qt.QtAbstractEnumerator entry(int index) {
+        return enclosingMetaObject().enumEntry(this, index);
+    }
+    
+    @io.qt.QtUninvokable
+    public io.qt.QtAbstractEnumerator entry(String name) {
+        return enclosingMetaObject().enumEntry(this, name);
+    }
+    
+    @io.qt.QtUninvokable
+    public Class<?> type() {
+        return enclosingMetaObject().enumType(this);
+    }
+    
+    @io.qt.QtUninvokable
+    @io.qt.internal.NativeAccess
+    private static Class<?> flagsType(Class<?> enumType){
+        try {
+            Class<?> result = enumType.getMethod("asFlags").getReturnType();
+            if(result==io.qt.QFlags.class && enumType.getDeclaringClass()!=null) {
+                for(Class<?> cls : enumType.getDeclaringClass().getDeclaredClasses()) {
+                    if(io.qt.QFlags.class.isAssignableFrom(cls)) {
+                        if(cls.getGenericSuperclass() instanceof java.lang.reflect.ParameterizedType) {
+                            java.lang.reflect.ParameterizedType pt = (java.lang.reflect.ParameterizedType)cls.getGenericSuperclass();
+                            if(pt.getRawType()==io.qt.QFlags.class) {
+                                java.lang.reflect.Type[] types = pt.getActualTypeArguments();
+                                if(types.length==1 && types[0]==enumType)
+                                    return cls;
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @io.qt.QtUninvokable
+    public io.qt.QFlags<?> flags(int value) {
+        Class<?> enumType = type();
+        if(io.qt.QtFlagEnumerator.class.isAssignableFrom(enumType)) {
+            Class<?> flagsType = flagsType(enumType);
+            if(flagsType!=null)
+                return flags(flagsType, value);
+        }else if(io.qt.QFlags.class.isAssignableFrom(enumType)) {
+            return flags(enumType, value);
+        }
+        return null;
+    }
+    
+    @io.qt.QtUninvokable
+    public io.qt.QFlags<?> flags(String... names) {
+        @SuppressWarnings("unchecked")
+        io.qt.QFlags<io.qt.QtFlagEnumerator> flags = (io.qt.QFlags<io.qt.QtFlagEnumerator>)flags(0);
+        for (String name : names) {
+            io.qt.QtAbstractEnumerator entry = entry(name);
+            if(entry instanceof io.qt.QtFlagEnumerator) {
+                flags.set((io.qt.QtFlagEnumerator)entry);
+            }else {
+                throw new io.qt.QNoSuchEnumValueException(name);
+            }
+        }
+        return flags;
+    }
+    
+    @io.qt.QtUninvokable
+    private static native io.qt.QFlags<? extends io.qt.QtFlagEnumerator> flags(Class<?> cls, int value);
+    
+    @io.qt.QtUninvokable
+    public io.qt.QtAbstractEnumerator resolve(int value) {
+        Class<?> type = type();
+        if(type.isEnum()) {
+            byte bitSize = 4;
+            if(io.qt.QtByteEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 1;
+            }else if(io.qt.QtShortEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 2;
+            }else if(io.qt.QtLongEnumerator.class.isAssignableFrom(type)) {
+                bitSize = 8;
+            }
+            return resolveEntry(type, value, bitSize);
+        }else {
+            return enclosingMetaObject().getEnumEntry(this, value);
+        }
+    }
+    
+    @io.qt.QtUninvokable
+    private static native io.qt.QtAbstractEnumerator resolveEntry(Class<?> cls, int value, byte bitSize);
+
 }// class
 
 class Qt___ extends Qt {
@@ -6588,101 +11902,28 @@ class QCborValue_java__{
     
     @io.qt.QtUninvokable
     public final void setValue(java.lang.String key, io.qt.core.QCborValue value){
-        __qt_QCborValue_setValue_cref_QString(checkedNativeId(this), key, value);
+        __qt_QCborValue_setValue_cref_QString(nativeId(this), key, value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborValue_setValue_cref_QString(long __this__nativeId, java.lang.String key, io.qt.core.QCborValue value);
     
     @io.qt.QtUninvokable
     public final void setValue(long key, io.qt.core.QCborValue value){
-        __qt_QCborValue_setValue_long_long(checkedNativeId(this), key, value);
+        __qt_QCborValue_setValue_long_long(nativeId(this), key, value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborValue_setValue_long_long(long __this__nativeId, long key, io.qt.core.QCborValue value);
     
 }// class
 
-class QCborValue_native__{
-
-// QCborValue::operator[](const QString & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborValue__1_1qt_1QCborValue_1setValue_1cref_1QString__JLjava_lang_String_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborValue::operator[](const QString & key)")
-    try{
-        QtJambiScope __qtjambi_scope(__this_nativeId);
-        Q_UNUSED(__qtjambi_scope)
-        QCborValue *__qt_this = qtjambi_object_from_nativeId<QCborValue>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QString&  __qt_key0 = qtjambi_cast<QString >(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-// QCborValue::operator[](long long key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborValue__1_1qt_1QCborValue_1setValue_1long_1long__JJ)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jlong key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborValue::operator[](long long key)")
-    try{
-        QtJambiScope __qtjambi_scope(__this_nativeId);
-        Q_UNUSED(__qtjambi_scope)
-        QCborValue *__qt_this = qtjambi_object_from_nativeId<QCborValue>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[static_cast<qlonglong>(key0)] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-}// class
-
 class QCborArray_java__{
 
     @io.qt.QtUninvokable
     public final void setValue(long i, io.qt.core.QCborValue value){
-        __qt_QCborArray_setValue_qsizetype(checkedNativeId(this), i, value);
+        __qt_QCborArray_setValue_qsizetype(nativeId(this), i, value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborArray_setValue_qsizetype(long __this__nativeId, long i, io.qt.core.QCborValue value);
-
-}// class
-
-class QCborArray_native__{
-
-// QCborArray::operator[](qsizetype i)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborArray__1_1qt_1QCborArray_1setValue_1qsizetype__JJLio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jlong i0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborArray::operator[](qsizetype i)")
-    try{
-        QtJambiScope __qtjambi_scope(__this_nativeId);
-        Q_UNUSED(__qtjambi_scope)
-        QCborArray *__qt_this = qtjambi_object_from_nativeId<QCborArray>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[static_cast<qsizetype>(i0)] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
 
 }// class
 
@@ -6690,88 +11931,25 @@ class QCborMap_java__{
     
     @io.qt.QtUninvokable
     public final void setValue(io.qt.core.QCborValue key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_cref_QCborValue(checkedNativeId(this), nativeId(key), value);
+        __qt_QCborMap_setValue_cref_QCborValue(nativeId(this), nativeId(key), value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborMap_setValue_cref_QCborValue(long __this__nativeId, long key, io.qt.core.QCborValue value);
 
     @io.qt.QtUninvokable
     public final void setValue(java.lang.String key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_cref_QString(checkedNativeId(this), key, value);
+        __qt_QCborMap_setValue_cref_QString(nativeId(this), key, value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborMap_setValue_cref_QString(long __this__nativeId, java.lang.String key, io.qt.core.QCborValue value);
 
     @io.qt.QtUninvokable
     public final void setValue(long key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_long_long(checkedNativeId(this), key, value);
+        __qt_QCborMap_setValue_long_long(nativeId(this), key, value);
     }
     @io.qt.QtUninvokable
     private native void __qt_QCborMap_setValue_long_long(long __this__nativeId, long key, io.qt.core.QCborValue value);
     
-}// class
-
-class QCborMap_native__{
-
-// QCborMap::operator[](const QCborValue & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QCborValue__JJLio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](const QCborValue & key)")
-    try{
-        QCborMap *__qt_this = qtjambi_object_from_nativeId<QCborMap>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QCborValue&  __qt_key0 = qtjambi_object_from_nativeId_deref<QCborValue>(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-// QCborMap::operator[](const QString & key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1cref_1QString__JLjava_lang_String_2Lio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](const QString & key)")
-    try{
-        QCborMap *__qt_this = qtjambi_object_from_nativeId<QCborMap>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        const QString&  __qt_key0 = qtjambi_cast<QString >(__jni_env, key0);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[__qt_key0] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-// QCborMap::operator[](long long key)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborMap__1_1qt_1QCborMap_1setValue_1long_1long__JJLio_qt_core_QCborValue_2)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jlong key0,
- jobject value1)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborMap::operator[](long long key)")
-    try{
-        QCborMap *__qt_this = qtjambi_object_from_nativeId<QCborMap>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborValue __qt_value1 = qtjambi_cast<QCborValue>(__jni_env, value1);
-        (*__qt_this)[key0] = __qt_value1;
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
 }// class
 
 class QCborStreamReader_java__{
@@ -6800,87 +11978,25 @@ class QCborStreamReader_java__{
     
     @io.qt.QtUninvokable
     public final io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> readByteArray(){
-        return __qt_QCborStreamReader_readByteArray(checkedNativeId(this));
+        return __qt_QCborStreamReader_readByteArray(nativeId(this));
     }
     @io.qt.QtUninvokable
     private native io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> __qt_QCborStreamReader_readByteArray(long __this__nativeId);
 
     @io.qt.QtUninvokable
     public final io.qt.core.QCborStreamReader.StringResult<String> readString(){
-        return __qt_QCborStreamReader_readString(checkedNativeId(this));
+        return __qt_QCborStreamReader_readString(nativeId(this));
     }
     @io.qt.QtUninvokable
     private native io.qt.core.QCborStreamReader.StringResult<String> __qt_QCborStreamReader_readString(long __this__nativeId);
 
     @io.qt.QtUninvokable
     public final io.qt.core.QCborStreamReader.StringResult<Long> readChunk(java.nio.ByteBuffer buffer){
-        return __qt_QCborStreamReader_readChunk(checkedNativeId(this), buffer);
+        return __qt_QCborStreamReader_readChunk(nativeId(this), buffer);
     }
     @io.qt.QtUninvokable
     private native io.qt.core.QCborStreamReader.StringResult<Long> __qt_QCborStreamReader_readChunk(long __this__nativeId, java.nio.ByteBuffer buffer);
     
-}// class
-
-class QCborStreamReader_native__{
-
-// QCborStreamReader::readByteArray()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader__1_1qt_1QCborStreamReader_1readByteArray__J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readByteArray()")
-    try{
-        QCborStreamReader *__qt_this = qtjambi_object_from_nativeId<QCborStreamReader>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborStreamReader::StringResult<QByteArray> __qt_return_value = __qt_this->readByteArray();
-        return Java::Private::QtCore::QCborStreamReader$StringResult.newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-
-}
-
-// QCborStreamReader::readString()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader__1_1qt_1QCborStreamReader_1readString__J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readString()")
-    try{
-        QCborStreamReader *__qt_this = qtjambi_object_from_nativeId<QCborStreamReader>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        QCborStreamReader::StringResult<QString> __qt_return_value = __qt_this->readString();
-        return Java::Private::QtCore::QCborStreamReader$StringResult.newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-
-}
-
-// QCborStreamReader::readChunk()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QCborStreamReader__1_1qt_1QCborStreamReader_1readChunk__J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId, jobject buffer)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QCborStreamReader::readChunk()")
-    try{
-        QCborStreamReader *__qt_this = qtjambi_object_from_nativeId<QCborStreamReader>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        JBufferData __qt_buffer(__jni_env, buffer);
-        QCborStreamReader::StringResult<qsizetype> __qt_return_value = __qt_this->readStringChunk(__qt_buffer, __qt_buffer.size());
-        return Java::Private::QtCore::QCborStreamReader$StringResult.newInstance(__jni_env, qtjambi_cast<jobject>(__jni_env, __qt_return_value.data), qtjambi_cast<jobject>(__jni_env, __qt_return_value.status));
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-
-}
-
 }// class
 
 class QFactoryLoader__{
@@ -7234,41 +12350,19 @@ class QPluginLoader_java__{
 class QStaticPlugin_java__{
     @io.qt.QtUninvokable
     public final io.qt.core.QObject instance(){
-        return instance(checkedNativeId(this));
+        return instance(nativeId(this));
     }
     
     private static native final io.qt.core.QObject instance(long nativeId);
 }// class
 
-class QStaticPlugin_native__{
-
-// QStaticPlugin::instance()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QStaticPlugin_instance)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QStaticPlugin::instance()")
-    try{
-        QStaticPlugin *__qt_this = qtjambi_object_from_nativeId<QStaticPlugin>(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this);
-        return qtjambi_cast<jobject>(__jni_env, __qt_this->instance());
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-}// class
-
 class QThread___{
     
     @io.qt.QtUninvokable
-    static native void initializeCurrentThread();
+    static native void initialize();
     
     public QThread(ThreadGroup group, String name, long stackSize, io.qt.core.QObject parent) {
         super((QPrivateConstructor)null);        
-        constructorThreadCheck(this);
         __qt_QThread_new_QObject_ptr(this, parent);
         initialize(group);
         if(name!=null)
@@ -7424,21 +12518,21 @@ class QThread___{
                 group = parent.getThreadGroup();
             }
         }
-        initialize(checkedNativeId(this), group);
+        initialize(nativeId(this), group);
     }
     
     public final ThreadGroup getThreadGroup() {
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
         }
-        return getThreadGroup(checkedNativeId(this));
+        return getThreadGroup(nativeId(this));
     }
     
     private native ThreadGroup getThreadGroup(long __this__nativeId);
     
     public void setName(String name) {
         if(!isRunning() && javaThread==null)
-            setName(checkedNativeId(this), name);
+            setName(nativeId(this), name);
     }
     
     private native void setName(long __this__nativeId, String name);
@@ -7447,14 +12541,14 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getName();
         }
-        return getName(checkedNativeId(this));
+        return getName(nativeId(this));
     }
     
     private native String getName(long __this__nativeId);
     
     public void setDaemon(boolean daemon) {
         if(!isRunning() && javaThread==null)
-            setDaemon(checkedNativeId(this), daemon);
+            setDaemon(nativeId(this), daemon);
     }
     
     private native void setDaemon(long __this__nativeId, boolean daemon);
@@ -7463,7 +12557,7 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.isDaemon();
         }
-        return isDaemon(checkedNativeId(this));
+        return isDaemon(nativeId(this));
     }
     
     private native boolean isDaemon(long __this__nativeId);
@@ -7472,7 +12566,7 @@ class QThread___{
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
         }else {
-            setUncaughtExceptionHandler(checkedNativeId(this), handler);
+            setUncaughtExceptionHandler(nativeId(this), handler);
         }
     }
     
@@ -7482,7 +12576,7 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
         }
-        return getUncaughtExceptionHandler(checkedNativeId(this));
+        return getUncaughtExceptionHandler(nativeId(this));
     }
     
     private native Thread.UncaughtExceptionHandler getUncaughtExceptionHandler(long __this__nativeId);
@@ -7491,7 +12585,7 @@ class QThread___{
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
         }else {
-            setContextClassLoader(checkedNativeId(this), cl);
+            setContextClassLoader(nativeId(this), cl);
         }
     }
     
@@ -7501,15 +12595,15 @@ class QThread___{
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
         }
-        return getContextClassLoader(checkedNativeId(this));
+        return getContextClassLoader(nativeId(this));
     }
     
     private native ClassLoader getContextClassLoader(long __this__nativeId);
     
-    private native void initialize(long nativeId, ThreadGroup group);
+    private static native void initialize(long nativeId, ThreadGroup group);
     private final Thread javaThread = null;
     
-    public final Thread javaThread() { return javaThread==null ? javaThread(checkedNativeId(this)) : javaThread; }
+    public final Thread javaThread() { return javaThread==null ? javaThread(nativeId(this)) : javaThread; }
     
     private native Thread javaThread(long nativeId);
     public static native QThread thread(Thread thread);
@@ -7543,7 +12637,7 @@ class QThread___{
                                 QThread qthread = thread(thread);
                                 try(Monitor monitor = synchronizedNativeId(qthread)){
                                     if(qthread!=null && !qthread.isDisposed() && !qthread.isInterruptionRequested()){
-                                        qthread.__qt_QThread_requestInterruption(checkedNativeId(qthread));
+                                        qthread.__qt_QThread_requestInterruption(nativeId(qthread));
                                     }
                                 }
                             }
@@ -7554,165 +12648,6 @@ class QThread___{
         }
         interruptible = _interruptible;
     }
-}// class
-
-class QThread_native__{
-    
-#if !defined(QT_QTJAMBI_PORT)
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_javaThread)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_from_thread(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_thread)
-(JNIEnv *__jni_env, jclass, jobject thread)
-{
-    try{
-        return qtjambi_cast<jobject>(__jni_env, qtjambi_to_thread(__jni_env, thread));
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_getThreadGroup)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_thread_get_group(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_setUncaughtExceptionHandler)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId, jobject handler)
-{
-    try{
-        qtjambi_thread_set_UncaughtExceptionHandler(__jni_env, __this_nativeId, handler);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_getUncaughtExceptionHandler)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_thread_get_UncaughtExceptionHandler(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_setContextClassLoader)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId, jobject cl)
-{
-    try{
-        qtjambi_thread_set_ContextClassLoader(__jni_env, __this_nativeId, cl);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_getContextClassLoader)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_thread_get_ContextClassLoader(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_setName)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId, jstring name)
-{
-    try{
-        qtjambi_thread_set_name(__jni_env, __this_nativeId, name);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_getName)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_thread_get_name(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return nullptr;
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_setDaemon)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId, jboolean daemon)
-{
-    try{
-        qtjambi_thread_set_daemon(__jni_env, __this_nativeId, daemon);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-extern "C" Q_DECL_EXPORT jboolean JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_isDaemon)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
-{
-    try{
-        QThread* __qt_this = qtjambi_object_from_nativeId<QThread>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        return qtjambi_thread_is_daemon(__qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-        return false;
-    }
-}
-
-extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QThread_initialize)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId, jobject group)
-{
-    try{
-        qtjambi_initialize_thread(__jni_env, __this_nativeId, group);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-
-#endif // !defined(QT_QTJAMBI_PORT)
-
 }// class
 
 class QSharedMemory_java__{
@@ -7785,65 +12720,36 @@ class QSettings__{
 
 }// class
 
-class QPersistentModelIndex__{
+class QModelRoleData___{
     
     @io.qt.QtUninvokable
-    public final io.qt.core.QModelIndex toIndex(){
-        return __qt_QPersistentModelIndex_toIndex(checkedNativeId(this));
+    public final void setData(Object data){
+        __qt_QModelRoleData_setData(nativeId(this), data);
     }
     
     @io.qt.QtUninvokable
-    private native io.qt.core.QModelIndex __qt_QPersistentModelIndex_toIndex(long __this__nativeId);
+    private native void __qt_QModelRoleData_setData(long __this__nativeId, Object data);
     
-}// class
-
-class QPersistentModelIndex_native_{
-
-// QPersistentModelIndex::operator const QModelIndex &() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QPersistentModelIndex__1_1qt_1QPersistentModelIndex_1toIndex__J)
-(JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QPersistentModelIndex::operator const QModelIndex &() const")
-    try{
-#if QT_CONFIG(itemmodel)
-        const QPersistentModelIndex *__qt_this = qtjambi_object_from_nativeId<QPersistentModelIndex>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        const QModelIndex& __qt_return_value = *__qt_this;
-        return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(row0)
-        Q_UNUSED(column1)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(itemmodel)
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
-
 }// class
 
 class QDir__{
     @io.qt.QtUninvokable
-    public final java.util.List<io.qt.core.QFileInfo> entryInfoList(io.qt.core.QDir.Filter... filters) {
+    public final io.qt.core.QList<io.qt.core.QFileInfo> entryInfoList(io.qt.core.QDir.Filter... filters) {
         return entryInfoList(new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
     }
     
     @io.qt.QtUninvokable
-    public final java.util.List<java.lang.String> entryList(io.qt.core.QDir.Filter... filters) {
+    public final io.qt.core.QList<java.lang.String> entryList(io.qt.core.QDir.Filter... filters) {
         return entryList(new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
     }
     
     @io.qt.QtUninvokable
-    public final java.util.List<java.lang.String> entryList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
+    public final io.qt.core.QList<java.lang.String> entryList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
         return entryList(nameFilters, new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
     }
     
     @io.qt.QtUninvokable
-    public final java.util.List<io.qt.core.QFileInfo> entryInfoList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
+    public final io.qt.core.QList<io.qt.core.QFileInfo> entryInfoList(java.util.Collection<java.lang.String> nameFilters, io.qt.core.QDir.Filter... filters) {
         return entryInfoList(nameFilters, new io.qt.core.QDir.Filters(filters), new io.qt.core.QDir.SortFlags(-1));
     }
 }// class
@@ -7861,5 +12767,144 @@ class QFile__{
             this.pathInTrash = pathInTrash;
         }
     }
+}// class
+
+class QUntypedPropertyBinding_java__{
+    QUntypedPropertyBinding(Object functor){
+        __qt_QUntypedPropertyBinding_new_functor(this, java.util.Objects.requireNonNull(functor));
+    }
+    private native static void __qt_QUntypedPropertyBinding_new_functor(Object instance, Object functor);
+    
+    QUntypedPropertyBinding(QPropertyBindingData bindingData) {
+        __qt_QUntypedPropertyBinding_new_bindingData(this, bindingData);
+    }
+    private native static void __qt_QUntypedPropertyBinding_new_bindingData(Object instance, QPropertyBindingData bindingData);
+    
+    QUntypedPropertyBinding(QUntypedPropertyBinding other, boolean copy){
+        super((QPrivateConstructor)null);
+        __qt_QUntypedPropertyBinding_new_copy(this, other);
+    }
+    
+    private native static void __qt_QUntypedPropertyBinding_new_copy(Object instance, QUntypedPropertyBinding other);
+}// class
+
+class QPropertyObserver_java__{
+    QPropertyObserver(io.qt.core.QUntypedPropertyData aliasedPropertyPtr, boolean isAlias){
+        super((QPrivateConstructor)null);
+        __qt_QPropertyObserver_newAlias(this, aliasedPropertyPtr);
+    }
+    
+    private native static void __qt_QPropertyObserver_newAlias(Object instance, io.qt.core.QUntypedPropertyData aliasedPropertyPtr);
+    
+    QPropertyObserver(boolean isPropertyChangeHandler){
+        super((QPrivateConstructor)null);
+        __qt_QPropertyObserver_newPropertyChangeHandler(this);
+    }
+    
+    private native static void __qt_QPropertyObserver_newPropertyChangeHandler(Object instance);
+}// class
+
+class QPropertyObserver_shell__{
+public:
+    QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler);
+}// class
+
+class QPropertyObserver_native__{
+
+QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)
+    : QPropertyObserver(changeHandler0)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)", __shell())
+    __shell()->constructed(typeid(QPropertyObserver));
+}
+
+// new QPropertyChangeHandler()
+void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QPropertyChangeHandler()")
+    new(__qtjambi_ptr) QPropertyObserver_shell([](QPropertyObserver* self, QUntypedPropertyData *){
+            try{
+                if(JNIEnv *env = qtjambi_current_environment()) {
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    try{
+                        jobject _self = qtjambi_cast<jobject>(env, self);
+                        Java::QtCore::QPropertyChangeHandler::invoke(env, _self);
+                    }catch(const JavaException& exn){
+                        exn.report(env);
+                    }
+                }
+            }catch(...){}
+        });
+}
+
+}// class
+
+class QUntypedBindable_java__{
+    QUntypedBindable(io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i, boolean copy){
+        super((QPrivateConstructor)null);
+        __qt_QUntypedBindable_new_copy(this, d, i);
+    }
+    
+    private native static void __qt_QUntypedBindable_new_copy(Object instance, io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i);
+    
+    /**
+     * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+     * <p>The returned property change handler object keeps track of the registration. 
+     * As long as the change handler is alive i.e. as long as a reference to the {@link QPropertyChangeHandler} instance exists, 
+     * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+     * @param f
+     * @return property change handler
+     * @see QPropertyChangeHandler
+     */
+    @io.qt.QtUninvokable
+    public final QPropertyChangeHandler onValueChanged(Runnable f)
+    {
+        QPropertyChangeHandler handler = new QPropertyChangeHandler(f);
+        observe(handler);
+        return handler;
+    }
+
+    /**
+     * Subscribes the given functor f as a callback that is called immediately and whenever the value of the bindable changes in the future.
+     * @param f
+     * @return property change handler
+     * @see QPropertyChangeHandler
+     * @see #onValueChanged(Runnable)
+     */
+    @io.qt.QtUninvokable
+    public final QPropertyChangeHandler subscribe(Runnable f)
+    {
+        f.run();
+        return onValueChanged(f);
+    }
+    
+    @io.qt.QtUninvokable
+    final io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QUntypedPropertyBinding binding){
+        return overrideBinding(checkedNativeId(this.iface()), checkedNativeId(this.data()), checkedNativeId(binding));
+    }
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QUntypedPropertyBinding overrideBinding(long ifaceId, long dataId, long binding);
+    
+}// class
+
+class QBindableInterface__{
+    @io.qt.QtUninvokable
+    final QMetaType metaType() { return metaType(io.qt.internal.QtJambiInternal.nativeId(this)); }
+    
+    @io.qt.QtUninvokable
+    private static native QMetaType metaType(long nativeId);
+}// class
+
+class QLoggingCategory__{
+    
+    public QLoggingCategory(java.lang.String category){
+        this(category==null ? null : new QByteArray(category));
+    }
+    
+    public QLoggingCategory(java.lang.String category, io.qt.core.QtMsgType severityLevel){
+        this(category==null ? null : new QByteArray(category), severityLevel);
+    }
+    
 }// class
 

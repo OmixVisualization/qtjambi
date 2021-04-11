@@ -557,21 +557,50 @@ namespace rpp {
                             "numeric",
                             "functional",
                             "windows.h",
+                            "Windows.h",
                             "xcb/xcb.h",
                             "CoreFoundation/CoreFoundation.h",
                             "qplatformdefs.h",
                             "QtMacExtras/QtMacExtrasDepends",
                             "QtX11Extras/QtX11ExtrasDepends",
                             "QtWinExtras/QtWinExtrasDepends",
+                            "QtMacExtras/QtMacExtras",
+                            "QtX11Extras/QtX11Extras",
+                            "QtX11Extras/QX11Info",
+                            "QtWinExtras/QtWinExtras",
                             "time.h",
                             "inttypes.h",
                             "typeinfo",
                             "memory",
                             "mutex",
                             "atomic",
+                            "array",
+                            "filesystem",
+                            "optional",
+                            "variant",
+                            "private/qlibrary_p.h",
                             "private/qobject_p.h",
                             "sys/types.h",
-                            "unistd.h"
+                            "unistd.h",
+                            "GLES3/gl32.h",
+                            "qopengl.h",
+                            "cstring",
+                            "tuple",
+                            "vulkan/vulkan.h",
+                            "QObject",
+                            "qpromise.h",
+                            "QScopedPointer",
+                            "QtGlobal",
+                            "QPointer",
+                            "QAbstractListModel",
+                            "QRectF",
+                            "QLocale",
+                            "QInputMethodEvent",
+                            "QInputMethod",
+                            "QVariant",
+                            "QPointF",
+                            "qanimationclipdata.h",
+                            "qchannel.h"
                         };
                     if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0 && !ignoredFiles.contains(QByteArray(filename.c_str()))) {
                         QString message = QString("No such file or directory: %1%2%3")
@@ -712,6 +741,7 @@ namespace rpp {
                 bool expect_paren = false;
                 int token;
                 __first = next_token(__first, __last, &token);
+                bool isHasInclude = false;
 
                 switch (token) {
                     case TOKEN_NUMBER:
@@ -749,10 +779,6 @@ namespace rpp {
                         }
                         break;
 
-                    case TOKEN_IDENTIFIER:
-                        result->set_long(0);
-                        break;
-
                     case '-':
                         __first = eval_primary(__first, __last, result);
                         result->set_long(- result->l);
@@ -767,8 +793,48 @@ namespace rpp {
                         result->set_long(result->is_zero());
                         return __first;
 
-                    case '(':
-                        __first = eval_constant_expression(__first, __last, result);
+                    case TOKEN_IDENTIFIER: {
+                        isHasInclude = _M_current_text==std::string("__has_include");
+                        result->set_long(0);
+                        int _token;
+                        _InputIterator ___first = next_token(__first, __last, &_token);
+                        if(_token=='('){
+                            token = _token;
+                            __first = ___first;
+                        }else if(_token==':'){
+                            ___first = next_token(___first, __last, &_token);
+                            if(_token==':'){
+                                ___first = next_token(___first, __last, &_token);
+                                if(_token==TOKEN_IDENTIFIER){
+                                    token = _token;
+                                    __first = ___first;
+                                    break;
+                                }
+                            }
+                        }else{
+                            break;
+                        }
+                    }
+                    Q_FALLTHROUGH();
+                    case '(':{
+                        if(isHasInclude){
+                            int _token;
+                            _InputIterator ___first = next_token(__first, __last, &_token);
+                            if(_token=='<'){
+                                do{
+                                    isHasInclude = false;
+                                    ___first = next_token(___first, __last, &_token);
+                                    if(_token=='>'){
+                                        token = _token;
+                                        __first = ___first;
+                                        isHasInclude = true;
+                                        break;
+                                    }
+                                }while(true);
+                            }
+                        }
+                        if(!isHasInclude)
+                            __first = eval_constant_expression(__first, __last, result);
                         next_token(__first, __last, &token);
 
                         if (token != ')') {
@@ -778,7 +844,7 @@ namespace rpp {
                             __first = next_token(__first, __last, &token);
                         }
                         break;
-
+                    }
                     default:
                         result->set_long(0);
                 }

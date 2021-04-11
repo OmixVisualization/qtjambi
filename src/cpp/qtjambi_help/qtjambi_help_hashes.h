@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,9 +33,9 @@
 #include <QtCore/QtCore>
 #include <QtHelp/QtHelp>
 
-inline uint qHash(const QHelpFilterData &value)
+inline hash_type qHash(const QHelpFilterData &value)
 {
-    uint hashCode = qHash(value.components());
+    hash_type hashCode = qHash(value.components());
     hashCode = hashCode * 31 + qHash(value.versions());
     return hashCode;
 }

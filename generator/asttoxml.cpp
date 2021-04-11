@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,7 +43,9 @@
 
 #include <QXmlStreamWriter>
 #include <QTextStream>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#endif
 #include <QFile>
 
 void astToXML(const QString& name) {
@@ -53,7 +55,11 @@ void astToXML(const QString& name) {
         return;
 
     QTextStream stream(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     stream.setCodec(QTextCodec::codecForName("UTF-8"));
+#else
+    stream.setEncoding(QStringConverter::Utf8);
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QByteArray contents = stream.readAll().toUtf8();
     file.close();
 
@@ -311,11 +317,12 @@ void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
     s.writeStartElement("class");
     s.writeAttribute("name", qualified_name);
 
-    QStringList bases = item.constData()->baseClasses();
+    QList<QPair<QString,bool>> bases = item.constData()->baseClasses();
     s.writeStartElement("inherits");
-    for(const QString &c : bases) {
+    for(const QPair<QString,bool> &c : bases) {
         s.writeStartElement("class");
-        s.writeAttribute("name", c);
+        s.writeAttribute("name", c.first);
+        s.writeAttribute("access", c.second ? "public" : "protected");
         s.writeEndElement();
     }
     s.writeEndElement();
@@ -325,13 +332,12 @@ void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
         writeOutEnum(s, item);
     }
 
-    QHash<QString, FunctionModelItem> functionMap = item->functionMap();
+    QMultiHash<QString, FunctionModelItem> functionMap = item->functionMap();
     for(const FunctionModelItem& item : functionMap.values()) {
         writeOutFunction(s, qualified_name, item);
     }
 
-    QHash<QString, VariableModelItem> variableMap = item->variableMap();
-    for(const VariableModelItem& item : variableMap.values()) {
+    for(const VariableModelItem& item : item->variables()) {
         writeOutVariable(s, item);
     }
 

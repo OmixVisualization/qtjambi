@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,26 +36,26 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.qt.QtObject;
+import io.qt.QtUninvokable;
 
 public abstract class QtJambiCollectionObject<E> extends QtObject implements Collection<E> {
 	
-	@NativeAccess
-	private final Class<E> elementType;
-
-	protected QtJambiCollectionObject(Class<E> elementType) {
+	protected QtJambiCollectionObject() {
 		super();
-		this.elementType = elementType;
 	}
 
-    protected QtJambiCollectionObject(QPrivateConstructor p, Class<E> elementType) {
+    protected QtJambiCollectionObject(QPrivateConstructor p) {
 		super(p);
-		this.elementType = elementType;
 	}
-
+    
+    @QtUninvokable
 	protected abstract QtJambiIteratorObject<E> begin();
-	protected abstract QtJambiIteratorObject<E> end();
+
+    @QtUninvokable
+    protected abstract QtJambiIteratorObject<E> end();
     
 	@Override
+    @QtUninvokable
     public Object[] toArray() {
         Object[] result = new Object[size()];
         int i = 0;
@@ -67,6 +67,7 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
 
     @SuppressWarnings("unchecked")
     @Override
+    @QtUninvokable
     public <T> T[] toArray(T[] a) {
         if (a.length < size())
             a = (T[])Arrays.copyOf(a, size(), a.getClass());
@@ -78,6 +79,7 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
     }
 
 	@Override
+    @QtUninvokable
 	public boolean containsAll(Collection<?> c) {
 		boolean result = true;
         for (Object object : c) {
@@ -87,6 +89,7 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
 	}
 
 	@Override
+    @QtUninvokable
     public boolean addAll(Collection<? extends E> c) {
         boolean result = true;
         for (E o : c) {
@@ -96,6 +99,7 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
     }
 
 	@Override
+    @QtUninvokable
 	public boolean removeAll(Collection<?> c) {
 		boolean result = true;
         for (Object o : c) {
@@ -105,21 +109,26 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
 	}
 
 	@Override
+    @QtUninvokable
 	public boolean retainAll(Collection<?> c) {
-		List<E> list = new ArrayList<>(this);
-        boolean b = list.retainAll(c);
-        if(b) {
-            this.clear();
-            this.addAll(list);
+		List<E> toBeRemoved = new ArrayList<>();
+		for(E e : this) {
+			if(!c.contains(e))
+				toBeRemoved.add(e);
+		}
+        if(!toBeRemoved.isEmpty()) {
+        	this.removeAll(toBeRemoved);
         }
-        return b;
+        return !toBeRemoved.isEmpty();
 	}
 	
 	@Override
+    @QtUninvokable
 	public Iterator<E> iterator() {
-		return begin().toJavaIterator(this::end);
+		return begin().toJavaIterator();
 	}
 	
+    @QtUninvokable
 	public String toString() {
         Iterator<E> it = iterator();
         if (! it.hasNext())
@@ -136,22 +145,8 @@ public abstract class QtJambiCollectionObject<E> extends QtObject implements Col
         }
     }
 
-    final Class<E> elementType() {
-		return elementType;
-	}
-    
-    protected final boolean checkElement(Object element) {
-    	if(elementType.isPrimitive()) {
-    		return QtJambiInternal.getComplexType(elementType).isInstance(element);
-    	}
-		return elementType.isInstance(element) || element==null;
-	}
-    
-    @SuppressWarnings("unchecked")
-    protected final E castElement(Object element) {
-    	if(elementType.isPrimitive()) {
-    		return (E)QtJambiInternal.getComplexType(elementType).cast(element);
-    	}
-		return elementType.cast(element);
-	}
+    @QtUninvokable
+    protected java.util.Iterator<E> descendingIterator() {
+        return end().toJavaDescendingIterator(this::begin);
+    }
 }

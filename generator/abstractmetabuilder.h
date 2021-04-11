@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,6 +57,7 @@ class AbstractMetaBuilder {
             RedefinedToNotClass,
             UnmatchedArgumentType,
             UnmatchedReturnType,
+            IsPrivate,
             NoReason
         };
 
@@ -70,7 +71,6 @@ class AbstractMetaBuilder {
         FileModelItem model() const { return m_dom; }
         void setModel(FileModelItem item) { m_dom = item; }
 
-
         ScopeModelItem popScope() { return m_scopes.takeLast(); }
         void pushScope(ScopeModelItem item) { m_scopes << item; }
         ScopeModelItem currentScope() const { return m_scopes.last(); }
@@ -81,6 +81,8 @@ class AbstractMetaBuilder {
         void dumpLog();
 
         bool build();
+
+        void applyDocs(const DocModel* model);
 
         void figureOutEnumValuesForClass(AbstractMetaClass *meta_class, QSet<AbstractMetaClass *> *classes, QSet<AbstractMetaClass *> *repeatClasses, QSet<QString> *warnings = nullptr);
         QVariant figureOutEnumValue(const uint size, const QString &name, QVariant value, AbstractMetaClass *global, AbstractMetaEnum *meta_enum, AbstractMetaFunction *meta_function = nullptr, QSet<QString> *warnings = nullptr);
@@ -130,6 +132,9 @@ class AbstractMetaBuilder {
         AbstractMetaType *inheritTemplateType(const QList<const AbstractMetaType *> &template_types, const AbstractMetaType *meta_type, bool *ok = nullptr);
 
         bool isQObject(const QString &qualified_name);
+        bool isQWidget(const QString &qualified_name);
+        bool isQWindow(const QString &qualified_name);
+        bool isQCoreApplication(const QString &qualified_name);
         bool isEnum(const QStringList &qualified_name);
 
         void fixQObjectForScope(TypeDatabase *types,
@@ -138,7 +143,7 @@ class AbstractMetaBuilder {
         const QString& outputDirectory() const { return m_out_dir; }
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
         void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
-        void setDocDirectory(const QString &docsDir);
+        void setQtVersion(uint qtVersion) {m_qtVersion = qtVersion;}
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
@@ -161,7 +166,13 @@ class AbstractMetaBuilder {
                               AbstractMetaEnum *meta_enum,
                               AbstractMetaFunction *meta_function, QSet<QString> *warnings = nullptr);
 
-        QString rename_operator(const QString &oper);
+        struct RenamedOperator{
+            QString newName;
+            TypeEntry *castType;
+            bool skip;
+        };
+
+        RenamedOperator rename_operator(const QString &oper);
 
         QString m_file_name;
         QString m_out_dir;
@@ -182,8 +193,6 @@ class AbstractMetaBuilder {
 
         QList<AbstractMetaEnum *> m_enums;
 
-        QList<QPair<AbstractMetaArgument *, AbstractMetaFunction *> > m_enum_default_arguments;
-
         QHash<QString, AbstractMetaEnumValue *> m_enum_values;
 
         AbstractMetaClass *m_current_class;
@@ -191,7 +200,6 @@ class AbstractMetaBuilder {
         QString m_namespace_prefix;
 
         QSet<AbstractMetaClass *> m_setup_inheritance_done;
-        const DocModel* m_docModel;
 
         struct MissingIterator{
             MissingIterator(const IteratorTypeEntry* _iteratorType,
@@ -207,6 +215,7 @@ class AbstractMetaBuilder {
         };
         QList<MissingIterator> m_missing_iterators;
         const QMap<QString, QString>* m_features;
+        uint m_qtVersion;
 };
 
 struct Operator {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,9 +33,9 @@
 #include <QtSql/QtSql>
 
 
-inline uint qHash(const QSqlError &value)
+inline hash_type qHash(const QSqlError &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.type()));
     hashCode = hashCode * 31 + qHash(value.driverText());
     hashCode = hashCode * 31 + qHash(value.databaseText());
@@ -45,9 +45,9 @@ inline uint qHash(const QSqlError &value)
     return hashCode;
 }
 
-inline uint qHash(const QSqlField &value)
+inline hash_type qHash(const QSqlField &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.type()));
     hashCode = hashCode * 31 + qHash(int(value.requiredStatus()));
     hashCode = hashCode * 31 + qHash(value.name());
@@ -63,9 +63,9 @@ inline uint qHash(const QSqlField &value)
     return hashCode;
 }
 
-inline uint qHash(const QSqlRecord &value)
+inline hash_type qHash(const QSqlRecord &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.count());
     for(int i=0; i<value.count(); ++i){
         hashCode = hashCode * 31 + qHash(value.field(i));

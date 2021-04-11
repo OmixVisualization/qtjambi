@@ -32,6 +32,7 @@ import QtQuick 2.0
 Rectangle {
     id: item
     property int testProperty: 0
+    property Rectangle rectangleProperty: Rectangle{}
     signal testIntSignal(int i)
     signal testBoolSignal(bool i)
     signal testRealSignal(real r)

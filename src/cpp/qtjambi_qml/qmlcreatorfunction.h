@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,15 +30,29 @@
 #ifndef QMLCREATORFUNCTION_H
 #define QMLCREATORFUNCTION_H
 
-#ifdef Q_OS_MAC
-#  include <jni.h>
-#else
-#  include <jni.h>
-#endif
-#include <QtCore>
+#include <qtjambi/qtjambi_global.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
 
+struct QMetaObject;
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 typedef void(*CreatorFunction)(void*);
-
 CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast);
+#else
+
+struct CreatorFunctionMetaData : QSharedData{
+    JObjectWrapper clazzWrapper;
+    const QMetaObject *meta_object;
+    jmethodID constructor;
+    size_t objectSize;
+    int psCast;
+    int vsCast;
+    int viCast;
+};
+
+void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast);
+
+void createQmlObject(void* placement,void* metaData);
+#endif
 
 #endif // QMLCREATORFUNCTION_H

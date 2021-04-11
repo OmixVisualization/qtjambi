@@ -42,9 +42,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <QtWidgets>
-#include <QDebug>
+#include <QtGui/QtGui>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
+#include <QtCore/QDebug>
 
 #include "testdialog.h"
 

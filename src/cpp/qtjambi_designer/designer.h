@@ -47,6 +47,6 @@
 
 #include <QtDesigner/QtDesigner>
 
-#include "jambiresourcebrowser.h"
+#include "qtjambiresourcebrowser.h"
 
 #endif // DESIGNER_H

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -94,7 +94,7 @@ public class TestPolymorphicTypes extends QApplicationTest {
 	        eventClass = m_event.getClass();
 	        eventType = m_event.type();
 	        if (m_event instanceof CustomEvent)
-	            customEventSomething = ((CustomEvent)m_event).m_something();
+	            customEventSomething = ((CustomEvent)m_event).something();
 	        else
 	            customEventSomething = -1;
 
@@ -372,7 +372,7 @@ public class TestPolymorphicTypes extends QApplicationTest {
         assertTrue(event instanceof CustomEvent);
 
         CustomEvent customEvent = (CustomEvent) event;
-        assertEquals(customEvent.m_something(), 10);
+        assertEquals(customEvent.something(), 10);
     }
 
     @Test
@@ -408,7 +408,7 @@ public class TestPolymorphicTypes extends QApplicationTest {
         assertTrue(opt instanceof CustomStyleOption);
 
         CustomStyleOption customOpt = (CustomStyleOption) opt;
-        assertEquals(customOpt.m_something(), 30);
+        assertEquals(customOpt.something(), 30);
     }
 
     @Test

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -184,7 +184,7 @@ void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jint height = arguments[2].i;
     jobject format = arguments[3].l;
     JByteArrayPointer* qt_data = new JByteArrayPointer(env, jbyteArray(data), false);
-    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, QImage::Format(qtjambi_to_enum(env, format)), [](void* ptr){ delete reinterpret_cast<JByteArrayPointer*>(ptr); }, qt_data);
+    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JByteArrayPointer*>(ptr); }, qt_data);
 
 }
 
@@ -195,7 +195,7 @@ void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     jint height = arguments[2].i;
     jobject format = arguments[3].l;
     JBufferConstData* qt_data = new JBufferConstData(env, data);
-    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, QImage::Format(qtjambi_to_enum(env, format)), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
+    new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage__1_1qt_1QImage_1new__Ljava_lang_Object_2_3BIILio_qt_gui_QImage_00024Format_2)
@@ -208,7 +208,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        qtjambi_initialize_native_object(env, __jni_class, java_object, &__qt_create_new_QImage_7, sizeof(QImage_shell), typeid(QImage), true, false, nullptr, nullptr, arguments);
+        qtjambi_initialize_native_value(env, __jni_class, java_object, &__qt_create_new_QImage_7, sizeof(QImage_shell), typeid(QImage), true, arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -225,7 +225,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
         arguments[1].i = width;
         arguments[2].i = height;
         arguments[3].l = format;
-        qtjambi_initialize_native_object(env, __jni_class, java_object, &__qt_create_new_QImage_8, sizeof(QImage_shell), typeid(QImage), true, false, nullptr, nullptr, arguments);
+        qtjambi_initialize_native_value(env, __jni_class, java_object, &__qt_create_new_QImage_8, sizeof(QImage_shell), typeid(QImage), true, arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
@@ -233,7 +233,22 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 
 }// class
 
-class QKeySequence___ extends QKeySequence {
+class QPointerEvent___{
+
+    @io.qt.QtUninvokable
+    public final void setPoint(long i, QEventPoint point) {
+        __qt_QPointerEvent_setPoint(nativeId(this), i, checkedNativeId(point));
+    }
+    @io.qt.QtUninvokable
+    private native void __qt_QPointerEvent_setPoint(long __this__nativeId, long i, long pointId);
+
+}// class
+
+class QPointerEvent_native__{
+
+}// class
+
+class QKeySequence_5__ extends QKeySequence {
 
         @io.qt.QtUninvokable
         public final int at(int i) {
@@ -242,66 +257,89 @@ class QKeySequence___ extends QKeySequence {
 
 }// class
 
+class QKeySequence_6__ extends QKeySequence {
+
+        @io.qt.QtUninvokable
+        public final QKeyCombination at(int i) {
+            return operator_subscript(i);
+        }
+
+}// class
+
+class QPainter_redir__ extends QPainter {
+    private static java.util.Map<QPaintDevice,QPaintDevice> __rcRedirections = new java.util.HashMap<>();
+}// class
+
 class QPainter___ extends QPainter {
 
-        public final void setBrush(QColor color) {
-            setBrush(new QBrush(color));
-        }
+    @io.qt.QtUninvokable
+    public final void setBrush(QColor color) {
+        setBrush(new QBrush(color));
+    }
 
-        public final void setBrush(io.qt.core.Qt.GlobalColor color) {
-            setBrush(new QBrush(new QColor(color)));
-        }
+    @io.qt.QtUninvokable
+    public final void setBrush(io.qt.core.Qt.GlobalColor color) {
+        setBrush(new QBrush(new QColor(color)));
+    }
 
-        public final void setBrush(QGradient gradient) {
-            setBrush(new QBrush(gradient));
-        }
+    @io.qt.QtUninvokable
+    public final void setBrush(QGradient gradient) {
+        setBrush(new QBrush(gradient));
+    }
 
-        public final void setBrush(QPixmap pm) {
-            setBrush(new QBrush(pm));
-        }
+    @io.qt.QtUninvokable
+    public final void setBrush(QPixmap pm) {
+        setBrush(new QBrush(pm));
+    }
 
-        private static java.util.Map<QPaintDevice,QPaintDevice> __rcRedirections = new java.util.HashMap<>();
-
-        private static void beginPaint(QPaintDevice paintedWidget){
-            __paintedDevices.put(paintedWidget, java.util.Collections.emptyList());
-        }
-        
-        private static void endPaint(QPaintDevice paintedWidget){
-            java.util.List<QPainter> painters = __paintedDevices.remove(paintedWidget);
-            if(painters!=null){
-                for(QPainter painter : painters){
-                    if(!painter.isDisposed() && painter.isActive()){
-                        painter.end();
-                        painter.dispose();
-                    }
+    @io.qt.QtUninvokable
+    private static void beginPaint(QPaintDevice paintedWidget){
+        __paintedDevices.put(paintedWidget, java.util.Collections.emptyList());
+    }
+    
+    @io.qt.QtUninvokable
+    private static void endPaint(QPaintDevice paintedWidget){
+        java.util.List<QPainter> painters = __paintedDevices.remove(paintedWidget);
+        if(painters!=null){
+            for(QPainter painter : painters){
+                if(!painter.isDisposed() && painter.isActive()){
+                    painter.end();
+                    painter.dispose();
                 }
             }
         }
-        
-        private void initialize(QPaintDevice device, boolean inConstructor){
-            if(device instanceof io.qt.widgets.QWidget || device instanceof QPaintDeviceWindow){
-                java.util.List<QPainter> painters = __paintedDevices.get(device);
-                if(painters==null){
-                    if(inConstructor)
-                        throw new QPaintingOutsidePaintEventException();
-                }else if(painters.size()==0){
-                    io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
-                    painters = java.util.Collections.singletonList(this);
+    }
+    
+    @io.qt.QtUninvokable
+    private void initialize(QPaintDevice device, boolean inConstructor){
+        if(device instanceof io.qt.widgets.QWidget || device instanceof QPaintDeviceWindow){
+            java.util.List<QPainter> painters = __paintedDevices.get(device);
+            if(painters==null){
+                if(inConstructor)
+                    throw new QPaintingOutsidePaintEventException();
+            }else if(painters.size()==0){
+                threadCheck(nativeId((io.qt.core.QObject)device));
+                painters = java.util.Collections.singletonList(this);
+                __paintedDevices.put(device, painters);
+            }else{
+                threadCheck(nativeId((io.qt.core.QObject)device));
+                if(painters.size()==1){
+                    painters = new java.util.LinkedList<>(painters);
                     __paintedDevices.put(device, painters);
-                }else{
-                    io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
-                    if(painters.size()==1){
-                        painters = new java.util.LinkedList<>(painters);
-                        __paintedDevices.put(device, painters);
-                    }
-                    painters.add(this);
                 }
-            }else if(device instanceof io.qt.core.QObject){
-                io.qt.internal.QtJambiInternal.threadCheck((io.qt.core.QObject)device);
+                painters.add(this);
             }
+        }else if(device instanceof io.qt.core.QObject){
+            threadCheck(nativeId((io.qt.core.QObject)device));
+        }else{
+            java.util.Objects.requireNonNull(device, "Argument 'QPaintDevice': null not expected.");
         }
-        
-        private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
+    }
+    
+    @io.qt.QtUninvokable
+    private static native void threadCheck(long objectId);
+    
+    private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
 }// class
 
 class QPen___ extends QPen {
@@ -510,88 +548,132 @@ class QGradient_java__{
 }// class
 
 
-class QGradient_native__{
-
-// QGradient::QGradient(QGradient::Preset arg__1)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QGradient_create)
-(JNIEnv *__jni_env, jclass, int preset)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QGradient::QGradient(QGradient::Preset arg__1)");
-    try{
-        return qtjambi_cast<jobject>(__jni_env, QGradient(QGradient::Preset(preset)));
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
-
-}// class
-
-class QOpenGLContext_java__{
+class QOpenGLContext___{
 
     @io.qt.QtUninvokable
     public final <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(Class<T> type){
-        return __qt_QOpenGLContext_versionFunctions(checkedNativeId(this), java.util.Objects.requireNonNull(type));
+        return versionFunctions(nativeId(this), java.util.Objects.requireNonNull(type));
     }
     @io.qt.QtUninvokable
-    private native <T extends io.qt.gui.QAbstractOpenGLFunctions> T __qt_QOpenGLContext_versionFunctions(long __this__nativeId, Class<T> type);
+    private native <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(long __this__nativeId, Class<T> type);
 
 }// class
 
 
-class QOpenGLContext_native__{
-
-// QOpenGLContext::versionFunctions<T>() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QOpenGLContext__1_1qt_1QOpenGLContext_1versionFunctions)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jclass type)
-{
-    jobject __java_return_value = nullptr;
-    try{
-        const QOpenGLContext *__qt_this = qtjambi_object_from_nativeId<QOpenGLContext>(__this_nativeId);
-        Q_ASSERT(__qt_this);
-        QAbstractOpenGLFunctions* __qt_return_value = nullptr;
-        QString className = qtjambi_class_name(__jni_env, type);
-        if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
-            __qt_return_value = __qt_this->versionFunctions();
-        }else if(className.startsWith("io.qt.gui.QOpenGLFunctions_")){
-            className = className.mid(27);
-            int idx = className.indexOf('_');
-            if(idx>0){
-                bool ok = false;
-                int majorVersion = className.left(idx).toInt(&ok);
-                if(ok){
-                    className = className.mid(idx+1);
-                    QSurfaceFormat::OpenGLContextProfile profile = QSurfaceFormat::NoProfile;
-                    if(className.endsWith("_Core")){
-                        className = className.chopped(5);
-                        profile = QSurfaceFormat::CoreProfile;
-                    }else if(className.endsWith("_Compatibility")){
-                        className = className.chopped(14);
-                        profile = QSurfaceFormat::CompatibilityProfile;
-                    }
-                    ok = false;
-                    int minorVersion = className.toInt(&ok);
-                    if(ok){
-                        QOpenGLVersionProfile version;
-                        version.setProfile(profile);
-                        version.setVersion(majorVersion, minorVersion);
-                        __qt_return_value = __qt_this->versionFunctions(version);
-                    }
-                }
-            }
-        }
-        __java_return_value = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
-        if(!__jni_env->IsInstanceOf(__java_return_value, type)){
-            __java_return_value = nullptr;
-        }
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
+class QWindow___ extends QWindow {
+    /**
+     * <p>Overloaded function for {@link #parent(io.qt.gui.QWindow.AncestorMode)}
+     *  with <code>mode = io.qt.gui.QWindow.AncestorMode.ExcludeTransients</code>.</p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.gui.QWindow nonTransientParent(){
+        return parent(io.qt.gui.QWindow.AncestorMode.ExcludeTransients);
     }
-    return __java_return_value;
-}
+}// class
+
+
+class QAction___ extends QAction {
+
+        private QActionGroup __rcActionGroup = null;
+
+        /**
+         * Sets the shortcut to the key sequence for the given key string. For
+         * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
+         * "Meta" are recognized, as well as their translated equivalents in the
+         * "QShortcut" context (using QObject::tr()). Up to four key codes may be
+         * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
+         *
+         * @param key
+         *            The description of the key sequence. Typically used with tr()
+         *            so key sequences can be locale aware.
+         */
+        public final void setShortcut(String key) {
+            setShortcut(new QKeySequence(key));
+        }
+
+        /**
+         * Sets the shortcut to the key sequence for the given key. The result will
+         * depend on the currently running platform. The key sequence will be based
+         * on the first element in the list of key bindings for the key.
+         *
+         * @param key
+         *            The key for which to select a key sequence
+         */
+        public final void setShortcut(QKeySequence.StandardKey key) {
+            setShortcut(new QKeySequence(key));
+        }
+
+        public final void setIcon(QPixmap pm) {
+            setIcon(new QIcon(pm));
+        }
+
+        @io.qt.QtUninvokable
+        public final QMenu menu(){
+            return menu(QMenu.class);
+        }
+        
+        @io.qt.QtUninvokable
+        public final <T extends QMenu> T menu(Class<T> type) {
+            io.qt.core.QObject result = menu(nativeId(this));
+            if(!type.isInstance(result))
+                return type.cast(result);
+            return null;
+        }
+        
+        private Object __rcMenu;
+    
+        @io.qt.QtUninvokable
+        public final void setMenu(QMenu menu){
+            setMenu(nativeId(this), checkedNativeId(menu));
+            __rcMenu = menu();
+        }
+        
+        @io.qt.QtUninvokable
+        private native io.qt.core.QObject menu(long __this__nativeId);
+        
+        @io.qt.QtUninvokable
+        private native void setMenu(long __this__nativeId, long menu);
+        
+        @io.qt.QtUninvokable
+        public final QWidget parentWidget(){
+            return parentWidget(QWidget.class);
+        }
+        
+        @io.qt.QtUninvokable
+        public final <T extends QWidget> T parentWidget(Class<T> type) {
+            io.qt.core.QObject result = parent();
+            while (result!=null && !type.isInstance(result))
+                result = result.parent();
+            return type.cast(result);
+        }
+        
+        @io.qt.QtUninvokable
+        public final java.util.List<QWidget> associatedWidgets() {
+            return associatedWidgets(QWidget.class);
+        }
+        
+        @io.qt.QtUninvokable
+        public final <T extends QWidget> java.util.List<T> associatedWidgets(Class<T> type) {
+            java.util.List<T> result = new java.util.ArrayList<>();
+            for (io.qt.core.QObject object : associatedObjects())
+                if (type.isInstance(object))
+                    result.add(type.cast(object));
+            return result;
+        }
+        
+        @io.qt.QtUninvokable
+        public final java.util.List<QGraphicsWidget> associatedGraphicsWidgets() {
+            return associatedGraphicsWidgets(QGraphicsWidget.class);
+        }
+        
+        @io.qt.QtUninvokable
+        public final <T extends QGraphicsWidget> java.util.List<T> associatedGraphicsWidgets(Class<T> type) {
+            java.util.List<T> result = new java.util.ArrayList<>();
+            for (io.qt.core.QObject object : associatedObjects())
+                if (type.isInstance(object))
+                    result.add(type.cast(object));
+            return result;
+        }
 }// class
 
 

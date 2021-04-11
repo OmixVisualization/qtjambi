@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,11 +45,11 @@ QObject* createParent(const JObjectWrapper& clazzWrapper, jmethodID constructor,
 }
 
 CreateParentFunction createParentFunction(JNIEnv * env, jclass clazz, jmethodID constructor){
-    uint hash = 1;
+    hash_type hash = 1;
     hash = 31 * hash + qHash(qint64(constructor));
     hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
     JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<8 /*=512 options*/,QObject*(QObject*)>([clazzWrapper, constructor](QObject* parent) -> QObject* {
+    return qtjambi_function_pointer<64,QObject*(QObject*)>([clazzWrapper, constructor](QObject* parent) -> QObject* {
         return createParent(clazzWrapper, constructor, parent);
     }, hash);
 }

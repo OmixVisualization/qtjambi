@@ -121,8 +121,8 @@ class Parser {
         bool parseIfStatement(StatementAST *&node);
         bool parseInclusiveOrExpression(ExpressionAST *&node,
                                         bool templArgs = false);
-        bool parseInitDeclarator(InitDeclaratorAST *&node);
-        bool parseInitDeclaratorList(const ListNode<InitDeclaratorAST*> *&node);
+        bool parseInitDeclarator(InitDeclaratorAST *&node, bool noBrackets);
+        bool parseInitDeclaratorList(const ListNode<InitDeclaratorAST*> *&node, bool noBrackets);
         bool parseInitializer(InitializerAST *&node);
         bool parseInitializerClause(InitializerClauseAST *&node);
         bool parseLabeledStatement(StatementAST *&node);

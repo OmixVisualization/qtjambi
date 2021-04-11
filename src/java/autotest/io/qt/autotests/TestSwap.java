@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@ import io.qt.core.QByteArray;
 import io.qt.core.QPoint;
 import io.qt.core.QPointF;
 import io.qt.core.QRect;
-import io.qt.core.QRegExp;
+import io.qt.core.QRegularExpression;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
 import io.qt.gui.QBitmap;
@@ -121,11 +121,11 @@ public class TestSwap extends QApplicationTest{
 	}
 	
 	@org.junit.Test
-	public void swapQRegExp(){
+	public void swapQRegularExpression(){
 		String data1 = "[abc]";
 		String data2 = "[def]";
-		QRegExp object1 = new QRegExp(data1);
-		QRegExp object2 = new QRegExp(data2);
+		QRegularExpression object1 = new QRegularExpression(data1);
+		QRegularExpression object2 = new QRegularExpression(data2);
 		object2.swap(object1);
 		assertEquals("swap: data1 == object2", data1, object2.pattern());
 		assertEquals("swap: data2 == object1", data2, object1.pattern());

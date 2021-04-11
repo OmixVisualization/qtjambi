@@ -5,6 +5,7 @@
     <rejection class="QDBusPendingReply::Select"/>
     <rejection class="QtJambiDBusPendingReply"/>
     <rejection class="QDBusPendingReplyData" />
+    <rejection class="QDBusPendingReplyBase" />
     <rejection class="QDBusConnection" function-name="registerVirtualObject"/>
 
     <namespace-type name="QDBus">
@@ -79,6 +80,9 @@
             return new(placement) QDBusConnection("");
     }
         </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QDBusConnection("");
+        </custom-constructor>
         <modify-function signature="interface() const" rename="connectionInterface"/>
         <modify-function signature="internalPointer() const" remove="all"/>
         <modify-function signature="operator=(const QDBusConnection &amp;)" remove="all"/>
@@ -117,7 +121,13 @@
 
     <interface-type name="QDBusPendingCall" is-value="yes"> <!-- since 4.5 -->
         <custom-constructor>
-            return new(placement) QDBusPendingCall(*copy);
+            if(copy)
+                return new(placement) QDBusPendingCall(*copy);
+            else
+                return new(placement) QDBusPendingCall(QDBusPendingCall::fromCompletedCall(QDBusMessage()));
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QDBusPendingCall(QDBusPendingCall::fromCompletedCall(QDBusMessage()));
         </custom-constructor>
         <modify-function signature="operator=(QDBusPendingCall &amp;&amp;)" remove="all" since="5.14.0"/>
         <modify-function signature="operator=(const QDBusPendingCall &amp;)" remove="all"/>
@@ -148,8 +158,6 @@
         <modify-function signature="fromError(const QDBusError &amp;)" remove="all"/>
     </object-type>
 
-    <value-type name="QDBusPendingReplyData" force-abstract="yes">
-    </value-type>
     <object-type name="QDBusServiceWatcher"><!-- since 4.6 -->
         <modify-function signature="connection() const" remove="all"/><!-- FIXME: commented out due to build errors -->
         <!-- FIXME: QDBusServiceWatcher() this probably makes this class pretty useless, need to fix QDBusConnection type  -->
@@ -175,6 +183,8 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'Type'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: horribly broken type ''" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusReply::operator Type', unmatched return type ''" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Operator type unknown: QDBusReply::operator Type()const" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QDBusReply::*', unmatched *type '*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: template baseclass '*' of 'QDBusPendingReplyBase' is not known" />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QDBus*." />
 </typesystem>

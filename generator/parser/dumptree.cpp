@@ -105,6 +105,7 @@ static char const * const names[] = {
     "SimpleDeclaration",
     "SimpleTypeSpecifier",
     "SizeofExpression",
+    "AlignofExpression",
     "StringLiteral",
     "SubscriptExpression",
     "SwitchStatement",

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,8 +28,5 @@
 ****************************************************************************/
 
 #include "qtjambi_widgets_core.h"
-
-#include <qtjambi/qtjambi_core.h>
-#include <QtSvg/QGraphicsSvgItem>
 
 

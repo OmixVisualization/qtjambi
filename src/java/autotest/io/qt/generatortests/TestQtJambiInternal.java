@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,21 +35,13 @@ import static org.junit.Assert.assertTrue;
 import io.qt.autotests.QApplicationTest;
 import io.qt.core.QFile;
 import io.qt.core.QObject;
-import io.qt.core.QThread;
 import io.qt.gui.QImage;
 import io.qt.internal.QtJambiInternal;
 
 public class TestQtJambiInternal {
 	
-	static {
-		io.qt.QtUtilities.initializePackage("io.qt.autotests.generated");
-	}
-
-	private QObject o1;
 	private FetchableTestClass ftc;
-	private QObject o2;
 	private QImage image;
-	private QThread t;
 
 	@org.junit.BeforeClass
 	public static void testInitialize() throws Exception {
@@ -63,29 +55,14 @@ public class TestQtJambiInternal {
 
 	@org.junit.Before
 	public void setUp() {
-		o1 = new QObject();
-		o2 = new QObject();
-		ftc = new FetchableTestClass(o2);
+		ftc = new FetchableTestClass(new QObject());
 		image = new QImage();
-		t = new QThread();
-		t.start();
 	}
 
 	@org.junit.After
 	public void tearDown() {
-		o1 = null;
 		ftc = null;
-		o2 = null;
 		image = null;
-		ftc = null;
-		t.quit();
-		t = null;
-	}
-
-	@org.junit.Test(expected = io.qt.QThreadAffinityException.class)
-	public void testThreadCheck() {
-		o1.moveToThread(t);
-		QtJambiInternal.threadCheck(o1);
 	}
 
 	@org.junit.Test

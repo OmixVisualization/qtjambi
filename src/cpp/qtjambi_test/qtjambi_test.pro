@@ -15,4 +15,10 @@ INCLUDEPATH += $$QMAKE_INCDIR_QT/QtGui
 # Hmmm no (not anymore?) in 4.7.4 qtestlib references qWaitForWindowShown() which
 #  on linux needs qt_x11_wait_for_window_manager(QWidget*) from QtGui
 #QT = core qtestlib
-QT += core gui widgets testlib
+QT += core gui widgets network testlib
+
+HEADERS += \
+    qtjambi_test_util.h
+
+SOURCES += \
+    qtjambi_test.cpp

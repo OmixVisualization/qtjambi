@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -100,6 +100,11 @@ private:
     <object-type name="Qt3DCore::QAbstractAspect">
         <inject-code class="java">
             <import-file name="typesystem/java/typesystem_qt3dcore-java.java" quote-after-line="class QAbstractAspect___java" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="Qt3DCore::QEntity">
+        <inject-code class="java" since="6.0.0">
+            <import-file name="typesystem/java/typesystem_qt3dcore-java.java" quote-after-line="class QEntity__" quote-before-line="}// class"/>
         </inject-code>
     </object-type>
 </typesystem>

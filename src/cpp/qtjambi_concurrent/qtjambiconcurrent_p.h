@@ -52,15 +52,6 @@
 #include <QList>
 #include <QFutureWatcher>
 
-class FutureSequenceCleanUp: public QFutureWatcher<void> {
-public:
-    FutureSequenceCleanUp(QList<JObjectWrapper> *sequence);
-    ~FutureSequenceCleanUp();
-
-private:
-    void cleanUp();
-    QList<JObjectWrapper> *m_sequence;
-};
 
 #endif // QT_NO_CONCURRENT
 

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -291,10 +291,11 @@ public final class QNativePointer {
         if(buffer.isDirect()) {
         	QtJambiInternal.registerCleaner(buffer, data::reset);
         	data.m_autodelete = AutoDeleteMode.None;
+        	data.m_isReadonly = buffer.isReadOnly();
         }else {
             data.m_autodelete = data.m_knownSize == 1 ? AutoDeleteMode.Delete : AutoDeleteMode.DeleteArray;
+            data.m_isReadonly = false;
         }
-        data.m_isReadonly = buffer.isReadOnly();
     }
 
     private QNativePointer() {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -55,7 +56,6 @@ import io.qt.autotests.generated.TheGlobalLongEnumStruct;
 import io.qt.autotests.generated.TheGlobalLongIntegerEnumClass;
 import io.qt.autotests.generated.TheGlobalShortEnum;
 import io.qt.autotests.generated.TheGlobalShortEnumClass;
-import io.qt.core.QList;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject.Connection;
 import io.qt.core.Qt;
@@ -214,7 +214,7 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		Qt.WidgetAttribute[] attributes = {
 			Qt.WidgetAttribute.WA_TranslucentBackground,
 			Qt.WidgetAttribute.WA_X11NetWmWindowTypeDesktop,
-			Qt.WidgetAttribute.WA_ContentsPropagated
+			Qt.WidgetAttribute.WA_OpaquePaintEvent
 		};
 		result = 0;
 		Qt.WidgetAttribute[][] receivedAttributes = {null};
@@ -226,7 +226,7 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		assertEquals("testSignal4 result",
 						Qt.WidgetAttribute.WA_TranslucentBackground.value() +
 						Qt.WidgetAttribute.WA_X11NetWmWindowTypeDesktop.value() +
-						Qt.WidgetAttribute.WA_ContentsPropagated.value(), result);
+						Qt.WidgetAttribute.WA_OpaquePaintEvent.value(), result);
 		result = 0;
 		assertArrayEquals("getAttributes() after emmitting testSignal4", attributes, getAttributes().toArray(new Qt.WidgetAttribute[3]));
 		assertArrayEquals("receivedAttributes after emmitting testSignal4", attributes, receivedAttributes[0]);
@@ -256,7 +256,7 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		Qt.WidgetAttribute[] attributes = {
 			Qt.WidgetAttribute.WA_CustomWhatsThis,
 			Qt.WidgetAttribute.WA_DontShowOnScreen,
-			Qt.WidgetAttribute.WA_ContentsPropagated,
+			Qt.WidgetAttribute.WA_OpaquePaintEvent,
 			Qt.WidgetAttribute.WA_TransparentForMouseEvents
 		};
 		buffer = null;
@@ -283,7 +283,7 @@ public class TestFlagsAndEnumParameters extends FlagsAndEnumTest{
 		}
 		assertEquals("testSignal5 result", sum, result);
 		result = 0;
-		QList<Integer> ints = getInts();
+		List<Integer> ints = getInts();
 		int[] _ints = new int[ints.size()];
 		for (int i = 0; i < _ints.length; i++) {
 			_ints[i] = ints.get(i);

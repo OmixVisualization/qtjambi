@@ -44,16 +44,11 @@
 
 package io.qt.autotests;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
+import org.junit.*;
 
-import java.util.Collections;
+import java.util.*;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import io.qt.concurrent.QtConcurrent;
 import io.qt.core.QBitArray;
 import io.qt.core.QByteArray;
 import io.qt.core.QByteArrayMatcher;
@@ -63,8 +58,6 @@ import io.qt.core.QDir;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QElapsedTimer;
 import io.qt.core.QFileInfo;
-import io.qt.core.QFuture;
-import io.qt.core.QFutureVoid;
 import io.qt.core.QItemSelection;
 import io.qt.core.QItemSelectionRange;
 import io.qt.core.QLine;
@@ -77,7 +70,6 @@ import io.qt.core.QPointF;
 import io.qt.core.QProcessEnvironment;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
-import io.qt.core.QRegExp;
 import io.qt.core.QSize;
 import io.qt.core.QSizeF;
 import io.qt.core.QStringMatcher;
@@ -141,62 +133,14 @@ import io.qt.gui.QTextOption;
 import io.qt.gui.QTextTableCell;
 import io.qt.gui.QTextTableCellFormat;
 import io.qt.gui.QTextTableFormat;
-import io.qt.gui.QTouchEvent;
 import io.qt.gui.QTransform;
 import io.qt.gui.QVector2D;
 import io.qt.gui.QVector3D;
 import io.qt.gui.QVector4D;
 import io.qt.internal.QtJambiInternal;
-import io.qt.network.QAuthenticator;
-import io.qt.network.QHostAddress;
-import io.qt.network.QHostInfo;
-import io.qt.network.QIPv6Address;
-import io.qt.network.QNetworkAddressEntry;
-import io.qt.network.QNetworkCacheMetaData;
-import io.qt.network.QNetworkCookie;
-import io.qt.network.QNetworkInterface;
-import io.qt.network.QNetworkProxy;
-import io.qt.network.QNetworkProxyQuery;
-import io.qt.network.QNetworkRequest;
-import io.qt.widgets.QColormap;
-import io.qt.widgets.QListWidgetItem;
-import io.qt.widgets.QSizePolicy;
-import io.qt.widgets.QStyleOption;
-import io.qt.widgets.QTableWidgetItem;
-import io.qt.widgets.QTableWidgetSelectionRange;
-import io.qt.widgets.QTextEdit;
-import io.qt.widgets.QTileRules;
-import io.qt.widgets.QTreeWidgetItem;
-import io.qt.xml.QDomAttr;
-import io.qt.xml.QDomCDATASection;
-import io.qt.xml.QDomCharacterData;
-import io.qt.xml.QDomComment;
-import io.qt.xml.QDomDocument;
-import io.qt.xml.QDomDocumentFragment;
-import io.qt.xml.QDomDocumentType;
-import io.qt.xml.QDomElement;
-import io.qt.xml.QDomEntity;
-import io.qt.xml.QDomEntityReference;
-import io.qt.xml.QDomImplementation;
-import io.qt.xml.QDomNamedNodeMap;
-import io.qt.xml.QDomNode;
-import io.qt.xml.QDomNodeList;
-import io.qt.xml.QDomNotation;
-import io.qt.xml.QDomProcessingInstruction;
-import io.qt.xml.QDomText;
+import io.qt.widgets.*;
 
 public class TestCloneable extends QApplicationTest {
-
-    @Test
-    public void run_clone_QAuthenticator() {
-        QAuthenticator org = new QAuthenticator();
-        QAuthenticator clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QAuthenticator clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
 
     @Test
     public void run_clone_QBitArray() {
@@ -301,193 +245,6 @@ public class TestCloneable extends QApplicationTest {
     }
 
     @Test
-    public void run_clone_QDomAttr() {
-        QDomAttr org = new QDomAttr();
-        QDomAttr clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomAttr clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomCDATASection() {
-        QDomCDATASection org = new QDomCDATASection();
-        QDomCDATASection clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomCDATASection clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomCharacterData() {
-        QDomCharacterData org = new QDomCharacterData();
-        QDomCharacterData clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomCharacterData clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomComment() {
-        QDomComment org = new QDomComment();
-        QDomComment clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomComment clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomDocument() {
-        QDomDocument org = new QDomDocument();
-        QDomDocument clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomDocument clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomDocumentFragment() {
-        QDomDocumentFragment org = new QDomDocumentFragment();
-        QDomDocumentFragment clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomDocumentFragment clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomDocumentType() {
-        QDomDocumentType org = new QDomDocumentType();
-        QDomDocumentType clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomDocumentType clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomElement() {
-        QDomElement org = new QDomElement();
-        QDomElement clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomElement clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomEntity() {
-        QDomEntity org = new QDomEntity();
-        QDomEntity clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomEntity clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomEntityReference() {
-        QDomEntityReference org = new QDomEntityReference();
-        QDomEntityReference clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomEntityReference clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomImplementation() {
-        QDomImplementation org = new QDomImplementation();
-        QDomImplementation clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomImplementation clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomNamedNodeMap() {
-        QDomNamedNodeMap org = new QDomNamedNodeMap();
-        QDomNamedNodeMap clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomNamedNodeMap clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomNode() {
-        QDomNode org = new QDomNode();
-        QDomNode clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomNode clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomNodeList() {
-        QDomNodeList org = new QDomNodeList();
-        QDomNodeList clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomNodeList clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomNotation() {
-        QDomNotation org = new QDomNotation();
-        QDomNotation clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomNotation clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomProcessingInstruction() {
-        QDomProcessingInstruction org = new QDomProcessingInstruction();
-        QDomProcessingInstruction clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomProcessingInstruction clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QDomText() {
-        QDomText org = new QDomText();
-        QDomText clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QDomText clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
     public void run_clone_QFileInfo() {
         QFileInfo org = new QFileInfo();
         QFileInfo clone = org.clone();
@@ -549,28 +306,6 @@ public class TestCloneable extends QApplicationTest {
     }
 
     @Test
-    public void run_clone_QHostAddress() {
-        QHostAddress org = new QHostAddress();
-        QHostAddress clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QHostAddress clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QHostInfo() {
-        QHostInfo org = new QHostInfo();
-        QHostInfo clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QHostInfo clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone.hostName(), clone2.hostName());
-    }
-
-    @Test
     public void run_clone_QIcon() {
         QIcon org = new QIcon("file");
         QIcon clone = org.clone();
@@ -610,61 +345,6 @@ public class TestCloneable extends QApplicationTest {
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
         org.dispose();
         QLocale clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QNetworkAddressEntry() {
-        QNetworkAddressEntry org = new QNetworkAddressEntry();
-        QNetworkAddressEntry clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QNetworkAddressEntry clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone.broadcast(), clone2.broadcast());
-    }
-
-    @Test
-    public void run_clone_QNetworkCookie() {
-        QNetworkCookie org = new QNetworkCookie();
-        QNetworkCookie clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QNetworkCookie clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
-    }
-
-    @Test
-    public void run_clone_QNetworkInterface() {
-        QNetworkInterface org = new QNetworkInterface();
-        QNetworkInterface clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QNetworkInterface clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone.toString(), clone2.toString());
-    }
-
-    @Test
-    public void run_clone_QNetworkProxy() {
-        QNetworkProxy org = new QNetworkProxy();
-        QNetworkProxy clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QNetworkProxy clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone.hostName(), clone2.hostName());
-    }
-
-    @Test
-    public void run_clone_QNetworkRequest() {
-        QNetworkRequest org = new QNetworkRequest();
-        QNetworkRequest clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QNetworkRequest clone2 = clone.clone();
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
         assertEquals(clone, clone2);
     }
@@ -733,17 +413,6 @@ public class TestCloneable extends QApplicationTest {
         QPixmap clone2 = clone.clone();
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
         assertEquals(clone.rect(), clone2.rect());
-    }
-
-    @Test
-    public void run_clone_QRegExp() {
-        QRegExp org = new QRegExp();
-        QRegExp clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-        org.dispose();
-        QRegExp clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-        assertEquals(clone, clone2);
     }
 
     @Test
@@ -944,28 +613,6 @@ public class TestCloneable extends QApplicationTest {
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
 		org.dispose();
 		QElapsedTimer clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals(clone, clone2);
-	}
-
-	@Test
-	public void run_clone_QFuture() {
-		QFuture<String> org = QtConcurrent.run(()->"TEST");
-		QFuture<String> clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		QFuture<String> clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals(clone, clone2);
-	}
-
-	@Test
-	public void run_clone_QFutureVoid() {
-		QFutureVoid org = QtConcurrent.run(()->{});
-		QFutureVoid clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		QFutureVoid clone2 = clone.clone();
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
 		assertEquals(clone, clone2);
 	}
@@ -1667,20 +1314,6 @@ public class TestCloneable extends QApplicationTest {
 	}
 
 	@Test
-	public void run_clone_QTouchEvent_TouchPoint() {
-		QTouchEvent.TouchPoint org = new QTouchEvent.TouchPoint();
-		org.setPos(new QPointF(5,6));
-		QTouchEvent.TouchPoint clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		QTouchEvent.TouchPoint clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals((Object)clone.pos().x(), 5.);
-		assertEquals((Object)clone.pos().y(), 6.);
-		assertEquals(clone.pos(), clone2.pos());
-	}
-
-	@Test
 	public void run_clone_QTreeWidgetItem() {
 		QTreeWidgetItem org = new QTreeWidgetItem(Collections.singletonList("text"));
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(org));
@@ -1741,56 +1374,6 @@ public class TestCloneable extends QApplicationTest {
 		assertEquals((Object)clone.w(), clone2.w());
 	}
 	
-	@Test
-	public void run_clone_QIPv6Address() {
-		for(QHostAddress address : QNetworkInterface.allAddresses()){
-			QIPv6Address org = address.toIPv6Address();
-			QIPv6Address clone = org.clone();
-			assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-			org.dispose();
-			QIPv6Address clone2 = clone.clone();
-			assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-			assertArrayEquals(clone.c(), clone2.c());
-		}
-	}
-
-	@Test
-	public void run_clone_QNetworkCacheMetaData() {
-		QNetworkCacheMetaData org = new QNetworkCacheMetaData();
-		org.setLastModified(QDateTime.currentDateTimeUtc());
-		QNetworkCacheMetaData clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		QNetworkCacheMetaData clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals(clone.lastModified(), clone2.lastModified());
-	}
-
-	@Test
-	@Deprecated
-	public void run_clone_QNetworkConfiguration() {
-		io.qt.network.QNetworkConfiguration org = new io.qt.network.QNetworkConfiguration();
-		io.qt.network.QNetworkConfiguration clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		io.qt.network.QNetworkConfiguration clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals(clone, clone2);
-	}
-
-	@Test
-	public void run_clone_QNetworkProxyQuery() {
-		QNetworkProxyQuery org = new QNetworkProxyQuery();
-		org.setPeerHostName("test.org");
-		QNetworkProxyQuery clone = org.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
-		org.dispose();
-		QNetworkProxyQuery clone2 = clone.clone();
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone2));
-		assertEquals(clone.peerHostName(), "test.org");
-		assertEquals(clone.peerHostName(), clone2.peerHostName());
-	}
-
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestCloneable.class.getName());
     }

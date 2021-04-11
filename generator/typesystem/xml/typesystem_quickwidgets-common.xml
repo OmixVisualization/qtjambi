@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,18 +55,18 @@
             </inject-code>
             <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
     </modify-function>
-    <modify-function signature="setSource(const QUrl &amp;)">
+    <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes">
             <inject-code class="native" position="beginning">
             QTJAMBI_BLOCK_EXCEPTIONS(true)
             </inject-code>
             <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
     </modify-function>
-    <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)">
-        <modify-argument index="2">
+    <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)" thread-affine="yes">
+        <modify-argument index="2" thread-affine="yes">
             <reference-count action="set" variable-name="__rcQmlComponent" />
         </modify-argument>
-        <modify-argument index="3">
-            <define-ownership class="java" owner="cplusplus"/>
+        <modify-argument index="3" thread-affine="yes">
+            <define-ownership class="native" owner="cplusplus"/>
         </modify-argument>
     </modify-function>
   </object-type>

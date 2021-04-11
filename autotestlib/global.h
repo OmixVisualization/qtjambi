@@ -47,8 +47,14 @@
 
 // QT_NO_STL removes extra generator parser noise (that it doesn't understand anyway)
 #define QT_NO_STL
+#include <QtCore/QtGlobal>
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
+#ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
+#endif
 #include <QtGui/QtGui>
 
 #include "abstractclass.h"
@@ -67,6 +73,9 @@
 #include "testdialog.h"
 #include "threads.h"
 #include "tulip.h"
+#include "containers.h"
+#include "containers_qt5.h"
+#include "bindableowner.h"
 #include "variants.h"
 #include "general.h"
 #include "memorymanagement.h"

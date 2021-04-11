@@ -1,3 +1,8 @@
+#include <QtCore/QCborParserError>
+#include <QtCore/QCborValue>
+#include <QtCore/QJsonObject>
+#include <QtCore/QString>
+#include "qtjambi_core.h"
 #include "qtjambi_plugin.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambi_cast.h"
@@ -14,7 +19,7 @@ QString libraryPath(QueryMetadata qt_plugin_query_metadata){
 #ifdef Q_OS_WIN32
 #ifdef UNICODE
     QChar data[MAX_PATH];
-    HMODULE hm = NULL;
+    HMODULE hm = nullptr;
 
     if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
             GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -65,7 +70,8 @@ QObject* qtjambi_plugin_instance(QueryMetadata qt_plugin_query_metadata){
             QString className = cbClassName.toString().replace("::", ".");
             QString pluginName = cbPluginName.toString();
             if(JNIEnv* env =  qtjambi_current_environment()){
-                jobject result = Java::Private::QtJambi::QtJambiInternal.loadPluginInstance(
+                QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+                jobject result = Java::QtJambi::QtJambiInternal::loadPluginInstance(
                             env,
                             qtjambi_cast<jstring>(env, libPath),
                             qtjambi_cast<jstring>(env, className),

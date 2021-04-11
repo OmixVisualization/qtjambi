@@ -44,6 +44,7 @@
 
 #include "injectedcode.h"
 
+#ifndef QTJAMBI_NO_WIDGETS
 void GraphicsSceneSubclass::drawItems(QPainter *painter,
                                      int numItems,
                                      QGraphicsItem *items[],
@@ -69,7 +70,7 @@ void GraphicsSceneSubclass::drawItems(QPainter *painter,
     firstStyleOption = options[0];
     secondStyleOption = options[1];
 }
-
+#endif
 
 void AccessibleTextInterfaceSubclass::selection(int selectionIndex, int *startOffset, int *endOffset) const
 {
@@ -141,6 +142,7 @@ QString AccessibleTextInterfaceSubclass::callTextAtOffset(AccessibleTextInterfac
     return obj->textAtOffset(offset, boundaryType, startOffset, endOffset);
 }
 
+#ifndef QTJAMBI_NO_NETWORK
 void AbstractSocketSubclass::connectProxyAuthenticationRequired(QAbstractSocket *socket)
 {
     QObject::connect(socket, &QAbstractSocket::proxyAuthenticationRequired, this, &AbstractSocketSubclass::aSlot);
@@ -158,25 +160,34 @@ void AbstractSocketSubclass::aSlot(const QNetworkProxy &proxy, QAuthenticator *a
         authenticator->setPassword(proxy.password());
     }
 }
+#endif // QTJAMBI_NO_NETWORK
 
 namespace Java{
-Q_GLOBAL_STATIC_WITH_ARGS(QMutex, gMutex, (QMutex::Recursive))
+Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlEntityResolver$ResolvedEntity,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+namespace QtXml{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlEntityResolver$ResolvedEntity,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLio/qt/xml/QXmlInputSource;)
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(error,Z)
                                 QTJAMBI_REPOSITORY_DEFINE_FIELD(inputSource,Lio/qt/xml/QXmlInputSource;)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlNamespaceSupport$ProcessedName,
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlNamespaceSupport$ProcessedName,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
 )
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(QtXml,io/qt/xml,QXmlNamespaceSupport$SplitName,
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/xml,QXmlNamespaceSupport$SplitName,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;Ljava/lang/String;)
 )
+}
+#endif
 
-QTJAMBI_REPOSITORY_DEFINE_CLASS(QtWidgets,io/qt/widgets,QGraphicsItem$BlockedByModalPanelInfo,
+#ifndef QTJAMBI_NO_WIDGETS
+namespace QtWidgets{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QGraphicsItem$BlockedByModalPanelInfo,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLio/qt/widgets/QGraphicsItem;)
 )
+}
+#endif
 }

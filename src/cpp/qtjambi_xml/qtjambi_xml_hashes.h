@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,13 +32,13 @@
 
 #include <QtXml/QtXml>
 
-inline uint qHash(const QDomNamedNodeMap &value);
+inline hash_type qHash(const QDomNamedNodeMap &value);
 
-inline uint qHash(const QDomNode &value)
+inline hash_type qHash(const QDomNode &value)
 {
     if(value.parentNode().isNull())
         return 0;
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.nodeType()));
     hashCode = hashCode * 31 + qHash(value.nodeName());
     hashCode = hashCode * 31 + qHash(value.nodeValue());
@@ -48,9 +48,9 @@ inline uint qHash(const QDomNode &value)
     return hashCode;
 }
 
-inline uint qHash(const QDomNamedNodeMap &value)
+inline hash_type qHash(const QDomNamedNodeMap &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.count());
     for (int i=0; i< value.count(); ++i) {
         hashCode = hashCode * 31 + qHash(value.item(i));
@@ -58,9 +58,9 @@ inline uint qHash(const QDomNamedNodeMap &value)
     return hashCode;
 }
 
-inline uint qHash(const QDomNodeList &value)
+inline hash_type qHash(const QDomNodeList &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.count());
     for (int i=0; i< value.count(); ++i) {
         hashCode = hashCode * 31 + qHash(value.item(i));
@@ -68,7 +68,7 @@ inline uint qHash(const QDomNodeList &value)
     return hashCode;
 }
 
-inline uint qHash(const QDomImplementation &)
+inline hash_type qHash(const QDomImplementation &)
 {
     return 0;
 }

@@ -59,7 +59,7 @@
     <template name="scxml.bool_ptr_to_AtomicBoolean">
     jobject %out = nullptr;
     if(%in){
-        %out = Java::Runtime::AtomicBoolean.newInstance(%env, *%in);
+        %out = Java::Runtime::AtomicBoolean::newInstance(%env, *%in);
         %scope.addFinalAction([%env,%in,%out](){
                                 *%in = Java::Runtime::AtomicBoolean.get(%env, %out);
                               });
@@ -92,8 +92,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="boolean[]"/>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer boolPointer(%env, jbooleanArray(%in), true);
-                    bool* %out = boolPointer.pointer();
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -152,7 +151,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -164,7 +163,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -176,7 +175,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -188,7 +187,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -200,7 +199,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -212,7 +211,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -224,7 +223,7 @@
                     jbooleanArray %out = %inArray.array();
                 </conversion-rule>
                 <conversion-rule class="native">
-                    JBooleanArrayPointer %out(%env, jbooleanArray(%in), true);
+                    JBooleanArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <modify-argument invalidate-after-use="yes" index="3" />
@@ -242,8 +241,8 @@
                 </conversion-rule>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(const_cast&lt;int*>(%in), 1024*1024 /* this number is an assumption */);
-                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env,%out);
-                    %out = Java::Runtime::ByteBuffer.asIntBuffer(%env,%out);
+                    %out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env,%out);
+                    %out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -255,8 +254,8 @@
                 </conversion-rule>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(const_cast&lt;int*>(%in), 1024*1024 /* this number is an assumption */);
-                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env,%out);
-                    %out = Java::Runtime::ByteBuffer.asIntBuffer(%env,%out);
+                    %out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env,%out);
+                    %out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -269,7 +268,7 @@
                 </conversion-rule>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, jlong(sizeof(int)) * count);
-                    %out = Java::Runtime::ByteBuffer.asIntBuffer(%env,%out);
+                    %out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="1">
@@ -285,10 +284,6 @@
         </modify-function>
   </interface-type>
   <object-type name="QScxmlStateMachine">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
-            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
-        </extra-includes>
         <modify-function signature="submitEvent(QScxmlEvent *)">
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.scxml.QScxmlEvent"/>
@@ -301,10 +296,7 @@
             </modify-argument>
         </modify-function>
         <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_scxml-java.java" quote-after-line="class QScxmlStateMachine_java__" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_scxml-java.java" quote-after-line="class QScxmlStateMachine_native__" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_scxml-java.java" quote-after-line="class QScxmlStateMachine___" quote-before-line="}// class"/>
         </inject-code>
   </object-type>
 </typesystem>

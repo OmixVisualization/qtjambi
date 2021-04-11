@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,22 +27,79 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QDataStream>
+#include <QtCore/QDebug>
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_repository.h>
+#include <qtjambi/qtjambi_containers.h>
+#include <qtjambi/qtjambi_cast.h>
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_initialize)
+(JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
+{
+    initialize_QMap(env, _this, keyType, keyMetaType, valueType, valueMetaType, other);
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap_initialize)
+(JNIEnv * env, jobject _this, jclass keyType, QtJambiNativeID keyMetaType, jclass valueType, QtJambiNativeID valueMetaType, jobject other)
+{
+    initialize_QMultiMap(env, _this, keyType, keyMetaType, valueType, valueMetaType, other);
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_lessThan)
+(JNIEnv * env, jclass, jobject key1, jobject key2, jlong containerAccess)
+{
+    return reinterpret_cast<AbstractMapAccess*>(containerAccess)->keyLessThan(env, key1, key2);
+}
+
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_clonedAccess)
+(JNIEnv *, jclass, QtJambiNativeID __this_nativeId)
+{
+    QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+    AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+    Q_ASSERT(containerAccess);
+    return jlong(containerAccess->clone());
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_disposeAccess)
+(JNIEnv *, jclass, jlong containerAccess)
+{
+    if(containerAccess)
+        reinterpret_cast<AbstractContainerAccess*>(containerAccess)->dispose();
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_keyMetaType)
+(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
+{
+    QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+    AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+    Q_ASSERT(containerAccess);
+    return qtjambi_cast<jobject>(env, containerAccess->keyMetaType());
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap_valueMetaType)
+(JNIEnv * env, jclass, QtJambiNativeID __this_nativeId)
+{
+    QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+    AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+    Q_ASSERT(containerAccess);
+    return qtjambi_cast<jobject>(env, containerAccess->valueMetaType());
+}
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QMap<Key, T>::begin() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1begin__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1begin__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong beginFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "begin() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapBeginFunction>(beginFunction)(__jni_env, __this_nativeId, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->begin(__jni_env, __this_nativeId, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -50,35 +107,37 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::clear()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1clear__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1clear__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong clearFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::clear()")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapClearFunction>(clearFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->clear(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
 }
 
 // QMap<Key, T>::contains(const Key & k) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1contains__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1contains__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong containsFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::contains(const Key & k) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapContainsFunction>(containsFunction)(__jni_env, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->contains(__jni_env, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -86,18 +145,19 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMap<Key, T>::count(const Key & k) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1count__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1count__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong countObjectFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::count(const Key & k) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapCountObjectFunction>(countObjectFunction)(__jni_env, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->count(__jni_env, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -105,17 +165,18 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMap<Key, T>::end() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1end__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1end__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong endFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::end() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapEndFunction>(endFunction)(__jni_env, __this_nativeId, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->end(__jni_env, __this_nativeId, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -123,18 +184,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::find(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1find__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1find__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong countObjectFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::find(const Key & k) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapFindFunction>(countObjectFunction)(__jni_env, __this_nativeId, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->find(__jni_env, __this_nativeId, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -142,17 +204,18 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::first() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1first__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1first__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong firstFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::first() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapFirstFunction>(firstFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->first(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -160,17 +223,18 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::firstKey() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1firstKey__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1firstKey__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong firstKeyFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::firstKey() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapFirstKeyFunction>(firstKeyFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->firstKey(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -178,38 +242,40 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::insert(const K & k, const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1insert__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1insert__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject k0,
- jobject t1,
- jlong insertFunction)
+ jobject t1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::insert(const K & k, const T & t)")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        reinterpret_cast<QMapInsertFunction>(insertFunction)(__jni_env, __qt_this, k0, t1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        containerAccess->insert(__jni_env, container.first, k0, t1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
 }
 
 // QMap<Key, T>::key(const V & value, const K & defaultKey) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1key__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1key__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong keyFunction)
+ jobject k1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::key(const V & value, const K & defaultKey) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapKeyFunction>(keyFunction)(__jni_env, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->key(__jni_env, container.first, t0, k1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -217,18 +283,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::keys(const T & value) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1keysForValue__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1keysForValue__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong keysForValueFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::keys(const T & value) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapKeysForValueFunction>(keysForValueFunction)(__jni_env, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->keys(__jni_env, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -236,17 +303,18 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::keys() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1keys__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1keys__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong keysFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::keys() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapKeysFunction>(keysFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->keys(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -254,17 +322,18 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::last() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1last__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1last__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong lastFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::last() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapLastFunction>(lastFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->last(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -272,17 +341,18 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::lastKey() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1lastKey__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1lastKey__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong lastKeyFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::lastKey() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapLastKeyFunction>(lastKeyFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->lastKey(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -290,18 +360,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::lowerBound(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1lowerBound__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1lowerBound__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong lowerBoundFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::lowerBound(const Key & k) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapLowerBoundFunction>(lowerBoundFunction)(__jni_env, __this_nativeId, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->lowerBound(__jni_env, __this_nativeId, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -309,18 +380,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::upperBound(const Key & k) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1upperBound__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1upperBound__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong upperBoundFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::upperBound(const Key & k) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapUpperBoundFunction>(upperBoundFunction)(__jni_env, __this_nativeId, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->upperBound(__jni_env, __this_nativeId, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -328,18 +400,19 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::operator==(const QMap & l) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1operator_1equal__JLjava_util_Map_2J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1operator_1equal__JLjava_util_Map_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject l0,
- jlong equalFunction)
+ jobject l0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::operator==(const QMap<Key, T> & other) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapEqualFunction>(equalFunction)(__jni_env, __qt_this, l0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->equal(__jni_env, container.first, l0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -347,18 +420,19 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMap<Key, T>::remove(const T & t)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1remove__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1remove__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong removeAllFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::remove(const T & t)")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapRemoveAllFunction>(removeAllFunction)(__jni_env, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->remove(__jni_env, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -366,17 +440,18 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMap<Key, T>::size() const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1size__JJ)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1size__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong sizeFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::size() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapSizeFunction>(sizeFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->size(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -384,93 +459,40 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMap<Key, T>::take(const T & t)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1take__JLjava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1take__JLjava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong takeFunction)
+ jobject t0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::take(const T & t)")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapTakeFunction>(takeFunction)(__jni_env, __qt_this, t0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->take(__jni_env, container.first, t0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
     return nullptr;
-}
-
-// QMap<Key, T>::uniqueKeys() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1uniqueKeys__JJ)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jlong uniqueKeysFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::uniqueKeys() const")
-    try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapUniqueKeysFunction>(uniqueKeysFunction)(__jni_env, __qt_this);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
-
-// QMap<Key, T>::unite(const T & t)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1unite__JLjava_lang_Object_2J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject t0,
- jlong uniteFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::unite(const T & t)")
-    try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        reinterpret_cast<QMapUniteFunction>(uniteFunction)(__jni_env, __qt_this, t0);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
 }
 
 // QMap<Key, T>::value(const Key &key, const T &defaultValue) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1value__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1value__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject k0,
- jobject t1,
- jlong valueFunction)
+ jobject t1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "value(const Key &key, const T &defaultValue) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapValueFunction>(valueFunction)(__jni_env, __qt_this, k0, t1);
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-    return nullptr;
-}
-
-// QMap<Key, T>::values(const Key &key) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1valuesKey__JLjava_lang_Object_2J)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- jobject k0,
- jlong valuesKeyFunction)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "values(const Key &key) const")
-    try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapValuesKeyFunction>(valuesKeyFunction)(__jni_env, __qt_this, k0);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->value(__jni_env, container.first, k0, t1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -478,17 +500,142 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::values() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1values__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1values__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong valuesFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "values() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMapValuesFunction>(valuesFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->values(__jni_env, container.first);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1writeTo)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID stream0)
+{
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(stream0);
+        qtjambi_check_resource(__jni_env, stream, typeid(QDataStream));
+        QByteArray containerName = "QMap<";
+        containerName += containerAccess->keyMetaType().name();
+        containerName += ",";
+        containerName += containerAccess->valueMetaType().name();
+        containerName += ">";
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int metaType = containerAccess->registerContainer(containerName);
+        if(!QMetaType::save(*stream, metaType, container.first)){
+#else
+        QMetaType metaType(containerAccess->registerContainer(containerName));
+        if(!metaType.save(*stream, container.first)){
+#endif
+            containerName.prepend("QDataStream& << ");
+            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMap__1_1qt_1QMap_1readFrom)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID stream0)
+{
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMap<QVariant,QVariant>));
+        AbstractMapAccess* containerAccess = dynamic_cast<AbstractMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(stream0);
+        qtjambi_check_resource(__jni_env, stream, typeid(QDataStream));
+        QByteArray containerName = "QMap<";
+        containerName += containerAccess->keyMetaType().name();
+        containerName += ",";
+        containerName += containerAccess->valueMetaType().name();
+        containerName += ">";
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int metaType = containerAccess->registerContainer(containerName);
+        if(!QMetaType::save(*stream, metaType, container.first)){
+#else
+        QMetaType metaType(containerAccess->registerContainer(containerName));
+        if(!metaType.load(*stream, container.first)){
+#endif
+            containerName.prepend("QDataStream& >> ");
+            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+// QMap<Key, T>::uniqueKeys() const
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1uniqueKeys__J)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::uniqueKeys() const")
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->uniqueKeys(__jni_env, container.first);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+    return nullptr;
+}
+
+// QMap<Key, T>::unite(const T & t)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1unite__JLjava_lang_Object_2)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ jobject t0)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::unite(const T & t)")
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        containerAccess->unite(__jni_env, container.first, t0);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+// QMap<Key, T>::values(const Key &key) const
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1valuesKey__JLjava_lang_Object_2)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ jobject k0)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::values(const Key &key) const")
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->values(__jni_env, container.first, k0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -496,19 +643,20 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::contains(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1contains__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1contains__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong containsFunction)
+ jobject k1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::contains(const Key & k, const T & value) const")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::contains(const Key & k, const T & value) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMultiMapContainsPairFunction>(containsFunction)(__jni_env, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->contains(__jni_env, container.first, t0, k1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -516,19 +664,20 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // QMap<Key, T>::count(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1count__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1count__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong countFunction)
+ jobject k1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::contains(const Key & k, const T & value) const")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::contains(const Key & k, const T & value) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMultiMapCountPairFunction>(countFunction)(__jni_env, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->count(__jni_env, container.first, t0, k1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -536,19 +685,20 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMap<Key, T>::find(const Key & k, const T & value) const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1find__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1find__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong findFunction)
+ jobject k1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::find(const Key & k, const T & value) const")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::find(const Key & k, const T & value) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMultiMapFindPairFunction>(findFunction)(__jni_env, __this_nativeId, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->find(__jni_env, __this_nativeId, container.first, t0, k1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -556,19 +706,20 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // QMap<Key, T>::remove(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1remove__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1remove__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong removeFunction)
+ jobject k1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::remove(const Key & k, const T & value)")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::remove(const Key & k, const T & value)")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        return reinterpret_cast<QMultiMapRemovePairFunction>(removeFunction)(__jni_env, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->remove(__jni_env, container.first, t0, k1);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -576,19 +727,86 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // QMap<Key, T>::replace(const Key & k, const T & value)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1replace__JLjava_lang_Object_2Ljava_lang_Object_2J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1replace__JLjava_lang_Object_2Ljava_lang_Object_2)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
  jobject t0,
- jobject k1,
- jlong replaceFunction)
+ jobject k1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMap<Key, T>::replace(const Key & k, const T & value)")
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QMultiMap<Key, T>::replace(const Key & k, const T & value)")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>));
-        reinterpret_cast<QMultiMapReplaceFunction>(replaceFunction)(__jni_env, __qt_this, t0, k1);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        containerAccess->replace(__jni_env, container.first, t0, k1);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1writeTo)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID stream0)
+{
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(stream0);
+        qtjambi_check_resource(__jni_env, stream, typeid(QDataStream));
+        QByteArray containerName = "QMultiMap<";
+        containerName += containerAccess->keyMetaType().name();
+        containerName += ",";
+        containerName += containerAccess->valueMetaType().name();
+        containerName += ">";
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int metaType = containerAccess->registerContainer(containerName);
+        if(!QMetaType::save(*stream, metaType, container.first)){
+#else
+        QMetaType metaType(containerAccess->registerContainer(containerName));
+        if(!metaType.save(*stream, container.first)){
+#endif
+            containerName.prepend("QDataStream& << ");
+            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMultiMap__1_1qt_1QMultiMap_1readFrom)
+(JNIEnv *__jni_env,
+ jclass,
+ QtJambiNativeID __this_nativeId,
+ QtJambiNativeID stream0)
+{
+    try{
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        qtjambi_check_resource(__jni_env, container.first, typeid(QMultiMap<QVariant,QVariant>));
+        AbstractMultiMapAccess* containerAccess = dynamic_cast<AbstractMultiMapAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        QDataStream* stream = qtjambi_object_from_nativeId<QDataStream>(stream0);
+        qtjambi_check_resource(__jni_env, stream, typeid(QDataStream));
+        QByteArray containerName = "QMultiMap<";
+        containerName += containerAccess->keyMetaType().name();
+        containerName += ",";
+        containerName += containerAccess->valueMetaType().name();
+        containerName += ">";
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        int metaType = containerAccess->registerContainer(containerName);
+        if(!QMetaType::save(*stream, metaType, container.first)){
+#else
+        QMetaType metaType(containerAccess->registerContainer(containerName));
+        if(!metaType.load(*stream, container.first)){
+#endif
+            containerName.prepend("QDataStream& >> ");
+            JavaException::raiseQNoImplementationException(__jni_env, containerName QTJAMBI_STACKTRACEINFO );
+        }
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }

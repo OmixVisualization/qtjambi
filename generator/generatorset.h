@@ -49,6 +49,9 @@
 #include <QString>
 #include <QStringList>
 #include <QMap>
+#include <QFuture>
+
+class DocModel;
 
 class GeneratorSet : public QObject {
         Q_OBJECT
@@ -60,7 +63,7 @@ class GeneratorSet : public QObject {
         virtual bool readParameters(const QMap<QString, QString> args) = 0;
         virtual void buildModel(const QMap<QString, QString>& features, const QString pp_file) = 0;
         virtual void dumpObjectTree() = 0;
-        virtual QString generate() = 0;
+        virtual void generate() = 0;
 
         static GeneratorSet *getInstance();
         QString inDir;
@@ -68,8 +71,9 @@ class GeneratorSet : public QObject {
         QString javaOutDir;
         QString outDir;
         bool printStdout;
-        QString docsDirectory;
         QString docsUrl;
+        uint qtVersion;
+        QFuture<const DocModel*> m_docModelFuture;
 };
 
 #endif // GENERATOR_SET_H

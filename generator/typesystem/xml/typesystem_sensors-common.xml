@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -55,10 +55,12 @@
     </object-type>
     <enum-type name="QAccelerometer::AccelerationMode"/>
     <object-type name="QAccelerometer">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QAccelerometerReading">
     </object-type>
     <object-type name="QAltimeter">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QAltimeterReading">
     </object-type>
@@ -66,44 +68,55 @@
     <object-type name="QAmbientLightReading">
     </object-type>
     <object-type name="QAmbientLightSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QAmbientTemperatureReading">
     </object-type>
     <object-type name="QAmbientTemperatureSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QCompass">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QCompassReading">
     </object-type>
     <object-type name="QGyroscope">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QGyroscopeReading">
     </object-type>
     <object-type name="QDistanceSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QDistanceReading">
     </object-type>
     <object-type name="QHolsterReading">
     </object-type>
     <object-type name="QHolsterSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QHumidityReading">
     </object-type>
     <object-type name="QHumiditySensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QIRProximityReading">
     </object-type>
     <object-type name="QIRProximitySensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QLidReading">
     </object-type>
     <object-type name="QLidSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QMagnetometer">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QMagnetometerReading">
     </object-type>
     <object-type name="QOrientationSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QOrientationReading">
     </object-type>
@@ -111,23 +124,28 @@
     <object-type name="QPressureReading">
     </object-type>
     <object-type name="QPressureSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QProximityReading">
     </object-type>
     <object-type name="QProximitySensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QRotationReading">
     </object-type>
     <object-type name="QRotationSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <enum-type name="QTapReading::TapDirection"/>
     <object-type name="QTapReading">
     </object-type>
     <object-type name="QTapSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <object-type name="QTiltReading">
     </object-type>
     <object-type name="QTiltSensor">
+        <modify-field name="type" read="false"/>
     </object-type>
     <enum-type name="QSensor::AxesOrientationMode"/>
     <enum-type name="QSensor::Feature"/>
@@ -138,6 +156,7 @@
     <object-type name="QLightReading" since="5.15.0">
     </object-type>
     <object-type name="QLightSensor" since="5.15.0">
+        <modify-field name="type" read="false"/>
     </object-type>
     <value-type name="qoutputrange" java-name="QOutputRange">
     </value-type>
@@ -199,4 +218,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'filter(QSensorReading *)' in '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QSensorReading::d_ptr', unmatched return type '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QSensorReading' set to non-final, as it is extended by other classes" />
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type qoutputrange." />
 </typesystem>

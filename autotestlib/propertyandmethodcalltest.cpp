@@ -4,6 +4,7 @@ PropertyAndMethodCallTest::PropertyAndMethodCallTest(QObject *parent) :
     QObject(parent),
     m_receivedEnum(),
     m_receivedColor(),
+    m_receivedColorPtr(nullptr),
     m_receivedQtEnum(),
     m_receivedQtFlags(),
     m_receivedList(),
@@ -17,14 +18,15 @@ PropertyAndMethodCallTest::PropertyAndMethodCallTest(QObject *parent) :
 
 bool PropertyAndMethodCallTest::connectSignals(QObject* sender){
     bool connected = true;
-    connected &= (bool)QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customQtFlagsChanged(JObjectWrapper)), this, SLOT(receiveQtFlags(JObjectWrapper)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customQtInterfaceValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper)));
-    connected &= (bool)QObject::connect(sender, SIGNAL(derivedQObjectChanged(QObject*)), this, SLOT(receiveDerivedQObject(QObject*)));
+    connected &= bool(QObject::connect(sender, SIGNAL(customEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomEnum(JEnumWrapper))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customQtEnumChanged(JEnumWrapper)), this, SLOT(receiveCustomQtEnum(JEnumWrapper))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customQtFlagsChanged(JObjectWrapper)), this, SLOT(receiveQtFlags(JObjectWrapper))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customColorChanged(QColor)), this, SLOT(receiveColor(QColor))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customColorPtrChanged(QColor*)), this, SLOT(receiveColorPtr(QColor*))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customQtValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customQtInterfaceValueChanged(QGraphicsItem*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*))));
+    connected &= bool(QObject::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));
+    connected &= bool(QObject::connect(sender, SIGNAL(derivedQObjectChanged(QObject*)), this, SLOT(receiveDerivedQObject(QObject*))));
     return connected;
 }
 
@@ -34,6 +36,10 @@ void PropertyAndMethodCallTest::receiveCustomEnum(JEnumWrapper value){
 
 void PropertyAndMethodCallTest::receiveColor(QColor value){
     m_receivedColor = value;
+}
+
+void PropertyAndMethodCallTest::receiveColorPtr(QColor* value){
+    m_receivedColorPtr = value;
 }
 
 void PropertyAndMethodCallTest::receiveCustomQtEnum(JEnumWrapper value){
@@ -74,6 +80,10 @@ JEnumWrapper PropertyAndMethodCallTest::receivedCustomEnum(){
 
 QColor PropertyAndMethodCallTest::receivedColor(){
     return m_receivedColor;
+}
+
+QColor* PropertyAndMethodCallTest::receivedColorPtr(){
+    return m_receivedColorPtr;
 }
 
 JEnumWrapper PropertyAndMethodCallTest::receivedCustomQtEnum(){
@@ -120,6 +130,10 @@ bool PropertyAndMethodCallTest::testMethodCallColor(QObject* qobj){
     GETMETHOD_TEST(QColor, Color)
 }
 
+bool PropertyAndMethodCallTest::testMethodCallColorPtr(QObject* qobj){
+    GETMETHOD_TEST(QColor*, ColorPtr)
+}
+
 bool PropertyAndMethodCallTest::testMethodCallQtEnum(QObject* qobj){
     GETMETHOD_TEST(Qt::AspectRatioMode, QtEnum)
 }
@@ -163,6 +177,10 @@ bool PropertyAndMethodCallTest::testFetchPropertyEnum(QObject* qobj){
 
 bool PropertyAndMethodCallTest::testFetchPropertyColor(QObject* qobj){
     PROPERTY_TEST(QColor, Color)
+}
+
+bool PropertyAndMethodCallTest::testFetchPropertyColorPtr(QObject* qobj){
+    PROPERTY_TEST(QColor*, ColorPtr)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyQtEnum(QObject* qobj){

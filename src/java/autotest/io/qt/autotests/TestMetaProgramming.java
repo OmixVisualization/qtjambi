@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,13 +29,12 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,17 +42,16 @@ import org.junit.Test;
 import io.qt.QUnsuccessfulInvocationException;
 import io.qt.QtExtensibleEnum;
 import io.qt.QtInvokable;
-import io.qt.QtPropertyDesignable;
-import io.qt.QtPropertyNotify;
+import io.qt.QtPropertyMember;
 import io.qt.QtPropertyReader;
-import io.qt.QtPropertyRequired;
-import io.qt.QtPropertyResetter;
-import io.qt.QtPropertyUser;
 import io.qt.QtPropertyWriter;
 import io.qt.QtShortEnumerator;
 import io.qt.autotests.generated.FlagsAndEnumTest;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QEasingCurve;
 import io.qt.core.QEvent;
+import io.qt.core.QFileInfo;
+import io.qt.core.QList;
 import io.qt.core.QMetaEnum;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -63,214 +61,27 @@ import io.qt.core.QMetaType;
 import io.qt.core.QMetaType.GenericFlags;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
+import io.qt.core.QRunnable;
+import io.qt.core.QSet;
 import io.qt.core.QThread;
 import io.qt.core.QUrl;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
+import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QStandardItemModel;
 import io.qt.widgets.QAbstractButton;
+import io.qt.widgets.QAbstractSpinBox;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QCheckBox;
+import io.qt.widgets.QComboBox;
+import io.qt.widgets.QDoubleSpinBox;
 import io.qt.widgets.QPushButton;
+import io.qt.widgets.QSpinBox;
+import io.qt.widgets.QWidget;
 
 public class TestMetaProgramming extends QApplicationTest {
 	
-	private static class FullOfPropertiesSuper extends QObject {
-
-		public FullOfPropertiesSuper() {
-			super();
-		}
-		
-        @QtPropertyReader()
-        public final int readOnlyProperty() { return 0; }
-
-        @QtPropertyWriter(enabled=false)
-        public final void setReadOnlyProperty(int i) { }
-	}
-	
-    private static class FullOfProperties extends FullOfPropertiesSuper {
-    	@QtInvokable
-    	public FullOfProperties(String test) {
-			super();
-		}
-		@QtPropertyNotify(name="ordinaryProperty")
-    	public final Signal1<Integer> ordinaryPropertyChanged = new Signal1<>();
-        private boolean isDesignableTest;
-        private FullOfProperties(boolean isDesignableTest) {
-            this.isDesignableTest = isDesignableTest;
-        }
-
-        @SuppressWarnings("unused")
-        public final int ordinaryProperty() { 
-        	return 8; 
-    	}
-        @SuppressWarnings("unused")
-        public final void setOrdinaryProperty(int i) { 
-        }
-
-        @QtPropertyReader(name="annotatedProperty")
-        public final int fooBar() { return 0; }
-
-        @QtPropertyWriter(name="annotatedProperty")
-        public final void fooBarSetIt(int i) { }
-
-        @QtPropertyReader()
-        public final int ordinaryReadOnlyProperty() { return 0; }
-
-        @QtPropertyDesignable(value="false")
-        public final int ordinaryNonDesignableProperty() { return 0; }
-
-        @SuppressWarnings("unused")
-        public final void setOrdinaryNonDesignableProperty(int i) { }
-
-        @QtPropertyDesignable(value="false")
-        @QtPropertyReader(name="annotatedNonDesignableProperty")
-        public final int fooBarXyz() { return 0; }
-        @QtPropertyWriter()
-        public final void setAnnotatedNonDesignableProperty(int i) { }
-
-        @SuppressWarnings("unused")
-        public final boolean hasBooleanProperty() { return false; }
-        @SuppressWarnings("unused")
-        public final void setBooleanProperty(boolean b) { }
-
-        @SuppressWarnings("unused")
-        public final boolean isOtherBooleanProperty() { return false; }
-        @SuppressWarnings("unused")
-        public final void setOtherBooleanProperty(boolean b) { }
-
-        @QtPropertyReader
-        public final int resettableProperty() { return 0; }
-
-        @QtPropertyWriter
-        public final void setResettableProperty(int i) { }
-
-        @QtPropertyResetter(name="resettableProperty")
-        public final void resetResettableProperty() { }
-
-        @QtPropertyDesignable(value="test")
-        public final int testDesignableProperty() { 
-        	return 0; 
-    	}
-        @SuppressWarnings("unused")
-		public final void setTestDesignableProperty(int i) { 
-        }
-        
-        @QtPropertyRequired
-        public final int requiredProperty() { 
-        	return 0; 
-    	}
-        @SuppressWarnings("unused")
-		public final void setRequiredProperty(int i) { 
-        }
-
-        @QtPropertyReader
-        @QtPropertyUser
-        public final int annotatedUserProperty() { return 0; }
-
-        @QtPropertyWriter
-        public final void setAnnotatedUserProperty(int i) {}
-
-        @QtPropertyUser
-        public final int myUserProperty() { return 0; }
-        @SuppressWarnings("unused")
-        public final void setMyUserProperty(int i) {}
-
-
-        @SuppressWarnings("unused")
-        public boolean test() {
-            return isDesignableTest;
-        }
-        
-        static boolean staticScriptableMethodInvoked;
-        
-        @QtInvokable
-        public static void staticScriptableMethod() {
-        	staticScriptableMethodInvoked = true;
-        }
-    }
-
-    private static class ExpectedValues {
-        private boolean writable;
-        private boolean resettable;
-        private boolean designable;
-        private boolean user;
-        private boolean required;
-        private boolean hasNotifySignal;
-        private String name;
-
-        private ExpectedValues(String name, boolean writable, boolean resettable, boolean designable, boolean user, boolean required, boolean hasNotifySignal) {
-            this.name = name;
-            this.writable = writable;
-            this.resettable = resettable;
-            this.designable = designable;
-            this.user = user;
-            this.required = required;
-            this.hasNotifySignal = hasNotifySignal;
-        }
-    }
-
-    @Test
-    public void testMetaProperties() {
-        ExpectedValues expectedValues[] = {
-                new ExpectedValues("testDesignableProperty", true, false, true, false, false, false),
-                new ExpectedValues("requiredProperty", true, false, true, false, true, false),
-                new ExpectedValues("ordinaryProperty", true, false, true, false, false, true),
-                new ExpectedValues("annotatedProperty", true, false, true, false, false, false),
-                new ExpectedValues("ordinaryReadOnlyProperty", false, false, true, false, false, false),
-                new ExpectedValues("readOnlyProperty", false, false, true, false, false, false),
-                new ExpectedValues("ordinaryNonDesignableProperty", true, false, false, false, false, false),
-                new ExpectedValues("annotatedNonDesignableProperty", true, false, false, false, false, false),
-                new ExpectedValues("booleanProperty", true, false, true, false, false, false),
-                new ExpectedValues("otherBooleanProperty", true, false, true, false, false, false),
-                new ExpectedValues("resettableProperty", true, true, true, false, false, false),
-                new ExpectedValues("objectName", true, false, true, false, false, true),
-                new ExpectedValues("myUserProperty", true, false, true, true, false, false),
-                new ExpectedValues("annotatedUserProperty", true, false, true, true, false, false)
-        };
-
-        FullOfProperties fop = new FullOfProperties(true);
-        for (ExpectedValues e : expectedValues) {
-//            Utils.println(1, "Current property: " + e.name);
-            QMetaProperty property = fop.metaObject().property(e.name);
-            assertTrue(property!=null);
-            assertEquals(property.name()+" writable", e.writable, property.isWritable());
-            assertEquals(property.name()+" resettable", e.resettable, property.isResettable());
-            assertEquals(property.name()+" designable", e.designable, property.isDesignable(fop));
-            assertEquals(property.name()+" user", e.user, property.isUser());
-            assertEquals(property.name()+" required", e.required, property.isRequired());
-            assertEquals(property.name()+" hasNotifySignal", e.hasNotifySignal, property.hasNotifySignal());
-            if(property.hasNotifySignal()) {
-            	switch(property.name()) {
-            	case "ordinaryProperty":
-            		assertEquals(property.name(), fop.ordinaryPropertyChanged, property.notifySignal(fop)); break;
-            	case "objectName":
-            		assertEquals(property.name(), fop.objectNameChanged, property.notifySignal(fop)); break;
-            	}
-            }
-        }
-        List<QMetaProperty> properties = fop.metaObject().properties();
-        assertEquals(expectedValues.length, properties.size());
-    }
-
-    @Test
-    public void testFunctionDesignableProperty() {
-        {
-            FullOfProperties fop = new FullOfProperties(true);
-            QMetaProperty property = fop.metaObject().property("testDesignableProperty");
-            assertTrue(property!=null);
-            assertTrue(property.isDesignable(fop));
-        }
-
-        {
-            FullOfProperties fop = new FullOfProperties(false);
-            QMetaProperty property = fop.metaObject().property("testDesignableProperty");
-            assertTrue(property!=null);
-            assertFalse(property.isDesignable(fop));
-        }
-    }
-
     @Test
     public void testUserPropertyInQt() {
         QAbstractButton b = new QCheckBox();
@@ -278,15 +89,6 @@ public class TestMetaProgramming extends QApplicationTest {
         QMetaProperty property = b.metaObject().userProperty();
         assertEquals("checked", property.name());
         assertEquals(true, property.isUser());
-    }
-    
-    @Test
-    public void testMetaMethodCall() throws NoSuchMethodException {
-    	FullOfProperties fop = new FullOfProperties(true);
-    	QObject object = fop.metaObject().newInstance("test");
-    	assertTrue(object instanceof FullOfProperties);
-    	QMetaObject.forType(FullOfProperties.class).method("staticScriptableMethod").invoke(fop);
-    	assertTrue(FullOfProperties.staticScriptableMethodInvoked);
     }
     
     @Test
@@ -300,7 +102,7 @@ public class TestMetaProgramming extends QApplicationTest {
 //    	QAbstractItemView.staticMetaObject.enumerators().forEach(enm -> { System.out.println(( enm.isFlag() ? "flags: " : "enum:  " ) + " " + enm.name() + " " + Arrays.toString(enm.entries())); } );
     	QObject hiddenType = FlagsAndEnumTest.createHiddenObject(null);
 //    	hiddenType.metaObject().enumerators().forEach(enm -> { System.out.println(enm.name() + " " + Arrays.toString(enm.entries())); } );
-//    	hiddenType.metaObject().methods().forEach(mt -> { System.out.println(mt.methodType() + ": " + mt.returnType() + " " + mt.enclosingMetaObject().className() + "::" + mt.methodSignature() ); } );
+//    	hiddenType.metaObject().methods().forEach(mt -> { System.out.println(mt.methodType() + ": " + mt.returnClassType() + " " + mt.enclosingMetaObject().className() + "::" + mt.methodSignature() + "   " + mt.cppMethodSignature() ); } );
 //    	System.out.println();
     	List<QMetaType.GenericEnumerator> hiddenClassEnums = new ArrayList<>();
     	List<QMetaType.GenericFlags> hiddenFlags = new ArrayList<>();
@@ -315,15 +117,15 @@ public class TestMetaProgramming extends QApplicationTest {
 	    	sig.connect(hiddenFlags::add);
     	}
     	QMetaMethod method = hiddenType.metaObject().method("setHiddenEnum", QMetaType.GenericEnumerator.class);
-    	Assert.assertTrue(method!=null);
-    	method.invoke(hiddenType, QVariant.convert(5, method.parameterMetaType(0)));
-    	method.invoke(hiddenType, QVariant.convert(9, method.parameterMetaType(0)));
+    	Assert.assertTrue(method!=null && method.isValid());
+    	method.invoke(hiddenType, QVariant.convert(5, method.parameterType(0)));
+    	method.invoke(hiddenType, QVariant.convert(9, method.parameterType(0)));
     	Assert.assertEquals(2, hiddenClassEnums.size());
     	Assert.assertEquals(5, hiddenClassEnums.get(0).value());
     	Assert.assertEquals(9, hiddenClassEnums.get(1).value());
     	
     	method = hiddenType.metaObject().method("setHiddenFlags", QMetaType.GenericFlags.class);
-    	Assert.assertTrue(method!=null);
+    	Assert.assertTrue(method!=null && method.isValid());
     	method.invoke(hiddenType, 6);
     	method.invoke(hiddenType, 2);
     	Assert.assertEquals(2, hiddenFlags.size());
@@ -331,11 +133,11 @@ public class TestMetaProgramming extends QApplicationTest {
     	Assert.assertEquals(2, hiddenFlags.get(1).value());
     	
     	method = hiddenType.metaObject().method("hiddenEnum");
-    	Assert.assertTrue(method!=null);
+    	Assert.assertTrue(method!=null && method.isValid());
     	Assert.assertEquals(9, ((QMetaType.GenericEnumerator)method.invoke(hiddenType)).value());
 
     	method = hiddenType.metaObject().method("hiddenFlags");
-    	Assert.assertTrue(method!=null);
+    	Assert.assertTrue(method!=null && method.isValid());
     	Assert.assertEquals(2, ((QMetaType.GenericFlags)method.invoke(hiddenType)).value());
     	
     	Assert.assertTrue(hiddenType.metaObject().property("hiddenEnum")!=null);
@@ -357,8 +159,66 @@ public class TestMetaProgramming extends QApplicationTest {
     }
 	
 	static class InvocationTest extends QObject{
+		public final Signal1<QObject> qobjectChanged = new Signal1<>();
+		public final Signal1<Object> variantChanged = new Signal1<>();
+		public final Signal1<java.util.Date> javaDateChanged = new Signal1<>();
+		public final Signal1<QRunnable> runnableChanged = new Signal1<>();
+		public final Signal1<QWidget> widgetChanged = new Signal1<>();
+		public final Signal1<QComboBox> comboBoxChanged = new Signal1<>();
+		public final Signal1<QEasingCurve.EasingFunction> functionalChanged = new Signal1<>();
+		public final Signal1<String> textChanged = new Signal1<>();
+		public final Signal1<QColor> colorChanged = new Signal1<>();
+		public final Signal1<Integer> iChanged = new Signal1<>();
+		public final Signal1<Double> dChanged = new Signal1<>();
+		public final Signal1<Float> fChanged = new Signal1<>();
+		public final Signal1<List<QFileInfo>> listChanged = new Signal1<>();
+		public final Signal1<Set<QAbstractSpinBox>> setChanged = new Signal1<>();
+		
+		@QtPropertyMember
+		QObject qobject;
+		
+		@QtPropertyMember
+		Object variant;
+		
+		@QtPropertyMember
+		java.util.Date javaDate;
+		
+		@QtPropertyMember
+		QRunnable runnable;
+		
+		@QtPropertyMember
+		QWidget widget;
+		
+		@QtPropertyMember
+		QComboBox comboBox;
+		
+		@QtPropertyMember
+		QEasingCurve.EasingFunction functional;
+		
+		@QtPropertyMember
+		String text;
+		
+		@QtPropertyMember
+		QColor color;
+		
+		@QtPropertyMember
+		int i;
+		
+		@QtPropertyMember
+		double d;
+		
+		@QtPropertyMember
+		float f;
+		
+		@QtPropertyMember
+		QList<QFileInfo> list;
+		
+		@QtPropertyMember
+		QSet<QAbstractSpinBox> set;
+		
 		private boolean invoked = false;
 		private QThread invokingThread = null;
+		private Object parameter;
 		
 		@QtInvokable
         public final void invokableSlot0() {
@@ -371,6 +231,90 @@ public class TestMetaProgramming extends QApplicationTest {
         	this.invoked = true;
         	invokingThread = QThread.currentThread();
         	return "TEST"+i;
+        }
+		
+		@QtInvokable
+        public final void test(QObject v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(Object v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(java.util.Date v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QRunnable v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QWidget v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QComboBox v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QEasingCurve.EasingFunction v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(String v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QColor v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(int v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(double v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(float v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QList<QFileInfo> v) {
+        	this.invoked = true;
+        	this.parameter = v;
+        }
+		
+		@QtInvokable
+        public final void test(QSet<QAbstractSpinBox> v) {
+        	this.invoked = true;
+        	this.parameter = v;
         }
 	}
 	
@@ -485,8 +429,9 @@ public class TestMetaProgramming extends QApplicationTest {
     	Assert.assertTrue(invokableSlot!=null);
 		try {
 			invokableSlot.invoke(b, Qt.ConnectionType.BlockingQueuedConnection);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Blocking-queued invocation on object whose thread is the current thread is not allowed.", e.getMessage());
 		}
 	}
 	
@@ -585,7 +530,7 @@ public class TestMetaProgramming extends QApplicationTest {
 		InvocationTest b = new InvocationTest();
 		try {
 			QMetaObject.invokeMethod(b::invokableSlot0, Qt.ConnectionType.BlockingQueuedConnection);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
 		}
 	}
@@ -597,8 +542,9 @@ public class TestMetaProgramming extends QApplicationTest {
     	Assert.assertTrue(invokableMethod!=null);
     	try {
     		invokableMethod.invoke(b, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
 		}
 	}
 	
@@ -652,8 +598,9 @@ public class TestMetaProgramming extends QApplicationTest {
 			QMetaMethod invokableMethod = b.metaObject().method("invokableMethod3", double.class, float.class, int.class);
 	    	Assert.assertTrue(invokableMethod!=null);
 	    	invokableMethod.invoke(b, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -687,8 +634,9 @@ public class TestMetaProgramming extends QApplicationTest {
 			QMetaMethod invokableMethod = b.metaObject().method("invokableMethod3", double.class, float.class, int.class);
 	    	Assert.assertTrue(invokableMethod!=null);
 	    	invokableMethod.invoke(b, Qt.ConnectionType.AutoConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections (auto connection with different threads).", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -701,8 +649,9 @@ public class TestMetaProgramming extends QApplicationTest {
     	Assert.assertTrue(invokableMethod!=null);
 		try {
 			invokableMethod.invoke(b, Qt.ConnectionType.BlockingQueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Blocking-queued invocation on object whose thread is the current thread is not allowed.", e.getMessage());
 		}
 	}
 	
@@ -711,8 +660,9 @@ public class TestMetaProgramming extends QApplicationTest {
 		InvocationTest b = new InvocationTest();
 		try {
 	    	QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
 		}
 	}
 	
@@ -758,8 +708,9 @@ public class TestMetaProgramming extends QApplicationTest {
 			b.moveToThread(thread);
 			thread.start();
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -789,8 +740,9 @@ public class TestMetaProgramming extends QApplicationTest {
 			b.moveToThread(thread);
 			thread.start();
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.AutoConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections (auto connection with different threads).", e.getMessage());
 		}finally {
 			thread.quit();
 		}
@@ -801,8 +753,9 @@ public class TestMetaProgramming extends QApplicationTest {
 		InvocationTest b = new InvocationTest();
 		try {
 			QMetaObject.invokeMethod(b::invokableMethod3, Qt.ConnectionType.BlockingQueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Blocking-queued invocation on object whose thread is the current thread is not allowed.", e.getMessage());
 		}
 	}
 	
@@ -830,8 +783,9 @@ public class TestMetaProgramming extends QApplicationTest {
     public void testQMetaObject_invokeMethod_Lambda_BlockingQueued() {
 		try {
 			QMetaObject.invokeMethod((d,f,i)->{}, Qt.ConnectionType.BlockingQueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Blocking-queued invocation of method on not allowed without thread affinity.", e.getMessage());
 		}
 	}
 	
@@ -849,8 +803,9 @@ public class TestMetaProgramming extends QApplicationTest {
     public void testQMetaObject_invokeMethod_ReturningLambda_Queued() {
 		try {
 			QMetaObject.invokeMethod((d,f,i)->{ return "TEST"+i; }, Qt.ConnectionType.QueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Unable to invoke methods with return values in queued connections.", e.getMessage());
 		}
 	}
 	
@@ -858,8 +813,9 @@ public class TestMetaProgramming extends QApplicationTest {
     public void testQMetaObject_invokeMethod_ReturningLambda_BlockingQueued() {
 		try {
 			QMetaObject.invokeMethod((d,f,i)->{ return "TEST"+i; }, Qt.ConnectionType.BlockingQueuedConnection, 2.0, 4f, 7);
-			Assert.assertFalse("Expected to throw a QUnsuccessfulInvocationException.", false);
+			Assert.fail("Expected to throw a QUnsuccessfulInvocationException.");
 		} catch (QUnsuccessfulInvocationException e) {
+			Assert.assertEquals("Blocking-queued invocation of method on not allowed without thread affinity.", e.getMessage());
 		}
 	}
     
@@ -1037,13 +993,13 @@ public class TestMetaProgramming extends QApplicationTest {
         	metaMethod = b.metaObject().method("setIntList", List.class);
         	Assert.assertTrue(metaMethod!=null);
         	metaMethod.invoke(b, new ArrayList<>());
-        	Assert.assertEquals(ArrayList.class, b.intList.getClass());
+        	Assert.assertEquals(QList.class, b.intList.getClass());
     	}
     	{
     		metaProperty = b.metaObject().property("intList");
         	Assert.assertTrue(metaProperty!=null);
         	metaProperty.write(b, new LinkedList<>());
-        	Assert.assertEquals(LinkedList.class, b.intList.getClass());
+    		Assert.assertTrue(List.class.isAssignableFrom(b.intList.getClass()));
     	}
     	{
         	metaMethod = b.metaObject().method("setIndex", QModelIndex.class);
@@ -1107,6 +1063,1001 @@ public class TestMetaProgramming extends QApplicationTest {
         	Assert.assertEquals(b.connection, con);
     	}
     }
+    
+    @Test
+    public void testQMetaMethod_invoke_IllegalArguments() {
+		InvocationTest b = new InvocationTest();
+//		b.metaObject().methods().forEach(m->{if("test".equals(m.name().toString()) || m.methodType()==MethodType.Signal)System.out.println(m.methodSignature()+" - "+m.cppMethodSignature());});
+//		b.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+" ==> "+p.notifySignal().cppMethodSignature()));
+		QMetaMethod invokableMethod;
+		
+		{
+			invokableMethod = b.metaObject().method("test", double.class);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2.5);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(Double.valueOf(2.5), b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(Double.valueOf(2), b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: double", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: double", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			invokableMethod = b.metaObject().method("test", float.class);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2.5f);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(Float.valueOf(2.5f), b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(Float.valueOf(2), b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				invokableMethod.invoke(b, "2");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: float", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: float", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			invokableMethod = b.metaObject().method("test", int.class);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(Integer.valueOf(2), b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				invokableMethod.invoke(b, 2.0);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: int", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: int", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: int", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			Object value = new QColor(Qt.GlobalColor.darkBlue);
+			try {
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: int", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			invokableMethod = b.metaObject().method("test", Object.class);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2.5);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(2.5, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, 2);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(2, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			invokableMethod.invoke(b, "2.0");
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals("2.0", b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new Object();
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+		}
+		
+		{
+			Class<?> parameter = QObject.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new QWidget();
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			value = QCoreApplication.instance();
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QWidget.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new QWidget();
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QComboBox.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new QComboBox();
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QRunnable.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = (QRunnable)()->{};
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			value = new QRunnable() {
+				@Override
+				public void run() {
+				}
+			};
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QEasingCurve.EasingFunction.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = (QEasingCurve.EasingFunction)d->d;
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			value = new QEasingCurve.EasingFunction() {
+				@Override
+				public double call(double progress) {
+					return 0;
+				}
+			};
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = String.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = "test";
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QColor(Qt.GlobalColor.darkBlue);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QColor.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new QColor(Qt.GlobalColor.darkBlue);
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = QList.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = QList.of(new QFileInfo());
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = QList.of(Qt.GlobalColor.darkGreen);
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong collection content given: io.qt.core.Qt.GlobalColor, expected: io.qt.core.QFileInfo", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		{
+			Class<?> parameter = QSet.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = QSet.of(new QSpinBox(), new QDoubleSpinBox());
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = QSet.of(new QWidget());
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong collection content given: io.qt.widgets.QWidget, expected: io.qt.widgets.QAbstractSpinBox", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: java.util.Collection", e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+		
+		{
+			Class<?> parameter = java.util.Date.class;
+			invokableMethod = b.metaObject().method("test", parameter);
+	    	Assert.assertTrue(invokableMethod!=null);
+			b.invoked = false;
+			b.parameter = null;
+			Object value = new java.util.Date(5);
+			invokableMethod.invoke(b, value);
+			Assert.assertTrue(b.invoked);
+			Assert.assertEquals(value, b.parameter);
+			b.invoked = false;
+			b.parameter = null;
+			try {
+				value = new QWidget();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				value = QCoreApplication.instance();
+				invokableMethod.invoke(b, value);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: "+value.getClass().getName()+", expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2.5);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Double, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, 2);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Integer, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, "2.0");
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.String, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, new Object());
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: java.lang.Object, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QRunnable)()->{});
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QRunnable, expected: "+parameter.getName().replace('$', '.'), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+			try {
+				invokableMethod.invoke(b, (QEasingCurve.EasingFunction)d->d);
+				Assert.fail("IllegalArgumentException expected to be thrown.");
+			} catch (IllegalArgumentException e) {
+				Assert.assertEquals("Wrong argument given: io.qt.core.QEasingCurve.EasingFunction, expected: "+parameter.getName(), e.getMessage());
+			}
+			Assert.assertFalse(b.invoked);
+			Assert.assertEquals(null, b.parameter);
+		}
+	}
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaProgramming.class.getName());

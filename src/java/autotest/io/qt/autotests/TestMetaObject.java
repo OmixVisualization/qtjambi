@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,8 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.junit.Test;
 
 import io.qt.QtEnumerator;
@@ -43,6 +41,7 @@ import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
 import io.qt.autotests.generated.SignalsAndSlots;
+import io.qt.core.QMetaEnum;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
@@ -110,73 +109,59 @@ public class TestMetaObject extends QApplicationTest {
     @Test public void regularEnumDeclarations() {
         SignalsAndSlotsSubclass sass = new SignalsAndSlotsSubclass();
 
-        assertEquals(4, sass.numberOfEnumTypes());
+        assertEquals(4, sass.metaObject().enumeratorCount());
 
-        assertFalse(sass.isFlagsType("YoYoYo"));
-
-        {
-            List<String> names = sass.namesOfEnumType("YoYoYo");
-            assertEquals(3, names.size());
-
-            assertEquals("Yo", names.get(0));
-            assertEquals("YoYo", names.get(1));
-            assertEquals("YoYoYo", names.get(2));
-        }
-
-        {
-            List<Integer> values = sass.valuesOfEnumType("YoYoYo");
-            assertEquals(3, values.size());
-
-            assertEquals((Integer)0, values.get(0));
-            assertEquals((Integer)1, values.get(1));
-            assertEquals((Integer)2, values.get(2));
-        }
+        QMetaEnum enumYoYoYo = sass.metaObject().enumerator("YoYoYo");
+        assertFalse(enumYoYoYo.isFlag());
+        assertEquals(3, enumYoYoYo.keyCount());
+        assertEquals("Yo", enumYoYoYo.key(0));
+        assertEquals("YoYo", enumYoYoYo.key(1));
+        assertEquals("YoYoYo", enumYoYoYo.key(2));
+        assertEquals(0, enumYoYoYo.value(0));
+        assertEquals(1, enumYoYoYo.value(1));
+        assertEquals(2, enumYoYoYo.value(2));
+        assertEquals("Yo", enumYoYoYo.entry(0).name());
+        assertEquals("YoYo", enumYoYoYo.entry(1).name());
+        assertEquals("YoYoYo", enumYoYoYo.entry(2).name());
+        assertEquals(0, ((QtEnumerator)enumYoYoYo.entry(0)).value());
+        assertEquals(1, ((QtEnumerator)enumYoYoYo.entry(1)).value());
+        assertEquals(2, ((QtEnumerator)enumYoYoYo.entry(2)).value());
     }
 
     @Test public void qtEnumeratorDeclarations() {
         SignalsAndSlotsSubclass sass = new SignalsAndSlotsSubclass();
 
-        assertFalse(sass.isFlagsType("HeyYo"));
-
-        {
-            List<String> names = sass.namesOfEnumType("HeyYo");
-            assertEquals(2, names.size());
-
-            assertEquals("Hey", names.get(0));
-            assertEquals("Yo", names.get(1));
-        }
-
-        {
-            List<Integer> values = sass.valuesOfEnumType("HeyYo");
-            assertEquals(2, values.size());
-
-            assertEquals((Integer)0x4, values.get(0));
-            assertEquals((Integer)1123, values.get(1));
-        }
+        QMetaEnum enumHeyYo = sass.metaObject().enumerator("HeyYo");
+        assertFalse(enumHeyYo.isFlag());
+        assertEquals(2, enumHeyYo.keyCount());
+        assertEquals("Hey", enumHeyYo.key(0));
+        assertEquals("Yo", enumHeyYo.key(1));
+        assertEquals(0x4, enumHeyYo.value(0));
+        assertEquals(1123, enumHeyYo.value(1));
+        assertEquals("Hey", enumHeyYo.entry(0).name());
+        assertEquals("Yo", enumHeyYo.entry(1).name());
+        assertEquals(0x4, ((QtEnumerator)enumHeyYo.entry(0)).value());
+        assertEquals(1123, ((QtEnumerator)enumHeyYo.entry(1)).value());
     }
 
     @Test public void flagsDeclarations() {
         SignalsAndSlotsSubclass sass = new SignalsAndSlotsSubclass();
 
-        assertTrue(sass.isFlagsType("FlipModeSquads"));
-
-        {
-            List<String> names = sass.namesOfEnumType("FlipModeSquad");
-            assertEquals(3, names.size());
-
-            assertEquals("Flip", names.get(0));
-            assertEquals("Mode", names.get(1));
-            assertEquals("Squad", names.get(2));
-        }
-
-        {
-            List<Integer> values = sass.valuesOfEnumType("FlipModeSquad");
-            assertEquals(3, values.size());
-
-            assertEquals((Integer)1, values.get(0));
-            assertEquals((Integer)2, values.get(1));
-            assertEquals((Integer)4, values.get(2));
-        }
+        QMetaEnum enumFlipModeSquads = sass.metaObject().enumerator("FlipModeSquads");
+        assertTrue(enumFlipModeSquads.isFlag());
+        assertEquals(3, enumFlipModeSquads.keyCount());
+        assertEquals("Flip", enumFlipModeSquads.key(0));
+        assertEquals("Mode", enumFlipModeSquads.key(1));
+        assertEquals("Squad", enumFlipModeSquads.key(2));
+        assertEquals(1, enumFlipModeSquads.value(0));
+        assertEquals(2, enumFlipModeSquads.value(1));
+        assertEquals(4, enumFlipModeSquads.value(2));
+        assertEquals("Flip", enumFlipModeSquads.entry(0).name());
+        assertEquals("Mode", enumFlipModeSquads.entry(1).name());
+        assertEquals("Squad", enumFlipModeSquads.entry(2).name());
+        assertEquals(1, ((QtEnumerator)enumFlipModeSquads.entry(0)).value());
+        assertEquals(2, ((QtEnumerator)enumFlipModeSquads.entry(1)).value());
+        assertEquals(4, ((QtEnumerator)enumFlipModeSquads.entry(2)).value());
     }
     
     static class SignalTest extends QObject{
@@ -265,11 +250,14 @@ public class TestMetaObject extends QApplicationTest {
     	}
     }
     
-//    @Test 
+    @Test 
     public void testForeignMetaObject() {
     	System.out.println(QObject.staticMetaObject.constructors());
     	System.out.println(QObject.staticMetaObject.methods().size() + QObject.staticMetaObject.constructors().size());
     	System.out.println(QMetaObject.forType(SubQObject.class).constructors());
+    	System.out.println(QMetaObject.forType(SubQObject.class).constructors().get(0).returnClassType());
+    	System.out.println(QMetaObject.forType(SubQObject.class).constructors().get(0).returnType());
+    	System.out.println(QMetaObject.forType(SubQObject.class).constructors().get(0).typeName());
     	System.out.println(QMetaObject.forType(SubQObject.class).methods());
     	System.out.println(QMetaObject.forType(SubQtObject.class).constructors());
     	System.out.println(QMetaObject.forType(SubQtObject.class).methods());
@@ -282,13 +270,13 @@ public class TestMetaObject extends QApplicationTest {
 		}
     	try {
 			System.out.println("new SubQtObject = "+QMetaObject.forType(SubQtObject.class).newInstance(1, false));
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+//			e.printStackTrace();
 		}
     	NonQtType object = new NonQtType(8, "test");
     	QMetaObject mo = QMetaObject.forType(object.getClass());
     	for(QMetaProperty prop : mo.properties()) {
-    		System.out.print(prop.type().getName()+" "+prop.name()+" = ");
+    		System.out.print(prop.typeName()+" "+prop.name()+" = ");
     		System.out.flush();
     		System.out.println(prop.readOnGadget(object));
     	}
@@ -299,7 +287,7 @@ public class TestMetaObject extends QApplicationTest {
     @Test public void slotHidesSignal() {
     	assertEquals(QMetaMethod.MethodType.Signal, QMetaObject.forType(SignalTest.class).method("quit").methodType());
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaObject.class.getName());
     }

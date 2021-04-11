@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,18 +30,22 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import io.qt.QNativePointer;
 import io.qt.autotests.generated.AbstractSocketSubclass;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QObject;
 import io.qt.network.QAbstractSocket;
 import io.qt.network.QAuthenticator;
+import io.qt.network.QHostAddress;
 import io.qt.network.QHostInfo;
 import io.qt.network.QNetworkProxy;
+import io.qt.network.QTcpServer;
 import io.qt.network.QTcpSocket;
+import io.qt.network.QTimeoutException;
 import io.qt.network.QUdpSocket;
 
 public class TestInjectedCodeNetwork extends QApplicationTest {
@@ -90,7 +94,7 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
         authenticator.setUser("ZIM");
         authenticator.setPassword("ZUM");
 
-        ass.emitProxyAuthenticationRequired(as, proxy, QNativePointer.fromObject(authenticator));
+        ass.emitProxyAuthenticationRequired(as, proxy, authenticator);
 
         assertEquals("BAR", authenticator.user());
         assertEquals("FOO", authenticator.password());
@@ -112,7 +116,7 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
         authenticator.setUser("ZIM");
         authenticator.setPassword("ZUM");
 
-        ass.emitProxyAuthenticationRequired(as, proxy, QNativePointer.fromObject(authenticator));
+        ass.emitProxyAuthenticationRequired(as, proxy, authenticator);
 
         assertEquals("BAR", authenticator.user());
         assertEquals("FOO", authenticator.password());
@@ -134,7 +138,7 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
         authenticator.setUser("ZIM");
         authenticator.setPassword("ZUM");
 
-        ass.emitProxyAuthenticationRequired(as, proxy, QNativePointer.fromObject(authenticator));
+        ass.emitProxyAuthenticationRequired(as, proxy, authenticator);
 
         assertEquals("BAR", authenticator.user());
         assertEquals("FOO", authenticator.password());
@@ -222,58 +226,12 @@ public class TestInjectedCodeNetwork extends QApplicationTest {
         Utils.println(2, "RESULT: " + helloObject.fromSecondSlot + " for " + "qt.io");
     }
 
-    @Deprecated
-    static class XmlEntityResolverSubclassSubclass extends io.qt.autotests.generated.XmlEntityResolverSubclass{
-
-        @Override
-        public ResolvedEntity resolveEntity(String publicId, String systemId) {
-            if (publicId.equals("In java")) {
-            	io.qt.xml.QXmlInputSource src = new io.qt.xml.QXmlInputSource();
-                src.setData("Made in Java");
-                return new ResolvedEntity(systemId.equals("error"), src);
-            } else {
-                return super.resolveEntity(publicId, systemId);
-            }
-        }
-
-        @Override
-        public String errorString() {
-            return null;
-        }
-
-    }
-
-
     @Test
-    @Deprecated
-    public void QXmlEntityResolverResolveEntityMadeInJava() {
-        XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("In java", "");
-        assertEquals("Made in Java", src.data());
-    }
-
-    @Test
-    @Deprecated
-    public void QXmlEntityResolverResolveEntityMadeInJavaWithError() {
-        XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("In java", "error");
-        assertEquals("Made in Java with error", src.data());
-    }
-
-    @Test
-    @Deprecated
-    public void QXmlEntityResolverResolveEntityMadeInCpp() {
-        XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("c++", "");
-        assertEquals("Made in C++", src.data());
-    }
-
-    @Test
-    @Deprecated
-    public void QXmlEntityResolverResolveEntityMadeInCppWithError() {
-        XmlEntityResolverSubclassSubclass xerss = new XmlEntityResolverSubclassSubclass();
-        io.qt.xml.QXmlInputSource src = xerss.callResolveEntity("c++", "error");
-        assertEquals("Made in C++ with error", src.data());
+    public void testQTcpServerWaitForConnection() throws QTimeoutException{
+        QTcpServer server = new QTcpServer();
+        QHostAddress address = new QHostAddress(QHostAddress.SpecialAddress.Any);
+        assertTrue(server.listen(address, 0));
+        assertFalse(server.waitForNewConnection(100));
     }
 
     public static void main(String args[]) {

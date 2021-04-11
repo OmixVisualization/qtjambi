@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,10 +30,11 @@
 #ifndef QTJAMBI_CAST_JNITYPE_P_H
 #define QTJAMBI_CAST_JNITYPE_P_H
 
-#include "qtjambi_core.h"
 #include "qtjambi_cast_util_p.h"
 #include "qtjambi_cast_container1_p.h"
 #include "qtjambi_cast_container2_p.h"
+#include "qtjambi_cast_container3_p.h"
+#include "qtjambi_cast_container4_p.h"
 
 namespace QtJambiPrivate {
 
@@ -41,18 +42,7 @@ template<bool forward, bool has_scope,
          typename JniType,
          typename NativeType, bool is_arithmetic, bool is_enum, bool is_pointer, bool is_const, bool is_reference, bool is_function, bool is_template>
 struct qtjambi_jnitype_caster{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static JniType castfwd(JNIEnv *, NativeType_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return JniType();
-    }
-    static NativeType_out castbck(JNIEnv *, JniType, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool forward, bool has_scope,
@@ -60,95 +50,48 @@ template<bool forward, bool has_scope,
          template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
          int parameterCount, typename... Ts>
 struct qtjambi_jnitype_container_cast_decider{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static JniType castfwd(JNIEnv *, NativeType_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return JniType();
-    }
-    static NativeType_out castbck(JNIEnv *, JniType, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType<Ts...>();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
-template<bool has_scope,
+template<bool forward, bool has_scope, typename JniType, template<typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename T>
+constexpr qtjambi_jnitype_container1_cast<forward, has_scope, JniType, Container, is_pointer, is_const, is_reference, T> qtjambi_jnitype_container1_supertype(){ return {}; }
+
+template<bool forward, bool has_scope,
          typename JniType,
          template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
          typename... Ts>
-struct qtjambi_jnitype_container_cast_decider<true, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 1, Ts...>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 1, Ts...>
+    : decltype(qtjambi_jnitype_container1_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
-    typedef JniType (*CastFwdReturn)(JNIEnv *, NativeType_in, const char*, QtJambiScope*);
-    template<template<typename T> class Container, typename T>
-    static constexpr CastFwdReturn _castfwd(){
-        return qtjambi_jnitype_container1_cast<true, has_scope, JniType, Container, is_pointer, is_const, is_reference, T>::castfwd;
-    }
+template<bool forward, bool has_scope, typename JniType, template<typename K, typename T> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T>
+constexpr qtjambi_jnitype_container2_cast<forward, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T> qtjambi_jnitype_container2_supertype(){ return {};}
 
-    static constexpr JniType (*castfwd)(JNIEnv *, NativeType_in, const char*, QtJambiScope*) = _castfwd<NativeType, Ts...>();
-};
-
-template<bool has_scope,
+template<bool forward, bool has_scope,
          typename JniType,
          template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
          typename... Ts>
-struct qtjambi_jnitype_container_cast_decider<false, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 1, Ts...>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 2, Ts...>
+        : decltype(qtjambi_jnitype_container2_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
-    typedef NativeType_out (*CastBckReturn)(JNIEnv *, JniType, const char*, QtJambiScope*);
-    template<template<typename T> class Container, typename T>
-    static constexpr CastBckReturn _castbck(){
-        return qtjambi_jnitype_container1_cast<false, has_scope, JniType, Container, is_pointer, is_const, is_reference, T>::castbck;
-    }
+template<bool forward, bool has_scope, typename JniType, template<typename K, typename T, typename A> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T, typename A>
+constexpr qtjambi_jnitype_container3_cast<forward, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T, A> qtjambi_jnitype_container3_supertype(){ return {};}
 
-    static constexpr NativeType_out (*castbck)(JNIEnv *, JniType, const char*, QtJambiScope*) = _castbck<NativeType, Ts...>();
-};
-
-template<bool has_scope,
+template<bool forward, bool has_scope,
          typename JniType,
          template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
          typename... Ts>
-struct qtjambi_jnitype_container_cast_decider<true, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 2, Ts...>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 3, Ts...>
+        : decltype(qtjambi_jnitype_container3_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
-    typedef JniType (*CastFwdReturn)(JNIEnv *, NativeType_in, const char*, QtJambiScope*);
-    template<template<typename K, typename T> class Container, typename K, typename T>
-    static constexpr CastFwdReturn _castfwd(){
-        return qtjambi_jnitype_container2_cast<true, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T>::castfwd;
-    }
+template<bool forward, bool has_scope, typename JniType, template<typename K, typename T, typename A, typename B> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T, typename A, typename B>
+constexpr qtjambi_jnitype_container4_cast<forward, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T, A, B> qtjambi_jnitype_container4_supertype(){ return {};}
 
-    static constexpr JniType (*castfwd)(JNIEnv *, NativeType_in, const char*, QtJambiScope*) = _castfwd<NativeType, Ts...>();
-};
-
-template<bool has_scope,
+template<bool forward, bool has_scope,
          typename JniType,
          template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
          typename... Ts>
-struct qtjambi_jnitype_container_cast_decider<false, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 2, Ts...>{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType<Ts...>>::type, NativeType<Ts...>>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-
-    typedef NativeType_out (*CastBckReturn)(JNIEnv *, JniType, const char*, QtJambiScope*);
-    template<template<typename K, typename T> class Container, typename K, typename T>
-    static constexpr CastBckReturn _castbck(){
-        return qtjambi_jnitype_container2_cast<false, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T>::castbck;
-    }
-
-    static constexpr NativeType_out (*castbck)(JNIEnv *, JniType, const char*, QtJambiScope*) = _castbck<NativeType, Ts...>();
-};
+struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 4, Ts...>
+        : decltype(qtjambi_jnitype_container4_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
 template<bool forward, bool has_scope,
          typename JniType,
@@ -162,29 +105,40 @@ struct qtjambi_jnitype_caster<forward, has_scope,
 
 //template from any function pointer to jobject
 
-template<bool forward, bool has_scope,
+template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference, bool is_template>
-struct qtjambi_jnitype_caster<forward, has_scope,
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         NativeType, false, false, true, is_const, is_reference, true, is_template>{
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope*){
+    static jobject cast(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope*){
         jobject result = nullptr;
         if(!qtjambi_convert_from_native(env, typeid(NativeType_ptr), nativeTypeName, &in, true, false, result)){
-           JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast from type %1").arg(nativeTypeName ? nativeTypeName : typeid(NativeType_ptr).name())) QTJAMBI_STACKTRACEINFO );
+           JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast to type %1").arg(QLatin1String(nativeTypeName ? nativeTypeName : qtjambi_type_name(typeid(NativeType)).data()))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
+};
 
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to function pointer reference");
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference, bool is_template>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        NativeType, false, false, true, is_const, is_reference, true, is_template>{
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to function pointer reference");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr fct = nullptr;
         NativeType_ptr* result = &fct;
         if(!qtjambi_convert_to_native(env, typeid(NativeType_ptr), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(typename std::remove_pointer<NativeType>::type).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return result ? *result : nullptr;
     }
@@ -192,21 +146,10 @@ struct qtjambi_jnitype_caster<forward, has_scope,
 
 //template for any QObject(&/*) and non-QObject
 
-template<bool has_scope,
-         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_q_object>
+template<bool forward, bool has_scope,
+         typename NativeType, bool is_pointer, bool is_const, bool is_reference, bool is_q_object, bool is_polymorphic>
 struct qtjambi_jnitype_qobject_decider_cast{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *, NativeType_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return jobject();
-    }
-    static NativeType_out castbck(JNIEnv *, jobject, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool forward, bool has_scope,
@@ -214,7 +157,7 @@ template<bool forward, bool has_scope,
 struct qtjambi_jnitype_caster<forward, has_scope,
         jobject,
         NativeType, false, false, is_pointer, is_const, is_reference, false, false>
-        : qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, is_pointer, is_const, is_reference, std::is_base_of<QObject, NativeType>::value>
+        : qtjambi_jnitype_qobject_decider_cast<forward, has_scope, NativeType, is_pointer, is_const, is_reference, std::is_base_of<QObject, NativeType>::value, std::is_polymorphic<NativeType>::value>
 {
 };
 
@@ -222,19 +165,27 @@ struct qtjambi_jnitype_caster<forward, has_scope,
 
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, true, is_const, is_reference, true>{
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, is_const, is_reference, true, true>{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    static jobject castfwd(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qobject(env, in, typeid(NativeType));
     }
+};
 
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, true, is_const, is_reference, true, true>{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -244,20 +195,30 @@ struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, true, is_cons
 
 template<bool has_scope,
          typename NativeType, bool is_const>
-struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, false, is_const, true, true>{
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, false, is_const, true, true, true>{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    static jobject castfwd(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qobject(env, &in, typeid(NativeType));
     }
+};
 
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
+template<bool has_scope,
+         typename NativeType, bool is_const>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, false, is_const, true, true, true>{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
+        if(!result)
+            JavaException::raiseNullPointerException(env, qPrintable(QString("Cannot cast null to reference type %1").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         return *result;
     }
 };
@@ -266,23 +227,50 @@ struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, false, is_con
 
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, true, is_const, is_reference, false>{
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    static jobject castfwd(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
+    static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
         jobject o = qtjambi_from_object(env, in, typeid(NativeType), false, false);
         if(scope){
-            scope->addFinalAction([env, o](){qtjambi_invalidate_object(env, o); env->DeleteLocalRef(o); });
+            scope->addFinalAction([env, o](){qtjambi_invalidate_object(env, o);});
         }
         return o;
     }
+};
 
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference>
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, is_const, is_reference, false, true>{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
+        jobject o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
+        if(!o){
+            o = qtjambi_from_object(env, in, typeid(NativeType), false, false);
+            if(scope){
+                scope->addFinalAction([env, o](){qtjambi_invalidate_object(env, o);});
+            }
+        }
+        return o;
+    }
+};
+
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, true, is_const, is_reference, false, is_polymorphic>{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
+    typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -293,38 +281,48 @@ struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, true, is_cons
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference, bool is_copy_assignable>
 struct qtjambi_jnitype_copy_assignable_decider_cast{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    static NativeType_cr castbck(JNIEnv *, jobject, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool has_scope,
-         typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_jnitype_qobject_decider_cast<has_scope, NativeType, false, is_const, is_reference, false>
-        : qtjambi_jnitype_copy_assignable_decider_cast<has_scope, NativeType, is_const, is_reference, std::is_copy_assignable<NativeType>::value>
+         typename NativeType, bool is_const, bool is_reference, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, false, is_const, is_reference, false, is_polymorphic>
 {
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef typename std::add_lvalue_reference<typename std::add_const<NativeType>::type>::type NativeType_in;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    static jobject castfwd(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_object(env, &in, typeid(NativeType), true, false);
     }
 };
 
 template<bool has_scope,
+         bool is_const, bool is_reference>
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, QVariant, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QVariant>::type, QVariant>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<typename std::add_const<QVariant>::type>::type NativeType_in;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<QVariant>::type NativeType_ptr;
+    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
+        return qtjambi_from_qvariant(env, in);
+    }
+};
+
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, NativeType, false, is_const, is_reference, false, is_polymorphic>
+        : qtjambi_jnitype_copy_assignable_decider_cast<has_scope, NativeType, is_const, is_reference, std::is_copy_assignable<NativeType>::value>
+{
+};
+
+template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference, bool dont_use_pointer>
 struct qtjambi_jnitype_use_pointer_decider_cast{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    static NativeType_cr castbck(JNIEnv *, jobject, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool has_scope,
@@ -340,25 +338,55 @@ struct qtjambi_jnitype_copy_assignable_decider_cast<has_scope, NativeType, is_co
 {
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    static NativeType_cr castbck(JNIEnv * env, jobject in, const char* nativeTypeName, QtJambiScope*){
+    static NativeType_cr cast(JNIEnv * env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType* result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return checked_deref<NativeType>(env, result);
     }
 };
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QVariant, is_const, is_reference, true /*dont_use_pointer*/>{
+    typedef typename std::conditional<is_const, typename std::add_const<QVariant>::type, QVariant>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QVariant reference");
+
+    static NativeType_cr cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
+        return qtjambi_to_qvariant(env, in);
+    }
+};
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#ifdef QABSTRACTITEMMODEL_H
+template<bool is_const, bool is_reference>
+struct qtjambi_jnitype_use_pointer_decider_cast<true, QModelRoleDataSpan, is_const, is_reference, true /*dont_use_pointer*/>{
+    typedef typename std::conditional<is_const, typename std::add_const<QModelRoleDataSpan>::type, QVariant>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QVariant reference");
+
+    static QModelRoleDataSpan cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        void *data(nullptr);
+        qsizetype length(0);
+        qtjambi_to_QModelRoleData(env, *scope, in, data, length);
+        return QModelRoleDataSpan(reinterpret_cast<QModelRoleData*>(data), length);
+    }
+};
+#endif
+#endif
 
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference>
 struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const, is_reference, true /*dont_use_pointer*/>{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    static NativeType_cr castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to value reference");
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to value reference");
+
+    static NativeType_cr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType result;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -371,10 +399,10 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
 
-    static NativeType_cr castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
+    static NativeType_cr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType_ptr result = nullptr;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return qtjambi_deref_value<NativeType, supports_StandardConstructor<NativeType>::value, is_const, is_reference>::deref(env, result);
     }
@@ -385,14 +413,7 @@ struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, NativeType, is_const,
 template<bool has_scope,
          typename NativeType, bool is_arithmetic, bool is_enum, bool is_pointer, bool is_const, bool is_reference, bool is_function, bool is_template>
 struct qtjambi_jstring_caster{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *, jstring, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType();
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool has_scope, bool is_arithmetic, bool is_enum, bool is_const, bool is_function, bool is_template>
@@ -401,7 +422,7 @@ struct qtjambi_jstring_caster<has_scope, QString, is_arithmetic, is_enum, false,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope*){
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope*){
         QString result;
         if(!qtjambi_convert_to_native(env, typeid(QString), nativeTypeName, in, &result)){
             JavaException::raiseRuntimeException(env, "Cannot cast to type QString" QTJAMBI_STACKTRACEINFO );
@@ -416,9 +437,10 @@ struct qtjambi_jstring_caster<has_scope, QString, is_arithmetic, is_enum, is_poi
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QString & without scope.");
-        Q_STATIC_ASSERT_X(!is_pointer || has_scope, "Cannot cast to QString* without scope.");
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QString & without scope.");
+    Q_STATIC_ASSERT_X(!is_pointer || has_scope, "Cannot cast to QString* without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
         if((is_reference || is_pointer) && !scope)
             JavaException::raiseError(env, "Cannot cast to QString pointer or reference without scope." QTJAMBI_STACKTRACEINFO );
         QString* result = new QString();
@@ -430,15 +452,17 @@ struct qtjambi_jstring_caster<has_scope, QString, is_arithmetic, is_enum, is_poi
     }
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<bool has_scope, bool is_arithmetic, bool is_enum, bool is_const, bool is_reference, bool is_function, bool is_template>
 struct qtjambi_jstring_caster<has_scope, QStringRef, is_arithmetic, is_enum, false, is_const, is_reference, is_function, is_template>{
     typedef typename std::conditional<is_const, typename std::add_const<QStringRef>::type, QStringRef>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -457,8 +481,9 @@ struct qtjambi_jstring_caster<has_scope, QStringRef, is_arithmetic, is_enum, tru
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -471,6 +496,7 @@ struct qtjambi_jstring_caster<has_scope, QStringRef, is_arithmetic, is_enum, tru
         return ref;
     }
 };
+#endif
 
 template<bool has_scope, bool is_arithmetic, bool is_enum, bool is_const, bool is_reference, bool is_function, bool is_template>
 struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, false, is_const, is_reference, is_function, is_template>{
@@ -478,15 +504,15 @@ struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, fa
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-        const jchar* chars = env->GetStringChars(in, nullptr);
-        jsize length = env->GetStringLength(in);
-        scope->addFinalAction([chars, env, in](){env->ReleaseStringChars(in, chars);});
-        return QStringView(chars, length);
+        JString2QChars* buffer = new JString2QChars(env, in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toStringView();
     }
 };
 
@@ -496,14 +522,14 @@ struct qtjambi_jstring_caster<has_scope, QStringView, is_arithmetic, is_enum, tr
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-        const jchar* chars = env->GetStringChars(in, nullptr);
-        jsize length = env->GetStringLength(in);
-        QStringView* ref = new QStringView(chars, length);
-        scope->addFinalAction([chars, env, in, ref](){delete ref; env->ReleaseStringChars(in, chars); });
+        JString2QChars* buffer = new JString2QChars(env, in);
+        QStringView* ref = new QStringView(buffer->data(), buffer->length());
+        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
         return ref;
     }
 };
@@ -514,15 +540,15 @@ struct qtjambi_jstring_caster<has_scope, QLatin1String, is_arithmetic, is_enum, 
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        const char* chars = env->GetStringUTFChars(in, nullptr);
-        jsize length = env->GetStringUTFLength(in);
-        scope->addFinalAction([chars, env, in](){env->ReleaseStringUTFChars(in, chars);});
-        return QLatin1String(chars, length);
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toLatin1String();
     }
 };
 
@@ -532,21 +558,22 @@ struct qtjambi_jstring_caster<has_scope, QLatin1String, is_arithmetic, is_enum, 
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        const char* chars = env->GetStringUTFChars(in, nullptr);
-        jsize length = env->GetStringUTFLength(in);
-        QLatin1String* ref = new QLatin1String(chars, length);
-        scope->addFinalAction([chars, env, in, ref](){delete ref; env->ReleaseStringUTFChars(in, chars); });
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
+        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
         return ref;
     }
 };
 
-template<bool forward, bool has_scope,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template<bool has_scope,
          bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QStringRef, false, false, false, is_const, is_reference, false, false>
 {
@@ -554,12 +581,25 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstringref(env, in);
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+};
+
+template<bool has_scope,
+         bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QStringRef, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringRef>::type, QStringRef>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -572,9 +612,9 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     }
 };
 
-template<bool forward, bool has_scope,
+template<bool has_scope,
          bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QStringRef, false, false, false, is_const, is_reference, false, false>
 {
@@ -582,12 +622,24 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstringref(env, in);
     }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QStringRef, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringRef>::type, QStringRef>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringRef &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -600,9 +652,8 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QStringRef, false, false, true, is_const, false, false, false>
 {
@@ -610,11 +661,23 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstringref(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QStringRef, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringRef>::type, QStringRef>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -628,9 +691,8 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QStringRef, false, false, true, is_const, false, false, false>
 {
@@ -638,11 +700,23 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstringref(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QStringRef, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringRef>::type, QStringRef>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringRef without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char* nativeTypeName, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringRef without scope." QTJAMBI_STACKTRACEINFO );
         QString *result = new QString();
@@ -655,10 +729,10 @@ struct qtjambi_jnitype_caster<forward, has_scope,
         return ref;
     }
 };
+#endif
 
-template<bool forward, bool has_scope,
-         bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QStringView, false, false, false, is_const, is_reference, false, false>
 {
@@ -666,24 +740,34 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstringview(env, in);
-    }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-        const jchar* chars = env->GetStringChars(in, nullptr);
-        jsize length = env->GetStringLength(in);
-        scope->addFinalAction([chars, env, in](){env->ReleaseStringChars(in, chars);});
-        return QStringView(chars, length);
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QStringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringView>::type, QStringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
+        JString2QChars* buffer = new JString2QChars(env, in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toStringView();
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QStringView, false, false, false, is_const, is_reference, false, false>
 {
@@ -691,25 +775,35 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstringview(env, in);
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QStringView, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringView>::type, QStringView>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QStringView &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
-        const jchar* chars = env->GetStringChars(_in, nullptr);
-        jsize length = env->GetStringLength(_in);
-        scope->addFinalAction([chars, env, _in](){env->ReleaseStringChars(_in, chars);});
-        return QStringView(chars, length);
+        JString2QChars* buffer = new JString2QChars(env, _in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toStringView();
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QStringView, false, false, true, is_const, false, false, false>
 {
@@ -717,24 +811,34 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstringview(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QStringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringView>::type, QStringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
-        const jchar* chars = env->GetStringChars(in, nullptr);
-        jsize length = env->GetStringLength(in);
-        QStringView* ref = new QStringView(chars, length);
-        scope->addFinalAction([chars, env, in, ref](){delete ref; env->ReleaseStringChars(in, chars);});
+        JString2QChars* buffer = new JString2QChars(env, in);
+        QStringView* ref = new QStringView(buffer->constData(), buffer->length());
+        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
         return ref;
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QStringView, false, false, true, is_const, false, false, false>
 {
@@ -742,25 +846,35 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstringview(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QStringView, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QStringView>::type, QStringView>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QStringView without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
-        const jchar* chars = env->GetStringChars(_in, nullptr);
-        jsize length = env->GetStringLength(_in);
-        QStringView* ref = new QStringView(chars, length);
-        scope->addFinalAction([chars, env, _in, ref](){delete ref; env->ReleaseStringChars(_in, chars);});
+        JString2QChars* buffer = new JString2QChars(env, _in);
+        QStringView* ref = new QStringView(buffer->constData(), buffer->length());
+        scope->addFinalAction([ref, buffer](){delete ref; delete buffer;});
         return ref;
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QLatin1String, false, false, false, is_const, is_reference, false, false>
 {
@@ -768,24 +882,34 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstring(env, in);
-    }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        const char* chars = env->GetStringUTFChars(in, nullptr);
-        jsize length = env->GetStringUTFLength(in);
-        scope->addFinalAction([chars, env, in](){env->ReleaseStringUTFChars(in, chars);});
-        return QLatin1String(chars, length);
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QLatin1String, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1String>::type, QLatin1String>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toLatin1String();
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QLatin1String, false, false, false, is_const, is_reference, false, false>
 {
@@ -793,25 +917,36 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_qstring(env, in);
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
-        if(!scope)
-            JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        jstring _in = qtjambi_to_jstring(env, in);
-        const char* chars = env->GetStringUTFChars(_in, nullptr);
-        jsize length = env->GetStringUTFLength(_in);
-        scope->addFinalAction([chars, env, _in](){env->ReleaseStringUTFChars(_in, chars);});
-        return QLatin1String(chars, length);
     }
 };
 
-template<bool forward, bool has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QLatin1String, false, false, false, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1String>::type, QLatin1String>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QLatin1String &.");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
+        jstring _in = qtjambi_to_jstring(env, in);
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
+        scope->addFinalAction([buffer](){delete buffer;});
+        return buffer->toLatin1String();
+    }
+};
+
+template<bool has_scope,
          bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+struct qtjambi_jnitype_caster<true, has_scope,
         jstring,
         QLatin1String, false, false, true, is_const, false, false, false>
 {
@@ -819,24 +954,34 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jstring cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstring(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jstring,
+        QLatin1String, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1String>::type, QLatin1String>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jstring in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
-        const char* chars = env->GetStringUTFChars(in, nullptr);
-        jsize length = env->GetStringUTFLength(in);
-        QLatin1String* ref = new QLatin1String(chars, length);
-        scope->addFinalAction([chars, env, in, ref](){delete ref; env->ReleaseStringUTFChars(in, chars);});
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, in);
+        QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
+        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
         return ref;
     }
 };
 
-template<bool forward, bool has_scope,
-         bool is_const>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QLatin1String, false, false, true, is_const, false, false, false>
 {
@@ -844,56 +989,91 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return in ? qtjambi_from_qstring(env, *in) : nullptr;
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QLatin1String, false, false, true, is_const, false, false, false>
+{
+    typedef typename std::conditional<is_const, typename std::add_const<QLatin1String>::type, QLatin1String>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<true, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QLatin1String without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         if(!scope)
             JavaException::raiseError(env, "Cannot cast to QLatin1String without scope." QTJAMBI_STACKTRACEINFO );
         jstring _in = qtjambi_to_jstring(env, in);
-        const char* chars = env->GetStringUTFChars(_in, nullptr);
-        jsize length = env->GetStringUTFLength(_in);
-        QLatin1String* ref = new QLatin1String(chars, length);
-        scope->addFinalAction([chars, env, _in, ref](){delete ref; env->ReleaseStringUTFChars(_in, chars);});
+        J2CStringBuffer* buffer = new J2CStringBuffer(env, _in);
+        QLatin1String* ref = new QLatin1String(buffer->data(), buffer->length());
+        scope->addFinalAction([buffer, ref](){delete ref; delete buffer; });
         return ref;
     }
 };
 
-template<bool forward, bool has_scope,
+template<bool has_scope,
+         bool is_const, bool is_reference, bool is_function, bool is_template>
+struct qtjambi_jnitype_caster<true, has_scope, jstring, _jobject, false, false, true, is_const, is_reference, is_function, is_template>
+{
+    constexpr static jstring cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
+        return qtjambi_to_jstring(env, in);
+    }
+};
+
+template<bool has_scope,
          typename NativeType, bool is_arithmetic, bool is_enum, bool is_pointer, bool is_const, bool is_reference, bool is_function, bool is_template>
-struct qtjambi_jnitype_caster<forward, has_scope, jstring, NativeType, is_arithmetic, is_enum, is_pointer, is_const, is_reference, is_function, is_template>
-        : qtjambi_jstring_caster<has_scope, NativeType, is_arithmetic, is_enum, is_pointer, is_const, is_reference, is_function, is_template>
+struct qtjambi_jnitype_caster<true, has_scope, jstring, NativeType, is_arithmetic, is_enum, is_pointer, is_const, is_reference, is_function, is_template>
 {
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jstring castfwd(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope* scope){
-        jobject result = qtjambi_scoped_cast<has_scope,jobject,NativeType_in>::cast(env, in, nativeTypeName, scope);
-        return qtjambi_to_jstring(env, result);
+    constexpr static jstring cast(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope* scope){
+        return qtjambi_to_jstring(env, qtjambi_scoped_cast<has_scope,jobject,NativeType_in>::cast(env, in, nativeTypeName, scope));
     }
 };
 
+template<bool has_scope,
+         typename NativeType, bool is_arithmetic, bool is_enum, bool is_pointer, bool is_const, bool is_reference, bool is_function, bool is_template>
+struct qtjambi_jnitype_caster<false, has_scope, jstring, NativeType, is_arithmetic, is_enum, is_pointer, is_const, is_reference, is_function, is_template>
+        : qtjambi_jstring_caster<has_scope, NativeType, is_arithmetic, is_enum, is_pointer, is_const, is_reference, is_function, is_template>{};
+
 // enums
 
-template<bool forward, bool has_scope,
+template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         NativeType, false, true, false, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_object(env, &in, typeid(NativeType), false, false);
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to enumerator reference");
+};
+
+template<bool has_scope,
+         typename NativeType, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        NativeType, false, true, false, is_const, is_reference, false, false>{
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef NativeType_cr NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to enumerator reference");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope*){
         NativeType result;
         if(!qtjambi_convert_to_native(env, typeid(NativeType), nativeTypeName, in, &result)){
-            JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(NativeType).name())) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(in ? qtjambi_object_class_name(env, in) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
         }
         return result;
     }
@@ -901,20 +1081,9 @@ struct qtjambi_jnitype_caster<forward, has_scope,
 
 // object <=> arithmetic
 
-template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_integral, bool a_is_floating_point, bool a_is_signed, size_t a_size>
+template<bool forward, bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_integral, bool a_is_floating_point, bool a_is_signed, size_t a_size>
 struct qtjambi_jnitype_arithmetic_caster{
-    typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
-    typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *, NativeType_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return nullptr;
-    }
-    static NativeType_out castbck(JNIEnv *, jobject, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-        return NativeType(0);
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
 template<bool forward, bool has_scope, typename NativeType, bool is_const, bool is_reference>
@@ -922,6 +1091,7 @@ struct qtjambi_jnitype_caster<forward, has_scope,
         jobject,
         NativeType, true, false, false, is_const, is_reference, false, false>
         : qtjambi_jnitype_arithmetic_caster<
+            forward,
             has_scope,
             NativeType,
             is_const,
@@ -929,163 +1099,248 @@ struct qtjambi_jnitype_caster<forward, has_scope,
             std::is_integral<NativeType>::value,
             std::is_floating_point<NativeType>::value,
             std::is_signed<NativeType>::value,
-            sizeof(NativeType)>
-{
+            sizeof(NativeType)>{};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jbyte)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_byte(env, jbyte(in));
+    }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jbyte)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_byte(env, jbyte(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_byte(env, in));
     }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jshort)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_short(env, jshort(in));
+    }
+};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jshort)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_short(env, jshort(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_short(env, in));
     }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jint)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_int(env, jint(in));
+    }
+};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jint)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_int(env, jint(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_int(env, in));
     }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jlong)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_long(env, jlong(in));
+    }
+};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, true, false, a_is_signed, sizeof(jlong)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_long(env, jlong(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_long(env, in));
     }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, false, true, a_is_signed, sizeof(jdouble)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_double(env, jdouble(in));
+    }
+};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, false, true, a_is_signed, sizeof(jdouble)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_double(env, jdouble(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_double(env, in));
     }
 };
 
 template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
-struct qtjambi_jnitype_arithmetic_caster<has_scope,
+struct qtjambi_jnitype_arithmetic_caster<true, has_scope,
+        NativeType, a_is_const, a_is_reference, false, true, a_is_signed, sizeof(jfloat)>{
+    constexpr static jobject cast(JNIEnv *env, NativeType in, const char*, QtJambiScope*){
+        return qtjambi_from_float(env, jfloat(in));
+    }
+};
+
+template<bool has_scope, typename NativeType, bool a_is_const, bool a_is_reference, bool a_is_signed>
+struct qtjambi_jnitype_arithmetic_caster<false, has_scope,
         NativeType, a_is_const, a_is_reference, false, true, a_is_signed, sizeof(jfloat)>{
     typedef typename std::conditional<a_is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<a_is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return qtjambi_from_float(env, jfloat(in));
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+    Q_STATIC_ASSERT_X(!a_is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return NativeType(qtjambi_to_float(env, in));
     }
 };
 
-template<bool forward, bool has_scope, bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         wchar_t, true, false, false, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<wchar_t>::type, wchar_t>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_char(env, in);
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to arithmetic reference");
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        wchar_t, true, false, false, is_const, is_reference, false, false>{
+    typedef typename std::conditional<is_const, typename std::add_const<wchar_t>::type, wchar_t>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef NativeType_cr NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return qtjambi_to_char(env, in);
     }
 };
 
-template<bool forward, bool has_scope, bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         bool, true, false, false, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<bool>::type, bool>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_boolean(env, jboolean(in));
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to arithmetic reference");
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        bool, true, false, false, is_const, is_reference, false, false>{
+    typedef typename std::conditional<is_const, typename std::add_const<bool>::type, bool>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef NativeType_cr NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to arithmetic reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return qtjambi_to_boolean(env, in);
     }
 };
 
 // QChar
 
-template<bool forward, bool has_scope, bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
         jobject,
         QChar, false, false, false, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<QChar>::type, QChar>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+    constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return qtjambi_from_char(env, in.unicode());
     }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to QChar reference");
+};
+
+template<bool has_scope, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
+        jobject,
+        QChar, false, false, false, is_const, is_reference, false, false>{
+    typedef typename std::conditional<is_const, typename std::add_const<QChar>::type, QChar>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
+    typedef NativeType_cr NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to QChar reference");
+
+    constexpr static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return QChar(qtjambi_to_char(env, in));
     }
 };
 
 // QStringList
 
-template<bool forward, bool has_scope, bool is_pointer, bool is_const, bool is_reference>
-struct qtjambi_jnitype_caster<forward, has_scope,
+template<bool has_scope, bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<true, has_scope,
+        jobject,
+        QStringList, false, false, is_pointer, is_const, is_reference, false, false>
+{
+    typedef typename std::conditional<is_const, const QStringList,QStringList>::type Container;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
+    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
+        return qtjambi_from_QStringList(env,
+                                  scope ? scope->relatedNativeID() : InvalidNativeID,
+                                  ref_ptr<is_pointer, Container>::ref(in),
+                                  is_pointer ? nullptr : CopyFunction([](const void* ptr) -> void* { return new QStringList(*reinterpret_cast<const QStringList*>(ptr)); }),
+                                  [](void* ptr) { delete reinterpret_cast<QStringList*>(ptr); },
+                                  is_pointer && is_const
+                                );
+    }
+};
+
+template<bool has_scope, bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_caster<false, has_scope,
         jobject,
         QStringList, false, false, is_pointer, is_const, is_reference, false, false>{
     typedef typename std::conditional<is_const, typename std::add_const<QStringList>::type, QStringList>::type NativeType_c;
@@ -1098,11 +1353,8 @@ struct qtjambi_jnitype_caster<forward, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_c>::type NativeType_ptr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject castfwd(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
-        return qtjambi_jnitype_container1_cast<forward,has_scope,jobject,QList,is_pointer,is_const,is_reference,QString>::castfwd(env, in, nullptr, scope);
-    }
-    static NativeType_out castbck(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        NativeType2_ptr_out result = qtjambi_jnitype_container1_cast<forward,has_scope,jobject,QList,is_pointer,is_const,is_reference,QString>::castbck(env, in, nullptr, scope);
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        NativeType2_ptr_out result = qtjambi_jnitype_container1_cast<false,has_scope,jobject,QList,is_pointer,is_const,is_reference,QString>::cast(env, in, nullptr, scope);
         return *reinterpret_cast<NativeType_ptr*>(&result);
     }
 };

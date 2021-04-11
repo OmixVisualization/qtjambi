@@ -327,6 +327,11 @@ void DefaultVisitor::visitSizeofExpression(SizeofExpressionAST *node) {
     visit(node->expression);
 }
 
+void DefaultVisitor::visitAlignofExpression(AlignofExpressionAST *node) {
+    visit(node->type_id);
+    visit(node->expression);
+}
+
 void DefaultVisitor::visitTypeidExpression(TypeidExpressionAST *node) {
     visit(node->type_id);
 }

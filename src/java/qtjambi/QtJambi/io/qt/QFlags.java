@@ -56,7 +56,7 @@ import io.qt.internal.QtJambiInternal;
  * clear flags, and query which flags are set.
  */
 @SuppressWarnings("serial")
-public abstract class QFlags<T extends QtFlagEnumerator>
+public abstract class QFlags<T extends QtAbstractFlagEnumerator>
     implements java.io.Serializable,
                Cloneable
 {
@@ -114,7 +114,15 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       * @return this
       */
      public QFlags<T> setFlag(T flag) {
-    	 value |= flag.value();
+    	 if(flag instanceof QtFlagEnumerator) {
+    		 value |= ((QtFlagEnumerator)flag).value();
+    	 }else if(flag instanceof QtByteFlagEnumerator) {
+    		 value |= ((QtByteFlagEnumerator)flag).value();
+    	 }else if(flag instanceof QtShortFlagEnumerator) {
+    		 value |= ((QtShortFlagEnumerator)flag).value();
+    	 }else if(flag instanceof QtLongFlagEnumerator) {
+    		 value |= ((QtLongFlagEnumerator)flag).value();
+    	 }
     	 return this;
      }
 
@@ -125,10 +133,27 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       * @return this
       */
      public QFlags<T> setFlag(T flag, boolean on) {
-    	 if(on)
-    		 value |= flag.value();
-    	 else 
-    		 value &= ~flag.value();
+    	 if(on) {
+    		 if(flag instanceof QtFlagEnumerator) {
+        		 value |= ((QtFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtByteFlagEnumerator) {
+        		 value |= ((QtByteFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtShortFlagEnumerator) {
+        		 value |= ((QtShortFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtLongFlagEnumerator) {
+        		 value |= ((QtLongFlagEnumerator)flag).value();
+        	 }
+    	 }else {
+    		 if(flag instanceof QtFlagEnumerator) {
+        		 value &= ~((QtFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtByteFlagEnumerator) {
+        		 value &= ~((QtByteFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtShortFlagEnumerator) {
+        		 value &= ~((QtShortFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtLongFlagEnumerator) {
+        		 value &= ~((QtLongFlagEnumerator)flag).value();
+        	 }
+    	 }
     	 return this;
      }
 
@@ -137,8 +162,17 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       */
      @SafeVarargs
 	 public final void set(T ... ts) {
-         for (T t : ts)
-             value |= t.value();
+         for (T flag : ts) {
+        	 if(flag instanceof QtFlagEnumerator) {
+        		 value |= ((QtFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtByteFlagEnumerator) {
+        		 value |= ((QtByteFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtShortFlagEnumerator) {
+        		 value |= ((QtShortFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtLongFlagEnumerator) {
+        		 value |= ((QtLongFlagEnumerator)flag).value();
+        	 }
+         }
      }
 
     /**
@@ -157,9 +191,24 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       */
      @SafeVarargs
 	 public final boolean isSet(T ... ts) {
-         for (T t : ts) {
-             if ((t.value() & value) != t.value())
-                  return false;
+         for (T flag : ts) {
+        	 if(flag instanceof QtFlagEnumerator) {
+        		 QtFlagEnumerator t = (QtFlagEnumerator)flag;
+                 if ((t.value() & value) != t.value())
+                     return false;
+        	 }else if(flag instanceof QtByteFlagEnumerator) {
+        		 QtByteFlagEnumerator t = (QtByteFlagEnumerator)flag;
+                 if ((t.value() & value) != t.value())
+                     return false;
+        	 }else if(flag instanceof QtShortFlagEnumerator) {
+        		 QtShortFlagEnumerator t = (QtShortFlagEnumerator)flag;
+                 if ((t.value() & value) != t.value())
+                     return false;
+        	 }else if(flag instanceof QtLongFlagEnumerator) {
+        		 QtLongFlagEnumerator t = (QtLongFlagEnumerator)flag;
+                 if ((t.value() & value) != t.value())
+                     return false;
+        	 }
          }
          return true;
      }
@@ -170,7 +219,20 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       * @return true if flag <code>other</code> is set
       */
       public final boolean testFlag(T flag) {
-          return (value & flag.value()) == flag.value();
+    	  if(flag instanceof QtFlagEnumerator) {
+     		 QtFlagEnumerator t = (QtFlagEnumerator)flag;
+     		return (value & t.value()) == t.value();
+     	 }else if(flag instanceof QtByteFlagEnumerator) {
+     		 QtByteFlagEnumerator t = (QtByteFlagEnumerator)flag;
+     		return (value & t.value()) == t.value();
+     	 }else if(flag instanceof QtShortFlagEnumerator) {
+     		 QtShortFlagEnumerator t = (QtShortFlagEnumerator)flag;
+     		return (value & t.value()) == t.value();
+     	 }else if(flag instanceof QtLongFlagEnumerator) {
+     		 QtLongFlagEnumerator t = (QtLongFlagEnumerator)flag;
+     		return (value & t.value()) == t.value();
+     	 }
+         return false;
       }
 
      /**
@@ -186,8 +248,17 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       */
      @SafeVarargs
 	 public final void clear(T ... ts) {
-         for (T t : ts)
-             value &= ~t.value();
+         for (T flag : ts) {
+        	 if(flag instanceof QtFlagEnumerator) {
+        		 value &= ~((QtFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtByteFlagEnumerator) {
+        		 value &= ~((QtByteFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtShortFlagEnumerator) {
+        		 value &= ~((QtShortFlagEnumerator)flag).value();
+        	 }else if(flag instanceof QtLongFlagEnumerator) {
+        		 value &= ~((QtLongFlagEnumerator)flag).value();
+        	 }
+         }
      }
 
      /**
@@ -233,7 +304,17 @@ public abstract class QFlags<T extends QtFlagEnumerator>
     	 java.util.List<T> result = new ArrayList<>();
     	 T zeroValue = null;
     	 for (T possibleValue : possibleValues) {
-    		 if(possibleValue.value()==0) {
+    		 boolean isNull = false;
+    		 if(possibleValue instanceof QtFlagEnumerator) {
+    			 isNull = 0==((QtFlagEnumerator)possibleValue).value();
+        	 }else if(possibleValue instanceof QtByteFlagEnumerator) {
+        		 isNull = 0==((QtByteFlagEnumerator)possibleValue).value();
+        	 }else if(possibleValue instanceof QtShortFlagEnumerator) {
+        		 isNull = 0==((QtShortFlagEnumerator)possibleValue).value();
+        	 }else if(possibleValue instanceof QtLongFlagEnumerator) {
+        		 isNull = 0==((QtLongFlagEnumerator)possibleValue).value();
+        	 }
+    		 if(isNull) {
     			 zeroValue = possibleValue;
     		 }else {
 	 			 if(this.isSet(possibleValue)) {
@@ -274,7 +355,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
       */
      @Override
      public final String toString() {
-    	 QtFlagEnumerator[] flags = flags();
+    	 QtAbstractFlagEnumerator[] flags = flags();
     	 String className = this.getClass().getName();
     	 int idx = className.lastIndexOf('.');
     	 if(idx>0) {
@@ -304,7 +385,7 @@ public abstract class QFlags<T extends QtFlagEnumerator>
     		 result.append(hexString);    		 
     	 }else {
 	    	 int initialLength = result.length();
-	    	 for(QtFlagEnumerator flag : flags) {
+	    	 for(QtAbstractFlagEnumerator flag : flags) {
 	    		 if(result.length()>initialLength) {
 	    			 result.append('|');
 	    		 }

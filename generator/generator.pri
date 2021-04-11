@@ -33,7 +33,6 @@ HEADERS += \
         $$GENERATORPATH/typesystem/codesnip.h \
         $$GENERATORPATH/typesystem/handler.h \
         $$GENERATORPATH/typesystem/modification.h \
-        $$GENERATORPATH/typesystem/stackelement.h \
         $$GENERATORPATH/typesystem/typedatabase.h \
         $$GENERATORPATH/typesystem/typeentry.h \
         $$GENERATORPATH/asttoxml.h \
@@ -53,7 +52,8 @@ HEADERS += \
         $$GENERATORPATH/docindex/docmodel.h \
         $$GENERATORPATH/docindex/docvariable.h \
         $$GENERATORPATH/docindex/docproperty.h \
-        $$PWD/docindex/docnamespace.h
+        $$PWD/docindex/docnamespace.h \
+        $$PWD/docindex/doctypedef.h
 
 SOURCES += \
         $$GENERATORPATH/generator.cpp \
@@ -87,11 +87,12 @@ SOURCES += \
         $$GENERATORPATH/docindex/docmodel.cpp \
         $$GENERATORPATH/docindex/docvariable.cpp \
         $$GENERATORPATH/docindex/docproperty.cpp \
-        $$PWD/docindex/docnamespace.cpp
+        $$PWD/docindex/docnamespace.cpp \
+        $$PWD/docindex/doctypedef.cpp
 
 
 
-QT = core xml network
+QT = core xml network concurrent
 
 win32{
         PRECOMPILED_HEADER = generator_pch.h

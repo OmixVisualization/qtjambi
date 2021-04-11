@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -308,11 +308,17 @@ public class PlatformJarTask extends Task {
             throw new BuildException("Failed to open 'qtjambi-deployment.xml' for writing in '" + outdir + "'");
         }
 
-        writer.println("<qtjambi-deploy" + " system=\""
-                            + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME).toString()) + "\">");
-        writer.println();
-        writer.println("  <cache key=\"" + xmlEscape(cacheKey) + "\"/>");
-
+        writer.println("<qtjambi-deploy system=\""
+                            + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME).toString()) + "\"");
+        writer.println("                version=\"" + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.version").toString()) + "\"");
+        writer.println("                compiler=\"" + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.compiler").toString()) + "\"");
+        if(Boolean.TRUE.equals(this.debug)) {
+        	writer.println("                configuration=\"debug\"");
+        }else {
+        	writer.println("                configuration=\"release\"");
+        }
+        writer.println("                date=\"" + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, "DSTAMP").toString()) + "\"");
+        writer.println("                time=\"" + xmlEscape(AntUtil.getPropertyAsString(propertyHelper, "TSTAMP").toString()) + "\">");
         writeDirectoryElementTree(writer, directoryList);
 
         // system libraries that must be loaded first of all...
@@ -792,10 +798,12 @@ public class PlatformJarTask extends Task {
         
         if(absolutePath == null && e.getType().equals(LibraryEntry.TYPE_FILESET)){
         	names = new ArrayList<String>();
-        	for(String strg : srcDir.list()){
-        		if(strg.matches(e.getName())){
-        			names.add(strg);
-        		}
+        	if(srcDir!=null && srcDir.isDirectory()) {
+	        	for(String strg : srcDir.list()){
+	        		if(strg.matches(e.getName())){
+	        			names.add(strg);
+	        		}
+	        	}
         	}
         }
 
@@ -847,6 +855,73 @@ public class PlatformJarTask extends Task {
 	                	}
 		                Util.copy(srcFile, destFile);
 		                e.setPacked();
+		                if(e.getType().equals(LibraryEntry.TYPE_QT) || e.getType().equals(LibraryEntry.TYPE_QTJAMBI_JNI)) {
+			                if(e.getDsoVersion() == null || e.getDsoVersion().compareToIgnoreCase("no-version") != 0) {
+			                    int qtMajorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
+			                    int qtMinorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
+			                    String libInfix = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_QT_LIBINFIX);
+			                	switch(OSInfo.crossOS()) {
+			                    case MacOS:
+			                    case Solaris:
+			                    case Linux:
+			                    case FreeBSD:
+			        				Path target = Path.of(destFile.getName());
+			                    	File link;
+			                    	String name;
+			                    	if(e.getType().equals(LibraryEntry.TYPE_QT)) {
+			                    		name = LibraryEntry.formatQtName(e.getOriginalname(), libInfix, debug, qtMajorVersion, qtMinorVersion, -1);
+			                    	}else {
+			                    		name = LibraryEntry.formatQtJambiJniName(e.getOriginalname(), debug, qtMajorVersion, qtMinorVersion, -1);
+			                    	}
+			        				link = new File(destFile.getParentFile(), name);
+			        				if(!link.exists()) {
+			        					try{
+			        						Files.createSymbolicLink(link.toPath(), target);
+			        					}catch(java.nio.file.FileAlreadyExistsException ex) {
+				    					} catch (Exception ex) {
+				    						ex.printStackTrace();
+				    					}
+			        				}
+		    						symlinks.add(new SimpleEntry<>(outputPath+"/"+name, outputPath+"/"+destFile.getName()));
+			                    	if(e.getType().equals(LibraryEntry.TYPE_QT)) {
+			                    		name = LibraryEntry.formatQtName(e.getOriginalname(), libInfix, debug, qtMajorVersion, -1, -1);
+			                    	}else {
+			                    		name = LibraryEntry.formatQtJambiJniName(e.getOriginalname(), debug, qtMajorVersion, -1, -1);
+			                    	}
+			        				link = new File(destFile.getParentFile(), name);
+			        				if(!link.exists()) {
+			        					try{
+			        						Files.createSymbolicLink(link.toPath(), target);
+			        					}catch(java.nio.file.FileAlreadyExistsException ex) {
+				    					} catch (Exception ex) {
+				    						ex.printStackTrace();
+				    					}
+			        				}
+		    						symlinks.add(new SimpleEntry<>(outputPath+"/"+name, outputPath+"/"+destFile.getName()));
+				                	switch(OSInfo.crossOS()) {
+				                    case MacOS:
+				                    	if(e.getType().equals(LibraryEntry.TYPE_QT)) {
+				                    		name = LibraryEntry.formatQtName(e.getOriginalname(), libInfix, debug, -1, -1, -1);
+				                    	}else {
+				                    		name = LibraryEntry.formatQtJambiJniName(e.getOriginalname(), debug, -1, -1, -1);
+				                    	}
+				        				link = new File(destFile.getParentFile(), name);
+				        				if(!link.exists()) {
+				        					try{
+				        						Files.createSymbolicLink(link.toPath(), target);
+				        					}catch(java.nio.file.FileAlreadyExistsException ex) {
+					    					} catch (Exception ex) {
+					    						ex.printStackTrace();
+					    					}
+				        				}
+			    						symlinks.add(new SimpleEntry<>(outputPath+"/"+name, outputPath+"/"+destFile.getName()));
+			                    	default: break;
+				                	}
+			                    	break;
+			                    	default: break;
+			                	}
+			                }
+		                }
 		
 		                boolean doStrip = true;
 		                if(e.getType().equals(LibraryEntry.TYPE_QT))
@@ -1211,17 +1286,34 @@ public class PlatformJarTask extends Task {
         boolean no_otool = false;
         try {
         	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), outdir, getProject(), null, null, false);
-        	if(out.length<2 || out[0]==null || !out[0].contains("Apple")) {
+        	if(out==null || out.length<2 || out[0]==null || !out[0].contains("Apple")) {
         		no_otool = true;
+        		for (String string : out) {
+        			if(string.contains("Apple")) {
+        				no_otool = false;
+        				break;
+        			}
+        		}
         	}
+        	if(no_otool) {
+        		getProject().log(this, "otool unavailable", Project.MSG_INFO);
+        	}else
+        		getProject().log(this, "otool available", Project.MSG_INFO);
         } catch ( Exception e ) {
         	no_otool = true;
+        	getProject().log(this, "otool unavailable", e, Project.MSG_INFO);
         }
 
         for(LibraryEntry lib : libs) {
             if(LibraryEntry.TYPE_FILE.equals(lib.getType()) 
                     || LibraryEntry.TYPE_PLUGIN_JAR.equals(lib.getType()) 
                     || LibraryEntry.TYPE_FILESET.equals(lib.getType())
+                    || (useFrameworks 
+                    		&& !convertQtFrameworks 
+                    		&& (LibraryEntry.TYPE_QT.equals(lib.getType())
+				                    ||  LibraryEntry.TYPE_PLUGIN.equals(lib.getType())
+				                    ||  LibraryEntry.TYPE_PLUGIN.equals(lib.getType())
+				                    ||  LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(lib.getType())))
                     || lib.isPending()){
                 // never perform install_name_tool on files like "qmldir"
                 continue;
@@ -1244,6 +1336,10 @@ public class PlatformJarTask extends Task {
         	Set<String> deleteCommands = new TreeSet<>();
         	
             String path = "@executable_path/../Frameworks";
+            if(otoolOut==null || otoolOut.rpaths.contains(path)) {
+            	deleteCommands.add(path);
+            }
+            path = "@loader_path/Frameworks";
             if(otoolOut==null || otoolOut.rpaths.contains(path)) {
             	deleteCommands.add(path);
             }
@@ -1303,6 +1399,7 @@ public class PlatformJarTask extends Task {
                         || LibraryEntry.TYPE_QMLPLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(referencedLib.getType())
                         || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(referencedLib.getType()) 
+                        || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_FILESET.equals(referencedLib.getType())){
                     // never relink files (e.g. "qmldir") or plugin libraries
                     continue;
@@ -1331,15 +1428,15 @@ public class PlatformJarTask extends Task {
                         getProject().log(this, " with.Subdir       =  " + withSubdir, Project.MSG_VERBOSE);
                         getProject().log(this, " with.Name         =  " + referencedLib.getName(), Project.MSG_VERBOSE);
                     }
-                    to = "@rpath/" + referencedLib.getResolvedName();
+                    to = "@rpath/" + referencedLib.getShortName();
                 }
 
                 String from;
                 // only name, when Qt is configured with -no-rpath
                 if(convertQtFrameworks && LibraryEntry.TYPE_QT.equals(referencedLib.getType())){
-                    from = "@rpath/"+referencedLib.getName();
+                    from = "@rpath/"+referencedLib.getShortName();
                 }else{
-                    from = referencedLib.getName();
+                    from = referencedLib.getShortName();
                 }
                 
                 if(otoolOut==null || otoolOut.loadDylibs.contains(from)) {
@@ -1369,6 +1466,7 @@ public class PlatformJarTask extends Task {
 		        	getProject().log(this, " - " + (e.getMessage()!=null && !e.getMessage().isEmpty() ? e.getMessage() : e), e, Project.MSG_INFO);
 		        }
         	}
+//        	getProject().log(this, "-  add rpaths: " + addCommands, Project.MSG_INFO);
     		List<String> adds = new ArrayList<>(addCommands);
         	while(!adds.isEmpty()) {
         		List<String> commands = new ArrayList<>();
@@ -1387,6 +1485,7 @@ public class PlatformJarTask extends Task {
 		        }
 //                    	print(stream, commands.toArray(new String[commands.size()]));
         	}
+//        	getProject().log(this, "-  delete rpaths: " + deleteCommands, Project.MSG_INFO);
         	{
         		List<String> deletes = new ArrayList<>(deleteCommands);
         		while(!deletes.isEmpty()) {
@@ -1426,66 +1525,68 @@ public class PlatformJarTask extends Task {
         	}
         }
         
-        for(Directory dir : directoryList){
-            java.util.ArrayList<File> directories = new java.util.ArrayList<File>();
-            File startDir = new  File(outdir + "/" + dir.getDestSubdir()+"/"+dir.getName());
-            directories.add(startDir);
-            while(!directories.isEmpty()){
-                for(File directory : new java.util.ArrayList<File>(directories)){
-                    directories.remove(directory);
-                    for(File file : directory.listFiles()){
-                        if(file.isDirectory()){
-                            if(!file.getName().endsWith(".dylib.dSYM"))
-                                directories.add(file);
-                        }else if(file.isFile() && file.getName().endsWith(".dylib")){
-                            List<Map.Entry<String, String>> changeCommands = new ArrayList<>();
-                            String targetPath = file.getAbsolutePath();
-                            OToolOut otoolOut = no_otool ? null : getOtoolOut(this, targetPath, outdir);
-                            if(otoolOut==null && !no_otool) {
-                            	getProject().log(this, "otool does not provide info for " + targetPath, Project.MSG_INFO);
-                            }
-                        	for(LibraryEntry referencedLib : libs) {
-                            	if(LibraryEntry.TYPE_QT.equals(referencedLib.getType())){
-		                            String from;
-		                            if(convertQtFrameworks){
-		                            	from = "@rpath/"+referencedLib.getName();
-		                            }else{
-		                            	from = referencedLib.getName();
-		                            }
-		                            if(otoolOut==null || otoolOut.loadDylibs.contains(from)) {
-		                            	changeCommands.add(new SimpleEntry<>(from, "@rpath/" + referencedLib.getResolvedName()));
-		                            }
-		                            if(convertQtFrameworks && from.endsWith("_debug")){
-		                            	from = from.substring(0, from.length()-6);
-		                            	if(otoolOut==null || otoolOut.loadDylibs.contains(from)) {
-		                            		changeCommands.add(new SimpleEntry<>(from, "@rpath/" + referencedLib.getResolvedName()));
-		                            	}
-		                            }
-                            	}
-                        	}
-                            getProject().log(this, "-  updating: " + targetPath, Project.MSG_INFO);
-                    		while(!changeCommands.isEmpty()) {
-                        		List<String> commands = new ArrayList<>();
-                    			commands.add("install_name_tool");
-                    			for (int i = 0; i < 10 && i < changeCommands.size(); i++) 
-                    			{
-                        			commands.add("-change");
-                        			Map.Entry<String, String> e = changeCommands.remove(0);
-            						commands.add(e.getKey());
-            						commands.add(e.getValue());
-            					}
-            					commands.add(targetPath);
-            					try {
-            						Exec.exec(this, commands.toArray(new String[commands.size()]), outdir, getProject(), false);
-            					} catch ( BuildException e )
-            			        {
-            			        	getProject().log(this, " - " + (e.getMessage()!=null && !e.getMessage().isEmpty() ? e.getMessage() : e), e, Project.MSG_INFO);
-            			        }
-                        	}
-                        }
-                    }
-                }
-            }
+        if(!useFrameworks || convertQtFrameworks) {
+	        for(Directory dir : directoryList){
+	            java.util.ArrayList<File> directories = new java.util.ArrayList<File>();
+	            File startDir = new  File(outdir + "/" + dir.getDestSubdir()+"/"+dir.getName());
+	            directories.add(startDir);
+	            while(!directories.isEmpty()){
+	                for(File directory : new java.util.ArrayList<File>(directories)){
+	                    directories.remove(directory);
+	                    for(File file : directory.listFiles()){
+	                        if(file.isDirectory()){
+	                            if(!file.getName().endsWith(".dylib.dSYM"))
+	                                directories.add(file);
+	                        }else if(file.isFile() && file.getName().endsWith(".dylib")){
+	                            List<Map.Entry<String, String>> changeCommands = new ArrayList<>();
+	                            String targetPath = file.getAbsolutePath();
+	                            OToolOut otoolOut = no_otool ? null : getOtoolOut(this, targetPath, outdir);
+	                            if(otoolOut==null && !no_otool) {
+	                            	getProject().log(this, "otool does not provide info for " + targetPath, Project.MSG_INFO);
+	                            }
+	                        	for(LibraryEntry referencedLib : libs) {
+	                            	if(LibraryEntry.TYPE_QT.equals(referencedLib.getType())){
+			                            String from;
+			                            if(convertQtFrameworks){
+			                            	from = "@rpath/"+referencedLib.getShortName();
+			                            }else{
+			                            	from = referencedLib.getShortName();
+			                            }
+			                            if(otoolOut==null || otoolOut.loadDylibs.contains(from)) {
+			                            	changeCommands.add(new SimpleEntry<>(from, "@rpath/" + referencedLib.getResolvedName()));
+			                            }
+			                            if(convertQtFrameworks && from.endsWith("_debug")){
+			                            	from = from.substring(0, from.length()-6);
+			                            	if(otoolOut==null || otoolOut.loadDylibs.contains(from)) {
+			                            		changeCommands.add(new SimpleEntry<>(from, "@rpath/" + referencedLib.getResolvedName()));
+			                            	}
+			                            }
+	                            	}
+	                        	}
+	                            getProject().log(this, "-  updating: " + targetPath, Project.MSG_INFO);
+	                    		while(!changeCommands.isEmpty()) {
+	                        		List<String> commands = new ArrayList<>();
+	                    			commands.add("install_name_tool");
+	                    			for (int i = 0; i < 10 && i < changeCommands.size(); i++) 
+	                    			{
+	                        			commands.add("-change");
+	                        			Map.Entry<String, String> e = changeCommands.remove(0);
+	            						commands.add(e.getKey());
+	            						commands.add(e.getValue());
+	            					}
+	            					commands.add(targetPath);
+	            					try {
+	            						Exec.exec(this, commands.toArray(new String[commands.size()]), outdir, getProject(), false);
+	            					} catch ( BuildException e )
+	            			        {
+	            			        	getProject().log(this, " - " + (e.getMessage()!=null && !e.getMessage().isEmpty() ? e.getMessage() : e), e, Project.MSG_INFO);
+	            			        }
+	                        	}
+	                        }
+	                    }
+	                }
+	            }
+	        }
         }
     }
     
@@ -1494,6 +1595,10 @@ public class PlatformJarTask extends Task {
 		getProject().log(this, "Processing RPATH...", Project.MSG_INFO);
         try
         {
+            int qtMajorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
+            int qtMinorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
+            int qtPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_PATCHLEVEL));
+            String sosuffix = ".so."+qtMajorVersion+"."+qtMinorVersion+"."+qtPatchlevelVersion;
 			java.util.ArrayList<File> directories = new java.util.ArrayList<File>();
 			directories.add(new File(outdir, "lib"));
 			String suffix = "/.";
@@ -1503,7 +1608,7 @@ public class PlatformJarTask extends Task {
 					for(File file : directory.listFiles()){
 						if(file.isDirectory()){
 							directories.add(file);
-						}else if(file.isFile() && (file.getName().endsWith(".so") || file.getName().endsWith(".so.1") || file.getName().endsWith(".so.4") || file.getName().endsWith(".so.5"))){
+						}else if(file.isFile() && file.getName().startsWith("libQtJambi") && file.getName().endsWith(sosuffix)){
 							try{
 								Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN"+suffix, file.getAbsolutePath()}, file.getParentFile(), getProject(), true );
 							}catch(Exception e){
@@ -1514,30 +1619,6 @@ public class PlatformJarTask extends Task {
 				if(suffix.length()==2)
 					suffix += '.';
 				else suffix = "/.." + suffix;
-			}
-			
-			directories.clear();
-			for(File file : outdir.listFiles()){
-				if(file.isDirectory() && !file.getName().equals("lib"))
-					directories.add(file);
-			}
-			
-			suffix = "/../lib";
-			while(!directories.isEmpty()){
-				for(File directory : new java.util.ArrayList<File>(directories)){
-					directories.remove(directory);
-					for(File file : directory.listFiles()){
-						if(file.isDirectory()){
-							directories.add(file);
-						}else if(file.isFile() && (file.getName().endsWith(".so") || file.getName().endsWith(".so.1") || file.getName().endsWith(".so.4") || file.getName().endsWith(".so.5"))){
-							try{
-								Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN"+suffix, file.getAbsolutePath()}, file.getParentFile(), getProject(), true );
-							}catch(Exception e){
-							}
-						}
-					}
-				}
-				suffix = "/.." + suffix;
 			}
 			
 			File utilFile = Boolean.TRUE.equals(debug) ? new File(outdir, "utilities/libqtjambiplugin_debug.so") : new File(outdir, "utilities/libqtjambiplugin.so");
@@ -1640,6 +1721,8 @@ public class PlatformJarTask extends Task {
         {
         	task.getProject().log(task, " - " + e.getMessage() , Project.MSG_INFO);
         }
+//    	if(result!=null)
+//    		task.getProject().log(task, "  rpaths: " + result.rpaths, Project.MSG_INFO);
     	return result;
     }
 

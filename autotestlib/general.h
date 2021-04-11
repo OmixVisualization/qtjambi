@@ -46,9 +46,34 @@
 #define GENERAL_H
 
 #include <QtGui/QtGui>
+#ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
+#endif
 #include <jni.h>
 
+template<typename T>
+bool initializer_list_equals(const std::initializer_list<T>& a,const std::initializer_list<T>& b){
+    if(a.size()==b.size()){
+        if(a.begin()==b.begin()){
+            return true;
+        }
+
+        for(size_t i=0; i<a.size(); ++i){
+            if(a.begin()[i]!=b.begin()[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+template<typename T>
+bool operator ==(const std::initializer_list<T>& a,const std::initializer_list<T>& b){
+    return initializer_list_equals(a, b);
+}
+
+#ifndef QTJAMBI_NO_WIDGETS
 class CalendarWidgetAccessor: public QCalendarWidget {
 public:
     void paintCellAccess(QPainter *p) {
@@ -76,6 +101,7 @@ public:
         return _start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, jstring(text));
     }
 };
+#endif
 
 class FunctionalTest{
 public:

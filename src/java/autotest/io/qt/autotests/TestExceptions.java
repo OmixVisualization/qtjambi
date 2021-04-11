@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,13 +28,12 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
+import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QRunnable;
 import io.qt.core.QThread;
@@ -46,32 +45,32 @@ import io.qt.widgets.QApplication;
 public class TestExceptions extends QApplicationTest {
 	
     @Test
-    public void test() {
+    public void test_multi_inherited_QRunnable_QObject_Deletion() {
     	{
 			QObject parent = new QObject();
-			class MultiImpl2 extends QObject implements QRunnable, QPaintDevice{
-			    public MultiImpl2() {
+			class MultiImpl extends QObject implements QRunnable, QPaintDevice{
+			    public MultiImpl() {
 					super();
 				}
 
 			    @SuppressWarnings("unused")
-				MultiImpl2(QDeclarativeConstructor dc) throws IllegalAccessException {
+				MultiImpl(QDeclarativeConstructor dc) throws IllegalAccessException {
 					super(dc);
 				}
 
 			    @SuppressWarnings("unused")
-				public MultiImpl2(QObject parent) {
+				public MultiImpl(QObject parent) {
 					super(parent);
 				}
 
 			    @SuppressWarnings("unused")
-				MultiImpl2(QPrivateConstructor p) {
+				MultiImpl(QPrivateConstructor p) {
 					super(p);
 				}
 
 				public void run() {
-			    	System.out.println("TestInterfaces.test_MultiInterfaceImpl() "+Thread.currentThread()+" / object thread "+this.thread());
-			    	throw new RuntimeException();
+//			    	System.out.println("TestInterfaces.test_MultiInterfaceImpl() "+Thread.currentThread()+" / object thread "+this.thread());
+			    	throw new RuntimeException("Run Exception");
 			    }
 
 				@Override
@@ -79,11 +78,11 @@ public class TestExceptions extends QApplicationTest {
 					return null;
 				}
 			}
-			MultiImpl2 object = new MultiImpl2();
+			MultiImpl object = new MultiImpl();
 			object.setParent(parent);
-			object.destroyed.connect(()->{
-				System.out.println("disposing QObject in thread "+Thread.currentThread());
-			});
+//			object.destroyed.connect(()->{
+//				System.out.println("disposing QObject in thread "+Thread.currentThread());
+//			});
 			Assert.assertFalse(object.isDisposed());
 			object.objectName();
 			object.paintingActive();
@@ -92,7 +91,7 @@ public class TestExceptions extends QApplicationTest {
 			pool.start(object);
 			pool.waitForDone();
 			Assert.assertFalse(object.isDisposed());
-			List<QObject> children = parent.children();
+			QList<QObject> children = parent.children();
 			Assert.assertEquals(object, children.get(0));
 			try {
 				object.paintingActive();
@@ -108,7 +107,70 @@ public class TestExceptions extends QApplicationTest {
 			Assert.assertTrue(object.isDisposed());
 			Assert.assertEquals(0, parent.children().size());
 		}
+    }
+    
+    @Test
+    public void test_multi_inherited_Runnable_QObject_Deletion() {
+    	{
+			QObject parent = new QObject();
+			class MultiImpl extends QObject implements Runnable, QPaintDevice{
+			    public MultiImpl() {
+					super();
+				}
+
+			    @SuppressWarnings("unused")
+				MultiImpl(QDeclarativeConstructor dc) throws IllegalAccessException {
+					super(dc);
+				}
+
+			    @SuppressWarnings("unused")
+				public MultiImpl(QObject parent) {
+					super(parent);
+				}
+
+			    @SuppressWarnings("unused")
+				MultiImpl(QPrivateConstructor p) {
+					super(p);
+				}
+
+				public void run() {
+//			    	System.out.println("TestInterfaces.test_MultiInterfaceImpl() "+Thread.currentThread()+" / object thread "+this.thread());
+			    	throw new RuntimeException("Run Exception");
+			    }
+
+				@Override
+				public QPaintEngine paintEngine() {
+					return null;
+				}
+			}
+			MultiImpl object = new MultiImpl();
+			object.setParent(parent);
+//			object.destroyed.connect(()->{
+//				System.out.println("disposing QObject in thread "+Thread.currentThread());
+//			});
+			Assert.assertFalse(object.isDisposed());
+			object.objectName();
+			object.paintingActive();
+			QThreadPool pool = new QThreadPool();
+			pool.start(object);
+			pool.waitForDone();
+			Assert.assertFalse(object.isDisposed());
+			QList<QObject> children = parent.children();
+			Assert.assertEquals(object, children.get(0));
+			object.paintingActive();
+			QApplication.sendPostedEvents(null, io.qt.core.QEvent.Type.DeferredDispose.value());
+			QApplication.processEvents();
+			QApplication.processEvents();
+			QApplication.processEvents();
+			QApplication.processEvents();
+			object.paintingActive();
+			Assert.assertFalse(object.isDisposed());
+			Assert.assertEquals(1, parent.children().size());
+		}
+    }
     	
+    @Test
+    public void testExceptionDuringEvent() {
     	{
 			QThread t = new QThread();
 			class ExnEventObject extends QObject{
@@ -116,7 +178,7 @@ public class TestExceptions extends QApplicationTest {
 				public boolean event(QEvent event) {
 					if(event.type()==QEvent.Type.WinEventAct) {
 						disposeLater();
-						throw new RuntimeException();
+						throw new RuntimeException("Event Exception");
 					}
 					if(event.type()==QEvent.Type.DeferredDispose) {
 						t.quit();

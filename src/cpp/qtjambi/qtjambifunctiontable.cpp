@@ -34,13 +34,14 @@
 **
 ****************************************************************************/
 
+#include "qtjambi_core.h"
+#include "qtjambi_application.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambifunctiontable_p.h"
 #include "qtjambi_registry_p.h"
-#include "qtjambi_core.h"
-#include "qtjambi_interfaces.h"
+#include "qtjambi_interfaces_p.h"
 #include "qtjambi_typeinfo_p.h"
-#include "qtdynamicmetaobject_p.h"
+#include "qtjambimetaobject_p.h"
 
 #include <memory>
 #include <typeindex>
@@ -118,19 +119,19 @@ private:
 class DynamicMetaObjectFunctionTable : public FunctionTable
 {
 public:
-    DynamicMetaObjectFunctionTable(JNIEnv* env, jclass clazz, const QList<jmethodID> & methods, const QtDynamicMetaObject* metaObject);
+    DynamicMetaObjectFunctionTable(JNIEnv* env, jclass clazz, const QList<jmethodID> & methods, const QtJambiMetaObject* metaObject);
     const QMetaObject* metaObject() const;
 private:
-    QSharedPointer<const QtDynamicMetaObject> m_metaObject;
+    QSharedPointer<const QtJambiMetaObject> m_metaObject;
 };
 
 class DynamicMetaObjectInterfaceFunctionTable : public InterfaceFunctionTable
 {
 public:
-    DynamicMetaObjectInterfaceFunctionTable(JNIEnv* env, jclass clazz, const QMap<std::type_index, QList<jmethodID>> & methods, const QtDynamicMetaObject* metaObject);
+    DynamicMetaObjectInterfaceFunctionTable(JNIEnv* env, jclass clazz, const QMap<std::type_index, QList<jmethodID>> & methods, const QtJambiMetaObject* metaObject);
     const QMetaObject* metaObject() const;
 private:
-    QSharedPointer<const QtDynamicMetaObject> m_metaObject;
+    QSharedPointer<const QtJambiMetaObject> m_metaObject;
 };
 
 QtJambiFunctionTable::~QtJambiFunctionTable()
@@ -155,7 +156,11 @@ const QMetaObject* AbstractFunctionTable::metaObject() const
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         return qtjambi_metaobject_for_class(env, m_class, nullptr);
     }else{
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         return qt_getQtMetaObject();
+#else
+        return &Qt::staticMetaObject;
+#endif
     }
 }
 
@@ -214,12 +219,12 @@ MetaObjectInterfaceFunctionTable::MetaObjectInterfaceFunctionTable(JNIEnv* env, 
 
 const QMetaObject* MetaObjectInterfaceFunctionTable::metaObject() const { return m_metaObject; }
 
-DynamicMetaObjectFunctionTable::DynamicMetaObjectFunctionTable(JNIEnv* env, jclass clazz, const QList<jmethodID> & methods, const QtDynamicMetaObject* metaObject)
+DynamicMetaObjectFunctionTable::DynamicMetaObjectFunctionTable(JNIEnv* env, jclass clazz, const QList<jmethodID> & methods, const QtJambiMetaObject* metaObject)
     : FunctionTable(env, clazz, methods), m_metaObject(metaObject->thisPointer()) {}
 
 const QMetaObject* DynamicMetaObjectFunctionTable::metaObject() const { return m_metaObject.get(); }
 
-DynamicMetaObjectInterfaceFunctionTable::DynamicMetaObjectInterfaceFunctionTable(JNIEnv* env, jclass clazz, const QMap<std::type_index, QList<jmethodID>> & methods, const QtDynamicMetaObject* metaObject)
+DynamicMetaObjectInterfaceFunctionTable::DynamicMetaObjectInterfaceFunctionTable(JNIEnv* env, jclass clazz, const QMap<std::type_index, QList<jmethodID>> & methods, const QtJambiMetaObject* metaObject)
     : InterfaceFunctionTable(env, clazz, methods), m_metaObject(metaObject->thisPointer()) {}
 
 const QMetaObject* DynamicMetaObjectInterfaceFunctionTable::metaObject() const { return m_metaObject.get(); }
@@ -233,7 +238,7 @@ QString jniSignatureToJava(QString jniSignature, const QString& methodName){
         while(!jniSignature.isEmpty() && !jniSignature.startsWith(')')){
             if(jniSignature.startsWith('L')){
                 jniSignature = jniSignature.mid(1);
-                int idx = jniSignature.indexOf(';');
+                auto idx = jniSignature.indexOf(';');
                 if(idx>=0){
                     signature << jniSignature.left(idx).replace('/', '.').replace('$', '.') + array;
                     array.clear();
@@ -277,7 +282,7 @@ QString jniSignatureToJava(QString jniSignature, const QString& methodName){
             jniSignature = jniSignature.mid(1);
             if(jniSignature.startsWith('L')){
                 jniSignature = jniSignature.mid(1);
-                int idx = jniSignature.indexOf(';');
+                auto idx = jniSignature.indexOf(';');
                 if(idx>=0){
                     returnType = jniSignature.left(idx).replace('/', '.').replace('$', '.') + array;
                     jniSignature = jniSignature.mid(idx+1);
@@ -316,7 +321,7 @@ QString jniSignatureToJava(QString jniSignature, const QString& methodName){
 QString qtjambi_class_display_name(JNIEnv *env, jclass object_class)
 {
     QString name = qtjambi_class_name(env, object_class);//.replace('$', '.')
-    int idx = name.indexOf('$');
+    auto idx = name.indexOf('$');
     QString _name;
     while(idx>=0 && idx<name.length()){
         _name += name.left(idx);
@@ -338,7 +343,8 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
     bool is_interface = isInterface(typeId) || isFunctional(typeId);
     QList<jmethodID> methods;
     const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
-    const QVector<FunctionInfo>* virtualFcts(nullptr);
+    Q_ASSERT(typeEntry);
+    const QVector<const FunctionInfo>* virtualFcts(nullptr);
     if(typeEntry->isObject()){
         virtualFcts = static_cast<const ObjectTypeEntry*>(typeEntry)->virtualFunctions();
     }else if(typeEntry->isQObject()){
@@ -365,7 +371,7 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                     message = message.arg(qtjambi_class_display_name(env, object_class));
                     message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                     message = message.arg(QLatin1String(typeEntry->qtName()));
-                    Java::Private::QtJambi::QMissingVirtualOverridingException.throwNew(env, message QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
                 }else{
                     fprintf(stderr, "vtable setup failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
@@ -386,14 +392,14 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
             }
 
             if(info.flags & FunctionInfo::Private){
-                bool isPrivateOverride = Java::Private::Runtime::AccessibleObject.isAnnotationPresent(env, method_object, Java::Private::QtJambi::QtPrivateOverride.getClass(env));
+                bool isPrivateOverride = Java::Runtime::AccessibleObject::isAnnotationPresent(env, method_object, Java::QtJambi::QtPrivateOverride::getClass(env));
                 if(!isPrivateOverride){
                     QString message(QLatin1String("Method '%1' in class %2 misses @QtPrivateOverride annotation."));
                     message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                     message = message.arg(qtjambi_class_display_name(env, object_class));
-                    Java::Private::QtJambi::QMissingVirtualOverridingException.throwNew(env, message QTJAMBI_STACKTRACEINFO );
+                    Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
                 }
-            }else if (Java::Private::QtJambi::QtJambiInternal.isImplementedInJava(env,
+            }else if (Java::QtJambi::QtJambiInternal::isImplementedInJava(env,
                                              jboolean(info.flags & FunctionInfo::Abstract),
                                              method_object, typeEntry->javaClass())) {
                 methods << method_id;
@@ -402,7 +408,7 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                 message = message.arg(qtjambi_class_display_name(env, object_class));
                 message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
                 message = message.arg(QLatin1String(typeEntry->qtName()));
-                Java::Private::QtJambi::QMissingVirtualOverridingException.throwNew(env, message QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
             }else{
                 methods << nullptr;
             }
@@ -422,7 +428,7 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
             Q_ASSERT(object);
             jclass object_class = env->GetObjectClass(object);
 
-            int classHashCode = Java::Private::Runtime::Object.hashCode(env,object_class);
+            int classHashCode = Java::Runtime::Object::hashCode(env,object_class);
             {
                 QReadLocker locker(gTableLock());
                 Q_UNUSED(locker)
@@ -442,10 +448,10 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
                 if(methodsByType.size()==1){
                     if(originalMetaObject){
                         const QMetaObject* metaObject = originalMetaObject;
-                        if(!env->IsSameObject(superTypeInfos->first().javaClass, object_class))
+                        if(!env->IsSameObject(superTypeInfos->first().javaClass(), object_class))
                             metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject);
-                        if(QtDynamicMetaObject::isDynamic(metaObject)){
-                            table = new DynamicMetaObjectFunctionTable(env, object_class, methodsByType.first(), static_cast<const QtDynamicMetaObject*>(metaObject));
+                        if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
+                            table = new DynamicMetaObjectFunctionTable(env, object_class, methodsByType.first(), mo);
                         }else{
                             table = new MetaObjectFunctionTable(env, object_class, methodsByType.first(), metaObject);
                         }
@@ -455,10 +461,10 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
                 }else{
                     if(originalMetaObject){
                         const QMetaObject* metaObject = originalMetaObject;
-                        if(!env->IsSameObject(superTypeInfos->first().javaClass, object_class))
+                        if(!env->IsSameObject(superTypeInfos->first().javaClass(), object_class))
                             metaObject = qtjambi_metaobject_for_class(env, object_class, metaObject);
-                        if(QtDynamicMetaObject::isDynamic(metaObject)){
-                            table = new DynamicMetaObjectInterfaceFunctionTable(env, object_class, methodsByType, static_cast<const QtDynamicMetaObject*>(metaObject));
+                        if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
+                            table = new DynamicMetaObjectInterfaceFunctionTable(env, object_class, methodsByType, mo);
                         }else{
                             table = new MetaObjectInterfaceFunctionTable(env, object_class, methodsByType, metaObject);
                         }
@@ -469,7 +475,7 @@ const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *e
             }else{
                 // this should be exactly the qt type, so no virtual overrides.
                 if(originalMetaObject){
-                    Q_ASSERT(!QtDynamicMetaObject::isDynamic(originalMetaObject));
+                    Q_ASSERT(!QtJambiMetaObject::isInstance(originalMetaObject));
                     table = new MetaObjectEmptyFunctionTable(env, object_class, originalMetaObject);
                 }else{
                     table = new EmptyFunctionTable(env, object_class);

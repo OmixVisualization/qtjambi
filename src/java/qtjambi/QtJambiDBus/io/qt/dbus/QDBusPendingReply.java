@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 
+import io.qt.core.QMetaType;
 import io.qt.core.QVariant;
 
 public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl implements java.lang.Cloneable {
@@ -43,54 +44,54 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl imple
     }
 	
 	private final Class<A> typeA;
-	private final QVariant.Type variantTypeA;
+	private final QMetaType variantTypeA;
 	
 	public static QDBusPendingReply<Object> newInstance(QDBusMessage message){
-		return new QDBusPendingReply<>(message, Object.class);
+		return new QDBusPendingReply<>(message, Object.class, QMetaType.Type.QVariant);
 	}
 	
 	public static QDBusPendingReply<Object> newInstance(QDBusPendingCall call){
-		return new QDBusPendingReply<>(call, Object.class);
+		return new QDBusPendingReply<>(call, Object.class, QMetaType.Type.QVariant);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<List<?>> newListInstance(QDBusMessage message){
-		return new QDBusPendingReply(message, List.class, QVariant.Type.List);
+		return new QDBusPendingReply(message, List.class, QMetaType.Type.QVariantList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<List<?>> newListInstance(QDBusPendingCall call){
-		return new QDBusPendingReply(call, List.class, QVariant.Type.List);
+		return new QDBusPendingReply(call, List.class, QMetaType.Type.QVariantList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<List<String>> newStringListInstance(QDBusMessage message){
-		return new QDBusPendingReply(message, List.class, QVariant.Type.StringList);
+		return new QDBusPendingReply(message, List.class, QMetaType.Type.QStringList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<List<String>> newStringListInstance(QDBusPendingCall call){
-		return new QDBusPendingReply(call, List.class, QVariant.Type.StringList);
+		return new QDBusPendingReply(call, List.class, QMetaType.Type.QStringList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<NavigableMap<String,?>> newMapInstance(QDBusMessage message){
-		return new QDBusPendingReply(message, NavigableMap.class, QVariant.Type.Map);
+		return new QDBusPendingReply(message, NavigableMap.class, QMetaType.Type.QVariantMap);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<NavigableMap<String,?>> newMapInstance(QDBusPendingCall call){
-		return new QDBusPendingReply(call, NavigableMap.class, QVariant.Type.Map);
+		return new QDBusPendingReply(call, NavigableMap.class, QMetaType.Type.QVariantMap);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<Map<String,?>> newHashInstance(QDBusMessage message){
-		return new QDBusPendingReply(message, Map.class, QVariant.Type.Hash);
+		return new QDBusPendingReply(message, Map.class, QMetaType.Type.QVariantHash);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static QDBusPendingReply<Map<String,?>> newHashInstance(QDBusPendingCall call){
-		return new QDBusPendingReply(call, Map.class, QVariant.Type.Hash);
+		return new QDBusPendingReply(call, Map.class, QMetaType.Type.QVariantHash);
 	}
 	
 	public QDBusPendingReply() {
@@ -99,18 +100,18 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl imple
 		variantTypeA = null;
 	}
 
-	private QDBusPendingReply(QDBusMessage message, Class<A> typeA, QVariant.Type variantTypeA) {
+	private QDBusPendingReply(QDBusMessage message, Class<A> typeA, QMetaType.Type variantTypeA) {
 		super(io.qt.dbus.QDBusPendingCall.fromCompletedCall(message));
 		this.typeA = Objects.requireNonNull(typeA);
-		this.variantTypeA = variantTypeA;
+		this.variantTypeA = variantTypeA!=null ? new QMetaType(variantTypeA) : null;
 	}
 
-	private QDBusPendingReply(QDBusPendingCall call, Class<A> typeA, QVariant.Type variantTypeA) {
+	private QDBusPendingReply(QDBusPendingCall call, Class<A> typeA, QMetaType.Type variantTypeA) {
 		super(call);
 		this.typeA = Objects.requireNonNull(typeA);
-		this.variantTypeA = variantTypeA;
+		this.variantTypeA = variantTypeA!=null ? new QMetaType(variantTypeA) : null;
 	}
-
+	
 	public QDBusPendingReply(QDBusMessage message, Class<A> typeA) {
 		super(io.qt.dbus.QDBusPendingCall.fromCompletedCall(message));
 		this.typeA = Objects.requireNonNull(typeA);
@@ -121,6 +122,18 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl imple
 		super(call);
 		this.typeA = Objects.requireNonNull(typeA);
 		variantTypeA = null;
+	}
+
+	public QDBusPendingReply(QDBusMessage message, Class<A> typeA, QMetaType... instantiations) {
+		super(io.qt.dbus.QDBusPendingCall.fromCompletedCall(message));
+		this.typeA = Objects.requireNonNull(typeA);
+		variantTypeA = instantiations!=null ? QMetaType.fromType(typeA, instantiations) : null;
+	}
+
+	public QDBusPendingReply(QDBusPendingCall call, Class<A> typeA, QMetaType... instantiations) {
+		super(call);
+		this.typeA = Objects.requireNonNull(typeA);
+		variantTypeA = instantiations!=null ? QMetaType.fromType(typeA, instantiations) : null;
 	}
 
 	public QDBusPendingReply(QDBusPendingReply<A> other) {
@@ -161,7 +174,7 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingCall.Impl imple
 		if(variantTypeA==null) {
 			return QVariant.convert(argumentAt(0), typeA);
 		}else{
-			return QVariant.convert(QVariant.convert(argumentAt(0), variantTypeA), typeA);
+			return QVariant.convert(QVariant.convert(argumentAt(0), variantTypeA.id()), typeA);
 		}
 	}
 	

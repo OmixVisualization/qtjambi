@@ -45,3 +45,11 @@ const DocEnum* DocModel::getEnum(const QString& name) const{
 QList<QString> DocModel::classes() const{
     return m_classes.keys();
 }
+
+const QString& DocModel::url() const{
+    return m_url;
+}
+
+void DocModel::setUrl(const QString& url){
+    m_url = url;
+}

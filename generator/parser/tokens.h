@@ -105,6 +105,7 @@ enum TOKEN_KIND {
     Token_k_dcop,
     Token_k_dcop_signals,
     Token_leq,
+    Token_compare,
     Token_long,
     Token_mutable,
     Token_namespace,
@@ -166,7 +167,9 @@ enum TOKEN_KIND {
     Token_QTJAMBI_DEPRECATED_X,
     Token_decltype,
     Token_alignas,
+    Token_alignof,
 //    Token_nullptr,
+    Token_noexcept,
 
     TOKEN_KIND_COUNT
 };

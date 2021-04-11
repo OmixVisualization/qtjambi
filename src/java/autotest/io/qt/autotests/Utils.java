@@ -44,45 +44,7 @@
 
 package io.qt.autotests;
 
-import java.util.List;
-import java.util.Map;
-
 public abstract class Utils {
-    public static String listToString(List<? extends Object> list) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("[");
-        boolean first = true;
-        for(Object o : list) {
-            if(first)
-                first = false;
-            else
-                sb.append(", ");
-            sb.append(o.toString());
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public static String mapValueToString(Map<? extends Object,? extends Object> map) {
-        StringBuffer sb = new StringBuffer();
-        sb.append("[");
-        boolean first = true;
-        for(Object o : map.values()) {
-            if(first)
-                first = false;
-            else
-                sb.append(", ");
-            sb.append(o.toString());
-        }
-        sb.append("]");
-        return sb.toString();
-    }
-
-    public static String toStringOrNull(Object o) {
-        if(o == null)
-            return "null";
-        return o.toString();
-    }
 
     ////////////////////////////////////////////////////////////////////////////
 

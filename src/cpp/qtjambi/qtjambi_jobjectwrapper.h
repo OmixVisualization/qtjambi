@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,9 +32,36 @@
 #define QOBJECTWRAPPER_H
 
 #include "qtjambi_global.h"
-#include <QtCore/QtCore>
+#include <QtCore/QVariant>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QList>
+#include <QtCore/QStringList>
+#include <QtCore/QDebug>
+#include <typeinfo>
 
-class JObjectWrapperData;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+inline bool operator < (const QVariant& v1, const QVariant& v2){
+    if(v1.userType()==v2.userType()){
+        QPartialOrdering result = QMetaType(v1.userType()).compare(v1.data(), v2.data());
+        return result==QPartialOrdering::Less;
+    }
+    return false;
+}
+#endif
+
+class JObjectWrapperData : public QSharedData{
+protected:
+    JObjectWrapperData() = default;
+public:
+    virtual ~JObjectWrapperData() = default;
+    virtual void clear(JNIEnv *env) = 0;
+    virtual jobject data() const = 0;
+    virtual const void* array() const = 0;
+    virtual void* array() = 0;
+};
+
+template<typename JType>
+class JArrayWrapper;
 
 class QTJAMBI_EXPORT JObjectWrapper
 {
@@ -43,21 +70,56 @@ public:
 
     JObjectWrapper(const JObjectWrapper &wrapper);
 
+    JObjectWrapper(JObjectWrapper &&wrapper);
+
+    JObjectWrapper(jobject obj);
+
     JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs = true);
 
     virtual ~JObjectWrapper();
 
-    JObjectWrapper& operator=(const JObjectWrapper &wrapper);
+    virtual JObjectWrapper& operator=(const JObjectWrapper &wrapper);
+
+    virtual JObjectWrapper& operator=(JObjectWrapper &&wrapper);
+
+    virtual JObjectWrapper& operator=(jobject obj);
 
     bool operator==(const JObjectWrapper &other) const;
 
+    bool operator==(jobject obj) const;
+
     bool operator<(const JObjectWrapper &other) const;
 
-    virtual QString toString() const;
+    bool operator<(jobject obj) const;
+
+    virtual QString toString(bool * ok = nullptr) const;
 
     jobject object() const;
+
+    inline operator jobject() const { return object(); }
+
+    void clear(JNIEnv *env);
 private:
-    QSharedPointer<JObjectWrapperData> m_data;
+    JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const std::type_info& typeId);
+    void assign(JNIEnv* env, const JObjectWrapper& wrapper, const std::type_info& typeId);
+    void assign(JNIEnv* env, JObjectWrapper&& wrapper, const std::type_info& typeId);
+    jobject filterPrimitiveArray(JNIEnv *env, jobject object, const std::type_info& typeId);
+    const void* array() const;
+    void* array();
+    QExplicitlySharedDataPointer<JObjectWrapperData> m_data;
+    friend class JEnumWrapper;
+    friend class JMapWrapper;
+    friend class JCollectionWrapper;
+    friend class JIteratorWrapper;
+    friend class JObjectArrayWrapper;
+    friend JArrayWrapper<jint>;
+    friend JArrayWrapper<jlong>;
+    friend JArrayWrapper<jbyte>;
+    friend JArrayWrapper<jshort>;
+    friend JArrayWrapper<jchar>;
+    friend JArrayWrapper<jboolean>;
+    friend JArrayWrapper<jdouble>;
+    friend JArrayWrapper<jfloat>;
 };
 Q_DECLARE_METATYPE(JObjectWrapper)
 
@@ -66,23 +128,42 @@ class QTJAMBI_EXPORT JEnumWrapper: public JObjectWrapper
 public:
     JEnumWrapper(): JObjectWrapper() {}
 
-    JEnumWrapper(JNIEnv *env, jobject obj): JObjectWrapper(env, obj) {}
+    JEnumWrapper(JNIEnv *env, jobject obj, bool globalRefs = true);
 
-    JEnumWrapper(const JEnumWrapper& enm): JObjectWrapper(enm) {}
+    JEnumWrapper(jobject obj);
 
-    virtual ~JEnumWrapper() {}
+    inline JEnumWrapper(const JEnumWrapper& enm): JObjectWrapper(enm) {}
 
-    bool operator==(const JEnumWrapper &other) const;
+    inline JEnumWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
 
-    JEnumWrapper& operator=(const JObjectWrapper &wrapper);
+    inline JEnumWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
 
-    JEnumWrapper& operator=(const JEnumWrapper &wrapper);
+    inline JEnumWrapper(JEnumWrapper&& wrapper): JObjectWrapper(std::move(wrapper)) {
+    }
 
-    bool operator<(const JEnumWrapper &other) const;
+    inline ~JEnumWrapper()  override {}
 
     qint32 ordinal() const;
 
-    operator qint32() const {return ordinal();}
+    inline operator qint32() const {return ordinal();}
+
+    JEnumWrapper& operator=(const JObjectWrapper &wrapper) override;
+
+    JEnumWrapper& operator=(const JEnumWrapper &wrapper);
+
+    JEnumWrapper& operator=(JObjectWrapper &&wrapper) override;
+
+    JEnumWrapper& operator=(JEnumWrapper &&wrapper);
+
+    JEnumWrapper& operator=(jobject obj) override;
+
+    using JObjectWrapper::operator<;
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator jobject;
 };
 Q_DECLARE_METATYPE(JEnumWrapper)
 
@@ -91,25 +172,44 @@ class QTJAMBI_EXPORT JIteratorWrapper: public JObjectWrapper
 public:
     JIteratorWrapper(): JObjectWrapper() {}
 
-    JIteratorWrapper(JNIEnv *env, jobject obj): JObjectWrapper(env, obj) {}
+    JIteratorWrapper(JNIEnv *env, jobject obj, bool globalRefs = true);
 
-    JIteratorWrapper(const JIteratorWrapper& list): JObjectWrapper(list) {}
+    JIteratorWrapper(jobject obj);
 
-    virtual ~JIteratorWrapper() {}
+    inline JIteratorWrapper(const JIteratorWrapper& list): JObjectWrapper(list) {}
 
-    bool hasNext() const;
+    inline JIteratorWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
 
-    QVariant next() const;
+    inline JIteratorWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
 
-    bool operator<(const JIteratorWrapper &other) const;
+    inline JIteratorWrapper(JIteratorWrapper&& wrapper): JObjectWrapper(std::move(wrapper)) {
+    }
 
-    JIteratorWrapper& operator=(const JObjectWrapper &wrapper);
+    inline ~JIteratorWrapper() override {}
+
+    JIteratorWrapper& operator=(const JObjectWrapper &wrapper) override;
+
+    JIteratorWrapper& operator=(JObjectWrapper &&wrapper) override;
 
     JIteratorWrapper& operator=(const JIteratorWrapper &wrapper);
 
-    bool operator==(const JIteratorWrapper &other) const;
+    JIteratorWrapper& operator=(JIteratorWrapper &&wrapper);
+
+    JIteratorWrapper& operator=(jobject obj) override;
+
+    bool hasNext() const;
+
+    JObjectWrapper next() const;
+
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator<;
+    using JObjectWrapper::operator jobject;
 private:
-    jobject _next() const;
+    jobject _next(JNIEnv *env) const;
 
     friend class JCollectionWrapper;
     friend class JMapWrapper;
@@ -121,15 +221,27 @@ class QTJAMBI_EXPORT JCollectionWrapper: public JObjectWrapper
 public:
     JCollectionWrapper(): JObjectWrapper() {}
 
-    JCollectionWrapper(JNIEnv *env, jobject obj): JObjectWrapper(env, obj){}
+    JCollectionWrapper(JNIEnv *env, jobject obj, bool globalRefs = true);
 
-    JCollectionWrapper(const JCollectionWrapper& list): JObjectWrapper(list) {}
+    JCollectionWrapper(jobject obj);
 
-    virtual ~JCollectionWrapper() {}
+    inline JCollectionWrapper(const JCollectionWrapper& list): JObjectWrapper(list) {}
+
+    inline JCollectionWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
+
+    inline JCollectionWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
+
+    inline JCollectionWrapper(JCollectionWrapper&& wrapper): JObjectWrapper(std::move(wrapper)) {}
+
+    inline ~JCollectionWrapper() override {}
 
     int size() const;
 
-    bool isEmpty() const { return size()==0; }
+    inline bool isEmpty() const { return size()==0; }
 
     JIteratorWrapper iterator() const;
 
@@ -137,17 +249,23 @@ public:
 
     QStringList toStringList(bool* ok = Q_NULLPTR) const;
 
-    operator QList<QVariant>() const {return toList();}
+    JCollectionWrapper& operator=(const JObjectWrapper &wrapper) override;
 
-    operator QStringList() const {return toStringList();}
-
-    bool operator<(const JCollectionWrapper &other) const;
-
-    bool operator==(const JCollectionWrapper &other) const;
-
-    JCollectionWrapper& operator=(const JObjectWrapper &wrapper);
+    JCollectionWrapper& operator=(JObjectWrapper &&wrapper) override;
 
     JCollectionWrapper& operator=(const JCollectionWrapper &wrapper);
+
+    JCollectionWrapper& operator=(JCollectionWrapper &&wrapper);
+
+    JCollectionWrapper& operator=(jobject obj) override;
+
+    inline operator QList<QVariant>() const {return toList();}
+
+    inline operator QStringList() const {return toStringList();}
+
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator<;
+    using JObjectWrapper::operator jobject;
 };
 Q_DECLARE_METATYPE(JCollectionWrapper)
 
@@ -156,11 +274,24 @@ class QTJAMBI_EXPORT JMapWrapper: public JObjectWrapper
 public:
     JMapWrapper(): JObjectWrapper() {}
 
-    JMapWrapper(JNIEnv *env, jobject obj): JObjectWrapper(env, obj){}
+    JMapWrapper(JNIEnv *env, jobject obj, bool globalRefs = true);
 
-    JMapWrapper(const JMapWrapper& map): JObjectWrapper(map) {}
+    JMapWrapper(jobject obj);
 
-    virtual ~JMapWrapper() {}
+    inline JMapWrapper(const JMapWrapper& map): JObjectWrapper(map) {}
+
+    inline JMapWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
+
+    inline JMapWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
+
+    inline JMapWrapper(JMapWrapper&& wrapper): JObjectWrapper(std::move(wrapper)) {
+    }
+
+    inline ~JMapWrapper() override {}
 
     JCollectionWrapper entrySet() const;
 
@@ -170,24 +301,411 @@ public:
 
     QVariantHash toStringHash(bool* ok = Q_NULLPTR) const;
 
-    operator QMap<QVariant,QVariant>() const {return toMap();}
+    inline operator QMap<QVariant,QVariant>() const {return toMap();}
 
-    operator QVariantMap() const {return toStringMap();}
+    inline operator QVariantMap() const {return toStringMap();}
 
-    operator QVariantHash() const {return toStringHash();}
+    inline operator QVariantHash() const {return toStringHash();}
 
-    bool operator<(const JMapWrapper &other) const;
+    JMapWrapper& operator=(const JObjectWrapper &wrapper) override;
 
-    bool operator==(const JMapWrapper &other) const;
-
-    JMapWrapper& operator=(const JObjectWrapper &wrapper);
+    JMapWrapper& operator=(JObjectWrapper &&wrapper) override;
 
     JMapWrapper& operator=(const JMapWrapper &wrapper);
 
+    JMapWrapper& operator=(JMapWrapper &&wrapper);
+
+    JMapWrapper& operator=(jobject obj) override;
+
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator<;
+    using JObjectWrapper::operator jobject;
 private:
     jobject _entrySet() const;
 };
 Q_DECLARE_METATYPE(JMapWrapper)
+
+class QTJAMBI_EXPORT JObjectWrapperRef{
+public:
+    JObjectWrapperRef& operator=(const JObjectWrapper &newValue);
+    JObjectWrapperRef& operator=(jobject newValue);
+    operator JObjectWrapper() const;
+    operator jobject() const;
+private:
+    JObjectWrapperRef(const JObjectWrapper& arrayWrapper, jsize index);
+    JObjectWrapper m_arrayWrapper;
+    jsize m_index;
+    friend class JObjectArrayWrapper;
+};
+
+class QTJAMBI_EXPORT JObjectArrayWrapper: public JObjectWrapper
+{
+public:
+    inline JObjectArrayWrapper(): JObjectWrapper() {}
+
+    JObjectArrayWrapper(JNIEnv *env, jobjectArray obj, bool globalRefs = true);
+
+    JObjectArrayWrapper(jobjectArray obj);
+
+    inline JObjectArrayWrapper(const JObjectArrayWrapper& other): JObjectWrapper(other) {}
+
+    inline JObjectArrayWrapper(JObjectArrayWrapper&& other): JObjectWrapper(std::move(other)) {}
+
+    inline JObjectArrayWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
+
+    inline JObjectArrayWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
+
+    inline ~JObjectArrayWrapper() override {}
+
+    jsize length() const;
+
+    jobject at(JNIEnv *env, jsize index) const;
+
+    JObjectWrapper operator[](jsize index) const;
+
+    JObjectWrapperRef operator[](jsize index);
+
+    QString toString(bool * ok = nullptr) const override;
+
+    inline jobjectArray object() const { return jobjectArray(JObjectWrapper::object()); }
+
+    inline operator jobjectArray() const{ return object(); }
+
+    JObjectArrayWrapper& operator=(const JObjectWrapper &wrapper) override;
+
+    JObjectArrayWrapper& operator=(JObjectWrapper &&wrapper) override;
+
+    JObjectArrayWrapper& operator=(const JObjectArrayWrapper &wrapper);
+
+    JObjectArrayWrapper& operator=(JObjectArrayWrapper &&wrapper);
+
+    JObjectArrayWrapper& operator=(jobject obj) override;
+
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator<;
+};
+Q_DECLARE_METATYPE(JObjectArrayWrapper)
+
+template<typename JType>
+struct JArray{
+};
+
+template<>
+struct JArray<jint>{
+    typedef jintArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetIntArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseIntArrayElements;
+};
+
+template<>
+struct JArray<jbyte>{
+    typedef jbyteArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetByteArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseByteArrayElements;
+};
+
+template<>
+struct JArray<jlong>{
+    typedef jlongArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetLongArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseLongArrayElements;
+};
+
+template<>
+struct JArray<jshort>{
+    typedef jshortArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetShortArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseShortArrayElements;
+};
+
+template<>
+struct JArray<jchar>{
+    typedef jcharArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetCharArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseCharArrayElements;
+};
+
+template<>
+struct JArray<jboolean>{
+    typedef jbooleanArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetBooleanArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseBooleanArrayElements;
+};
+
+template<>
+struct JArray<jfloat>{
+    typedef jfloatArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetFloatArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseFloatArrayElements;
+};
+
+template<>
+struct JArray<jdouble>{
+    typedef jdoubleArray Type;
+    constexpr static auto GetArrayElements = &JNIEnv_::GetDoubleArrayElements;
+    constexpr static auto ReleaseArrayElements = &JNIEnv_::ReleaseDoubleArrayElements;
+};
+
+template<typename JType> class JArrayWrapper;
+
+template<typename JType>
+class JArrayAccessRef{
+    typedef typename JArray<JType>::Type ArrayType;
+public:
+    JArrayAccessRef& operator=(JType newValue){
+        if(m_array && m_arrayWrapper.object()){
+            if(JNIEnv *env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                m_array[m_index] = newValue;
+                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, JNI_COMMIT);
+            }
+        }
+        return *this;
+    }
+
+    operator JType() const
+    {
+        if(m_array){
+            return m_array[m_index];
+        }
+        return 0;
+    }
+
+    ~JArrayAccessRef(){
+        if(m_array && m_arrayWrapper.object()){
+            if(JNIEnv* env = qtjambi_current_environment()){
+                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                (env->*JArray<JType>::ReleaseArrayElements)(ArrayType(m_arrayWrapper.object()), m_array, 0);
+            }
+        }
+    }
+private:
+    JArrayAccessRef(JNIEnv *env, const JObjectWrapper& arrayWrapper, jsize index)
+        : m_arrayWrapper(arrayWrapper),
+          m_index(index),
+          m_array(env ? (env->*JArray<JType>::GetArrayElements)(ArrayType(arrayWrapper.object()), nullptr) : nullptr)
+    { }
+
+    JObjectWrapper m_arrayWrapper;
+    jsize m_index;
+    JType* m_array;
+    friend JArrayWrapper<JType>;
+};
+
+template<typename JType>
+class JArrayWrapper: public JObjectWrapper
+{
+    typedef typename JArray<JType>::Type ArrayType;
+public:
+    JArrayWrapper(): JObjectWrapper() {}
+
+    JArrayWrapper(JNIEnv *env, ArrayType obj, bool globalRefs = true)
+        : JObjectWrapper(env, obj, globalRefs, typeid(JType)) {
+    }
+
+    JArrayWrapper(ArrayType obj)
+        : JObjectWrapper() {
+        (*this) = obj;
+    }
+
+    JArrayWrapper(const JArrayWrapper& other): JObjectWrapper(other) {}
+
+    JArrayWrapper(JArrayWrapper&& other): JObjectWrapper(std::move(other)) {}
+
+    JArrayWrapper(const JObjectWrapper& wrapper): JObjectWrapper() {
+        this->operator=(wrapper);
+    }
+
+    JArrayWrapper(JObjectWrapper&& wrapper): JObjectWrapper() {
+        this->operator=(std::move(wrapper));
+    }
+
+    virtual ~JArrayWrapper() override {}
+
+    jsize length() const;
+
+    inline const JType* array() const
+    {
+        return reinterpret_cast<const JType*>(JObjectWrapper::array());
+    }
+
+    inline JType* array()
+    {
+        return reinterpret_cast<JType*>(JObjectWrapper::array());
+    }
+
+    inline operator const JType*() const{return array();}
+
+    inline operator JType*(){return array();}
+
+    JType operator[](jsize index) const;
+    JArrayAccessRef<JType> operator[](jsize index);
+    QString toString(bool * ok = nullptr) const override;
+
+    inline ArrayType object() const { return ArrayType(JObjectWrapper::object()); }
+
+    inline operator ArrayType() const{ return object(); }
+
+    JArrayWrapper& operator=(const JObjectWrapper &wrapper) override;
+    JArrayWrapper& operator=(JObjectWrapper &&wrapper) override;
+    JArrayWrapper& operator=(const JArrayWrapper &wrapper);
+    JArrayWrapper& operator=(JArrayWrapper &&wrapper);
+    JArrayWrapper& operator=(jobject object) override;
+
+    using JObjectWrapper::operator==;
+    using JObjectWrapper::operator<;
+};
+
+template<typename JType>
+jsize JArrayWrapper<JType>::length() const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        return env->GetArrayLength(object());
+    }
+    return 0;
+}
+
+template<typename JType>
+JType JArrayWrapper<JType>::operator[](jsize index) const{
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        if(index>=0 && index < env->GetArrayLength(object())){
+            const JType* _array = array();
+            JType result;
+            if(!_array){
+                JType* array = (env->*JArray<JType>::GetArrayElements)(object(), nullptr);
+                result = array[index];
+                (env->*JArray<JType>::ReleaseArrayElements)(object(), array, 0);
+            }else{
+                result = _array[index];
+            }
+            return result;
+        }
+    }
+    return 0;
+}
+
+template<typename JType>
+JArrayAccessRef<JType> JArrayWrapper<JType>::operator[](jsize index){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        if(index>=0 && index < env->GetArrayLength(object())){
+            return JArrayAccessRef<JType>(env, *this, index);
+        }
+    }
+    return JArrayAccessRef<JType>(nullptr, JObjectWrapper(), 0);
+}
+
+template<typename JType>
+QString JArrayWrapper<JType>::toString(bool * ok) const{
+    QString result = QLatin1String("[");
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        jsize _length = env->GetArrayLength(object());
+        for(jsize i=0; i<_length; ++i){
+            if(i>0)
+                result += QLatin1String(",");
+            JType value = (*this)[i];
+            result += QString::number(value);
+        }
+    }
+    result += QLatin1String("]");
+    if(ok)
+        *ok = true;
+    return result;
+}
+
+template<typename JType>
+JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(jobject object){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        object = filterPrimitiveArray(env, object, typeid(JType));
+        if(object){
+            m_data = std::move(JArrayWrapper<JType>(env, ArrayType(object)).m_data);
+        }else{
+            m_data.reset();
+        }
+    }
+    return *this;
+}
+
+template<typename JType>
+JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(const JObjectWrapper &wrapper){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        if(filterPrimitiveArray(env, wrapper.object(), typeid(JType))){
+            if(typeid(wrapper)==typeid(*this)){
+                m_data = wrapper.m_data;
+            }else if(typeid(wrapper)==typeid(JObjectWrapper)){
+                JObjectWrapper::assign(env, wrapper, typeid(JType));
+            }else{
+                m_data.reset();
+            }
+        }else{
+            m_data.reset();
+        }
+    }
+    return *this;
+}
+
+template<typename JType>
+JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(JObjectWrapper &&wrapper){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+        if(filterPrimitiveArray(env, wrapper.object(), typeid(JType))){
+            if(typeid(wrapper)==typeid(*this)){
+                m_data = std::move(wrapper.m_data);
+            }else if(typeid(wrapper)==typeid(JObjectWrapper)){
+                JObjectWrapper::assign(env, wrapper, typeid(JType));
+            }else{
+                m_data.reset();
+            }
+        }else{
+            m_data.reset();
+        }
+    }
+    return *this;
+}
+
+template<typename JType>
+JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(const JArrayWrapper &wrapper){
+    m_data = wrapper.m_data;
+    return *this;
+}
+
+template<typename JType>
+JArrayWrapper<JType>& JArrayWrapper<JType>::operator=(JArrayWrapper &&wrapper){
+    m_data = std::move(wrapper.m_data);
+    return *this;
+}
+
+typedef JArrayWrapper<jint> JIntArrayWrapper;
+Q_DECLARE_METATYPE(JIntArrayWrapper)
+
+typedef JArrayWrapper<jlong> JLongArrayWrapper;
+Q_DECLARE_METATYPE(JLongArrayWrapper)
+
+typedef JArrayWrapper<jshort> JShortArrayWrapper;
+Q_DECLARE_METATYPE(JShortArrayWrapper)
+
+typedef JArrayWrapper<jbyte> JByteArrayWrapper;
+Q_DECLARE_METATYPE(JByteArrayWrapper)
+
+typedef JArrayWrapper<jboolean> JBooleanArrayWrapper;
+Q_DECLARE_METATYPE(JBooleanArrayWrapper)
+
+typedef JArrayWrapper<jchar> JCharArrayWrapper;
+Q_DECLARE_METATYPE(JCharArrayWrapper)
+
+typedef JArrayWrapper<jfloat> JFloatArrayWrapper;
+Q_DECLARE_METATYPE(JFloatArrayWrapper)
+
+typedef JArrayWrapper<jdouble> JDoubleArrayWrapper;
+Q_DECLARE_METATYPE(JDoubleArrayWrapper)
 
 QTJAMBI_EXPORT JObjectWrapper qtjambi_to_jobjectwrapper(JNIEnv *env, jobject java_object);
 
@@ -195,10 +713,98 @@ QTJAMBI_EXPORT jobject qtjambi_from_jobjectwrapper(JNIEnv *env, const JObjectWra
 
 QTJAMBI_EXPORT jobject qtjambi_from_destroyed_qobject(JNIEnv *env, QObject* object);
 
-QTJAMBI_EXPORT uint qHash(const JIteratorWrapper &value);
-QTJAMBI_EXPORT uint qHash(const JMapWrapper &value);
-QTJAMBI_EXPORT uint qHash(const JCollectionWrapper &value);
-QTJAMBI_EXPORT uint qHash(const JEnumWrapper &value);
-QTJAMBI_EXPORT uint qHash(const JObjectWrapper &value);
+QTJAMBI_EXPORT hash_type qHash(const JObjectWrapper &value);
+
+inline hash_type qHash(const JObjectArrayWrapper &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+inline hash_type qHash(const JIteratorWrapper &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+inline hash_type qHash(const JMapWrapper &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+inline hash_type qHash(const JCollectionWrapper &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+inline hash_type qHash(const JEnumWrapper &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+template<typename JType>
+inline hash_type qHash(const JArrayWrapper<JType> &value){
+    return qHash(static_cast<const JObjectWrapper &>(value));
+}
+
+QTJAMBI_EXPORT QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj);
+QTJAMBI_EXPORT QDataStream &operator>>(QDataStream &in, JObjectWrapper &myObj);
+QTJAMBI_EXPORT QDebug operator<<(QDebug out, const JObjectWrapper &myObj);
+
+inline QDataStream &operator<<(QDataStream &out, const JEnumWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator>>(QDataStream &in, JEnumWrapper &myObj){
+    return in >> static_cast<JObjectWrapper &>(myObj);
+}
+
+inline QDebug operator<<(QDebug out, const JEnumWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator<<(QDataStream &out, const JMapWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator>>(QDataStream &in, JMapWrapper &myObj){
+    return in >> static_cast<JObjectWrapper &>(myObj);
+}
+
+inline QDebug operator<<(QDebug out, const JMapWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator<<(QDataStream &out, const JCollectionWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator>>(QDataStream &in, JCollectionWrapper &myObj){
+    return in >> static_cast<JObjectWrapper &>(myObj);
+}
+
+inline QDebug operator<<(QDebug out, const JCollectionWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator<<(QDataStream &out, const JIteratorWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+inline QDataStream &operator>>(QDataStream &in, JIteratorWrapper &myObj){
+    return in >> static_cast<JObjectWrapper &>(myObj);
+}
+
+inline QDebug operator<<(QDebug out, const JIteratorWrapper &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+template<typename JType>
+inline QDataStream &operator<<(QDataStream &out, const JArrayWrapper<JType> &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
+
+template<typename JType>
+inline QDataStream &operator>>(QDataStream &in, JArrayWrapper<JType> &myObj){
+    return in >> static_cast<JObjectWrapper &>(myObj);
+}
+
+template<typename JType>
+inline QDebug operator<<(QDebug out, const JArrayWrapper<JType> &myObj){
+    return out << static_cast<const JObjectWrapper &>(myObj);
+}
 
 #endif // QOBJECTWRAPPER_H

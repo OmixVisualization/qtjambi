@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -69,6 +69,9 @@
             return new(placement) QWebSocketCorsAuthenticator("");
     }
         </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QWebSocketCorsAuthenticator("");
+        </custom-constructor>
         <modify-function signature="operator=(QWebSocketCorsAuthenticator)" rename="set">
             <modify-argument index="0">
                 <no-null-pointer/>
@@ -76,4 +79,5 @@
             </modify-argument>
         </modify-function>
   </value-type>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QWebSocketCorsAuthenticator." />
 </typesystem>

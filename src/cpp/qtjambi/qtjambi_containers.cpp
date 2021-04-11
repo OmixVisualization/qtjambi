@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,21 +27,6 @@
 **
 ****************************************************************************/
 
-#include "qtjambi_repository_p.h"
-#include "qtjambi_containers.h"
-#include "qtjambi_cast.h"
-#include "qtjambi_jobjectwrapper.h"
-#include "qtjambi_registry_p.h"
-#include "qtjambifunctiontable_p.h"
-#include "qtjambilink_p.h"
-#include "qtjambitypemanager_p.h"
-#include "qtdynamicmetaobject_p.h"
-#include "qtjambivariant_p.h"
-#include "qtjambi_thread.h"
-#include "qtjambi_interfaces.h"
-#include "qtjambi_functionpointer.h"
-#include "qtjambi_application.h"
-
 #include <qglobal.h>
 #include <cstring>
 
@@ -61,8 +46,14 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QMutex>
 #include <QtCore/QAbstractEventDispatcher>
-#include <QtWidgets/QWidget>
-#include "qtjambi_templates.h"
+#include <QtCore/QCryptographicHash>
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+QT_WARNING_DISABLE_DEPRECATED
+#include <QtCore/QLinkedList>
+#include <QtCore/QVector>
+#endif
+
 #if QT_VERSION < 0x050000
 #include <QtGui/QStyleOption>
 #endif
@@ -72,4852 +63,1153 @@
 #include <Windows.h>
 #endif
 
-jobject qtjambi_to_constQList(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             const void* listPtr,
-                             const char* className,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-
-        returned = Java::Private::QtCore::QList.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QList(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             void* listPtr,
-                             const char* className,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-
-        returned = Java::Private::QtCore::QList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQQueue(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             const void* listPtr,
-                             const char* className,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QQueue.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QQueue",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-
-jobject qtjambi_to_QQueue(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             void* listPtr,
-                             const char* className,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QQueue.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QQueue",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQSet(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* className,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetValuesFunction valuesFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QSet.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QSet",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QSet(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* className,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetClearFunction clearFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetInsertFunction insertFunction,
-                                     QSetIntersectFunction intersectFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetRemoveFunction removeFunction,
-                                     QSetReserveFunction reserveFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetSubtractFunction subtractFunction,
-                                     QSetUniteFunction uniteFunction,
-                                     QSetValuesFunction valuesFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QSet.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(insertFunction),
-                                  jlong(intersectFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(subtractFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QSet",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQLinkedList(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* className,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QLinkedList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QSet",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QLinkedList(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* className,
-                                     QLinkedListAppendFunction appendFunction,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListClearFunction clearFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListPrependFunction prependFunction,
-                                     QLinkedListRemoveAllFunction removeAllFunction,
-                                     QLinkedListRemoveFirstFunction removeFirstFunction,
-                                     QLinkedListRemoveLastFunction removeLastFunction,
-                                     QLinkedListRemoveOneFunction removeOneFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction,
-                                     QLinkedListTakeFirstFunction takeFirstFunction,
-                                     QLinkedListTakeLastFunction takeLastFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QLinkedList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeFirstFunction),
-                                  jlong(removeLastFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeFirstFunction),
-                                  jlong(takeLastFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QLinkedList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQVector(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* className,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QVector.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QVector",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QVector(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* className,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QVector.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QVector",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQStack(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* className,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QStack.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QStack",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QStack(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* className,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QStack.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                        "QStack",
-#endif
-                                                                                        owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQMultiHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMultiHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction,
-                                     QMultiHashRemovePairFunction removeAllPairFunction,
-                                     QMultiHashReplaceFunction replaceOneFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMap",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-    #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                                "QMap",
-    #endif
-                                                                                                owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQMultiMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiMap",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMultiMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction,
-                                     QMultiMapRemovePairFunction removeAllPairFunction,
-                                     QMultiMapReplaceFunction replaceOneFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiMap",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQList_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const char* className,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QList.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-
-jobject qtjambi_from_QList_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const char* className,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQQueue_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const char* className,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QQueue",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-
-jobject qtjambi_from_QQueue_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const char* className,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QQueue",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQSet_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetValuesFunction valuesFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QSet",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QSet_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetClearFunction clearFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetInsertFunction insertFunction,
-                                     QSetIntersectFunction intersectFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetRemoveFunction removeFunction,
-                                     QSetReserveFunction reserveFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetSubtractFunction subtractFunction,
-                                     QSetUniteFunction uniteFunction,
-                                     QSetValuesFunction valuesFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(insertFunction),
-                                  jlong(intersectFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(subtractFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QSet",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQLinkedList_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                              "QLinkedList",
-#endif
-                                                                              false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QLinkedList_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QLinkedListAppendFunction appendFunction,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListClearFunction clearFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListPrependFunction prependFunction,
-                                     QLinkedListRemoveAllFunction removeAllFunction,
-                                     QLinkedListRemoveFirstFunction removeFirstFunction,
-                                     QLinkedListRemoveLastFunction removeLastFunction,
-                                     QLinkedListRemoveOneFunction removeOneFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction,
-                                     QLinkedListTakeFirstFunction takeFirstFunction,
-                                     QLinkedListTakeLastFunction takeLastFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeFirstFunction),
-                                  jlong(removeLastFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeFirstFunction),
-                                  jlong(takeLastFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QLinkedList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQVector_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QVector",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QVector_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QVector",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQStack_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QStack",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QStack_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* className,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, className);
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-  #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                              "QStack",
-  #endif
-                                                                                              false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQMultiHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QMultiHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction,
-                                     QMultiHashRemovePairFunction removeAllPairFunction,
-                                     QMultiHashReplaceFunction replaceOneFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQMultiMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_QMultiMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const char* keyClassName,
-                                     const char* valueClassName,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction,
-                                     QMultiMapRemovePairFunction removeAllPairFunction,
-                                     QMultiMapReplaceFunction replaceOneFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, keyClassName);
-    jclass valueClazz = resolveClass(env, valueClassName);
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QIterator(JNIEnv *env,
+#include "qtjambi_core.h"
+#include "qtjambi_repository_p.h"
+#include "qtjambi_containers.h"
+#include "qtjambi_containeraccess.h"
+#include "qtjambi_containeraccess_p.h"
+#include "qtjambi_jobjectwrapper.h"
+#include "qtjambi_registry_p.h"
+#include "qtjambifunctiontable_p.h"
+#include "qtjambilink_p.h"
+#include "qtjambitypemanager_p.h"
+#include "qtjambimetaobject_p.h"
+#include "qtjambivariant_p.h"
+#include "qtjambi_thread.h"
+#include "qtjambi_interfaces_p.h"
+#include "qtjambi_functionpointer.h"
+#include "qtjambi_application.h"
+
+#include "qtjambi_templates.h"
+#include "qtjambi_cast.h"
+
+#define EXCLUDE_GT_END(strg) strg //.endsWith(">") ? strg+" " : strg
+
+jobject qtjambi_from_QIterator(JNIEnv *env,
                            QtJambiNativeID owner,
                            void* iteratorPtr,
-                           QIteratorValueFunction valueFunction,
-                           QIteratorIncrementFunction incrementFunction,
-                           QIteratorDecrementFunction decrementFunction,
-                           QIteratorLessThanFunction lessThanFunction,
-                           QIteratorEqualsFunction equalsFunction,
-                           PtrDeleterFunction destructor_function)
+                           PtrDeleterFunction destructor_function,
+                           AbstractIteratorAccess* containerAccess)
 {
+    Q_ASSERT(containerAccess);
     jobject returned = nullptr;
 
     jobject obj = qtjambi_java_object_reference(owner, env);
-    returned = Java::Private::QtCore::QIterator.newInstance(env,
-                              obj,
-                              jlong(valueFunction),
-                              jlong(incrementFunction),
-                              jlong(decrementFunction),
-                              jlong(lessThanFunction),
-                              jlong(equalsFunction));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, iteratorPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QIterator",
-#endif
-                                                                                            owner, destructor_function);
+    returned = Java::QtCore::QIterator::newInstance(env, obj);
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedContainer(env, returned, iteratorPtr,
+                                                                                            LINK_NAME_ARG("QIterator")
+                                                                                            owner, destructor_function, containerAccess);
     if (!link) {
         returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_QMapIterator(JNIEnv *env,
-                                           QtJambiNativeID owner,
-                                           void* iteratorPtr,
-                                           QMapIteratorKeyFunction keyFunction,
-                                           QIteratorValueFunction valueFunction,
-                                           QIteratorIncrementFunction incrementFunction,
-                                           QIteratorDecrementFunction decrementFunction,
-                                           QIteratorLessThanFunction lessThanFunction,
-                                           QIteratorEqualsFunction equalsFunction,
-                                           PtrDeleterFunction destructor_function)
+jobject qtjambi_from_QMapIterator(JNIEnv *env,
+                                  QtJambiNativeID owner,
+                                  void* iteratorPtr,
+                                  PtrDeleterFunction destructor_function,
+                                  AbstractBiIteratorAccess* containerAccess)
 {
+    Q_ASSERT(containerAccess);
     jobject returned = nullptr;
 
     jobject obj = qtjambi_java_object_reference(owner, env);
-    returned = Java::Private::QtCore::QMapIterator.newInstance(env,
-                              obj,
-                              jlong(keyFunction),
-                              jlong(valueFunction),
-                              jlong(incrementFunction),
-                              jlong(decrementFunction),
-                              jlong(lessThanFunction),
-                              jlong(equalsFunction));
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, iteratorPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMapIterator",
-#endif
-                                                                                            owner, destructor_function);
+    returned = Java::QtCore::QMapIterator::newInstance(env, obj);
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedContainer(env, returned, iteratorPtr,
+                                                                                            LINK_NAME_ARG("QMapIterator")
+                                                                                            owner, destructor_function, containerAccess);
     if (!link) {
         returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_constQList(JNIEnv *env,
+jobject qtjambi_from_QList(JNIEnv *env,
+                           QtJambiNativeID owner,
+                           const void* listPtr,
+                           CopyFunction copyFunction,
+                           PtrDeleterFunction deleter,
+                           ListType listType,
+                           AbstractListAccess* containerAccess)
+{
+    Q_ASSERT(containerAccess);
+    if(qtjambi_from_nativeId(owner)==listPtr){
+        if(jobject obj = qtjambi_java_object_reference(owner, env)){
+            switch(listType){
+            case ListType::QQueue:
+                if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            case ListType::QStack:
+                if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+#endif
+            default:
+                if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+            }
+        }
+    }else{
+        for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+            if(link && (!copyFunction || link->createdByJava())){
+                jobject obj = link->getJavaObjectLocalRef(env);
+                switch(listType){
+                case ListType::QQueue:
+                    if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                        return obj;
+                    }
+                    break;
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                case ListType::QStack:
+                    if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                        return obj;
+                    }
+                    break;
+    #endif
+                default:
+                    if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                        return obj;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    QByteArray containerName;
+    switch(listType){
+    case ListType::QQueue:
+        returned = Java::QtCore::QQueue::newInstance(env, nullptr);
+        containerName = "QQueue<";
+        break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    case ListType::QStack:
+        returned = Java::QtCore::QStack::newInstance(env, nullptr);
+        containerName = "QStack<";
+        break;
+#endif
+    default:
+        returned = Java::QtCore::QList::newInstance(env, nullptr);
+        containerName = "QList<";
+        break;
+    }
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QList(JNIEnv *env,
+                           const void* listPtr,
+                           AbstractContainerAccess* containerAccess
+                        )
+{
+    if(auto access = dynamic_cast<AbstractListAccess*>(containerAccess))
+        return qtjambi_from_QList(env,
+                                  InvalidNativeID,
+                                  listPtr,
+                                  nullptr,
+                                  nullptr,
+                                  ListType::QList,
+                                  access
+                             );
+    return nullptr;
+}
+
+jobject qtjambi_from_QList(JNIEnv *env,
+                             void* ptr_shared_pointer,
+                             PointerDeleter sharedPointerDeleter,
+                             PointerGetter sharedPointerGetter,
+                             ListType listType,
+                             AbstractListAccess* containerAccess
+                        )
+{
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            switch(listType){
+            case ListType::QQueue:
+                if(Java::QtCore::QQueue::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            case ListType::QStack:
+                if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+#endif
+            default:
+                if(Java::QtCore::QList::isInstanceOf(env, obj)){
+                    return obj;
+                }
+                break;
+            }
+        }
+    }
+
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    QByteArray containerName;
+    switch(listType){
+    case ListType::QQueue:
+        returned = Java::QtCore::QQueue::newInstance(env, nullptr);
+        containerName = "QQueue<";
+        break;
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    case ListType::QStack:
+        returned = Java::QtCore::QStack::newInstance(env, nullptr);
+        containerName = "QStack<";
+        break;
+#endif
+    default:
+        returned = Java::QtCore::QList::newInstance(env, nullptr);
+        containerName = "QList<";
+        break;
+    }
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QStringList(JNIEnv *env,
+                           QtJambiNativeID owner,
+                           const void* listPtr,
+                           CopyFunction copyFunction,
+                           PtrDeleterFunction deleter,
+                           bool isConstant)
+{
+    if(qtjambi_from_nativeId(owner)==listPtr){
+        if(jobject obj = qtjambi_java_object_reference(owner, env)){
+            if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link && (!copyFunction || link->createdByJava())){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+    jobject returned = nullptr;
+    AbstractListAccess* containerAccess = isConstant
+            ? QtJambiPrivate::QListAccess<QString,true>::newInstance()
+            : QtJambiPrivate::QListAccess<QString,false>::newInstance();
+    returned = Java::QtCore::QStringList::newInstance(env, nullptr);
+
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_ARG("QStringList")
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_ARG("QStringList")
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_ARG("QStringList")
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       QMetaType(QMetaType::QStringList),
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       QMetaType(QMetaType::QStringList),
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QStringList(JNIEnv *env,
+                             void* ptr_shared_pointer,
+                             PointerDeleter sharedPointerDeleter,
+                             PointerGetter sharedPointerGetter,
+                             bool isConstant
+                        )
+{
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QStringList::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+
+    AbstractListAccess* containerAccess = isConstant
+            ? QtJambiPrivate::QListAccess<QString,true>::newInstance()
+            : QtJambiPrivate::QListAccess<QString,false>::newInstance();
+
+    jobject returned = nullptr;
+    returned = Java::QtCore::QStringList::newInstance(env, nullptr);
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_ARG("QStringList")
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QSet(JNIEnv *env,
+                         QtJambiNativeID owner,
+                         const void* listPtr,
+                         CopyFunction copyFunction,
+                         PtrDeleterFunction deleter,
+                         AbstractSetAccess* containerAccess)
+{
+    Q_ASSERT(containerAccess);
+    if(qtjambi_from_nativeId(owner)==listPtr){
+        jobject obj = qtjambi_java_object_reference(owner, env);
+        if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+            return obj;
+        }
+    }
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link && (!copyFunction || link->createdByJava())){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QSet::newInstance(env, nullptr);
+    QSharedPointer<QtJambiLink> link;
+    QByteArray containerName = "QSet<";
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QSet(JNIEnv *env,
+                         const void* listPtr,
+                         AbstractContainerAccess* containerAccess)
+{
+    if(auto access = dynamic_cast<AbstractSetAccess*>(containerAccess))
+        return qtjambi_from_QSet(env,
+                                 InvalidNativeID,
+                                 listPtr,
+                                 nullptr,
+                                 nullptr,
+                                 access);
+    return nullptr;
+}
+
+jobject qtjambi_from_QSet(JNIEnv *env,
+                                     void* ptr_shared_pointer,
+                                     PointerDeleter sharedPointerDeleter,
+                                     PointerGetter sharedPointerGetter,
+                                     AbstractSetAccess* containerAccess
+                                )
+{
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QSet::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QSet::newInstance(env, nullptr);
+    QByteArray containerName = "QSet<";
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+jobject qtjambi_from_QLinkedList(JNIEnv *env,
+                                     QtJambiNativeID owner,
+                                     const void* listPtr,
+                                     CopyFunction copyFunction,
+                                     PtrDeleterFunction deleter,
+                                     AbstractLinkedListAccess* containerAccess
+                                )
+{
+    Q_ASSERT(containerAccess);
+    QT_WARNING_DISABLE_DEPRECATED
+    if(qtjambi_from_nativeId(owner)==listPtr){
+        jobject obj = qtjambi_java_object_reference(owner, env);
+        if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+            return obj;
+        }
+    }
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+            return obj;
+        }
+    }
+
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QLinkedList::newInstance(env, nullptr);
+    QSharedPointer<QtJambiLink> link;
+    QByteArray containerName = "QLinkedList<";
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QLinkedList(JNIEnv *env,
+                                     void* ptr_shared_pointer,
+                                     PointerDeleter sharedPointerDeleter,
+                                     PointerGetter sharedPointerGetter,
+                                     AbstractLinkedListAccess* containerAccess
+                                )
+{
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
+
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QLinkedList::newInstance(env, nullptr);
+    QByteArray containerName = "QLinkedList<";
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
+    }
+    return returned;
+}
+
+jobject qtjambi_from_QVector(JNIEnv *env,
                              QtJambiNativeID owner,
                              const void* listPtr,
-                             const std::type_info& typeId,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
+                             CopyFunction copyFunction,
+                             PtrDeleterFunction deleter,
+                             VectorType vectorType,
+                             AbstractVectorAccess* containerAccess)
 {
-
+    Q_ASSERT(containerAccess);
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QList.isInstanceOf(env, obj)){
-            return obj;
+        if(vectorType==VectorType::QStack){
+            if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }else{
+            if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                return obj;
+            }
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(vectorType==VectorType::QStack){
+            if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }else{
+            if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
 
     jobject returned = nullptr;
-    if (clazz) {
-
-        returned = Java::Private::QtCore::QList.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    QByteArray containerName;
+    if(vectorType==VectorType::QStack){
+        returned = Java::QtCore::QStack::newInstance(env, nullptr);
+        containerName = "QStack<";
+    }else {
+        returned = Java::QtCore::QVector::newInstance(env, nullptr);
+        containerName = "QVector<";
+    }
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
         }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_QList(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             void* listPtr,
-                             const std::type_info& typeId,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-
-        returned = Java::Private::QtCore::QList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQQueue(JNIEnv *env,
-                             QtJambiNativeID owner,
+jobject qtjambi_from_QVector(JNIEnv *env,
                              const void* listPtr,
-                             const std::type_info& typeId,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
+                             AbstractContainerAccess* containerAccess)
 {
+    if(auto access = dynamic_cast<AbstractVectorAccess*>(containerAccess))
+        return qtjambi_from_QVector(env,
+                                    InvalidNativeID,
+                                    listPtr,
+                                    nullptr,
+                                    nullptr,
+                                    VectorType::QVector,
+                                    access);
+    return nullptr;
+}
 
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QQueue.isInstanceOf(env, obj)){
-            return obj;
+jobject qtjambi_from_QVector(JNIEnv *env,
+                            void* ptr_shared_pointer,
+                            PointerDeleter sharedPointerDeleter,
+                            PointerGetter sharedPointerGetter,
+                            VectorType vectorType,
+                            AbstractVectorAccess* containerAccess
+                )
+{
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(vectorType==VectorType::QStack){
+                if(Java::QtCore::QStack::isInstanceOf(env, obj)){
+                    return obj;
+                }
+            }else{
+                if(Java::QtCore::QVector::isInstanceOf(env, obj)){
+                    return obj;
+                }
+            }
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QQueue",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
+    containerAccess = checkContainerAccess(env, containerAccess);
+    QByteArray containerName;
+    if(vectorType==VectorType::QStack){
+        returned = Java::QtCore::QStack::newInstance(env, nullptr);
+        containerName = "QStack<";
+    }else{
+        returned = Java::QtCore::QVector::newInstance(env, nullptr);
+        containerName = "QVector<";
+    }
+    containerName += containerAccess->elementMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-
-jobject qtjambi_to_QQueue(JNIEnv *env,
-                             QtJambiNativeID owner,
-                             void* listPtr,
-                             const std::type_info& typeId,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QQueue.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QQueue",
 #endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
 
-jobject qtjambi_to_constQSet(JNIEnv *env,
+jobject qtjambi_from_QHash(JNIEnv *env,
                                      QtJambiNativeID owner,
                                      const void* listPtr,
-                                     const std::type_info& typeId,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetValuesFunction valuesFunction
+                                     CopyFunction copyFunction,
+                                     PtrDeleterFunction deleter,
+                                     AbstractHashAccess* containerAccess
                                 )
 {
-
+    Q_ASSERT(containerAccess);
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QSet.isInstanceOf(env, obj)){
+        if(Java::QtCore::QHash::isInstanceOf(env, obj)){
             return obj;
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QSet",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(Java::QtCore::QHash::isInstanceOf(env, obj)){
+            return obj;
         }
+    }
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QHash::newInstance(env, nullptr);
+    QByteArray containerName = "QHash<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_QSet(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& typeId,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetClearFunction clearFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetInsertFunction insertFunction,
-                                     QSetIntersectFunction intersectFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetRemoveFunction removeFunction,
-                                     QSetReserveFunction reserveFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetSubtractFunction subtractFunction,
-                                     QSetUniteFunction uniteFunction,
-                                     QSetValuesFunction valuesFunction
+jobject qtjambi_from_QHash(JNIEnv *env,
+                                     void* ptr_shared_pointer,
+                                     PointerDeleter sharedPointerDeleter,
+                                     PointerGetter sharedPointerGetter,
+                                     AbstractHashAccess* containerAccess
                                 )
 {
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QSet.isInstanceOf(env, obj)){
-            return obj;
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QHash::isInstanceOf(env, obj)){
+                return obj;
+            }
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(insertFunction),
-                                  jlong(intersectFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(subtractFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QSet",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QHash::newInstance(env, nullptr);
+    QByteArray containerName = "QHash<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_constQLinkedList(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const std::type_info& typeId,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QLinkedList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QLinkedList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QLinkedList(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& typeId,
-                                     QLinkedListAppendFunction appendFunction,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListClearFunction clearFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListPrependFunction prependFunction,
-                                     QLinkedListRemoveAllFunction removeAllFunction,
-                                     QLinkedListRemoveFirstFunction removeFirstFunction,
-                                     QLinkedListRemoveLastFunction removeLastFunction,
-                                     QLinkedListRemoveOneFunction removeOneFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction,
-                                     QLinkedListTakeFirstFunction takeFirstFunction,
-                                     QLinkedListTakeLastFunction takeLastFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QLinkedList.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeFirstFunction),
-                                  jlong(removeLastFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeFirstFunction),
-                                  jlong(takeLastFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QLinkedList",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQVector(JNIEnv *env,
+jobject qtjambi_from_QMultiHash(JNIEnv *env,
                                      QtJambiNativeID owner,
                                      const void* listPtr,
-                                     const std::type_info& typeId,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
+                                     CopyFunction copyFunction,
+                                     PtrDeleterFunction deleter,
+                                     AbstractMultiHashAccess* containerAccess
                                 )
 {
-
+    Q_ASSERT(containerAccess);
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QVector.isInstanceOf(env, obj)){
+        if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
             return obj;
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
+            return obj;
+        }
+    }
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QVector",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMultiHash::newInstance(env, nullptr);
+    QSharedPointer<QtJambiLink> link;
+    QByteArray containerName = "QMultiHash<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
         }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_QVector(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& typeId,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
+jobject qtjambi_from_QMultiHash(JNIEnv *env,
+                                     void* ptr_shared_pointer,
+                                     PointerDeleter sharedPointerDeleter,
+                                     PointerGetter sharedPointerGetter,
+                                     AbstractMultiHashAccess* containerAccess
                                 )
 {
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QVector.isInstanceOf(env, obj)){
-            return obj;
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QMultiHash::isInstanceOf(env, obj)){
+                return obj;
+            }
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QVector",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMultiHash::newInstance(env, nullptr);
+    QByteArray containerName = "QMultiHash<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                              LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                              ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_constQStack(JNIEnv *env,
+jobject qtjambi_from_QMap(JNIEnv *env,
                                      QtJambiNativeID owner,
                                      const void* listPtr,
-                                     const std::type_info& typeId,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
+                                     CopyFunction copyFunction,
+                                     PtrDeleterFunction deleter,
+                                     AbstractMapAccess* containerAccess
                                 )
 {
-
+    Q_ASSERT(containerAccess);
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QStack.isInstanceOf(env, obj)){
+        if(Java::QtCore::QMap::isInstanceOf(env, obj)){
             return obj;
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QStack",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(Java::QtCore::QMap::isInstanceOf(env, obj)){
+            return obj;
         }
+    }
+    jobject returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMap::newInstance(env, nullptr);
+    QByteArray containerName = "QMap<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
+        }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_QStack(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& typeId,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
+jobject qtjambi_from_QMap(JNIEnv *env,
+                                     void* ptr_shared_pointer,
+                                     PointerDeleter sharedPointerDeleter,
+                                     PointerGetter sharedPointerGetter,
+                                     AbstractMapAccess* containerAccess
                                 )
 {
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QStack.isInstanceOf(env, obj)){
-            return obj;
+    Q_ASSERT(containerAccess);
+    Q_ASSERT(sharedPointerGetter);
+    Q_ASSERT(sharedPointerDeleter);
+    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
+        return nullptr;
+    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
+    if (!listPtr)
+        return nullptr;
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QMap::isInstanceOf(env, obj)){
+                return obj;
+            }
         }
     }
-    jclass clazz = resolveClass(env, getJavaName(typeId));
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QStack",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMap::newInstance(env, nullptr);
+    QByteArray containerName = "QMap<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                                LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                                ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_constQHash(JNIEnv *env,
+jobject qtjambi_from_QMultiMap(JNIEnv *env,
                                      QtJambiNativeID owner,
                                      const void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
+                                     CopyFunction copyFunction,
+                                     PtrDeleterFunction deleter,
+                                     AbstractMultiMapAccess* containerAccess
                                 )
 {
-
+    Q_ASSERT(containerAccess);
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QHash.isInstanceOf(env, obj)){
+        if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
             return obj;
         }
     }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QHash.isInstanceOf(env, obj)){
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        jobject obj = link->getJavaObjectLocalRef(env);
+        if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
             return obj;
         }
     }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
 
     jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMultiMap::newInstance(env, nullptr);
+    QByteArray containerName = "QMultiMap<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    QSharedPointer<QtJambiLink> link;
+    if(!!owner){
+        link = QtJambiLink::createLinkForOwnedContainer(env, returned, const_cast<void*>(listPtr),
+                                                        LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                        owner, containerAccess);
+    }else if(deleter){
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, true, deleter, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                       false, false, deleter, containerAccess);
         }
+    }else{
+        if(copyFunction){
+            link = QtJambiLink::createLinkForContainer(env, returned, copyFunction(listPtr),
+                                                       containerMetaType,
+                                                       false, true, containerAccess);
+        }else{
+            link = QtJambiLink::createLinkForContainer(env, returned, const_cast<void*>(listPtr),
+                                                       containerMetaType,
+                                                       false, false, containerAccess);
+        }
+    }
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_to_constQMultiHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMultiHash(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction,
-                                     QMultiHashRemovePairFunction removeAllPairFunction,
-                                     QMultiHashReplaceFunction replaceOneFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiHash.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiHash",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMap",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMap",
-#endif
-                                                                                           owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_constQMultiMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     const void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, const_cast<void*>(listPtr),
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                        "QMultiMap",
-#endif
-                                                                                        owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_to_QMultiMap(JNIEnv *env,
-                                     QtJambiNativeID owner,
-                                     void* listPtr,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction,
-                                     QMultiMapRemovePairFunction removeAllPairFunction,
-                                     QMultiMapReplaceFunction replaceOneFunction
-                                )
-{
-
-    if(qtjambi_from_nativeId(owner)==listPtr){
-        jobject obj = qtjambi_java_object_reference(owner, env);
-        if(obj && Java::Private::QtCore::QMultiMap.isInstanceOf(env, obj)){
-            return obj;
-        }
-    }
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForOwnedObject(env, returned, listPtr,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                            "QMultiMap",
-#endif
-                                                                                            owner, nullptr);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQList_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const std::type_info& typeId,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QList.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-
-jobject qtjambi_from_QList_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const std::type_info& typeId,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQQueue_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const std::type_info& typeId,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListEqualFunction equalFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QQueue",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-
-jobject qtjambi_from_QQueue_shared_pointer(JNIEnv *env,
-                             void* ptr_shared_pointer,
-                             PointerDeleter sharedPointerDeleter,
-                             PointerGetter sharedPointerGetter,
-                             const std::type_info& typeId,
-                             QListAppendFunction appendFunction,
-                             QListAppendListFunction appendListFunction,
-                             QListAtFunction atFunction,
-                             QListBeginFunction beginFunction,
-                             QListClearFunction clearFunction,
-                             QListContainsFunction containsFunction,
-                             QListCountObjectFunction countObjectFunction,
-                             QListEndFunction endFunction,
-                             QListEndsWithFunction endsWithFunction,
-                             QListIndexOfFunction indexOfFunction,
-                             QListInsertFunction insertFunction,
-                             QListLastIndexOfFunction lastIndexOfFunction,
-                             QListMidFunction midFunction,
-                             QListMoveFunction moveFunction,
-                             QListEqualFunction equalFunction,
-                             QListPrependFunction prependFunction,
-                             QListRemoveAllFunction removeAllFunction,
-                             QListRemoveAtFunction removeAtFunction,
-                             QListRemoveOneFunction removeOneFunction,
-                             QListReplaceFunction replaceFunction,
-                             QListReserveFunction reserveFunction,
-                             QListSizeFunction sizeFunction,
-                             QListStartsWithFunction startsWithFunction,
-                             QListSwapFunction swapFunction,
-                             QListTakeAtFunction takeAtFunction,
-                             QListToSetFunction toSetFunction,
-                             QListValueFunction valueFunction,
-                             QListValueDefaultFunction valueDefaultFunction)
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QQueue.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(swapFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toSetFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QQueue",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
-}
-
-jobject qtjambi_from_constQSet_shared_pointer(JNIEnv *env,
+jobject qtjambi_from_QMultiMap(JNIEnv *env,
                                      void* ptr_shared_pointer,
                                      PointerDeleter sharedPointerDeleter,
                                      PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetValuesFunction valuesFunction
+                                     AbstractMultiMapAccess* containerAccess
                                 )
 {
+    Q_ASSERT(containerAccess);
     Q_ASSERT(sharedPointerGetter);
     Q_ASSERT(sharedPointerDeleter);
     if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
@@ -4925,1204 +1217,1418 @@ jobject qtjambi_from_constQSet_shared_pointer(JNIEnv *env,
     void* listPtr = sharedPointerGetter(ptr_shared_pointer);
     if (!listPtr)
         return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
+    for(QSharedPointer<QtJambiLink> link : QtJambiLink::findLinksForPointer(listPtr)){
+        if(link){
+            jobject obj = link->getJavaObjectLocalRef(env);
+            if(Java::QtCore::QMultiMap::isInstanceOf(env, obj)){
+                return obj;
+            }
+        }
+    }
 
     jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QSet",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
+    containerAccess = checkContainerAccess(env, containerAccess);
+    returned = Java::QtCore::QMultiMap::newInstance(env, nullptr);
+    QByteArray containerName = "QMultiMap<";
+    containerName += containerAccess->keyMetaType().name();
+    containerName += ",";
+    containerName += containerAccess->valueMetaType().name();
+    containerName += ">";
+    containerName = QMetaObject::normalizedType(containerName);
+    QMetaType containerMetaType(containerAccess->registerContainer(containerName));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToContainer(env, returned,
+                                                                                                LINK_NAME_META_TYPE_ARG(containerMetaType)
+                                                                                                ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, containerAccess);
+    if (!link) {
+        returned = nullptr;
+        containerAccess->dispose();
     }
     return returned;
 }
 
-jobject qtjambi_from_QSet_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QSetBeginFunction beginFunction,
-                                     QSetCapacityFunction capacityFunction,
-                                     QSetClearFunction clearFunction,
-                                     QSetContainsFunction containsFunction,
-                                     QSetEndFunction endFunction,
-                                     QSetInsertFunction insertFunction,
-                                     QSetIntersectFunction intersectFunction,
-                                     QSetIntersectsFunction intersectsFunction,
-                                     QSetEqualFunction equalFunction,
-                                     QSetRemoveFunction removeFunction,
-                                     QSetReserveFunction reserveFunction,
-                                     QSetSizeFunction sizeFunction,
-                                     QSetSubtractFunction subtractFunction,
-                                     QSetUniteFunction uniteFunction,
-                                     QSetValuesFunction valuesFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QSet.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(endFunction),
-                                  jlong(insertFunction),
-                                  jlong(intersectFunction),
-                                  jlong(intersectsFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(subtractFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valuesFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QSet",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
+template<typename T>
+T& checkedUnref(T* t){
+    Q_ASSERT(t);
+    return *t;
 }
 
-jobject qtjambi_from_constQLinkedList_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
+int qtjambi_register_metatype(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference);
 
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance2(env,
-                                  clazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QLinkedList",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
+    QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") ) QTJAMBI_STACKTRACEINFO );
+    using namespace QtJambiPrivate;
+    AbstractListAccess* containerAccess = nullptr;
+    bool isNativeContainer = false;
+    if(Java::QtCore::QList::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractListAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        switch(elementMetaType.id()){
+        case QMetaType::VoidStar:
+            containerAccess = QListAccess<void*>::newInstance();
+            break;
+        case QMetaType::Bool:
+            containerAccess = QListAccess<bool>::newInstance();
+            break;
+        case QMetaType::Char:
+        case QMetaType::SChar:
+        case QMetaType::UChar:
+            containerAccess = QListAccess<qint8>::newInstance();
+            break;
+        case QMetaType::Short:
+        case QMetaType::UShort:
+            containerAccess = QListAccess<qint16>::newInstance();
+            break;
+        case QMetaType::Int:
+        case QMetaType::UInt:
+            containerAccess = QListAccess<qint32>::newInstance();
+            break;
+        case QMetaType::LongLong:
+        case QMetaType::ULongLong:
+            containerAccess = QListAccess<qint64>::newInstance();
+            break;
+        case QMetaType::Double:
+            containerAccess = QListAccess<double>::newInstance();
+            break;
+        case QMetaType::Float:
+            containerAccess = QListAccess<float>::newInstance();
+            break;
+        case QMetaType::QChar:
+            containerAccess = QListAccess<QChar>::newInstance();
+            break;
+        case QMetaType::QString:
+            containerAccess = QListAccess<QString>::newInstance();
+            break;
+        case QMetaType::QVariant:
+            containerAccess = QListAccess<QVariant>::newInstance();
+            break;
+        case QMetaType::QObjectStar:
+            containerAccess = QListAccess<QObject*>::newInstance();
+            break;
+        default: {
+                elementType = getGlobalClassRef(env, elementType);
+                QByteArray qTypeName = elementMetaType.name();
+                size_t size = size_t(elementMetaType.sizeOf());
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                bool isPointer = elementMetaType.flags() & QMetaType::IsPointer;
+                size_t align = size_t(elementMetaType.alignOf());
+#else
+                bool isStaticType = false;
+                bool isPointer = qTypeName.endsWith("*");
+                size_t align = 0;
+                {
+                    const std::type_info* typeId = getTypeByMetaType(elementMetaType.id());
+                    if(!typeId)
+                        typeId = getTypeByQtName(qTypeName);
+                    if(typeId){
+                        if(isFunctional(*typeId)){
+                            QString typeName = qtjambi_type_name(*typeId);
+                            if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                                isPointer = true;
+                            }
+                        }
+                        if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
+                            isStaticType = typeInfo->isStatic;
+                        if(!isPointer)
+                            align = getValueAlignment(*typeId);
+                    }
+                }
+#endif
+                if(isPointer)
+                    size = 0;
+                InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                    env,
+                                                                                                                    QLatin1String(qTypeName),
+                                                                                                                    elementMetaType,
+                                                                                                                    elementType,
+                                                                                                                    true
+                                                                                                                );
+                ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                    env,
+                                                                                                                    elementType,
+                                                                                                                    QLatin1String(qTypeName),
+                                                                                                                    elementMetaType
+                                                                                                                );
+
+                ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(ContainerType::QList, align, size
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                                                     , isStaticType
+#else
+                                                                                                     , false
+#endif
+                                                                                                     );
+                Q_ASSERT(accessFactory);
+                QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                containerAccess = dynamic_cast<AbstractListAccess*>(accessFactory(elementMetaType,
+                                                                             hashFunction,
+                                                                             internalToExternalConverter,
+                                                                             externalToInternalConverter));
+            }
+            break;
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QList(env, other, elementMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name;
+    name = "QList<";
+    name += containerAccess->elementMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        containerAccess->appendList(env, listPtr, other);
+    }
 }
 
-jobject qtjambi_from_QLinkedList_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QLinkedListAppendFunction appendFunction,
-                                     QLinkedListBeginFunction beginFunction,
-                                     QLinkedListClearFunction clearFunction,
-                                     QLinkedListContainsFunction containsFunction,
-                                     QLinkedListCountObjectFunction countObjectFunction,
-                                     QLinkedListEndFunction endFunction,
-                                     QLinkedListEndsWithFunction endsWithFunction,
-                                     QLinkedListFirstFunction firstFunction,
-                                     QLinkedListLastFunction lastFunction,
-                                     QLinkedListEqualFunction equalFunction,
-                                     QLinkedListPrependFunction prependFunction,
-                                     QLinkedListRemoveAllFunction removeAllFunction,
-                                     QLinkedListRemoveFirstFunction removeFirstFunction,
-                                     QLinkedListRemoveLastFunction removeLastFunction,
-                                     QLinkedListRemoveOneFunction removeOneFunction,
-                                     QLinkedListSizeFunction sizeFunction,
-                                     QLinkedListStartsWithFunction startsWithFunction,
-                                     QLinkedListTakeFirstFunction takeFirstFunction,
-                                     QLinkedListTakeLastFunction takeLastFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QLinkedList.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(firstFunction),
-                                  jlong(lastFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeFirstFunction),
-                                  jlong(removeLastFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeFirstFunction),
-                                  jlong(takeLastFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                  "QLinkedList",
-#endif
-                                                                                  false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
+    QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") ) QTJAMBI_STACKTRACEINFO );
+    using namespace QtJambiPrivate;
+    AbstractSetAccess* containerAccess = nullptr;
+    bool isNativeContainer = false;
+    if(Java::QtCore::QSet::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractSetAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        {
+            switch(elementMetaType.id()){
+            case QMetaType::VoidStar:
+                containerAccess = QSetAccess<void*>::newInstance();
+                break;
+            case QMetaType::Bool:
+                containerAccess = QSetAccess<bool>::newInstance();
+                break;
+            case QMetaType::Char:
+            case QMetaType::SChar:
+            case QMetaType::UChar:
+                containerAccess = QSetAccess<qint8>::newInstance();
+                break;
+            case QMetaType::Short:
+            case QMetaType::UShort:
+                containerAccess = QSetAccess<qint16>::newInstance();
+                break;
+            case QMetaType::Int:
+            case QMetaType::UInt:
+                containerAccess = QSetAccess<qint32>::newInstance();
+                break;
+            case QMetaType::LongLong:
+            case QMetaType::ULongLong:
+                containerAccess = QSetAccess<qint64>::newInstance();
+                break;
+            case QMetaType::Double:
+                containerAccess = QSetAccess<double>::newInstance();
+                break;
+            case QMetaType::Float:
+                containerAccess = QSetAccess<float>::newInstance();
+                break;
+            case QMetaType::QChar:
+                containerAccess = QSetAccess<QChar>::newInstance();
+                break;
+            case QMetaType::QString:
+                containerAccess = QSetAccess<QString>::newInstance();
+                break;
+            case QMetaType::QObjectStar:
+                containerAccess = QSetAccess<QObject*>::newInstance();
+                break;
+            default: {
+                    elementType = getGlobalClassRef(env, elementType);
+                    QByteArray qTypeName = elementMetaType.name();
+                    size_t size = size_t(elementMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                    bool isPointer = elementMetaType.flags() & QMetaType::IsPointer;
+                    size_t align = size_t(elementMetaType.alignOf());
+    #else
+                    bool isStaticType = false;
+                    bool isPointer = qTypeName.endsWith("*");
+                    size_t align = 0;
+                    {
+                        const std::type_info* typeId = getTypeByMetaType(elementMetaType.id());
+                        if(!typeId)
+                            typeId = getTypeByQtName(qTypeName);
+                        if(typeId){
+                            if(isFunctional(*typeId)){
+                                QString typeName = qtjambi_type_name(*typeId);
+                                if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                                    isPointer = true;
+                                }
+                            }
+                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
+                                isStaticType = typeInfo->isStatic;
+                            if(!isPointer)
+                                align = getValueAlignment(*typeId);
+                        }
+                    }
+    #endif
+                    if(isPointer)
+                        size = 0;
+                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                        env,
+                                                                                                                        QLatin1String(qTypeName),
+                                                                                                                        elementMetaType,
+                                                                                                                        elementType,
+                                                                                                                        true
+                                                                                                                    );
+                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                        env,
+                                                                                                                        elementType,
+                                                                                                                        QLatin1String(qTypeName),
+                                                                                                                        elementMetaType
+                                                                                                                    );
+                    ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(ContainerType::QSet, align, size
+    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                                                                                    , isStaticType
+    #else
+                                                                                                                                    , false
+    #endif
+                                                                                                         );
+                    Q_ASSERT(accessFactory);
+                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    containerAccess = dynamic_cast<AbstractSetAccess*>(accessFactory(elementMetaType,
+                                                                                 hashFunction,
+                                                                                 internalToExternalConverter,
+                                                                                 externalToInternalConverter));
+                }
+                break;
+            }
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QSet(env, other, elementMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QSet<";
+    name += containerAccess->elementMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        jobject iter = qtjambi_collection_iterator(env, other);
+        while(qtjambi_iterator_has_next(env, iter)){
+            containerAccess->insert(env, listPtr, qtjambi_iterator_next(env, iter));
+        }
+    }
 }
 
-jobject qtjambi_from_constQVector_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QVector",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
+    QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QLinkedList") ) QTJAMBI_STACKTRACEINFO );
+    using namespace QtJambiPrivate;
+    AbstractLinkedListAccess* containerAccess = nullptr;
+    bool isNativeContainer = false;
+    if(Java::QtCore::QLinkedList::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractLinkedListAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        {
+            switch(elementMetaType.id()){
+            case QMetaType::VoidStar:
+                containerAccess = QLinkedListAccess<void*>::newInstance();
+                break;
+            case QMetaType::Bool:
+                containerAccess = QLinkedListAccess<bool>::newInstance();
+                break;
+            case QMetaType::Char:
+            case QMetaType::SChar:
+            case QMetaType::UChar:
+                containerAccess = QLinkedListAccess<qint8>::newInstance();
+                break;
+            case QMetaType::Short:
+            case QMetaType::UShort:
+                containerAccess = QLinkedListAccess<qint16>::newInstance();
+                break;
+            case QMetaType::Int:
+            case QMetaType::UInt:
+                containerAccess = QLinkedListAccess<qint32>::newInstance();
+                break;
+            case QMetaType::LongLong:
+            case QMetaType::ULongLong:
+                containerAccess = QLinkedListAccess<qint64>::newInstance();
+                break;
+            case QMetaType::Double:
+                containerAccess = QLinkedListAccess<double>::newInstance();
+                break;
+            case QMetaType::Float:
+                containerAccess = QLinkedListAccess<float>::newInstance();
+                break;
+            case QMetaType::QChar:
+                containerAccess = QLinkedListAccess<QChar>::newInstance();
+                break;
+            case QMetaType::QString:
+                containerAccess = QLinkedListAccess<QString>::newInstance();
+                break;
+            case QMetaType::QVariant:
+                containerAccess = QLinkedListAccess<QVariant>::newInstance();
+                break;
+            case QMetaType::QObjectStar:
+                containerAccess = QLinkedListAccess<QObject*>::newInstance();
+                break;
+            default: {
+                    elementType = getGlobalClassRef(env, elementType);
+                    size_t size = size_t(elementMetaType.sizeOf());
+                    bool isStaticType = false;
+                    bool isPointer = elementMetaType.name().endsWith("*");
+                    size_t align = 0;
+                    {
+                        const std::type_info* typeId = getTypeByMetaType(elementMetaType.id());
+                        if(!typeId)
+                            typeId = getTypeByQtName(elementMetaType.name());
+                        if(typeId){
+                            if(isFunctional(*typeId)){
+                                QString typeName = qtjambi_type_name(*typeId);
+                                if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                                    isPointer = true;
+                                }
+                            }
+                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
+                                isStaticType = typeInfo->isStatic;
+                            if(!isPointer)
+                                align = getValueAlignment(*typeId);
+                        }
+                    }
+                    if(isPointer)
+                        size = 0;
+                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                        env,
+                                                                                                                        QLatin1String(elementMetaType.name()),
+                                                                                                                        elementMetaType,
+                                                                                                                        elementType,
+                                                                                                                        true
+                                                                                                                    );
+                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                        env,
+                                                                                                                        elementType,
+                                                                                                                        QLatin1String(elementMetaType.name()),
+                                                                                                                        elementMetaType
+                                                                                                                    );
+                    ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(ContainerType::QLinkedList, align, size, isStaticType);
+                    Q_ASSERT(accessFactory);
+                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    containerAccess = dynamic_cast<AbstractLinkedListAccess*>(accessFactory(elementMetaType,
+                                                                                 hashFunction,
+                                                                                 internalToExternalConverter,
+                                                                                 externalToInternalConverter));
+                }
+                break;
+            }
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QLinkedList(env, other, elementMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QLinkedList<";
+    name += containerAccess->elementMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        jobject iter = qtjambi_collection_iterator(env, other);
+        while(qtjambi_iterator_has_next(env, iter)){
+            containerAccess->append(env, listPtr, qtjambi_iterator_next(env, iter));
+        }
+    }
 }
 
-jobject qtjambi_from_QVector_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QVector.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QVector",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
+    QMetaType& elementMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(elementMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QVector") ) QTJAMBI_STACKTRACEINFO );
+    using namespace QtJambiPrivate;
+    AbstractVectorAccess* containerAccess = nullptr;
+    bool isNativeContainer = false;
+    if(Java::QtCore::QVector::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractVectorAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer  = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        {
+            switch(elementMetaType.id()){
+            case QMetaType::VoidStar:
+                containerAccess = QVectorAccess<void*>::newInstance();
+                break;
+            case QMetaType::Bool:
+                containerAccess = QVectorAccess<bool>::newInstance();
+                break;
+            case QMetaType::Char:
+            case QMetaType::SChar:
+            case QMetaType::UChar:
+                containerAccess = QVectorAccess<qint8>::newInstance();
+                break;
+            case QMetaType::Short:
+            case QMetaType::UShort:
+                containerAccess = QVectorAccess<qint16>::newInstance();
+                break;
+            case QMetaType::Int:
+            case QMetaType::UInt:
+                containerAccess = QVectorAccess<qint32>::newInstance();
+                break;
+            case QMetaType::LongLong:
+            case QMetaType::ULongLong:
+                containerAccess = QVectorAccess<qint64>::newInstance();
+                break;
+            case QMetaType::Double:
+                containerAccess = QVectorAccess<double>::newInstance();
+                break;
+            case QMetaType::Float:
+                containerAccess = QVectorAccess<float>::newInstance();
+                break;
+            case QMetaType::QChar:
+                containerAccess = QVectorAccess<QChar>::newInstance();
+                break;
+            case QMetaType::QString:
+                containerAccess = QVectorAccess<QString>::newInstance();
+                break;
+            case QMetaType::QVariant:
+                containerAccess = QVectorAccess<QVariant>::newInstance();
+                break;
+            case QMetaType::QObjectStar:
+                containerAccess = QVectorAccess<QObject*>::newInstance();
+                break;
+            default: {
+                    elementType = getGlobalClassRef(env, elementType);
+                    size_t size = size_t(elementMetaType.sizeOf());
+                    bool isStaticType = false;
+                    bool isPointer = elementMetaType.name().endsWith("*");
+                    size_t align = 0;
+                    {
+                        const std::type_info* typeId = getTypeByMetaType(elementMetaType.id());
+                        if(!typeId)
+                            typeId = getTypeByQtName(elementMetaType.name());
+                        if(typeId){
+                            if(isFunctional(*typeId)){
+                                QString typeName = qtjambi_type_name(*typeId);
+                                if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                                    isPointer = true;
+                                }
+                            }
+                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
+                                isStaticType = typeInfo->isStatic;
+                            if(!isPointer)
+                                align = getValueAlignment(*typeId);
+                        }
+                    }
+                    if(isPointer)
+                        size = 0;
+                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                        env,
+                                                                                                                        QLatin1String(elementMetaType.name()),
+                                                                                                                        elementMetaType,
+                                                                                                                        elementType,
+                                                                                                                        true
+                                                                                                                    );
+                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                        env,
+                                                                                                                        elementType,
+                                                                                                                        QLatin1String(elementMetaType.name()),
+                                                                                                                        elementMetaType
+                                                                                                                    );
+                    ContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(ContainerType::QVector, align, size, isStaticType);
+                    Q_ASSERT(accessFactory);
+                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    containerAccess = dynamic_cast<AbstractVectorAccess*>(accessFactory(elementMetaType,
+                                                                                 hashFunction,
+                                                                                 internalToExternalConverter,
+                                                                                 externalToInternalConverter));
+                }
+                break;
+            }
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QVector(env, other, elementMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QVector<";
+    name += containerAccess->elementMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        containerAccess->appendVector(env, listPtr, other);
+    }
+}
+#endif
+
+void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
+    QMetaType& keyMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(keyMetaTypeId));
+    QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") ) QTJAMBI_STACKTRACEINFO );
+    keyType = getGlobalClassRef(env, keyType);
+    valueType = getGlobalClassRef(env, valueType);
+    using namespace QtJambiPrivate;
+    AbstractHashAccess* containerAccess = nullptr;
+    bool isNativeContainer = false;
+    if(Java::QtCore::QHash::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractHashAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+        }
+    }
+    if(!containerAccess){
+        size_t size1 = size_t(keyMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer1 = keyMetaType.flags() & QMetaType::IsPointer;
+        size_t align1 = size_t(keyMetaType.alignOf());
+    #else
+        bool isPointer1 = keyMetaType.name().endsWith("*");
+        size_t align1 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(keyMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(keyMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer1 = true;
+                    }
+                }
+                align1 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        size_t size2 = size_t(valueMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer2 = valueMetaType.flags() & QMetaType::IsPointer;
+        size_t align2 = size_t(valueMetaType.alignOf());
+    #else
+        bool isPointer2 = valueMetaType.name().endsWith("*");
+        size_t align2 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(valueMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(valueMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer2 = true;
+                    }
+                }
+                align2 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        if(!containerAccess){
+            InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType,
+                                                                                                                keyType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                keyType,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType
+                                                                                                            );
+            InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType,
+                                                                                                                valueType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                valueType,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType
+                                                                                                            );
+            if(isPointer1)
+                size1 = 0;
+            if(isPointer2)
+                size2 = 0;
+            BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(MapType::QHash, align1, size1, align2, size2);
+            Q_ASSERT(accessFactory);
+            QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+            QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+            containerAccess = dynamic_cast<AbstractHashAccess*>(accessFactory(
+                                                                        keyMetaType,
+                                                                        hashFunction1,
+                                                                        keyInternalToExternalConverter,
+                                                                        keyExternalToInternalConverter,
+                                                                        valueMetaType,
+                                                                        hashFunction2,
+                                                                        valueInternalToExternalConverter,
+                                                                        valueExternalToInternalConverter));
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QHash(env, other, keyMetaType, valueMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QHash<";
+    name += containerAccess->keyMetaType().name();
+    name += ",";
+    name += containerAccess->valueMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        jobject iter = qtjambi_map_entryset_iterator(env, other);
+        while(qtjambi_iterator_has_next(env, iter)){
+            jobject entry = qtjambi_iterator_next(env, iter);
+            containerAccess->insert(env, listPtr, qtjambi_map$entry_key(env, entry), qtjambi_map$entry_value(env, entry));
+        }
+    }
 }
 
-jobject qtjambi_from_constQStack_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance2(env,
-                                  clazz,
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QStack",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
+    QMetaType& keyMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(keyMetaTypeId));
+    QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") ) QTJAMBI_STACKTRACEINFO );
+    keyType = getGlobalClassRef(env, keyType);
+    valueType = getGlobalClassRef(env, valueType);
+    using namespace QtJambiPrivate;
+    bool isNativeContainer = false;
+    AbstractMultiHashAccess* containerAccess = nullptr;
+    if(Java::QtCore::QMultiHash::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractMultiHashAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        size_t size1 = size_t(keyMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer1 = keyMetaType.flags() & QMetaType::IsPointer;
+        size_t align1 = size_t(keyMetaType.alignOf());
+    #else
+        bool isPointer1 = keyMetaType.name().endsWith("*");
+        size_t align1 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(keyMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(keyMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer1 = true;
+                    }
+                }
+                align1 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        size_t size2 = size_t(valueMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer2 = valueMetaType.flags() & QMetaType::IsPointer;
+        size_t align2 = size_t(valueMetaType.alignOf());
+    #else
+        bool isPointer2 = valueMetaType.name().endsWith("*");
+        size_t align2 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(valueMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(valueMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer2 = true;
+                    }
+                }
+                align2 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        if(!containerAccess){
+            InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType,
+                                                                                                                keyType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                keyType,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType
+                                                                                                            );
+            InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType,
+                                                                                                                valueType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                valueType,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType
+                                                                                                            );
+
+            if(isPointer1)
+                size1 = 0;
+            if(isPointer2)
+                size2 = 0;
+            BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(MapType::QMultiHash, align1, size1, align2, size2);
+            QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+            QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+            containerAccess = dynamic_cast<AbstractMultiHashAccess*>(accessFactory(
+                                                                        keyMetaType,
+                                                                        hashFunction1,
+                                                                        keyInternalToExternalConverter,
+                                                                        keyExternalToInternalConverter,
+                                                                        valueMetaType,
+                                                                        hashFunction2,
+                                                                        valueInternalToExternalConverter,
+                                                                        valueExternalToInternalConverter));
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QMultiHash(env, other, keyMetaType, valueMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QMultiHash<";
+    name += containerAccess->keyMetaType().name();
+    name += ",";
+    name += containerAccess->valueMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        jobject iter = qtjambi_map_entryset_iterator(env, other);
+        while(qtjambi_iterator_has_next(env, iter)){
+            jobject entry = qtjambi_iterator_next(env, iter);
+            jobject list = qtjambi_map$entry_value(env, entry);
+            jobject iter2 = qtjambi_collection_iterator(env, list);
+            while(qtjambi_iterator_has_next(env, iter2)){
+                containerAccess->insert(env, listPtr, qtjambi_map$entry_key(env, entry), qtjambi_iterator_next(env, iter2));
+            }
+        }
+    }
 }
 
-jobject qtjambi_from_QStack_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& typeId,
-                                     QVectorAppendFunction appendFunction,
-                                     QVectorAppendVectorFunction appendListFunction,
-                                     QVectorAtFunction atFunction,
-                                     QVectorBeginFunction beginFunction,
-                                     QVectorCapacityFunction capacityFunction,
-                                     QVectorClearFunction clearFunction,
-                                     QVectorContainsFunction containsFunction,
-                                     QVectorCountObjectFunction countObjectFunction,
-                                     QVectorEndFunction endFunction,
-                                     QVectorEndsWithFunction endsWithFunction,
-                                     QVectorFillFunction fillFunction,
-                                     QVectorIndexOfFunction indexOfFunction,
-                                     QVectorInsertFunction insertFunction,
-                                     QVectorInsertNFunction insertNFunction,
-                                     QVectorLastIndexOfFunction lastIndexOfFunction,
-                                     QVectorMidFunction midFunction,
-                                     QVectorMoveFunction moveFunction,
-                                     QVectorEqualFunction equalFunction,
-                                     QVectorPrependFunction prependFunction,
-                                     QVectorRemoveAllFunction removeAllFunction,
-                                     QVectorRemoveAtFunction removeAtFunction,
-                                     QVectorRemoveNFunction removeNFunction,
-                                     QVectorRemoveOneFunction removeOneFunction,
-                                     QVectorReplaceFunction replaceFunction,
-                                     QVectorReserveFunction reserveFunction,
-                                     QVectorResizeFunction resizeFunction,
-                                     QVectorShrinkToFitFunction shrinkToFitFunction,
-                                     QVectorSizeFunction sizeFunction,
-                                     QVectorStartsWithFunction startsWithFunction,
-                                     QVectorTakeAtFunction takeAtFunction,
-                                     QVectorToListFunction toListFunction,
-                                     QVectorValueFunction valueFunction,
-                                     QVectorValueDefaultFunction valueDefaultFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass clazz = resolveClass(env, getJavaName(typeId));
-
-    jobject returned = nullptr;
-    if (clazz) {
-        returned = Java::Private::QtCore::QStack.newInstance(env,
-                                  clazz,
-                                  jlong(appendFunction),
-                                  jlong(appendListFunction),
-                                  jlong(atFunction),
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(endsWithFunction),
-                                  jlong(fillFunction),
-                                  jlong(indexOfFunction),
-                                  jlong(insertFunction),
-                                  jlong(insertNFunction),
-                                  jlong(lastIndexOfFunction),
-                                  jlong(midFunction),
-                                  jlong(moveFunction),
-                                  jlong(equalFunction),
-                                  jlong(prependFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(removeAtFunction),
-                                  jlong(removeNFunction),
-                                  jlong(removeOneFunction),
-                                  jlong(replaceFunction),
-                                  jlong(reserveFunction),
-                                  jlong(resizeFunction),
-                                  jlong(shrinkToFitFunction),
-                                  jlong(sizeFunction),
-                                  jlong(startsWithFunction),
-                                  jlong(takeAtFunction),
-                                  jlong(toListFunction),
-                                  jlong(valueFunction),
-                                  jlong(valueDefaultFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QStack",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
+    QMetaType& keyMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(keyMetaTypeId));
+    QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") ) QTJAMBI_STACKTRACEINFO );
+    keyType = getGlobalClassRef(env, keyType);
+    valueType = getGlobalClassRef(env, valueType);
+    using namespace QtJambiPrivate;
+    bool isNativeContainer = false;
+    AbstractMapAccess* containerAccess = nullptr;
+    if(Java::QtCore::QMap::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractMapAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        size_t size1 = size_t(keyMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer1 = keyMetaType.flags() & QMetaType::IsPointer;
+        size_t align1 = size_t(keyMetaType.alignOf());
+    #else
+        bool isPointer1 = keyMetaType.name().endsWith("*");
+        size_t align1 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(keyMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(keyMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer1 = true;
+                    }
+                }
+                align1 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        size_t size2 = size_t(valueMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer2 = valueMetaType.flags() & QMetaType::IsPointer;
+        size_t align2 = size_t(valueMetaType.alignOf());
+    #else
+        bool isPointer2 = valueMetaType.name().endsWith("*");
+        size_t align2 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(valueMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(valueMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer2 = true;
+                    }
+                }
+                align2 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        if(!containerAccess){
+            InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType,
+                                                                                                                keyType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                keyType,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType
+                                                                                                            );
+            InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType,
+                                                                                                                valueType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                valueType,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType
+                                                                                                            );
+
+            if(isPointer1)
+                size1 = 0;
+            if(isPointer2)
+                size2 = 0;
+            BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(MapType::QMap, align1, size1, align2, size2);
+            Q_ASSERT(accessFactory);
+            QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+            QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+            containerAccess = dynamic_cast<AbstractMapAccess*>(accessFactory(
+                                                                        keyMetaType,
+                                                                        hashFunction1,
+                                                                        keyInternalToExternalConverter,
+                                                                        keyExternalToInternalConverter,
+                                                                        valueMetaType,
+                                                                        hashFunction2,
+                                                                        valueInternalToExternalConverter,
+                                                                        valueExternalToInternalConverter));
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QMap(env, other, keyMetaType, valueMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QMap<";
+    name += containerAccess->keyMetaType().name();
+    name += ",";
+    name += containerAccess->valueMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else if(!isNativeContainer && other){
+        jobject iter = qtjambi_map_entryset_iterator(env, other);
+        while(qtjambi_iterator_has_next(env, iter)){
+            jobject entry = qtjambi_iterator_next(env, iter);
+            containerAccess->insert(env, listPtr, qtjambi_map$entry_key(env, entry), qtjambi_map$entry_value(env, entry));
+        }
+    }
 }
 
-jobject qtjambi_from_constQHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
+    QMetaType& keyMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(keyMetaTypeId));
+    QMetaType& valueMetaType = checkedUnref(qtjambi_object_from_nativeId<QMetaType>(valueMetaTypeId));
+    SuperTypeInfos superTypeInfos = getSuperTypeInfos(env, env->GetObjectClass(object));
+    if(superTypeInfos.size()>1)
+        JavaException::raiseError(env, qPrintable( QString("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") ) QTJAMBI_STACKTRACEINFO );
+    keyType = getGlobalClassRef(env, keyType);
+    valueType = getGlobalClassRef(env, valueType);
+    using namespace QtJambiPrivate;
+    bool isNativeContainer = false;
+    AbstractMultiMapAccess* containerAccess = nullptr;
+    if(Java::QtCore::QMultiMap::isInstanceOf(env, other)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            containerAccess = dynamic_cast<AbstractMultiMapAccess*>(link->containerAccess());
+            if(containerAccess){
+                containerAccess = containerAccess->clone();
+                isNativeContainer = true;
+            }
+        }else{
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
     }
-    return returned;
+    if(!containerAccess){
+        size_t size1 = size_t(keyMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer1 = keyMetaType.flags() & QMetaType::IsPointer;
+        size_t align1 = size_t(keyMetaType.alignOf());
+    #else
+        bool isPointer1 = keyMetaType.name().endsWith("*");
+        size_t align1 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(keyMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(keyMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer1 = true;
+                    }
+                }
+                align1 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        size_t size2 = size_t(valueMetaType.sizeOf());
+    #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+        bool isPointer2 = valueMetaType.flags() & QMetaType::IsPointer;
+        size_t align2 = size_t(valueMetaType.alignOf());
+    #else
+        bool isPointer2 = valueMetaType.name().endsWith("*");
+        size_t align2 = 0;
+        {
+            const std::type_info* typeId = getTypeByMetaType(valueMetaType.id());
+            if(!typeId)
+                typeId = getTypeByQtName(valueMetaType.name());
+            if(typeId){
+                if(isFunctional(*typeId)){
+                    QString typeName = qtjambi_type_name(*typeId);
+                    if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
+                        isPointer2 = true;
+                    }
+                }
+                align2 = getValueAlignment(*typeId);
+            }
+        }
+    #endif
+
+        if(!containerAccess){
+            InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType,
+                                                                                                                keyType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                keyType,
+                                                                                                                QLatin1String(keyMetaType.name()),
+                                                                                                                keyMetaType
+                                                                                                            );
+            InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                                                                                                                env,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType,
+                                                                                                                valueType,
+                                                                                                                true
+                                                                                                            );
+            ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                                                                                                                env,
+                                                                                                                valueType,
+                                                                                                                QLatin1String(valueMetaType.name()),
+                                                                                                                valueMetaType
+                                                                                                            );
+
+            if(isPointer1)
+                size1 = 0;
+            if(isPointer2)
+                size2 = 0;
+            BiContainerAccessFactory accessFactory = ContainerAccessFactories::getAccessFactory(MapType::QMultiMap, align1, size1, align2, size2);
+            Q_ASSERT(accessFactory);
+            QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+            QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+            containerAccess = dynamic_cast<AbstractMultiMapAccess*>(accessFactory(
+                                                                        keyMetaType,
+                                                                        hashFunction1,
+                                                                        keyInternalToExternalConverter,
+                                                                        keyExternalToInternalConverter,
+                                                                        valueMetaType,
+                                                                        hashFunction2,
+                                                                        valueInternalToExternalConverter,
+                                                                        valueExternalToInternalConverter));
+        }
+        containerAccess = checkContainerAccess(env, containerAccess);
+        isNativeContainer = other && qtjambi_is_QMultiMap(env, other, keyMetaType, valueMetaType);
+    }
+    void* listPtr;
+    if(isNativeContainer){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, other)){
+            listPtr = containerAccess->copyContainer(link->pointer());
+        }else{
+            if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, other)){
+                containerAccess->dispose();
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, other).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+            }
+            listPtr = containerAccess->createContainer();
+        }
+    }else{
+        listPtr = containerAccess->createContainer();
+    }
+    QByteArray name = "QMultiMap<";
+    name += containerAccess->keyMetaType().name();
+    name += ",";
+    name += containerAccess->valueMetaType().name();
+    name += ">";
+    name = QMetaObject::normalizedType(name);
+    QMetaType containerMetaType(containerAccess->registerContainer(name));
+    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForContainer(env, object, listPtr,
+                                                                                   containerMetaType,
+                                                                                   true, true, containerAccess);
+    if (!link) {
+        containerAccess->containerDeleter()(listPtr);
+        containerAccess->dispose();
+    }else{
+        if(!isNativeContainer && other){
+            jobject iter = qtjambi_map_entryset_iterator(env, other);
+            while(qtjambi_iterator_has_next(env, iter)){
+                jobject entry = qtjambi_iterator_next(env, iter);
+                jobject list = qtjambi_map$entry_value(env, entry);
+                jobject iter2 = qtjambi_collection_iterator(env, list);
+                while(qtjambi_iterator_has_next(env, iter2)){
+                    containerAccess->insert(env, listPtr, qtjambi_map$entry_key(env, entry), qtjambi_iterator_next(env, iter2));
+                }
+            }
+        }
+    }
 }
 
-jobject qtjambi_from_QHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                                    "QHash",
-#endif
-                                                                                                    false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+bool qtjambi_is_static_type(const QMetaType& metaType){
+    {
+        const std::type_info* typeId = getTypeByQtName(metaType.name());
+        if(!typeId)
+            typeId = getTypeByMetaType(metaType.id());
+        if(typeId){
+            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
+                return typeInfo->isStatic;
         }
     }
-    return returned;
+    return QtJambiTypeManager::isStaticType(QLatin1String(metaType.name()));
+}
+#endif
+
+
+typedef QMap<hash_type, ContainerAccessFactory> ContainerAccessFactoryHash;
+typedef QMap<hash_type, BiContainerAccessFactory> BiContainerAccessFactoryHash;
+Q_GLOBAL_STATIC(ContainerAccessFactoryHash, gContainerAccessFactoryHash)
+Q_GLOBAL_STATIC(BiContainerAccessFactoryHash, gBiContainerAccessFactoryHash)
+
+inline hash_type qHash(ContainerType containerType, size_t align, size_t size
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                       , bool isStatic
+#endif
+) {
+    if(size==0)
+        align=0;
+    switch(containerType){
+    case ContainerType::QStack:
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        containerType = ContainerType::QVector;
+        break;
+#endif
+    case ContainerType::QQueue:
+        containerType = ContainerType::QList;
+        break;
+    default: break;
+    }
+    QCryptographicHash hashGenerator(QCryptographicHash::Md5);
+    hashGenerator.addData(reinterpret_cast<char*>(&containerType), sizeof(containerType));
+    hashGenerator.addData(reinterpret_cast<char*>(&align), sizeof(align));
+    hashGenerator.addData(reinterpret_cast<char*>(&size), sizeof(size));
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    switch(containerType){
+    case ContainerType::QList:
+        if(size <= sizeof(void*)){
+            hashGenerator.addData(reinterpret_cast<char*>(&isStatic), sizeof(isStatic));
+        }
+        break;
+    default: break;
+    }
+#endif
+    QByteArray result = hashGenerator.result();
+    hash_type h;
+    if(size_t(result.size())==sizeof(hash_type)){
+        h = *reinterpret_cast<hash_type*>(result.data());
+    }else{
+        h = qHash(result);
+    }
+    return h;
 }
 
-jobject qtjambi_from_constQMultiHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction
-                                )
+inline hash_type qHash(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2)
 {
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiHash",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
+    if(size1==0)
+        align1=0;
+    if(size2==0)
+        align2=0;
+    QCryptographicHash hashGenerator(QCryptographicHash::Md5);
+    hashGenerator.addData(reinterpret_cast<char*>(&containerType), sizeof(containerType));
+    hashGenerator.addData(reinterpret_cast<char*>(&align1), sizeof(align1));
+    hashGenerator.addData(reinterpret_cast<char*>(&size1), sizeof(size1));
+    hashGenerator.addData(reinterpret_cast<char*>(&align2), sizeof(align2));
+    hashGenerator.addData(reinterpret_cast<char*>(&size2), sizeof(size2));
+    QByteArray result = hashGenerator.result();
+    hash_type h;
+    if(size_t(result.size())==sizeof(hash_type)){
+        h = *reinterpret_cast<hash_type*>(result.data());
+    }else{
+        h = qHash(result);
     }
-    return returned;
+    return h;
 }
 
-jobject qtjambi_from_QMultiHash_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QHashBeginFunction beginFunction,
-                                     QHashCapacityFunction capacityFunction,
-                                     QHashClearFunction clearFunction,
-                                     QHashContainsFunction containsFunction,
-                                     QHashCountObjectFunction countObjectFunction,
-                                     QHashEndFunction endFunction,
-                                     QHashFindFunction findFunction,
-                                     QHashInsertFunction insertFunction,
-                                     QHashKeyFunction keyFunction,
-                                     QHashKeysFunction keysFunction,
-                                     QHashKeysForValueFunction keysForValueFunction,
-                                     QHashEqualFunction equalFunction,
-                                     QHashRemoveAllFunction removeAllFunction,
-                                     QHashReserveFunction reserveFunction,
-                                     QHashSizeFunction sizeFunction,
-                                     QHashTakeFunction takeFunction,
-                                     QHashUniqueKeysFunction uniqueKeysFunction,
-                                     QHashUniteFunction uniteFunction,
-                                     QHashValueFunction valueFunction,
-                                     QHashValuesFunction valuesFunction,
-                                     QHashValuesKeyFunction valuesKeyFunction,
-                                     QMultiHashContainsPairFunction containsPairFunction,
-                                     QMultiHashCountPairFunction countPairFunction,
-                                     QMultiHashFindPairFunction findPairFunction,
-                                     QMultiHashRemovePairFunction removeAllPairFunction,
-                                     QMultiHashReplaceFunction replaceOneFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiHash.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(capacityFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(reserveFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiHash",
+ContainerAccessFactory ContainerAccessFactories::getAccessFactory(ContainerType containerType, size_t align, size_t size, bool
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                                  isStatic
 #endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
+                                                                            ){
+    return gContainerAccessFactoryHash->value(qHash(containerType, align, size
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                    , isStatic
+#endif
+                                            ), nullptr);
 }
 
-jobject qtjambi_from_constQMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
+BiContainerAccessFactory ContainerAccessFactories::getAccessFactory(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2){
+    return gBiContainerAccessFactoryHash->value(qHash(containerType, align1, size1, align2, size2), nullptr);
 }
 
-jobject qtjambi_from_QMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMap",
+void ContainerAccessFactories::registerAccessFactory(ContainerType containerType, size_t align, size_t size, bool
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                                     isStatic
 #endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
+                                                     , ContainerAccessFactory factory){
+    /*switch(containerType){
+    case ContainerType::QList:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QList,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    case ContainerType::QQueue:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QQueue,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    case ContainerType::QLinkedList:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QLinkedList,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    case ContainerType::QSet:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QSet,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    case ContainerType::QStack:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QStack,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    case ContainerType::QVector:
+        printf("%s\n", qPrintable(QString("registerAccessFactory(QVector,%1,%2,%3)").arg(align).arg(size).arg(isStatic)));
+        break;
+    }*/
+    gContainerAccessFactoryHash->insert(qHash(containerType, align, size
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                              , isStatic
+#endif
+                                    ), factory);
 }
 
-jobject qtjambi_from_constQMultiMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance2(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(sizeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
-    }
-    return returned;
+void ContainerAccessFactories::registerAccessFactory(MapType containerType, size_t align1, size_t size1, size_t align2, size_t size2, BiContainerAccessFactory factory){
+    gBiContainerAccessFactoryHash->insert(qHash(containerType, align1, size1, align2, size2), factory);
 }
 
-jobject qtjambi_from_QMultiMap_shared_pointer(JNIEnv *env,
-                                     void* ptr_shared_pointer,
-                                     PointerDeleter sharedPointerDeleter,
-                                     PointerGetter sharedPointerGetter,
-                                     const std::type_info& keyTypeId,
-                                     const std::type_info& valueTypeId,
-                                     QMapBeginFunction beginFunction,
-                                     QMapClearFunction clearFunction,
-                                     QMapContainsFunction containsFunction,
-                                     QMapCountObjectFunction countObjectFunction,
-                                     QMapEndFunction endFunction,
-                                     QMapFindFunction findFunction,
-                                     QMapFirstFunction firstFunction,
-                                     QMapFirstKeyFunction firstKeyFunction,
-                                     QMapInsertFunction insertFunction,
-                                     QMapKeyFunction keyFunction,
-                                     QMapKeysFunction keysFunction,
-                                     QMapKeysForValueFunction keysForValueFunction,
-                                     QMapLastFunction lastFunction,
-                                     QMapLastKeyFunction lastKeyFunction,
-                                     QMapLowerBoundFunction lowerBoundFunction,
-                                     QMapEqualFunction equalFunction,
-                                     QMapRemoveAllFunction removeAllFunction,
-                                     QMapSizeFunction sizeFunction,
-                                     QMapTakeFunction takeFunction,
-                                     QMapUniqueKeysFunction uniqueKeysFunction,
-                                     QMapUniteFunction uniteFunction,
-                                     QMapUpperBoundFunction upperBoundFunction,
-                                     QMapValueFunction valueFunction,
-                                     QMapValuesFunction valuesFunction,
-                                     QMapValuesKeyFunction valuesKeyFunction,
-                                     QMultiMapContainsPairFunction containsPairFunction,
-                                     QMultiMapCountPairFunction countPairFunction,
-                                     QMultiMapFindPairFunction findPairFunction,
-                                     QMultiMapRemovePairFunction removeAllPairFunction,
-                                     QMultiMapReplaceFunction replaceOneFunction
-                                )
-{
-    Q_ASSERT(sharedPointerGetter);
-    Q_ASSERT(sharedPointerDeleter);
-    if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter)
-        return nullptr;
-    void* listPtr = sharedPointerGetter(ptr_shared_pointer);
-    if (!listPtr)
-        return nullptr;
-
-
-    jclass keyClazz = resolveClass(env, getJavaName(keyTypeId));
-    jclass valueClazz = resolveClass(env, getJavaName(valueTypeId));
-
-    jobject returned = nullptr;
-    if (keyClazz && valueClazz) {
-        returned = Java::Private::QtCore::QMultiMap.newInstance(env,
-                                  keyClazz,
-                                  valueClazz,
-                                  jlong(beginFunction),
-                                  jlong(clearFunction),
-                                  jlong(containsFunction),
-                                  jlong(countObjectFunction),
-                                  jlong(endFunction),
-                                  jlong(findFunction),
-                                  jlong(firstFunction),
-                                  jlong(firstKeyFunction),
-                                  jlong(insertFunction),
-                                  jlong(keyFunction),
-                                  jlong(keysFunction),
-                                  jlong(keysForValueFunction),
-                                  jlong(lastFunction),
-                                  jlong(lastKeyFunction),
-                                  jlong(lowerBoundFunction),
-                                  jlong(equalFunction),
-                                  jlong(removeAllFunction),
-                                  jlong(sizeFunction),
-                                  jlong(takeFunction),
-                                  jlong(uniqueKeysFunction),
-                                  jlong(uniteFunction),
-                                  jlong(upperBoundFunction),
-                                  jlong(valueFunction),
-                                  jlong(valuesFunction),
-                                  jlong(valuesKeyFunction),
-                                  jlong(containsPairFunction),
-                                  jlong(countPairFunction),
-                                  jlong(findPairFunction),
-                                  jlong(removeAllPairFunction),
-                                  jlong(replaceOneFunction));
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSharedPointerToObject(env, returned, QMetaType::UnknownType,
-#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
-                                                                                          "QMultiMap",
-#endif
-                                                                                          false, false, nullptr, nullptr, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
-        if (!link) {
-            returned = nullptr;
-        }
+QPair<void*,AbstractContainerAccess*> qtjambi_container_from_nativeId(QtJambiNativeID nativeId){
+    if(!!nativeId){
+        QtJambiLink *lnk = reinterpret_cast<QtJambiLink *>(nativeId);
+        return {lnk->pointer(), lnk->containerAccess()};
+    }else{
+        return {nullptr,nullptr};
     }
-    return returned;
 }

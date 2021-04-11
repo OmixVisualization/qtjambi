@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <QMap>
+#include <QDir>
 
 #include "generatorset.h"
 #include "debuglog.h"
@@ -11,11 +12,17 @@
 class DefineUndefine {
 
     public:
-        DefineUndefine(const QString &name, const QString &value, bool set) :
+        inline DefineUndefine(const QString &name, const QString &value, bool set) :
             m_name(name), m_value(value), m_set(set) {
         }
 
-        DefineUndefine &operator=(const DefineUndefine &rhs) {
+        inline DefineUndefine(const DefineUndefine &rhs) {
+            m_name  = rhs.m_name;
+            m_value = rhs.m_value;
+            m_set   = rhs.m_set;
+        }
+
+        inline DefineUndefine &operator=(const DefineUndefine &rhs) {
             if(this != &rhs) {
                 m_name  = rhs.m_name;
                 m_value = rhs.m_value;
@@ -72,6 +79,7 @@ class Wrapper {
         QString pp_file;
         QStringList rebuild_classes;
         GeneratorSet *gs;
+        QDir docsDirectory;
         QMap< QString, QString > args;
         QStringList includePathsList;
         QStringList inputDirectoryList;

@@ -91,7 +91,9 @@ class QMetaObjectConnectionTypeEntry : public ComplexTypeEntry {
 class QMetaMethodTypeEntry : public ComplexTypeEntry {
     public:
         QMetaMethodTypeEntry() : ComplexTypeEntry("QMetaMethod", QMetaMethodType) {
-            setCodeGeneration(GenerateNothing);
+            setCodeGeneration(GenerateAll);
+            setTargetTypeSystem("QtCore");
+            setTargetLangPackage("io.qt.core");
         }
 
         virtual QString javaPackage() const { return "io.qt.core"; }
@@ -102,7 +104,9 @@ class QMetaMethodTypeEntry : public ComplexTypeEntry {
 class QMetaPropertyTypeEntry : public ComplexTypeEntry {
     public:
         QMetaPropertyTypeEntry() : ComplexTypeEntry("QMetaProperty", QMetaPropertyType) {
-            setCodeGeneration(GenerateNothing);
+            setCodeGeneration(GenerateAll);
+            setTargetTypeSystem("QtCore");
+            setTargetLangPackage("io.qt.core");
         }
 
         virtual QString javaPackage() const { return "io.qt.core"; }
@@ -113,7 +117,9 @@ class QMetaPropertyTypeEntry : public ComplexTypeEntry {
 class QMetaEnumTypeEntry : public ComplexTypeEntry {
     public:
         QMetaEnumTypeEntry() : ComplexTypeEntry("QMetaEnum", QMetaEnumType) {
-            setCodeGeneration(GenerateNothing);
+            setCodeGeneration(GenerateAll);
+            setTargetTypeSystem("QtCore");
+            setTargetLangPackage("io.qt.core");
         }
 
         virtual QString javaPackage() const { return "io.qt.core"; }

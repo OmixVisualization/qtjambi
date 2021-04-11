@@ -24,10 +24,6 @@
     <property name="outputDir" location="build"/>
     <property name="generatorDir" location="generator"/>
 
-    <path id="java.compile.classpath">
-        <fileset dir="${deploymentdir}" includes="*.jar"/>
-    </path>
-
     <!--
         Import files containing tasks for the compilation.
     -->
@@ -136,6 +132,8 @@
 
     <target name="library.java.bundle" depends="log, jar.qtjambi">
     </target>
+    <target name="library.java8.bundle" depends="log, jar8.qtjambi">
+    </target>
 
     <target name="library.designer.bundle" depends="log, jar.qtjambi-designer">
         <copy file="${deploymentdir}/qtjambi-designer.jar"
@@ -185,6 +183,9 @@ Further options:
 
     <target name="library.java" depends="log, library.java.bundle"
         description="Compiles and bundles the Qt Jambi java libraries."/>
+
+    <target name="library.java8" depends="log, library.java8.bundle"
+        description="Compiles and bundles the Qt Jambi java libraries."/>
         
     <target name="library.java.plugins" depends="log, jar.qtjambi.plugins"
         description="Compiles and bundles the Qt Jambi plugins."/>
@@ -192,7 +193,7 @@ Further options:
     <target name="library.designer" depends="log, library.designer.bundle"
         description="Compiles and bundles the Qt Jambi designer libraries."/>
 
-    <target name="library" depends="log, library.native.compile, library.java, library.native.bundle"
+    <target name="library" depends="log, library.native.compile, library.java, library.java8, library.native.bundle"
         description="Compiles and bundles the Qt Jambi libraries.">
         <!--<copy file="${deploymentdir}/qtjambi-util.jar"
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->

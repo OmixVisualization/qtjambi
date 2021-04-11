@@ -39,31 +39,196 @@
 
 #ifndef QT_NO_QFUTURE
 
-#include <QtCore/QtCore>
 #ifndef QT_JAMBI_RUN
+#define QFUTURE_TEST
+#endif
+
+#include <QtCore/QFuture>
+#include <QtCore/QFutureWatcher>
+#include <QtCore/QFutureSynchronizer>
+#include <QtCore/QAtomicInteger>
+#include <QtCore/QThreadStorage>
+#include <QtCore/QString>
+#include <QtCore/QStringList>
+#include <QtCore/QList>
+#include <QtCore/QVariant>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtCore/QPromise>
+#endif
+
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #endif //def QT_JAMBI_RUN
 
-typedef QFutureWatcher<void> QtJambiVoidFutureWatcher;
-typedef QFuture<void> QtJambiVoidFuture;
-typedef QFutureSynchronizer<void> QtJambiVoidFutureSynchronizer;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+typedef QPromise<void> QVoidPromise;
+typedef QPromise<jbyte> QBytePromise;
+typedef QPromise<jint> QIntPromise;
+typedef QPromise<jshort> QShortPromise;
+typedef QPromise<jlong> QLongPromise;
+typedef QPromise<jfloat> QFloatPromise;
+typedef QPromise<jdouble> QDoublePromise;
+typedef QPromise<jchar> QCharPromise;
+typedef QPromise<jboolean> QBooleanPromise;
+typedef QPromise<JObjectWrapper> QtJambiPromise;
+#endif
+
+typedef QFuture<void> QVoidFuture;
+typedef QFuture<jbyte> QByteFuture;
+typedef QFuture<jint> QIntFuture;
+typedef QFuture<jshort> QShortFuture;
+typedef QFuture<jlong> QLongFuture;
+typedef QFuture<jfloat> QFloatFuture;
+typedef QFuture<jdouble> QDoubleFuture;
+typedef QFuture<jchar> QCharFuture;
+typedef QFuture<jboolean> QBooleanFuture;
 typedef QFuture<JObjectWrapper> QtJambiFuture;
-typedef QFutureWatcher<JObjectWrapper> QtJambiFutureWatcher;
-typedef QFutureSynchronizer<JObjectWrapper> QtJambiFutureSynchronizer;
+
 typedef QFutureIterator<JObjectWrapper> QtJambiFutureIterator;
+typedef QFutureIterator<jbyte> QByteFutureIterator;
+typedef QFutureIterator<jint> QIntFutureIterator;
+typedef QFutureIterator<jshort> QShortFutureIterator;
+typedef QFutureIterator<jlong> QLongFutureIterator;
+typedef QFutureIterator<jfloat> QFloatFutureIterator;
+typedef QFutureIterator<jdouble> QDoubleFutureIterator;
+typedef QFutureIterator<jchar> QCharFutureIterator;
+typedef QFutureIterator<jboolean> QBooleanFutureIterator;
+
+typedef QFutureWatcher<void> QVoidFutureWatcher;
+typedef QFutureWatcher<jbyte> QByteFutureWatcher;
+typedef QFutureWatcher<jint> QIntFutureWatcher;
+typedef QFutureWatcher<jshort> QShortFutureWatcher;
+typedef QFutureWatcher<jlong> QLongFutureWatcher;
+typedef QFutureWatcher<jfloat> QFloatFutureWatcher;
+typedef QFutureWatcher<jdouble> QDoubleFutureWatcher;
+typedef QFutureWatcher<jchar> QCharFutureWatcher;
+typedef QFutureWatcher<jboolean> QBooleanFutureWatcher;
+typedef QFutureWatcher<JObjectWrapper> QtJambiFutureWatcher;
+
+typedef QFutureSynchronizer<void> QVoidFutureSynchronizer;
+typedef QFutureSynchronizer<jbyte> QByteFutureSynchronizer;
+typedef QFutureSynchronizer<jint> QIntFutureSynchronizer;
+typedef QFutureSynchronizer<jshort> QShortFutureSynchronizer;
+typedef QFutureSynchronizer<jlong> QLongFutureSynchronizer;
+typedef QFutureSynchronizer<jfloat> QFloatFutureSynchronizer;
+typedef QFutureSynchronizer<jdouble> QDoubleFutureSynchronizer;
+typedef QFutureSynchronizer<jchar> QCharFutureSynchronizer;
+typedef QFutureSynchronizer<jboolean> QBooleanFutureSynchronizer;
+typedef QFutureSynchronizer<JObjectWrapper> QtJambiFutureSynchronizer;
+
+typedef QFutureInterface<void> QVoidFutureInterface;
+typedef QFutureInterface<jbyte> QByteFutureInterface;
+typedef QFutureInterface<jint> QIntFutureInterface;
+typedef QFutureInterface<jshort> QShortFutureInterface;
+typedef QFutureInterface<jlong> QLongFutureInterface;
+typedef QFutureInterface<jfloat> QFloatFutureInterface;
+typedef QFutureInterface<jdouble> QDoubleFutureInterface;
+typedef QFutureInterface<jchar> QCharFutureInterface;
+typedef QFutureInterface<jboolean> QBooleanFutureInterface;
+typedef QFutureInterface<JObjectWrapper> QtJambiFutureInterface;
+
 typedef QThreadStorage<JObjectWrapper> QtJambiThreadStorage;
+typedef QThreadStorage<jbyte> QByteThreadStorage;
+typedef QThreadStorage<jint> QIntThreadStorage;
+typedef QThreadStorage<jshort> QShortThreadStorage;
+typedef QThreadStorage<jlong> QLongThreadStorage;
+typedef QThreadStorage<jfloat> QFloatThreadStorage;
+typedef QThreadStorage<jdouble> QDoubleThreadStorage;
+typedef QThreadStorage<jchar> QCharThreadStorage;
+typedef QThreadStorage<jboolean> QBooleanThreadStorage;
 typedef QAtomicInteger<jint> QtJambiAtomicInteger;
 typedef QAtomicInteger<jbyte> QAtomicByte;
 typedef QAtomicInteger<jshort> QAtomicShort;
 typedef QAtomicInteger<jlong> QAtomicLong;
 
-namespace QtJambiStringUtil{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+inline bool operator==(const QtJambiFuture &f1, const QtJambiFuture &f2) {
+    struct Future{
+        QFutureInterfaceBase d;
+    };
+    return reinterpret_cast<const Future*>(&f1)->d==reinterpret_cast<const Future*>(&f2)->d;
+}
+
+inline bool operator==(const QVoidFuture &f1, const QVoidFuture &f2) {
+    struct Future{
+        QFutureInterfaceBase d;
+    };
+    return reinterpret_cast<const Future*>(&f1)->d==reinterpret_cast<const Future*>(&f2)->d;
+}
+#endif
+
+namespace QtJambiStringListUtil{
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 inline QString join(const QStringList& stringList, const QString &sep)
 {return stringList.join(sep);}
 
 inline QString join(const QStringList& stringList, QChar sep)
 {return stringList.join(sep);}
+
+inline QStringList filter(const QStringList& stringList, const QString &str, Qt::CaseSensitivity cs){
+    return stringList.filter(str, cs);
+}
+
+inline QStringList filter(const QStringList& stringList, const QRegularExpression  &re){
+    return stringList.filter(re);
+}
+
+inline int removeDuplicates(QStringList& stringList){
+    return int(stringList.removeDuplicates());
+}
+
+inline void replaceInStrings(QStringList& stringList, const QString &before, const QString &after, Qt::CaseSensitivity cs){
+    stringList.replaceInStrings(before, after, cs);
+}
+
+inline void replaceInStrings(QStringList& stringList, const QRegularExpression &re, const QString &after){
+    stringList.replaceInStrings(re, after);
+}
+
+inline void sort(QStringList& stringList, Qt::CaseSensitivity cs){
+    stringList.sort(cs);
+}
+
+#else
+inline void sort(QStringList& self, Qt::CaseSensitivity cs)
+{ QtPrivate::QStringList_sort(&self, cs); }
+inline qsizetype removeDuplicates(QStringList& self)
+{ return QtPrivate::QStringList_removeDuplicates(&self); }
+
+inline QString join(const QStringList& self, QStringView sep)
+{ return QtPrivate::QStringList_join(&self, sep); }
+inline QString join(const QStringList& self, QChar sep)
+{ return QtPrivate::QStringList_join(&self, &sep, 1); }
+
+inline QStringList filter(const QStringList& self, QStringView str, Qt::CaseSensitivity cs)
+{ return QtPrivate::QStringList_filter(&self, str, cs); }
+inline void replaceInStrings(QStringList& self, QStringView before, QStringView after, Qt::CaseSensitivity cs)
+{
+    QtPrivate::QStringList_replaceInStrings(&self, before, after, cs);
+}
+
+inline bool contains(const QStringList& self, QStringView str, Qt::CaseSensitivity cs) noexcept
+{ return QtPrivate::QStringList_contains(&self, str, cs); }
+
+#if QT_CONFIG(regularexpression)
+inline QStringList filter(const QStringList& self, const QRegularExpression &re)
+{ return QtPrivate::QStringList_filter(&self, re); }
+inline void replaceInStrings(QStringList& self, const QRegularExpression &re, const QString &after)
+{
+    QtPrivate::QStringList_replaceInStrings(&self, re, after);
+}
+inline qsizetype indexOf(const QStringList& self, const QRegularExpression &re, qsizetype from)
+{ return QtPrivate::QStringList_indexOf(&self, re, from); }
+inline qsizetype lastIndexOf(const QStringList& self, const QRegularExpression &re, qsizetype from)
+{ return QtPrivate::QStringList_lastIndexOf(&self, re, from); }
+#endif // QT_CONFIG(regularexpression)
+#endif
+}
+
+namespace QtJambiStringUtil{
 
 #if QT_VERSION_CHECK(5,15,0)
 #define Q_SPLITBEHAVIOUR_PREFIX(e) Qt::e
@@ -90,10 +255,14 @@ inline QStringList split(const QString& string, const QString &sep, Q_SPLITBEHAV
 
 inline QStringList split(const QString& string, QChar sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts), Qt::CaseSensitivity cs = Qt::CaseSensitive)
 { return string.split(sep, behavior, cs); }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #ifndef QT_NO_REGEXP
 inline QStringList split(const QString& string, const QRegExp &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
 { return string.split(sep, behavior); }
 #endif
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 #if QT_CONFIG(regularexpression)
 inline QStringList split(const QString& string, const QRegularExpression &sep, Q_SPLITBEHAVIOUR_PREFIX(SplitBehavior) behavior = Q_SPLIT_PREFIX(KeepEmptyParts))
 { return string.split(sep, behavior); }
@@ -121,10 +290,14 @@ inline QString section(const QString& string, QChar sep, int start, int end = -1
 
 inline QString section(const QString& string, const QString &in_sep, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
 { return string.section(in_sep, start, end, flags); }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #ifndef QT_NO_REGEXP
 inline QString section(const QString& string, const QRegExp &reg, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
 { return string.section(reg, start, end, flags); }
 #endif
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 #if QT_CONFIG(regularexpression)
 inline QString section(const QString& string, const QRegularExpression &re, int start, int end = -1, SectionFlags flags = Q_STRING_PREFIX(SectionDefault))
 { return string.section(re, start, end, flags); }
@@ -145,6 +318,14 @@ inline QString arg(QString string, std::initializer_list<QString> args)
 {
     for(const QString& arg : args){
         string = string.arg(arg);
+    }
+    return string;
+}
+
+inline QString format(QString string, std::initializer_list<QVariant> args)
+{
+    for(const QVariant& arg : args){
+        string = string.arg(arg.toString());
     }
     return string;
 }

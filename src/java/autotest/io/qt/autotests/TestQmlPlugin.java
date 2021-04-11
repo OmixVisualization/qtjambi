@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,6 +29,7 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QByteArray;
@@ -40,6 +41,12 @@ import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 
 public class TestQmlPlugin extends QApplicationTest{
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		QApplicationTest.testInitialize();
+		io.qt.QtUtilities.initializePackage("io.qt.quick");
+	}
 	
 	@Test
     public void run_testQmlPlugin() {

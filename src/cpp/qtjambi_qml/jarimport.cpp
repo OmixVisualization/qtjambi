@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,11 +28,11 @@
 ****************************************************************************/
 
 #include <QHash>
+#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_cast.h>
 #include "jarimport.h"
 #include "qtjambi_jarimport.h"
 #include "qtjambi_qml_repository.h"
-#include <qtjambi/qtjambi_core.h>
-#include <qtjambi/qtjambi_cast.h>
 
 Jarimport::Jarimport()
     : QQmlExtensionPlugin() {}
@@ -40,7 +40,7 @@ Jarimport::Jarimport()
 void Jarimport::registerTypes(const char * uri){
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-        Java::QtQml::QmlTypes.registerModule(env, qtjambi_cast<jobject>(env, baseUrl()), env->NewStringUTF(uri));
+        Java::QtQml::QmlTypes::registerModule(env, qtjambi_cast<jobject>(env, baseUrl()), env->NewStringUTF(uri));
     }
 }
 

@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,15 +60,12 @@
         <inject-code>
             <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QSsl___" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QSsl_native__" quote-before-line="}// class"/>
-        </inject-code>
     </namespace-type>
 
     <object-type name="QAbstractSocket">
-        <inject-code>
+        <!--inject-code>
             <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QAbstractSocket___" quote-before-line="}// class"/>
-        </inject-code>
+        </inject-code-->
         <modify-function signature="proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)">
             <modify-argument index="2" invalidate-after-use="yes">
                 <no-null-pointer/>
@@ -81,35 +78,69 @@
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <!--modify-function signature="connectToHostImplementation(QString, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="private" /-->
-        <modify-function signature="localPort()const" access="private" rename="localPort_private"/>
-        <modify-function signature="peerPort()const" access="private" rename="peerPort_private"/>
-        <modify-function signature="setLocalPort(unsigned short)" access="private"/>
-        <modify-function signature="setPeerPort(unsigned short)" access="private"/>
-        <modify-function signature="connectToHost(QString, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;,QAbstractSocket::NetworkLayerProtocol)" access="private"/>
-        <modify-function signature="connectToHost(QHostAddress, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="private"/>
-
+        <modify-function signature="localPort()const">
+            <modify-argument index="0">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="peerPort()const">
+            <modify-argument index="0">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setLocalPort(unsigned short)">
+            <modify-argument index="1">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setPeerPort(unsigned short)">
+            <modify-argument index="1">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="connectToHost(QString, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;,QAbstractSocket::NetworkLayerProtocol)" until="5.*">
+            <modify-argument index="2">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="connectToHost(QString, unsigned short, QFlags&lt;QIODeviceBase::OpenModeFlag&gt;,QAbstractSocket::NetworkLayerProtocol)" since="6.0.0">
+            <modify-argument index="2">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="connectToHost(QHostAddress, unsigned short, QFlags&lt;QIODevice::OpenModeFlag&gt;)" until="5.*">
+            <modify-argument index="2">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="connectToHost(QHostAddress, unsigned short, QFlags&lt;QIODeviceBase::OpenModeFlag&gt;)" since="6.0.0">
+            <modify-argument index="2">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
         <modify-function signature="abort()" access="non-final" />
-        <!--modify-function signature="disconnectFromHostImplementation()" access="non-final" /-->
         <modify-function signature="flush()" access="non-final" />
         <modify-function signature="setReadBufferSize(long long)" access="non-final" />
-    <modify-function signature="setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="non-final" />
+        <modify-function signature="setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags&lt;QIODevice::OpenModeFlag&gt;)" access="non-final" until="5.*"/>
+        <modify-function signature="setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags&lt;QIODeviceBase::OpenModeFlag&gt;)" access="non-final" since="6.0.0"/>
         <modify-function signature="waitForConnected(int)" access="non-final" />
         <modify-function signature="waitForDisconnected(int)" access="non-final" />
-        <modify-function signature="bind(QHostAddress, unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)" access="private" rename="bind_private"/>
-        <modify-function signature="bind(unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)" access="private" rename="bind_private"/>
+        <modify-function signature="bind(QHostAddress, unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)">
+            <modify-argument index="2">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="bind(unsigned short, QFlags&lt;QAbstractSocket::BindFlag>)">
+            <modify-argument index="1">
+                <replace-type modified-type="int" />
+            </modify-argument>
+        </modify-function>
     </object-type>
 
     <value-type name="QHostInfo">
         <inject-code class="java">
             <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QHostInfo___" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_network-java.java" quote-after-line="class QHostInfo_native__" quote-before-line="}// class"/>
-        </inject-code>
-         <extra-includes>
-             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
-         </extra-includes>
         <modify-function signature="lookupHost(QString,QObject*,const char*)">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
@@ -145,7 +176,7 @@
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok){
-                    Java::QtNetwork::QTimeoutException.throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
+                    Java::QtNetwork::QTimeoutException::throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
                     return false;
                 }
             </inject-code>
@@ -167,8 +198,8 @@
                 <conversion-rule class="native">
                     jlong %out = jlong(%in);
                     if(%3){
-                        Java::QtNetwork::QHostAddress$HostInfo.set_address(%env, %3, qtjambi_cast&lt;jobject>(%env, host));
-                        Java::QtNetwork::QHostAddress$HostInfo.set_port(%env, %3, jshort(port));
+                        Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %3, qtjambi_cast&lt;jobject>(%env, host));
+                        Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %3, jshort(port));
                     }
                 </conversion-rule>
             </modify-argument>
@@ -304,7 +335,7 @@
             </modify-argument>
             <inject-code class="native" position="end">
                 if(!ok){
-                    Java::QtNetwork::QTimeoutException.throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
+                    Java::QtNetwork::QTimeoutException::throwNew(%env, "Connection timed out" QTJAMBI_STACKTRACEINFO );
                     return false;
                 }
             </inject-code>
@@ -361,15 +392,41 @@
 
     <value-type name="QSslConfiguration">
       <modify-function signature="operator=(QSslConfiguration)" remove="all" />
-        <modify-field name="ALPNProtocolHTTP2">
+        <modify-field name="ALPNProtocolHTTP2" read="yes" write="no" access="private">
             <replace-type modified-type="java.lang.String"/>
         </modify-field>
-        <modify-field name="NextProtocolHttp1_1">
+        <modify-field name="NextProtocolHttp1_1" read="yes" write="no" access="private">
             <replace-type modified-type="java.lang.String"/>
         </modify-field>
-        <modify-field name="NextProtocolSpdy3_0">
+        <modify-field name="NextProtocolSpdy3_0" read="yes" write="no" access="private" until="5.*">
             <replace-type modified-type="java.lang.String"/>
         </modify-field>
+        <inject-code>
+            public static final String ALPNProtocolHTTP2;
+            public static final String NextProtocolHttp1_1;
+            static{
+                String _ALPNProtocolHTTP2 = null;
+                String _NextProtocolHttp1_1 = null;
+                try{
+                    _ALPNProtocolHTTP2 = ALPNProtocolHTTP2();
+                    _NextProtocolHttp1_1 = NextProtocolHttp1_1();
+                }catch(Throwable t){
+                }
+                ALPNProtocolHTTP2 = _ALPNProtocolHTTP2;
+                NextProtocolHttp1_1 = _NextProtocolHttp1_1;
+            }
+        </inject-code>
+        <inject-code until="5.*">
+            public static final String NextProtocolSpdy3_0;
+            static{
+                String _NextProtocolSpdy3_0 = null;
+                try{
+                    _NextProtocolSpdy3_0 = NextProtocolSpdy3_0();
+                }catch(Throwable t){
+                }
+                NextProtocolSpdy3_0 = _NextProtocolSpdy3_0;
+            }
+        </inject-code>
         <modify-function signature="setBackendConfiguration(const QMap&lt;QByteArray, QVariant> &amp;)">
             <modify-argument index="1">
                 <replace-default-expression with="java.util.Collections.emptyMap()"/>

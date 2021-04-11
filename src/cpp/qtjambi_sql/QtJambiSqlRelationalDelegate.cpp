@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,15 +37,13 @@
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_cast.h>
 #include <QtWidgets/QtWidgets>
-#include <QtSql/QtSql>
+#include <QtSql/QSqlRelationalDelegate>
 
 void initialize_meta_info_QSqlRelationalDelegate(){
-
 #if QT_CONFIG(sqlmodel)
 #ifdef QT_WIDGETS_LIB
     const std::type_info& typeId = registerQObjectTypeInfo<QSqlRelationalDelegate>("QSqlRelationalDelegate", "io/qt/sql/QSqlRelationalDelegate");
     Q_UNUSED(typeId)
 #endif //QT_WIDGETS_LIB
 #endif //QT_CONFIG(sqlmodel)
-
 }

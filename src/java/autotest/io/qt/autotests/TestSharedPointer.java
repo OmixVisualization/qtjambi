@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,15 +33,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
+import io.qt.QtObject;
 import io.qt.autotests.generated.SharedPointerTest;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
-import io.qt.core.QList;
 import io.qt.core.QMetaObject.Connection;
 import io.qt.core.QObject;
 import io.qt.core.QTemporaryFile;
@@ -370,9 +371,9 @@ public class TestSharedPointer extends QApplicationTest {
 	
 	@Test
 	public void testSharedObject80() {
-		QList<String> sharedObject = object.createSharedObject8();
-		assertNotNull(sharedObject);
-		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
+		List<String> sharedObject = object.createSharedObject8();
+		assertTrue(sharedObject instanceof QtObject);
+		assertTrue(QtJambiInternal.isSharedPointer((QtObject)sharedObject));
 		assertEquals(1, sharedObject.size());
 	}
 	

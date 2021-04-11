@@ -5,9 +5,9 @@
 #include <QtCore/QtCore>
 #include <QtPositioning/QtPositioning>
 
-inline uint qHash(const QGeoAddress &value)
+inline hash_type qHash(const QGeoAddress &value)
 {
-    uint hashCode = qHash(value.city());
+    hash_type hashCode = qHash(value.city());
     hashCode = hashCode * 31 + qHash(value.text());
     hashCode = hashCode * 31 + qHash(value.state());
     hashCode = hashCode * 31 + qHash(value.county());
@@ -21,12 +21,12 @@ inline uint qHash(const QGeoAddress &value)
     return hashCode;
 }
 
-uint qHash(const QGeoRectangle &value);
-uint qHash(const QGeoPath &value);
-uint qHash(const QGeoCircle &value);
-uint qHash(const QGeoPolygon &value);
+hash_type qHash(const QGeoRectangle &value);
+hash_type qHash(const QGeoPath &value);
+hash_type qHash(const QGeoCircle &value);
+hash_type qHash(const QGeoPolygon &value);
 
-inline uint qHash(const QGeoShape &value)
+inline hash_type qHash(const QGeoShape &value)
 {
     if(!value.isValid())
         return 0;
@@ -40,68 +40,68 @@ inline uint qHash(const QGeoShape &value)
     case QGeoShape::PolygonType:
         return qHash(static_cast<const QGeoPolygon &>(value));
     default:
-        uint hashCode = qHash(value.type());
+        hash_type hashCode = qHash(value.type());
         hashCode = hashCode * 31 + qHash(value.isEmpty());
         hashCode = hashCode * 31 + qHash(value.center());
         return hashCode;
     }
 }
 
-inline uint qHash(const QGeoCircle &value)
+inline hash_type qHash(const QGeoCircle &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.radius());
+    hash_type hashCode = qHash(value.radius());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.center());
     return hashCode;
 }
 
-inline uint qHash(const QGeoPath &value)
+inline hash_type qHash(const QGeoPath &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.path());
+    hash_type hashCode = qHash(value.path());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.center());
     return hashCode;
 }
 
-inline uint qHash(const QGeoPolygon &value)
+inline hash_type qHash(const QGeoPolygon &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.path());
+    hash_type hashCode = qHash(value.path());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.center());
     return hashCode;
 }
 
-inline uint qHash(const QGeoRectangle &value)
+inline hash_type qHash(const QGeoRectangle &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.width());
+    hash_type hashCode = qHash(value.width());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.center());
     hashCode = hashCode * 31 + qHash(value.height());
     return hashCode;
 }
 
-inline uint qHash(const QGeoLocation &value)
+inline hash_type qHash(const QGeoLocation &value)
 {
-    uint hashCode = qHash(value.address());
+    hash_type hashCode = qHash(value.address());
     hashCode = hashCode * 31 + qHash(value.coordinate());
     hashCode = hashCode * 31 + qHash(value.boundingBox());
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     return hashCode;
 }
 
-inline uint qHash(const QGeoAreaMonitorInfo &value)
+inline hash_type qHash(const QGeoAreaMonitorInfo &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.area());
+    hash_type hashCode = qHash(value.area());
     hashCode = hashCode * 31 + qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.expiration());
     hashCode = hashCode * 31 + qHash(value.identifier());
@@ -109,9 +109,9 @@ inline uint qHash(const QGeoAreaMonitorInfo &value)
     return hashCode;
 }
 
-inline uint qHash(const QGeoSatelliteInfo &value)
+inline hash_type qHash(const QGeoSatelliteInfo &value)
 {
-    uint hashCode = qHash(value.signalStrength());
+    hash_type hashCode = qHash(value.signalStrength());
     hashCode = hashCode * 31 + qHash(value.satelliteSystem());
     hashCode = hashCode * 31 + qHash(value.satelliteIdentifier());
     for(int a=QGeoSatelliteInfo::Elevation; a<=QGeoSatelliteInfo::Azimuth; ++a){
@@ -124,11 +124,11 @@ inline uint qHash(const QGeoSatelliteInfo &value)
     return hashCode;
 }
 
-inline uint qHash(const QGeoPositionInfo &value)
+inline hash_type qHash(const QGeoPositionInfo &value)
 {
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.timestamp());
+    hash_type hashCode = qHash(value.timestamp());
     hashCode = hashCode * 31 + qHash(value.coordinate());
     for(int a=QGeoPositionInfo::Direction; a<=QGeoPositionInfo::VerticalAccuracy; ++a){
         if(value.hasAttribute(QGeoPositionInfo::Attribute(a))){

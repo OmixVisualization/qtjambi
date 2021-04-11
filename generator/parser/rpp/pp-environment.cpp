@@ -5,7 +5,7 @@
 #include "pp-environment.h"
 
 void rpp::pp_environment::bind(pp_fast_string const *__name, pp_macro const &__macro) {
-    _M_featureRegistry(std::string(__name->begin()), current_file);
+    _M_featureRegistry(std::string(__name->begin()), __macro.definition ? std::string(__macro.definition->begin()) : std::string(), current_file);
     std::size_t h = hash_code(*__name) % _M_hash_size;
     pp_macro *m = new pp_macro(__macro);
     m->name = __name;

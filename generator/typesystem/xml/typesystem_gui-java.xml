@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,9 +47,11 @@
     <extra-includes>
         <include file-name="QGradient" location="global"/>
         <include file-name="QPixmapCache" location="global"/>
-        <include file-name="QtGui" location="global"/>
+        <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+        <include file-name="private/qguiapplication_p.h" location="global"/>
+        <include file-name="qpa/qplatformintegration.h" location="global"/>
     </extra-includes>
-    <inject-code position="2">
+    <inject-code position="2" until="5.*">
         if(io.qt.QtUtilities.isAvailableUtilityLibrary("libGLESv2", ""))
             io.qt.QtUtilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
         if(io.qt.QtUtilities.isAvailableUtilityLibrary("libEGL", ""))
@@ -64,6 +66,7 @@
             Q_ASSERT(object);
             return object->type() == QGradient::NoGradient;
         }, nullptr, typeid(std::nullptr_t), false);
+    qtjambi_install_threaded_pixmaps_checker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
     </inject-code>
   <primitive-type name="GLuint" java-name="int" preferred-conversion="no" jni-name="jint"/>
   <primitive-type name="GLshort" java-name="short" preferred-conversion="no" jni-name="jshort"/>
@@ -1504,7 +1507,7 @@
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
                                                     jobject result = env->NewDirectByteBuffer(const_cast&lt;void*>(ptr), INT_MAX);
-                                                    return Java::Runtime::ByteBuffer.asReadOnlyBuffer(env, result);
+                                                    return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);
                                                 }
                                             );
                     if(%out.size()==0){
@@ -1535,7 +1538,7 @@
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
                                                     jobject result = env->NewDirectByteBuffer(const_cast&lt;void*>(ptr), INT_MAX);
-                                                    return Java::Runtime::ByteBuffer.asReadOnlyBuffer(env, result);
+                                                    return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);
                                                 }
                                             );
                 </conversion-rule>
@@ -1805,7 +1808,7 @@
                 <no-null-pointer/>
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                JIntArrayPointer %out(%env, %in, true);
+                JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -1850,7 +1853,7 @@
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
                                                     jobject result = env->NewDirectByteBuffer(const_cast&lt;void*>(ptr), INT_MAX);
-                                                    return Java::Runtime::ByteBuffer.asReadOnlyBuffer(env, result);
+                                                    return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);
                                                 }
                                             );
                 </conversion-rule>
@@ -1883,7 +1886,7 @@
                                                 },
                                                 [](JNIEnv * env, const void* const&amp; ptr) -> jobject {
                                                     jobject result = env->NewDirectByteBuffer(const_cast&lt;void*>(ptr), INT_MAX);
-                                                    return Java::Runtime::ByteBuffer.asReadOnlyBuffer(env, result);
+                                                    return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);
                                                 }
                                             );
                 </conversion-rule>
@@ -2236,30 +2239,30 @@ public final void copyDataTo(float[] values)    {
 
     <template name="gui.convert_validationdata_to_java">
         jstring __qt_converted_input = qtjambi_from_qstring(%env, %STRING);
-        jobject %out = Java::QtGui::QValidator$QValidationData.newInstance(%env, __qt_converted_input, %POS);
+        jobject %out = Java::QtGui::QValidator$QValidationData::newInstance(%env, __qt_converted_input, %POS);
         jobject __java_validation_data = %out;
     </template>
 
     <template name="gui.cleanup_validationdata_to_java">
-        jstring __java_string = jstring(Java::QtGui::QValidator$QValidationData.string(%env, __java_validation_data));
+        jstring __java_string = jstring(Java::QtGui::QValidator$QValidationData::string(%env, __java_validation_data));
         qtjambi_to_qstring(%STRING, %env, __java_string);
-        %POS = Java::QtGui::QValidator$QValidationData.position(%env, __java_validation_data);
+        %POS = Java::QtGui::QValidator$QValidationData::position(%env, __java_validation_data);
     </template>
 
     <template name="gui.convert_validationdata_to_string">
-        jstring __java_string = Java::QtGui::QValidator$QValidationData.string(%env, %in);
+        jstring __java_string = Java::QtGui::QValidator$QValidationData::string(%env, %in);
         QString %out = qtjambi_to_qstring(%env, __java_string);
         QString *__string_ptr = &amp;%out;
     </template>
 
     <template name="gui.convert_validationdata_to_pos">
-        int %out = Java::QtGui::QValidator$QValidationData.position(%env, %1);
+        int %out = Java::QtGui::QValidator$QValidationData::position(%env, %1);
         int *__position_ptr = &amp;%out;
     </template>
 
     <template name="gui.cleanup_validationdata_from_java">
-        Java::QtGui::QValidator$QValidationData.set_position(%env, %1, *__position_ptr);
-        Java::QtGui::QValidator$QValidationData.set_string(%env, %1, qtjambi_from_qstring(%env, *__string_ptr));
+        Java::QtGui::QValidator$QValidationData::set_position(%env, %1, *__position_ptr);
+        Java::QtGui::QValidator$QValidationData::set_string(%env, %1, qtjambi_from_qstring(%env, *__string_ptr));
     </template>
 
     <object-type name="QAbstractTextDocumentLayout">
@@ -2320,9 +2323,6 @@ public final void copyDataTo(float[] values)    {
         <inject-code since="5.12">
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QGradient_java__" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native" since="5.12">
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QGradient_native__" quote-before-line="}// class"/>
-        </inject-code>
     </value-type>
 
     <object-type name="QClipboard">
@@ -2342,7 +2342,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QClipboard$Text"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::Private::QtGui::QClipboard$Text.newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jstring>(%env, __qt_%1));
+                    jobject %out = Java::QtGui::QClipboard$Text::newInstance(%env, qtjambi_cast&lt;jstring>(%env, %in), qtjambi_cast&lt;jstring>(%env, __qt_%1));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2361,12 +2361,6 @@ public final void copyDataTo(float[] values)    {
     </value-type>
 
     <value-type name="QCursor">
-        <template name="gui.cursor_bitmap_getter">
-            <insert-template name="gui.getter_returning_nativepointer">
-                <replace from="%RETURN_TYPE" to="QBitmap"/>
-            </insert-template>
-        </template>
-
         <modify-function signature="bitmap()const" until="5.14">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QBitmap"/>
@@ -2403,6 +2397,15 @@ public final void copyDataTo(float[] values)    {
             </modify-argument>
         </modify-function>
     </value-type>
+    
+    <value-type name="QFontDatabase">
+        <modify-function signature="QFontDatabase()" until="5.*">
+            <inject-code position="beginning">
+                if(io.qt.gui.QGuiApplication.instance()==null)
+                    throw new IllegalStateException("Cannot create QFontDatabase before initializing QGuiApplication.");
+            </inject-code>
+        </modify-function>
+    </value-type>
 
     <object-type name="QDesktopServices">
         <inject-code>
@@ -2433,7 +2436,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="5">
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                    JIntArrayPointer %out(%env, %in, false);
+                    JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code>
@@ -2444,7 +2447,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="4">
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                    JIntArrayPointer %out(%env, %in, false);
+                    JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code>
@@ -2458,7 +2461,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="8">
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                    JIntArrayPointer %out(%env, %in, false);
+                    JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code>
@@ -2469,7 +2472,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="5">
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                    JIntArrayPointer %out(%env, %in, false);
+                    JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code>
@@ -2480,7 +2483,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="4">
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                    JIntArrayPointer %out(%env, %in, false);
+                    JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
             <inject-code>
@@ -2500,7 +2503,7 @@ public final void copyDataTo(float[] values)    {
         <modify-function signature="QGuiApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
             <inject-code class="native" position="beginning">
-                if(!Java::QtCore::QCoreApplication.__qt_isInitializing(%env)){
+                if(!Java::QtCore::QCoreApplication::__qt_isInitializing(%env)){
                     JavaException::raiseIllegalAccessError(%env, "Not allowed to instantiate QGuiApplication. Please use QGuiApplication.initialize() instead." QTJAMBI_STACKTRACEINFO );
                     return;
                 }
@@ -2523,7 +2526,7 @@ public final void copyDataTo(float[] values)    {
                 <remove-argument/>
             </modify-argument>
             <inject-code class="native" position="end">
-                __qt_this->setUserData(ApplicationData::id(), applicationData.take());
+                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.take());
             </inject-code>
         </modify-function>
         <!-- We implement a custom Java wrapper to this -->
@@ -2531,11 +2534,6 @@ public final void copyDataTo(float[] values)    {
             <access modifier="private"/>
             <rename to="exec_internal"/>
         </modify-function>
-        <template name="gui.application_char_pointer_function">
-        public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {
-            return %FUNCTION_NAME(%PRE_CALL_ARGUMENTS %COMMA className == null ? null : className.data());
-        }
-        </template>
         <modify-function signature="overrideCursor()">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QCursor"/>
@@ -2545,11 +2543,59 @@ public final void copyDataTo(float[] values)    {
             </modify-argument>
         </modify-function>
         <modify-function signature="notify(QObject *, QEvent *)">
-            <inject-code class="java" position="beginning">
-                <argument-map index="1" meta-name="%1"/>
-                if(%1!=null)
-                    threadCheck(%1, "Cannot send posted events for objects in another thread");
-            </inject-code>
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+    </object-type>
+    
+    <object-type name="QImageIOHandler">
+        <modify-function signature="setDevice(QIODevice*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDevice"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="read(QImage*)">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                </conversion-rule>
+                <conversion-rule class="native">
+                QImage __image;
+                QImage* %out = &amp;__image;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.gui.QImage"/>
+                <conversion-rule class="shell">
+                bool %out = __java_return_value!=nullptr;
+                if(%out &amp;&amp; %1)
+                    *%1 = qtjambi_cast&lt;const QImage&amp;>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, __image) : nullptr;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="allocateImage(QSize, QImage::Format, QImage *)" since="6.0.0">
+            <modify-argument index="3">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                </conversion-rule>
+                <conversion-rule class="native">
+                QImage __image;
+                QImage* %out = &amp;__image;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.gui.QImage"/>
+                <conversion-rule class="shell">
+                bool %out = __java_return_value!=nullptr;
+                if(%out &amp;&amp; %3)
+                    *%1 = qtjambi_cast&lt;const QImage&amp;>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, __image) : nullptr;
+                </conversion-rule>
+            </modify-argument>
         </modify-function>
     </object-type>
 
@@ -2683,7 +2729,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.ByteBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(reinterpret_cast&lt;jbyte*>(const_cast&lt;unsigned char*>(%in)), __qt_this->sizeInBytes());
-                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2705,15 +2751,18 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.ByteBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(reinterpret_cast&lt;jbyte*>(const_cast&lt;unsigned char*>(%in)), __qt_this->sizeInBytes());
-                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </value-type>
 
     <value-type name="QKeySequence">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QKeySequence___" quote-before-line="}// class"/>
+        <inject-code until="5.*">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QKeySequence_5__" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code since="6.0.0">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QKeySequence_6__" quote-before-line="}// class"/>
         </inject-code>
 
     </value-type>
@@ -2825,7 +2874,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 16);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2837,11 +2886,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix4x3" java-name="QMatrix4x3">
+    <value-type name="QMatrix4x3">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix4x3(const float *)">
+        <modify-function signature="QMatrix4x3(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -2891,7 +2940,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 12);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>        <inject-code>
@@ -2902,11 +2951,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix4x2" java-name="QMatrix4x2">
+    <value-type name="QMatrix4x2">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix4x2(const float *)">
+        <modify-function signature="QMatrix4x2(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -2956,7 +3005,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 8);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -2968,11 +3017,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix3x4" java-name="QMatrix3x4">
+    <value-type name="QMatrix3x4">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix3x4(const float *)">
+        <modify-function signature="QMatrix3x4(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3022,7 +3071,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 12);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3034,11 +3083,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix3x3" java-name="QMatrix3x3">
+    <value-type name="QMatrix3x3">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix3x3(const float *)">
+        <modify-function signature="QMatrix3x3(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3088,7 +3137,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 9);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3100,11 +3149,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix3x2" java-name="QMatrix3x2">
+    <value-type name="QMatrix3x2">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix3x2(const float *)">
+        <modify-function signature="QMatrix3x2(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3154,7 +3203,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 6);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3166,11 +3215,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix2x4" java-name="QMatrix2x4">
+    <value-type name="QMatrix2x4">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix2x4(const float *)">
+        <modify-function signature="QMatrix2x4(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3220,7 +3269,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 8);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3232,11 +3281,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix2x3" java-name="QMatrix2x3">
+    <value-type name="QMatrix2x3">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix2x3(const float *)">
+        <modify-function signature="QMatrix2x3(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3286,7 +3335,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 6);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3298,11 +3347,11 @@ public final void copyDataTo(float[] values)    {
         </inject-code>
     </value-type>
     
-    <value-type name="QtJambiMatrix2x2" java-name="QMatrix2x2">
+    <value-type name="QMatrix2x2">
          <extra-includes>
              <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
          </extra-includes>
-        <modify-function signature="QtJambiMatrix2x2(const float *)">
+        <modify-function signature="QMatrix2x2(const float *)">
             <modify-argument index="1">
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
@@ -3352,7 +3401,7 @@ public final void copyDataTo(float[] values)    {
                 <replace-type modified-type="java.nio.FloatBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, 4);
-                    %out = Java::Runtime::ByteBuffer.asFloatBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asFloatBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3392,11 +3441,8 @@ public final void copyDataTo(float[] values)    {
         </modify-function-->
       <modify-function signature="makeCurrent(QSurface *)" thread-affine="yes">
       </modify-function>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLContext_java__" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLContext_native__" quote-before-line="}// class"/>
+        <inject-code class="java" until="5.*">
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QOpenGLContext___" quote-before-line="}// class"/>
         </inject-code>
     </object-type>
     
@@ -3454,12 +3500,13 @@ public final void copyDataTo(float[] values)    {
 
     <object-type name="QPainter">
         <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPainter_redir__" quote-before-line="}// class" until="5.*"/>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPainter___" quote-before-line="}// class"/>
         </inject-code>
         <modify-function signature="QPainter(QPaintDevice *)">
             <inject-code position="beginning">
                 <argument-map index="1" meta-name="%1"/>
-                initialize(java.util.Objects.requireNonNull(%1, "Argument 'QPaintDevice': null not expected."), true);
+                initialize(%1, true);
             </inject-code>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
@@ -3489,7 +3536,7 @@ public final void copyDataTo(float[] values)    {
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="setRedirected(const QPaintDevice*, QPaintDevice*, const QPoint &amp;)">
+        <modify-function signature="setRedirected(const QPaintDevice*, QPaintDevice*, const QPoint &amp;)" until="5.*">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
@@ -3502,7 +3549,7 @@ public final void copyDataTo(float[] values)    {
 __rcRedirections.put(%1, %2);
             </inject-code>
         </modify-function>
-        <modify-function signature="restoreRedirected(const QPaintDevice*)">
+        <modify-function signature="restoreRedirected(const QPaintDevice*)" until="5.*">
             <inject-code position="end">
             <argument-map index="1" meta-name="%1"/>
 __rcRedirections.remove(%1);
@@ -3584,7 +3631,7 @@ __rcRedirections.remove(%1);
                 <array-type varargs="yes" length-parameter="2"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="redirected(const QPaintDevice*,QPoint*)">
+        <modify-function signature="redirected(const QPaintDevice*,QPoint*)" until="5.*">
             <modify-argument index="1">
                 <no-null-pointer />
             </modify-argument>
@@ -3625,22 +3672,22 @@ __rcRedirections.remove(%1);
     </object-type>
 
     <value-type name="QPicture">
-        <modify-function signature="load(QIODevice*,const char*)">
+        <modify-function signature="load(QIODevice*,const char*)" until="5.*">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="load(QString,const char*)">
+        <modify-function signature="load(QString,const char*)" until="5.*">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="save(QIODevice*,const char*)">
+        <modify-function signature="save(QIODevice*,const char*)" until="5.*">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="save(QString,const char*)">
+        <modify-function signature="save(QString,const char*)" until="5.*">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
@@ -3651,7 +3698,7 @@ __rcRedirections.remove(%1);
             </modify-argument>
         </modify-function>
 
-        <modify-function signature="pictureFormat(QString)">
+        <modify-function signature="pictureFormat(QString)" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
@@ -3874,15 +3921,14 @@ __rcRedirections.remove(%1);
         <extra-includes>
             <include file-name="io.qt.core.QPoint" location="java"/>
         </extra-includes>
+        <modify-function signature="QPolygon(int, const int *)" remove="all">
+            <modify-argument index="2">
+                <array-type length-parameter="1"/>
+            </modify-argument>
+        </modify-function>
         <!--modify-function signature="remove(int)" remove="all"/-->
         <inject-code>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPolygon___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="native" position="beginning">
-        bool operator&lt;(const QPoint&amp; lhs, const QPoint&amp; rhs)
-        {
-            return qHash(lhs) &lt; qHash(rhs);
-        }
         </inject-code>
     </value-type>
 
@@ -3893,12 +3939,6 @@ __rcRedirections.remove(%1);
         <!--modify-function signature="remove(int)" remove="all"/-->
         <inject-code>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPolygonF___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="native" position="beginning">
-        bool operator&lt;(const QPointF&amp; lhs, const QPointF&amp; rhs)
-        {
-            return qHash(lhs) &lt; qHash(rhs);
-        }
         </inject-code>
     </value-type>
 
@@ -3956,7 +3996,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QQuaternion$Axes"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::Private::QtGui::QQuaternion$Axes.newInstance(%env, qtjambi_cast&lt;jobject>(%env, xAxis), qtjambi_cast&lt;jobject>(%env, yAxis), qtjambi_cast&lt;jobject>(%env, zAxis));
+                    jobject %out = Java::QtGui::QQuaternion$Axes::newInstance(%env, qtjambi_cast&lt;jobject>(%env, xAxis), qtjambi_cast&lt;jobject>(%env, yAxis), qtjambi_cast&lt;jobject>(%env, zAxis));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -3978,7 +4018,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QQuaternion$AxisAndAngle"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::Private::QtGui::QQuaternion$AxisAndAngle.newInstance(%env, qtjambi_cast&lt;jobject>(%env, axis), fValue);
+                    jobject %out = Java::QtGui::QQuaternion$AxisAndAngle::newInstance(%env, qtjambi_cast&lt;jobject>(%env, axis), fValue);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -4007,7 +4047,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QQuaternion$EulerAngles"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::Private::QtGui::QQuaternion$EulerAngles.newInstance(%env, aValue, bValue, cValue);
+                    jobject %out = Java::QtGui::QQuaternion$EulerAngles::newInstance(%env, aValue, bValue, cValue);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -4079,6 +4119,13 @@ __rcRedirections.remove(%1);
             </modify-argument>
         </modify-function>
     </object-type>
+    <interface-type name="QUrlResourceProvider">
+        <modify-function signature="setDefaultProvider(QUrlResourceProvider *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDefaultProvider" />
+            </modify-argument>
+        </modify-function>
+    </interface-type>
 
     <object-type name="QTextDocument">
         <modify-function signature="undo(QTextCursor *)">
@@ -4099,17 +4146,68 @@ __rcRedirections.remove(%1);
         </modify-function>
     </object-type>
 
-    <object-type name="QTouchEvent">
-        <modify-function signature="QTouchEvent(QEvent::Type, QTouchDevice *, QFlags&lt;Qt::KeyboardModifier>, QFlags&lt;Qt::TouchPointState>, const QList&lt;QTouchEvent::TouchPoint> &amp;)">
-            <access modifier="private"/>
-            <modify-argument index="5">
-                <replace-default-expression with="new java.util.ArrayList&lt;TouchPoint>()"/>
+    <object-type name="QSinglePointEvent">
+        <modify-function signature="setExclusivePointGrabber(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcExclusiveGrabber" />
             </modify-argument>
         </modify-function>
     </object-type>
 
+    <object-type name="QPointerEvent">
+        <modify-function signature="point(qsizetype)">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.gui.QEventPoint"/>
+                <conversion-rule class="native">
+                    const QEventPoint&amp; ptr = %in;
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, ptr);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="pointById(int)">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.gui.QEventPoint"/>
+                <conversion-rule class="native">
+                    jobject %out = %in ? qtjambi_cast&lt;jobject>(%env, *%in) : nullptr;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setExclusiveGrabber(QEventPoint,QObject*)">
+            <modify-argument index="2">
+                <reference-count action="set" variable-name="__rcExclusiveGrabber" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addPassiveGrabber(QEventPoint,QObject*)">
+            <modify-argument index="2">
+                <reference-count action="add" variable-name="__rcPassiveGrabber" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removePassiveGrabber(QEventPoint,QObject*)">
+            <modify-argument index="2">
+                <reference-count action="remove" variable-name="__rcPassiveGrabber" />
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QPointerEvent___" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <!--object-type name="QTouchEvent">
+        <modify-function signature="QTouchEvent(QEvent::Type, QTouchDevice *, QFlags&lt;Qt::KeyboardModifier>, QFlags&lt;Qt::TouchPointState>, const QList&lt;QTouchEvent::TouchPoint> &amp;)" until="5.*">
+            <access modifier="private"/>
+            <modify-argument index="5">
+                <replace-default-expression with="java.util.Collections.emptyList()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QTouchEvent(QEvent::Type, const QPointingDevice *, QFlags&lt;Qt::KeyboardModifier>, QFlags&lt;Qt::TouchPointState>, const QList&lt;QEventPoint> &amp;)" since="6.0.0">
+            <access modifier="private"/>
+            <modify-argument index="5">
+                <replace-default-expression with="java.util.Collections.emptyList()"/>
+            </modify-argument>
+        </modify-function>
+    </object-type-->
+
     <value-type name="QTextLine">
-        <modify-function signature="draw(QPainter*,QPointF,const QTextLayout::FormatRange*)const">
+        <modify-function signature="draw(QPainter*,QPointF,const QTextLayout::FormatRange*)const" until="5.*">
             <modify-argument index="3">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -4121,10 +4219,16 @@ __rcRedirections.remove(%1);
     </value-type>
 
     <object-type name="QTextLayout">
-        <modify-function signature="draw(QPainter *, const QPointF &amp;, const QVector&lt;QTextLayout::FormatRange> &amp;, const QRectF &amp;) const">
+        <modify-function signature="draw(QPainter *, const QPointF &amp;, const QVector&lt;QTextLayout::FormatRange> &amp;, const QRectF &amp;) const" until="5.*">
             <access modifier="private"/>
             <modify-argument index="3">
-                <replace-default-expression with="new java.util.ArrayList&lt;FormatRange>()"/>
+                <replace-default-expression with="java.util.Collections.emptyList()"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="draw(QPainter *, const QPointF &amp;, const QList&lt;QTextLayout::FormatRange> &amp;, const QRectF &amp;) const" since="6.0.0">
+            <access modifier="private"/>
+            <modify-argument index="3">
+                <replace-default-expression with="java.util.Collections.emptyList()"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -4174,7 +4278,7 @@ __rcRedirections.remove(%1);
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.gui.QTextCursor$SelectedTableCells"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::Private::QtGui::QTextCursor$SelectedTableCells.newInstance(%env,  a, b, c, d);
+                    jobject %out = Java::QtGui::QTextCursor$SelectedTableCells::newInstance(%env,  a, b, c, d);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -4347,7 +4451,7 @@ __rcRedirections.remove(%1);
                         <replace from="%STRING" to="%1"/>
                         <replace from="%POS" to="%2"/>
                     </insert-template>
-                    QValidator::State %out = QValidator::State(qtjambi_to_enumerator(%env, %in).value&lt;qint32>());
+                    QValidator::State %out = qtjambi_cast&lt;QValidator::State>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -5013,8 +5117,6 @@ __rcRedirections.remove(%1);
     </value-type>
     <value-type name="QPageLayout">
     </value-type>
-    <value-type name="QOpenGLPixelTransferOptions">
-    </value-type>
     <value-type name="QGlyphRun">
         <modify-function signature="setRawData(const unsigned int *, const QPointF *, int)" remove="all"/>
     </value-type>
@@ -5022,6 +5124,505 @@ __rcRedirections.remove(%1);
     </value-type>
     <value-type name="QFontInfo">
     </value-type>
+    <object-type name="QWindow">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QWindow___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="requestUpdate()" thread-affine="ui" />
+    </object-type>
+    <object-type name="QOffscreenSurface">
+        <modify-function signature="create()" thread-affine="ui" />
+    </object-type>
+    <interface-type name="QAccessibleTextInterface">
+        <modify-function signature="attributes(int, int *, int *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="selection(int, int *, int *) const">
+            <modify-argument index="2">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="textAfterOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="textAtOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="textBeforeOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
+            <modify-argument index="3">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="int[]"/>
+                <conversion-rule class="native">
+                jsize %out_size = 1;
+                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <value-type name="QOpenGLBuffer">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="allocate(const void *, int)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="read(int, void *, int)">
+            <modify-argument index="2">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="write(int, const void *, int)">
+            <modify-argument index="2">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="map(QOpenGLBuffer::Access)">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer" />
+                <conversion-rule class="native">
+                jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->size());
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="mapRange(int, int, QFlags&lt;QOpenGLBuffer::RangeAccessFlag>)">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer" />
+                <conversion-rule class="native">
+                jobject %out = %env->NewDirectByteBuffer(%in, qMin(%2, __qt_this->size()-%1));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+      </value-type>
+    <object-type name="QOpenGLTexture">
+        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
+            <modify-argument index="13">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="14">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
+            <modify-argument index="12">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="13">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
+            <modify-argument index="11">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="12">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
+            <modify-argument index="10">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="11">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
+            <modify-argument index="9">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="10">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="6">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="7">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="7">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="8">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="5">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="6">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="4">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="3">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCompressedData(int, int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="6">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="7">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="5">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="6">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCompressedData(int, int, int, const void *,const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="4">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="5">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="3">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCompressedData(int, const void *,const QOpenGLPixelTransferOptions * const)">
+            <modify-argument index="2">
+                <no-null-pointer/>
+                <array-type as-buffer="yes"/>
+            </modify-argument>
+            <modify-argument index="3">
+                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
+                <conversion-rule class="native">
+                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+      </object-type>
+    <object-type name="QOpenGLVersionFunctionsBackend">
+        <modify-field name="context">
+            <reference-count action="set" variable-name="_rcOpenGLContext"/>
+        </modify-field>
+        <inject-code>
+            private Object _rcOpenGLContext;
+        </inject-code>
+    </object-type>
+    <object-type name="QActionEvent">
+        <inject-code class="native">
+            class QAction;
+        </inject-code>
+        <modify-function signature="QActionEvent(int, QAction *, QAction *)" until="5.*">
+            <modify-argument index="2">
+                <conversion-rule class="native">
+                    QAction* %out = static_cast&lt;QAction*>(qtjambi_to_qobject(%env, %in));
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="3">
+                <conversion-rule class="native">
+                    QAction* %out = static_cast&lt;QAction*>(qtjambi_to_qobject(%env, %in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="action() const" until="5.*">
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="before() const" until="5.*">
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+<!--
+    since Qt5 QMatrix is deprecated
+
+    <value-type name="QMatrix">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QMatrix___" quote-before-line="}// class"/>
+        </inject-code>
+
+    </value-type>
+-->
+    <object-type name="QActionGroup" since="6.0.0">
+        <modify-function signature="addAction(QAction*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="add" variable-name="__rcActions"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="removeAction(QAction*)" thread-affine="yes">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcActions"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);
+            </inject-code>
+        </modify-function>
+    </object-type>
+    
+    <object-type name="QAction" since="6.0.0">
+        <extra-includes>
+        <include file-name="io.qt.widgets.*" location="java"/>
+        </extra-includes>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QAction___" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="setActionGroup(QActionGroup*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="end">
+                <argument-map index="1" meta-name="%1"/>
+            if (__rcActionGroup != null) {
+                removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
+            }
+            __rcActionGroup = %1;
+            if (__rcActionGroup != null) {
+                addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
+            }
+            </inject-code>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QUndoStack" since="6.0.0">
+        <modify-function signature="push(QUndoCommand *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    
+    <object-type name="QShortcut" since="6.0.0">
+        <modify-function signature="QShortcut(QKeySequence::StandardKey,QObject*,const char*,const char*,Qt::ShortcutContext)">
+            <modify-argument index="3">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QShortcut(QKeySequence,QObject*,const char*,const char*,Qt::ShortcutContext)">
+            <modify-argument index="3">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+            <modify-argument index="4">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QShortcut__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="QFileSystemModel" since="6.0.0">
+        <modify-function signature="setIconProvider(QAbstractFileIconProvider *)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIconProvider"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QOpenGLFunctions">
         <modify-function signature="glBindAttribLocation(GLuint,GLuint,const char*)">
             <modify-argument index="3">
@@ -5525,21 +6126,33 @@ __rcRedirections.remove(%1);
         <modify-function signature="glGetUniformBlockIndex(GLuint, const GLchar *)">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetFragDataLocation(GLuint, const GLchar *)">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetProgramResourceIndex(GLuint, GLenum, const GLchar *)">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glObjectLabel(GLenum, GLuint, GLsizei, const GLchar *)">
             <modify-argument index="4">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glPushDebugGroup(GLenum, GLuint, GLsizei, const GLchar *)">
@@ -5557,6 +6170,9 @@ __rcRedirections.remove(%1);
         <modify-function signature="glGetProgramResourceLocation(GLuint, GLenum, const GLchar *)">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetProgramPipelineInfoLog(GLuint, GLsizei, GLsizei *, GLchar *)">
@@ -6306,7 +6922,7 @@ __rcRedirections.remove(%1);
                 <no-null-pointer/>
                 <replace-type modified-type="int[]"/>
                 <conversion-rule class="native">
-                JIntArrayPointer %out(%env, %in, true);
+                JIntArrayPointer %out(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -6362,6 +6978,9 @@ __rcRedirections.remove(%1);
         <modify-function signature="glBindAttribLocation(GLuint,GLuint,const GLchar*)">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetVertexAttribPointerv(GLuint, GLenum, GLvoid **)">
@@ -6382,9 +7001,6 @@ __rcRedirections.remove(%1);
         <modify-function signature="glGetString(GLenum)">
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
-                <conversion-rule class="shell">
-                    jstring %out = qtjambi_cast&lt;jstring>(%env, QLatin1String(reinterpret_cast&lt;const char *>(%in)));
-                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glBufferData(GLenum,GLsizeiptr,const GLvoid*,GLenum)">
@@ -6450,6 +7066,9 @@ __rcRedirections.remove(%1);
         <modify-function signature="glGetAttribLocation(GLuint, const GLchar*)">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetProgramInfoLog(GLuint, GLsizei, GLsizei*, GLchar*)">
@@ -6518,6 +7137,9 @@ __rcRedirections.remove(%1);
         <modify-function signature="glGetUniformLocation(GLuint, const GLchar*)">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, %in);
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="glGetShaderSource(GLuint, GLsizei, GLsizei*, GLchar*)">
@@ -6696,421 +7318,5 @@ __rcRedirections.remove(%1);
         <import template="QOpenGLFunctions_1_1_template_full2"/>
         <import template="QOpenGLFunctions_4_5"/>
     </object-type>
-    <object-type name="QWindow">
-        <modify-function signature="show()" access="non-final" />
-        <modify-function signature="requestUpdate()" thread-affine="ui" />
-    </object-type>
-    <object-type name="QOffscreenSurface">
-        <modify-function signature="create()" thread-affine="ui" />
-    </object-type>
-    <interface-type name="QAccessibleTextInterface">
-        <modify-function signature="attributes(int, int *, int *) const">
-            <modify-argument index="2">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="3">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="selection(int, int *, int *) const">
-            <modify-argument index="2">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="3">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="textAfterOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
-            <modify-argument index="3">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="4">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="textAtOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
-            <modify-argument index="3">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="4">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="textBeforeOffset(int, QAccessible::TextBoundaryType, int *, int *) const">
-            <modify-argument index="3">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="4">
-                <replace-type modified-type="int[]"/>
-                <conversion-rule class="native">
-                jsize %out_size = 1;
-                int* %out = qtjambi_array_cast&lt;int*>(%env, %scope, jintArray(%in), %out_size);
-                </conversion-rule>
-                <conversion-rule class="shell">
-                jintArray %out = qtjambi_array_cast&lt;jintArray>(%env, %scope, %in, %in ? 1 : 0);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </interface-type>
-    <value-type name="QOpenGLBuffer">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="allocate(const void *, int)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="read(int, void *, int)">
-            <modify-argument index="2">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="write(int, const void *, int)">
-            <modify-argument index="2">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="map(QOpenGLBuffer::Access)">
-            <modify-argument index="0">
-                <replace-type modified-type="java.nio.ByteBuffer" />
-                <conversion-rule class="native">
-                jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->size());
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="mapRange(int, int, QFlags&lt;QOpenGLBuffer::RangeAccessFlag>)">
-            <modify-argument index="0">
-                <replace-type modified-type="java.nio.ByteBuffer" />
-                <conversion-rule class="native">
-                jobject %out = %env->NewDirectByteBuffer(%in, qMin(%2, __qt_this->size()-%1));
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-      </value-type>
-    <object-type name="QOpenGLTexture">
-        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
-            <modify-argument index="13">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="14">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
-            <modify-argument index="12">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="13">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
-            <modify-argument index="11">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="12">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
-            <modify-argument index="10">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="11">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)" since="5.14.0">
-            <modify-argument index="9">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="10">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="6">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="7">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="7">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="8">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="5">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="6">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="4">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="5">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="shell">
-                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="3">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="4">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setCompressedData(int, int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="6">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="7">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="5">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="6">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setCompressedData(int, int, int, const void *,const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="4">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="5">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="3">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="4">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setCompressedData(int, const void *,const QOpenGLPixelTransferOptions * const)">
-            <modify-argument index="2">
-                <no-null-pointer/>
-                <array-type as-buffer="yes"/>
-            </modify-argument>
-            <modify-argument index="3">
-                <replace-type modified-type="io.qt.gui.QOpenGLPixelTransferOptions"/>
-                <conversion-rule class="native">
-                    QOpenGLPixelTransferOptions *%out = qtjambi_cast&lt;QOpenGLPixelTransferOptions *>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-      </object-type>
-    <object-type name="QOpenGLVersionFunctionsBackend">
-        <modify-field name="context">
-            <reference-count action="set" variable-name="_rcOpenGLContext"/>
-        </modify-field>
-        <inject-code>
-            private Object _rcOpenGLContext;
-        </inject-code>
-    </object-type>
-    <object-type name="QActionEvent">
-        <inject-code class="native">
-            class QAction;
-        </inject-code>
-        <modify-function signature="QActionEvent(int, QAction *, QAction *)">
-            <modify-argument index="2">
-                <conversion-rule class="native">
-                    QAction* %out = static_cast&lt;QAction*>(qtjambi_to_qobject(%env, %in));
-                </conversion-rule>
-            </modify-argument>
-            <modify-argument index="3">
-                <conversion-rule class="native">
-                    QAction* %out = static_cast&lt;QAction*>(qtjambi_to_qobject(%env, %in));
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="action() const">
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="before() const">
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                    jobject %out = qtjambi_from_qobject(%env, %in, "io/qt/widgets/QAction");
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-<!--
-    since Qt5 QMatrix is deprecated
-
-    <value-type name="QMatrix">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QMatrix___" quote-before-line="}// class"/>
-        </inject-code>
-
-    </value-type>
--->
 </typesystem>
 

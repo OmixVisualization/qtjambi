@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -75,6 +75,7 @@ public class LibraryEntry extends Task {
      */
     private String type = TYPE_DEFAULT;
     private String name;         // name from configuration
+    private String shortName;
     private String originalname;
 
 	private String targetName;
@@ -137,12 +138,16 @@ public class LibraryEntry extends Task {
         this.type = type;
     }
 
+    public String getShortName() {
+        return shortName;
+    }
     public String getName() {
         return name;
     }
     public void setName(String name) {
         this.name = name;
         this.originalname = name;
+        this.shortName = name;
     }
     
     public String getTargetName() {
@@ -306,12 +311,6 @@ public class LibraryEntry extends Task {
         int qtPatchlevelVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_PATCHLEVEL));
         boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK));
         boolean convertQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK));
-        String sonameVersion;
-        if(qtMajorVersion<5){
-        	sonameVersion = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_SONAME_VERSION_MAJOR);
-        }else{
-        	sonameVersion = ""+qtMajorVersion;
-        }
         String libInfix = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_QT_LIBINFIX);
 
         boolean resolved = false;
@@ -322,6 +321,7 @@ public class LibraryEntry extends Task {
                 // FIXME this should override everything
                 //name = srcPathFile.getAbsolutePath();
                 name = srcPathFile.getName();
+                shortName = srcPathFile.getName();
                 resolved = true;
             }
         }
@@ -339,7 +339,7 @@ public class LibraryEntry extends Task {
                 } else if(dsoVersion != null && dsoVersion.compareToIgnoreCase("use-qt-version") == 0) {
                     useDsoVersion = qtVersion;
                 } else if(dsoVersion != null && dsoVersion.compareToIgnoreCase("use-soname-version") == 0) {
-                    useDsoVersion = sonameVersion;
+                    useDsoVersion = ""+qtMajorVersion;
                 } else if(dsoVersion == null) {  // the default stratagy
                     if(OSInfo.crossOS() == OSInfo.OS.Windows)
                         useDsoVersion = ""+qtMajorVersion;
@@ -369,17 +369,31 @@ public class LibraryEntry extends Task {
         		name = formatQmlPluginName(name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
         		break;
         	case TYPE_QT: {
-	                // MacOSX: uses *.dylib and _debug suffix
-	        		if(useFrameworks) {
-	        			name = formatQtNameAsFramework(name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-	        		}else {
-		                String _name = name;
-	                	name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-		                if(convertQtFrameworks){
-		                    targetName = name;
-		                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
-		                }
-	        		}
+	        		if(dsoVersion != null && dsoVersion.compareToIgnoreCase("no-version") == 0) {
+	            		if(useFrameworks) {
+	            			shortName = name = formatQtNameAsFramework(name, libInfix, debug, -1, -1, -1);
+	            		}else {
+	    	                String _name = name;
+	    	                shortName = name = formatQtName(_name, libInfix, debug, -1, -1, -1);
+	    	                if(convertQtFrameworks){
+	    	                    targetName = name;
+	    	                    shortName = name = formatQtNameAsFramework(_name, libInfix, debug, -1, -1, -1);
+	    	                }
+	            		}
+	                }else {
+		                // MacOSX: uses *.dylib and _debug suffix
+		        		if(useFrameworks) {
+		        			shortName = name = formatQtNameAsFramework(name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+		        		}else {
+			                String _name = name;
+		                	name = formatQtName(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+		                	shortName = formatQtName(_name, libInfix, debug, qtMajorVersion, -1, -1);
+			                if(convertQtFrameworks){
+			                    targetName = name;
+			                    name = formatQtNameAsFramework(_name, libInfix, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+			                }
+		        		}
+	                }
 	            } 
 	        	break;
         	case TYPE_QT_NONVERSIONED:
@@ -387,7 +401,9 @@ public class LibraryEntry extends Task {
     			break;
         	case TYPE_QTJAMBI_JNI: // JNI
                 // MacOSX: uses *.jnilib and _debug suffix
-    			name = formatQtJambiJniName(name, debug, dsoVersion);
+        		String _name = name;
+    			name = formatQtJambiJniName(_name, debug, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+    			shortName = formatQtJambiJniName(_name, debug, qtMajorVersion, -1, -1);
                 break;
         	case TYPE_QTJAMBI: // non-JNI base library
                 // MacOSX: uses *.dylib and _debug suffix
@@ -519,6 +535,9 @@ public class LibraryEntry extends Task {
     
     public static String formatQtNameAsFramework(String name, String infix, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
         String result = name + ".framework/Versions/" + qtMajorVersion + "/" + name;
+        if(qtMajorVersion==6) {
+        	result = name + ".framework/Versions/A/" + name;
+        }
         if(qtMajorVersion==5 && qtMinorVersion<14){
             if(debug)
                 result += "_debug";
@@ -545,9 +564,7 @@ public class LibraryEntry extends Task {
         if(debug) {
             String tmpDotVersionString;
             if(qtMajorVersion>=0){
-                if(name.startsWith("Qt")){
-                    tmpDotVersionString = String.format(".%1$s", qtMajorVersion);
-                }else if(qtMinorVersion>=0){
+                if(qtMinorVersion>=0){
                     if(qtPatchlevelVersion>=0){
                         tmpDotVersionString = String.format(".%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
                     }else{
@@ -581,9 +598,7 @@ public class LibraryEntry extends Task {
         } else {
             String tmpDotVersionString;
             if(qtMajorVersion>=0){
-                if(name.startsWith("Qt")){
-                    tmpDotVersionString = String.format(".%1$s", qtMajorVersion);
-                }else if(qtMinorVersion>=0){
+                if(qtMinorVersion>=0){
                     if(qtPatchlevelVersion>=0){
                         tmpDotVersionString = String.format(".%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
                     }else{
@@ -706,26 +721,27 @@ public class LibraryEntry extends Task {
         throw new BuildException("unhandled case...");
     }
     
-    public static String formatQtJambiJniName(String name, boolean debug, String versionString) {
-        String tmpVersionString = (versionString != null) ? versionString : "";
-    	int iversion = 0;
-    	if(!tmpVersionString.isEmpty()){
-    		try {
-				iversion = Integer.parseInt(tmpVersionString);
-			} catch (Exception e) {
-			}
-    	}
-        String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
+    public static String formatQtJambiJniName(String name, boolean debug, int qtMajorVersion, int qtMinorVersion, int qtPatchlevelVersion) {
+        String tmpVersionString = (qtMajorVersion>=0) ? ""+qtMajorVersion : "";
+    	String tmpDotVersionString;
+        if(qtMajorVersion>=0){
+            if(qtMinorVersion>=0){
+                if(qtPatchlevelVersion>=0){
+                    tmpDotVersionString = String.format(".%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtPatchlevelVersion);
+                }else{
+                    tmpDotVersionString = String.format(".%1$s.%2$s", qtMajorVersion, qtMinorVersion);
+                }
+            }else{
+                tmpDotVersionString = String.format(".%1$s", qtMajorVersion);
+            }
+        }else{
+            tmpDotVersionString = "";
+        }
         if(debug) {
             String tmpDebugSuffix = "_debug";
             switch(OSInfo.crossOS()) {
-            case Windows:{
-            	if(iversion>=5){
-            		return name + "d" + tmpVersionString + ".dll";
-            	}else{
-            		return name + "d.dll";
-            	}
-            }
+            case Windows:
+        		return name + "d" + tmpVersionString + ".dll";
             case MacOS:
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".jnilib";
             case Android:
@@ -741,11 +757,7 @@ public class LibraryEntry extends Task {
         } else {
             switch(OSInfo.crossOS()) {
             case Windows:
-            	if(iversion>=5){
-            		return name + tmpVersionString + ".dll";
-            	}else{
-            		return name + ".dll";
-            	}
+        		return name + tmpVersionString + ".dll";
             case MacOS:
                 return "lib" + name + tmpDotVersionString + ".jnilib";
             case Android:
@@ -819,56 +831,39 @@ public class LibraryEntry extends Task {
 
 
     public static String formatQtJambiPluginName(String name, boolean debug, String versionString) {
-        String tmpVersionString = (versionString != null) ? versionString : "";
-        int iversion = 0;
-    	if(!tmpVersionString.isEmpty()){
-    		try {
-				iversion = Integer.parseInt(tmpVersionString);
-			} catch (Exception e) {
-			}
-    	}
-//        String tmpDotVersionString = (versionString != null && versionString.length() > 0) ? "." + versionString : "";
-         if(debug) {
-            String tmpDebugSuffix = "_debug";
-             switch(OSInfo.crossOS()) {
-             case Windows:
-            	 if(iversion>=5){
-            		 return name + "d" + tmpVersionString + ".dll";
-            	 }else{
-            		 return name + "d.dll";
-            	 }
-             case MacOS:
-                return "lib" + name + ".dylib";
-             case Android:
-             case Solaris:
-             case Linux:
-             case FreeBSD:
-                return "lib" + name + tmpDebugSuffix + ".so";
-             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
- 			default:
+    	if(debug) {
+            switch(OSInfo.crossOS()) {
+            case Windows: return name + "d.dll";
+            case MacOS:
+                return "lib" + name + "_debug.dylib";
+            case Android:
+            case Solaris:
+            case Linux:
+            case FreeBSD:
+                return "lib" + name + "_debug.so";
+            case IOS:
+                return "lib" + name + "_debug.a";
+			default:
 				break;
-             }
-         } else {
-             switch(OSInfo.crossOS()) {
-             case Windows:
-            	 if(iversion>=5){
-            		 return name + tmpVersionString + ".dll";
-            	 }else{
-            		 return name + ".dll";
-            	 }
-             case MacOS:
+            }
+        } else {
+            switch(OSInfo.crossOS()) {
+            case Windows:
+                return name + ".dll";
+            case MacOS:
                 return "lib" + name + ".dylib";
-             case Android:
-             case Solaris:
-             case Linux:
-             case FreeBSD:
+            case Android:
+            case Solaris:
+            case Linux:
+            case FreeBSD:
                 return "lib" + name + ".so";
-             case IOS: return "lib" + name + ".a";
- 			default:
+            case IOS:
+                return "lib" + name + ".a";
+			default:
 				break;
-             }
-         }
-         throw new BuildException("unhandled case...");
+            }
+        }
+        throw new BuildException("unhandled case...");
     }
 
     public static String formatQtJambiQmlPluginName(String name, boolean debug, String versionString) {

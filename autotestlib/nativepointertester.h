@@ -45,6 +45,8 @@
 #ifndef NATIVEPOINTERTESTER_H
 #define NATIVEPOINTERTESTER_H
 
+#include <QtCore/QString>
+
 class NativePointerTester
 {
 public:

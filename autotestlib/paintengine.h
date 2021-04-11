@@ -45,7 +45,9 @@
 #ifndef PAINTENGINE_H
 #define PAINTENGINE_H
 
-#include <QtWidgets>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
 
 class CustomPaintEngine: public QPaintEngine
 {

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -116,7 +116,7 @@ static QString protect(const QByteArray& str) {
 
 void QDocGenerator::write(QTextStream &s, const AbstractMetaFunction *java_function) {
     const AbstractMetaArgumentList& arguments = java_function->arguments();
-    int argument_count = arguments.size();
+    auto argument_count = arguments.size();
 
     int overload_count = 0;
 
@@ -126,7 +126,7 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaFunction *java_funct
     }
 
     for (int i = 0; i <= overload_count; ++i) {
-        writeOverload(s, java_function, argument_count - i);
+        writeOverload(s, java_function, int(argument_count - i));
     }
 }
 
@@ -296,7 +296,7 @@ void QDocGenerator::write(QTextStream &s, const AbstractMetaClass *java_class) {
     s << "<class" << Qt::endl
     << "   java=\"" << protect(java_class->name().toUtf8()) << "\"" << Qt::endl
     << "   cpp=\"" << protect(java_class->typeEntry()->qualifiedCppName().toUtf8()) << "\"" << Qt::endl
-    << "   java-extends=\"" << protect(java_class->baseClass() ? java_class->baseClass()->name().toUtf8() : "") << "\"" << Qt::endl
+    << "   java-extends=\"" << (java_class->baseClass() ? protect(java_class->baseClass()->name().toUtf8()) : "") << "\"" << Qt::endl
     << "   package=\"" << protect(java_class->package().toUtf8()) << "\"" << Qt::endl;
 
     AbstractMetaClassList interfaces = java_class->interfaces();

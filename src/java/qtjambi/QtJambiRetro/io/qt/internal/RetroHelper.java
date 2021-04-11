@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,29 +30,26 @@
 package io.qt.internal;
 
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
 import java.util.Optional;
+import java.util.function.IntFunction;
 import java.util.function.Supplier;
-import io.qt.core.QPair;
 
 final class RetroHelper {
 	private RetroHelper() {throw new RuntimeException();}
     private static final StackWalker stackWalker = StackWalker.getInstance(java.util.Collections.singleton(StackWalker.Option.RETAIN_CLASS_REFERENCE));
     private static final Supplier<Class<?>> callerClassProvider = stackWalker::getCallerClass;
-    private static final Supplier<QPair<Class<?>, String>> callerClassProvider2 = ()->{
-        Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(4).skip(3).findFirst());
-        if(stackFrame.isPresent()) {
-            return new QPair<>(
-                stackFrame.get().getDeclaringClass(),
-                stackFrame.get().getMethodName());
-        }else {
-            return null;
+    private static final IntFunction<QtJambiInternal.InvocationInfo> callerClassProvider2 = number->{
+    	if(number>0) {
+	        Optional<StackWalker.StackFrame> stackFrame = stackWalker.walk(stream->stream.limit(number).skip(number-1).findFirst());
+	        if(stackFrame.isPresent()) {
+	            return new QtJambiInternal.InvocationInfo(
+	                stackFrame.get().getDeclaringClass(),
+	                stackFrame.get().getMethodName(), 
+	                stackFrame.get().getLineNumber());
+	        }
         }
+        return null;
     };
-    
-    static boolean trySetAccessible(Field f) {
-        return f.trySetAccessible();
-    }
     
     static AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType) {
         return actualType.getAnnotatedOwnerType();
@@ -62,7 +59,7 @@ final class RetroHelper {
         return callerClassProvider;
     }
     
-    static Supplier<QPair<Class<?>, String>> classAccessChecker(){
+    static IntFunction<QtJambiInternal.InvocationInfo> classAccessChecker(){
         return callerClassProvider2;
     }
 }

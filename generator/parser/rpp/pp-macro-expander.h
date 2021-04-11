@@ -267,7 +267,7 @@ namespace rpp {
 #if defined(__SUNPRO_CC)
                                         std::distance(begin_id, end_id, new_macro_size);
 #else
-                                        new_macro_size = std::distance(begin_id, end_id);
+                                        new_macro_size = std::size_t(std::distance(begin_id, end_id));
 #endif
                                         new_macro = env.resolve(id.c_str(), new_macro_size);
                                     }

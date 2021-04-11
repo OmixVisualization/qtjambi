@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,11 +30,14 @@
 #ifndef QTJAMBI_THREAD_H
 #define QTJAMBI_THREAD_H
 
-#include <QtCore>
-#include "qtjambi_core.h"
-#include <QtCore/QThread>
+#include "qtjambi_global.h"
 
+class QThread;
+
+QTJAMBI_EXPORT jobject qtjambi_get_qthread_for_jthread(JNIEnv *env, jobject thread);
 #ifndef QT_QTJAMBI_PORT
+QTJAMBI_EXPORT void qtjambi_initialize_current_thread(JNIEnv *env);
+
 QTJAMBI_EXPORT void qtjambi_initialize_thread(JNIEnv *__jni_env, QtJambiNativeID __this_nativeId, jobject threadGroup);
 
 QTJAMBI_EXPORT void qtjambi_thread_set_daemon(JNIEnv *__jni_env, QtJambiNativeID nativeId, bool daemon);

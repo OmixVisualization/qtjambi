@@ -36,6 +36,7 @@
 #include "QDBusVariantReply.h"
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_cast.h>
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QDBusReply__1_1qt_1QDBusReply_1clone)
@@ -112,7 +113,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
     try{
         jvalue arguments;
         arguments.l = dbusError0;
-        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_1, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, false, nullptr, nullptr, &arguments);
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_1, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -130,7 +131,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
     try{
         jvalue arguments;
         arguments.l = reply0;
-        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_2, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, false, nullptr, nullptr, &arguments);
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_2, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -148,7 +149,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
     try{
         jvalue arguments;
         arguments.l = pcall0;
-        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_3, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, false, nullptr, nullptr, &arguments);
+        qtjambi_initialize_native_value(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_3, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -201,8 +202,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
  jobject other0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::operator=(const QDBusReply<QVariant > & other)")
+    QtJambiScope __qtjambi_scope(__this_nativeId);
     try{
-        QtJambiScope __qtjambi_scope(__this_nativeId);
         QDBusReply<QVariant> *__qt_this = qtjambi_object_from_nativeId<QDBusReply<QVariant>>(__this_nativeId);
         Q_ASSERT(__qt_this);
         const QDBusReply<QVariant>&  __qt_other0 = qtjambi_cast<QDBusReply<QVariant> >(__jni_env, __qtjambi_scope, other0);
@@ -239,7 +240,11 @@ void initialize_meta_info_QtDBus()
     const std::type_info& typeId = registerTypeInfo<QDBusReply<QVariant>>("QDBusReply", "io/qt/dbus/QDBusReply");
     registerOperators<QDBusReply<QVariant>>();
     int metaTypeID = registerMetaType<QDBusReply<QVariant>>("QDBusReply<QVariant>");
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMetaType::registerNormalizedTypedef("QDBusReply", metaTypeID);
+#else
+    QMetaType::registerNormalizedTypedef("QDBusReply", QMetaType(metaTypeID));
+#endif
     registerConstructorInfos(typeId, &__qt_destruct_QDBusReply, {
         ConstructorInfo(&__qt_construct_QDBusReply_0, nullptr)
        ,ConstructorInfo(&__qt_construct_QDBusReply_1, "Lio/qt/dbus/QDBusError;")

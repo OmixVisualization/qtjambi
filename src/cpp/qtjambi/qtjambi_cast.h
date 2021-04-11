@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,16 +34,17 @@
 #include "qtjambi_array_cast.h"
 
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in, const char* nativeTypeName){
-     typedef typename std::remove_reference<O>::type O_noref;
-     typedef typename std::remove_reference<T>::type T_noref;
-     typedef typename std::remove_cv<O_noref>::type O_noconst;
-     typedef typename std::remove_cv<T_noref>::type T_noconst;
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, const T& in, const char* nativeTypeName){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+
     return QtJambiPrivate::qtjambi_cast_decider<true, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          const T&,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
@@ -52,16 +53,54 @@ O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in, const char* nativeTypeN
 }
 
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in, const char* nativeTypeName){
-     typedef typename std::remove_reference<O>::type O_noref;
-     typedef typename std::remove_reference<T>::type T_noref;
-     typedef typename std::remove_cv<O_noref>::type O_noconst;
-     typedef typename std::remove_cv<T_noref>::type T_noconst;
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T& in, const char* nativeTypeName){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<T>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+
+    return QtJambiPrivate::qtjambi_cast_decider<true, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          T&,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+    >::cast(env, in, nativeTypeName, &scope);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T* in, const char* nativeTypeName){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<T*>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_cast_decider<true, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          T*,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+    >::cast(env, in, nativeTypeName, &scope);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, const T& in, const char* nativeTypeName){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+
     return QtJambiPrivate::qtjambi_cast_decider<false, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          const T&,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
@@ -70,16 +109,54 @@ O qtjambi_cast(JNIEnv *env, T&& in, const char* nativeTypeName){
 }
 
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in){
+constexpr O qtjambi_cast(JNIEnv *env, T& in, const char* nativeTypeName){
     typedef typename std::remove_reference<O>::type O_noref;
     typedef typename std::remove_reference<T>::type T_noref;
     typedef typename std::remove_cv<O_noref>::type O_noconst;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
+
     return QtJambiPrivate::qtjambi_cast_decider<false, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          T&,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+     >::cast(env, in, nativeTypeName, nullptr);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, T* in, const char* nativeTypeName){
+     typedef typename std::remove_reference<O>::type O_noref;
+     typedef typename std::remove_reference<T*>::type T_noref;
+     typedef typename std::remove_cv<O_noref>::type O_noconst;
+     typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_cast_decider<false, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          T*,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+     >::cast(env, in, nativeTypeName, nullptr);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, const T& in){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+
+    return QtJambiPrivate::qtjambi_cast_decider<false, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          const T&,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
@@ -88,16 +165,54 @@ O qtjambi_cast(JNIEnv *env, T&& in){
 }
 
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in){
+constexpr O qtjambi_cast(JNIEnv *env, T& in){
     typedef typename std::remove_reference<O>::type O_noref;
     typedef typename std::remove_reference<T>::type T_noref;
     typedef typename std::remove_cv<O_noref>::type O_noconst;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
+
+    return QtJambiPrivate::qtjambi_cast_decider<false, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          T&,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+    >::cast(env, in, nullptr, nullptr);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, T* in){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<T*>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_cast_decider<false, O,
+                          std::is_arithmetic<O_noref>::value,
+                          std::is_enum<O_noref>::value,
+                          QtJambiPrivate::is_jni_type<O_noconst>::value,
+                          T*,
+                          std::is_arithmetic<T_noref>::value,
+                          std::is_enum<T_noref>::value,
+                          QtJambiPrivate::is_jni_type<T_noconst>::value,
+                          std::is_same<O_noref, T_noref>::value
+    >::cast(env, in, nullptr, nullptr);
+}
+
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, const T& in){
+    typedef typename std::remove_reference<O>::type O_noref;
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<O_noref>::type O_noconst;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+
     return QtJambiPrivate::qtjambi_cast_decider<true, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          const T&,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
@@ -106,43 +221,184 @@ O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in){
 }
 
 template<class O, class T>
-O qtjambi_cast(QtJambiScope& scope, T&& in, const char* nativeTypeName = nullptr){
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T& in){
     typedef typename std::remove_reference<O>::type O_noref;
     typedef typename std::remove_reference<T>::type T_noref;
     typedef typename std::remove_cv<O_noref>::type O_noconst;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
-    JNIEnv *env = qtjambi_current_environment();
-    Q_ASSERT(env);
+
     return QtJambiPrivate::qtjambi_cast_decider<true, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          T&,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
                           std::is_same<O_noref, T_noref>::value
-    >::cast(env, in, nativeTypeName, &scope);
+    >::cast(env, in, nullptr, &scope);
 }
 
 template<class O, class T>
-O qtjambi_cast(T&& in, const char* nativeTypeName = nullptr){
+constexpr O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T* in){
     typedef typename std::remove_reference<O>::type O_noref;
-    typedef typename std::remove_reference<T>::type T_noref;
+    typedef typename std::remove_reference<T*>::type T_noref;
     typedef typename std::remove_cv<O_noref>::type O_noconst;
     typedef typename std::remove_cv<T_noref>::type T_noconst;
-    JNIEnv *env = qtjambi_current_environment();
-    Q_ASSERT(env);
-    return QtJambiPrivate::qtjambi_cast_decider<false, O,
+    return QtJambiPrivate::qtjambi_cast_decider<true, O,
                           std::is_arithmetic<O_noref>::value,
                           std::is_enum<O_noref>::value,
                           QtJambiPrivate::is_jni_type<O_noconst>::value,
-                          T,
+                          T*,
                           std::is_arithmetic<T_noref>::value,
                           std::is_enum<T_noref>::value,
                           QtJambiPrivate::is_jni_type<T_noconst>::value,
                           std::is_same<O_noref, T_noref>::value
-    >::cast(env, in, nativeTypeName, nullptr);
+    >::cast(env, in, nullptr, &scope);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_iterator(JNIEnv *env, QtJambiScope& scope, const T& in){
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_QIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_iterator(JNIEnv *env, QtJambiScope& scope, T& in){
+    typedef typename std::remove_reference<T>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_QIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_iterator(JNIEnv *env, QtJambiScope& scope, T* in){
+    typedef typename std::remove_reference<T*>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_QIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_mapiterator(JNIEnv *env, QtJambiScope& scope, const T& in){
+    typedef typename std::remove_reference<const T>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_BiIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_mapiterator(JNIEnv *env, QtJambiScope& scope, T& in){
+    typedef typename std::remove_reference<T>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_BiIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class T>
+constexpr jobject qtjambi_cast_mapiterator(JNIEnv *env, QtJambiScope& scope, T* in){
+    typedef typename std::remove_reference<T*>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+    return QtJambiPrivate::qtjambi_BiIterator_caster<T_noconst>::cast(env, scope.relatedNativeID(), in);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, const T& in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,const T&>::cast(env, in, nullptr, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, T& in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,T&>::cast(env, in, nullptr, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, T* in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,T*>::cast(env, in, nullptr, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, const T& in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,const T&>::cast(env, in, nativeTypeName, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, T& in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,T&>::cast(env, in, nativeTypeName, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(QtJambiScope& scope, T* in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<true,O,T*>::cast(env, in, nativeTypeName, &scope);
+}
+
+template<class O, class T>
+O qtjambi_cast(const T& in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,const T&>::cast(env, in, nullptr, nullptr);
+}
+
+template<class O, class T>
+O qtjambi_cast(T& in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,T&>::cast(env, in, nullptr, nullptr);
+}
+
+template<class O, class T>
+O qtjambi_cast(T* in){
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,T*>::cast(env, in, nullptr, nullptr);
+}
+
+template<class O, class T>
+O qtjambi_cast_by_name(const T& in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,const T&>::cast(env, in, nativeTypeName, nullptr);
+}
+
+template<class O, class T>
+O qtjambi_cast_by_name(T& in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,T&>::cast(env, in, nativeTypeName, nullptr);
+}
+
+template<class O, class T>
+O qtjambi_cast_by_name(T* in, const char* nativeTypeName){
+    Q_ASSERT(nativeTypeName);
+    JNIEnv *env = qtjambi_current_environment();
+    Q_ASSERT(env);
+    QTJAMBI_JNI_LOCAL_FRAME(env, 500)
+    return QtJambiPrivate::qtjambi_scoped_cast<false,O,T*>::cast(env, in, nativeTypeName, nullptr);
 }
 
 #endif // QTJAMBI_CONVERT_H

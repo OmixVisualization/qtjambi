@@ -1,0 +1,305 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtOpenGL"> 
+    <rejection class="QOpenGLFunctions_*Backend"/>
+    <rejection class="PFNGL*"/>
+    <rejection class="GLDEBUGPROCAMD"/>
+    <rejection class="GLDEBUGPROCARB"/>
+    <rejection class="GLVULKANPROCNV"/>
+    <rejection class="QOpenGLVersionFunctionsStorage"/>
+    <rejection class="QOpenGLVersionFunctionsBackend" enum-name="Version"/>
+    <rejection class="QOpenGLVersionFunctionsBackend" field-name="refs"/>
+    <rejection class="QOpenGLVersionFunctionsBackend"/>
+    <rejection class="QOpenGLExtraFunctionsPrivate"/>
+    <rejection class="QOpenGLFunctionsPrivate"/>
+    <rejection class="QAbstractOpenGLFunctionsPrivate"/>
+    <rejection class="QOpenGLTextureHelper" />
+    <enum-type name="QOpenGLWindow::UpdateBehavior"/>
+    <enum-type name="QOpenGLBuffer::Access" />
+    <enum-type name="QOpenGLBuffer::Type" />
+    <enum-type name="QOpenGLBuffer::RangeAccessFlag" flags="QOpenGLBuffer::RangeAccessFlags" />
+    <enum-type name="QOpenGLBuffer::UsagePattern" />
+    <enum-type name="QOpenGLDebugLogger::LoggingMode" />
+    <enum-type name="QOpenGLDebugMessage::Severity" flags="QOpenGLDebugMessage::Severities">
+        <reject-enum-value name="LastSeverity"/>
+    </enum-type>
+    <enum-type name="QOpenGLDebugMessage::Source" flags="QOpenGLDebugMessage::Sources">
+        <reject-enum-value name="LastSource"/>
+    </enum-type>
+    <enum-type name="QOpenGLDebugMessage::Type" flags="QOpenGLDebugMessage::Types">
+        <reject-enum-value name="LastType"/>
+    </enum-type>
+
+    <enum-type name="QOpenGLFramebufferObject::Attachment" />
+    <enum-type name="QOpenGLFramebufferObject::FramebufferRestorePolicy" />
+    <enum-type name="QOpenGLShader::ShaderTypeBit" flags="QOpenGLShader::ShaderType" />
+    <enum-type name="QOpenGLTexture::BindingTarget"/>
+    <enum-type name="QOpenGLTexture::DepthStencilMode"/>
+    <enum-type name="QOpenGLTexture::CoordinateDirection"/>
+    <enum-type name="QOpenGLTexture::Feature" flags="QOpenGLTexture::Features"/>
+    <enum-type name="QOpenGLTexture::CubeMapFace"/>
+    <enum-type name="QOpenGLTexture::Filter"/>
+    <enum-type name="QOpenGLTexture::MipMapGeneration"/>
+    <enum-type name="QOpenGLTexture::PixelFormat"/>
+    <enum-type name="QOpenGLTexture::PixelType"/>
+    <enum-type name="QOpenGLTexture::SwizzleComponent"/>
+    <enum-type name="QOpenGLTexture::SwizzleValue"/>
+    <enum-type name="QOpenGLTexture::Target"/>
+    <enum-type name="QOpenGLTexture::TextureFormat"/>
+    <enum-type name="QOpenGLTexture::TextureUnitReset"/>
+    <enum-type name="QOpenGLTexture::WrapMode"/>
+    <enum-type name="QOpenGLTexture::TextureFormatClass"/>
+    <enum-type name="QOpenGLTexture::ComparisonFunction"/>
+    <enum-type name="QOpenGLTexture::ComparisonMode"/>
+    <enum-type name="QOpenGLVersionStatus::OpenGLStatus"/>
+
+    <value-type name="QOpenGLBuffer">
+            <modify-function signature="operator=(const QOpenGLBuffer &amp;)" remove="all"/>
+      </value-type>
+
+    <object-type name="QOpenGLDebugLogger">
+    </object-type>
+
+    <value-type name="QOpenGLDebugMessage">
+        <modify-function signature="operator=(const QOpenGLDebugMessage&amp;)" remove="all"/>
+    </value-type>
+
+    <value-type name="QOpenGLFramebufferObjectFormat">
+    <modify-function signature="operator!=(const QOpenGLFramebufferObjectFormat &amp;) const" remove="all"/>
+    <modify-function signature="operator=(const QOpenGLFramebufferObjectFormat &amp;)" remove="all"/>
+    <modify-function signature="operator==(const QOpenGLFramebufferObjectFormat &amp;) const" access="private"/>
+    </value-type>
+
+    <object-type name="QOpenGLFramebufferObject">
+    </object-type>
+    <object-type name="QOpenGLVersionFunctionsFactory">
+        <modify-function signature="get(QOpenGLContext *)" remove="all"/>
+        <modify-function signature="get(const QOpenGLVersionProfile &amp;, QOpenGLContext *)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QAbstractOpenGLFunctions" polymorphic-base="yes" polymorphic-id-expression="false">
+        <modify-function signature="setOwningContext(const QOpenGLContext*)">
+            <modify-argument index="1">
+                <reference-count action="ignore" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="QAbstractOpenGLFunctions()" remove="all">
+        </modify-function>
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_0*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_1*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_2" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_2*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_3" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_3*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_4" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_4*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_1_5" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_5*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_2_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_0*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_2_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_1*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_0*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_1*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_3_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_0_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_0_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_1_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_1_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_4_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_4_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Core*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_5_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Compatibility*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLFunctions_4_5_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Core*>(%1)" target-type="final class">
+    </object-type>
+    
+    <object-type name="QOpenGLFunctions_ES2" pp-condition="QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_ES2*>(%1)" target-type="final class">
+    </object-type>
+
+    <object-type name="QOpenGLPaintDevice">
+        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::OpenGL" />
+        <modify-function signature="devType() const" remove="all" />
+        <!--modify-function signature="operator=(QOpenGLPaintDevice)" remove="all" />
+        <modify-function signature="QOpenGLPaintDevice(const QOpenGLPaintDevice&amp;)" remove="all" /-->
+    </object-type>
+
+    <object-type name="QOpenGLShader">
+        <modify-function signature="compileSourceCode ( const char *)" remove="all"/>
+    </object-type>
+
+    <object-type name="QOpenGLShaderProgram">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
+        <!-- Should be disambiguated later by fixing the native pointer API -->
+        <modify-function signature="addCacheableShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all" />
+        <modify-function signature="uniformLocation(const char *) const" remove="all" />
+        <modify-function signature="setUniformValue(int, GLuint)" remove="all" />
+        <modify-function signature="setUniformValue(const char*, GLuint)" remove="all" />
+        <modify-function signature="setUniformValue(int, Array)" remove="all" />
+        <modify-function signature="setUniformValue(const char*, Array)" remove="all" />
+        <modify-function signature="setUniformValueArray(int, const GLuint *, int)" remove="all" />
+        <modify-function signature="setUniformValueArray(const char*, const GLuint *, int)" remove="all" />
+        <modify-function signature="addShaderFromSourceCode(QFlags&lt;QOpenGLShader::ShaderTypeBit&gt;, const char *)" remove="all"/>
+        <modify-function signature="attributeLocation(const char *)const" remove="all"/>
+        <modify-function signature="bindAttributeLocation(const char *, int)" remove="all"/>
+        <modify-function signature="addShader(QOpenGLShader*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcSharers" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeShader(QOpenGLShader*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcSharers" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+
+    <object-type name="QOpenGLTimeMonitor" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)">
+    </object-type>
+
+    <value-type name="QOpenGLVersionProfile">
+    <modify-function signature="operator=(const QOpenGLVersionProfile &amp;)" remove="all"/>
+    </value-type>
+
+    <object-type name="QOpenGLVertexArrayObject">
+    </object-type>
+
+    <object-type name="QOpenGLVertexArrayObject::Binder">
+    </object-type>
+    <enum-type name="QOpenGLTextureBlitter::Origin" since="5.8.0"/>
+    <object-type name="QOpenGLTextureBlitter" since="5.8.0">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
+    </object-type>
+    <value-type name="QOpenGLVersionStatus">
+        <custom-constructor>
+            return new(placement) QOpenGLVersionStatus(copy->version.first, copy->version.second, copy->status);
+        </custom-constructor>
+    </value-type>
+
+    <object-type name="QOpenGLTexture">
+        <modify-function signature="createTextureView(QOpenGLTexture::Target, QOpenGLTexture::TextureFormat, int, int, int, int) const">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="borderColor(int *) const" remove="all"/>
+        <modify-function signature="borderColor(float *) const" remove="all"/>
+        <modify-function signature="borderColor(unsigned int *) const" remove="all"/>
+        <modify-function signature="setBorderColor(uint, uint, uint, uint)" remove="all"/>
+    </object-type>
+    <value-type name="QOpenGLPixelTransferOptions">
+        <modify-function signature="operator=(const QOpenGLPixelTransferOptions&amp;)" remove="all"/>
+    </value-type>
+    
+    <object-type name="QOpenGLTimerQuery" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)">
+    </object-type>
+    
+    <object-type name="QOpenGLWindow">
+    </object-type>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QOpenGLBuffer."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QOpenGLPixelTransferOptions."/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum,GLvoid**)' for function modification in '*' not found.*"/>
+</typesystem>

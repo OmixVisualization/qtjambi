@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -38,6 +38,15 @@
 #include "typeparser.h"
 
 #include <qdebug.h>
+#include <QException>
+
+struct ScannerException : QException{
+    inline ScannerException(const QByteArray& what) : QException(), m_what(what) {}
+    inline char const* what() const noexcept{
+        return m_what;
+    }
+    QByteArray m_what;
+};
 
 class Scanner {
     public:
@@ -69,7 +78,7 @@ class Scanner {
 
     private:
         int m_pos;
-        int m_length;
+        decltype(QString().size()) m_length;
         int m_token_start;
         const QChar *m_chars;
 };
@@ -116,7 +125,7 @@ Scanner::Token Scanner::nextToken() {
                     }else if (c.isLetterOrNumber() || c == '_')
                         tok = Identifier;
                     else
-                        qFatal("Unrecognized character in lexer: %c", c.toLatin1());
+                        throw ScannerException(QString("Unrecognized character in lexer: %c found in %s").arg(c.toLatin1()).arg(QString(this->m_chars)).toUtf8());
                     break;
             }
         }
@@ -160,97 +169,104 @@ Scanner::Token Scanner::nextToken() {
 }
 
 TypeParser::Info TypeParser::parse(const QString &str) {
-    Scanner scanner(str);
-
     Info info;
-    QStack<Info *> stack;
-    stack.push(&info);
+    try{
+        Scanner scanner(str);
 
-    bool colon_prefix = false;
-    bool in_array = false;
-    QString array;
+        QStack<Info *> stack;
+        stack.push(&info);
 
-    // search for 'T', 'T *', 'const T *', 'T const *', 'T * const' and so on
-    bool lastWasStarToken = false;
-    Scanner::Token tok = scanner.nextToken();
-    while (tok != Scanner::NoToken) {
+        bool colon_prefix = false;
+        bool in_array = false;
+        QString array;
 
-        switch (tok) {
-            case Scanner::EllipsisToken:
-                stack.top()->is_variadics = true;
+        // search for 'T', 'T *', 'const T *', 'T const *', 'T * const' and so on
+        bool lastWasStarToken = false;
+        Scanner::Token tok = scanner.nextToken();
+        while (tok != Scanner::NoToken) {
+
+            switch (tok) {
+                case Scanner::EllipsisToken:
+                    stack.top()->is_variadics = true;
+                    break;
+                case Scanner::StarToken:
+                    //++stack.top()->indirections;
+                    stack.top()->indirections << false;
+                    break;
+
+                case Scanner::AmpersandToken:
+                    if(stack.top()->reference_type==TypeParser::Info::Reference){
+                        stack.top()->reference_type = TypeParser::Info::RReference;
+                    }else{
+                        stack.top()->reference_type = TypeParser::Info::Reference;
+                    }
+                    break;
+
+                case Scanner::LessThanToken:
+                    stack.top()->template_instantiations << Info();
+                    stack.push(&stack.top()->template_instantiations.last());
+                    break;
+
+                case Scanner::CommaToken:
+                    stack.pop();
+                    stack.top()->template_instantiations << Info();
+                    stack.push(&stack.top()->template_instantiations.last());
+                    break;
+
+                case Scanner::GreaterThanToken:
+                    stack.pop();
+                    break;
+
+                case Scanner::ColonToken:
+                    colon_prefix = true;
+                    break;
+
+                case Scanner::ConstToken:
+                    if(lastWasStarToken){
+                        stack.top()->indirections[stack.top()->indirections.size()-1] = true;
+                    }else{
+                        stack.top()->is_constant = true;
+                    }
+                    break;
+
+            case Scanner::VolatileToken:
+                stack.top()->is_volatile = true;
                 break;
-            case Scanner::StarToken:
-                //++stack.top()->indirections;
-                stack.top()->indirections << false;
-                break;
 
-            case Scanner::AmpersandToken:
-                if(stack.top()->reference_type==TypeParser::Info::Reference){
-                    stack.top()->reference_type = TypeParser::Info::RReference;
-                }else{
-                    stack.top()->reference_type = TypeParser::Info::Reference;
+                case Scanner::OpenParenToken: // function pointers not supported
+                case Scanner::CloseParenToken: {
+                    Info i;
+                    i.is_busted = true;
+                    return i;
                 }
-                break;
 
-            case Scanner::LessThanToken:
-                stack.top()->template_instantiations << Info();
-                stack.push(&stack.top()->template_instantiations.last());
-                break;
+                case Scanner::Identifier:
+                    parseIdentifier(scanner, stack, array, in_array, colon_prefix);
+                    break;
 
-            case Scanner::CommaToken:
-                stack.pop();
-                stack.top()->template_instantiations << Info();
-                stack.push(&stack.top()->template_instantiations.last());
-                break;
+                case Scanner::SquareBegin:
+                    in_array = true;
+                    break;
 
-            case Scanner::GreaterThanToken:
-                stack.pop();
-                break;
+                case Scanner::SquareEnd:
+                    in_array = false;
+                    stack.top()->arrays += array;
+                    break;
 
-            case Scanner::ColonToken:
-                colon_prefix = true;
-                break;
-
-            case Scanner::ConstToken:
-                if(lastWasStarToken){
-                    stack.top()->indirections[stack.top()->indirections.size()-1] = true;
-                }else{
-                    stack.top()->is_constant = true;
-                }
-                break;
-
-        case Scanner::VolatileToken:
-            stack.top()->is_volatile = true;
-            break;
-
-            case Scanner::OpenParenToken: // function pointers not supported
-            case Scanner::CloseParenToken: {
-                Info i;
-                i.is_busted = true;
-                return i;
+                default:
+                    break;
             }
 
-            case Scanner::Identifier:
-                parseIdentifier(scanner, stack, array, in_array, colon_prefix);
-                break;
-
-            case Scanner::SquareBegin:
-                in_array = true;
-                break;
-
-            case Scanner::SquareEnd:
-                in_array = false;
-                stack.top()->arrays += array;
-                break;
-
-            default:
-                break;
+            lastWasStarToken = tok == Scanner::StarToken;
+            tok = scanner.nextToken();
         }
-
-        lastWasStarToken = tok == Scanner::StarToken;
-        tok = scanner.nextToken();
+    }catch(const ScannerException& e){
+        info.is_busted = true;
+        qWarning("%s", e.what());
+    }catch(const std::exception& e){
+        info.is_busted = true;
+        qWarning("%s", e.what());
     }
-
     return info;
 }
 

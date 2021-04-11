@@ -48,11 +48,20 @@ enum class AsArrayType{
 };
 typedef QFlags<AsArrayType> AsArrayTypes;
 
+enum class ThreadAffinity : uint{
+    None = 0,
+    Yes = 0x00080000,
+    UI = 0x00800000,
+    Pixmap = 0x08000000
+};
+
 struct ArgumentModification {
     ArgumentModification(int idx) :
             removed_default_expression(false),
             removed(false),
             no_null_pointers(false),
+            reset_after_use(false),
+            thread_affine(ThreadAffinity::None),
             index(idx),
             useAsArrayType(AsArrayType::No),
             arrayLengthParameter(-1),
@@ -65,6 +74,7 @@ struct ArgumentModification {
     uint removed : 1;
     uint no_null_pointers : 1;
     uint reset_after_use : 1;
+    ThreadAffinity thread_affine;
 
     //! The index of this argument
     int index;
@@ -125,8 +135,9 @@ struct Modification {
         VirtualSlot =           0x00010000 | NonFinal,
         AllowAsSlot =           0x00020000,
         PrivateSignal =         0x00040000,
-        ThreadAffine =          0x00080000,
-        UIThreadAffine =        0x00800000,
+        ThreadAffine =          uint(ThreadAffinity::Yes),
+        UIThreadAffine =        uint(ThreadAffinity::UI),
+        PixmapThreadAffine =    uint(ThreadAffinity::Pixmap),
         NoExcept =              0x02000000
     };
 
@@ -144,6 +155,7 @@ struct Modification {
     bool isVirtualSlot() const { return (modifiers & VirtualSlot) == VirtualSlot; }
     bool isThreadAffine() const { return (modifiers & ThreadAffine) == ThreadAffine; }
     bool isUIThreadAffine() const { return (modifiers & UIThreadAffine) == UIThreadAffine; }
+    bool isPixmapThreadAffine() const { return (modifiers & PixmapThreadAffine) == PixmapThreadAffine; }
     bool isAllowedAsSlot() const { return (modifiers & AllowAsSlot) == AllowAsSlot; }
     bool isPrivateSignal() const { return (modifiers & PrivateSignal) == PrivateSignal; }
     QString accessModifierString() const;

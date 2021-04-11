@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,7 +41,8 @@
 #include <QtGui/QtGui>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 
-#define QTJAMBIMATRIX(M,N) QtJambiMatrix##M##x##N
+#ifdef QT_JAMBI_RUN
+#define QTJAMBIMATRIX(M,N) QMatrix##M##x##N
 #define QMATRIX(M,N) QMatrix##M##x##N
 
 #define QTJAMBI_MATRIX_CONTENT(M,N)\
@@ -67,19 +68,12 @@
     const float *data() const;\
     const float *constData() const;\
 
-
-#ifdef QT_JAMBI_RUN
 #define QTJAMBI_MATRIX(M,N)\
     class QTJAMBIMATRIX(M,N){\
     QTJAMBI_MATRIX_CONTENT(M,N)\
     QTJAMBI_MATRIX_EXTRACONTENT(M,N)\
     };\
-    uint qHash(const QTJAMBIMATRIX(M,N) &);
-#else
-#define QTJAMBI_MATRIX(M,N)\
-    typedef QMATRIX(M,N) QTJAMBIMATRIX(M,N);
-#endif
-
+    hash_type qHash(const QTJAMBIMATRIX(M,N) &);
 QTJAMBI_MATRIX(2,2)
 QTJAMBI_MATRIX(2,3)
 QTJAMBI_MATRIX(2,4)
@@ -88,5 +82,6 @@ QTJAMBI_MATRIX(3,3)
 QTJAMBI_MATRIX(3,4)
 QTJAMBI_MATRIX(4,2)
 QTJAMBI_MATRIX(4,3)
+#endif
 
 #endif // QTMATRIXES_H

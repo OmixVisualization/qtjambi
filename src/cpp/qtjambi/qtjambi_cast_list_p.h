@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,404 +30,179 @@
 #ifndef QTJAMBI_CAST_LIST_P_H
 #define QTJAMBI_CAST_LIST_P_H
 
-#include "qtjambi_core.h"
 #include "qtjambi_cast_util_p.h"
-#include "qtjambi_cast_type_p.h"
+#include "qtjambi_cast_container_util_p.h"
 
 QT_WARNING_DISABLE_DEPRECATED
 
+template<typename T>
+int registerMetaType(const QByteArray& typeName);
+
 namespace QtJambiPrivate {
 
-typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&);
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QList_caster{
-    typedef QList<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QSet_caster{
-    typedef QSet<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QLinkedList_caster{
-    typedef QLinkedList<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QStack_caster{
-    typedef QStack<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QQueue_caster{
-    typedef QQueue<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
-
-template<bool c_is_pointer, bool c_is_const, typename T>
-struct qtjambi_QVector_caster{
-    typedef QVector<T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
-    }
-};
+typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&);
 
 template<typename Iterator>
-struct IteratorValue{
-    static QIteratorValueFunction function() { return  [](JNIEnv *env, void* ptr) -> jobject {
-            Q_UNUSED(env)
-            Iterator* iterator = static_cast<Iterator*>(ptr);
-            return qtjambi_cast<jobject>(env, *(*iterator) );
-        }; }
+class QIteratorAccess : QAbstractIteratorAccess<Iterator>{
+private:
+    QIteratorAccess(){}
+public:
+    static AbstractIteratorAccess* newInstance(){
+        static QIteratorAccess<Iterator> instance;
+        return &instance;
+    }
+
+    AbstractIteratorAccess* clone() override{
+        return this;
+    }
+
+    void dispose() override {}
+
+    jobject value(JNIEnv * env, void* ptr) override {
+        Iterator* iterator = static_cast<Iterator*>(ptr);
+        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(*(*iterator))>::type>::cast(env, *(*iterator), nullptr, nullptr);
+    }
 };
 
 template<typename Iterator>
 struct qtjambi_QIterator_caster{
-    static jobject castfwd(JNIEnv * env, QtJambiNativeID __list_nativeId, Iterator&& iter){
-        return qtjambi_to_QIterator(env, __list_nativeId,
+    static jobject cast(JNIEnv * env, QtJambiNativeID __list_nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
+        return qtjambi_from_QIterator(env, __list_nativeId,
             new Iterator(iter),
-            IteratorValue<Iterator>::function(),
-            IteratorIncrement<Iterator>::function(),
-            IteratorDecrement<Iterator>::function(),
-            IteratorLessThan<Iterator, supports_less_than<Iterator>::value>::function(),
-            IteratorEquals<Iterator>::function(),
             [](void* ptr) {
                 Iterator* iterator = static_cast<Iterator*>(ptr);
                 delete iterator;
-            }
+            },
+            QIteratorAccess<Iterator>::newInstance()
         );
     }
 };
 
+template<template<typename T> class Container, typename T, bool isPointer, bool = std::is_copy_constructible<T>::value && std::is_default_constructible<T>::value && std::is_copy_constructible<Container<T>>::value>
+struct CloneContainer{
+    static constexpr CopyFunction function = nullptr;
+};
+
+template<template<typename T> class Container, typename T>
+struct CloneContainer<Container,T,false,true>{
+    static void* clone(const void* ptr) { return new Container<T>(*reinterpret_cast<const Container<T>*>(ptr)); }
+    static constexpr CopyFunction function = &clone;
+};
+
+template<template<typename T> class Container, typename T>
+struct DeleteContainer{
+    static void del(void* ptr) { delete reinterpret_cast<Container<T>*>(ptr); }
+    static constexpr PtrDeleterFunction function = &del;
+};
+
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 template<template<typename T> class Container, typename T>
 struct ContainerToList{
-    static QVectorToListFunction function() { return  [](JNIEnv * env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<T>  *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->toList());
-        }; }
+    static jobject function(JNIEnv * env, const void* ptr) {
+        const Container<T>  *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const QList<T>>::cast(env, container->toList(), nullptr, nullptr);
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_qHash<T>::value && supports_equal<T>::value>
 struct ContainerToSet{
+    static jobject function(JNIEnv * env, const void*) {
+        JavaException::raiseUnsupportedOperationException(env, "toSet()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
-template<template<typename T> class Container, typename T>
-struct ContainerToSet<Container, T, false>{
-    static QListToSetFunction function() { return  nullptr; }
-};
-
+#ifdef QSET_H
 template<template<typename T> class Container, typename T>
 struct ContainerToSet<Container, T, true>{
-    static QListToSetFunction function() { return  [](JNIEnv * env, const void* ptr) -> jobject {
-            const Container<T>  *container = static_cast<const Container<T> *>(ptr);
+    static jobject function(JNIEnv * env, const void* ptr) {
+        const Container<T>  *container = static_cast<const Container<T> *>(ptr);
 #if QT_VERSION < QT_VERSION_CHECK(5,14,0)
-            return qtjambi_cast<jobject>(env, container->toSet());
+        return qtjambi_scoped_cast<false,jobject,const QSet<T>>::cast(env, container->toSet(), nullptr, nullptr);
 #else
-            return qtjambi_cast<jobject>(env, QSet<T>(container->begin(), container->end()));
+        return qtjambi_scoped_cast<false,jobject,const QSet<T>>::cast(env, QSet<T>(container->begin(), container->end()), nullptr, nullptr);
 #endif
-        }; }
+    }
 };
+#endif
+#endif
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerAt{
-    static QListAtFunction function() { return nullptr; }
+    static jobject function(JNIEnv * env, const void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "at(i)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerAt<Container,T,true>{
-    static QListAtFunction function() { return  [](JNIEnv * env, const void* ptr, jint idx) -> jobject {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->at(int(idx)));
-        }; }
+    static jobject function(JNIEnv * env, const void* ptr, jint idx) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->at(int(idx)), nullptr, nullptr);
+    }
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<template<typename T> class Container, typename T>
 struct ContainerFirst{
-    static QLinkedListFirstFunction function() { return  [](JNIEnv * env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->first());
-        }; }
+    static jobject function(JNIEnv * env, const void* ptr) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->first(), nullptr, nullptr);
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerLast{
-    static QLinkedListLastFunction function() { return  [](JNIEnv * env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->last());
-        }; }
+    static jobject function(JNIEnv * env, const void* ptr) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->last(), nullptr, nullptr);
+    }
 };
+#endif
 
 template<template<typename T> class Container, typename T>
 struct ContainerCapacity{
-    static QSetCapacityFunction function() { return  [](JNIEnv *env, const void* ptr) -> jint {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return jint(container->capacity());
-        }; }
+    static jint function(JNIEnv *env, const void* ptr) {
+        Q_UNUSED(env)
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return jint(container->capacity());
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerBegin{
-    static QListBeginFunction function() { return  [](JNIEnv *env, QtJambiNativeID __list_nativeId, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_QIterator_caster<typename Container<T>::const_iterator>::castfwd(env, __list_nativeId, container->begin());
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID __list_nativeId, const void* ptr) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_QIterator_caster<typename Container<T>::const_iterator>::cast(env, __list_nativeId, container->begin());
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
 struct ContainerContains{
-    static QListContainsFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jboolean {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return container->contains(qtjambi_cast<T>(env, object));
-        }; }
+    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->contains(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerContains<Container, T, false>{
-    static QListContainsFunction function() { return nullptr; }
+    static jboolean function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "contains(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
 struct ContainerIntersects{
-    static QSetIntersectsFunction function() { return  [](JNIEnv * env, const void* ptr, jobject other) -> jboolean {
-                Q_UNUSED(env)
-                const Container<T> *container = static_cast<const Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            (*__qt_other_pointer) << qtjambi_cast<T>(env, element);
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
-                }
-                return container->intersects(*__qt_other_pointer);
-            }; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
-struct ContainerIntersect{
-    static QSetIntersectFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            (*__qt_other_pointer) << qtjambi_cast<T>(env, element);
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
-                }
-                container->intersect(*__qt_other_pointer);
-            }; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
-struct ContainerUnite{
-    static QSetUniteFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            (*__qt_other_pointer) << qtjambi_cast<T>(env, element);
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
-                }
-                container->unite(*__qt_other_pointer);
-            }; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
-struct ContainerSubtract{
-    static QSetSubtractFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            (*__qt_other_pointer) << qtjambi_cast<T>(env, element);
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
-                }
-                container->subtract(*__qt_other_pointer);
-            }; }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
-struct ContainerCountObject{
-    static QListCountObjectFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerCountObject<Container, T, true>{
-    static QListCountObjectFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jint {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return container->count(qtjambi_cast<T>(env, object));
-        }; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerEnd{
-    static QListEndFunction function() { return  [](JNIEnv *env, QtJambiNativeID __list_nativeId, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<T> *container = static_cast<const Container<T> *>(ptr);
-            return qtjambi_QIterator_caster<typename Container<T>::const_iterator>::castfwd(env, __list_nativeId, container->end());
-        }; }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
-struct ContainerEndsWith{
-    static QListEndsWithFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerEndsWith<Container, T, true>{
-    static QListEndsWithFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jboolean {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return container->endsWith(qtjambi_cast<T>(env, object));
-    }; }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
-struct ContainerIndexOf{
-    static QListIndexOfFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerIndexOf<Container, T, true>{
-    static QListIndexOfFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object, jint idx) -> jint {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return container->indexOf(qtjambi_cast<T>(env, object), int(idx));
-    }; }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
-struct ContainerLastIndexOf{
-    static QListLastIndexOfFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerLastIndexOf<Container, T, true>{
-    static QListLastIndexOfFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object, jint idx) -> jint {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return container->lastIndexOf(qtjambi_cast<T>(env, object), int(idx));
-    }; }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
-struct ContainerMid{
-    static QListMidFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerMid<Container, T, true>{
-    static QListMidFunction function() { return  [](JNIEnv * env, const void* ptr, jint idx1, jint idx2) -> jobject {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return qtjambi_cast<jobject>(env, container->mid(int(idx1), int(idx2)));
-    }; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct, bool = supports_equal<T>::value>
-struct ContainerEquals{
-    static QListEqualFunction function() { return  nullptr; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
-struct ContainerEquals<Container, T, is_Container1_fct, true>{
-    static QListEqualFunction function() { return  [](JNIEnv * env, const void* ptr, jobject other) -> jboolean {
-        Q_UNUSED(env)
+    static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         QScopedPointer<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (is_Container1_fct(env, other, qtjambi_type<T>::id())) {
+            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
                 __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
@@ -435,7 +210,207 @@ struct ContainerEquals<Container, T, is_Container1_fct, true>{
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
-                    (*__qt_other_pointer) << qtjambi_cast<T>(env, element);
+                    (*__qt_other_pointer) << qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr);
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new Container<T> ());
+            __qt_other_pointer = __qt_scoped_pointer.data();
+        }
+        return container->intersects(*__qt_other_pointer);
+    }
+};
+
+template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
+struct ContainerIntersect{
+    static void function(JNIEnv * env, void* ptr, jobject other) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        Container<T> *__qt_other_pointer = nullptr;
+        if (other!= nullptr) {
+            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+            } else {
+                __qt_scoped_pointer.reset(new Container<T> ());
+                __qt_other_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, other);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    (*__qt_other_pointer) << qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr);
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new Container<T> ());
+            __qt_other_pointer = __qt_scoped_pointer.data();
+        }
+        container->intersect(*__qt_other_pointer);
+    }
+};
+
+template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
+struct ContainerUnite{
+    static void function(JNIEnv * env, void* ptr, jobject other) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        Container<T> *__qt_other_pointer = nullptr;
+        if (other!= nullptr) {
+            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+            } else {
+                __qt_scoped_pointer.reset(new Container<T> ());
+                __qt_other_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, other);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    (*__qt_other_pointer) << qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr);
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new Container<T> ());
+            __qt_other_pointer = __qt_scoped_pointer.data();
+        }
+        container->unite(*__qt_other_pointer);
+    }
+};
+
+template<template<typename T> class Container, typename T, IsContainerFunction isContainer>
+struct ContainerSubtract{
+    static void function(JNIEnv * env, void* ptr, jobject other) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        Container<T> *__qt_other_pointer = nullptr;
+        if (other!= nullptr) {
+            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+            } else {
+                __qt_scoped_pointer.reset(new Container<T> ());
+                __qt_other_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, other);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    (*__qt_other_pointer) << qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr);
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new Container<T> ());
+            __qt_other_pointer = __qt_scoped_pointer.data();
+        }
+        container->subtract(*__qt_other_pointer);
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+struct ContainerCountObject{
+    static jint function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "count(value)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerCountObject<Container, T, true>{
+    static jint function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->count(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerEnd{
+    static jobject function(JNIEnv *env, QtJambiNativeID __list_nativeId, const void* ptr) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_QIterator_caster<typename Container<T>::const_iterator>::cast(env, __list_nativeId, container->end());
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+struct ContainerEndsWith{
+    static jboolean function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "endsWith(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerEndsWith<Container, T, true>{
+    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->endsWith(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+struct ContainerIndexOf{
+    static jint function(JNIEnv * env, const void*, jobject, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "indexOf(value, index)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerIndexOf<Container, T, true>{
+    static jint function(JNIEnv * env, const void* ptr, jobject object, jint idx) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->indexOf(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr), int(idx));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+struct ContainerLastIndexOf{
+    static jint function(JNIEnv * env, const void*, jobject, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "lastIndexOf(value,index)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerLastIndexOf<Container, T, true>{
+    static jint function(JNIEnv * env, const void* ptr, jobject object, jint idx) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return container->lastIndexOf(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr), int(idx));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
+struct ContainerMid{
+    static jobject function(JNIEnv * env, const void*, jint, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "mid(index1, index2)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerMid<Container, T, true>{
+    static jobject function(JNIEnv * env, const void* ptr, jint idx1, jint idx2) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(container->mid(int(idx1), int(idx2)))>::type>::cast(env, container->mid(int(idx1), int(idx2)), nullptr, nullptr);
+    }
+};
+
+template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct, bool = supports_equal<T>::value>
+struct ContainerEquals{
+    static jboolean function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "operator==(other)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+};
+
+template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
+struct ContainerEquals<Container, T, is_Container1_fct, true>{
+    static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        Container<T> *__qt_other_pointer = nullptr;
+        if (other!= nullptr) {
+            if (is_Container1_fct(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+            } else {
+                __qt_scoped_pointer.reset(new Container<T> ());
+                __qt_other_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, other);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    (*__qt_other_pointer) << qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr);
                 }
             }
         }else{
@@ -444,479 +419,1292 @@ struct ContainerEquals<Container, T, is_Container1_fct, true>{
         }
         const Container<T>& __qt_other = *__qt_other_pointer;
         return (*container)==__qt_other;
-    }; }
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerSize{
-    static QListSizeFunction function() { return  [](JNIEnv * env, const void* ptr) -> jint {
+    static jint function(JNIEnv * env, const void* ptr) {
         Q_UNUSED(env)
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
         return container->size();
-    }; }
+    }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
 struct ContainerStartsWith{
-    static QListStartsWithFunction function() { return nullptr; }
+    static jboolean function(JNIEnv * env, const void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "startsWith(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerStartsWith<Container, T, true>{
-    static QListStartsWithFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jboolean {
-        Q_UNUSED(env)
+    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return container->startsWith(qtjambi_cast<T>(env, object));
-    }; }
+        return container->startsWith(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerValue{
-    static QListValueFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerValue<Container, T, true>{
-    static QListValueFunction function() { return  [](JNIEnv * env, const void* ptr, jint index) -> jobject {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return qtjambi_cast<jobject>(env, container->value(index));
-    }; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerValueDefault{
-    static QListValueDefaultFunction function() { return  [](JNIEnv * env, const void* ptr, jint index, jobject object) -> jobject {
-        Q_UNUSED(env)
-        const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        return qtjambi_cast<jobject>(env, container->value(index, qtjambi_cast<T>(env, object)));
-    }; }
-};
-
-template<template<typename T> class Container, typename T, bool = true>
-struct ContainerAppend{
-    static QListAppendFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerAppend<Container, T, true>{
-    static QListAppendFunction function() { return [](JNIEnv * env, void* ptr, jobject object) {
-            Q_UNUSED(env)
-            Container<T> *container = static_cast<Container<T> *>(ptr);
-            container->append(qtjambi_cast<T>(env, object));
-        };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
-struct ContainerFill{
-    static QVectorFillFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerFill<Container, T, true>{
-    static QVectorFillFunction function() { return [](JNIEnv * env, void* ptr, jobject object, jint size) {
-            Q_UNUSED(env)
-            Container<T> *container = static_cast<Container<T> *>(ptr);
-            container->fill(qtjambi_cast<T>(env, object), size);
-        };
-    }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
-struct ContainerAppendList{
-    static QListAppendListFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_object_pointer = nullptr;
-                if (object!= nullptr) {
-                    if (is_Container1_fct(env, object, qtjambi_type<T>::id())) {
-                        __qt_object_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, object));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T>());
-                        __qt_object_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, object);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            __qt_object_pointer->append(qtjambi_cast<T>(env, element));
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_object_pointer = __qt_scoped_pointer.data();
-                }
-                container->append(*__qt_object_pointer);
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct, bool = supports_StandardConstructor<T>::value>
-struct ContainerAppendVector{
-    static QVectorAppendVectorFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T, IsContainerFunction is_Container1_fct>
-struct ContainerAppendVector<Container, T, is_Container1_fct, true>{
-    static QVectorAppendVectorFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                QScopedPointer<Container<T> > __qt_scoped_pointer;
-                Container<T> *__qt_object_pointer = nullptr;
-                if (object!= nullptr) {
-                    if (is_Container1_fct(env, object, qtjambi_type<T>::id())) {
-                        __qt_object_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, object));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<T>());
-                        __qt_object_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_collection_iterator(env, object);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject element = qtjambi_iterator_next(env, iterator);
-                            __qt_object_pointer->append(qtjambi_cast<T>(env, element));
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<T> ());
-                    __qt_object_pointer = __qt_scoped_pointer.data();
-                }
-                container->append(*__qt_object_pointer);
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = true>
-struct ContainerClear{
-    static QListClearFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerClear<Container, T, true>{
-    static QListClearFunction function() {
-        return [](JNIEnv * env, void* ptr) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->clear();
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = true>
-struct ContainerInsertAt{
-    static QListInsertFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerInsertAt<Container, T, true>{
-    static QListInsertFunction function() {
-        return [](JNIEnv * env, void* ptr, jint i, jobject value) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->insert(i, qtjambi_cast<T>(env, value));
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
-struct ContainerInsertN{
-    static QVectorInsertNFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerInsertN<Container, T, true>{
-    static QVectorInsertNFunction function() {
-        return [](JNIEnv * env, void* ptr, jint i, jint n, jobject value) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->insert(i, n, qtjambi_cast<T>(env, value));
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerInsert{
-    static QSetInsertFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject value) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->insert(qtjambi_cast<T>(env, value));
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = true>
-struct ContainerMove{
-    static QListMoveFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerMove<Container, T, true>{
-    static QListMoveFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx1, jint idx2) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->move(int(idx1), int(idx2));
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = true>
-struct ContainerPrepend{
-    static QListPrependFunction function() { return nullptr; }
-};
-
-template<template<typename T> class Container, typename T>
-struct ContainerPrepend<Container, T, true>{
-    static QListPrependFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->prepend(qtjambi_cast<T>(env, object));
-            };
-    }
-};
-
-template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
-struct ContainerRemoveAll{
-    static QListRemoveAllFunction function() {
+    static jobject function(JNIEnv * env, const void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "value(i)" QTJAMBI_STACKTRACEINFO );
         return nullptr;
     }
 };
 
 template<template<typename T> class Container, typename T>
-struct ContainerRemoveAll<Container, T, true>{
-    static QListRemoveAllFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) -> jint {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return container->removeAll(qtjambi_cast<T>(env, object));
-            };
+struct ContainerValue<Container, T, true>{
+    static jobject function(JNIEnv * env, const void* ptr, jint index) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->value(int(index)), nullptr, nullptr);
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value || std::is_move_constructible<T>::value>
+struct ContainerValueDefault{
+    static jobject function(JNIEnv * env, const void*, jint, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "value(i,defaultValue)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
     }
 };
 
 template<template<typename T> class Container, typename T>
+struct ContainerValueDefault<Container, T, true>{
+    static jobject function(JNIEnv * env, const void* ptr, jint index, jobject object) {
+        const Container<T> *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->value(index, qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr)), nullptr, nullptr);
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value || std::is_move_constructible<T>::value>
+struct ContainerAppend{
+    static void function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "append(value)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerAppend<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jobject object) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->append(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
+struct ContainerFill{
+    static void function(JNIEnv * env, void*, jobject, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "fill(value,size)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerFill<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jobject object, jint size) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->fill(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr), size);
+    }
+};
+
+template<typename T, bool = std::is_copy_constructible<T>::value || std::is_move_constructible<T>::value>
+struct ContainerAppendList{
+    static void function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "QList::append(list)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<typename T>
+struct ContainerAppendList<T, true>{
+    static void function(JNIEnv * env, void* ptr, jobject object) {
+        QList<T> *container = static_cast<QList<T> *>(ptr);
+        QScopedPointer<QList<T> > __qt_scoped_pointer;
+        QList<T> *__qt_object_pointer = nullptr;
+        if (object!= nullptr) {
+            if (qtjambi_is_QList<T>(env, object)) {
+                __qt_object_pointer = reinterpret_cast<QList<T> *>(qtjambi_to_object(env, object));
+            } else {
+                __qt_scoped_pointer.reset(new QList<T>());
+                __qt_object_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, object);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    __qt_object_pointer->append(qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr));
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new QList<T> ());
+            __qt_object_pointer = __qt_scoped_pointer.data();
+        }
+        container->append(*__qt_object_pointer);
+    }
+};
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+template<typename T, bool = std::is_copy_constructible<T>::value || std::is_move_constructible<T>::value>
+struct ContainerAppendVector{
+    static void function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::append(vector)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<typename T>
+struct ContainerAppendVector<T, true>{
+    static void function(JNIEnv * env, void* ptr, jobject object) {
+        QVector<T> *container = static_cast<QVector<T> *>(ptr);
+        QScopedPointer<QVector<T> > __qt_scoped_pointer;
+        QVector<T> *__qt_object_pointer = nullptr;
+        if (object!= nullptr) {
+            if (qtjambi_is_QVector(env, object, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_object_pointer = reinterpret_cast<QVector<T> *>(qtjambi_to_object(env, object));
+            } else {
+                __qt_scoped_pointer.reset(new QVector<T>());
+                __qt_object_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_collection_iterator(env, object);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject element = qtjambi_iterator_next(env, iterator);
+                    __qt_object_pointer->append(qtjambi_scoped_cast<false,T,jobject>::cast(env, element, nullptr, nullptr));
+                }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new QVector<T> ());
+            __qt_object_pointer = __qt_scoped_pointer.data();
+        }
+        container->append(*__qt_object_pointer);
+    }
+};
+#endif
+
+template<template<typename T> class Container, typename T>
+struct ContainerClear{
+    static void function(JNIEnv *, void* ptr) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->clear();
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value && std::is_default_constructible<T>::value>
+struct ContainerInsertAt{
+    static void function(JNIEnv * env, void*, jint, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "insert(i,value)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerInsertAt<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jint i, jobject value) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->insert(i, qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value && std::is_default_constructible<T>::value>
+struct ContainerInsertN{
+    static void function(JNIEnv * env, void*, jint, jint, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "insert(i,n,value)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerInsertN<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jint i, jint n, jobject value) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->insert(i, n, qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerInsert{
+    static void function(JNIEnv * env, void* ptr, jobject value) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->insert(qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value && std::is_default_constructible<T>::value>
+struct ContainerMove{
+    static void function(JNIEnv * env, void*, jint, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "move(index1, index2)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerMove<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jint idx1, jint idx2) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->move(int(idx1), int(idx2));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = std::is_copy_constructible<T>::value || std::is_move_constructible<T>::value>
+struct ContainerPrepend{
+    static void function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "prepend(value)" QTJAMBI_STACKTRACEINFO );
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerPrepend<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr, jobject object) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->prepend(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
+};
+
+template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
+struct ContainerRemoveAll{
+    static jint function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "removeAll(value)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+};
+
+template<template<typename T> class Container, typename T>
+struct ContainerRemoveAll<Container, T, true>{
+    static jint function(JNIEnv * env, void* ptr, jobject object) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return container->removeAll(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
+};
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template<template<typename T> class Container, typename T>
 struct ContainerTakeFirst{
-    static QLinkedListTakeFirstFunction function() {
-        return [](JNIEnv * env, void* ptr) -> jobject {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return qtjambi_cast<jobject>(container->takeFirst());
-            };
+    static jobject function(JNIEnv * env, void* ptr) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->takeFirst(), nullptr, nullptr);
     }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerTakeLast{
-    static QLinkedListTakeLastFunction function() {
-        return [](JNIEnv * env, void* ptr) -> jobject {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return qtjambi_cast<jobject>(container->takeLast());
-            };
+    static jobject function(JNIEnv * env, void* ptr) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->takeLast(), nullptr, nullptr);
     }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveFirst{
-    static QLinkedListRemoveFirstFunction function() {
-        return [](JNIEnv * env, void* ptr) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->removeFirst();
-            };
+    static void function(JNIEnv * env, void* ptr) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->removeFirst();
     }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveLast{
-    static QLinkedListRemoveLastFunction function() {
-        return [](JNIEnv * env, void* ptr) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->removeLast();
-            };
+    static void function(JNIEnv * env, void* ptr) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->removeLast();
     }
 };
+#endif
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveAt{
-    static QListRemoveAtFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->removeAt(idx);
-            };
+    static void function(JNIEnv * env, void* ptr, jint idx) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->removeAt(idx);
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerRemoveI{
-    static QVectorRemoveAtFunction function() { return nullptr; }
+    static void function(JNIEnv * env, void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "remove(index)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveI<Container, T, true>{
-    static QVectorRemoveAtFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->remove(idx);
-            };
+    static void function(JNIEnv * env, void* ptr, jint idx) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->remove(idx);
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerRemoveN{
-    static QVectorRemoveNFunction function() { return nullptr; }
+    static void function(JNIEnv * env, void*, jint, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "remove(index,n)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveN<Container, T, true>{
-    static QVectorRemoveNFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx, jint n) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->remove(idx, n);
-            };
+    static void function(JNIEnv * env, void* ptr, jint idx, jint n) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->remove(idx, n);
     }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
 struct ContainerRemoveOne{
-    static QListRemoveOneFunction function() { return nullptr; }
+    static jboolean function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "removeOne(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemoveOne<Container, T, true>{
-    static QListRemoveOneFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) -> jboolean {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return container->removeOne(qtjambi_cast<T>(env, object));
-            };
+    static jboolean function(JNIEnv * env, void* ptr, jobject object) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return container->removeOne(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
     }
 };
 
 template<template<typename T> class Container, typename T, bool = supports_equal<T>::value>
 struct ContainerRemove{
-    static QSetRemoveFunction function() { return nullptr; }
+    static jboolean function(JNIEnv * env, void*, jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "remove(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerRemove<Container, T, true>{
-    static QSetRemoveFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject object) -> jboolean {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return container->remove(qtjambi_cast<T>(env, object));
-            };
+    static jboolean function(JNIEnv * env, void* ptr, jobject object) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return container->remove(qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerReplace{
-    static QListReplaceFunction function() { return nullptr; }
+    static void function(JNIEnv * env, void*, jint,jobject) {
+        JavaException::raiseUnsupportedOperationException(env, "replace(index,value)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerReplace<Container, T, true>{
-    static QListReplaceFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx,jobject newObject) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->replace(idx, qtjambi_cast<T>(env, newObject));
-            };
+    static void function(JNIEnv * env, void* ptr, jint idx,jobject newObject) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->replace(idx, qtjambi_scoped_cast<false,T,jobject>::cast(env, newObject, nullptr, nullptr));
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerReserve{
-    static QListReserveFunction function() { return nullptr; }
+    static void function(JNIEnv * env, void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "reserve(size)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerReserve<Container, T, true>{
-    static QListReserveFunction function() {
-        return [](JNIEnv * env, void* ptr, jint size) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->reserve(size);
-            };
+    static void function(JNIEnv * env, void* ptr, jint size) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->reserve(size);
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerResize{
-    static QVectorResizeFunction function() {return nullptr;}
+    static void function(JNIEnv * env, void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "resize(size)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerResize<Container, T, true>{
-    static QVectorResizeFunction function() {
-        return [](JNIEnv * env, void* ptr, jint size) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->resize(size);
-            };
+    static void function(JNIEnv * env, void* ptr, jint size) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->resize(size);
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
-struct ContainerShrinkToFit{
-    static QVectorShrinkToFitFunction function() {return nullptr;}
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
+struct ContainerSqueeze{
+    static void function(JNIEnv * env, void*) {
+        JavaException::raiseUnsupportedOperationException(env, "squeeze()" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename T> class Container, typename T>
-struct ContainerShrinkToFit<Container, T, true>{
-    static QVectorShrinkToFitFunction function() {
-        return [](JNIEnv * env, void* ptr) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                container->shrink_to_fit();
-            };
+struct ContainerSqueeze<Container, T, true>{
+    static void function(JNIEnv * env, void* ptr) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        container->squeeze();
     }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerSwap{
-    static QListSwapFunction function() {
-        return [](JNIEnv * env, void* ptr, jint idx1, jint idx2) {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
+    static void function(JNIEnv * env, void* ptr, jint idx1, jint idx2) {
+        Q_UNUSED(env)
+        Container<T> *container = static_cast<Container<T> *>(ptr);
 #if QT_VERSION < QT_VERSION_CHECK(5,13,0)
-                container->swap(int(idx1), int(idx2));
+        container->swap(int(idx1), int(idx2));
 #else
-                container->swapItemsAt(int(idx1), int(idx2));
+        container->swapItemsAt(int(idx1), int(idx2));
 #endif
-            };
     }
 };
 
-template<template<typename T> class Container, typename T, bool = supports_StandardConstructor<T>::value>
+template<template<typename T> class Container, typename T, bool = std::is_default_constructible<T>::value>
 struct ContainerTakeAt{
-    static QListTakeAtFunction function() { return nullptr; }
+    static jobject function(JNIEnv * env, void*, jint) {
+        JavaException::raiseUnsupportedOperationException(env, "takeAt(index)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerTakeAt<Container, T, true>{
-    static QListTakeAtFunction function() {
-        return [](JNIEnv * env, void* ptr, jint index) -> jobject {
-                Q_UNUSED(env)
-                Container<T> *container = static_cast<Container<T> *>(ptr);
-                return qtjambi_cast<jobject>(env, container->takeAt(index));
-            };
+    static jobject function(JNIEnv * env, void* ptr, jint index) {
+        Container<T> *container = static_cast<Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->takeAt(index), nullptr, nullptr);
     }
 };
 
 template<template<typename T> class Container, typename T>
 struct ContainerValues{
-    static QSetValuesFunction function() {
-        return [](JNIEnv * env, const void* ptr) -> jobject {
-                Q_UNUSED(env)
-                const Container<T>  *container = static_cast<const Container<T> *>(ptr);
-                return qtjambi_cast<jobject>(env, container->values());
-            };
+    static jobject function(JNIEnv * env, const void* ptr) {
+        const Container<T>  *container = static_cast<const Container<T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const QList<T>>::cast(env, container->values(), nullptr, nullptr);
+    }
+};
+
+template<typename T, bool isConst = false>
+class QListAccess : public AbstractListAccess{
+protected:
+    QListAccess(){}
+public:
+    static AbstractListAccess* newInstance(){
+        static QListAccess<T, isConst> instance;
+        return &instance;
+    }
+
+    AbstractListAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return true;}
+    const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QList<T>();}
+    void* copyContainer(const void* container) override {return container ? new QList<T>(*reinterpret_cast<const QList<T>*>(container)) : createContainer();}
+    void assign(void* container, const void* other) override { (*reinterpret_cast<QList<T>*>(container)) = (*reinterpret_cast<const QList<T>*>(other)); }
+    void deleteContainer(void* container) override {delete reinterpret_cast<QList<T>*>(container);}
+    int registerContainer(const QByteArray& containerTypeName) override {
+        return registerMetaType<QList<T>>(containerTypeName);
+    }
+    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QList,T>::function;}
+
+    void append(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::append" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void appendList(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::append" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject at(JNIEnv * env, const void* container, jint index) override {
+        return ContainerAt<QList, T>::function(env, container, index);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jint index) override {
+        return ContainerValue<QList, T>::function(env, container, index);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override {
+        return ContainerValueDefault<QList, T>::function(env, container, index, defaultValue);
+    }
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+    jobject toSet(JNIEnv * env,const void* container) override {
+        return ContainerToSet<QList, T>::function(env, container);
+    }
+#endif
+
+    jobject takeAt(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::takeAt" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::swapItemsAt" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerStartsWith<QList, T>::function(env, container, value);
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+        return ContainerSize<QList, T>::function(env, container);
+    }
+
+    void reserve(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::reserve" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void replace(JNIEnv * env, void*, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::replace" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean removeOne(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::removeOne" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+
+    void removeAt(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::removeAt" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint removeAll(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::removeAll" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+
+    void prepend(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::prepend" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+        return ContainerEquals<QList, T, qtjambi_is_QList>::function(env, container, other);
+    }
+
+    void move(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::move" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override {
+        return ContainerMid<QList, T>::function(env, container, index1, index2);
+    }
+
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+        return ContainerLastIndexOf<QList, T>::function(env, container, value, index);
+    }
+
+    void insert(JNIEnv * env, void*, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::insert" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+        return ContainerIndexOf<QList, T>::function(env, container, value, index);
+    }
+
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerEndsWith<QList, T>::function(env, container, value);
+    }
+
+    jint count(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerCountObject<QList, T>::function(env, container, value);
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerContains<QList, T>::function(env, container, value);
+    }
+
+    void clear(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::clear" QTJAMBI_STACKTRACEINFO );
+    }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    jint capacity(JNIEnv * env, const void* container) override {
+        return ContainerCapacity<QList, T>::function(env, container);
+    }
+
+    void fill(JNIEnv * env, void*, jobject, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::fill" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void remove(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::remove" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void insert(JNIEnv * env, void*, jint, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::insert" QTJAMBI_STACKTRACEINFO );
+    }
+    void resize(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::resize" QTJAMBI_STACKTRACEINFO );
+    }
+    void squeeze(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QList::squeeze" QTJAMBI_STACKTRACEINFO );
+    }
+#endif
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerBegin<QList, T>::function(env, ownerId, container);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerEnd<QList, T>::function(env, ownerId, container);
+    }
+
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
+        for(auto element : *reinterpret_cast<const QList<T>*>(container)){
+            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+                break;
+            }
+        }
+    }
+};
+
+template<typename T>
+class QListAccess<T, false> : public QListAccess<T, true>{
+protected:
+    QListAccess(){}
+public:
+    static AbstractListAccess* newInstance(){
+        static QListAccess<T, false> instance;
+        return &instance;
+    }
+
+    AbstractListAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return false;}
+
+    void append(JNIEnv * env, void* container, jobject value) override {
+        ContainerAppend<QList, T>::function(env, container, value);
+    }
+
+    void appendList(JNIEnv * env, void* container, jobject list) override {
+        ContainerAppendList<T>::function(env, container, list);
+    }
+
+    jobject takeAt(JNIEnv * env, void* container, jint index) override {
+        return ContainerTakeAt<QList, T>::function(env, container, index);
+    }
+
+    void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override {
+        ContainerSwap<QList, T>::function(env, container, index1, index2);
+    }
+
+    void reserve(JNIEnv * env, void* container, jint size) override {
+        ContainerReserve<QList, T>::function(env, container, size);
+    }
+
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override {
+        ContainerReplace<QList, T>::function(env, container, index, value);
+    }
+
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveOne<QList, T>::function(env, container, value);
+    }
+
+    void removeAt(JNIEnv * env, void* container, jint index) override {
+        ContainerRemoveAt<QList, T>::function(env, container, index);
+    }
+
+    jint removeAll(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveAll<QList, T>::function(env, container, value);
+    }
+
+    void prepend(JNIEnv * env, void* container, jobject value) override {
+        ContainerPrepend<QList, T>::function(env, container, value);
+    }
+
+    void move(JNIEnv * env, void* container, jint index1, jint index2) override {
+        ContainerMove<QList, T>::function(env, container, index1, index2);
+    }
+
+    void insert(JNIEnv * env, void* container, jint index, jobject value) override {
+        ContainerInsertAt<QList, T>::function(env, container, index, value);
+    }
+
+    void clear(JNIEnv * env, void* container) override {
+        ContainerClear<QList, T>::function(env, container);
+    }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override {
+        ContainerFill<QList, T>::function(env, container, value, size);
+    }
+
+    void remove(JNIEnv * env, void* container, jint index, jint n) override {
+        ContainerRemoveN<QList, T>::function(env, container, index, n);
+    }
+
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override {
+        ContainerInsertN<QList, T>::function(env, container, index, n, value);
+    }
+    void resize(JNIEnv * env, void* container, jint newSize) override {
+        ContainerResize<QList, T>::function(env, container, newSize);
+    }
+    void squeeze(JNIEnv * env, void* container) override {
+        ContainerSqueeze<QList, T>::function(env, container);
+    }
+#endif
+};
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#ifdef QVECTOR_H
+template<typename T, bool isConst = false>
+class QVectorAccess : public AbstractVectorAccess{
+protected:
+    QVectorAccess(){}
+public:
+    static AbstractVectorAccess* newInstance(){
+        static QVectorAccess<T, isConst> instance;
+        return &instance;
+    }
+
+    AbstractVectorAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return true;}
+    const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QVector<T>();}
+    void* copyContainer(const void* container) override {return container ? new QVector<T>(*reinterpret_cast<const QVector<T>*>(container)) : createContainer();}
+    void assign(void* container, const void* other) override { (*reinterpret_cast<QVector<T>*>(container)) = (*reinterpret_cast<const QVector<T>*>(other)); }
+    void deleteContainer(void* container) override {delete reinterpret_cast<QVector<T>*>(container);}
+    int registerContainer(const QByteArray& containerTypeName) override {
+        return registerMetaType<QVector<T>>(qPrintable(containerTypeName));
+    }
+    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QVector,T>::function;}
+
+    void append(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::append" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void appendVector(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::append" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject at(JNIEnv * env, const void* container, jint index) override {
+        return ContainerAt<QVector, T>::function(env, container, index);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jint index) override {
+        return ContainerValue<QVector, T>::function(env, container, index);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jint index, jobject defaultValue) override {
+        return ContainerValueDefault<QVector, T>::function(env, container, index, defaultValue);
+    }
+
+    jobject toSet(JNIEnv * env,const void* container) override {
+        return ContainerToSet<QVector, T>::function(env, container);
+    }
+
+    jobject takeAt(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::takeAt" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    void swapItemsAt(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::swapItemsAt" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerStartsWith<QVector, T>::function(env, container, value);
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+        return ContainerSize<QVector, T>::function(env, container);
+    }
+
+    void reserve(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::reserve" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void replace(JNIEnv * env, void*, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::replace" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean removeOne(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::removeOne" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+
+    void removeAt(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::removeAt" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint removeAll(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::removeAll" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+
+    void prepend(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::prepend" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+        return ContainerEquals<QVector, T, qtjambi_is_QVector>::function(env, container, other);
+    }
+
+    void move(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::move" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject mid(JNIEnv * env, const void* container, jint index1, jint index2) override {
+        return ContainerMid<QVector, T>::function(env, container, index1, index2);
+    }
+
+    jint lastIndexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+        return ContainerLastIndexOf<QVector, T>::function(env, container, value, index);
+    }
+
+    void insert(JNIEnv * env, void*, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::insert" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint indexOf(JNIEnv * env, const void* container, jobject value, jint index) override {
+        return ContainerIndexOf<QVector, T>::function(env, container, value, index);
+    }
+
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerEndsWith<QVector, T>::function(env, container, value);
+    }
+
+    jint count(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerCountObject<QVector, T>::function(env, container, value);
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerContains<QVector, T>::function(env, container, value);
+    }
+
+    void clear(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::clear" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint capacity(JNIEnv * env, const void* container) override {
+        return ContainerCapacity<QVector, T>::function(env, container);
+    }
+
+    void fill(JNIEnv * env, void*, jobject, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::fill" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void remove(JNIEnv * env, void*, jint, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::remove" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void insert(JNIEnv * env, void*, jint, jint, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::insert" QTJAMBI_STACKTRACEINFO );
+    }
+    void resize(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::resize" QTJAMBI_STACKTRACEINFO );
+    }
+    void squeeze(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QVector::squeeze" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerBegin<QVector, T>::function(env, ownerId, container);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerEnd<QVector, T>::function(env, ownerId, container);
+    }
+
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
+        for(auto element : *reinterpret_cast<const QVector<T>*>(container)){
+            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+                break;
+            }
+        }
+    }
+};
+
+template<typename T>
+class QVectorAccess<T, false> : public QVectorAccess<T, true>{
+protected:
+    QVectorAccess(){}
+public:
+    static AbstractVectorAccess* newInstance(){
+        static QVectorAccess<T, false> instance;
+        return &instance;
+    }
+
+    AbstractVectorAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return false;}
+
+    void append(JNIEnv * env, void* container, jobject value) override {
+        ContainerAppend<QVector, T>::function(env, container, value);
+    }
+
+    void appendVector(JNIEnv * env, void* container, jobject list) override {
+        ContainerAppendVector<T>::function(env, container, list);
+    }
+
+    jobject takeAt(JNIEnv * env, void* container, jint index) override {
+        return ContainerTakeAt<QVector, T>::function(env, container, index);
+    }
+
+    void swapItemsAt(JNIEnv * env, void* container, jint index1, jint index2) override {
+        ContainerSwap<QVector, T>::function(env, container, index1, index2);
+    }
+
+    void reserve(JNIEnv * env, void* container, jint size) override {
+        ContainerReserve<QVector, T>::function(env, container, size);
+    }
+
+    void replace(JNIEnv * env, void* container, jint index, jobject value) override {
+        ContainerReplace<QVector, T>::function(env, container, index, value);
+    }
+
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveOne<QVector, T>::function(env, container, value);
+    }
+
+    void removeAt(JNIEnv * env, void* container, jint index) override {
+        ContainerRemoveAt<QVector, T>::function(env, container, index);
+    }
+
+    jint removeAll(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveAll<QVector, T>::function(env, container, value);
+    }
+
+    void prepend(JNIEnv * env, void* container, jobject value) override {
+        ContainerPrepend<QVector, T>::function(env, container, value);
+    }
+
+    void move(JNIEnv * env, void* container, jint index1, jint index2) override {
+        ContainerMove<QVector, T>::function(env, container, index1, index2);
+    }
+
+    void insert(JNIEnv * env, void* container, jint index, jobject value) override {
+        ContainerInsertAt<QVector, T>::function(env, container, index, value);
+    }
+
+    void clear(JNIEnv * env, void* container) override {
+        ContainerClear<QVector, T>::function(env, container);
+    }
+
+    void fill(JNIEnv * env, void* container, jobject value, jint size) override {
+        ContainerFill<QVector, T>::function(env, container, value, size);
+    }
+
+    void remove(JNIEnv * env, void* container, jint index, jint n) override {
+        ContainerRemoveN<QVector, T>::function(env, container, index, n);
+    }
+
+    void insert(JNIEnv * env, void* container, jint index, jint n, jobject value) override {
+        ContainerInsertN<QVector, T>::function(env, container, index, n, value);
+    }
+    void resize(JNIEnv * env, void* container, jint newSize) override {
+        ContainerResize<QVector, T>::function(env, container, newSize);
+    }
+    void squeeze(JNIEnv * env, void* container) override {
+        ContainerSqueeze<QVector, T>::function(env, container);
+    }
+};
+#endif
+
+#ifdef QLINKEDLIST_H
+template<typename T, bool isConst = false>
+class QLinkedListAccess : public AbstractLinkedListAccess{
+protected:
+    QLinkedListAccess(){}
+public:
+    static AbstractLinkedListAccess* newInstance(){
+        static QLinkedListAccess<T, isConst> instance;
+        return &instance;
+    }
+
+    AbstractLinkedListAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return true;}
+    const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QLinkedList<T>();}
+    void* copyContainer(const void* container) override {return container ? new QLinkedList<T>(*reinterpret_cast<const QLinkedList<T>*>(container)) : createContainer();}
+    void assign(void* container, const void* other) override { (*reinterpret_cast<QLinkedList<T>*>(container)) = (*reinterpret_cast<const QLinkedList<T>*>(other)); }
+    void deleteContainer(void* container) override {delete reinterpret_cast<QLinkedList<T>*>(container);}
+    int registerContainer(const QByteArray& containerTypeName) override {
+        return registerMetaType<QLinkedList<T>>(qPrintable(containerTypeName));
+    }
+    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QLinkedList,T>::function;}
+
+    void append(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::append" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject first(JNIEnv * env, const void* container) override {
+        return ContainerFirst<QLinkedList, T>::function(env, container);
+    }
+
+    jobject last(JNIEnv * env, const void* container) override {
+        return ContainerLast<QLinkedList, T>::function(env, container);
+    }
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerBegin<QLinkedList, T>::function(env, ownerId, container);
+    }
+
+    void clear(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::clear" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerContains<QLinkedList, T>::function(env, container, value);
+    }
+
+    jint count(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerCountObject<QLinkedList, T>::function(env, container, value);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerEnd<QLinkedList, T>::function(env, ownerId, container);
+    }
+
+    jboolean endsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerEndsWith<QLinkedList, T>::function(env, container, value);
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+        return ContainerEquals<QLinkedList, T, qtjambi_is_QLinkedList>::function(env, container, other);
+    }
+
+    void prepend(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::prepend" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void removeFirst(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::removeFirst" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint removeAll(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::removeAll" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+
+    void removeLast(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::removeLast" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean removeOne(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::removeOne" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+        return ContainerSize<QLinkedList, T>::function(env, container);
+    }
+
+    jboolean startsWith(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerStartsWith<QLinkedList, T>::function(env, container, value);
+    }
+
+    jobject takeFirst(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::takeFirst" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    jobject takeLast(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QLinkedList::takeLast" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
+        for(auto element : *reinterpret_cast<const QLinkedList<T>*>(container)){
+            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+                break;
+            }
+        }
+    }
+};
+
+template<typename T>
+class QLinkedListAccess<T, false> : public QLinkedListAccess<T, true>{
+protected:
+    QLinkedListAccess(){}
+public:
+    static AbstractLinkedListAccess* newInstance(){
+        static QLinkedListAccess<T, false> instance;
+        return &instance;
+    }
+
+    AbstractLinkedListAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return false;}
+
+    void append(JNIEnv * env, void* container, jobject value) override {
+        ContainerAppend<QLinkedList, T>::function(env, container, value);
+    }
+
+    void clear(JNIEnv * env, void* container) override {
+        ContainerClear<QLinkedList, T>::function(env, container);
+    }
+
+    void prepend(JNIEnv * env, void* container, jobject value) override {
+        ContainerPrepend<QLinkedList, T>::function(env, container, value);
+    }
+
+    void removeFirst(JNIEnv * env, void* container) override {
+        ContainerRemoveFirst<QLinkedList, T>::function(env, container);
+    }
+
+    jint removeAll(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveAll<QLinkedList, T>::function(env, container, value);
+    }
+
+    void removeLast(JNIEnv * env, void* container) override {
+        ContainerRemoveLast<QLinkedList, T>::function(env, container);
+    }
+
+    jboolean removeOne(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemoveOne<QLinkedList, T>::function(env, container, value);
+    }
+
+    jobject takeFirst(JNIEnv * env, void* container) override {
+        return ContainerTakeFirst<QLinkedList, T>::function(env, container);
+    }
+
+    jobject takeLast(JNIEnv * env, void* container) override {
+        return ContainerTakeLast<QLinkedList, T>::function(env, container);
+    }
+};
+#endif
+#endif
+
+template<typename T, bool isConst = false>
+class QSetAccess : public AbstractSetAccess{
+protected:
+    QSetAccess(){}
+public:
+    static AbstractSetAccess* newInstance(){
+        static QSetAccess<T, isConst> instance;
+        return &instance;
+    }
+
+    AbstractSetAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return true;}
+    const QMetaType& elementMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QSet<T>();}
+    void* copyContainer(const void* container) override {return container ? new QSet<T>(*reinterpret_cast<const QSet<T>*>(container)) : createContainer();}
+    void assign(void* container, const void* other) override { (*reinterpret_cast<QSet<T>*>(container)) = (*reinterpret_cast<const QSet<T>*>(other)); }
+    void deleteContainer(void* container) override {delete reinterpret_cast<QSet<T>*>(container);}
+    int registerContainer(const QByteArray& containerTypeName) override {
+        return registerMetaType<QSet<T>>(containerTypeName);
+    }
+    PtrDeleterFunction containerDeleter() override {return DeleteContainer<QSet,T>::function;}
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerBegin<QSet, T>::function(env, ownerId, container);
+    }
+
+    jint capacity(JNIEnv * env, const void* container) override {
+        return ContainerCapacity<QSet, T>::function(env, container);
+    }
+
+    void clear(JNIEnv * env, void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::clear()" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject value) override {
+        return ContainerContains<QSet, T>::function(env, container, value);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return ContainerEnd<QSet, T>::function(env, ownerId, container);
+    }
+
+    void insert(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::insert(value)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void intersect(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::intersect(other)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean intersects(JNIEnv * env, const void* container, jobject other) override {
+        return ContainerIntersects<QSet, T, qtjambi_is_QSet>::function(env, container, other);
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+        return ContainerEquals<QSet, T, qtjambi_is_QSet>::function(env, container, other);
+    }
+
+    jboolean remove(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::remove(value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+
+    void reserve(JNIEnv * env, void*, jint) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::reserve(newSize)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+        return ContainerSize<QSet, T>::function(env, container);
+    }
+
+    void subtract(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::subtract(other)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    void unite(JNIEnv * env, void*, jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QSet::unite(other)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject values(JNIEnv * env, const void* container) override {
+        return ContainerValues<QSet, T>::function(env, container);
+    }
+
+    void analyzeElements(const void* container, ElementAnalyzer analyzer, void* data) override {
+        for(auto element : *reinterpret_cast<const QSet<T>*>(container)){
+            if(!analyzer(pointer_from<decltype(element)>::from(element), data)){
+                break;
+            }
+        }
+    }
+};
+
+template<typename T>
+class QSetAccess<T, false> : public QSetAccess<T, true>{
+protected:
+    QSetAccess(){}
+public:
+    static AbstractSetAccess* newInstance(){
+        static QSetAccess<T, false> instance;
+        return &instance;
+    }
+
+    AbstractSetAccess* clone() override{
+        return this;
+    }
+
+    bool isConstant() override {return false;}
+
+    void clear(JNIEnv * env, void* container) override {
+        ContainerClear<QSet, T>::function(env, container);
+    }
+    void insert(JNIEnv * env, void* container, jobject value) override {
+        ContainerInsert<QSet, T>::function(env, container, value);
+    }
+    void intersect(JNIEnv * env, void* container, jobject other) override {
+        ContainerIntersect<QSet, T, qtjambi_is_QSet>::function(env, container, other);
+    }
+    jboolean remove(JNIEnv * env, void* container, jobject value) override {
+        return ContainerRemove<QSet, T>::function(env, container, value);
+    }
+    void reserve(JNIEnv * env, void* container, jint newSize) override {
+        ContainerReserve<QSet, T>::function(env, container, newSize);
+    }
+    void subtract(JNIEnv * env, void* container, jobject other) override {
+        ContainerSubtract<QSet, T, qtjambi_is_QSet>::function(env, container, other);
+    }
+    void unite(JNIEnv * env, void* container, jobject other) override {
+        ContainerUnite<QSet, T, qtjambi_is_QSet>::function(env, container, other);
     }
 };
 
@@ -950,8 +1738,8 @@ struct create_container_pointer<true, is_const, false, false, Container, T>{
     }
 };
 
-template<template<typename T> class Container, typename T>
-struct create_container_pointer<true, false, false, true, Container, T>{
+template<bool is_const, template<typename T> class Container, typename T>
+struct create_container_pointer<true, is_const, false, true, Container, T>{
     static Container<T>* create(JNIEnv *, QtJambiScope*, Container<T>* t, const char*){
         return t;
     }
@@ -1050,475 +1838,6 @@ struct create_container_pointer<false, false, true, false, Container, T>{
     static Container<T>& create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>& t, const char*){
         Q_STATIC_ASSERT_X(false && std::is_pointer<Container<T>>::value, "Cannot cast to Container reference without scope.");
         return *t;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QList_caster<c_is_pointer, true, T>{
-    typedef const QList<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQList(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerAt<QList, T>::function(),
-                                     ContainerBegin<QList, T>::function(),
-                                     ContainerContains<QList, T>::function(),
-                                     ContainerCountObject<QList, T>::function(),
-                                     ContainerEnd<QList, T>::function(),
-                                     ContainerEndsWith<QList, T>::function(),
-                                     ContainerIndexOf<QList, T>::function(),
-                                     ContainerLastIndexOf<QList, T>::function(),
-                                     ContainerMid<QList, T>::function(),
-                                     ContainerEquals<QList, T, qtjambi_is_QList>::function(),
-                                     ContainerSize<QList, T>::function(),
-                                     ContainerStartsWith<QList, T>::function(),
-                                     ContainerToSet<QList, T>::function(),
-                                     ContainerValue<QList, T, supports_StandardConstructor<T>::value>::function(),
-                                     ContainerValueDefault<QList, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QList_caster<c_is_pointer, false, T>{
-    typedef QList<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QList(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                ContainerAppend<QList, T>::function(),
-                                ContainerAppendList<QList, T, qtjambi_is_QList>::function(),
-                                ContainerAt<QList, T>::function(),
-                                ContainerBegin<QList, T>::function(),
-                                ContainerClear<QList, T>::function(),
-                                ContainerContains<QList, T>::function(),
-                                ContainerCountObject<QList, T>::function(),
-                                ContainerEnd<QList, T>::function(),
-                                ContainerEndsWith<QList, T>::function(),
-                                ContainerIndexOf<QList, T>::function(),
-                                ContainerInsertAt<QList, T>::function(),
-                                ContainerLastIndexOf<QList, T>::function(),
-                                ContainerMid<QList, T>::function(),
-                                ContainerMove<QList, T>::function(),
-                                ContainerEquals<QList, T, qtjambi_is_QList>::function(),
-                                ContainerPrepend<QList, T>::function(),
-                                ContainerRemoveAll<QList, T>::function(),
-                                ContainerRemoveAt<QList, T>::function(),
-                                ContainerRemoveOne<QList, T>::function(),
-                                ContainerReplace<QList, T>::function(),
-                                ContainerReserve<QList, T>::function(),
-                                ContainerSize<QList, T>::function(),
-                                ContainerStartsWith<QList, T>::function(),
-                                ContainerSwap<QList, T>::function(),
-                                ContainerTakeAt<QList, T>::function(),
-                                ContainerToSet<QList, T>::function(),
-                                ContainerValue<QList, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerValueDefault<QList, T>::function()
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QSet_caster<c_is_pointer, true, T>{
-    typedef const QSet<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(supports_qHash<T>::value, "Unsupported type T for QSet: missing qHash().");
-        Q_STATIC_ASSERT_X(supports_equal<T>::value, "Unsupported type T for QSet: missing operator ==.");
-        jobject result = qtjambi_to_constQSet(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerBegin<QSet, T>::function(),
-                                     ContainerCapacity<QSet, T>::function(),
-                                     ContainerContains<QSet, T, true>::function(),
-                                     ContainerEnd<QSet, T>::function(),
-                                     ContainerIntersects<QSet, T, qtjambi_is_QSet>::function(),
-                                     ContainerEquals<QSet, T, qtjambi_is_QSet>::function(),
-                                     ContainerSize<QSet, T>::function(),
-                                     ContainerValues<QSet, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QSet_caster<c_is_pointer, false, T>{
-    typedef QSet<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        Q_STATIC_ASSERT_X(supports_qHash<T>::value, "Unsupported type T for QSet: missing qHash().");
-        Q_STATIC_ASSERT_X(supports_equal<T>::value, "Unsupported type T for QSet: missing operator ==.");
-        jobject result = qtjambi_to_QSet(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                QSetBeginFunction(ContainerBegin<QSet, T>::function()),
-                                QSetCapacityFunction(ContainerCapacity<QSet, T>::function()),
-                                QSetClearFunction(ContainerClear<QSet, T>::function()),
-                                QSetContainsFunction(ContainerContains<QSet, T, true>::function()),
-                                QSetEndFunction(ContainerEnd<QSet, T>::function()),
-                                QSetInsertFunction(ContainerInsert<QSet, T>::function()),
-                                QSetIntersectFunction(ContainerIntersect<QSet, T, qtjambi_is_QSet>::function()),
-                                QSetIntersectsFunction(ContainerIntersects<QSet, T, qtjambi_is_QSet>::function()),
-                                QSetEqualFunction(ContainerEquals<QSet, T, qtjambi_is_QSet>::function()),
-                                QSetRemoveFunction(ContainerRemove<QSet, T>::function()),
-                                QSetReserveFunction(ContainerReserve<QSet, T>::function()),
-                                QSetSizeFunction(ContainerSize<QSet, T>::function()),
-                                QSetSubtractFunction(ContainerSubtract<QSet, T, qtjambi_is_QSet>::function()),
-                                QSetUniteFunction(ContainerUnite<QSet, T, qtjambi_is_QSet>::function()),
-                                QSetValuesFunction(ContainerValues<QSet, T>::function())
-
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QLinkedList_caster<c_is_pointer, true, T>{
-    typedef const QLinkedList<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQLinkedList(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerBegin<QLinkedList, T>::function(),
-                                     ContainerContains<QLinkedList, T>::function(),
-                                     ContainerCountObject<QLinkedList, T>::function(),
-                                     ContainerEnd<QLinkedList, T>::function(),
-                                     ContainerEndsWith<QLinkedList, T>::function(),
-                                     ContainerFirst<QLinkedList, T>::function(),
-                                     ContainerLast<QLinkedList, T>::function(),
-                                     ContainerEquals<QLinkedList, T, qtjambi_is_QLinkedList>::function(),
-                                     ContainerSize<QLinkedList, T>::function(),
-                                     ContainerStartsWith<QLinkedList, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QLinkedList_caster<c_is_pointer, false, T>{
-    typedef QLinkedList<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QLinkedList(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                QLinkedListAppendFunction(ContainerAppend<QLinkedList, T>::function()),
-                                QLinkedListBeginFunction(ContainerBegin<QLinkedList, T>::function()),
-                                QLinkedListClearFunction(ContainerClear<QLinkedList, T>::function()),
-                                QLinkedListContainsFunction(ContainerContains<QLinkedList, T>::function()),
-                                QLinkedListCountObjectFunction(ContainerCountObject<QLinkedList, T>::function()),
-                                QLinkedListEndFunction(ContainerEnd<QLinkedList, T>::function()),
-                                QLinkedListEndsWithFunction(ContainerEndsWith<QLinkedList, T>::function()),
-                                QLinkedListFirstFunction(ContainerFirst<QLinkedList, T>::function()),
-                                QLinkedListLastFunction(ContainerLast<QLinkedList, T>::function()),
-                                QLinkedListEqualFunction(ContainerEquals<QLinkedList, T, qtjambi_is_QLinkedList>::function()),
-                                QLinkedListPrependFunction(ContainerPrepend<QLinkedList, T>::function()),
-                                QLinkedListRemoveAllFunction(ContainerRemoveAll<QLinkedList, T>::function()),
-                                QLinkedListRemoveFirstFunction(ContainerRemoveFirst<QLinkedList, T>::function()),
-                                QLinkedListRemoveLastFunction(ContainerRemoveLast<QLinkedList, T>::function()),
-                                QLinkedListRemoveOneFunction(ContainerRemoveOne<QLinkedList, T>::function()),
-                                QLinkedListSizeFunction(ContainerSize<QLinkedList, T>::function()),
-                                QLinkedListStartsWithFunction(ContainerStartsWith<QLinkedList, T>::function()),
-                                QLinkedListTakeFirstFunction(ContainerTakeFirst<QLinkedList, T>::function()),
-                                QLinkedListTakeLastFunction(ContainerTakeLast<QLinkedList, T>::function())
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QQueue_caster<c_is_pointer, true, T>{
-    typedef const QQueue<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQQueue(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerAt<QQueue, T>::function(),
-                                     ContainerBegin<QQueue, T>::function(),
-                                     ContainerContains<QQueue, T>::function(),
-                                     ContainerCountObject<QQueue, T>::function(),
-                                     ContainerEnd<QQueue, T>::function(),
-                                     ContainerEndsWith<QQueue, T>::function(),
-                                     ContainerIndexOf<QQueue, T>::function(),
-                                     ContainerLastIndexOf<QQueue, T>::function(),
-                                     ContainerMid<QQueue, T>::function(),
-                                     ContainerEquals<QQueue, T, qtjambi_is_QQueue>::function(),
-                                     ContainerSize<QQueue, T>::function(),
-                                     ContainerStartsWith<QQueue, T>::function(),
-                                     ContainerToSet<QQueue, T>::function(),
-                                     ContainerValue<QQueue, T, supports_StandardConstructor<T>::value>::function(),
-                                     ContainerValueDefault<QQueue, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QQueue_caster<c_is_pointer, false, T>{
-    typedef QQueue<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QQueue(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                ContainerAppend<QQueue, T>::function(),
-                                ContainerAppendList<QQueue, T, qtjambi_is_QQueue>::function(),
-                                ContainerAt<QQueue, T>::function(),
-                                ContainerBegin<QQueue, T>::function(),
-                                ContainerClear<QQueue, T>::function(),
-                                ContainerContains<QQueue, T>::function(),
-                                ContainerCountObject<QQueue, T>::function(),
-                                ContainerEnd<QQueue, T>::function(),
-                                ContainerEndsWith<QQueue, T>::function(),
-                                ContainerIndexOf<QQueue, T>::function(),
-                                ContainerInsertAt<QQueue, T>::function(),
-                                ContainerLastIndexOf<QQueue, T>::function(),
-                                ContainerMid<QQueue, T>::function(),
-                                ContainerMove<QQueue, T>::function(),
-                                ContainerEquals<QQueue, T, qtjambi_is_QQueue>::function(),
-                                ContainerPrepend<QQueue, T>::function(),
-                                ContainerRemoveAll<QQueue, T>::function(),
-                                ContainerRemoveAt<QQueue, T>::function(),
-                                ContainerRemoveOne<QQueue, T>::function(),
-                                ContainerReplace<QQueue, T>::function(),
-                                ContainerReserve<QQueue, T>::function(),
-                                ContainerSize<QQueue, T>::function(),
-                                ContainerStartsWith<QQueue, T>::function(),
-                                ContainerSwap<QQueue, T>::function(),
-                                ContainerTakeAt<QQueue, T>::function(),
-                                ContainerToSet<QQueue, T>::function(),
-                                ContainerValue<QQueue, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerValueDefault<QQueue, T>::function()
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QVector_caster<c_is_pointer, true, T>{
-    typedef const QVector<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQVector(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerAt<QVector, T>::function(),
-                                     ContainerBegin<QVector, T>::function(),
-                                     ContainerCapacity<QVector, T>::function(),
-                                     ContainerContains<QVector, T>::function(),
-                                     ContainerCountObject<QVector, T>::function(),
-                                     ContainerEnd<QVector, T>::function(),
-                                     ContainerEndsWith<QVector, T>::function(),
-                                     ContainerIndexOf<QVector, T>::function(),
-                                     ContainerLastIndexOf<QVector, T>::function(),
-                                     ContainerMid<QVector, T>::function(),
-                                     ContainerEquals<QVector, T, qtjambi_is_QVector>::function(),
-                                     ContainerSize<QVector, T>::function(),
-                                     ContainerStartsWith<QVector, T>::function(),
-                                     ContainerToList<QVector, T>::function(),
-                                     ContainerValue<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                     ContainerValueDefault<QVector, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QVector_caster<c_is_pointer, false, T>{
-    typedef QVector<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QVector(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                ContainerAppend<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerAppendVector<QVector, T, qtjambi_is_QVector>::function(),
-                                ContainerAt<QVector, T>::function(),
-                                ContainerBegin<QVector, T>::function(),
-                                ContainerCapacity<QVector, T>::function(),
-                                ContainerClear<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerContains<QVector, T>::function(),
-                                ContainerCountObject<QVector, T>::function(),
-                                ContainerEnd<QVector, T>::function(),
-                                ContainerEndsWith<QVector, T>::function(),
-                                ContainerFill<QVector, T>::function(),
-                                ContainerIndexOf<QVector, T>::function(),
-                                ContainerInsertAt<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerInsertN<QVector, T>::function(),
-                                ContainerLastIndexOf<QVector, T>::function(),
-                                ContainerMid<QVector, T>::function(),
-                                ContainerMove<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerEquals<QVector, T, qtjambi_is_QVector>::function(),
-                                ContainerPrepend<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerRemoveAll<QVector, T>::function(),
-                                ContainerRemoveI<QVector, T>::function(),
-                                ContainerRemoveN<QVector, T>::function(),
-                                ContainerRemoveOne<QVector, T>::function(),
-                                ContainerReplace<QVector, T>::function(),
-                                ContainerReserve<QVector, T>::function(),
-                                ContainerResize<QVector, T>::function(),
-                                ContainerShrinkToFit<QVector, T>::function(),
-                                ContainerSize<QVector, T>::function(),
-                                ContainerStartsWith<QVector, T>::function(),
-                                ContainerTakeAt<QVector, T>::function(),
-                                ContainerToList<QVector, T>::function(),
-                                ContainerValue<QVector, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerValueDefault<QVector, T>::function()
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QStack_caster<c_is_pointer, true, T>{
-    typedef const QStack<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQStack(env,
-                                     scope ? scope->relatedNativeID() : InvalidNativeID,
-                                     ref_ptr<c_is_pointer, Container>::ref(in),
-                                     qtjambi_type<T>::id(),
-                                     ContainerAt<QStack, T>::function(),
-                                     ContainerBegin<QStack, T>::function(),
-                                     ContainerCapacity<QStack, T>::function(),
-                                     ContainerContains<QStack, T>::function(),
-                                     ContainerCountObject<QStack, T>::function(),
-                                     ContainerEnd<QStack, T>::function(),
-                                     ContainerEndsWith<QStack, T>::function(),
-                                     ContainerIndexOf<QStack, T>::function(),
-                                     ContainerLastIndexOf<QStack, T>::function(),
-                                     ContainerMid<QStack, T>::function(),
-                                     ContainerEquals<QStack, T, qtjambi_is_QStack>::function(),
-                                     ContainerSize<QStack, T>::function(),
-                                     ContainerStartsWith<QStack, T>::function(),
-                                     ContainerToList<QStack, T>::function(),
-                                     ContainerValue<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                     ContainerValueDefault<QStack, T>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
-
-template<bool c_is_pointer, typename T>
-struct qtjambi_QStack_caster<c_is_pointer, false, T>{
-    typedef QStack<T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QStack(env,
-                                scope ? scope->relatedNativeID() : InvalidNativeID,
-                                ref_ptr<c_is_pointer, Container>::ref(in),
-                                qtjambi_type<T>::id(),
-                                ContainerAppend<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerAppendVector<QStack, T, qtjambi_is_QStack>::function(),
-                                ContainerAt<QStack, T>::function(),
-                                ContainerBegin<QStack, T>::function(),
-                                ContainerCapacity<QStack, T>::function(),
-                                ContainerClear<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerContains<QStack, T>::function(),
-                                ContainerCountObject<QStack, T>::function(),
-                                ContainerEnd<QStack, T>::function(),
-                                ContainerEndsWith<QStack, T>::function(),
-                                ContainerFill<QStack, T>::function(),
-                                ContainerIndexOf<QStack, T>::function(),
-                                ContainerInsertAt<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerInsertN<QStack, T>::function(),
-                                ContainerLastIndexOf<QStack, T>::function(),
-                                ContainerMid<QStack, T>::function(),
-                                ContainerMove<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerEquals<QStack, T, qtjambi_is_QStack>::function(),
-                                ContainerPrepend<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerRemoveAll<QStack, T>::function(),
-                                ContainerRemoveI<QStack, T>::function(),
-                                ContainerRemoveN<QStack, T>::function(),
-                                ContainerRemoveOne<QStack, T>::function(),
-                                ContainerReplace<QStack, T>::function(),
-                                ContainerReserve<QStack, T>::function(),
-                                ContainerResize<QStack, T>::function(),
-                                ContainerShrinkToFit<QStack, T>::function(),
-                                ContainerSize<QStack, T>::function(),
-                                ContainerStartsWith<QStack, T>::function(),
-                                ContainerTakeAt<QStack, T>::function(),
-                                ContainerToList<QStack, T>::function(),
-                                ContainerValue<QStack, T, supports_StandardConstructor<T>::value>::function(),
-                                ContainerValueDefault<QStack, T>::function()
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
     }
 };
 

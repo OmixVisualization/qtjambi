@@ -45,7 +45,10 @@
 #ifndef TESTDIALOG_H
 #define TESTDIALOG_H
 
-#include <QtWidgets>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
+
 
  class QComboBox;
  class QDir;

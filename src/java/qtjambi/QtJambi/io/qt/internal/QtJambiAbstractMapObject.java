@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,88 +33,51 @@ import java.util.Iterator;
 import java.util.Map;
 
 import io.qt.QtObject;
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiAbstractMapObject<K,V> extends QtObject implements Map<K,V>, Iterable<QPair<K,V>> {
 	
 	@Override
+    @QtUninvokable
 	public abstract int size();
 
 	@Override
+    @QtUninvokable
 	public abstract boolean isEmpty();
 	
+    @QtUninvokable
 	public abstract java.util.List<K> keys();
-	protected abstract QtJambiMapIteratorObject<K,V> begin();
+
+    @QtUninvokable
+    protected abstract QtJambiMapIteratorObject<K,V> begin();
+
+    @QtUninvokable
 	protected abstract QtJambiMapIteratorObject<K,V> end();
 
 	@Override
-	public void putAll(Map<? extends K, ? extends V> m) {
+    @QtUninvokable
+	public final void putAll(Map<? extends K, ? extends V> m) {
 		for(Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
 			put(entry.getKey(), entry.getValue());
 		}
 	}
 
 	@Override
-	public Iterator<QPair<K,V>> iterator() {
-		return begin().toJavaMapIterator(this::end);
+    @QtUninvokable
+	public final Iterator<QPair<K,V>> iterator() {
+		return begin().toJavaMapIterator();
 	}
 	
-	@NativeAccess
-	private final Class<K> keyType;
-	
-	@NativeAccess
-	private final Class<V> valueType;
-
-    protected QtJambiAbstractMapObject(Class<K> keyType, Class<V> valueType) {
+    protected QtJambiAbstractMapObject() {
 		super();
-		this.keyType = keyType;
-		this.valueType = valueType;
 	}
 
-    protected QtJambiAbstractMapObject(QPrivateConstructor p, Class<K> keyType, Class<V> valueType) {
+    protected QtJambiAbstractMapObject(QPrivateConstructor p) {
 		super(p);
-		this.keyType = keyType;
-		this.valueType = valueType;
 	}
     
-    final Class<K> keyType() {
-		return keyType;
-	}
-
-    final Class<V> valueType() {
-		return valueType;
-	}
-    
-    protected final boolean checkKey(Object key) {
-    	if(keyType.isPrimitive()) {
-    		return QtJambiInternal.getComplexType(keyType).isInstance(key);
-    	}
-		return keyType.isInstance(key) || key==null;
-	}
-
-    protected final boolean checkValue(Object value) {
-    	if(valueType.isPrimitive()) {
-    		return QtJambiInternal.getComplexType(valueType).isInstance(value);
-    	}
-		return valueType.isInstance(value) || value==null;
-	}
-    
-    @SuppressWarnings("unchecked")
-	protected final K castKey(Object key) {
-    	if(keyType.isPrimitive()) {
-    		return (K)QtJambiInternal.getComplexType(keyType).cast(key);
-    	}
-		return keyType.cast(key);
-	}
-
-    @SuppressWarnings("unchecked")
-    protected final V castValue(Object value) {
-    	if(valueType.isPrimitive()) {
-    		return (V)QtJambiInternal.getComplexType(valueType).cast(value);
-    	}
-		return valueType.cast(value);
-	}
-	
+    @QtUninvokable
 	public String toString() {
         Iterator<QPair<K,V>> it = iterator();
         if (! it.hasNext())
@@ -125,7 +88,7 @@ public abstract class QtJambiAbstractMapObject<K,V> extends QtObject implements 
         for (;;) {
         	QPair<K,V> e = it.next();
             sb.append(e.first == this ? "(this Map)" : e.first);
-            sb.append(',').append(' ');
+            sb.append('=');
             sb.append(e.second == this ? "(this Map)" : e.second);
             if (! it.hasNext())
                 return sb.append('}').toString();

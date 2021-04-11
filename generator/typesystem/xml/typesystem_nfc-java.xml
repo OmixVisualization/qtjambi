@@ -57,9 +57,13 @@
     </object-type>
     <value-type name="QNdefMessage">
         <inject-code class="native" position="beginning">
-        bool operator&lt;(const QNdefRecord&amp; lhs, const QNdefRecord&amp; rhs)
-        {
-            return qHash(lhs) &lt; qHash(rhs);
+        namespace QtJambiPrivate{
+            template&lt;>
+            struct supports_less_than&lt;QNdefMessage> : std::false_type{};
+            template&lt;>
+            struct supports_stream_operators&lt;QNdefMessage> : std::false_type{};
+            template&lt;>
+            struct supports_debugstream&lt;QNdefMessage> : std::false_type{};
         }
         </inject-code>
     </value-type>

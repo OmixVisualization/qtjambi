@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -251,12 +251,8 @@ public class TestQObject extends QApplicationTest {
             if(Utils.isDebugLevel(4)) {
                 // Print array format [1, 2, 3]
                 synchronized(DyingObject.class) {
-                    String aliveString = Utils.listToString(alive);
-                    String aliveAndUnderTestString = Utils.listToString(aliveAndUnderTest);
-                    String weakReferenceMapString = Utils.mapValueToString(weakReferenceMap);
-                    String phantomReferenceMapString = Utils.mapValueToString(phantomReferenceMap);
-                    Utils.println(4, "alive=" + aliveString + "; aliveAndUnderTest=" + aliveAndUnderTestString +
-                            "; weakReferenceMapSize=" + weakReferenceMapString + "; phantomReferenceMapSize=" + phantomReferenceMapString);
+                    Utils.println(4, "alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                            "; weakReferenceMap=" + weakReferenceMap.values() + "; phantomReferenceMap=" + phantomReferenceMap.values());
                 }
             }
         }

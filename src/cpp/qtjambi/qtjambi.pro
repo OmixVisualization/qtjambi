@@ -6,61 +6,57 @@ include(qtjambi_base.pri)
 
 SOURCES += \
     qnativepointer.cpp \
+    qtjambi_containeraccess.cpp \
+    qtjambi_containeraccess_hash1.cpp \
+    qtjambi_containeraccess_linkedlist.cpp \
+    qtjambi_containeraccess_list.cpp \
+    qtjambi_containeraccess_map1.cpp \
+    qtjambi_containeraccess_multihash1.cpp \
+    qtjambi_containeraccess_multimap1.cpp \
+    qtjambi_containeraccess_pair.cpp \
+    qtjambi_containeraccess_set.cpp \
+    qtjambi_containeraccess_vector.cpp \
+    qtjambi_util.cpp \
     qtjambi_core.cpp \
     qtjambi_functions.cpp \
+    qtjambi_jobjectwrapper.cpp \
     qtjambi_plugin.cpp \
     qtjambi_registry.cpp \
     qtjambi_repository.cpp \
     qtjambi_typeinfo.cpp \
     qtjambifunctiontable.cpp \
     qtjambilink.cpp \
+    qtjambimetaobject.cpp \
+    qtjambisignals.cpp \
     qtjambitypemanager.cpp \
-    qtjambitypemanager02.cpp \
-    qtjambitypemanager03.cpp \
-    qtjambitypemanager04.cpp \
-    qtjambitypemanager05.cpp \
-    qtjambitypemanager06.cpp \
-    qtjambitypemanager07.cpp \
-    qtjambitypemanager08.cpp \
-    qtjambitypemanager09.cpp \
-    qtjambitypemanager10.cpp \
-    qtjambitypemanager11.cpp \
-    qtjambitypemanager12.cpp \
-    qtjambitypemanager13.cpp \
-    qtjambitypemanager14.cpp \
-    qtjambitypemanager15.cpp \
-    qtjambitypemanager16.cpp \
-    qtjambitypemanager17.cpp \
-    qtjambitypemanager18.cpp \
-    qtjambitypemanager19.cpp \
-    qtjambitypemanager20.cpp \
-    qtjambitypemanager21.cpp \
-    qtjambitypemanager22.cpp \
-    qtjambitypemanager23.cpp \
-    qtjambitypemanager24.cpp \
-    qtjambitypemanager25.cpp \
-    qtjambitypemanager26.cpp \
-    qtjambitypemanager27.cpp \
-    qtjambitypemanager28.cpp \
-    qtjambitypemanager29.cpp \
-    qtjambitypemanager30.cpp \
-    qtjambitypemanager31.cpp \
-    qtobject.cpp \
-    qvariant.cpp \
-    qtdynamicmetaobject.cpp \
     qtjambivariant.cpp \
     qtjambi_thread.cpp \
     qtjambi_interfaces.cpp \
-    staticmetacall1.cpp \
-    staticmetacall2.cpp \
-    staticmetacall3.cpp \
     qtjambi_containers.cpp \
-    qtjambishell.cpp\
+    qtjambishell.cpp \
     qtjambidebugtools.cpp
 
+
 HEADERS += \
+    qtjambi_cast_container1_util_p.h \
+    qtjambi_cast_container2_util_p.h \
+    qtjambi_cast_container3_p.h \
+    qtjambi_cast_container4_p.h \
+    qtjambi_cast_container_util_p.h \
+    qtjambi_containeraccess.h \
+    qtjambi_containeraccess_hash.h \
+    qtjambi_containeraccess_linkedlist.h \
+    qtjambi_containeraccess_list.h \
+    qtjambi_containeraccess_map.h \
+    qtjambi_containeraccess_multihash.h \
+    qtjambi_containeraccess_multimap.h \
+    qtjambi_containeraccess_p.h \
+    qtjambi_containeraccess_pair.h \
+    qtjambi_containeraccess_set.h \
+    qtjambi_containeraccess_vector.h \
     qtjambi_core.h \
     qtjambi_global.h \
+    qtjambi_interfaces_p.h \
     qtjambi_plugin.h \
     qtjambi_qml.h \
     qtjambi_registry_p.h \
@@ -70,7 +66,10 @@ HEADERS += \
     qtjambi_thread_p.h \
     qtjambi_typeinfo_p.h \
     qtjambi_typetests.h \
+    qtjambi_utils.h \
+    qtjambi_utils_p.h \
     qtjambifunctiontable_p.h \
+    qtjambimetaobject_p.h \
     qtjambitypemanager_p.h \
     qtjambivariant_p.h \
     qtjambi_thread.h \
@@ -78,8 +77,6 @@ HEADERS += \
     qtjambi_jobjectwrapper.h \
     qtjambi_templates.h \
     qtjambi_functionpointer.h \
-    qtjambi_interfaces.h \
-    qtdynamicmetaobject_p.h \
     qtjambi_exceptions.h \
     qtjambi_application.h \
     qtjambi_registry.h \

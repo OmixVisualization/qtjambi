@@ -33,10 +33,34 @@
     </target>
 
     <target name="jar.qtjambi" depends="init.build, javac.excludes">
+        <ant inheritrefs="true" target="jar.qtjambi.impl">
+        </ant>
+    </target>
+    <target name="jar8.qtjambi" depends="init.build, javac.excludes">
+        <ant inheritrefs="true" target="jar.qtjambi.impl">
+            <property name="minimum.java.version" value="1.8"/>
+            <property name="source.java.version" value="1.8"/>
+            <property name="java.module.based" value="false"/>
+            <property name="java.outdir" location="build/java8"/>
+            <property name="java.outsrcdir" location="build/java8-src"/>
+            <property name="deploymentdir" location="deployment/jdk8"/>
+        </ant>
+    </target>
+
+    <target name="jar.qtjambi.impl" depends="init.build, javac.excludes">
         <ant antfile="${basedir}/src/java/qtjambi/modules.xml" inheritrefs="true" target="build">
         </ant>
         <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+            <property name="qtjambi.testbuild" value="false"/>
         </ant>
+        <if>
+            <istrue value="${qtjambi.qml.any.true}"/>
+            <then>
+                <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                    <property name="qtjambi.testbuild" value="false"/>
+                </ant>
+            </then>
+        </if>
     </target>
     
     <target name="jar.qtjambi.plugins" depends="init.build, javac.excludes">

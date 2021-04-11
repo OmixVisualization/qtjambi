@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,144 +35,110 @@ import static io.qt.core.QIterator.__qt_QIterator_lessThan;
 import static io.qt.core.QIterator.__qt_QIterator_operator_equal;
 import static io.qt.core.QIterator.__qt_QIterator_value;
 
-import java.lang.invoke.MethodHandle;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import io.qt.QtUninvokable;
+import io.qt.internal.QtJambiIteratorObject;
 
-public class QMapIterator<K,V> extends io.qt.internal.QtJambiMapIteratorObject<K,V> implements java.lang.Comparable<K>, java.lang.Iterable<QPair<K,V>> {
+public final class QMapIterator<K,V> extends io.qt.internal.QtJambiMapIteratorObject<K,V> implements java.lang.Iterable<QPair<K,V>> {
 
     static {
     	io.qt.core.QtJambi_LibraryInitializer.init();
     }
     
-    private static Consumer<QMapIterator<?,?>> decrementFct = QMapIterator::decrement;
+    private QMapIterator(Object owner) { 
+    	super(owner); 
+	}
     
-    private static Consumer<QMapIterator<?,?>> incrementFct = QMapIterator::increment;
-    
-    private static Function<QMapIterator<?,?>,?> keyFct = QMapIterator::key;
-    
-    private static Function<QMapIterator<?,?>,?> valueFct = QMapIterator::val;
-
-    private final Object owner;
-    private final MethodHandle endHandle;
-    private final long keyFunction;
-    private final long valueFunction;
-    private final long incrementFunction;
-    private final long decrementFunction;
-    private final long lessThanFunction;
-    private final long equalsFunction;
-
     @QtUninvokable
     protected final K key()        {
-        if(keyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMapIterator_key(io.qt.internal.QtJambiInternal.checkedNativeId(this), keyFunction);
+        return __qt_QMapIterator_key(io.qt.internal.QtJambiInternal.nativeId(this));
     }
-    private static native <K> K __qt_QMapIterator_key(long __this__nativeId, long keyFunction);
+    @QtUninvokable
+    private static native <K> K __qt_QMapIterator_key(long __this__nativeId);
 
     @QtUninvokable
     protected final V val()        {
-        if(valueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QIterator_value(io.qt.internal.QtJambiInternal.checkedNativeId(this), valueFunction);
+        return __qt_QIterator_value(io.qt.internal.QtJambiInternal.nativeId(this));
     }
 
     @QtUninvokable
     protected final void increment()        {
-        if(incrementFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QIterator_increment(io.qt.internal.QtJambiInternal.checkedNativeId(this), incrementFunction);
+        __qt_QIterator_increment(io.qt.internal.QtJambiInternal.nativeId(this));
     }
 
     @QtUninvokable
     protected final void decrement()        {
-        if(decrementFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QIterator_decrement(io.qt.internal.QtJambiInternal.checkedNativeId(this), decrementFunction);
+        __qt_QIterator_decrement(io.qt.internal.QtJambiInternal.nativeId(this));
     }
 
     @QtUninvokable
-    private final boolean lessThan(QMapIterator<K,V> other)        {
-        if(lessThanFunction==0)
-        	throw new UnsupportedOperationException();
-        if(other.lessThanFunction!=lessThanFunction)
+    private final boolean lessThan(QtJambiIteratorObject<?> other)        {
+        if(compareOwners(other))
         	throw new IllegalArgumentException("Incomparable objects.");
-        return __qt_QIterator_lessThan(io.qt.internal.QtJambiInternal.checkedNativeId(this), io.qt.internal.QtJambiInternal.nativeId(other), lessThanFunction);
+        return __qt_QIterator_lessThan(io.qt.internal.QtJambiInternal.nativeId(this), io.qt.internal.QtJambiInternal.nativeId(other));
     }
 
     @QtUninvokable
     private final boolean operator_equal(QMapIterator<K,V> o)        {
-        if(equalsFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QIterator_operator_equal(io.qt.internal.QtJambiInternal.checkedNativeId(this), io.qt.internal.QtJambiInternal.nativeId(o), equalsFunction);
+        return __qt_QIterator_operator_equal(io.qt.internal.QtJambiInternal.nativeId(this), io.qt.internal.QtJambiInternal.nativeId(o));
     }
-    @QtUninvokable
-    private native boolean __qt_QMapIterator_operator_equal(long __this__nativeId, long o, long equalsFunction);
 
-    private QMapIterator(Object owner, long keyFunction, long valueFunction, long incrementFunction, long decrementFunction, long lessThanFunction, long equalsFunction) { 
-    	super(decrementFct, incrementFct, keyFct, valueFct); 
-    	this.owner = owner;
-    	this.endHandle = this.findEndFunction(owner);
-    	this.keyFunction = keyFunction;
-    	this.valueFunction = valueFunction;
-    	this.incrementFunction = incrementFunction;
-    	this.decrementFunction = decrementFunction;
-    	this.lessThanFunction = lessThanFunction;
-    	this.equalsFunction = equalsFunction;
-	} 
-
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof QMapIterator) {
-            return operator_equal((QMapIterator<K,V>) other);
+        	@SuppressWarnings("unchecked")
+        	QMapIterator<K,V> iter = (QMapIterator<K,V>) other;
+        	if(compareOwners(iter))
+        		return operator_equal(iter);
         }
         return Objects.equals(other, key());
     }
 
-    @SuppressWarnings("unchecked")
     @QtUninvokable
-	public int compareTo(Object other) {
-        if (equals(other)) return 0;
-        else if (other instanceof QMapIterator) {
-            if (lessThan((QMapIterator<K,V>) other)) return -1;
-            else return 1;
-        }
-        throw new ClassCastException();
-    }
-    
-    @QtUninvokable
-    private boolean isValid() {
-    	return this.lessThanFunction==0 ? operator_equal(end()) : compareTo(end())<0;
-    }
-    
-    @QtUninvokable
-    private QMapIterator<K,V> end() {
-    	if(endHandle!=null) {
-    		try {
-				return (QMapIterator<K,V>)endHandle.invoke(owner);
-			} catch (Throwable e) {
-				Logger.getAnonymousLogger().log(Level.SEVERE, "end()", e);
+    private final boolean isValid() {
+    	long nativeId = io.qt.internal.QtJambiInternal.nativeId(this);
+    	if(nativeId==0)
+    		return false;
+    	QtJambiIteratorObject<?> end = end();
+    	if(QIterator.canLess(nativeId)) {
+	    	try {
+	        	return lessThan(end);
+			} catch (Exception e) {
 			}
     	}
-    	return this;
+		return !equals(end);
     }
     
     @QtUninvokable
-    public Iterator<QPair<K,V>> iterator(){
-    	return toJavaMapIterator(this::end);
+    public final Iterator<QPair<K,V>> iterator(){
+    	return toJavaMapIterator();
     }
 
     @QtUninvokable
-	public Optional<QPair<K,V>> keyValuePair() {
-		return isValid() ? Optional.empty() : Optional.ofNullable(new QPair<>(key(), val()));
+	public final Optional<QPair<K,V>> keyValuePair() {
+		return !isValid() ? Optional.empty() : Optional.ofNullable(new QPair<>(key(), val()));
+	}
+    
+    @QtUninvokable
+    protected final V checkedValue() {
+    	if(isValid()) {
+    		return val();
+    	}else {
+    		throw new NoSuchElementException();
+    	}
+	}
+    
+    @QtUninvokable
+    protected final K checkedKey() {
+    	if(isValid()) {
+    		return key();
+    	}else {
+    		throw new NoSuchElementException();
+    	}
 	}
 }

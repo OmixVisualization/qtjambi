@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,6 +60,8 @@ QString MetaJavaArgument::argumentName() const {
             || n=="synchronized"
             || n=="throws"
             || n=="throw"
+            || n=="enum"
+            || n=="const"
             || n=="null"){
         return "arg__"+n;
     }else{

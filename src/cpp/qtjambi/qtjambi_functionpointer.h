@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,20 +31,15 @@
 #ifndef QTJAMBI_FUNCTIONPOINTER_H
 #define QTJAMBI_FUNCTIONPOINTER_H
 
+#include <QtCore/QVector>
+#include <QtCore/QQueue>
+#include <QtCore/QHash>
+#include <QtCore/QReadWriteLock>
 #include <functional>
 #include <limits>
 #include <utility>
 #include <type_traits>
-#include <QtCore/QList>
-#include <QtCore/QVector>
-#include <QtCore/QQueue>
-#include <QtCore/QHash>
-#include <QtCore/QMutex>
-#include <QtCore/QReadWriteLock>
-#include <QtCore/QWriteLocker>
 #include "qtjambi_global.h"
-#include "qtjambi_core.h"
-#include "qtjambi_exceptions.h"
 
 template<typename Callable>
 union storage
@@ -58,30 +53,30 @@ union storage
 template<typename Callable>
 class CallableHash{
 public:
-    CallableHash(int max) : hashes(max, UINT_MAX), freeIndexes(), s()
+    CallableHash(int max) : hashes(max, (std::numeric_limits<hash_type>::max)()), freeIndexes(), s()
     {
         for(int i=0; i<max; ++i){
             freeIndexes.enqueue(i);
         }
     }
 
-    bool contains(uint hash){
+    bool contains(hash_type hash){
         return hashes.contains(hash);
     }
-    int indexOf(uint hash){
+    int indexOf(hash_type hash){
         return hashes.indexOf(hash);
     }
-    void insert(int index, uint hash, Callable&& clb){
+    void insert(int index, hash_type hash, Callable&& clb){
         hashes[index] = hash;
         s[hash] = new storage<Callable>(std::forward<Callable>(clb));
     }
-    void remove(uint hash){
+    void remove(hash_type hash){
         if(s.contains(hash)){
             storage<Callable>* stor = s.take(hash);
             delete stor;
             int idx = hashes.indexOf(hash);
             if(idx<=0){
-                hashes[idx] = UINT_MAX;
+                hashes[idx] = (std::numeric_limits<hash_type>::max)();
                 freeIndexes.enqueue(idx);
             }
         }
@@ -96,13 +91,17 @@ public:
         return s.value(hashes.at(index));
     }
 private:
-    QVector<uint> hashes;
+    QVector<hash_type> hashes;
     QQueue<int> freeIndexes;
-    QHash<uint,storage<Callable>*> s;
+    QHash<hash_type,storage<Callable>*> s;
 };
 
 #ifdef INSERT_FUNCTION
 #undef INSERT_FUNCTION
+#endif
+
+#ifndef QTJAMBI_THROW_EXCEPTION
+#define QTJAMBI_THROW_EXCEPTION(Exception,env,Message) Q_UNUSED(env)
 #endif
 
 #define INSERT_FUNCTION(N)\
@@ -110,7 +109,8 @@ private:
         storage<Callable>* stor = callables->value(N);\
         if(!stor){\
             if(JNIEnv *env = qtjambi_current_environment()){\
-                JavaException::raiseNullPointerException(env, "Function pointer is null." QTJAMBI_STACKTRACEINFO );\
+                QTJAMBI_JNI_LOCAL_FRAME(env, 100)\
+                QTJAMBI_THROW_EXCEPTION(NullPointerException, env, "Function pointer is null.")\
             }\
         }\
         return stor ? Ret(stor->callable(std::forward<Args>(args)...)) : Ret();\
@@ -199,7 +199,7 @@ struct FunctionCreator<0>{
 };
 
 template<int max, typename Fn, typename Callable>
-Fn* qtjambi_function_pointer(Callable&& c, uint hash = 0, std::function<void()>* deleterFunction = nullptr, std::function<const Callable*(Fn*)>* reverseFunctionGetter = nullptr)
+Fn* qtjambi_function_pointer(Callable&& c, hash_type hash = 0, std::function<void()>* deleterFunction = nullptr, std::function<const Callable*(Fn*)>* reverseFunctionGetter = nullptr)
 {
     static CallableHash<Callable> callables(max*64);
     static QVector<Fn*> functions([](CallableHash<Callable>* chash) -> QVector<Fn*> {

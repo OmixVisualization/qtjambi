@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,10 +28,12 @@
 ****************************************************************************/
 
 
-#include <QtCore>
-#include "qtjambi_repository_p.h"
-#include "qtjambi_interfaces.h"
+#include <QtCore/QHash>
+#include <QtCore/QVector>
+#include <QtCore/QString>
 #include "qtjambi_core.h"
+#include "qtjambi_repository_p.h"
+#include "qtjambi_interfaces_p.h"
 #include "qtjambi_registry_p.h"
 #include "qtjambitypemanager_p.h"
 
@@ -50,7 +52,7 @@ typedef QHash<jint,SuperTypeInfos> SuperTypeInfosMap;
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gSuperTypeInfosLock, (QReadWriteLock::Recursive))
 Q_GLOBAL_STATIC(SuperTypeInfosMap, gSuperTypeInfosMap)
 
-const QVector<ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
+const QVector<const ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
 void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes)
@@ -65,7 +67,7 @@ void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes
             jclass cls;
             if(c==QLatin1Char('L')){
                 signature = signature.mid(1);
-                int idx = signature.indexOf(QLatin1Char(';'));
+                auto idx = signature.indexOf(QLatin1Char(';'));
                 Q_ASSERT(idx>0);
                 QString className = signature.mid(0, idx);
                 cls = resolveClass(env, qPrintable(className));
@@ -102,22 +104,183 @@ void resolveClasses(JNIEnv *env, QString signature, QList<jclass> &argumentTypes
     }
 }
 
+SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
+                const QString& _className,
+                jclass _javaClass,
+                size_t _size,
+                bool _hasShell,
+                size_t _offset,
+                const QVector<ResolvedConstructorInfo>& _constructorInfos,
+                Destructor _destructor,
+                PtrOwnerFunction _ownerFunction,
+                const std::type_info& typeId)
+    : m_qtName(_qtName),
+      m_className(_className),
+      m_javaClass(_javaClass),
+      m_size(_size),
+      m_hasShell(_hasShell),
+      m_offset(_offset),
+      m_constructorInfos(_constructorInfos),
+      m_destructor(_destructor),
+      m_ownerFunction(_ownerFunction),
+      m_typeId(&typeId)
+{}
+
+SuperTypeInfo::SuperTypeInfo()
+    : m_qtName(nullptr),
+      m_className(),
+      m_javaClass(nullptr),
+      m_size(0),
+      m_hasShell(false),
+      m_offset(0),
+      m_constructorInfos(),
+      m_destructor(nullptr),
+      m_ownerFunction(nullptr),
+      m_typeId(nullptr)
+{}
+
+SuperTypeInfo::SuperTypeInfo(  const SuperTypeInfo& other )
+    : m_qtName(other.m_qtName),
+      m_className(other.m_className),
+      m_javaClass(other.m_javaClass),
+      m_size(other.m_size),
+      m_hasShell(other.m_hasShell),
+      m_offset(other.m_offset),
+      m_constructorInfos(other.m_constructorInfos),
+      m_destructor(other.m_destructor),
+      m_ownerFunction(other.m_ownerFunction),
+      m_typeId(other.m_typeId)
+{}
+
+SuperTypeInfo& SuperTypeInfo::operator=(  const SuperTypeInfo& other )
+{
+      m_qtName = other.m_qtName;
+      m_className = other.m_className;
+      m_javaClass = other.m_javaClass;
+      m_size = other.m_size;
+      m_hasShell = other.m_hasShell;
+      m_offset = other.m_offset;
+      m_constructorInfos = other.m_constructorInfos;
+      m_destructor = other.m_destructor;
+      m_ownerFunction = other.m_ownerFunction;
+      m_typeId = other.m_typeId;
+      return *this;
+}
+
+SuperTypeInfo& SuperTypeInfo::operator=(  SuperTypeInfo&& other )
+{
+      m_qtName = std::move(other.m_qtName);
+      m_className = std::move(other.m_className);
+      m_javaClass = std::move(other.m_javaClass);
+      m_size = std::move(other.m_size);
+      m_hasShell = std::move(other.m_hasShell);
+      m_offset = std::move(other.m_offset);
+      m_constructorInfos = std::move(other.m_constructorInfos);
+      m_destructor = std::move(other.m_destructor);
+      m_ownerFunction = std::move(other.m_ownerFunction);
+      m_typeId = std::move(other.m_typeId);
+      return *this;
+}
+
+SuperTypeInfo::SuperTypeInfo(  SuperTypeInfo&& other )
+    : m_qtName(std::move(other.m_qtName)),
+      m_className(std::move(other.m_className)),
+      m_javaClass(std::move(other.m_javaClass)),
+      m_size(std::move(other.m_size)),
+      m_hasShell(std::move(other.m_hasShell)),
+      m_offset(std::move(other.m_offset)),
+      m_constructorInfos(std::move(other.m_constructorInfos)),
+      m_destructor(std::move(other.m_destructor)),
+      m_ownerFunction(std::move(other.m_ownerFunction)),
+      m_typeId(std::move(other.m_typeId))
+{}
+
+void SuperTypeInfo::swap(SuperTypeInfo& other){
+    qSwap(m_qtName, other.m_qtName);
+    m_className.swap(other.m_className);
+    qSwap(m_javaClass, other.m_javaClass);
+    qSwap(m_size, other.m_size);
+    qSwap(m_hasShell, other.m_hasShell);
+    qSwap(m_offset, other.m_offset);
+    m_constructorInfos.swap(other.m_constructorInfos);
+    qSwap(m_destructor, other.m_destructor);
+    qSwap(m_ownerFunction, other.m_ownerFunction);
+    qSwap(m_typeId, other.m_typeId);
+}
+
+void swap(SuperTypeInfo& a, SuperTypeInfo& b) noexcept {
+    a.swap(b);
+}
+
+const std::type_info& SuperTypeInfo::typeId() const {
+    Q_ASSERT(m_typeId);
+    return *m_typeId;
+}
+
+const char* SuperTypeInfo::qtName() const {
+    return m_qtName;
+}
+
+const QString& SuperTypeInfo::className() const {
+    return m_className;
+}
+
+jclass SuperTypeInfo::javaClass() const {
+    return m_javaClass;
+}
+
+size_t SuperTypeInfo::size() const {
+    return m_size;
+}
+
+bool SuperTypeInfo::hasShell() const {
+    return m_hasShell;
+}
+
+size_t SuperTypeInfo::offset() const {
+    return m_offset;
+}
+
+const QVector<ResolvedConstructorInfo>& SuperTypeInfo::constructorInfos() const {
+    return m_constructorInfos;
+}
+
+Destructor SuperTypeInfo::destructor() const {
+    return m_destructor;
+}
+
+PtrOwnerFunction SuperTypeInfo::ownerFunction() const {
+    return m_ownerFunction;
+}
+
+
 SuperTypeInfos::SuperTypeInfos(JNIEnv *env, jobject obj) : QVector<SuperTypeInfo>(), m_interfaceList(env, obj){}
 
 jobject SuperTypeInfos::interfaceList(JNIEnv *env) const{
     return env->NewLocalRef(m_interfaceList.object());
 }
 
-void clear_supertypes_at_shutdown(){
-    QReadLocker locker(gSuperTypeInfosLock());
-    Q_UNUSED(locker)
-    gSuperTypeInfosMap->clear();
+void clear_supertypes_at_shutdown(JNIEnv *env){
+    SuperTypeInfosMap superTypeInfosMap;
+    {
+        QWriteLocker locker(gSuperTypeInfosLock());
+        Q_UNUSED(locker)
+        superTypeInfosMap.swap(*gSuperTypeInfosMap);
+    }
+    for(SuperTypeInfos& info : superTypeInfosMap){
+        info.m_interfaceList.clear(env);
+    }
+}
+
+bool hasSuperTypeInfos(JNIEnv *env, jclass clazz)
+{
+    return !getSuperTypeInfos(env, clazz).isEmpty();
 }
 
 const SuperTypeInfos& getSuperTypeInfos(JNIEnv *env, jclass clazz)
 {
     if(clazz){
-        jint hashCode = Java::Private::Runtime::Object.hashCode(env,clazz);
+        jint hashCode = Java::Runtime::Object::hashCode(env,clazz);
         {
             QReadLocker locker(gSuperTypeInfosLock());
             Q_UNUSED(locker)
@@ -126,7 +289,7 @@ const SuperTypeInfos& getSuperTypeInfos(JNIEnv *env, jclass clazz)
             }
         }
         {
-            jobject interfaceList = Java::Private::QtJambi::QtJambiInternal.getImplementedInterfaces(env, clazz);
+            jobject interfaceList = Java::QtJambi::QtJambiInternal::getImplementedInterfaces(env, clazz);
             SuperTypeInfos superTypeInfos(env, interfaceList);
             size_t offset = 0;
             if(jclass closestQtClass = resolveClosestQtSuperclass(env, clazz, nullptr)){
@@ -134,28 +297,28 @@ const SuperTypeInfos& getSuperTypeInfos(JNIEnv *env, jclass clazz)
                 QString className = qtjambi_class_name(env, closestQtClass).replace('.', '/');
                 if(const std::type_info* typeId = getTypeByJavaName(className)){
                     const char* qtName = getQtName(*typeId);
-                    size_t size = qtjambi_shell_size_for_class(env, closestQtClass);
+                    size_t size = getShellSize(*typeId);
                     bool hasShell = true;
                     if(size==0){
                         hasShell = false;
-                        size = qtjambi_value_size_for_class(env, closestQtClass);
+                        size = getValueSize(*typeId);
                     }
-                    const QVector<ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
+                    const QVector<const ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
                     Destructor destructor = registeredDestructor(*typeId);
                     QVector<ResolvedConstructorInfo> resolvedConstructorInfos;
                     if(constructorInfos && destructor){
                         resolvedConstructorInfos.resize(constructorInfos->size());
                         for (int i=0; i<constructorInfos->size(); ++i) {
                             const ConstructorInfo& info = constructorInfos->at(i);
-                            QList<jclass> argumentTypes;
+                            resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                             if(info.signature){
-                                resolveClasses(env, QLatin1String(info.signature), argumentTypes);
+                                resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
                             }
-                            resolvedConstructorInfos[i] = ResolvedConstructorInfo(info.constructorFunction, argumentTypes);
                         }
                     }
-                    if(Java::Private::QtCore::QObject.isAssignableFrom(env, closestQtClass)){
-                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, [](void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId);
+                    Java::QtJambi::QtJambiInternal::checkImplementation(env, closestQtClass, clazz);
+                    if(Java::QtCore::QObject::isAssignableFrom(env, closestQtClass)){
+                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, [](const void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId);
                     }else{
                         superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId);
                     }
@@ -171,28 +334,32 @@ const SuperTypeInfos& getSuperTypeInfos(JNIEnv *env, jclass clazz)
                     QString className = qtjambi_class_name(env, interfaceClass).replace('.', '/');
                     if(const std::type_info* typeId = getTypeByJavaName(className)){
                         const char* qtName = getQtName(*typeId);
-                        size_t size = qtjambi_shell_size_for_class(env, interfaceClass);
-                        const QVector<ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
+                        size_t size = getShellSize(*typeId);
+                        bool hasShell = true;
+                        if(size==0){
+                            hasShell = false;
+                            size = getValueSize(*typeId);
+                        }
+                        const QVector<const ConstructorInfo>* constructorInfos = registeredConstructorInfos(*typeId);
                         Destructor destructor = registeredDestructor(*typeId);
                         if(qtName && size>0 && constructorInfos && !constructorInfos->isEmpty() && destructor){
-                            Java::Private::QtJambi::QtJambiInternal.checkInterfaceImplementation(env, interfaceClass, clazz, nullptr);
+                            Java::QtJambi::QtJambiInternal::checkImplementation(env, interfaceClass, clazz);
                             QVector<ResolvedConstructorInfo> resolvedConstructorInfos(constructorInfos->size());
                             for (int i=0; i<constructorInfos->size(); ++i) {
                                 const ConstructorInfo& info = constructorInfos->at(i);
-                                QList<jclass> argumentTypes;
+                                resolvedConstructorInfos[i].constructorFunction = info.constructorFunction;
                                 if(info.signature){
-                                    resolveClasses(env, QLatin1String(info.signature), argumentTypes);
+                                    resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
                                 }
-                                resolvedConstructorInfos[i] = ResolvedConstructorInfo(info.constructorFunction, argumentTypes);
                             }
-                            superTypeInfos << SuperTypeInfo(qtName, className, getGlobalClassRef(env, interfaceClass, qPrintable(className)), size, true, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId);
+                            superTypeInfos << SuperTypeInfo(qtName, className, getGlobalClassRef(env, interfaceClass, qPrintable(className)), size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId);
                             offset += size + sizeof(void*);
                         }else{
-                            jthrowable t = Java::Private::QtJambi::QInterfaceCannotBeSubclassedException.newInstance(env, interfaceClass);
+                            jthrowable t = Java::QtJambi::QInterfaceCannotBeSubclassedException::newInstance(env, interfaceClass);
                             JavaException(env, t).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
                         }
                     }else{
-                        jthrowable t = Java::Private::QtJambi::QInterfaceCannotBeSubclassedException.newInstance(env, interfaceClass);
+                        jthrowable t = Java::QtJambi::QInterfaceCannotBeSubclassedException::newInstance(env, interfaceClass);
                         JavaException(env, t).raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
                     }
                 }
@@ -201,7 +368,7 @@ const SuperTypeInfos& getSuperTypeInfos(JNIEnv *env, jclass clazz)
             Q_UNUSED(locker)
             if(gSuperTypeInfosMap->contains(hashCode)) // if it has been inserted meanwhile by other thread
                 return (*gSuperTypeInfosMap)[hashCode];
-            gSuperTypeInfosMap->insert(hashCode, superTypeInfos);
+            (*gSuperTypeInfosMap)[hashCode] = std::move(superTypeInfos);
             return (*gSuperTypeInfosMap)[hashCode];
         }
     }

@@ -24,7 +24,10 @@ public:
     const DocClass* getClass(const QString& name) const;
     const DocEnum* getEnum(const QString& name) const;
     QList<QString> classes() const;
+    const QString& url() const;
+    void setUrl(const QString& url);
 private:
+    QString m_url;
     QHash<QString,DocNamespace*> m_namespaces;
     QHash<QString,const DocEnum*> m_enums;
     QHash<QString,const DocClass*> m_classes;

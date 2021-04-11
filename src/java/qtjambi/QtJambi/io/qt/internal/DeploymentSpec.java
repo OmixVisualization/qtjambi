@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -53,8 +53,13 @@ import java.util.List;
 
 // NOTE the use of package level security on this class for any methods that may cause modification 
 class DeploymentSpec {
-    private String key;
-    private URL sourceUrl;
+    private String compiler;
+	private String configuration;
+    private String date;
+    private String time;
+    private String system;
+    private String version;
+	private URL sourceUrl;
     private File baseDir;
     private URL baseUrl;
     private List<LibraryEntry> libraries;
@@ -94,13 +99,6 @@ class DeploymentSpec {
 
     public URL buildUrl(String relativeUrl) throws MalformedURLException {
         return new URL(baseUrl, relativeUrl);
-    }
-
-    public String getKey() {
-        return key;
-    }
-    void setKey(String key) {
-        this.key = key;
     }
 
     public URL getSourceUrl() {
@@ -160,4 +158,51 @@ class DeploymentSpec {
     void setDirents(List<String> dirents) {
         this.dirents = dirents;
     }
+    public String getCompiler() {
+		return compiler;
+	}
+
+	public void setCompiler(String compiler) {
+		this.compiler = compiler;
+	}
+
+	public String getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(String configuration) {
+		this.configuration = configuration;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getTime() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+	public String getSystem() {
+		return system;
+	}
+
+	public void setSystem(String system) {
+		this.system = system;
+	}
+	
+    public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
 }

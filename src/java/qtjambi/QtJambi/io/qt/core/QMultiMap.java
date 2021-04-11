@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,127 +29,169 @@
 ****************************************************************************/
 package io.qt.core;
 
-import static io.qt.core.QMap.*;
+import static io.qt.core.QMap.__qt_QMap_begin;
+import static io.qt.core.QMap.__qt_QMap_clear;
+import static io.qt.core.QMap.__qt_QMap_contains;
+import static io.qt.core.QMap.__qt_QMap_count;
+import static io.qt.core.QMap.__qt_QMap_end;
+import static io.qt.core.QMap.__qt_QMap_find;
+import static io.qt.core.QMap.__qt_QMap_first;
+import static io.qt.core.QMap.__qt_QMap_firstKey;
+import static io.qt.core.QMap.__qt_QMap_insert;
+import static io.qt.core.QMap.__qt_QMap_key;
+import static io.qt.core.QMap.__qt_QMap_keys;
+import static io.qt.core.QMap.__qt_QMap_keysForValue;
+import static io.qt.core.QMap.__qt_QMap_last;
+import static io.qt.core.QMap.__qt_QMap_lastKey;
+import static io.qt.core.QMap.__qt_QMap_lowerBound;
+import static io.qt.core.QMap.__qt_QMap_operator_equal;
+import static io.qt.core.QMap.__qt_QMap_remove;
+import static io.qt.core.QMap.__qt_QMap_size;
+import static io.qt.core.QMap.__qt_QMap_take;
+import static io.qt.core.QMap.__qt_QMap_upperBound;
+import static io.qt.core.QMap.__qt_QMap_value;
+import static io.qt.core.QMap.createComparator;
+import static io.qt.internal.QtJambiInternal.nativeId;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
+import io.qt.internal.NativeAccess;
 
-
-public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
+/**
+ * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qmultimap.html">QMultiMap</a></p>
+ */
+public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V> implements Cloneable
 {
 	static {
     	io.qt.core.QtJambi_LibraryInitializer.init();
     }
 
-	private final long beginFunction;
-	private final long clearFunction;
-	private final long containsFunction;
-	private final long countObjectFunction;
-	private final long endFunction;
-	private final long findFunction;
-	private final long firstFunction;
-	private final long firstKeyFunction;
-	private final long insertFunction;
-	private final long keyFunction;
-	private final long keysFunction;
-	private final long keysForValueFunction;
-	private final long lastFunction;
-	private final long lastKeyFunction;
-	private final long lowerBoundFunction;
-	private final long equalFunction;
-	private final long removeAllFunction;
-	private final long sizeFunction;
-	private final long takeFunction;
-	private final long uniqueKeysFunction;
-	private final long uniteFunction;
-	private final long upperBoundFunction;
-	private final long valueFunction;
-	private final long valuesFunction;
-	private final long valuesKeyFunction;
-	private final long containsPairFunction;
-	private final long countPairFunction;
-	private final long findPairFunction;
-	private final long removeAllPairFunction;
-	private final long replaceOneFunction;
-	
-    private QMultiMap(Class<K> keyType, Class<V> valueType, long beginFunction, long clearFunction, long containsFunction,
-			long countObjectFunction, long endFunction, long findFunction, long firstFunction,
-			long firstKeyFunction, long insertFunction, long keyFunction, long keysFunction, long keysForValueFunction,
-			long lastFunction, long lastKeyFunction, long lowerBoundFunction, long equalFunction,
-			long removeAllFunction, long sizeFunction, long takeFunction, long uniqueKeysFunction, long uniteFunction,
-			long upperBoundFunction, long valueFunction, long valuesFunction, long valuesKeyFunction,
-			long containsPairFunction, long countPairFunction, long findPairFunction, long removeAllPairFunction,
-			long replaceOneFunction) {
-		super(null, keyType, valueType);
-		this.beginFunction = beginFunction;
-		this.clearFunction = clearFunction;
-		this.containsFunction = containsFunction;
-		this.countObjectFunction = countObjectFunction;
-		this.endFunction = endFunction;
-		this.findFunction = findFunction;
-		this.firstFunction = firstFunction;
-		this.firstKeyFunction = firstKeyFunction;
-		this.insertFunction = insertFunction;
-		this.keyFunction = keyFunction;
-		this.keysFunction = keysFunction;
-		this.keysForValueFunction = keysForValueFunction;
-		this.lastFunction = lastFunction;
-		this.lastKeyFunction = lastKeyFunction;
-		this.lowerBoundFunction = lowerBoundFunction;
-		this.equalFunction = equalFunction;
-		this.removeAllFunction = removeAllFunction;
-		this.sizeFunction = sizeFunction;
-		this.takeFunction = takeFunction;
-		this.uniqueKeysFunction = uniqueKeysFunction;
-		this.uniteFunction = uniteFunction;
-		this.upperBoundFunction = upperBoundFunction;
-		this.valueFunction = valueFunction;
-		this.valuesFunction = valuesFunction;
-		this.valuesKeyFunction = valuesKeyFunction;
-		this.containsPairFunction = containsPairFunction;
-		this.countPairFunction = countPairFunction;
-		this.findPairFunction = findPairFunction;
-		this.removeAllPairFunction = removeAllPairFunction;
-		this.replaceOneFunction = replaceOneFunction;
+    @NativeAccess
+    protected QMultiMap(QPrivateConstructor p) {
+		super(p);
 	}
 	
-    private QMultiMap(Class<K> keyType, Class<V> valueType, long beginFunction, long containsFunction,
-			long countObjectFunction, long endFunction, long findFunction, long firstFunction,
-			long firstKeyFunction, long keyFunction, long keysFunction, long keysForValueFunction,
-			long lastFunction, long lastKeyFunction, long lowerBoundFunction, long equalFunction,
-			long sizeFunction, long uniqueKeysFunction,  long upperBoundFunction, 
-			long valueFunction, long valuesFunction, long valuesKeyFunction,
-			long containsPairFunction, long countPairFunction, long findPairFunction) {
-    	this(keyType, valueType, beginFunction, 0, containsFunction, countObjectFunction, 
-    			endFunction, findFunction, firstFunction, firstKeyFunction, 
-    			0, keyFunction, keysFunction, keysForValueFunction, 
-    			lastFunction, lastKeyFunction, lowerBoundFunction, 
-    			equalFunction, 0, sizeFunction, 0, uniqueKeysFunction, sizeFunction, 
-    			upperBoundFunction, valueFunction, valuesFunction, valuesKeyFunction,
-    			containsPairFunction, countPairFunction, findPairFunction, 0, 0);
+	public QMultiMap(Class<K> keyType, QMetaType.Type valueMetaType) {
+		this(keyType, new QMetaType(valueMetaType));
+	}
+	
+	public QMultiMap(QMetaType.Type keyMetaType, Class<V> valueType) {
+		this(new QMetaType(keyMetaType), valueType);
+	}
+	
+	public QMultiMap(QMetaType.Type keyMetaType, QMetaType valueMetaType) {
+		this(new QMetaType(keyMetaType), valueMetaType);
+	}
+	
+	public QMultiMap(QMetaType keyMetaType, QMetaType.Type valueMetaType) {
+		this(keyMetaType, new QMetaType(valueMetaType));
+	}
+	
+	public QMultiMap(QMetaType.Type keyMetaType, QMetaType.Type valueMetaType) {
+		this(new QMetaType(keyMetaType), new QMetaType(valueMetaType));
+	}
+    
+    public QMultiMap(Class<K> keyType, Class<V> valueType) {
+		super(null);
+		QMetaType keyMetaType = QMetaType.fromType(keyType);
+		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
+		initialize(keyType, nativeId(keyMetaType), valueType, nativeId(valueMetaType), null);
+	}
+    
+    public QMultiMap(Map<K,List<V>> other) {
+		super(null);
+		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(other);
+		if(metaTypes.first.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
+		if(metaTypes.first.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
+		if(metaTypes.second.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
+		if(metaTypes.second.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
+		initialize(metaTypes.first.javaType(), nativeId(metaTypes.first), metaTypes.second.javaType(), nativeId(metaTypes.second), other);
+	}
+    
+	public QMultiMap(Class<K> keyType, QMetaType valueMetaType) {
+		super(null);
+		QMetaType keyMetaType = QMetaType.fromType(keyType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
+		initialize(keyType, nativeId(keyMetaType), valueMetaType.javaType(), nativeId(valueMetaType), null);
+	}
+    
+	public QMultiMap(QMetaType keyMetaType, Class<V> valueType) {
+		super(null);
+		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
+		initialize(keyMetaType.javaType(), nativeId(keyMetaType), valueMetaType.javaType(), nativeId(valueMetaType), null);
+	}
+    
+	public QMultiMap(QMetaType keyMetaType, QMetaType valueMetaType) {
+		super(null);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
+		initialize(keyMetaType.javaType(), nativeId(keyMetaType), valueMetaType.javaType(), nativeId(valueMetaType), null);
+	}
+    
+    @QtUninvokable
+    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<K, List<V>> other);
+    
+    @Override
+	public QMultiMap<K,V> clone(){
+		return new QMultiMap<>(this);
 	}
     
 	@QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> begin()    {
-        if(beginFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_begin(io.qt.internal.QtJambiInternal.checkedNativeId(this), beginFunction);
+        return __qt_QMap_begin(nativeId(this));
     }
 
     @QtUninvokable
     public final void clear()    {
-        if(clearFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QMap_clear(io.qt.internal.QtJambiInternal.checkedNativeId(this), clearFunction);
+        __qt_QMap_clear(nativeId(this));
     }
 
     @QtUninvokable
     public final boolean contains(K key)    {
-        if(containsFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_contains(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, containsFunction);
+        try{
+        	return __qt_QMap_contains(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
 
     @QtUninvokable
@@ -159,44 +201,50 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
 
     @QtUninvokable
     public final int count(K key)    {
-        if(countObjectFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_count(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, countObjectFunction);
+        try{
+        	return __qt_QMap_count(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
 
     @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {
-        if(endFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_end(io.qt.internal.QtJambiInternal.checkedNativeId(this), endFunction);
+        return __qt_QMap_end(nativeId(this));
     }
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key)    {
-        if(findFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_find(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, findFunction);
+        try{
+        	return __qt_QMap_find(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
 
     @QtUninvokable
     public final V first()    {
-        if(firstFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_first(io.qt.internal.QtJambiInternal.checkedNativeId(this), firstFunction);
+        return __qt_QMap_first(nativeId(this));
     }
 
     @QtUninvokable
     public final K firstKey()    {
-        if(firstKeyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_firstKey(io.qt.internal.QtJambiInternal.checkedNativeId(this), firstKeyFunction);
+        return __qt_QMap_firstKey(nativeId(this));
     }
 
     @QtUninvokable
     public final void insert(K key, V value)    {
-        if(insertFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QMap_insert(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, insertFunction);
+        try{
+        	__qt_QMap_insert(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
     }
 
     @QtUninvokable
@@ -210,95 +258,106 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
     }
     @QtUninvokable
     public final K key(V value, K defaultKey)    {
-        if(keyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_key(io.qt.internal.QtJambiInternal.checkedNativeId(this), value, defaultKey, keyFunction);
+        try{
+        	return __qt_QMap_key(nativeId(this), value, defaultKey);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, valueMetaType(), value);
+        }
     }
 
     @QtUninvokable
     public final java.util.List<K> keys()    {
-        if(keysFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_keys(io.qt.internal.QtJambiInternal.checkedNativeId(this), keysFunction);
+        return __qt_QMap_keys(nativeId(this));
     }
 
     @QtUninvokable
     public final java.util.List<K> keys(V value)    {
-        if(keysForValueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_keysForValue(io.qt.internal.QtJambiInternal.checkedNativeId(this), value, keysForValueFunction);
+        try{
+        	return __qt_QMap_keysForValue(nativeId(this), value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, valueMetaType(), value);
+        }
     }
 
     @QtUninvokable
     public final V last()    {
-        if(lastFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_last(io.qt.internal.QtJambiInternal.checkedNativeId(this), lastFunction);
+        return __qt_QMap_last(nativeId(this));
     }
 
     @QtUninvokable
     public final K lastKey()    {
-        if(lastKeyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_lastKey(io.qt.internal.QtJambiInternal.checkedNativeId(this), lastKeyFunction);
+        return __qt_QMap_lastKey(nativeId(this));
     }
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> lowerBound(K key)    {
-        if(lowerBoundFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_lowerBound(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, lowerBoundFunction);
+        try{
+        	return __qt_QMap_lowerBound(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Map<K,V> other)    {
-        if(equalFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_operator_equal(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, equalFunction);
+        return __qt_QMap_operator_equal(nativeId(this), other);
     }
 
     @QtUninvokable
     public final int removeAll(Object key)    {
-        if(removeAllFunction==0)
-        	throw new UnsupportedOperationException();
-        if(checkKey(key))
-        	return __qt_QMap_remove(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, removeAllFunction);
-        else return 0;
+        try{
+        	return __qt_QMap_remove(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return 0;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return 0;
+    	}
     }
 
     @QtUninvokable
     public final int size()    {
-        if(sizeFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_size(io.qt.internal.QtJambiInternal.checkedNativeId(this), sizeFunction);
+        return __qt_QMap_size(nativeId(this));
     }
 
     @QtUninvokable
     public final V take(K key)    {
-        if(takeFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_take(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, takeFunction);
+    	try {
+    		return __qt_QMap_take(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+    	}
     }
 
     @QtUninvokable
     public final java.util.List<K> uniqueKeys()    {
-        if(uniqueKeysFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_uniqueKeys(io.qt.internal.QtJambiInternal.checkedNativeId(this), uniqueKeysFunction);
+        return __qt_QMultiMap_uniqueKeys(nativeId(this));
     }
+    @QtUninvokable
+    static native <K> java.util.List<K> __qt_QMultiMap_uniqueKeys(long __this__nativeId);
 
     @QtUninvokable
     public final void unite(java.util.Map<? super K,? extends java.util.Collection<? super V>> other)    {
-        if(uniteFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QMap_unite(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, uniteFunction);
+        __qt_QMultiMap_unite(nativeId(this), other);
     }
+    @QtUninvokable
+    static native void __qt_QMultiMap_unite(long __this__nativeId, Object other);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> upperBound(K key)    {
-        if(upperBoundFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_upperBound(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, upperBoundFunction);
+        return __qt_QMap_upperBound(nativeId(this), key);
     }
 
 
@@ -309,78 +368,109 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
     
     @QtUninvokable
     public final V value(K key, V defaultValue)    {
-        if(valueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_value(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, defaultValue, valueFunction);
+        try{
+        	return __qt_QMap_value(nativeId(this), key, defaultValue);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, defaultValue);
+        }
     }
 
     @Override
     @QtUninvokable
-    public java.util.Collection<java.util.List<V>> values() {
+    public final java.util.Collection<java.util.List<V>> values() {
+    	long id = nativeId(this);
         java.util.List<java.util.List<V>> result = new java.util.ArrayList<>();
-        for(K key : keys()) {
-            result.add(values(key));
+        for(Object key : __qt_QMap_keys(id)) {
+            result.add(__qt_QMultiMap_valuesKey(id, key));
         }
         return result;
     }
 
     @QtUninvokable
     public final java.util.List<V> values(K key)    {
-        if(valuesKeyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMap_valuesKey(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, valuesKeyFunction);
+        try{
+        	return __qt_QMultiMap_valuesKey(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
+    @QtUninvokable
+    private static native <K,V> java.util.List<V> __qt_QMultiMap_valuesKey(long __this__nativeId, K key);
     
     @QtUninvokable
     public final boolean contains(K key, V value)    {
-        if(containsPairFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMultiMap_contains(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, containsPairFunction);
+        try{
+        	return __qt_QMultiMap_contains(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
     }
     @QtUninvokable
-    private static native <K,V> boolean __qt_QMultiMap_contains(long __this__nativeId, K key, V value, long containsPairFunction);
+    private static native <K,V> boolean __qt_QMultiMap_contains(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final int count(K key, V value)    {
-        if(countPairFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMultiMap_count(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, countPairFunction);
+        try{
+        	return __qt_QMultiMap_count(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
     }
     @QtUninvokable
-    private static native <K,V> int __qt_QMultiMap_count(long __this__nativeId, K key, V value, long countPairFunction);
+    private static native <K,V> int __qt_QMultiMap_count(long __this__nativeId, K key, V value);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key, V value)    {
-        if(findPairFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMultiMap_find(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, findPairFunction);
+        try{
+        	return __qt_QMultiMap_find(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
     }
     @QtUninvokable
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QMultiMap_find(long __this__nativeId, K key, long findPairFunction);
+    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QMultiMap_find(long __this__nativeId, K key);
     
     @QtUninvokable
     public final int removeAll(K key, V value)    {
-        if(removeAllPairFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QMultiMap_remove(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, removeAllPairFunction);
+    	try{
+    		return __qt_QMultiMap_remove(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+    	}
     }
     @QtUninvokable
-    static native <K,V> int __qt_QMultiMap_remove(long __this__nativeId, K key, V value, long removeAllPairFunction);
+    static native <K,V> int __qt_QMultiMap_remove(long __this__nativeId, K key, V value);
     
     @QtUninvokable
     public final void replaceOne(K key, V value)    {
-        if(replaceOneFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QMultiMap_replace(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, replaceOneFunction);
+        try{
+        	__qt_QMultiMap_replace(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+        }
     }
     @QtUninvokable
-    static native <K,V> void __qt_QMultiMap_replace(long __this__nativeId, K key, V value, long replaceOneFunction);
+    static native <K,V> void __qt_QMultiMap_replace(long __this__nativeId, K key, V value);
 
     @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
-        if (other instanceof java.util.Map) {
+        if (other instanceof java.util.Map && QMap.checkContainerType(this.keyMetaType(), this.valueMetaType(), (java.util.Map<?,?>) other)) {
             return operator_equal((java.util.Map<K,V>) other);
         }
         return false;
@@ -388,46 +478,88 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
 
     @Override
     @QtUninvokable
-    public java.util.Comparator<K> comparator(){
-        return (o1,o2)->lessThan(o1, o2) ? -1 : (lessThan(o2, o1) ? 1 : 0);
-    }
-
-    @QtUninvokable
-    static native <K> boolean lessThan(K key1, K key2);
-
-    @Override
-    @QtUninvokable
-    public boolean containsKey(Object key){
-        return checkKey(key) ? contains(castKey(key)) : false;
+    public final java.util.Comparator<K> comparator(){
+    	return createComparator(keyMetaType().javaType(), this);
     }
 
     @Override
     @QtUninvokable
-    public List<V> get(Object key){
-        return checkKey(key) ? values(castKey(key)) : Collections.emptyList();
+    public final boolean containsKey(Object key){
+        try{
+        	return __qt_QMap_contains(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return false;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return false;
+        }
     }
 
     @Override
     @QtUninvokable
-    public java.util.List<V> put(K key, java.util.List<V> values){
+    public final List<V> get(Object key){
+		try{
+			return __qt_QMultiMap_valuesKey(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return null;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return null;
+		}
+    }
+
+    @Override
+    @QtUninvokable
+    public final java.util.List<V> put(K key, java.util.List<V> values){
     	java.util.List<V> old = values(key);
     	for(V value : values)
     		insert(key, value);
         return old;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @QtUninvokable
-    public java.util.List<V> remove(Object key){
-		if(checkKey(key)) {
-            return Collections.singletonList(take(castKey(key)));
-        }else return Collections.emptyList();
+    public final java.util.List<V> remove(Object key){
+        try{
+        	java.util.List<V> result = __qt_QMultiMap_valuesKey(nativeId(this), (K)key);
+        	removeAll(key);
+        	return result;
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return Collections.emptyList();
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return Collections.emptyList();
+    	}
     }
 
     @Override
     @QtUninvokable
-    public boolean containsValue(Object value){
-        return checkValue(value) ? keys(castValue(value)).isEmpty() : false;
+    public final boolean containsValue(Object value){
+    	try {
+    		return __qt_QMap_keysForValue(nativeId(this), value).isEmpty();
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return false;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, valueMetaType(), value);
+    		if(e1==e)
+    			throw e;
+    		return false;
+    	}
     }
     
     @Override
@@ -437,5 +569,462 @@ public class QMultiMap<K,V> extends io.qt.internal.QtJambiMultiMapObject<K,V>
         for (QPair<K,V> e : this)
             hashCode = 31*hashCode + (e==null ? 0 : e.hashCode());
         return hashCode;
+    }
+    
+    @io.qt.QtUninvokable
+    public void writeTo(io.qt.core.QDataStream stream){
+        __qt_QMultiMap_writeTo(nativeId(this), nativeId(stream));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void __qt_QMultiMap_writeTo(long __this__nativeId, long stream);
+    
+    @io.qt.QtUninvokable
+    public void readFrom(io.qt.core.QDataStream stream){
+        __qt_QMultiMap_readFrom(nativeId(this), nativeId(stream));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void __qt_QMultiMap_readFrom(long __this__nativeId, long stream);
+    
+    @io.qt.QtUninvokable
+    final QMetaType keyMetaType() {
+    	return QMap.keyMetaType(nativeId(this));
+    }
+    
+    @io.qt.QtUninvokable
+    final QMetaType valueMetaType() {
+    	return QMap.valueMetaType(nativeId(this));
+    }
+    
+    /**
+     * Returns a QMultiMap containing a single mapping.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the mapping's key
+     * @param v1 the mapping's value
+     * @return a {@code QMultiMap} containing the specified mapping
+     * @throws NullPointerException if the key or the value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1), 
+    			QList.findElementMetaType(v1));
+    	result.insert(k1, v1);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing two mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2), 
+    			QList.findElementMetaType(v1, v2));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing three mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3), 
+    			QList.findElementMetaType(v1, v2, v3));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing four mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4), 
+    			QList.findElementMetaType(v1, v2, v3, v4));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing five mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing six mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing seven mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing eight mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing nine mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param v9 the ninth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8, v9));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+    	result.insert(k9, v9);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing ten mappings.
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param v9 the ninth mapping's value
+     * @param k10 the tenth mapping's key
+     * @param v10 the tenth mapping's value
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QMultiMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
+    	QMultiMap<K, V> result = new QMultiMap<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9, k10), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+    	result.insert(k9, v9);
+    	result.insert(k10, v10);
+        return result;
+    }
+
+    /**
+     * Returns a QMultiMap containing keys and values extracted from the given entries.
+     *
+     * @apiNote
+     * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.Map.entry;
+     *
+     *     QMultiMap<Integer,String> map = QMultiMap.ofEntries(
+     *         entry(1, "a"),
+     *         entry(2, "b"),
+     *         entry(3, "c"),
+     *         ...
+     *         entry(26, "z"));
+     * }</pre>
+     *
+     * @param <K> the {@code QMultiMap}'s key type
+     * @param <V> the {@code QMultiMap}'s value type
+     * @param entries {@code java.util.Map.Entry}s containing the keys and values from which the map is populated
+     * @return a {@code QMultiMap} containing the specified mappings
+     * @throws NullPointerException if any entry, key, or value is {@code null}, or if
+     *         the {@code entries} array is {@code null}
+     */
+    @SafeVarargs
+    public static <K, V> QMultiMap<K, V> ofEntries(Map.Entry<? extends K, ? extends V> entry0, Map.Entry<? extends K, ? extends V>... entries) {
+    	QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(entry0, entries);
+    	QMultiMap<K, V> result = new QMultiMap<>(metaTypes.first, metaTypes.second);
+    	result.insert(entry0.getKey(), entry0.getValue());
+    	for (Map.Entry<? extends K, ? extends V> entry : entries) {
+        	result.insert(entry.getKey(), entry.getValue());
+		}
+        return result;
+    }
+    
+	static <K,V> QPair<QMetaType,QMetaType> findMapMetaType(Map<K,List<V>> elements){
+        if(elements.getClass()==QMap.class) {
+            return new QPair<>(((QMap<?,?>)elements).keyMetaType(), ((QMap<?,?>)elements).valueMetaType());
+        }else if(elements.getClass()==QHash.class) {
+            return new QPair<>(((QHash<?,?>)elements).keyMetaType(), ((QHash<?,?>)elements).valueMetaType());
+        }else if(elements.getClass()==QMultiMap.class) {
+            return new QPair<>(((QMultiMap<K,V>)elements).keyMetaType(), ((QMultiMap<K,V>)elements).valueMetaType());
+        }else if(elements.getClass()==QMultiHash.class) {
+            return new QPair<>(((QMultiHash<K,V>)elements).keyMetaType(), ((QMultiHash<K,V>)elements).valueMetaType());
+        }else {
+        	QMetaType keyMetaType = new QMetaType();
+        	Class<?> keyType = null;
+        	QMetaType valueMetaType = new QMetaType();
+        	Class<?> valueType = null;
+        	for(Entry<K,List<V>> entry : elements.entrySet()) {
+        		Object key = entry.getKey();
+        		if(keyMetaType!=null) {
+    	    		QMetaType _result = QList.getMetaType(key);
+    	    		if(!keyMetaType.isValid() || keyMetaType.id()==QMetaType.Type.Nullptr.value())
+    	    			keyMetaType = _result;
+    	    		if(!_result.equals(keyMetaType)) {
+    	    			keyMetaType = null;
+    	    		}
+        		}
+        		if(key!=null) {
+        			if(keyType==null) {
+        				keyType = key.getClass();
+        			}else {
+        				Class<?> type2 = key.getClass();
+        				if(type2!=keyType) {
+        					if(type2.isAssignableFrom(keyType)) {
+        						keyType = type2;
+        					}else if(!keyType.isAssignableFrom(type2)) {
+        						do{
+        							keyType = keyType.getSuperclass();
+        						}while(!keyType.isAssignableFrom(type2));
+        					}
+        				}
+        			}
+    			}
+        		for(Object value : entry.getValue()) {
+	        		if(valueMetaType!=null) {
+	    	    		QMetaType _result = QList.getMetaType(value);
+	    	    		if(!valueMetaType.isValid() || valueMetaType.id()==QMetaType.Type.Nullptr.value())
+	    	    			valueMetaType = _result;
+	    	    		if(!_result.equals(valueMetaType)) {
+	    	    			valueMetaType = null;
+	    	    		}
+	        		}
+	        		if(value!=null) {
+	        			if(valueType==null) {
+	        				valueType = value.getClass();
+	        			}else {
+	        				Class<?> type2 = value.getClass();
+	        				if(type2!=valueType) {
+	        					if(type2.isAssignableFrom(valueType)) {
+	        						valueType = type2;
+	        					}else if(!valueType.isAssignableFrom(type2)) {
+	        						do{
+	        							valueType = valueType.getSuperclass();
+	        						}while(!valueType.isAssignableFrom(type2));
+	        					}
+	        				}
+	        			}
+	    			}
+        		}
+        	}
+        	if(keyMetaType==null)
+        		keyMetaType = QMetaType.fromType(keyType);
+        	if(valueMetaType==null)
+        		valueMetaType = QMetaType.fromType(valueType);
+        	return new QPair<>(keyMetaType, valueMetaType);
+        }
     }
 }

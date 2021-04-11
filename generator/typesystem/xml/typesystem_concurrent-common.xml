@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,6 +47,9 @@
     <rejection class="QtConcurrent" enum-name="enum_1" />
     <rejection class="QtConcurrent" function-name="operator|" />
     <rejection class="QtConcurrent" function-name="run" />
+    <rejection class="QtConcurrent" function-name="runWithPromise" />
+    <rejection class="QtConcurrent" function-name="task" />
+    <rejection class="QtConcurrent" function-name="startFiltered" />
     <rejection class="QtConcurrent::BlockSizeManager" />
     <rejection class="QtConcurrent::BlockSizeManagerV2" />
     <rejection class="QtConcurrent::ConstMemberFunctionWrapper" />
@@ -58,6 +61,7 @@
     <rejection class="QtConcurrent::FunctionWrapper1"/>
     <rejection class="QtConcurrent::FunctionWrapper2"/>
     <rejection class="QtConcurrent::IntermediateResults"/>
+    <rejection class="QtConcurrent::DefaultValueContainer"/>
     <rejection class="QtConcurrent::IterateKernel"/>
     <rejection class="QtConcurrent::MapKernel"/>
     <rejection class="QtConcurrent::MappedEachKernel"/>
@@ -195,6 +199,19 @@
     <rejection class="QtConcurrent::ThreadEngineBarrier" />
     <rejection class="QtConcurrent::internal" />
     <rejection class="QtConcurrent::StoredFunctorCall" />
+    <rejection class="QtConcurrent::FunctionResolver" />
+    <rejection class="QtConcurrent::FunctionResolverHelper" />
+    <rejection class="QtConcurrent::InvokeResult" />
+    <rejection class="QtConcurrent::MemberFunctionResolver" />
+    <rejection class="QtConcurrent::NonMemberFunctionResolver" />
+    <rejection class="QtConcurrent::NonPromiseTaskResolver" />
+    <rejection class="QtConcurrent::PromiseTaskResolver" />
+    <rejection class="QtConcurrent::QTaskBuilder" />
+    <rejection class="QtConcurrent::StoredFunctionCall" />
+    <rejection class="QtConcurrent::StoredFunctionCallWithPromise" />
+    <rejection class="QtConcurrent::TaskResolver" />
+    <rejection class="QtConcurrent::TaskResolverHelper" />
+    <rejection class="QtConcurrent::TaskStartParameters" />
 
     <namespace-type name="QtConcurrent" target-type="class">
         <extra-includes>
@@ -203,6 +220,7 @@
     </namespace-type>
     <enum-type name="QtConcurrent::ReduceOption" flags="QtConcurrent::ReduceOptions" />
     <enum-type name="QtConcurrent::ThreadFunctionResult" />
+    <enum-type name="QtConcurrent::FutureResult" />
     <object-type name="QtConcurrent::MedianDouble" />
 
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::selectIteration', unmatched parameter type 'T'" />

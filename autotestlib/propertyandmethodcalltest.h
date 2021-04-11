@@ -3,7 +3,9 @@
 
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
-#include <QtWidgets>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
@@ -73,6 +75,7 @@ public:
 
     JEnumWrapper receivedCustomEnum();
     QColor receivedColor();
+    QColor* receivedColorPtr();
     JEnumWrapper receivedCustomQtEnum();
     JObjectWrapper receivedQtFlags();
     JObjectWrapper receivedList();
@@ -85,6 +88,7 @@ public:
     static bool testMethodCallNumber(QObject* qobj);
     static bool testMethodCallEnum(QObject* qobj);
     static bool testMethodCallColor(QObject* qobj);
+    static bool testMethodCallColorPtr(QObject* qobj);
     static bool testMethodCallQtEnum(QObject* qobj);
     static bool testMethodCallDerivedQObject(QObject* qobj);
     static bool testMethodCallCustomQtEnum(QObject* qobj);
@@ -97,6 +101,7 @@ public:
     static bool testFetchPropertyNumber(QObject* qobj);
     static bool testFetchPropertyEnum(QObject* qobj);
     static bool testFetchPropertyColor(QObject* qobj);
+    static bool testFetchPropertyColorPtr(QObject* qobj);
     static bool testFetchPropertyQtEnum(QObject* qobj);
     static bool testFetchPropertyDerivedQObject(QObject* qobj);
     static bool testFetchPropertyCustomQtEnum(QObject* qobj);
@@ -113,6 +118,7 @@ public slots:
 private slots:
     void receiveCustomEnum(JEnumWrapper value);
     void receiveColor(QColor value);
+    void receiveColorPtr(QColor* value);
     void receiveCustomQtEnum(JEnumWrapper value);
     void receiveQtFlags(JObjectWrapper value);
     void receiveList(JObjectWrapper value);
@@ -125,6 +131,7 @@ private slots:
 private:
     JEnumWrapper m_receivedEnum;
     QColor m_receivedColor;
+    QColor* m_receivedColorPtr;
     JEnumWrapper m_receivedQtEnum;
     JObjectWrapper m_receivedQtFlags;
     JObjectWrapper m_receivedList;
@@ -134,5 +141,6 @@ private:
     JObjectWrapper m_receivedCustomJavaType;
     QObject* m_receivedDerivedQObject;
 };
+Q_DECLARE_METATYPE(QColor*)
 
 #endif // PROPERTYANDMETHODCALLTEST_H

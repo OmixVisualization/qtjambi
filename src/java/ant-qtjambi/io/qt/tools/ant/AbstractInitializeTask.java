@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -253,6 +253,44 @@ public abstract class AbstractInitializeTask extends Task {
 				mySetProperty(-1, "source.java.version", " (auto-detected)", minJavaVersion, false);
 			}
         }
+        return result;
+    }
+    
+    protected String decideJava8HomeTarget() {
+        String sourceValue = null;
+        String s = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA8_HOME_TARGET);
+        if(s == null) {
+            try {
+                s = System.getenv("JAVA8_HOME_TARGET");
+                if(s != null) {
+            		File includeDir = new File(s, "include");
+            		File jni_h = new File(includeDir, "jni.h");
+            		if(jni_h.isFile()) {
+                    	sourceValue = " (from envvar:JAVA8_HOME_TARGET)";
+            		}else {
+            			s = null;
+            		}
+                }
+            } catch(SecurityException eat) {
+            }
+        }
+        if(s == null) {
+            try {
+                s = System.getenv("JAVA8_HOME");
+                if(s != null) {
+            		File includeDir = new File(s, "include");
+            		File jni_h = new File(includeDir, "jni.h");
+            		if(jni_h.isFile()) {
+            			sourceValue = " (from envvar:JAVA8_HOME)";
+            		}else {
+            			s = null;
+            		}
+                }
+            } catch(SecurityException eat) {
+            }
+        }
+        String result = s;
+        mySetProperty(-1, Constants.JAVA8_HOME_TARGET, sourceValue, result, false);
         return result;
     }
 

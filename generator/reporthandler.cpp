@@ -42,30 +42,44 @@
 **
 ****************************************************************************/
 
+#include <QMutexLocker>
 #include "reporthandler.h"
 #include "typesystem/typedatabase.h"
 
-int ReportHandler::m_warning_count = 0;
+QReadWriteLock ReportHandler::m_lock;
 int ReportHandler::m_suppressed_count = 0;
-QString ReportHandler::m_context;
+QThreadStorage<QString> ReportHandler::m_context;
 ReportHandler::DebugLevel ReportHandler::m_debug_level = NoDebug;
-QSet<QString> ReportHandler::m_reported_warnings;
+QStringList ReportHandler::m_reported_warnings;
 
-const QSet<QString>& ReportHandler::reportedWarnings(){
+const QStringList& ReportHandler::reportedWarnings(){
+    QReadLocker locker(&m_lock);
     return m_reported_warnings;
 }
 
 void ReportHandler::warning(const QString &text) {
-    QString warningText = QString("WARNING(%1) :: %2").arg(m_context).arg(text);
+    QWriteLocker locker(&m_lock);
+    QString warningText = QString("WARNING(%1) :: %2").arg(m_context.localData()).arg(text);
 
     TypeDatabase *db = TypeDatabase::instance();
     if (db && db->isSuppressedWarning(warningText)) {
         ++m_suppressed_count;
     } else if (!m_reported_warnings.contains(warningText)) {
         qDebug("%s", qPrintable(warningText));
-        ++m_warning_count;
+        m_reported_warnings.append(warningText);
+    }
+}
 
-        m_reported_warnings.insert(warningText);
+void ReportHandler::error(const QString &text) {
+    QWriteLocker locker(&m_lock);
+    QString warningText = QString("ERROR(%1) :: %2").arg(m_context.localData()).arg(text);
+
+    TypeDatabase *db = TypeDatabase::instance();
+    if (db && db->isSuppressedWarning(warningText)) {
+        ++m_suppressed_count;
+    } else if (!m_reported_warnings.contains(warningText)) {
+        qDebug("%s", qPrintable(warningText));
+        m_reported_warnings.append(warningText);
     }
 }
 
@@ -74,5 +88,5 @@ void ReportHandler::debug(DebugLevel level, const QString &text) {
         return;
 
     if (level <= m_debug_level)
-        qDebug(" - DEBUG(%s) :: %s", qPrintable(m_context), qPrintable(text));
+        qDebug("DEBUG(%s) :: %s", qPrintable(m_context.localData()), qPrintable(text));
 }

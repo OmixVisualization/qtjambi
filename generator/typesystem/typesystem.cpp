@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -81,20 +81,19 @@ QString Include::toString() const {
  * which our typedefs unforntuatly expand to.
  */
 QString fixCppTypeName(const QString &name) {
-    int type;
     if (name == "qtjambireal"){
-        type = QMetaType::type("qreal");
+        return "qreal";
     }else{
-        type = QMetaType::type(name.toLatin1().constData());
-    }
-#if QT_VERSION < 0x050000
-    if(type>QMetaType::Void && type<=QMetaType::LastCoreExtType){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+        QMetaType metaType(QMetaType::type(name.toLatin1().constData()));
 #else
-    if(type>QMetaType::UnknownType && type<=QMetaType::HighestInternalId){
+        QMetaType metaType = QMetaType::fromName(name.toLatin1().constData());
 #endif
-        return QMetaType::typeName(type);
+        if(metaType.isValid() && metaType.id()<=QMetaType::HighestInternalId){
+            return metaType.name();
+        }
+        return name;
     }
-    return name;
 }
 
 QString formattedCodeHelper(QTextStream &s, Indentor &indentor, QStringList &lines) {

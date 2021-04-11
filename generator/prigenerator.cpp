@@ -47,16 +47,22 @@
 #include "fileout.h"
 
 void PriGenerator::addHeader(const QString &folder, const QString &header) {
+    QWriteLocker locker(&m_lock);
+    Q_UNUSED(locker)
     if(!priHash[folder].headers.contains(header))
         priHash[folder].headers << header;
 }
 
 void PriGenerator::addSource(const QString &folder, const QString &source) {
+    QWriteLocker locker(&m_lock);
+    Q_UNUSED(locker)
     if(!priHash[folder].sources.contains(source))
         priHash[folder].sources << source;
 }
 
 void PriGenerator::generate() {
+    QReadLocker locker(&m_lock);
+    Q_UNUSED(locker)
     QHashIterator<QString, Pri> pri(priHash);
     while (pri.hasNext()) {
         pri.next();

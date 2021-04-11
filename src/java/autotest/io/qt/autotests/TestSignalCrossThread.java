@@ -65,9 +65,9 @@ import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
+import io.qt.core.QTimer;
 import io.qt.core.Qt;
 import io.qt.internal.QtJambiThreadUtility;
-import io.qt.widgets.QApplication;
 
 // This testcase attempts to validate that the APIs allow and emit/deliver
 //  signals across threads correctly.
@@ -424,7 +424,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperThreadOut(Qt.ConnectionType connectionType) {
 		try {
 			MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
@@ -450,9 +449,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread));
 			assertTrue("thread is not alive: "+thread.getState(), thread.isAlive());
 			myImpl.signalShutdown();
-			int counter = 0;
-			while(counter++<1000 && QApplication.hasPendingEvents())
-				QApplication.processEvents();
+			QEventLoop loop = new QEventLoop();
+			QTimer.singleShot(2000, loop::quit);
+			loop.exec();
 			thread.join(1000);
 			assertEquals("caught exception", null, uncaughtExceptions.get(thread));
 			assertFalse("thread is alive: "+thread.getState(), thread.isAlive());
@@ -466,7 +465,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperQThreadOut(Qt.ConnectionType connectionType) {
 		try {
 			MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
@@ -493,9 +491,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
 			assertTrue("thread is not alive: "+thread, thread.isAlive());
 			myImpl.signalShutdown();
-			int counter = 0;
-			while(counter++<1000 && QApplication.hasPendingEvents())
-				QApplication.processEvents();
+			QEventLoop loop = new QEventLoop();
+			QTimer.singleShot(2000, loop::quit);
+			loop.exec();
 			thread.join(4000);
 			assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
 			assertFalse("thread is not alive: "+thread, thread.isAlive());
@@ -509,7 +507,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperImplThreadOut(Runnable threadStart, MyReceiver myReceiver, MyImpl myImpl, MyNotifiable myRecvNotifiable, MyNotifiable mySendNotifiable, Qt.ConnectionType connectionType) {
 		Object o = new Object();
 
@@ -534,9 +531,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 
 		assertEquals(0, myRecvNotifiable.getNotified());  // verify it is not delivered yet
 		// After waiting for state 4 and then exhaust our event queue (causing signal delivery)
-		int counter = 0;
-		while(counter++<1000 && QApplication.hasPendingEvents())
-			QApplication.processEvents();  // allow delivery to be performed in this thread QEventLoop
+		QEventLoop loop = new QEventLoop();
+		QTimer.singleShot(2000, loop::quit);
+		loop.exec();
 
 		// This was testing other interactions on the main problem
 		//myImpl.signalProcessEvents();
@@ -556,7 +553,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperThreadIn(Qt.ConnectionType connectionType) {
 		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 
@@ -572,9 +568,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		assertEquals("caught exception", null, uncaughtExceptions.get(thread));
 		assertTrue("thread is not alive: "+thread.getState(), thread.isAlive());
 		myImpl.signalShutdown();
-		int counter = 0;
-		while(counter++<1000 && QApplication.hasPendingEvents())
-			QApplication.processEvents();
+		QEventLoop loop = new QEventLoop();
+		QTimer.singleShot(2000, loop::quit);
+		loop.exec();
 		try {
 			thread.join(1000);
 		} catch (InterruptedException e) {
@@ -585,7 +581,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		assertFalse("thread is not alive: "+thread.getState(), thread.isAlive());
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperQThreadIn(Qt.ConnectionType connectionType) {
 		MyNotifiable myRecvNotifiable = new MyNotifiable("myRecvNotifiable");
 
@@ -601,9 +596,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
 		assertTrue("thread is not alive: "+thread, thread.isAlive());
 		myImpl.signalShutdown();
-		int counter = 0;
-		while(counter++<1000 && QApplication.hasPendingEvents())
-			QApplication.processEvents();
+		QEventLoop loop = new QEventLoop();
+		QTimer.singleShot(2000, loop::quit);
+		loop.exec();
 		try {
 			thread.join(1000);
 		} catch (Throwable e) {
@@ -614,7 +609,6 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 		assertFalse("thread is not alive: "+thread, thread.isAlive());
 	}
 
-	@SuppressWarnings("deprecation")
 	private void helperImplThreadIn(Runnable threadStart, MyImpl myImpl, MyNotifiable myRecvNotifiable, Qt.ConnectionType connectionType) {
 		Object o = new Object();
 
@@ -624,9 +618,9 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 
 		Utils.println(2, "emit(" + o + ") " + Thread.currentThread());
 		myImpl.signal.emit(o);  // do delivery (or queue delivery) from this thread
-		int counter = 0;
-		while(counter++<1000 && QApplication.hasPendingEvents())
-			QApplication.processEvents();  // allow delivery to be performed in this QEventLoop (only really for queued testcases)
+		QEventLoop loop = new QEventLoop();
+		QTimer.singleShot(2000, loop::quit);
+		loop.exec();
 		// during delivery the other thread will perform delivery in its QEventLoop right away
 		assertTrue("waitForNotify", myRecvNotifiable.waitForNotify(2000, 7));
 		assertTrue(myImpl.isSlotInvoked());

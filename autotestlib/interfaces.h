@@ -46,7 +46,9 @@
 #define INTERFACES_H
 
 #include <QtGui/QtGui>
-#include <QtWidgets>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
 
 class TestAbstractClass
 {

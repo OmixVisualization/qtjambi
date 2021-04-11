@@ -20,7 +20,7 @@
                 <argument-map index="0" meta-name="%0"/>
                 <argument-map index="3" meta-name="%3"/>
                 if(!%0 &amp;&amp; !%3.isEmpty()){
-                    Java::Private::Runtime::QTextToSpeechPlugin$CreateException.throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );
+                    Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -29,9 +29,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="3" meta-name="%3"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QTextToSpeechPlugin$CreateException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::isInstanceOf(%env, exn.object())){
                         if(%3){
-                            jstring message = Java::Private::Runtime::QTextToSpeechPlugin$CreateException.getMessage(%env, exn.object());
+                            jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%3, %env, message);
                         }
                     }else{
@@ -49,12 +49,14 @@
         }
         </inject-code>
     </object-type>
-    <value-type name="QVoice">
-        <inject-code class="native" position="beginning">
-        bool operator==(const QVoice&amp; lhs, const QVoice&amp; rhs)
-        {
-            return const_cast&lt;QVoice&amp;>(lhs) == rhs;
-        }
-        </inject-code>
-    </value-type>
+    <object-type name="QTextToSpeechEngine">
+        <extra-includes>
+            <include file-name="qtjambi_texttospeech_qhashes.h" location="local"/>
+        </extra-includes>
+    </object-type>
+    <object-type name="QTextToSpeech">
+        <extra-includes>
+            <include file-name="qtjambi_texttospeech_qhashes.h" location="local"/>
+        </extra-includes>
+    </object-type>
 </typesystem>

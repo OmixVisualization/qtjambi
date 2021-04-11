@@ -66,18 +66,6 @@ class QRemoteObjectNode___ {
     
 }// class
 
-class QRemoteObjectNode_native__ {
-
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectNode_acquire)
-(JNIEnv *__jni_env, jobject __this, jclass type, jobject constructor, jobject name)
-{
-    jmethodID constructorID = __jni_env->FromReflectedMethod(constructor);
-    Q_ASSERT(constructorID);
-    return __jni_env->NewObject(type, constructorID, __this, name);
-}
-
-}// class
-
 class QtRemoteObjects___ {
     
     public static class TypeNameAndMetaobject{

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -304,7 +304,7 @@ public class TestQThread extends QApplicationTest {
 	}
 	
 	@org.junit.Test
-	@SuppressWarnings("deprecation")
+//	@SuppressWarnings("deprecation")
 	public void testQThreadSignalsToQObject() throws InterruptedException{
 		TestObject finished = new TestObject();
 		TestObject started = new TestObject();
@@ -323,8 +323,6 @@ public class TestQThread extends QApplicationTest {
 			++i;
 			QCoreApplication.processEvents();
 		}
-		while(QCoreApplication.hasPendingEvents() && finished.get()==0)
-			QCoreApplication.processEvents();
 		assertEquals("started counter", 1, started.get());
 		assertEquals("running counter", 1, running.get());
 		assertEquals("finished counter", 1, finished.get());
@@ -727,7 +725,8 @@ public class TestQThread extends QApplicationTest {
 	
 	@org.junit.Test
 	public void testDeleteAdoptedThread() throws InterruptedException {
-		WeakReference<?>[] reference = {null};
+		AtomicBoolean threadCleaned = new AtomicBoolean();
+		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
 			QtJambiInternal.Ownership[] ownership = {null};
 			Thread[] javaThreads = {null,null};
@@ -737,26 +736,29 @@ public class TestQThread extends QApplicationTest {
 				ownership[0] = QtJambiInternal.ownership(qtarray[0]);
 				javaThreads[0] = Thread.currentThread();
 				javaThreads[1] = qtarray[0].javaThread();
-				reference[0] = new WeakReference<>(qtarray[0]);
+				QtJambiInternal.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
 			});
+			QtJambiInternal.registerCleaner(thread, ()->threadCleaned.set(true));
 			thread.start();
 			thread.join();
 			Assert.assertEquals(thread, javaThreads[0]);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, ownership[0]);
-			Assert.assertFalse(qtarray[0]==null);
-			Assert.assertFalse(qtarray[0].isDisposed());
+			Assert.assertFalse("QThread is null", qtarray[0]==null);
+			Assert.assertFalse("QThread is disposed", qtarray[0].isDisposed());
 			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(qtarray[0]));
 			qtarray[0] = null;
 			thread = null;
 		}
-		Thread.yield();
-		System.gc();
-		System.runFinalization();
-		Thread.yield();
-		System.gc();
-		System.runFinalization();
-		Thread.yield();
-		Assert.assertTrue("reference is not null", null==reference[0].get());
+		for (int i = 0; i < 50; i++) {
+			if(qthreadCleaned.get())
+				break;
+			System.gc();
+			System.runFinalization();
+			QCoreApplication.processEvents();
+			Thread.yield();
+			Thread.sleep(100);
+		}
+		Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
 	}
 }

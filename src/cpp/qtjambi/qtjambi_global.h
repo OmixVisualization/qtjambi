@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,10 +35,6 @@
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qobject.h>
-
-#ifndef TARGET_JAVA_VERSION
-#define TARGET_JAVA_VERSION 10
-#endif
 
 //TODO: rewrite
 #if defined(Q_OS_WIN)
@@ -84,6 +80,23 @@
 #  include <jni_md.h>
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
+#if !defined(Q_OS_ANDROID)
+#define Q_OS_ANDROID
+#if defined(Q_OS_ANDROID_EMBEDDED)
+#define TMP_Q_OS_ANDROID_EMBEDDED Q_OS_ANDROID_EMBEDDED
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
+#undef Q_OS_ANDROID_EMBEDDED
+#define Q_OS_ANDROID_EMBEDDED TMP_Q_OS_ANDROID_EMBEDDED
+#else //defined(Q_OS_ANDROID_EMBEDDED)
+#include <QtCore/QJniEnvironment>
+#include <QtCore/QJniObject>
+#endif //defined(Q_OS_ANDROID_EMBEDDED)
+#undef Q_OS_ANDROID
+#endif //!defined(Q_OS_ANDROID)
+#endif //QT_VERSION >= QT_VERSION_CHECK(6,1,0)
+
 /* Win64 ABI does not use underscore prefixes symbols we could also use !defined(__MINGW64__) */
 #if defined(Q_CC_MINGW) && !defined(_WIN64)
 #  define QTJAMBI_FUNCTION_PREFIX(name) _##name
@@ -92,23 +105,19 @@
 #endif
 
 #ifndef QT_JAMBI_RUN
-typedef int (*MetaTypeRegisterFunction)();
 
 typedef void (*PtrDeleterFunction)(void *);
 
-typedef const class QObject* (*PtrOwnerFunction)(void *);
+typedef void* (*CopyFunction)(const void *);
+
+typedef const class QObject* (*PtrOwnerFunction)(const void *);
 #endif
+
+using hash_type = decltype(qHash(QString()));
 
 extern "C" QTJAMBI_EXPORT JNIEnv *qtjambi_current_environment();
 
 enum class QtJambiNativeID : jlong { Invalid = 0 };
-
-#ifndef JNI_VERSION_9
-#define JNI_VERSION_9 JNI_VERSION_1_8
-#endif
-#ifndef JNI_VERSION_10
-#define JNI_VERSION_10 JNI_VERSION_9
-#endif
 
 #define InvalidNativeID QtJambiNativeID::Invalid
 

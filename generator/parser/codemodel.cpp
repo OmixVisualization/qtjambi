@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -234,6 +234,10 @@ QString TypeInfo::toString() const {
     return tmp;
 }
 
+void TypeInfo::setQualifiedName(const QStringList &qualified_name) {
+    m_qualifiedName = qualified_name;
+}
+
 bool TypeInfo::operator==(const TypeInfo &other) const {
     if (arrayElements().count() != other.arguments().count())
         return false;
@@ -248,9 +252,9 @@ bool TypeInfo::operator==(const TypeInfo &other) const {
     }
 #endif
 
-    return flags == other.flags
+    return m_flags == other.m_flags
            && m_qualifiedName == other.m_qualifiedName
-           && (!m_functionPointer || m_arguments == other.m_arguments);
+           && (!isFunctionPointer() || m_arguments == other.m_arguments);
 }
 
 // ---------------------------------------------------------------------------
@@ -321,6 +325,14 @@ void _ClassModelItem::setDeclDeprecated(bool declDeprecated) {
     _M_declDeprecated = declDeprecated;
 }
 
+CodeModel::AccessPolicy _ClassModelItem::accessPolicy() const {
+    return _M_accessPolicy;
+}
+
+void _ClassModelItem::setAccessPolicy(CodeModel::AccessPolicy accessPolicy) {
+    _M_accessPolicy = accessPolicy;
+}
+
 const QStringList& _CodeModelItem::scope() const {
     return _M_scope;
 }
@@ -373,11 +385,11 @@ void _CodeModelItem::setEndPosition(int line, int column) {
 }
 
 // ---------------------------------------------------------------------------
-const QStringList& _ClassModelItem::baseClasses() const {
+const QList<QPair<QString,bool>>& _ClassModelItem::baseClasses() const {
     return _M_baseClasses;
 }
 
-void _ClassModelItem::setBaseClasses(const QStringList &baseClasses) {
+void _ClassModelItem::setBaseClasses(const QList<QPair<QString,bool>> &baseClasses) {
     _M_baseClasses = baseClasses;
 }
 
@@ -392,16 +404,8 @@ void _ClassModelItem::setTemplateParameters(const TemplateParameterList &templat
     }
 }
 
-void _ClassModelItem::addBaseClass(const QString &baseClass) {
-    _M_baseClasses.append(baseClass);
-}
-
-void _ClassModelItem::removeBaseClass(const QString &baseClass) {
-    _M_baseClasses.removeAt(_M_baseClasses.indexOf(baseClass));
-}
-
 bool _ClassModelItem::extendsClass(const QString &name) const {
-    return _M_baseClasses.contains(name);
+    return _M_baseClasses.contains({name,true}) || _M_baseClasses.contains({name,false});
 }
 
 void _ClassModelItem::setClassType(CodeModel::ClassType type) {
@@ -468,7 +472,7 @@ EnumList _ScopeModelItem::enums() const {
 
 void _ScopeModelItem::addClass(ClassModelItem item) {
     QString name = item->name();
-    int idx = name.indexOf("<");
+    auto idx = name.indexOf("<");
     if (idx > 0)
         _M_classes.insert(name.left(idx), item);
     _M_classes.insert(name, item);
@@ -663,61 +667,77 @@ void _FunctionModelItem::setFunctionType(CodeModel::FunctionType functionType) {
     _M_functionType = functionType;
 }
 
+bool _FunctionModelItem::hasBody() const {
+    return _M_flags.testFlag(HasBody);
+}
+
+void _FunctionModelItem::setHasBody(bool hasBody) {
+    _M_flags.setFlag(HasBody, hasBody);
+}
+
 bool _FunctionModelItem::isVariadics() const {
-    return _M_isVariadics;
+    return _M_flags.testFlag(IsVariadics);
 }
 
 void _FunctionModelItem::setVariadics(bool isVariadics) {
-    _M_isVariadics = isVariadics;
+    _M_flags.setFlag(IsVariadics, isVariadics);
+}
+
+TypeInfo::ReferenceType _FunctionModelItem::referenceType() const {
+    return _M_referenceType;
+}
+
+void _FunctionModelItem::setReferenceType(TypeInfo::ReferenceType referenceType) {
+    _M_referenceType = referenceType;
 }
 
 bool _FunctionModelItem::isVirtual() const {
-    return _M_isVirtual;
+    return _M_flags.testFlag(IsVirtual);
 }
 
 void _FunctionModelItem::setVirtual(bool isVirtual) {
-    _M_isVirtual = isVirtual;
+    _M_flags.setFlag(IsVirtual, isVirtual);
 }
 
 bool _FunctionModelItem::isInline() const {
-    return _M_isInline;
+    return _M_flags.testFlag(IsInline);
 }
 
 void _FunctionModelItem::setInline(bool isInline) {
-    _M_isInline = isInline;
+    _M_flags.setFlag(IsInline, isInline);
 }
 
 bool _FunctionModelItem::isExplicit() const {
-    return _M_isExplicit;
+    return _M_flags.testFlag(IsExplicit);
 }
 
 void _FunctionModelItem::setExplicit(bool isExplicit) {
-    _M_isExplicit = isExplicit;
+    _M_flags.setFlag(IsExplicit, isExplicit);
 }
 
 bool _FunctionModelItem::isAbstract() const {
-    return _M_isAbstract;
+    return _M_flags.testFlag(IsAbstract);
 }
 
 void _FunctionModelItem::setAbstract(bool isAbstract) {
-    _M_isAbstract = isAbstract;
+    _M_flags.setFlag(IsAbstract, isAbstract);
 }
 
 bool _FunctionModelItem::isDeclFinal() const {
-    return _M_isDeclFinal;
+    return _M_flags.testFlag(IsDeclFinal);
 }
 
 void _FunctionModelItem::setDeclFinal(bool isDeclFinal) {
-    _M_isDeclFinal = isDeclFinal;
+    _M_flags.setFlag(IsDeclFinal, isDeclFinal);
 }
 
 // Qt
 bool _FunctionModelItem::isInvokable() const {
-    return _M_isInvokable;
+    return _M_flags.testFlag(IsInvokable);
 }
 
 void _FunctionModelItem::setInvokable(bool isInvokable) {
-    _M_isInvokable = isInvokable;
+    _M_flags.setFlag(IsInvokable, isInvokable);
 }
 
 // ---------------------------------------------------------------------------
@@ -727,6 +747,14 @@ const TypeInfo& _TypeAliasModelItem::type() const {
 
 void _TypeAliasModelItem::setType(const TypeInfo &type) {
     _M_type = type;
+}
+
+CodeModel::AccessPolicy _TypeAliasModelItem::accessPolicy() const {
+    return _M_accessPolicy;
+}
+
+void _TypeAliasModelItem::setAccessPolicy(CodeModel::AccessPolicy accessPolicy) {
+    _M_accessPolicy = accessPolicy;
 }
 
 // ---------------------------------------------------------------------------
@@ -801,11 +829,11 @@ void _TemplateParameterModelItem::setOwnerClass(const ClassModelItem& ownerClass
     _M_ownerClass = ownerClass;
 }
 
-bool _TemplateParameterModelItem::defaultValue() const {
+const QString& _TemplateParameterModelItem::defaultValue() const {
     return _M_defaultValue;
 }
 
-void _TemplateParameterModelItem::setDefaultValue(bool defaultValue) {
+void _TemplateParameterModelItem::setDefaultValue(const QString& defaultValue) {
     _M_defaultValue = defaultValue;
 }
 
@@ -888,67 +916,67 @@ void _MemberModelItem::setAccessPolicy(CodeModel::AccessPolicy accessPolicy) {
 }
 
 bool _MemberModelItem::isStatic() const {
-    return _M_isStatic;
+    return _M_flags.testFlag(IsStatic);
 }
 
 void _MemberModelItem::setStatic(bool isStatic) {
-    _M_isStatic = isStatic;
+    _M_flags.setFlag(IsStatic, isStatic);
 }
 
 bool _MemberModelItem::isConstant() const {
-    return _M_isConstant;
+    return _M_flags.testFlag(IsConstant);
 }
 
 void _MemberModelItem::setConstant(bool isConstant) {
-    _M_isConstant = isConstant;
+    _M_flags.setFlag(IsConstant, isConstant);
 }
 
 bool _MemberModelItem::isVolatile() const {
-    return _M_isVolatile;
+    return _M_flags.testFlag(IsVolatile);
 }
 
 void _MemberModelItem::setVolatile(bool isVolatile) {
-    _M_isVolatile = isVolatile;
+    _M_flags.setFlag(IsVolatile, isVolatile);
 }
 
 bool _MemberModelItem::isFriend() const {
-    return _M_isFriend;
+    return _M_flags.testFlag(IsFriend);
 }
 
 void _MemberModelItem::setFriend(bool isFriend) {
-    _M_isFriend = isFriend;
+    _M_flags.setFlag(IsFriend, isFriend);
 }
 
 bool _MemberModelItem::isRegister() const {
-    return _M_isRegister;
+    return _M_flags.testFlag(IsRegister);
 }
 
 void _MemberModelItem::setRegister(bool isRegister) {
-    _M_isRegister = isRegister;
+    _M_flags.setFlag(IsRegister, isRegister);
 }
 
 bool _MemberModelItem::isExtern() const {
-    return _M_isExtern;
+    return _M_flags.testFlag(IsExtern);
 }
 
 void _MemberModelItem::setExtern(bool isExtern) {
-    _M_isExtern = isExtern;
+    _M_flags.setFlag(IsExtern, isExtern);
 }
 
 bool _MemberModelItem::isMutable() const {
-    return _M_isMutable;
+    return _M_flags.testFlag(IsMutable);
 }
 
 void _MemberModelItem::setMutable(bool isMutable) {
-    _M_isMutable = isMutable;
+    _M_flags.setFlag(IsMutable, isMutable);
 }
 
 bool _MemberModelItem::isDeprecated() const {
-    return _M_isDeprecated;
+    return _M_flags.testFlag(IsDeprecated);
 }
 
 void _MemberModelItem::setDeprecated(bool isDeprecated) {
-    _M_isDeprecated = isDeprecated;
+    _M_flags.setFlag(IsDeprecated, isDeprecated);
 }
 
 const QString& _MemberModelItem::getDeprecatedComment() const {

@@ -8,6 +8,8 @@ include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
 QT += remoteobjects remoteobjects-private
 
+msvc:QMAKE_CXXFLAGS += /bigobj
+
 macx:{
     INCLUDEPATH += $$(QTDIR)/lib/QtRemoteObjects.framework/Headers/$$QT_VERSION/QtRemoteObjects/private
 }

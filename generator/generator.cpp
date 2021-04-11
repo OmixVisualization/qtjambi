@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -91,7 +91,7 @@ void Generator::generate() {
     }
 }
 
-void Generator::writeInclude(QTextStream &s, const Include &inc, QSet<QString> &dedupe) {
+void Generator::writeInclude(QTextStream &s, const Include &inc, QSet<QString> &included) {
     if (inc.name.isEmpty())
         return;
 
@@ -103,19 +103,29 @@ void Generator::writeInclude(QTextStream &s, const Include &inc, QSet<QString> &
     else
         incString = inc.name;
 
-    if (dedupe.contains(incString))
+    if (included.contains(incString))
         return;    // no need to emit this #include it is already in the generared file
 
-    dedupe.insert(incString);
+    included.insert(incString);
 
     if (!inc.suppressed){
         if (inc.type == Include::TargetLangImport)
             s << "import " << incString << ";" << Qt::endl;
         else{
+            if(incString==QLatin1String("qquickgraphicsdevice.h")
+                    || incString==QLatin1String("QtQuick/QQuickGraphicsDevice")){
+                s << "#ifdef QT_FEATURE_vulkan" << Qt::endl
+                  << "#undef QT_FEATURE_vulkan" << Qt::endl
+                  << "#define QT_FEATURE_vulkan -1" << Qt::endl
+                  << "#endif" << Qt::endl;
+            }
             for(const QString& feature : inc.requiredFeatures.keys()){
                 QString configFile = inc.requiredFeatures[feature];
                 if(!configFile.isEmpty()){
-                    writeInclude(s, Include(Include::IncludePath, configFile), dedupe);
+                    if(configFile=="qtgui-config.h"){
+                        configFile = "QtGui/qtguiglobal.h";
+                    }
+                    writeInclude(s, Include(Include::IncludePath, configFile), included);
                 }
                 s << "#if QT_CONFIG(" << feature << ")" << Qt::endl;
             }
@@ -205,17 +215,21 @@ bool Generator::hasPublicDefaultConstructor(const AbstractMetaType *type) {
     for(const AbstractMetaClass *java_class : m_classes) {
         if (java_class->typeEntry()->qualifiedTargetLangName() == full_name) {
             AbstractMetaFunctionList functions = java_class->functions();
+            bool hasConstructor = false;
             for(const AbstractMetaFunction *function : functions) {
-                if (function->name() == class_name && function->wasPublic()){
-                    for(AbstractMetaArgument* a : function->arguments()){
-                        if(a->originalDefaultValueExpression().isEmpty()){
-                            return false;
+                if (function->isConstructor()){
+                    hasConstructor = true;
+                    if(function->wasPublic()){
+                        for(AbstractMetaArgument* a : function->arguments()){
+                            if(a->originalDefaultValueExpression().isEmpty()){
+                                return false;
+                            }
                         }
+                        return true;
                     }
-                    return true;
                 }
             }
-            return false;
+            return !hasConstructor;
         }
     }
     return false;

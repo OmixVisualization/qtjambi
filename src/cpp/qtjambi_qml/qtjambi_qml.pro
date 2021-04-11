@@ -12,6 +12,7 @@ HEADERS += qqmllistproperty.h \
     qmlcreatorfunction.h \
     qtjambi_jarimport.h \
     jarimport.h \
+    qtjambi_qml_hashes.h \
     qtjambi_qml_repository.h
 SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
     qmlcreatorfunction.cpp \
@@ -22,7 +23,7 @@ SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
 
 DEFINES += QTJAMBI_QML_EXPORT
 
-QT += core gui qml core-private
+QT += core gui qml core-private qml-private
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 

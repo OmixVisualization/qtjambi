@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QtGlobal>
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 #include <QtQml/QtQml>
 
@@ -35,8 +37,12 @@
 #include <qtjambi/qtjambi_repository.h>
 #include <qtjambi/qtjambi_templates.h>
 #include <qtjambi/qtjambi_registry.h>
-#include <qtjambi/qtdynamicmetaobject_p.h>
+#include <qtjambi/qtjambimetaobject_p.h>
 #include <qtjambi/qtjambi_cast.h>
+
+#ifndef QT_JAMBI_RUN
+#include <QtQml/private/qqmllist_p.h>
+#endif
 
 // emitting (writeExtraFunctions)
 // emitting (writeToStringFunction)
@@ -68,6 +74,12 @@ void __qt_create_new_QQmlListProperty_0(void* __qtjambi_ptr, JNIEnv*, jobject, j
     Q_UNUSED(__qt_this)
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+typedef int list_int;
+#else
+typedef qsizetype list_int;
+#endif
+
 // new QQmlListProperty(QObject * o, QList<QObject > & list)
 void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
 {
@@ -92,7 +104,7 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
             }
         }
     };
-    listProperty->count = [](QQmlListProperty<QObject> * list) -> int {
+    listProperty->count = [](QQmlListProperty<QObject> * list) -> list_int {
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
@@ -106,12 +118,17 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
         }
         return 0;
     };
-    listProperty->at = [](QQmlListProperty<QObject> * list, int index) -> QObject* {
+    listProperty->at = [](QQmlListProperty<QObject> * list, list_int index) -> QObject* {
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
-            jobject result = qtjambi_list_get(env, javaList, index);
+            jobject result = qtjambi_list_get(env, javaList, jint(index));
             if(!env->IsSameObject(javaList, nullptr)){
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                if(index>std::numeric_limits<jint>::max()){
+                    JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("Index %1 exceeds maximum index value.").arg(index)) QTJAMBI_STACKTRACEINFO );
+                }
+#endif
                 try {
                     return qtjambi_to_qobject(env, result);
                 } catch (const JavaException& exn) {
@@ -135,14 +152,19 @@ void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, 
         }
     };
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
-    listProperty->replace = [](QQmlListProperty<QObject> * list, int idx, QObject *v){
+    listProperty->replace = [](QQmlListProperty<QObject> * list, list_int idx, QObject *v){
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject javaList = jobject(list->data);
             if(!env->IsSameObject(javaList, nullptr)){
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                if(idx>std::numeric_limits<jint>::max()){
+                    JavaException::raiseIndexOutOfBoundsException(env, qPrintable(QString("Index %1 exceeds maximum index value.").arg(idx)) QTJAMBI_STACKTRACEINFO );
+                }
+#endif
                 try{
                     jobject java_object = qtjambi_from_QObject(env, v);
-                    qtjambi_collection_replace(env, javaList, idx, java_object);
+                    qtjambi_collection_replace(env, javaList, jint(idx), java_object);
                 } catch (const JavaException& exn) {
                     exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
                 }
@@ -182,7 +204,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty()")
     try{
-        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_0, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, false, &deleter_QQmlListProperty, nullptr, nullptr);
+        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_0, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, &deleter_QQmlListProperty, nullptr);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -201,7 +223,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
         jvalue arguments[2];
         arguments[0].l = o0;
         arguments[1].l = list1;
-        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_1, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, false, &deleter_QQmlListProperty, nullptr, arguments);
+        qtjambi_initialize_native_object(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_1, sizeof(QQmlListProperty<QObject>), typeid(QQmlListProperty<QObject>), false, &deleter_QQmlListProperty, arguments);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -378,12 +400,12 @@ void initialize_meta_info_QQmlListProperty(){
     setQmlReportDestruction(&QQmlPrivate::qdeclarativeelement_destructor);
     const std::type_info& typeId = registerTypeInfo<QQmlListProperty<QObject>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<QObject>>();
-    registerConstructorInfos(typeId, &__qt_destruct_QQmlListProperty, QVector<ConstructorInfo>()
-        << ConstructorInfo(&__qt_create_new_QQmlListProperty_0, nullptr)
-        << ConstructorInfo(&__qt_create_new_QQmlListProperty_1, "Lio/qt/core/QObject;Ljava/util/List;") );
+    registerConstructorInfos(typeId, &__qt_destruct_QQmlListProperty, {ConstructorInfo(&__qt_create_new_QQmlListProperty_0, nullptr),
+                                                                       ConstructorInfo(&__qt_create_new_QQmlListProperty_1, "Lio/qt/core/QObject;Ljava/util/List;")} );
     registerDeleter(typeId, &deleter_QQmlListProperty);
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",
-                            &qtjambiGenericDestructor<QQmlListProperty<QObject>>,
+                            QtMetaTypePrivate::QMetaTypeFunctionHelper<QQmlListProperty<QObject>>::Destruct,
                             [](void *where, const void *ptr) -> void *{
                                 QQmlListProperty<QObject>* listProperty = new(where) QQmlListProperty<QObject>();
                                 if (ptr){
@@ -406,5 +428,55 @@ void initialize_meta_info_QQmlListProperty(){
                             }
                         );
     QMetaType::registerNormalizedTypedef("QQmlListProperty", metaTypeID);
+#else
+    int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",
+                            QtPrivate::QMetaTypeForType<QQmlListProperty<QObject>>::getDefaultCtr(),
+                            [](const QtPrivate::QMetaTypeInterface *, void *where, const void *ptr){
+                                QQmlListProperty<QObject>* listProperty = new(where) QQmlListProperty<QObject>();
+                                if (ptr){
+                                    const QQmlListProperty<QObject>* _ptr = reinterpret_cast<const QQmlListProperty<QObject>*>(ptr);
+                                    listProperty->object = _ptr->object;
+                                    listProperty->data = _ptr->data;
+                                    listProperty->append = _ptr->append;
+                                    listProperty->at = _ptr->at;
+                                    listProperty->clear = _ptr->clear;
+                                    listProperty->count = _ptr->count;
+                                    listProperty->replace = _ptr->replace;
+                                    listProperty->removeLast = _ptr->removeLast;
+                                }
+                            },
+                            [](const QtPrivate::QMetaTypeInterface *, void *where, void *ptr){
+                                QQmlListProperty<QObject>* listProperty = new(where) QQmlListProperty<QObject>();
+                                if (ptr){
+                                    const QQmlListProperty<QObject>* _ptr = reinterpret_cast<const QQmlListProperty<QObject>*>(ptr);
+                                    listProperty->object = std::move(_ptr->object);
+                                    listProperty->data = std::move(_ptr->data);
+                                    listProperty->append = std::move(_ptr->append);
+                                    listProperty->at = std::move(_ptr->at);
+                                    listProperty->clear = std::move(_ptr->clear);
+                                    listProperty->count = std::move(_ptr->count);
+                                    listProperty->replace = std::move(_ptr->replace);
+                                    listProperty->removeLast = std::move(_ptr->removeLast);
+                                }
+                            }
+                        );
+    QMetaType::registerNormalizedTypedef("QQmlListProperty", QMetaType(metaTypeID));
+#endif
 }
 
+hash_type qHash(const QQmlListReference &value)
+{
+    QQmlListReferencePrivate* p = QQmlListReferencePrivate::get(const_cast<QQmlListReference*>(&value));
+    if(!p){
+        return 0;
+    }
+    hash_type hashCode = qHash(quintptr(value.object()));
+    hashCode = hashCode * 31 + qHash(quintptr(p->property.data));
+    hashCode = hashCode * 31 + qHash(value.canAppend());
+    hashCode = hashCode * 31 + qHash(value.canAt());
+    hashCode = hashCode * 31 + qHash(value.canClear());
+    hashCode = hashCode * 31 + qHash(value.canCount());
+    hashCode = hashCode * 31 + qHash(value.canRemoveLast());
+    hashCode = hashCode * 31 + qHash(value.canReplace());
+    return hashCode;
+}

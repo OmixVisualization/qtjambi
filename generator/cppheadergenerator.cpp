@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,11 +64,54 @@ void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaF
 
     const AbstractMetaFunction *setter = java_field->setter();
     const AbstractMetaFunction *getter = java_field->getter();
+    const AbstractMetaClass *cls = java_field->enclosingClass();
+    FieldModification mod = cls->typeEntry()->fieldModification(java_field->name());
 
-    if (!java_field->type()->isConstant())
+    QStringList pps;
+    if(!java_field->enclosingClass()->typeEntry()->ppCondition().isEmpty() && !pps.contains(java_field->enclosingClass()->typeEntry()->ppCondition())){
+        pps << java_field->enclosingClass()->typeEntry()->ppCondition();
+    }
+    if(!java_field->type()->typeEntry()->ppCondition().isEmpty() && !pps.contains(java_field->type()->typeEntry()->ppCondition())){
+        pps << java_field->type()->typeEntry()->ppCondition();
+    }
+    for(const AbstractMetaType* inst : java_field->type()->instantiations()){
+        if(!inst->typeEntry()->ppCondition().isEmpty() && !pps.contains(inst->typeEntry()->ppCondition())){
+            pps << inst->typeEntry()->ppCondition();
+        }
+    }
+    if(!pps.isEmpty()){
+        for (int i=0; i<pps.size(); ++i) {
+            if(pps[i].contains("|")){
+                pps[i] = "(" + pps[i] + ")";
+            }
+        }
+    }
+
+    bool hasPPS = false;
+    bool isWritable = true;
+    if(java_field->type()->isConstant()){
+        if(java_field->type()->indirections().isEmpty()){
+            isWritable = false;
+        }else if(java_field->type()->indirections()[0]){
+            isWritable = false;
+        }
+    }else if(!java_field->type()->indirections().isEmpty()
+             && java_field->type()->indirections()[0]){
+        isWritable = false;
+    }
+    if (mod.isWritable() && isWritable && setter->wasProtected()){
+        if((hasPPS = !pps.isEmpty()))
+            s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
         writeFunction(s, setter);
+    }
 
-    writeFunction(s, getter);
+    if (mod.isReadable() && getter->wasProtected()) {
+        if(!hasPPS && (hasPPS = !pps.isEmpty()))
+            s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
+        writeFunction(s, getter);
+    }
+    if(hasPPS)
+        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
 }
 
 void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *java_class, int) {
@@ -91,26 +134,40 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
 
-    s << "#include <qtjambi/qtjambi_core.h>" << Qt::endl
-      << "#include <QtCore/QHash>" << Qt::endl
-      << "#include <QtCore/QWeakPointer>" << Qt::endl;
     QSet<QString> included;
-    included << "<qtjambi/qtjambi_core.h>"
-             << "<QtCore/QHash>"
-             << "<QtCore/QWeakPointer>";
-
+    {
+        IncludeList includes = java_class->typeEntry()->extraIncludes();
+        if(java_class->typeEntry()->designatedInterface()){
+            includes << java_class->typeEntry()->designatedInterface()->extraIncludes();
+        }
+        for(const Include& icl : includes){
+            if(icl.suppressed)
+                writeInclude(s, icl, included);
+        }
+    }
+    writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
+                || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
+            writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
+            s << "#undef QT_FEATURE_vulkan" << Qt::endl
+              << "#define QT_FEATURE_vulkan -1" << Qt::endl;
+        }
+    }
     if(java_class->enclosingClass()){
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
     writeInclude(s, java_class->typeEntry()->include(), included);
-    s << Qt::endl;
-
+    writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), included);
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
     for(const Include &inc : list) {
         if (inc.type != Include::TargetLangImport)
             writeInclude(s, inc, included);
     }
+    //writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), included);
+    //writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_templates.h"), included);
+    s << Qt::endl;
 
     if(java_class->enclosingClass() && !java_class->enclosingClass()->typeEntry()->ppCondition().isEmpty()){
         s << Qt::endl << "#if " << java_class->enclosingClass()->typeEntry()->ppCondition() << Qt::endl;
@@ -123,7 +180,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
       << "public:" << Qt::endl
       << "    " << shellClassName(java_class) << "();" << Qt::endl
       << "    ~" << shellClassName(java_class) << "() override;" << Qt::endl
-      << "    void getFunctional(void*) override;" << Qt::endl
+      << "    void getFunctional(JNIEnv*, void*) override;" << Qt::endl
       << "    static void operator delete(void * ptr) noexcept;" << Qt::endl << Qt::endl
       << "    class Functor final : private FunctorBase{" << Qt::endl
       << "    public:" << Qt::endl
@@ -150,9 +207,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
       << "        friend class " << shellClassName(java_class) << ";" << Qt::endl
       << "    };" << Qt::endl << Qt::endl
       << "    static jobject resolveFunctional(JNIEnv *, const " << java_class->typeEntry()->qualifiedCppName() << "*);" << Qt::endl << Qt::endl
-      << "protected:" << Qt::endl
-      << "    QtJambiShell* __shell() const override;" << Qt::endl
       << "private:" << Qt::endl
+      << "    QtJambiShell* __shell() const override final;" << Qt::endl
       << "    friend class " << shellClassName(java_class) << "::Functor;" << Qt::endl;
     if(java_class->isFunctionPointer()){
         s << "    std::function<void()> m_functionPointerDeleter;" << Qt::endl
@@ -194,19 +250,32 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
 
-    s << "#include <qtjambi/qtjambi_core.h>" << Qt::endl
-      << "#include <QtCore/QHash>" << Qt::endl
-      << "#include <QtCore/QWeakPointer>" << Qt::endl;
-
     QSet<QString> included;
-    included << "<qtjambi/qtjambi_core.h>"
-             << "<QtCore/QHash>"
-             << "<QtCore/QWeakPointer>";
+    {
+        IncludeList includes = java_class->typeEntry()->extraIncludes();
+        if(java_class->typeEntry()->designatedInterface()){
+            includes << java_class->typeEntry()->designatedInterface()->extraIncludes();
+        }
+        for(const Include& icl : includes){
+            if(icl.suppressed)
+                writeInclude(s, icl, included);
+        }
+    }
+    writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
+        if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
+                || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
+            writeInclude(s, Include(Include::IncludePath, "QtGui/qtguiglobal.h"), included);
+            s << "#undef QT_FEATURE_vulkan" << Qt::endl
+              << "#define QT_FEATURE_vulkan -1" << Qt::endl;
+        }
+    }
 
     if(java_class->enclosingClass()){
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
     writeInclude(s, java_class->typeEntry()->include(), included);
+    writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -215,6 +284,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             continue;
         writeInclude(s, inc, included);
     }
+
+    writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), included);
     s << Qt::endl;
 
     if(!java_class->typeEntry()->ppCondition().isEmpty()){
@@ -233,13 +304,16 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
     if (java_class->generateShellClass()) {
         s << Qt::endl
           << "class " << shellClassName(java_class)
-          << " : public " << java_class->qualifiedCppName() << Qt::endl
+          << " : public " << java_class->qualifiedCppName();
+        if(java_class->hasVirtualDestructor())
+            s << ", public QtJambiShellInterface";
+        s << Qt::endl
           << "{" << Qt::endl;
 
         s << "public:" << Qt::endl;
-        if(!java_class->hasPrivateDestructor()){
+        if(!java_class->hasPrivateDestructor() && java_class->instantiateShellClass()){
             for(const AbstractMetaFunction *function : java_class->functions()) {
-                if (function->isConstructor() && !function->isPrivate()){
+                if (function->isConstructor() && !function->wasPrivate()){
                     QStringList ppConditions;
                     for(const AbstractMetaArgument *argument : function->arguments()) {
                         if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
@@ -345,7 +419,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
 
         // Field accessors
         for(const AbstractMetaField *field : java_class->fields()) {
-            if (field->isProtected())
+            if (field->wasProtected())
                 writeFieldAccessors(s, field);
         }
 
@@ -357,11 +431,13 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                 break;
             }
         }
-        s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
-        if (java_class->isQObject() && java_class->qualifiedCppName()!="QDBusInterface") {
-            s << "    const QMetaObject *metaObject() const override final;" << Qt::endl
-              << "    void *qt_metacast(const char *) override final;" << Qt::endl
-              << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
+        if(java_class->instantiateShellClass()){
+            s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
+            if (java_class->isQObject() && java_class->qualifiedCppName()!="QDBusInterface") {
+                s << "    const QMetaObject *metaObject() const override final;" << Qt::endl
+                  << "    void *qt_metacast(const char *) override final;" << Qt::endl
+                  << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
+            }
         }
         QList<AbstractMetaEnum *> protetedEnums;
         for(AbstractMetaEnum *cpp_enum : java_class->enums()){
@@ -386,12 +462,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                     const QString qtEnumName = entry->qualifiedCppName();
                     const QString javaEnumName = [java_class,entry]()->QString{
                         if(java_class){
-                            if(java_class->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
-                                if(java_class->typeEntry()->javaPackage().isEmpty()){
-                                    return entry->targetLangName();
-                                }else{
-                                    return java_class->typeEntry()->javaPackage().replace(".", "/") + "/" + entry->targetLangName();
-                                }
+                            if(java_class->typeEntry()->isGlobal()){
+                                return entry->qualifiedTargetLangName().replace(".", "/");
                             }else{
                                 if(java_class->typeEntry()->javaPackage().isEmpty()){
                                     return java_class->typeEntry()->targetLangName() + "$" + entry->targetLangName();
@@ -407,12 +479,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                         const QString qtFlagName = fentry->qualifiedCppName();
                         const QString javaFlagName = [java_class,fentry]()->QString{
                             if(java_class){
-                                if(java_class->typeEntry()->targetLangName()==TypeDatabase::globalNamespaceClassName()){
-                                    if(java_class->typeEntry()->javaPackage().isEmpty()){
-                                        return fentry->targetLangName();
-                                    }else{
-                                        return java_class->typeEntry()->javaPackage().replace(".", "/") + "/" + fentry->targetLangName();
-                                    }
+                                if(java_class->typeEntry()->isGlobal()){
+                                    return fentry->targetLangName().replace(".", "/");
                                 }else{
                                     if(java_class->typeEntry()->javaPackage().isEmpty()){
                                         return java_class->typeEntry()->targetLangName() + "$" + fentry->targetLangName();
@@ -438,8 +506,14 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         for(const AbstractMetaFunction *function : privatePureVirtuals) {
             writeFunction(s, function);
         }
-        s << "    QtJambiShell* __shell() const;" << Qt::endl;
-        s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
+        if(java_class->instantiateShellClass()){
+            s << "    QtJambiShell* __shell() const";
+            if(java_class->hasVirtualDestructor()){
+                s << " override final";
+            }
+            s << ";" << Qt::endl;
+            s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
+        }
 
         //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
         writeInjectedCode(s, java_class);
@@ -475,7 +549,7 @@ void CppHeaderGenerator::writeFunction(QTextStream &s, const AbstractMetaFunctio
         s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
-    writeFunctionSignature(s, java_function, nullptr, QString(), Option(OriginalName | ShowStatic | ShowOverride | options));
+    writeFunctionSignature(s, java_function, nullptr, QString(), Option(OriginalName | ShowStatic | ShowOverride | FunctionOverride | options));
     s << ";" << Qt::endl;
     if(!pps.isEmpty()){
         s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
@@ -514,7 +588,13 @@ void CppHeaderGenerator::writeVirtualFunctionOverride(QTextStream &s,
 }
 
 
-void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &, const AbstractMetaClass *) {
+void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &s, const AbstractMetaClass *java_class) {
+    CodeSnipList code_snips = java_class->typeEntry()->codeSnips();
+    for(const CodeSnip &cs : code_snips) {
+        if (cs.language == TypeSystem::ShellCode) {
+            s << cs.code() << Qt::endl;
+        }
+    }
 }
 
 void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &, const AbstractMetaFunctional *) {

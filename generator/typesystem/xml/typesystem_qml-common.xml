@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -65,8 +65,13 @@
     <rejection class="QV4::CompiledData"/>
     <rejection class="QV4"/>
     <rejection class="QQmlModuleRegistration"/>
+    <rejection class="" enum-name="QQmlModuleImportSpecialVersions"/>
     <rejection class="QmlTypeAndRevisionsRegistration"/>
 
+    <enum-type name="QJSEngine::ObjectOwnership" since="6.0.0"/>
+    <enum-type name="QJSManagedValue::Type" since="6.1.0"/>
+    <enum-type name="QJSPrimitiveValue::Type" since="6.1.0"/>
+    <enum-type name="QJSValue::ObjectConversionBehavior" since="6.1.0"/>
     <enum-type name="QJSEngine::Extension" flags="QJSEngine::Extensions"/>
     <enum-type name="QQmlIncubator::IncubationMode"/>
     <enum-type name="QQmlIncubator::Status"/>
@@ -122,7 +127,12 @@
     </object-type>
     <value-type name="QQmlContext::PropertyPair"/>
     <object-type name="QQmlContext">
-        <modify-function signature="nameForObject(QObject*) const">
+        <modify-function signature="nameForObject(QObject*) const" until="5.*">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="nameForObject(const QObject*) const" since="6.0.0">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
@@ -141,6 +151,23 @@
   <value-type name="QQmlScriptString">
     <modify-function signature="operator= ( const QQmlScriptString &amp; )" remove="all"/>
   </value-type>
+    <object-type name="QJSManagedValue" since="6.1.0">
+    </object-type>
+    <value-type name="QJSPrimitiveValue" since="6.1.0">
+        <modify-function signature="QJSPrimitiveValue(QJSPrimitiveNull)" remove="all"/>
+        <modify-function signature="QJSPrimitiveValue(QJSPrimitiveUndefined)" remove="all"/>
+        <modify-function signature="operator%(QJSPrimitiveValue)" rename="modulo"/>
+        <modify-function signature="operator/(QJSPrimitiveValue)" rename="divided"/>
+        <modify-function signature="operator*(QJSPrimitiveValue)" rename="multiplied"/>
+        <modify-function signature="operator+(QJSPrimitiveValue)" rename="added"/>
+        <modify-function signature="operator-(QJSPrimitiveValue)" rename="substracted"/>
+    </value-type>
+    <value-type name="QJSPrimitiveNull" generate="no" since="6.1.0">
+    </value-type>
+    <value-type name="QJSPrimitiveUndefined" generate="no" since="6.1.0">
+    </value-type>
+    <object-type name="QJSNumberCoercion" since="6.1.0">
+    </object-type>
     <value-type name="QJSValue">
         <modify-function signature="QJSValue(uint)" remove="all"/>
         <modify-function signature="QJSValue(const QLatin1String &amp;)" remove="all"/>
@@ -165,7 +192,10 @@
         <modify-function signature="operator= ( QJSValue &amp; )" remove="all"/>
     </object-type>
     <namespace-type name="QtQml">
-        <modify-function signature="qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)" remove="all"/>
+        <extra-includes>
+            <include file-name="qqmllistproperty.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)" remove="all" until="5.*"/>
     </namespace-type>
     <functional-type name="QtQml::QQmlAttachedPropertiesFunc">
         <extra-includes>
@@ -187,6 +217,25 @@
         </extra-includes>
     </functional-type>
     <object-type name="QJSEngine">
+        <modify-function signature="setObjectOwnership(QObject*,QJSEngine::ObjectOwnership)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code class="java" position="end">
+                <argument-map index="1" meta-name="%1"/>
+                <argument-map index="2" meta-name="%2"/>
+                if (%1 != null &amp;&amp; %2 != null){
+                    switch(%2){
+                    case CppOwnership: 
+                        if(%1.parent()==null){
+                            io.qt.internal.QtJambiInternal.setJavaOwnership(%1);
+                        }
+                    default:
+                        io.qt.internal.QtJambiInternal.setCppOwnership(%1);
+                    }
+                }
+            </inject-code>
+        </modify-function>
     </object-type>
     <object-type name="QQmlEngine">
         <extra-includes>
@@ -194,12 +243,7 @@
         </extra-includes>
         <modify-function signature="addImageProvider(QString,QQmlImageProviderBase*)">
             <modify-argument index="2">
-                <define-ownership class="java" owner="cplusplus"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setUrlInterceptor(QQmlAbstractUrlInterceptor*)">
-            <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcUrlInterceptor"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setIncubationController(QQmlIncubationController*)">
@@ -220,7 +264,7 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setObjectOwnership(QObject*,QQmlEngine::ObjectOwnership)">
+        <modify-function signature="setObjectOwnership(QObject*,QQmlEngine::ObjectOwnership)" until="5.*">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
@@ -241,7 +285,7 @@
         </modify-function>
     </object-type>
     <object-type name="QQmlApplicationEngine">
-        <modify-function signature="rootObjects()" remove="all" since="5.9.0"/>
+        <modify-function signature="rootObjects()" remove="all" since="5.9.0" until="5.*"/>
     </object-type>
     <object-type name="QQmlExtensionPlugin">
         <interface-polymorphy interface="QQmlExtensionInterface" condition="dynamic_cast&lt;const QQmlExtensionPlugin*>(%1)" />
@@ -261,8 +305,10 @@
     </object-type>
     <enum-type name="QQmlImageProviderBase::Flag" flags="QQmlImageProviderBase::Flags"/>
     <enum-type name="QQmlImageProviderBase::ImageType"/>
-    <interface-type name="QQmlImageProviderBase">
+    <interface-type name="QQmlImageProviderBase" until="5.*">
     </interface-type>
+    <object-type name="QQmlImageProviderBase" since="6.0.0">
+    </object-type>
     <interface-type name="QQmlIncubationController">
         <modify-function signature="operator=(const QQmlIncubationController &amp;)" remove="all"/>
     </interface-type>
@@ -305,7 +351,7 @@
     </object-type>
 
     <object-type name="QQmlFileSelector">
-        <modify-function signature="setExtraSelectors(QStringList&lt;QString&gt; &amp;)" remove="all"/>
+        <modify-function signature="setExtraSelectors(QStringList &amp;)" remove="all" until="5.*"/>
         <modify-function signature="setSelector(QFileSelector*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcSelector" />
@@ -341,4 +387,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QV4::*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched * type 'QQmlInfo'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'T::QmlForeignType'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'QQmlModuleImportSpecialVersions' does not have a type entry or is not an enum" />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QJSValue." />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QQmlContext::PropertyPair." />
 </typesystem>

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,6 +36,10 @@ import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
 import io.qt.core.QMetaObject.*;
 
+/**
+ * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qweakpointer.html">QWeakPointer</a>
+ * similar to {@link java.lang.ref.WeakReference} but also supplying <code>null</code> when resource has been disposed.</p>
+ */
 public final class QWeakPointer<O extends QtObjectInterface> {
 	
 	public QWeakPointer(O object) {

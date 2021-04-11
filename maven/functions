@@ -1,6 +1,0 @@
-
-
-function die {
-	echo "ERROR!"
-	exit 1
-}

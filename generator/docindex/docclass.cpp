@@ -23,6 +23,11 @@ void DocClass::addProperty(const DocProperty* prop){
     m_properties[prop->name()] = prop;
 }
 
+void DocClass::addTypeDef(const DocTypeDef* def){
+    Q_ASSERT(def);
+    m_typeDefs[def->name()] = def;
+}
+
 QList<const DocFunction*> DocClass::getFunctions(const QString& name) const{
     return m_functions.values(name);
 }
@@ -33,5 +38,9 @@ const DocVariable* DocClass::getVariable(const QString& name) const{
 
 const DocProperty* DocClass::getProperty(const QString& name) const{
     return m_properties[name];
+}
+
+const DocTypeDef* DocClass::getTypeDef(const QString& name) const{
+    return m_typeDefs[name];
 }
 

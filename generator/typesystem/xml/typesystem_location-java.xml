@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -62,7 +62,7 @@
                     qtjambi_set_java_ownership_for_toplevel_object(%env, %in);
                     jobject __java_%2 = qtjambi_cast&lt;jobject>(%env, %2);
                     jstring __java_%3 = qtjambi_cast&lt;jstring>(%env, %3);
-                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result.newInstance(
+                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(
                                          %env,
                                          __java_engine,
                                          __java_%2,
@@ -71,14 +71,14 @@
                 <conversion-rule class="shell">
                     QGeoCodingManagerEngine*  %out = nullptr;
                     if(%in){
-                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result.engine(%env, %in);
+                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);
                         %out = qtjambi_cast&lt;QGeoCodingManagerEngine*>(%env, __java_engine);
                         if(%2){
-                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result.error(%env, %in);
+                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);
                             *%2 = qtjambi_cast&lt;QGeoServiceProvider::Error>(%env, __java_%2);
                         }
                         if(%3){
-                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result.errorString(%env, %in);
+                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);
                             *%3 = qtjambi_cast&lt;QString>(%env, __java_%3);
                         }
                     }else{
@@ -116,7 +116,7 @@
                     qtjambi_set_java_ownership_for_toplevel_object(%env, %in);
                     jobject __java_%2 = qtjambi_cast&lt;jobject>(%env, %2);
                     jstring __java_%3 = qtjambi_cast&lt;jstring>(%env, %3);
-                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result.newInstance(
+                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(
                                          %env,
                                          __java_engine,
                                          __java_%2,
@@ -125,14 +125,14 @@
                 <conversion-rule class="shell">
                     QGeoRoutingManagerEngine*  %out = nullptr;
                     if(%in){
-                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result.engine(%env, %in);
+                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);
                         %out = qtjambi_cast&lt;QGeoRoutingManagerEngine*>(%env, __java_engine);
                         if(%2){
-                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result.error(%env, %in);
+                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);
                             *%2 = qtjambi_cast&lt;QGeoServiceProvider::Error>(%env, __java_%2);
                         }
                         if(%3){
-                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result.errorString(%env, %in);
+                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);
                             *%3 = qtjambi_cast&lt;QString>(%env, __java_%3);
                         }
                     }else{
@@ -170,7 +170,7 @@
                     qtjambi_set_java_ownership_for_toplevel_object(%env, %in);
                     jobject __java_%2 = qtjambi_cast&lt;jobject>(%env, %2);
                     jstring __java_%3 = qtjambi_cast&lt;jstring>(%env, %3);
-                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result.newInstance(
+                    jobject %out = Java::QtLocation::QGeoServiceProviderFactory$Result::newInstance(
                                          %env,
                                          __java_engine,
                                          __java_%2,
@@ -179,14 +179,14 @@
                 <conversion-rule class="shell">
                     QPlaceManagerEngine*  %out = nullptr;
                     if(%in){
-                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result.engine(%env, %in);
+                        jobject __java_engine = Java::QtLocation::QGeoServiceProviderFactory$Result::engine(%env, %in);
                         %out = qtjambi_cast&lt;QPlaceManagerEngine*>(%env, __java_engine);
                         if(%2){
-                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result.error(%env, %in);
+                            jobject __java_%2 = Java::QtLocation::QGeoServiceProviderFactory$Result::error(%env, %in);
                             *%2 = qtjambi_cast&lt;QGeoServiceProvider::Error>(%env, __java_%2);
                         }
                         if(%3){
-                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result.errorString(%env, %in);
+                            jobject __java_%3 = Java::QtLocation::QGeoServiceProviderFactory$Result::errorString(%env, %in);
                             *%3 = qtjambi_cast&lt;QString>(%env, __java_%3);
                         }
                     }else{

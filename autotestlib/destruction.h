@@ -45,7 +45,7 @@
 #ifndef DESTRUCTION_H
 #define DESTRUCTION_H
 
-#include <QtCore>
+#include <QtCore/QtCore>
 
 class DestroyCounter: public QObject
 {

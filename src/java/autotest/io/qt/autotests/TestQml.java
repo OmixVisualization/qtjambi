@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,6 +29,8 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,49 +48,18 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QtClassInfo;
-import io.qt.QtPropertyNotify;
-import io.qt.QtPropertyReader;
-import io.qt.QtPropertyWriter;
-import io.qt.QtUtilities;
+import io.qt.*;
 import io.qt.autotests.generated.TestInterface;
-import io.qt.core.QByteArray;
-import io.qt.core.QEvent;
-import io.qt.core.QMetaMethod;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaObject.AbstractPrivateSignal1;
-import io.qt.core.QObject;
-import io.qt.core.QPointF;
-import io.qt.core.QRectF;
-import io.qt.core.QRunnable;
-import io.qt.core.QUrl;
-import io.qt.core.Qt;
-import io.qt.gui.QColor;
-import io.qt.gui.QGuiApplication;
-import io.qt.gui.QPainter;
-import io.qt.internal.NativeAccess;
-import io.qt.qml.QJSEngine;
-import io.qt.qml.QJSValue;
-import io.qt.qml.QQmlApplicationEngine;
-import io.qt.qml.QQmlComponent;
-import io.qt.qml.QQmlEngine;
-import io.qt.qml.QQmlIncubationController;
-import io.qt.qml.QQmlIncubator;
-import io.qt.qml.QQmlListProperty;
-import io.qt.qml.QQmlParserStatus;
-import io.qt.qml.QQmlProperty;
-import io.qt.qml.QQmlPropertyValueSource;
-import io.qt.qml.QtQml;
-import io.qt.qt3d.core.quick.QQmlAspectEngine;
-import io.qt.quick.QQuickItem;
-import io.qt.quick.QQuickView;
-import io.qt.quick.widgets.QQuickWidget;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QWidget;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.internal.*;
+import io.qt.qml.*;
+import io.qt.quick.*;
+import io.qt.quick.widgets.*;
+import io.qt.widgets.*;
 
 public class TestQml extends QApplicationTest{
-	
+
 	@AfterClass
     public static void testDispose() throws Exception {
 		RandomNumberGenerator.instance = null;
@@ -268,7 +239,7 @@ public class TestQml extends QApplicationTest{
 	
 	@After
     public void tearDown() {
-		
+		System.gc();
 	}
 	
 	@Test
@@ -483,21 +454,6 @@ public class TestQml extends QApplicationTest{
 	}
 	
 	@Test
-    public void testExceptionInInterface_QQmlAspectEngine() {
-		QtQml.qmlClearTypeRegistrations();
-		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
-		QQmlAspectEngine component = new QQmlAspectEngine();
-		try {
-			component.setSource(QUrl.fromLocalFile("classpath:io/qt/autotests/qml/TestExn.qml"));
-			Assert.assertFalse("Error expected to be thrown", true);
-		} catch (AssertionError e) {
-			throw e;
-		} catch (Error e) {
-			assertEquals("Cannot initialize interface io.qt.autotests.generated.TestInterface without arguments. Please use the private constructor and QtUtilities.initializeNativeObject(object, arguments...) instead.", e.getMessage());
-		}
-	}
-	
-	@Test
     public void testExceptionInInterface_QuickWidget() {
 		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
 		QtQml.qmlClearTypeRegistrations();
@@ -624,7 +580,7 @@ public class TestQml extends QApplicationTest{
 		}
 		
 		Msg msg = new Msg();
-		
+		Assert.assertEquals(msg.authorChanged, msg.metaObject().property("author").notifySignal(msg));
 		QQmlEngine engine = new QQmlEngine();
 		engine.rootContext().setContextProperty("msg", msg);
 		QByteArray data = new QByteArray("import QtQuick 2.0\n" + 
@@ -1069,6 +1025,42 @@ public class TestQml extends QApplicationTest{
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QQuickItem item = component.create(QQuickItem.class);
+//		item.metaObject().methods().forEach(m->System.out.println(m.methodSignature() + " = " + m.cppMethodSignature()));
+		QMetaMethod method = item.metaObject().method("testRectangleSignal", QQuickItem.class);
+		Object[] signalResult = {null};
+		((QMetaObject.AbstractPrivateSignal1<?>)method.toSignal(item)).connect(r -> signalResult[0] = r);
+		QQuickItem prop = new QQuickItem();
+		signalResult[0] = null;
+		try {
+			method.invoke(item, prop);
+			assertTrue("IllegalArgumentException expected to be thrown", false);
+		} catch (IllegalArgumentException e) {
+			assertTrue(true);
+		}
+		assertEquals(null, signalResult[0]);
+		assertFalse(item.setProperty("rectangleProperty", prop));
+		QQuickItem rectangleProperty = (QQuickItem)item.property("rectangleProperty");
+		assertTrue(rectangleProperty != null);
+		signalResult[0] = null;
+		method.invoke(item, rectangleProperty);
+		assertEquals(rectangleProperty, signalResult[0]);
+		
+		prop.dispose();
+		try {
+			item.setProperty("rectangleProperty", prop);
+			assertTrue("QNoNativeResourcesException expected to be thrown", false);
+		} catch (QNoNativeResourcesException e) {
+			assertTrue(true);
+		}
+		signalResult[0] = null;
+		try {
+			method.invoke(item, prop);
+			assertTrue("QNoNativeResourcesException expected to be thrown", false);
+		} catch (QNoNativeResourcesException e) {
+			assertTrue(true);
+		}
+		assertEquals(null, signalResult[0]);
+		
 		assertEquals(0, item.property("testProperty"));
 		QQmlProperty property = new QQmlProperty(item, "testProperty");
 		AtomicBoolean propertySignalFired = new AtomicBoolean();
@@ -1139,6 +1131,7 @@ public class TestQml extends QApplicationTest{
 	
 	@Test
     public void run_testUnknownEnums() {
+		Assume.assumeTrue("Qt6 required", QLibraryInfo.version().majorVersion()>=6);
 		QtQml.qmlClearTypeRegistrations();
 		QByteArray data = new QByteArray("import QtQuick 2.11\n" + 
 				"TextInput {\n" + 
@@ -1152,11 +1145,11 @@ public class TestQml extends QApplicationTest{
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject item = component.create();
-		AbstractPrivateSignal1<Integer> signal = QMetaObject.findSignal(item, "mouseSelectionModeChanged", int.class);
+		QMetaObject.AbstractPrivateSignal1<io.qt.core.QMetaType.GenericEnumerator> signal = QMetaObject.findSignal(item, "mouseSelectionModeChanged", io.qt.core.QMetaType.GenericEnumerator.class);
 		Assert.assertTrue(signal!=null);
 		List<Object> list = new ArrayList<>();
 		signal.connect(i->{
-			list.add(i);
+			list.add(i.value());
 		});
 		item.setProperty("mouseSelectionMode", 1);
 		item.setProperty("mouseSelectionMode", 0);
@@ -1184,11 +1177,10 @@ public class TestQml extends QApplicationTest{
 		}
 	};
 	
-	/*
-	@Test
+//	@Test
     public void run_testMultiInterfaceDeletion() {
 		QtQml.qmlClearTypeRegistrations();
-		QtQml.qmlRegisterType(MultiInterfaceObje)ct.class, "io.qt.test", 1, 0, "MultiInterfaceObject");
+		QtQml.qmlRegisterType(MultiInterfaceObject.class, "io.qt.test", 1, 0, "MultiInterfaceObject");
 		QByteArray data = new QByteArray("import io.qt.test 1.0\n" + 
 				"import QtQuick 2.0\n" + 
 				"MultiInterfaceObject {\n" + 
@@ -1204,6 +1196,6 @@ public class TestQml extends QApplicationTest{
 		root.moveToThread(thread);
 		QThreadPool pool = new QThreadPool();
 		pool.start(root);
-		QApplication.execStatic();
-	}*/
+		QApplication.exec();
+	}
 }

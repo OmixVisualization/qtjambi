@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,10 +37,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.logging.Logger;
 
 import io.qt.QtObjectInterface;
@@ -49,7 +47,7 @@ import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
-import io.qt.core.QString;
+import io.qt.core.QStringList;
 import io.qt.core.QTextStream;
 import io.qt.core.QUrl;
 import io.qt.internal.NativeAccess;
@@ -62,7 +60,7 @@ import io.qt.qml.QtQml;
 public final class QmlTypes {
 	
 	static {
-		io.qt.QtUtilities.initializePackage("io.qt.qml");
+		QtJambi_LibraryInitializer.init();
 	}
 	
 	private QmlTypes() throws java.lang.InstantiationError { throw new java.lang.InstantiationError("Cannot instantiate class QmlTypes."); }
@@ -331,20 +329,21 @@ public final class QmlTypes {
 			QDir directory = new QDir(baseUrl.toLocalFile());
 	        QFile qmldir = new QFile(directory.filePath("qmldir"));
 	        if(qmldir.exists() && qmldir.open(QIODevice.OpenModeFlag.ReadOnly)){
-	            List<String> classPath = Collections.emptyList();
-	            List<String> libraryPath = Collections.emptyList();
+	        	QStringList classPath = new QStringList();
+	            QStringList libraryPath = new QStringList();
 	        	try {
 		            QTextStream s = new QTextStream(qmldir);
 		            while(!s.atEnd()){
 		                String line = s.readLine();
 		                if(line.startsWith("classpath ")){
-		                    classPath = Arrays.asList(line.substring(10).trim().split(","));
+		                	classPath.clear();
+		                    classPath.append(Arrays.asList(line.substring(10).trim().split(",")));
 		                }else if(line.startsWith("librarypath ")){
-		                	libraryPath = new ArrayList<>(Arrays.asList(System.getProperty("java.library.path", "").split(File.pathSeparator)));
+		                	libraryPath.append(Arrays.asList(System.getProperty("java.library.path", "").split(File.pathSeparator)));
 							for(String lp : line.substring(12).trim().split(",")) {
 								lp = QDir.toNativeSeparators(directory.absoluteFilePath(lp));
 								if(!libraryPath.contains(lp)) {
-									libraryPath.add(lp);
+									libraryPath.append(lp);
 								}
 							}
 		                }
@@ -353,10 +352,10 @@ public final class QmlTypes {
 	        		qmldir.close();
 	        	}
 				if(!libraryPath.isEmpty()) {
-					System.setProperty("java.library.path", QString.join(libraryPath, File.pathSeparatorChar));
+					System.setProperty("java.library.path", libraryPath.join(File.pathSeparatorChar));
 				}
 				if(classPath.isEmpty()) {
-					classPath = directory.entryList(Arrays.asList("*.jar"), QDir.Filter.Files);
+					classPath.append(directory.entryList(Arrays.asList("*.jar"), QDir.Filter.Files));
 				}
 				for(String cp : classPath) {
 					File file = new File(QDir.toNativeSeparators(directory.absoluteFilePath(cp)));

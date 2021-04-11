@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,6 +50,7 @@
             <include file-name="Qt3DRender/qrenderapi.h" location="global"/>
         </extra-includes>
     </namespace-type>
+    <typealias-type name="Qt3DRender::QAbstractRayCaster::Hits"/>
     <rejection class="Qt3DRender" function-name="functorTypeId" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="functor_cast" since="5.15.0"/>
     <rejection class="Qt3DRender" function-name="operator==" since="5.15.0"/>
@@ -64,6 +65,7 @@
     <rejection class="Qt3DRender::QTechnique" function-name="graphicsApiFilter"/>
     <rejection class="Qt3DRender::QGeometry" function-name="boundingVolumeSpecifier"/>
     <enum-type name="Qt3DRender::QRenderAspect::RenderType"/>
+    <enum-type name="Qt3DRender::QRenderAspect::SubmissionType" since="6.0.0"/>
     <enum-type name="Qt3DRender::QShaderProgram::Format" since="5.15.0"/>
     <object-type name="Qt3DRender::QRenderAspect" java-name="QRenderAspect">
     </object-type>
@@ -205,10 +207,18 @@
     <object-type name="Qt3DRender::QSkyboxEntity" java-name="QSkyboxEntity" until="5.6">
     </object-type>
     <interface-type name="Qt3DRender::QAbstractMeshFunctor" java-name="QAbstractMeshFunctor">
-        <modify-function signature="operator==(const Qt3DRender::QAbstractMeshFunctor &amp;) const" rename="equals" access="public">
+        <modify-function signature="operator==(const Qt3DRender::QAbstractMeshFunctor &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
+        <modify-function signature="operator()()" rename="get">
+            <modify-argument index="return">
+                <define-ownership owner="cplusplus" class="shell"/>
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
     </interface-type>
     <object-type name="Qt3DRender::QAbstractMesh" java-name="QAbstractMesh">
     </object-type>
@@ -217,23 +227,39 @@
     <enum-type name="Qt3DRender::QGeometryRenderer::PrimitiveType"/>
     <object-type name="Qt3DRender::QGeometryRenderer" java-name="QGeometryRenderer">
     </object-type>
-    <object-type name="Qt3DRender::QGeometry" java-name="QGeometry">
+    <object-type name="Qt3DRender::QGeometry" java-name="QGeometry" until="5.*">
     </object-type>
     <object-type name="Qt3DRender::QAbstractSceneLoader" java-name="QAbstractSceneLoader" until="5.6">
     </object-type>
-    <object-type name="Qt3DRender::QTextureDataFunctor" java-name="QTextureDataFunctor">
-        <modify-function signature="operator==(const Qt3DRender::QTextureDataFunctor &amp;) const" rename="equals" access="public">
+    <interface-type name="Qt3DRender::QTextureDataFunctor" java-name="QTextureDataFunctor">
+        <modify-function signature="operator==(const Qt3DRender::QTextureDataFunctor &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
-    <object-type name="Qt3DRender::QGeometryFunctor" java-name="QGeometryFunctor">
-        <modify-function signature="operator==(const Qt3DRender::QGeometryFunctor &amp;) const" rename="equals" access="public">
+        <modify-function signature="operator()()" rename="get">
+            <modify-argument index="return">
+                <define-ownership owner="cplusplus" class="shell"/>
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="Qt3DRender::QGeometryFunctor" java-name="QGeometryFunctor" until="5.*">
+        <modify-function signature="operator==(const Qt3DRender::QGeometryFunctor &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
-    <object-type name="Qt3DRender::QAbstractFunctor" java-name="QAbstractFunctor" polymorphic-base="yes" polymorphic-id-expression="false">
+        <modify-function signature="operator()()" rename="get">
+            <modify-argument index="return">
+                <define-ownership owner="cplusplus" class="shell"/>
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
+    <interface-type name="Qt3DRender::QAbstractFunctor" java-name="QAbstractFunctor" until="5.*">
         <modify-function signature="functor_cast(const Qt3DRender::QAbstractFunctor *)const" remove="all" />
         <modify-function signature="id()const" remove="java">
             <inject-code class="shell">
@@ -242,18 +268,26 @@
                     if(jobject %this = __shell()->getJavaObjectLocalRef(%env)){
                         return qintptr(qtjambi_java_object_hashcode(%env, %env->GetObjectClass(%this)));
                     }else{
-                        __shell()->warnForMethod("Qt3DRender::QBufferDataGenerator::id() const");
+                        __shell()->warnForMethod("Qt3DRender::QAbstractFunctor::id() const");
                     }
                 }
             </inject-code>
         </modify-function>
-    </object-type>
-    <object-type name="Qt3DRender::QBufferFunctor" java-name="QBufferFunctor">
-        <modify-function signature="operator==(const Qt3DRender::QBufferFunctor &amp;) const" rename="equals" access="public">
+    </interface-type>
+    <interface-type name="Qt3DRender::QBufferFunctor" java-name="QBufferFunctor">
+        <modify-function signature="operator==(const Qt3DRender::QBufferFunctor &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
+        <modify-function signature="operator()()" rename="get">
+            <modify-argument index="return">
+                <define-ownership owner="cplusplus" class="shell"/>
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+    </interface-type>
     <object-type name="Qt3DRender::QAbstractTextureImage" java-name="QAbstractTextureImage">
     </object-type>
     <object-type name="Qt3DRender::QPaintedTextureImage" java-name="QPaintedTextureImage">
@@ -388,15 +422,15 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="Qt3DRender::QAttribute" java-name="QAttribute">
+    <object-type name="Qt3DRender::QAttribute" java-name="QAttribute" until="5.*">
         <modify-function signature="setBuffer(Qt3DRender::QBuffer*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
     </object-type>
-    <enum-type name="Qt3DRender::QAttribute::AttributeType"/>
-    <enum-type name="Qt3DRender::QAttribute::VertexBaseType"/>
+    <enum-type name="Qt3DRender::QAttribute::AttributeType" until="5.*"/>
+    <enum-type name="Qt3DRender::QAttribute::VertexBaseType" until="5.*"/>
     <object-type name="Qt3DRender::QAbstractAttribute" java-name="QAbstractAttribute">
         <modify-function signature="buffer() const" access="non-final"/>
     </object-type>
@@ -405,13 +439,13 @@
     <object-type name="Qt3DRender::QFrontFace" java-name="QFrontFace">
         <modify-function signature="doClone() const" remove="all" until="5.6"/>
     </object-type>
-    <object-type name="Qt3DRender::QBuffer" java-name="QBuffer">
-    </object-type>
     <object-type name="Qt3DRender::QAbstractBuffer" java-name="QAbstractBuffer">
     </object-type>
-    <enum-type name="Qt3DRender::QBuffer::BufferType"/>
-    <enum-type name="Qt3DRender::QBuffer::UsageType"/>
-    <enum-type name="Qt3DRender::QBuffer::AccessType" since="5.9.0"/>
+    <object-type name="Qt3DRender::QBuffer" java-name="QBuffer" until="5.*">
+    </object-type>
+    <enum-type name="Qt3DRender::QBuffer::BufferType" until="5.*"/>
+    <enum-type name="Qt3DRender::QBuffer::UsageType" until="5.*"/>
+    <enum-type name="Qt3DRender::QBuffer::AccessType" since="5.9.0" until="5.*"/>
     <object-type name="Qt3DRender::QItemModelBuffer" java-name="QItemModelBuffer">
         <modify-function signature="setModel(QAbstractItemModel*)">
             <modify-argument index="1">
@@ -710,7 +744,7 @@
     <object-type name="Qt3DRender::QFrameGraph" java-name="QFrameGraph">
         <modify-function signature="setActiveFrameGraph(Qt3DRender::QFrameGraphNode*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -899,53 +933,62 @@
         </modify-function>
     </object-type>
     <enum-type name="Qt3DRender::QRenderTargetOutput::AttachmentPoint" since="5.7.0"/>
-    <object-type name="Qt3DRender::QBufferDataGenerator" java-name="QBufferDataGenerator" since="5.7.0" polymorphic-id-expression="Qt3DRender::functor_cast&lt;Qt3DRender::QBufferDataGenerator>(%1) || dynamic_cast&lt;Qt3DRender::QBufferDataGenerator*>(%1)">
+    <interface-type name="Qt3DRender::QBufferDataGenerator" java-name="QBufferDataGenerator" since="5.7.0">
         <extra-includes>
-            <include file-name="Qt3DRender/qabstractfunctor.h" location="global"/>
+            <include file-name="Qt3DRender/qabstractfunctor.h" location="global" until="5.*"/>
         </extra-includes>
-        <modify-function signature="operator==(const Qt3DRender::QBufferDataGenerator &amp;) const" rename="equals" access="public">
+        <modify-function signature="operator==(const Qt3DRender::QBufferDataGenerator &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
-    <object-type name="Qt3DRender::QGeometryFactory" java-name="QGeometryFactory" since="5.7.0" polymorphic-id-expression="Qt3DRender::functor_cast&lt;Qt3DRender::QGeometryFactory>(%1) || dynamic_cast&lt;Qt3DRender::QGeometryFactory*>(%1)">
+        <modify-function signature="operator()()" rename="get"/>
+    </interface-type>
+    <interface-type name="Qt3DRender::QGeometryFactory" java-name="QGeometryFactory" since="5.7.0">
         <extra-includes>
-            <include file-name="Qt3DRender/qabstractfunctor.h" location="global"/>
+            <include file-name="Qt3DRender/qabstractfunctor.h" location="global" until="5.*"/>
         </extra-includes>
-        <modify-function signature="operator==(const Qt3DRender::QGeometryFactory &amp;) const" rename="equals" access="public">
+        <modify-function signature="operator==(const Qt3DRender::QGeometryFactory &amp;) const" rename="equals">
             <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
         </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
-    <object-type name="Qt3DRender::QTextureGenerator" java-name="QTextureGenerator" since="5.7.0" polymorphic-id-expression="Qt3DRender::functor_cast&lt;Qt3DRender::QTextureGenerator>(%1) || dynamic_cast&lt;Qt3DRender::QTextureGenerator*>(%1)">
-        <extra-includes>
-            <include file-name="Qt3DRender/qabstractfunctor.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="operator==(const Qt3DRender::QTextureGenerator &amp;) const" rename="equals" access="public">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="operator()()" rename="call"/>
-    </object-type>
-    <object-type name="Qt3DRender::QTextureImageDataGenerator" java-name="QTextureImageDataGenerator" since="5.7.0" polymorphic-id-expression="Qt3DRender::functor_cast&lt;Qt3DRender::QTextureImageDataGenerator>(%1) || dynamic_cast&lt;Qt3DRender::QTextureImageDataGenerator*>(%1)">
-        <extra-includes>
-            <include file-name="Qt3DRender/qabstractfunctor.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="operator==(const Qt3DRender::QTextureImageDataGenerator &amp;) const" rename="equals" access="public">
-            <modify-argument index="1" invalidate-after-use="yes" />
-        </modify-function>
-        <modify-function signature="operator()()" rename="call">
+        <modify-function signature="operator()()" rename="get">
             <modify-argument index="return">
-                <replace-type modified-type="io.qt.qt3d.render.QTextureImageData"/>
-                <conversion-rule class="native">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-                </conversion-rule>
+                <define-ownership owner="cplusplus" class="shell"/>
+                <define-ownership owner="java" class="native"/>
             </modify-argument>
         </modify-function>
-    </object-type>
+    </interface-type>
+    <interface-type name="Qt3DRender::QTextureGenerator" java-name="QTextureGenerator" since="5.7.0">
+        <extra-includes>
+            <include file-name="Qt3DRender/qabstractfunctor.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="operator==(const Qt3DRender::QTextureGenerator &amp;) const" rename="equals">
+            <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
+        </modify-function>
+        <modify-function signature="operator()()" rename="get"/>
+    </interface-type>
+    <interface-type name="Qt3DRender::QTextureImageDataGenerator" java-name="QTextureImageDataGenerator" since="5.7.0">
+        <extra-includes>
+            <include file-name="Qt3DRender/qabstractfunctor.h" location="global" until="5.*"/>
+        </extra-includes>
+        <modify-function signature="operator==(const Qt3DRender::QTextureImageDataGenerator &amp;) const" rename="equals">
+            <modify-argument index="1" invalidate-after-use="yes" />
+            <inject-code class="java-interface-default"><argument-map index="1" meta-name="%1"/>
+                return this==%1;
+            </inject-code>
+        </modify-function>
+    </interface-type>
     <object-type name="Qt3DRender::QFilterKey" java-name="QFilterKey" since="5.7.0">
     </object-type>
     <object-type name="Qt3DRender::QGraphicsApiFilter" java-name="QGraphicsApiFilter" since="5.7.0">
-        <modify-function signature="operator==(const Qt3DRender::QGraphicsApiFilter &amp;)" remove="all"/>
+        <modify-function signature="operator==(const Qt3DRender::QGraphicsApiFilter &amp;,const Qt3DRender::QGraphicsApiFilter &amp;)" remove="all"/>
     </object-type>
     <enum-type name="Qt3DRender::QGraphicsApiFilter::OpenGLProfile" since="5.7.0"/>
     <enum-type name="Qt3DRender::QGraphicsApiFilter::Api" since="5.7.0">
@@ -1000,7 +1043,6 @@
     </value-type>
     <enum-type name="Qt3DRender::QAbstractRayCaster::RunMode"/>
     <enum-type name="Qt3DRender::QAbstractRayCaster::FilterMode"/>
-    <!--value-type name="Qt3DRender::QAbstractRayCaster::Hits"/-->
     <object-type name="Qt3DRender::QAbstractRayCaster" java-name="QAbstractRayCaster">
         <modify-function signature="addLayer(Qt3DRender::QLayer*)">
             <modify-argument index="1">
@@ -1048,6 +1090,8 @@
     <enum-type name="Qt3DRender::QShaderImage::Access" since="5.14.0"/>
     <enum-type name="Qt3DRender::QShaderImage::ImageFormat" since="5.14.0"/>
     <enum-type name="Qt3DRender::QSubtreeEnabler::Enablement" since="5.14.0"/>
+    <object-type name="Qt3DRender::QPickingProxy" java-name="QPickingProxy" since="6.0.0">
+    </object-type>
     
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'Qt3DRender::QGraphicsApiFilter*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'Qt3DRender::QStencilTestSeparate*'"/>
@@ -1062,7 +1106,12 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: unknown operator 'quint64'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'createNodeCreationChange() const' in '*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'dataGenerator() const' in '*'"/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'dependencies() const' in '*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Rejected enum has no alternative...: QGraphicsApiFilter::Vulkan"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractLight' set to non-final, as it is extended by other classes" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'sceneChangeEvent(const QSharedPointer&lt;Qt3DCore::QSceneChange > &amp; change)' in 'QCameraLens'" />
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type Qt3DRender::QRayCasterHit." />
+    <suppress-warning text="WARNING(Lexer) :: Invalid input: 239 (in *qrendercapabilities.h, *)" />
+    <suppress-warning text="WARNING(Lexer) :: Invalid input: 187 (in *qrendercapabilities.h, *)" />
+    <suppress-warning text="WARNING(Lexer) :: Invalid input: 191 (in *qrendercapabilities.h, *)" />
 </typesystem>

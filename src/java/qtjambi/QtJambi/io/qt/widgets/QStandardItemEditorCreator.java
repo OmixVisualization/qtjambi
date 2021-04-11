@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,6 +40,9 @@ import io.qt.core.QByteArray;
 import io.qt.core.QMetaObject;
 import io.qt.internal.QtJambiInternal;
 
+/**
+ * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstandarditemeditorcreator.html">QStandardItemEditorCreator</a></p>
+ */
 public class QStandardItemEditorCreator<T extends QWidget> implements QItemEditorCreatorBase {
 	
 	public interface ConstructorHandle<T> extends QItemEditorCreator.ConstructorHandle<T>, Serializable{

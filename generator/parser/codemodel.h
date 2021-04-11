@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,11 +43,7 @@
 #include "codemodel_fwd.h"
 #include <codemodel_pointer.h>
 
-#include <QtCore/QHash>
-#include <QtCore/QList>
-#include <QtCore/QString>
-#include <QtCore/QStringList>
-#include <QtCore/QVector>
+#include <QtCore/QtCore>
 
 #define DECLARE_MODEL_NODE(k) \
     enum { __node_kind = Kind_##k }; \
@@ -124,31 +120,22 @@ class TypeInfo {
             RReference
         };
 
-        TypeInfo(const TypeInfo &other)
-                : flags(other.flags),
-                m_reference_type(other.m_reference_type),
-                m_indirections(other.m_indirections),
-                m_qualifiedName(other.m_qualifiedName),
-                m_arrayElements(other.m_arrayElements),
-                m_arguments(other.m_arguments),
-                m_argumentNames(other.m_argumentNames),
-                m_functionalReturnType(other.m_functionalReturnType),
-                m_functionalArgumentTypes(other.m_functionalArgumentTypes),
-                m_functionalArgumentNames(other.m_functionalArgumentNames) {}
+        TypeInfo(const TypeInfo &other) = default;
+        TypeInfo &operator=(const TypeInfo &other) = default;
+        TypeInfo(TypeInfo &&other) = default;
+        TypeInfo &operator=(TypeInfo &&other) = default;
 
         TypeInfo():
-                flags(0), m_reference_type(NoReference) {}
+                m_flags(), m_reference_type(NoReference) {}
 
         const QStringList& qualifiedName() const { return m_qualifiedName; }
-        void setQualifiedName(const QStringList &qualified_name) {
-            m_qualifiedName = qualified_name;
-        }
+        void setQualifiedName(const QStringList &qualified_name);
 
-        bool isConstant() const { return m_constant; }
-        void setConstant(bool is) { m_constant = is; }
+        bool isConstant() const { return m_flags.testFlag(IsConst); }
+        void setConstant(bool is) { m_flags.setFlag(IsConst, is); }
 
-        bool isVolatile() const { return m_volatile; }
-        void setVolatile(bool is) { m_volatile = is; }
+        bool isVolatile() const { return m_flags.testFlag(IsVolatile); }
+        void setVolatile(bool is) { m_flags.setFlag(IsVolatile, is); }
 
         ReferenceType getReferenceType() const { return m_reference_type; }
         void setReferenceType(ReferenceType reference_type) { m_reference_type = reference_type; }
@@ -156,8 +143,8 @@ class TypeInfo {
         inline const QList<bool>& indirections() const { return m_indirections; }
         void setIndirections(const QList<bool> & indirections) { m_indirections = indirections; }
 
-        bool isFunctionPointer() const { return m_functionPointer; }
-        void setFunctionPointer(bool is) { m_functionPointer = is; }
+        bool isFunctionPointer() const { return m_flags.testFlag(IsFunctionPointer); }
+        void setFunctionPointer(bool is) { m_flags.setFlag(IsFunctionPointer, is); }
 
         const QStringList& arrayElements() const { return m_arrayElements; }
         void setArrayElements(const QStringList &arrayElements) { m_arrayElements = arrayElements; }
@@ -187,16 +174,13 @@ class TypeInfo {
         void setFunctionalArgumentNames(const QList<QString>& l) { m_functionalArgumentNames = l; }
 
     private:
-        union {
-            uint flags;
-
-            struct {
-            uint m_constant: 1;
-            uint m_volatile: 1;
-            uint m_functionPointer: 1;
-            uint m_padding: 22;
-            };
+        enum Flag : quint8{
+            None = 0x00,
+            IsConst = 0x01,
+            IsVolatile = 0x02,
+            IsFunctionPointer = 0x04,
         };
+        QFlags<Flag> m_flags;
 
         ReferenceType m_reference_type;
         /**
@@ -367,11 +351,9 @@ class _ClassModelItem: public _ScopeModelItem {
         static ClassModelItem create(CodeModel *model);
 
     public:
-        const QStringList& baseClasses() const;
+        const QList<QPair<QString,bool>>& baseClasses() const;
 
-        void setBaseClasses(const QStringList &baseClasses);
-        void addBaseClass(const QString &baseClass);
-        void removeBaseClass(const QString &baseClass);
+        void setBaseClasses(const QList<QPair<QString,bool>> &baseClasses);
 
         const TemplateParameterList& templateParameters() const;
         void setTemplateParameters(const TemplateParameterList &templateParameters);
@@ -395,21 +377,25 @@ class _ClassModelItem: public _ScopeModelItem {
         void setDeclDeprecated(bool declDeprecated);
         const QString& declDeprecatedComment() const;
         void setDeclDeprecatedComment(const QString& comment);
+        CodeModel::AccessPolicy accessPolicy() const;
+        void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
     protected:
         _ClassModelItem(CodeModel *model, int kind = __node_kind)
                 : _ScopeModelItem(model, kind), m_has_Q_GADGET(false), m_has_Q_OBJECT(false), _M_classType(CodeModel::Class),
-                  _M_declFinal(false), _M_declDeprecated(false) {}
+                  _M_declFinal(false), _M_declDeprecated(false),
+                  _M_accessPolicy(CodeModel::Public) {}
 
     private:
         bool m_has_Q_GADGET;
         bool m_has_Q_OBJECT;
-        QStringList _M_baseClasses;
+        QList<QPair<QString,bool>> _M_baseClasses;
         TemplateParameterList _M_templateParameters;
         CodeModel::ClassType _M_classType;
         QStringList _M_propertyDeclarations;
         bool _M_declFinal;
         bool _M_declDeprecated;
         QString _M_declDeprecatedComment;
+        CodeModel::AccessPolicy _M_accessPolicy;
 
     private:
         _ClassModelItem(const _ClassModelItem &other);
@@ -536,25 +522,25 @@ class _MemberModelItem: public _CodeModelItem {
         _MemberModelItem(CodeModel *model, int kind)
                 : _CodeModelItem(model, kind),
                 _M_accessPolicy(CodeModel::Public),
-                _M_flags(0) {}
+                _M_flags(None) {}
 
     private:
+        enum Flag : quint8{
+            None = 0x00,
+            IsConstant = 0x01,
+            IsVolatile = 0x02,
+            IsStatic = 0x04,
+            IsFriend = 0x08,
+            IsRegister = 0x10,
+            IsExtern = 0x20,
+            IsMutable = 0x40,
+            IsDeprecated = 0x80,
+        };
+
         TemplateParameterList _M_templateParameters;
         TypeInfo _M_type;
         CodeModel::AccessPolicy _M_accessPolicy;
-        union {
-            struct {
-            uint _M_isConstant: 1;
-            uint _M_isVolatile: 1;
-            uint _M_isStatic: 1;
-            uint _M_isFriend: 1;
-            uint _M_isRegister: 1;
-            uint _M_isExtern: 1;
-            uint _M_isMutable: 1;
-            uint _M_isDeprecated: 1;
-            };
-            uint _M_flags;
-        };
+        QFlags<Flag> _M_flags;
         QString _M_deprecatedComment;
 };
 
@@ -593,6 +579,11 @@ class _FunctionModelItem: public _MemberModelItem {
 
         bool isVariadics() const;
         void setVariadics(bool isVariadics);
+        bool hasBody() const;
+        void setHasBody(bool hasBody);
+
+        TypeInfo::ReferenceType referenceType() const;
+        void setReferenceType(TypeInfo::ReferenceType referenceType);
 
         bool isSimilar(FunctionModelItem other) const;
 
@@ -600,23 +591,24 @@ class _FunctionModelItem: public _MemberModelItem {
         _FunctionModelItem(CodeModel *model, int kind = __node_kind)
                 : _MemberModelItem(model, kind),
                 _M_functionType(CodeModel::Normal),
-                _M_flags(0) {}
+                _M_flags(None), _M_referenceType(TypeInfo::NoReference) {}
 
     private:
+        enum Flag : quint8{
+            None = 0x00,
+            IsVirtual = 0x01,
+            IsInline = 0x02,
+            IsAbstract = 0x04,
+            IsExplicit = 0x08,
+            IsVariadics = 0x10,
+            IsInvokable = 0x20,
+            IsDeclFinal = 0x40,
+            HasBody = 0x80,
+        };
         ArgumentList _M_arguments;
         CodeModel::FunctionType _M_functionType;
-        union {
-            struct {
-            uint _M_isVirtual: 1;
-            uint _M_isInline: 1;
-            uint _M_isAbstract: 1;
-            uint _M_isExplicit: 1;
-            uint _M_isVariadics: 1;
-            uint _M_isInvokable : 1; // Qt
-            uint _M_isDeclFinal: 1;
-            };
-            uint _M_flags;
-        };
+        QFlags<Flag> _M_flags;
+        TypeInfo::ReferenceType _M_referenceType;
 
     private:
         _FunctionModelItem(const _FunctionModelItem &other);
@@ -662,13 +654,17 @@ class _TypeAliasModelItem: public _CodeModelItem {
     public:
         const TypeInfo& type() const;
         void setType(const TypeInfo &type);
+        CodeModel::AccessPolicy accessPolicy() const;
+        void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
 
     protected:
         _TypeAliasModelItem(CodeModel *model, int kind = __node_kind)
-                : _CodeModelItem(model, kind) {}
+                : _CodeModelItem(model, kind),
+                  _M_accessPolicy(CodeModel::Public) {}
 
     private:
         TypeInfo _M_type;
+        CodeModel::AccessPolicy _M_accessPolicy;
 
     private:
         _TypeAliasModelItem(const _TypeAliasModelItem &other);
@@ -757,19 +753,19 @@ class _TemplateParameterModelItem: public _CodeModelItem {
         const TypeInfo &type() const;
         void setType(const TypeInfo &type);
 
-        bool defaultValue() const;
-        void setDefaultValue(bool defaultValue);
+        const QString& defaultValue() const;
+        void setDefaultValue(const QString& defaultValue);
 
         void setOwnerClass(const ClassModelItem& ownerClass);
         ClassModelItem ownerClass() const;
 
     protected:
         _TemplateParameterModelItem(CodeModel *model, int kind = __node_kind)
-                : _CodeModelItem(model, kind), _M_defaultValue(false) {}
+                : _CodeModelItem(model, kind), _M_defaultValue() {}
 
     private:
         TypeInfo _M_type;
-        bool _M_defaultValue;
+        QString _M_defaultValue;
         ClassModelItem _M_ownerClass;
 
     private:

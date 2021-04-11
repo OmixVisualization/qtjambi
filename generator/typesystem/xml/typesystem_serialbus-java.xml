@@ -20,7 +20,7 @@
                 <argument-map index="0" meta-name="%0"/>
                 <argument-map index="3" meta-name="%3"/>
                 if(!%0 &amp;&amp; !%3.isEmpty()){
-                    Java::Private::Runtime::QCanBusException.throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %3 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -29,9 +29,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="3" meta-name="%3"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QCanBusException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%3){
-                            jstring message = Java::Private::Runtime::QCanBusException.getMessage(%env, exn.object());
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%3, %env, message);
                         }
                     }else{
@@ -51,7 +51,7 @@
             <inject-code class="native" position="end">
                 <argument-map index="2" meta-name="%2"/>
                 if(!%2.isEmpty()){
-                    Java::Private::Runtime::QCanBusException.throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -60,9 +60,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QCanBusException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
-                            jstring message = Java::Private::Runtime::QCanBusException.getMessage(%env, exn.object());
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%2, %env, message);
                         }
                     }else{
@@ -92,7 +92,7 @@
                 <argument-map index="0" meta-name="%0"/>
                 <argument-map index="2" meta-name="%2"/>
                 if(!%0 &amp;&amp; !%2.isEmpty()){
-                    Java::Private::Runtime::QCanBusException.throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -101,9 +101,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QCanBusException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
-                            jstring message = Java::Private::Runtime::QCanBusException.getMessage(%env, exn.object());
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%2, %env, message);
                         }
                     }else{
@@ -133,7 +133,7 @@
                 <argument-map index="0" meta-name="%0"/>
                 <argument-map index="2" meta-name="%2"/>
                 if(!%0 &amp;&amp; !%2.isEmpty()){
-                    Java::Private::Runtime::QCanBusException.throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %2 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -142,9 +142,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="2" meta-name="%2"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QCanBusException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%2){
-                            jstring message = Java::Private::Runtime::QCanBusException.getMessage(%env, exn.object());
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%2, %env, message);
                         }
                     }else{
@@ -164,7 +164,7 @@
             <inject-code class="native" position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if(!%1.isEmpty()){
-                    Java::Private::Runtime::QCanBusException.throwNew(%env, %1 QTJAMBI_STACKTRACEINFO );
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %1 QTJAMBI_STACKTRACEINFO );
                 }
             </inject-code>
             <inject-code class="shell" position="beginning">
@@ -173,9 +173,9 @@
             <inject-code class="shell" position="end">
                 <argument-map index="1" meta-name="%1"/>
                 }catch(const JavaException&amp; exn){
-                    if(Java::Private::Runtime::QCanBusException.isInstanceOf(%env, exn.object())){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
                         if(%1){
-                            jstring message = Java::Private::Runtime::QCanBusException.getMessage(%env, exn.object());
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%1, %env, message);
                         }
                     }else{

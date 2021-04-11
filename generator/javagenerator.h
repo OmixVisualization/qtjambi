@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -127,7 +127,7 @@ class JavaGenerator : public Generator {
 
         virtual bool shouldGenerate(const AbstractMetaClass *java_class) const override {
             return java_class->enclosingClass()==nullptr // do not generate if enclosed class (in this case create static embedded class)
-                    && !java_class->typeEntry()->isContainer()&& !java_class->typeEntry()->isIterator()
+                    && !java_class->typeEntry()->isIterator()
                     && !java_class->isFake() && !java_class->typeEntry()->isVariant()
                     && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang);
         }
@@ -184,7 +184,8 @@ class JavaGenerator : public Generator {
         }
 
     private:
-        void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool *first);
+        void printExtraCode(QStringList& lines, QTextStream &s, bool addFreeLine = false);
+        void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw);
         QString subDirectoryForPackage(const QString &package) const { return QString(package).replace(".", "/"); }
         void writeInstantiatedType(QTextStream &s, const AbstractMetaType *abstractMetaType, bool forceBoxed) const;
         void write(QTextStream &s, const AbstractMetaEnum *global_enum);

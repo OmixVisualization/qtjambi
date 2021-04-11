@@ -36,11 +36,14 @@
 #include "reporthandler.h"
 #include "fileout.h"
 #include "typesystem/typedatabase.h"
+#include "typesystem/handler.h"
 #include "main.h"
 #include "asttoxml.h"
 #include "parser/binder.h"
 #include "util.h"
 #include "rpp/pp-engine-bits.h"
+#include <QtConcurrent>
+#include "docindex/docindexreader.h"
 
 QString Wrapper::include_directory = QString();
 
@@ -111,7 +114,7 @@ void Wrapper::handleArguments() {
         include_directory = args.value("qt-include-directory");
 
     if (args.contains("qt-doc-directory"))
-        gs->docsDirectory = args.value("qt-doc-directory");
+        docsDirectory = args.value("qt-doc-directory");
 
     if (args.contains("qt-doc-url")){
         gs->docsUrl = args.value("qt-doc-url");
@@ -266,15 +269,14 @@ int Wrapper::runJambiGenerator() {
 
     printf("Running the Qt Jambi Generator. Please wait while source files are being generated...\n");
 
-    //parse the type system file
-    if (!typeDatabase->parseFile(typesystemFileName, inputDirectoryList))
-        qFatal("Cannot parse file: '%s'", qPrintable(typesystemFileName));
-
     //removing file here for theoretical case of wanting to parse two master include files here
     QFile::remove(pp_file);
     QMap<QString, QString> features;
     bool isQtJambiPort = false;
-    std::function<void(std::string,std::string)> featureRegistry = [&features, &isQtJambiPort](std::string macro, std::string file){
+    uint qtVersionMajor = QT_VERSION_MAJOR;
+    uint qtVersionMinor = QT_VERSION_MINOR;
+    uint qtVersionPatch = QT_VERSION_PATCH;
+    std::function<void(std::string,std::string,std::string)> featureRegistry = [&features, &isQtJambiPort, &qtVersionMajor, &qtVersionMinor, &qtVersionPatch](std::string macro, std::string definition, std::string file){
         QString _macro = QString::fromStdString(macro);
         if(_macro.startsWith("QT_FEATURE_")){
             QString _file = QString::fromStdString(file);
@@ -285,22 +287,54 @@ int Wrapper::runJambiGenerator() {
             features[_macro] = _file;
         }else if(_macro=="QT_QTJAMBI_PORT"){
             isQtJambiPort = true;
+        }else if(_macro=="QT_VERSION_MAJOR"){
+            QString _definition = QString::fromStdString(definition);
+            bool ok = false;
+            uint v = _definition.toUInt(&ok);
+            if(ok)
+                qtVersionMajor = v;
+        }else if(_macro=="QT_VERSION_MINOR"){
+            QString _definition = QString::fromStdString(definition);
+            bool ok = false;
+            uint v = _definition.toUInt(&ok);
+            if(ok)
+                qtVersionMinor = v;
+        }else if(_macro=="QT_VERSION_PATCH"){
+            QString _definition = QString::fromStdString(definition);
+            bool ok = false;
+            uint v = _definition.toUInt(&ok);
+            if(ok)
+                qtVersionPatch = v;
         }
     };
+
     //preprocess using master include, preprocessed file and command line given include paths, if any
     if (!Preprocess::preprocess(fileName, pp_file, featureRegistry, args.value("phonon-include"), includePathsList, inputDirectoryList, debugCppMode)) {
         fprintf(stderr, "Preprocessor failed on file: '%s'\n", qPrintable(fileName));
         return 1;
     }
 
+    gs->qtVersion = QT_VERSION_CHECK(qtVersionMajor,qtVersionMinor,qtVersionPatch);
+
+    if(docsDirectory.exists()){
+        gs->m_docModelFuture = QtConcurrent::run([](const QDir& docsDirectory, QThread* targetThread) -> const DocModel* {
+            DocIndexReader reader;
+            return reader.readDocIndexes(docsDirectory, targetThread);
+        }, docsDirectory, QThread::currentThread());
+    }
+
+    //parse the type system file
+    try{
+        typeDatabase->initialize(typesystemFileName, inputDirectoryList, gs->qtVersion, isQtJambiPort);
+    }catch(const TypesystemException& exn){
+        fprintf(stderr, "%s\n", exn.what());
+        return -1;
+    }
+
     //convert temp preprocessed file to xml
     if (args.contains("ast-to-xml")) {
         astToXML(pp_file);
         return 0;
-    }
-
-    if(isQtJambiPort){
-        typeDatabase->replaceQThreadType();
     }
 
     analyzeDependencies(typeDatabase);
@@ -311,12 +345,7 @@ int Wrapper::runJambiGenerator() {
         gs->dumpObjectTree();
         return 0;
     }
-
-    printf("%s\n", qPrintable(gs->generate()));
-
-    printf("Done, %d warnings (%d known issues)\n", ReportHandler::warningCount(),
-           ReportHandler::suppressedCount());
-
+    gs->generate();
     return 0;
 }
 
@@ -344,17 +373,23 @@ void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
                 f.open(QIODevice::ReadOnly);
                 QTextStream s(&f);
                 while(!s.atEnd()){
-                    QString line = s.readLine();
-                    if(line.startsWith("#include <") && line.endsWith(">")){
-                        line.chop(1);
-                        line = line.mid(10);
-                        QStringList include = line.split("/");
-                        if((include.size()==2 && include[0]==include[1]) || include.size()==1){
-                            TypeSystemTypeEntry * lib = typeSystemsByQtLibrary[include[0]];
-                            if(lib){
-                                entry->addRequiredTypeSystem(lib);
-                            }else{
-                                entry->addRequiredQtLibrary(include[0]);
+                    QString line = s.readLine().trimmed();
+                    if(line.startsWith('#')){
+                        line = line.mid(1).trimmed();
+                        if(line.startsWith("include")){
+                            line = line.mid(7).trimmed();
+                            if(line.startsWith("<") && line.endsWith(">")){
+                                line.chop(1);
+                                line = line.mid(1);
+                                QStringList include = line.split("/");
+                                if((include.size()==2 && include[0]==include[1]) || include.size()==1){
+                                    TypeSystemTypeEntry * lib = typeSystemsByQtLibrary[include[0]];
+                                    if(lib){
+                                        entry->addRequiredTypeSystem(lib);
+                                    }else{
+                                        entry->addRequiredQtLibrary(include[0]);
+                                    }
+                                }
                             }
                         }
                     }
@@ -419,7 +454,7 @@ void Wrapper::modifyCppDefine(const QString &arg, bool f_set) {
     if (arg.length() > 0) {
         const QChar ch = arg.at(0);
         if (ch.isSpace()) {
-            list = arg.split(QRegExp("[\\s]+"), Qt::SkipEmptyParts);
+            list = arg.split(QRegularExpression("[\\s]+"), Qt::SkipEmptyParts);
         } else if (ch == QChar(',')) {
             list = arg.split(ch, Qt::SkipEmptyParts);
         } else {
@@ -429,7 +464,7 @@ void Wrapper::modifyCppDefine(const QString &arg, bool f_set) {
 
     for (int i = 0; i < list.size(); i++) {
         const QString& s = list.at(i);
-        int split = s.indexOf("=");
+        auto split = s.indexOf("=");
         const QString name(s.left(split));
         QString value("1");
         if (split > 0)
@@ -465,7 +500,7 @@ QMap<QString, QString> Wrapper::parseArguments(int argc, char *argv[]) {
             } else if(arg.compare("--preproc-stage2") == 0) {
                 setDefineUndefineStage(2);
             } else {
-                int split = arg.indexOf("=");
+                auto split = arg.indexOf("=");
 
                 if (split > 0)
                     args[arg.mid(2).left(split-2)] = arg.mid(split + 1).trimmed();

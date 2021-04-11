@@ -1,2 +1,0 @@
-open module qtjambi.designer{
-}

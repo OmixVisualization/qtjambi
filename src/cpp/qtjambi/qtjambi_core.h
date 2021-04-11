@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,43 +47,18 @@
 #endif
 
 #include "qtjambi_global.h"
+#include "qtjambi_utils.h"
 
-#include "qtjambi_registry.h"
-#include "qtjambi_jobjectwrapper.h"
-#include "qtjambi_containers.h"
-
-#include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QtCore/QMetaType>
+#include <QtCore/QSharedDataPointer>
 #include <QtCore/QException>
-
-#include <QtCore/QPair>
-#include <QtCore/QVariant>
-#include <QtCore/QEvent>
-#include <QtCore/QModelIndex>
-#include <QtCore/QVarLengthArray>
-#include <QtCore/QStringList>
+#include <QtCore/QMetaEnum>
+#include <QtCore/QMetaMethod>
+#include <QtCore/QMetaProperty>
 #include <functional>
 #include <typeinfo>
 
 QT_WARNING_DISABLE_CLANG("-Wshift-count-overflow")
-
-#if TARGET_JAVA_VERSION>=10
-#ifndef JNI_VERSION_10
-#define JNI_VERSION_10   0x000a0000
-#endif
-#define JNI_VERSION_CURRENT JNI_VERSION_10
-#elif TARGET_JAVA_VERSION>=9
-#ifndef JNI_VERSION_9
-#define JNI_VERSION_9   0x00090000
-#endif
-#define JNI_VERSION_CURRENT JNI_VERSION_9
-#else
-#ifndef JNI_VERSION_1_8
-#define JNI_VERSION_1_8 0x00010008
-#endif
-#define JNI_VERSION_CURRENT JNI_VERSION_1_8
-#endif
 
 QTJAMBI_EXPORT void qtjambi_assert(const char *assertion, const char *file, int line);
 
@@ -191,13 +166,22 @@ private:
 
 class FunctorBasePrivate;
 
-class QTJAMBI_EXPORT FunctionalBase{
+class QTJAMBI_EXPORT QtJambiShellInterface{
+public:
+    static jobject getJavaObjectLocalRef(JNIEnv *env, const QtJambiShellInterface* shellInterface);
+protected:
+    virtual ~QtJambiShellInterface();
+private:
+    virtual QtJambiShell* __shell() const = 0;
+    friend class FunctorBase;
+    friend class FunctorBasePrivate;
+};
+
+class QTJAMBI_EXPORT FunctionalBase : public QtJambiShellInterface {
 public:
     FunctionalBase();
-    virtual ~FunctionalBase();
-    virtual void getFunctional(void*) = 0;
-protected:
-    virtual QtJambiShell* __shell() const = 0;
+    virtual ~FunctionalBase() override;
+    virtual void getFunctional(JNIEnv *,void*) = 0;
 private:
     Q_DISABLE_COPY_MOVE(FunctionalBase)
     QAtomicInt m_ref;
@@ -242,7 +226,9 @@ QTJAMBI_EXPORT bool qtjambi_exception_check(JNIEnv *env QTJAMBI_STACKTRACEINFO_D
 #define qtjambi_exception_check(ENV) qtjambi_exception_check(ENV QTJAMBI_STACKTRACEINFO )
 #endif
 
-class QTJAMBI_EXPORT JavaException : public QException, private JObjectWrapper
+class JavaExceptionPrivate;
+
+class QTJAMBI_EXPORT JavaException : public QException
 {
 public:
     JavaException();
@@ -278,11 +264,15 @@ public:
     static void raiseIllegalAccessError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseError(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseRuntimeException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
+    static void raiseUnsupportedOperationException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL );
     static void raiseQThreadAffinityException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3);
 private:
     void update(JNIEnv *env);
-    QByteArray m_what;
+    QSharedDataPointer<JavaExceptionPrivate> p;
 };
+
+#define QTJAMBI_THROW_EXCEPTION(Exception,env,Message)\
+    JavaException::raise##Exception(env, Message QTJAMBI_STACKTRACEINFO );
 
 #define qtjambi_throw_java_exception(env)\
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
@@ -311,43 +301,7 @@ private:
         exn.addSuppressed(env, exn##_2);\
     }
 
-inline uint qHash(const QMetaObject &value)
-{
-    return uint(31 * 1 + (qintptr(&value) ^ (qintptr(&value) >> 32)));
-}
-
-inline uint qHash(const QMetaEnum &value)
-{
-    if(!value.isValid())
-        return 0;
-    uint prime = 31;
-    uint result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + uint(value.enclosingMetaObject()->indexOfEnumerator(value.name()));
-    return result;
-}
-
-inline uint qHash(const QMetaMethod &value)
-{
-    if(!value.isValid())
-        return 0;
-    uint prime = 31;
-    uint result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + uint(value.methodIndex());
-    return result;
-}
-
-inline uint qHash(const QMetaProperty &value)
-{
-    if(!value.isValid())
-        return 0;
-    uint prime = 31;
-    uint result = 1;
-    result = prime * result + qHash(value.enclosingMetaObject());
-    result = prime * result + uint(value.propertyIndex());
-    return result;
-}
+QTJAMBI_EXPORT QByteArray qtjambi_type_name(const std::type_info& typeId);
 
 QTJAMBI_EXPORT bool qtjambi_convert_to_native(JNIEnv *env, const std::type_info& typeId, jobject java_object, void * output);
 
@@ -511,23 +465,12 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const T* array, j
     return out;
 }
 
-QTJAMBI_EXPORT jobject qtjambi_from_QMetaObject(JNIEnv *env, const QMetaObject *metaObject);
-
-QTJAMBI_EXPORT jobject qtjambi_from_QMetaEnum(JNIEnv *env, const QMetaEnum& enumerator);
-
-QTJAMBI_EXPORT jobject qtjambi_from_QMetaProperty(JNIEnv *env, const QMetaProperty& property);
-
-QTJAMBI_EXPORT jobject qtjambi_from_QMetaMethod(JNIEnv *env, const QMetaMethod& method);
-
-QTJAMBI_EXPORT const QMetaObject *qtjambi_to_QMetaObject(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QMetaEnum qtjambi_to_QMetaEnum(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QMetaMethod qtjambi_to_QMetaMethod(JNIEnv *env, jobject object);
-
-QTJAMBI_EXPORT QMetaProperty qtjambi_to_QMetaProperty(JNIEnv *env, jobject object);
-
 QTJAMBI_EXPORT QVariant qtjambi_to_qvariant(JNIEnv *env, jobject java_object);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+class QtJambiScope;
+QTJAMBI_EXPORT void qtjambi_to_QModelRoleData(JNIEnv *env, QtJambiScope& scope, jobject java_object, void * &data, qsizetype &length);
+#endif
 
 QTJAMBI_EXPORT jobject qtjambi_from_qvariant(JNIEnv *env, const QVariant &qt_variant);
 
@@ -542,8 +485,6 @@ QTJAMBI_EXPORT jstring qtjambi_to_jstring(JNIEnv *env, jobject object);
 QTJAMBI_EXPORT QString qtjambi_to_qstring(JNIEnv *env, jstring java_string);
 
 extern "C" QTJAMBI_EXPORT void qtjambi_to_qstring(QString& result, JNIEnv *env, jstring java_string);
-
-//QTJAMBI_EXPORT jobject qtjambi_from_qstyleoption(JNIEnv *env, const QStyleOption *so);
 
 template<template <typename> class Pointer, typename Instantiation>
 inline void deletePointer(void* pointer){
@@ -567,8 +508,6 @@ inline QObject* getQObjectFromPointer(const void* pointer){
     const Pointer<typename std::remove_const<Instantiation>::type>& _pointer = *reinterpret_cast<const Pointer<typename std::remove_const<Instantiation>::type>*>(pointer);
     return &*_pointer;
 }
-
-const QMetaObject *qtjambi_find_first_static_metaobject(const QMetaObject *meta_object);
 
 QTJAMBI_EXPORT void *qtjambi_to_interface(JNIEnv *env, jobject java_object,
                                   const char *interface_name, const std::type_info& typeId);
@@ -890,11 +829,10 @@ jobject qtjambi_from_flags(JNIEnv *env, const F& qt_flags)
 // QtEnumerator<T> -> int
 QTJAMBI_EXPORT QVariant qtjambi_to_enumerator(JNIEnv *env, jobject value);
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT
 jstring qtjambi_from_qstringref(JNIEnv *env, const QStringRef &s);
-
-QTJAMBI_EXPORT
-jstring qtjambi_from_qlatin1string(JNIEnv *env, const QLatin1String &s);
+#endif
 
 QTJAMBI_EXPORT
 jstring qtjambi_from_qstringview(JNIEnv *env, QStringView s);
@@ -914,23 +852,6 @@ void qtjambi_invalidate_array(JNIEnv *env, jobjectArray java_array, bool checkJa
 
 QTJAMBI_EXPORT
 void *qtjambi_to_cpointer(JNIEnv *env, jobject java_object, int indirections);
-
-QTJAMBI_EXPORT
-void qtjambi_dispose_interface(JNIEnv *env, jobject i);
-
-QTJAMBI_EXPORT
-bool qtjambi_is_interface_disposed(JNIEnv *env, jobject i);
-
-QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader = nullptr);
-
-QTJAMBI_EXPORT jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false);
-
-QTJAMBI_EXPORT jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature,
-                      const char *className, bool isStatic = false);
-QTJAMBI_EXPORT jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature, jclass clazz,
-                        bool isStatic = false);
-QTJAMBI_EXPORT jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signature,
-                        const char *className, bool isStatic = false);
 
 namespace QNativePointer{
     enum class Type{
@@ -962,8 +883,6 @@ QTJAMBI_EXPORT jobject qtjambi_from_QModelIndex(JNIEnv *env, const QModelIndex &
 QTJAMBI_EXPORT QString qtjambi_class_name(JNIEnv *env, jclass java_class);
 QTJAMBI_EXPORT QString qtjambi_object_class_name(JNIEnv *env, jobject java_object);
 
-QTJAMBI_EXPORT bool qtjambi_is_created_by_java(QObject *qobject);
-
 // Boxing functions
 QTJAMBI_EXPORT jobject qtjambi_from_int(JNIEnv *env, jint int_value);
 QTJAMBI_EXPORT jint qtjambi_to_int(JNIEnv *env, jobject int_object);
@@ -972,7 +891,6 @@ QTJAMBI_EXPORT jdouble qtjambi_to_double(JNIEnv *env, jobject double_object);
 QTJAMBI_EXPORT jobject qtjambi_from_boolean(JNIEnv *env, jboolean bool_value);
 QTJAMBI_EXPORT bool qtjambi_to_boolean(JNIEnv *env, jobject bool_object);
 QTJAMBI_EXPORT jlong qtjambi_to_long(JNIEnv *env, jobject long_object);
-QTJAMBI_EXPORT jobject qtjambi_from_jvalue(JNIEnv *env, const jvalue& value, jValueType valueType);
 QTJAMBI_EXPORT jobject qtjambi_from_long(JNIEnv *env, jlong long_value);
 QTJAMBI_EXPORT jobject qtjambi_from_short(JNIEnv *env, jshort short_value);
 QTJAMBI_EXPORT jobject qtjambi_from_float(JNIEnv *env, jfloat float_value);
@@ -1019,16 +937,17 @@ QTJAMBI_EXPORT jobject qtjambi_collection_iterator(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT jobject qtjambi_iterator_next(JNIEnv *env, jobject col);
 QTJAMBI_EXPORT bool qtjambi_iterator_has_next(JNIEnv *env, jobject col);
 
-inline void qtjambi_skipped_delete(void*){}
-
 template<typename T>
 const void* value_creator(){
     return new T();
 }
 
+typedef const void* (*DefaultValueCreator)();
+QTJAMBI_EXPORT const void* qtjambi_get_default_value(const std::type_info& type_info, DefaultValueCreator creator);
+
 template<typename T>
 const T& qtjambi_get_default_value(){
-    return *reinterpret_cast<const T*>(getDefaultValue(typeid(T), &value_creator<T>));
+    return *reinterpret_cast<const T*>(qtjambi_get_default_value(typeid(T), &value_creator<T>));
 }
 
 template<typename T>
@@ -1043,7 +962,7 @@ const T& qtjambi_value_from_nativeId(QtJambiNativeID nativeId){
 
 template <template<typename I> class V, class I>
 inline jobject qtjambi_to_ArrayList(JNIEnv *__jni_env, const V<I>& data, const std::function<jobject(JNIEnv *,I const &)>& converter){
-    jobject list = qtjambi_arraylist_new(__jni_env, data.size());
+    jobject list = qtjambi_arraylist_new(__jni_env, jint(data.size()));
     for(typename V<I>::const_iterator i = data.constBegin(); i!=data.constEnd(); ++i){
         qtjambi_collection_add(__jni_env, list, converter(__jni_env,*i));
     }
@@ -1163,34 +1082,12 @@ inline jobject qtjambi_to_HashSet(JNIEnv *__jni_env, int size, const std::functi
 }
 
 template <class P>
-inline jobject qtjambi_to_QPair(JNIEnv *__jni_env,
+inline jobject qtjambi_from_QPair(JNIEnv *__jni_env,
                                   const P& pair,
                                   const std::function<jobject(JNIEnv *,const P&)>& first,
                                   const std::function<jobject(JNIEnv *,const P&)>& second){
     return qtjambi_pair_new(__jni_env, first(__jni_env,pair), second(__jni_env,pair));
 }
-
-QTJAMBI_EXPORT const QMetaObject *qtjambi_metaobject_for_class(JNIEnv *env, jclass java_class, const QMetaObject *original_meta_object);
-
-QTJAMBI_EXPORT bool qtjambi_metaobject_is_dynamic(const QMetaObject *meta_object);
-
-QTJAMBI_EXPORT size_t qtjambi_value_size_for_class(JNIEnv *env, jclass object_class);
-
-QTJAMBI_EXPORT size_t qtjambi_shell_size_for_class(JNIEnv *env, jclass object_class);
-
-QTJAMBI_EXPORT size_t qtjambi_extended_size_for_class(JNIEnv *env, jclass object_class);
-
-QTJAMBI_EXPORT void qtjambi_register_variant_handler();
-
-QTJAMBI_EXPORT jobject qtjambi_invoke_method(JNIEnv *env, jobject receiver, jmethodID methodId, jbyte returnType, QVarLengthArray<jvalue> argsArray);
-
-QTJAMBI_EXPORT jobject qtjambi_invoke_static_method(JNIEnv *env,
-                            jclass clazz,
-                            jmethodID methodId,
-                            jbyte returnType,
-                            QVarLengthArray<jvalue> argsArray);
-
-QTJAMBI_EXPORT QVarLengthArray<jvalue> qtjambi_from_jobjectArray(JNIEnv *env, jobjectArray args, jintArray _cnvTypes, bool globalRefs = false);
 
 extern "C" QTJAMBI_EXPORT void qtjambi_shutdown();
 
@@ -1668,11 +1565,15 @@ public:
     JByteArrayPointer(JNIEnv *env, jbyteArray array, bool writable = true);
     ~JByteArrayPointer();
     operator char* () { return reinterpret_cast<char*>(m_array_elements); }
-    operator const char* () const { return reinterpret_cast<char*>(m_array_elements); }
+    operator const char* () const { return reinterpret_cast<const char*>(m_array_elements); }
     operator qint8* () { return reinterpret_cast<qint8*>(m_array_elements); }
-    operator const qint8* () const { return reinterpret_cast<qint8*>(m_array_elements); }
+    operator const qint8* () const { return reinterpret_cast<const qint8*>(m_array_elements); }
     operator quint8* () { return reinterpret_cast<quint8*>(m_array_elements); }
-    operator const quint8* () const { return reinterpret_cast<quint8*>(m_array_elements); }
+    operator const quint8* () const { return reinterpret_cast<const quint8*>(m_array_elements); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    operator QByteArrayView() const { return QByteArrayView(reinterpret_cast<const char*>(m_array_elements), size()); }
+#endif
+    operator QByteArray() const { return QByteArray(reinterpret_cast<const char*>(m_array_elements), size()); }
     static bool isValidArray(JNIEnv *env, jobject object);
 private:
 };
@@ -1744,6 +1645,12 @@ public:
     operator const quint16* () const { return reinterpret_cast<quint16*>(m_array_elements); }
     operator wchar_t* () { return reinterpret_cast<wchar_t*>(m_array_elements); }
     operator const wchar_t* () const { return reinterpret_cast<wchar_t*>(m_array_elements); }
+    operator QChar* () { return reinterpret_cast<QChar*>(m_array_elements); }
+    operator const QChar* () const { return reinterpret_cast<QChar*>(m_array_elements); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    operator QStringView() const { return QStringView(reinterpret_cast<const QChar*>(m_array_elements), size()); }
+#endif
+    operator QString() const { return QString(reinterpret_cast<const QChar*>(m_array_elements), size()); }
     static bool isValidArray(JNIEnv *env, jobject object);
 };
 
@@ -1810,21 +1717,64 @@ class QTJAMBI_EXPORT J2CStringBuffer{
 public:
     J2CStringBuffer(JNIEnv* env, jstring strg);
     ~J2CStringBuffer();
-    operator const char*() const;
-    operator char*();
+    const char* constData() const;
+    inline operator const char*() const { return constData(); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    inline QByteArrayView toByteArrayView() const { return QByteArrayView(constData(), length()); }
+    inline operator QByteArrayView() const { return toByteArrayView(); }
+#endif
+    inline QLatin1String toLatin1String() const { return QLatin1String(constData(), length()); }
+    inline operator QLatin1String() const { return toLatin1String(); }
+    inline const char* data() const { return constData(); }
+    inline const char* data() { return constData(); }
     int length() const;
 private:
-    int m_length;
-    QByteArray m_buffer;
+    const jstring m_strg;
+    const jsize m_length;
+    const char* m_data;
     Q_DISABLE_COPY_MOVE(J2CStringBuffer)
+};
+
+class QTJAMBI_EXPORT JString2QChars{
+public:
+    JString2QChars(JNIEnv* env, jstring strg);
+    ~JString2QChars();
+    const QChar* constData() const;
+    inline operator const QChar*() const { return constData(); }
+    inline QStringView toStringView() const { return QStringView(constData(), length()); }
+    inline operator QStringView() const { return toStringView(); }
+    inline const QChar* data() const { return constData(); }
+    inline const QChar* data() { return constData(); }
+    int length() const;
+private:
+    const jstring m_strg;
+    const jsize m_length;
+    const jchar* m_data;
+    Q_DISABLE_COPY_MOVE(JString2QChars)
 };
 
 QTJAMBI_EXPORT void qtjambi_report_qmlobject_destruction(QObject * obj);
 
 QTJAMBI_EXPORT void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                                                     size_t size, const std::type_info& typeId, bool isShell, bool isFunctional,
-                                                     PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction,
+                                                     size_t size, const std::type_info& typeId, bool isShell,
+                                                     PtrDeleterFunction delete_function,
                                                      jvalue* arguments);
+
+QTJAMBI_EXPORT void qtjambi_initialize_native_object(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                                                     size_t size, const std::type_info& typeId, bool isShell,
+                                                     PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction,
+                                                     jvalue* arguments);
+
+QTJAMBI_EXPORT void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                                                    size_t size, const std::type_info& typeId,
+                                                    bool isShell, jvalue* arguments);
+
+QTJAMBI_EXPORT void qtjambi_initialize_native_value(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                                                    size_t size, const std::type_info& typeId,
+                                                    bool isShell, PtrOwnerFunction ownerFunction, jvalue* arguments);
+
+QTJAMBI_EXPORT void qtjambi_initialize_native_functional(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                                                     size_t size, const std::type_info& typeId, PtrDeleterFunction delete_function);
 
 QTJAMBI_EXPORT void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
                                                       size_t size, const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isShell, bool isDeclarativeCall, jvalue* arguments);
@@ -1859,19 +1809,6 @@ void qtjambi_check_resource(JNIEnv *env, const T* ptr)
 {
     qtjambi_check_resource(env, ptr, typeid(T));
 }
-
-class QTJAMBI_EXPORT JniLocalFrame{
-public:
-    JniLocalFrame(JNIEnv *env, int capacity);
-    ~JniLocalFrame();
-private:
-    JNIEnv *m_env;
-    Q_DISABLE_COPY_MOVE(JniLocalFrame)
-};
-
-#define QTJAMBI_JNI_LOCAL_FRAME(env, capacity)\
-    JniLocalFrame __jniLocalFrame(env, capacity);\
-    Q_UNUSED(__jniLocalFrame)
 
 class QTJAMBI_EXPORT InvalidateAfterUse{
 public:
@@ -1949,6 +1886,19 @@ private:
     BlockExceptions __block_exceptions(block);\
     Q_UNUSED(__block_exceptions)
 
+class QTJAMBI_EXPORT JniLocalFrame{
+public:
+    JniLocalFrame(JNIEnv *env, int capacity);
+    ~JniLocalFrame();
+private:
+    JNIEnv *m_env;
+    Q_DISABLE_COPY_MOVE(JniLocalFrame)
+};
+
+#define QTJAMBI_JNI_LOCAL_FRAME(env, capacity)\
+    JniLocalFrame __jniLocalFrame(env, capacity);\
+    Q_UNUSED(__jniLocalFrame)
+
 class QtJambiScopePrivate;
 
 class QTJAMBI_EXPORT QtJambiScope{
@@ -2014,7 +1964,7 @@ T qtjambi_to_functional(JNIEnv *env, jobject java_object, const char *className)
     T fct = nullptr;
     T* result = &fct;
     if(!qtjambi_convert_to_native(env, typeid(T), nullptr, className, java_object, &result)){
-        JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(QLatin1String(className))) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QString("null")).arg(QLatin1String(className))) QTJAMBI_STACKTRACEINFO );
     }
     return result ? *result : nullptr;
 }
@@ -2025,7 +1975,7 @@ T qtjambi_to_functional(JNIEnv *env, jobject java_object)
     T fct = nullptr;
     T* result = &fct;
     if(!qtjambi_convert_to_native(env, typeid(T), nullptr, qtjambi_class_name(env, env->GetObjectClass(java_object)).replace(".", "/"), java_object, &result)){
-        JavaException::raiseRuntimeException(env, qPrintable(QString("Cannot cast to type %1").arg(typeid(typename std::remove_pointer<T>::type).name())) QTJAMBI_STACKTRACEINFO );
+        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast object of type %1 to %2").arg(java_object ? qtjambi_object_class_name(env, java_object) : QString("null")).arg(QLatin1String(qtjambi_type_name(typeid(T))))) QTJAMBI_STACKTRACEINFO );
     }
     return result ? *result : nullptr;
 }
@@ -2060,18 +2010,6 @@ T& qtjambi_interface_from_nativeId_deref(JNIEnv *env, QtJambiNativeID nativeId)
     return checked_deref<T>(env, qtjambi_interface_from_nativeId<T>(nativeId));
 }
 
-extern "C" QTJAMBI_EXPORT void qtjambi_raise_exception_in_java(JNIEnv *env, const JavaException& exn);
-
-extern "C" QTJAMBI_EXPORT void qtjambi_report_exception(JNIEnv *env, const JavaException& exn, QTextStream& stream);
-
-QTJAMBI_EXPORT void qtjambi_end_paint(JNIEnv *env, jobject device);
-
-QTJAMBI_EXPORT void qtjambi_begin_paint(JNIEnv *env, jobject device);
-
-QTJAMBI_EXPORT void qtjambi_add_dependency(QtJambiNativeID dependentId, QtJambiNativeID ownerId);
-
-QTJAMBI_EXPORT void qtjambi_remove_dependency(QtJambiNativeID dependentId, QtJambiNativeID ownerId);
-
 QTJAMBI_EXPORT void qtjambi_register_pointer_deletion(void* ptr, bool* isShell = nullptr);
 
 QTJAMBI_EXPORT void qtjambi_register_pointer_deletion(void* ptr, void(*purgeFunction)(void*), bool* isShell = nullptr);
@@ -2097,6 +2035,56 @@ QTJAMBI_EXPORT void qtjambi_set_default_ownership_for_toplevel_object(JNIEnv *en
 QTJAMBI_EXPORT uint qtjambi_java_object_identity(JNIEnv *env, jobject object);
 
 QTJAMBI_EXPORT uint qtjambi_java_object_hashcode(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT jobject qtjambi_make_optional(JNIEnv *env, bool hasValue, jobject object);
+
+QTJAMBI_EXPORT jobject qtjambi_make_optionalint(JNIEnv *env, bool hasValue, jint value);
+
+QTJAMBI_EXPORT jobject qtjambi_make_optionallong(JNIEnv *env, bool hasValue, jlong value);
+
+QTJAMBI_EXPORT jobject qtjambi_make_optionaldouble(JNIEnv *env, bool hasValue, jdouble value);
+
+QTJAMBI_EXPORT jobject qtjambi_read_optional(JNIEnv *env, jobject object, bool& isPresent);
+
+QTJAMBI_EXPORT jint qtjambi_read_optionalint(JNIEnv *env, jobject object, bool& isPresent);
+
+QTJAMBI_EXPORT jlong qtjambi_read_optionallong(JNIEnv *env, jobject object, bool& isPresent);
+
+QTJAMBI_EXPORT jdouble qtjambi_read_optionaldouble(JNIEnv *env, jobject object, bool& isPresent);
+
+QTJAMBI_EXPORT void qtjambi_thread_check(JNIEnv *env, const QObject* object);
+
+QTJAMBI_EXPORT void qtjambi_ui_thread_check(JNIEnv *env, const std::type_info& typeId);
+
+QTJAMBI_EXPORT void qtjambi_pixmap_thread_check(JNIEnv *env, const std::type_info& typeId);
+
+QTJAMBI_EXPORT void qtjambi_argument_thread_check(JNIEnv *env, const char* argumentName, const QObject* argument);
+
+QTJAMBI_EXPORT void qtjambi_argument_ui_thread_check(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
+
+QTJAMBI_EXPORT void qtjambi_argument_pixmap_thread_check(JNIEnv *env, const char* argumentName, const std::type_info& argumentType);
+
+QTJAMBI_EXPORT void qtjambi_argument_thread_check(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const QObject* argumentOwner);
+
+QTJAMBI_EXPORT void qtjambi_argument_thread_check(JNIEnv *env, const char* argumentName, const std::type_info& argumentType, const void* argument);
+
+QTJAMBI_EXPORT void qtjambi_constructor_thread_check(JNIEnv *env, const QObject* parent);
+
+QTJAMBI_EXPORT void qtjambi_constructor_thread_check(JNIEnv *env, const std::type_info& parentType, const void* parent);
+
+QTJAMBI_EXPORT void qtjambi_constructor_thread_check(JNIEnv *env, const std::type_info& parentType, const QObject* parentOwner);
+
+QTJAMBI_EXPORT void qtjambi_constructor_ui_thread_check(JNIEnv *env, const std::type_info& constructedType);
+
+QTJAMBI_EXPORT void qtjambi_constructor_pixmap_thread_check(JNIEnv *env, const std::type_info& constructedType);
+
+QTJAMBI_EXPORT void qtjambi_constructor_widget_thread_check(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
+
+QTJAMBI_EXPORT void qtjambi_constructor_window_thread_check(JNIEnv *env, const std::type_info& constructedType, const QObject* parent);
+
+QTJAMBI_EXPORT void qtjambi_constructor_application_thread_check(JNIEnv *env, const std::type_info& constructedType);
+
+QTJAMBI_EXPORT const QObject* qtjambi_pixmap_owner_function(const void *);
 
 #endif // QTJAMBI_CORE_H
 

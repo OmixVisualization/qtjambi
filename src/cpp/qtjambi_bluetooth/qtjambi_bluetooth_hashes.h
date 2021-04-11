@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,22 +31,29 @@
 #define QTJAMI_BLUETOOTH_HASHES_H
 
 #include <QtBluetooth/QtBluetooth>
+#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_typetests.h>
 
-uint qHash(const QLowEnergyCharacteristicData &value);
+namespace QtJambiPrivate {
+    template<> struct supports_qHash<QBluetoothServiceInfo::Alternative> : supports_qHash<QList<QVariant>>{};
+    template<> struct supports_qHash<QBluetoothServiceInfo::Sequence> : supports_qHash<QList<QVariant>>{};
+}
 
-inline uint qHash(const QBluetoothUuid &value)
+hash_type qHash(const QLowEnergyCharacteristicData &value);
+
+inline hash_type qHash(const QBluetoothUuid &value)
 {
     return qHash(value.toByteArray());
 }
 
-inline uint qHash(const QBluetoothAddress &value)
+inline hash_type qHash(const QBluetoothAddress &value)
 {
     return qHash(value.toString());
 }
 
-inline uint qHash(const QBluetoothDeviceInfo &value)
+inline hash_type qHash(const QBluetoothDeviceInfo &value)
 {
-    uint hashCode = qHash(value.name());
+    hash_type hashCode = qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.rssi());
     hashCode = hashCode * 31 + qHash(value.address());
     hashCode = hashCode * 31 + qHash(value.isValid());
@@ -61,16 +68,16 @@ inline uint qHash(const QBluetoothDeviceInfo &value)
     return hashCode;
 }
 
-inline uint qHash(const QBluetoothHostInfo &value)
+inline hash_type qHash(const QBluetoothHostInfo &value)
 {
-    uint hashCode = qHash(value.name());
+    hash_type hashCode = qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.address());
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyDescriptor &value)
+inline hash_type qHash(const QLowEnergyDescriptor &value)
 {
-    uint hashCode = qHash(value.name());
+    hash_type hashCode = qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.value());
@@ -79,9 +86,9 @@ inline uint qHash(const QLowEnergyDescriptor &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyAdvertisingData &value)
+inline hash_type qHash(const QLowEnergyAdvertisingData &value)
 {
-    uint hashCode = qHash(value.rawData());
+    hash_type hashCode = qHash(value.rawData());
     hashCode = hashCode * 31 + qHash(value.services());
     hashCode = hashCode * 31 + qHash(value.localName());
     hashCode = hashCode * 31 + qHash(value.manufacturerId());
@@ -92,9 +99,9 @@ inline uint qHash(const QLowEnergyAdvertisingData &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyServiceData &value)
+inline hash_type qHash(const QLowEnergyServiceData &value)
 {
-    uint hashCode = qHash(value.type());
+    hash_type hashCode = qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.isValid());
     hashCode = hashCode * 31 + qHash(value.characteristics());
@@ -102,22 +109,22 @@ inline uint qHash(const QLowEnergyServiceData &value)
     return hashCode;
 }
 
-inline uint qHash(const QBluetoothTransferRequest &value)
+inline hash_type qHash(const QBluetoothTransferRequest &value)
 {
-    uint hashCode = qHash(value.address());
+    hash_type hashCode = qHash(value.address());
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value)
+inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value)
 {
-    uint hashCode = qHash(value.type);
+    hash_type hashCode = qHash(value.type);
     hashCode = hashCode * 31 + qHash(value.address);
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyAdvertisingParameters &value)
+inline hash_type qHash(const QLowEnergyAdvertisingParameters &value)
 {
-    uint hashCode = qHash(value.mode());
+    hash_type hashCode = qHash(value.mode());
     hashCode = hashCode * 31 + qHash(value.filterPolicy());
     hashCode = hashCode * 31 + qHash(value.maximumInterval());
     hashCode = hashCode * 31 + qHash(value.minimumInterval());
@@ -125,9 +132,9 @@ inline uint qHash(const QLowEnergyAdvertisingParameters &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyDescriptorData &value)
+inline hash_type qHash(const QLowEnergyDescriptorData &value)
 {
-    uint hashCode = qHash(value.uuid());
+    hash_type hashCode = qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.value());
     hashCode = hashCode * 31 + qHash(int(value.readConstraints()));
     hashCode = hashCode * 31 + qHash(int(value.writeConstraints()));
@@ -137,9 +144,9 @@ inline uint qHash(const QLowEnergyDescriptorData &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyCharacteristicData &value)
+inline hash_type qHash(const QLowEnergyCharacteristicData &value)
 {
-    uint hashCode = qHash(value.uuid());
+    hash_type hashCode = qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.value());
     hashCode = hashCode * 31 + qHash(int(value.properties()));
     hashCode = hashCode * 31 + qHash(int(value.readConstraints()));
@@ -151,9 +158,9 @@ inline uint qHash(const QLowEnergyCharacteristicData &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyCharacteristic &value)
+inline hash_type qHash(const QLowEnergyCharacteristic &value)
 {
-    uint hashCode = qHash(value.uuid());
+    hash_type hashCode = qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.value());
     hashCode = hashCode * 31 + qHash(int(value.properties()));
     hashCode = hashCode * 31 + qHash(value.isValid());
@@ -162,18 +169,18 @@ inline uint qHash(const QLowEnergyCharacteristic &value)
     return hashCode;
 }
 
-inline uint qHash(const QLowEnergyConnectionParameters &value)
+inline hash_type qHash(const QLowEnergyConnectionParameters &value)
 {
-    uint hashCode = qHash(value.minimumInterval());
+    hash_type hashCode = qHash(value.minimumInterval());
     hashCode = hashCode * 31 + qHash(value.maximumInterval());
     hashCode = hashCode * 31 + qHash(value.latency());
     hashCode = hashCode * 31 + qHash(value.supervisionTimeout());
     return hashCode;
 }
 
-inline uint qHash(const QBluetoothServiceInfo &value)
+inline hash_type qHash(const QBluetoothServiceInfo &value)
 {
-    uint hashCode = qHash(value.serviceName());
+    hash_type hashCode = qHash(value.serviceName());
     hashCode = hashCode * 31 + qHash(value.serviceDescription());
     hashCode = hashCode * 31 + qHash(value.serviceProvider());
     hashCode = hashCode * 31 + qHash(value.serverChannel());
@@ -188,16 +195,6 @@ inline uint qHash(const QBluetoothServiceInfo &value)
     hashCode = hashCode * 31 + qHash(value.serviceClassUuids());
     hashCode = hashCode * 31 + qHash(value.attributes());
     return hashCode;
-}
-
-inline uint qHash(const QBluetoothServiceInfo::Sequence &)
-{
-    return 0;
-}
-
-inline uint qHash(const QBluetoothServiceInfo::Alternative &)
-{
-    return 0;
 }
 
 #endif // QTJAMI_BLUETOOTH_HASHES_H

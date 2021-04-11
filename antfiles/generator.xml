@@ -16,7 +16,6 @@
                 header="${generatorDir}/targets/qtjambi_masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtdocdirectory="${qtjambi.qt.docdir}"
-                qtdocurl="${qt.docs}"
                 qtlibdirectory="${tools.qt.libdir}"
                 qtbindirectory="${tools.qt.bindir}"
                 targetJavaVersion="${target.java.version}"
@@ -77,6 +76,8 @@
 		<xmlmerge victim="concurrent"/>
         <xmlmerge victim="gui"/>
 		<xmlmerge victim="widgets"/>
+		<xmlmerge victim="opengl"/>
+		<xmlmerge victim="openglwidgets"/>
         <xmlmerge victim="sql"/>
         <xmlmerge victim="network"/>
         <xmlmerge victim="networkauth"/>
@@ -92,6 +93,7 @@
         <xmlmerge victim="multimedia"/>
 		<xmlmerge victim="multimediawidgets"/>
         <xmlmerge victim="svg"/>
+        <xmlmerge victim="svgwidgets"/>
         <xmlmerge victim="dbus"/>
 		<xmlmerge victim="test"/>
         <xmlmerge victim="help"/>
@@ -127,6 +129,12 @@
 		<xmlmerge victim="serialbus"/>
 		<xmlmerge victim="purchasing"/>
 		<xmlmerge victim="texttospeech"/>
+		<xmlmerge victim="uitools"/>
+		<xmlmerge victim="charts"/>
+		<xmlmerge victim="datavisualization"/>
+		<xmlmerge victim="lottie"/>
+		<xmlmerge victim="quick3d"/>
+		<xmlmerge victim="virtkey"/>
     </target>
 
 </project>

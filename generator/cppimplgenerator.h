@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,7 @@ enum JNISignatureFormat {
     Underscores = 0x0001,        //!< Used in the jni exported function names
     SlashesAndStuff = 0x0010,     //!< Used for looking up functions through jni
     ReturnType = 0x0100,
+    NoQContainers = 0x0200,
     NoModification = 0x1000
 };
 
@@ -114,8 +115,8 @@ class CppImplGenerator : public CppGenerator {
         void writeShellDestructor(QTextStream &s, bool isInterface, const AbstractMetaClass *java_class);
         void writeShellConstructor(QTextStream &s, const AbstractMetaFunctional *java_class);
         void writeShellDestructor(QTextStream &s, const AbstractMetaFunctional *java_class);
-        void writeArgumentConversion(QTextStream &s, const AbstractMetaFunction *signal);
-        void writeTypeConversion(QTextStream &s, const AbstractMetaFunction *function, AbstractMetaType *type, int index, const QString& metaTypeId, const QString& parameterType);
+        void writeArgumentConversion(QTextStream &s, const AbstractMetaFunction *signal, QStringList& converterFunctions, QSet<QString> &forwardDeclarations);
+        void writeTypeConversion(QTextStream &s, const AbstractMetaFunction *function, AbstractMetaType *type, int index, const QString& metaTypeId, QStringList& converterFunctions, QSet<QString> &forwardDeclarations);
         void writeMetaInfo(QTextStream &s, const AbstractMetaClass *java_class,
                            const QMultiMap<int,AbstractMetaFunction *>& availabeConstructors,
                            const QList<const AbstractMetaFunction *>& signalsInTargetLang,
@@ -158,7 +159,7 @@ class CppImplGenerator : public CppGenerator {
                                       const AbstractMetaClass *java_class = nullptr,
                                       uint options = StandardJNISignature);
 
-        void writeJavaToQt(QTextStream &s,
+        bool writeJavaToQt(QTextStream &s,
                            const AbstractMetaType *java_type,
                            const QString &qt_name,
                            const QString &java_name,
@@ -199,7 +200,7 @@ class CppImplGenerator : public CppGenerator {
                             int var_index,
                             const AbstractMetaClass *implementor,
                             TypeSystem::Language);
-        void writeQtToJava(QTextStream &s,
+        bool writeQtToJava(QTextStream &s,
                            const AbstractMetaType *java_type,
                            const QString &qt_name,
                            const QString &java_name,
@@ -290,6 +291,9 @@ class CppImplGenerator : public CppGenerator {
                            const QString& __jni_env = "__jni_env");
         bool m_native_jump_table;
         bool m_qtjambi_debug_tools;
+
+        QMap<QString,QSet<QString>> javaToQtConverterInfos;
+        QMap<QString,QSet<QString>> qtToJavaConverterInfos;
 };
 
 #endif // CPPIMPLGENERATOR_H

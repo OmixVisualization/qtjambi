@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,6 +48,7 @@
 #define QTJAMBI_CORE_H
 #define QQMLPRIVATE_H
 #define QML_GETTYPENAMES
+#define QGENERICMATRIX_H
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
@@ -66,6 +67,7 @@
 #ifndef QTJAMBI_NO_GUI
 #define QACCESSIBLE_H
 #include <QtGui/QtGui>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/QOpenGLFunctions_1_0>
 #include <QtGui/QOpenGLFunctions_1_1>
 #include <QtGui/QOpenGLFunctions_1_2>
@@ -101,12 +103,16 @@
 #include <QtGui/QOpenGLFunctions_ES2>
 #endif
 
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
 #undef QACCESSIBLE_H
 #define quint64 bool
 #include <QtGui/qaccessible.h>
 #undef quint64
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtPlatformHeaders/QtPlatformHeaders>
+#endif
 #include <qtjambi_gui/qtjambi_gui.h>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 #include <qtjambi_gui/qtmatrixes.h>
@@ -125,13 +131,38 @@
 #include <qtjambi_widgets/qtjambi_widgets_core.h>
 #endif
 
+#ifndef QTJAMBI_NO_UITOOLS
+#include <QtUiTools/QtUiTools>
+#endif
+
+#ifndef QTJAMBI_NO_DESIGNER
+#include <QtUiPlugin/QtUiPlugin>
+#include <QtDesigner/QtDesigner>
+#include <qtjambi_designer/designer.h>
+#endif
+
 #ifndef QTJAMBI_NO_QML
 #include <QtQml/QtQml>
 #include <qtjambi_qml/qqmllistproperty.h>
+#include <qtjambi_qml/qtjambi_qml_hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_QUICK
-#include <QtQuick/QtQuick>
+#   if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#       include <QtQuick/QtQuick>
+#   else
+#       define QSGTEXTURE_PLATFORM_H
+#       include <QtQuick/QtQuick>
+#       undef QSGTEXTURE_PLATFORM_H
+#       ifndef Q_OS_WIN
+#           define Q_OS_WIN
+#           include <QtQuick/qsgtexture_platform.h>
+#           undef Q_OS_WIN
+#       else
+#           include <QtQuick/qsgtexture_platform.h>
+#       endif
+#   endif
+#   include <qtjambi_quick/qtjambi_quick_hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_QUICKWIDGETS
@@ -158,6 +189,28 @@
 #include <QtNetworkAuth/QtNetworkAuth>
 #endif
 
+#ifndef QTJAMBI_NO_VIRTUAL_KEYBOARD
+#include <QtVirtualKeyboard/QtVirtualKeyboard>
+#endif
+
+#ifndef QTJAMBI_NO_QUICK3D
+#include <QtQuick3D/QtQuick3D>
+#include <qtjambi_qt3d/qtjambi_quick3d/qtjambi_quick3d_hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_DATA_VISUALIZATION
+#include <QtDataVisualization/QtDataVisualization>
+#include <qtjambi_qt3d/qtjambi_datavis/qtjambi_datavis3d_hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_CHARTS
+#include <QtCharts/QtCharts>
+#endif
+
+#ifndef QTJAMBI_NO_LOTTIE
+#include <QtBodyMovin/QtBodyMovin>
+#endif
+
 #ifndef QTJAMBI_NO_SQL
 #ifdef QT_WIDGETS_LIB
 #  include <QtSql/QtSql>
@@ -171,6 +224,10 @@
 
 #ifndef QTJAMBI_NO_SVG
 #  include <QtSvg/QtSvg>
+#endif
+
+#ifndef QTJAMBI_NO_SVGWIDGETS
+#  include <QtSvgWidgets/QtSvgWidgets>
 #endif
 
 #ifndef QTJAMBI_NO_HELP
@@ -209,7 +266,15 @@
 #endif
 
 #ifndef QTJAMBI_NO_TEST
+#define QT_WIDGETS_LIB
 #  include <QtTest/QtTest>
+#  include <QtGui/qtestsupport_gui.h>
+#  include <QtWidgets/qtestsupport_widgets.h>
+#  include <QtCore/qtestsupport_core.h>
+#  include <QtTest/qtest_gui.h>
+#  include <QtTest/qtest_widgets.h>
+#  include <QtTest/qtest_network.h>
+#  include <QtTest/qtestsystem.h>
 #endif
 
 //#include <qtjambi_designer/designer.h>
@@ -356,6 +421,7 @@
 #endif
 
 #ifndef QTJAMBI_NO_QT3DANIMATION
+#include <qtjambi_qt3d/qtjambi_3danimation/qtjambi_3danimation_hashes.h>
 #include <Qt3DAnimation/Qt3DAnimation>
 #endif
 
@@ -373,6 +439,88 @@
 #include <qtjambi_bluetooth/qtjambi_bluetooth_hashes.h>
 #include <QtBluetooth/QtBluetooth>
 #endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
+#ifndef QTJAMBI_NO_OPENGLWIDGETS
+#include <QtOpenGLWidgets/QtOpenGLWidgets>
+#endif
+
+#ifndef QTJAMBI_NO_OPENGL
+
+typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+
+#include <QtOpenGL/QtOpenGL>
+
+#if QT_CONFIG(opengles2)
+#include <QtOpenGL/QOpenGLFunctions_ES2>
+#undef QT_CONFIG
+#define QT_CONFIG(A) 0
+#define QT_OPENGL_ES_2_BRIDGE
+#endif
+
+#ifdef QT_NO_OPENGL
+#undef QT_NO_OPENGL
+#define QT_NO_OPENGL_BRIDGE
+#endif
+
+#include <qtjambi_opengl/qtjambi_opengl_qhashes.h>
+#include <QtOpenGL/QOpenGLPixelTransferOptions>
+#include <QtOpenGL/QOpenGLFunctions_1_0>
+#include <QtOpenGL/QOpenGLFunctions_1_1>
+#include <QtOpenGL/QOpenGLFunctions_1_2>
+#include <QtOpenGL/QOpenGLFunctions_1_3>
+#include <QtOpenGL/QOpenGLFunctions_1_4>
+#include <QtOpenGL/QOpenGLFunctions_1_5>
+#include <QtOpenGL/QOpenGLFunctions_2_0>
+#include <QtOpenGL/QOpenGLFunctions_2_1>
+#include <QtOpenGL/QOpenGLFunctions_3_0>
+#include <QtOpenGL/QOpenGLFunctions_3_1>
+#include <QtOpenGL/QOpenGLFunctions_3_2_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_3_2_Core>
+#include <QtOpenGL/QOpenGLFunctions_3_3_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_3_3_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_0_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_0_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_1_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_1_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_2_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_2_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_3_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_3_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_4_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_4_Core>
+#include <QtOpenGL/QOpenGLFunctions_4_5_Compatibility>
+#include <QtOpenGL/QOpenGLFunctions_4_5_Core>
+
+#ifdef QT_OPENGL_ES_2_BRIDGE
+#undef QT_OPENGL_ES_2_BRIDGE
+#undef QT_CONFIG
+#define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
+#endif
+
+#ifdef QT_NO_OPENGL_BRIDGE
+#undef QT_NO_OPENGL_BRIDGE
+#define QT_NO_OPENGL
+#endif
+
+
+#if !QT_CONFIG(opengles2)
+#undef QT_FEATURE_opengles2
+#define QT_FEATURE_opengles2 1
+#define QT_OPENGL_ES_2_BRIDGE
+#endif
+
+#include <QtOpenGL/QOpenGLFunctions_ES2>
+
+#ifdef QT_OPENGL_ES_2_BRIDGE
+#undef QT_FEATURE_opengles2
+#undef QT_OPENGL_ES_2_BRIDGE
+#endif
+
+#endif
+
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #endif
 

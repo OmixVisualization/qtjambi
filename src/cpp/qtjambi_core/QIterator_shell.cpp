@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,41 +34,57 @@
 #include <QtCore/QVariant>
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_containers.h>
 #include <qtjambi/qtjambi_repository.h>
 
 // emitting (writeExtraFunctions)
 // emitting (writeToStringFunction)
 // emitting (writeSignalFunction)
 // emitting  (functionsInTargetLang writeFinalFunction)
+
+// Iterator::operator++()
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator_canLess__J)
+(JNIEnv *,
+ jclass,
+ QtJambiNativeID __this_nativeId)
+{
+    QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+    AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+    Q_ASSERT(containerAccess);
+    return containerAccess->canLess();
+}
+
 // Iterator::operator*() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMapIterator__1_1qt_1QMapIterator_1key__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMapIterator__1_1qt_1QMapIterator_1key__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong keyFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::key() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QMap<QVariant,QVariant>::const_iterator));
-        return reinterpret_cast<QMapIteratorKeyFunction>(keyFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractBiIteratorAccess* containerAccess = dynamic_cast<AbstractBiIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->key(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
     return nullptr;
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1value__JJ)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1value__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong valueFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator*() const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QList<QVariant>::const_iterator));
-        return reinterpret_cast<QIteratorValueFunction>(valueFunction)(__jni_env, __qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        return containerAccess->value(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -76,54 +92,57 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 }
 
 // Iterator::operator++()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1increment__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1increment__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong incrementFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator++()")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QList<QVariant>::const_iterator));
-        reinterpret_cast<QIteratorIncrementFunction>(incrementFunction)(__qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        containerAccess->increment(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
 }
 
 // Iterator::operator--()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1decrement__JJ)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1decrement__J)
 (JNIEnv *__jni_env,
  jclass,
- QtJambiNativeID __this_nativeId,
- jlong decrementFunction)
+ QtJambiNativeID __this_nativeId)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator--()")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QList<QVariant>::const_iterator));
-        reinterpret_cast<QIteratorDecrementFunction>(decrementFunction)(__qt_this);
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        containerAccess->decrement(__jni_env, container.first);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
 }
 
 // Iterator::operator<(const Iterator & other) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1lessThan__JJJ)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1lessThan__JJ)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- QtJambiNativeID other0,
- jlong lessThanFunction)
+ QtJambiNativeID other0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator<(const Iterator & other) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QList<QVariant>::const_iterator));
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
         void *__qt_other0 = qtjambi_from_nativeId(other0);
         qtjambi_check_resource(__jni_env, __qt_other0, typeid(QList<QVariant>::const_iterator));
-        return reinterpret_cast<QIteratorLessThanFunction>(lessThanFunction)(__qt_this, __qt_other0);
+        return containerAccess->lessThan(__jni_env, container.first, __qt_other0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }
@@ -131,20 +150,21 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
 }
 
 // Iterator::operator==(const Iterator & o) const
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1operator_1equal__JJJ)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIterator__1_1qt_1QIterator_1operator_1equal__JJ)
 (JNIEnv *__jni_env,
  jclass,
  QtJambiNativeID __this_nativeId,
- QtJambiNativeID o0,
- jlong equalsFunction)
+ QtJambiNativeID o0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator==(const Iterator & o) const")
     try{
-        void *__qt_this = qtjambi_from_nativeId(__this_nativeId);
-        qtjambi_check_resource(__jni_env, __qt_this, typeid(QList<QVariant>::const_iterator));
+        QPair<void*,AbstractContainerAccess*> container = qtjambi_container_from_nativeId(__this_nativeId);
+        Q_ASSERT(container.first);
+        AbstractIteratorAccess* containerAccess = dynamic_cast<AbstractIteratorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
         void *__qt_o0 = qtjambi_from_nativeId(o0);
         qtjambi_check_resource(__jni_env, __qt_o0, typeid(QList<QVariant>::const_iterator));
-        return reinterpret_cast<QIteratorEqualsFunction>(equalsFunction)(__qt_this, __qt_o0);
+        return containerAccess->equals(__jni_env, container.first, __qt_o0);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }

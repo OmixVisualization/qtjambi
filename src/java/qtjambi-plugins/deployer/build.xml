@@ -37,7 +37,7 @@
                 <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
                 <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
             </manifest>
-            <fileset dir="${java.outdir}/${module-name}"/>
+            <fileset dir="${java.outdir}/plugins/${module-name}"/>
         </jar>
     </target>
 </project>

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -119,6 +119,7 @@ public class TestThreads extends QApplicationTest {
 					QObject object = new QObject();
 					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
 					object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
+					qthread = null;
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
@@ -132,29 +133,33 @@ public class TestThreads extends QApplicationTest {
 		Thread.yield();
 		System.gc();
 		Thread.sleep(100);
-    	for (int i = 0; i < 200; i++) {
+    	for (int i = 0; i < 500; i++) {
     		if(threadCleaned.get()) {
         		Thread.yield();
         		Thread.sleep(100);
     			break;
     		}
-    		Thread.yield();
     		System.gc();
-    		Thread.sleep(10);
+			System.runFinalization();
+			QCoreApplication.processEvents();
+    		Thread.yield();
+    		Thread.sleep(100);
 		}
 		Thread.yield();
 		System.gc();
+		System.runFinalization();
 		Thread.yield();
 		Thread.sleep(100);
 		System.gc();
+		System.runFinalization();
 		Thread.yield();
     	assertTrue("qobjectDisposed", qobjectDisposed.get());
     	assertTrue("qobjectDestroyed", qobjectDestroyed.get());
     	assertTrue("qthreadDisposed", threadDisposed.get());
     	assertTrue("qthreadDestroyed", qthreadDestroyed.get());
     	assertTrue("qthreadFinished", qthreadFinished.get());
-    	assertTrue("threadCleaned", threadCleaned.get());
     	assertTrue("qthreadCleaned", qthreadCleaned.get());
+    	assertTrue("threadCleaned", threadCleaned.get());
     }
     
     @Test
@@ -438,9 +443,12 @@ public class TestThreads extends QApplicationTest {
             synchronized(this) {
                 if(object != null)
                     return true;
-                try { wait(millis); } catch (InterruptedException e) { };
-                if(object != null)
-                    return true;
+                long step = millis / 100;
+                for(long w = 0; w<millis; w+=step) {
+	                try { wait(100); } catch (InterruptedException e) { };
+	                if(object != null)
+	                    return true;
+                }
             }
             return false;
         }
@@ -463,8 +471,8 @@ public class TestThreads extends QApplicationTest {
         pongThread.setDaemon(true);
         pongThread.start();
 
-        ping.startupReady(1500);  // wait for object to be initalized
-        pong.startupReady(1500);
+        ping.startupReady(15000);  // wait for object to be initalized
+        pong.startupReady(15000);
 
         assertNotNull("ping.object", ping.object);
         assertNotNull("pong.object", pong.object);

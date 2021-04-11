@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,6 +33,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
@@ -73,6 +74,7 @@ public class TestPlugin extends QApplicationTest {
 	
 	@Test
     public void testGenericPlugin() {
+		Assume.assumeTrue("QtNetwork unavailable", QtUtilities.initializePackage("io.qt.network"));
 		QFactoryLoader loader = new QFactoryLoader(QGenericPlugin.class, "/generic");
 		QObject plugin = loader.loadPlugin(QGenericPlugin::create, "TuioTouch", "TuioTouch", "");
 		Assert.assertTrue(plugin!=null);

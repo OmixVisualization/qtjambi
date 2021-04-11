@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,7 +58,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.winextras.QtWin$ColorizationColorInfo"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtWinExtras::QtWin$ColorizationColorInfo.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(ok));
+                    jobject %out = Java::QtWinExtras::QtWin$ColorizationColorInfo::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(ok));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

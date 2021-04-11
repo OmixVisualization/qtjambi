@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -71,6 +71,17 @@ QString CppGenerator::subDirectoryForPackage(const QString &package) {
 }
 
 void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, Option options) {
+    if(type->typeEntry()->isComplex()){
+        const ComplexTypeEntry *ctype = reinterpret_cast<const ComplexTypeEntry *>(type->typeEntry());
+        if(ctype->isGenericClass() && type->instantiations().isEmpty()){
+            s << "auto";
+            if(type->getReferenceType()==AbstractMetaType::Reference)
+                s << "&";
+            if (!(options & SkipName))
+                s << ' ';
+            return;
+        }
+    }
     if ((options & OriginalTypeDescription) && !type->originalTypeDescription().isEmpty()) {
         QString originalTypeDescription = type->originalTypeDescription();
 
@@ -78,25 +89,33 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
             originalTypeDescription = QMetaObject::normalizedSignature(originalTypeDescription.toLatin1().constData());
             originalTypeDescription = fixNormalizedSignatureForQt(originalTypeDescription);
         }
-        int mtype;
         if (originalTypeDescription.contains("qtjambireal")){ // map generator type to qreal type
             s << originalTypeDescription.replace("qtjambireal", "qreal");
+            if (!(options & SkipName))
+                s << ' ';
             return;
         }else if (originalTypeDescription.contains("qreal")){ // map generator type to qreal type
             s << originalTypeDescription;
+            if (!(options & SkipName))
+                s << ' ';
             return;
         }else{
-            mtype = QMetaType::type(originalTypeDescription.toLatin1().constData());
-        }
-#if QT_VERSION < 0x050000
-        if(mtype>QMetaType::Void && mtype<=QMetaType::LastCoreExtType){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            int mtype = QMetaType::type(originalTypeDescription.toLatin1().constData());
+            if(mtype>QMetaType::UnknownType && mtype<=QMetaType::HighestInternalId){
+                originalTypeDescription = QMetaType::typeName(mtype);
+            }
 #else
-        if(mtype>QMetaType::UnknownType && mtype<=QMetaType::HighestInternalId){
+            QMetaType mtype = QMetaType::fromName(originalTypeDescription.toLatin1().constData());
+            if(mtype.id()>QMetaType::UnknownType && mtype.id()<=QMetaType::HighestInternalId){
+                originalTypeDescription = mtype.name();
+            }
 #endif
-            originalTypeDescription = QMetaType::typeName(mtype);
+            s << originalTypeDescription;
+            if (!(options & SkipName))
+                s << ' ';
+            return;
         }
-        s << originalTypeDescription;
-        return;
     }
 
     if (type->isArray()) {
@@ -111,14 +130,17 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
 
     const TypeEntry *te = type->typeEntry();
 
-    if ( (type->isConstant()
+    if(type->isConstant() && (options & FunctionOverride) == FunctionOverride){
+        s << "const ";
+    }else if ( (type->isConstant()
             && !(options & ExcludeConst))
          || ((options & ForceConstReference) == ForceConstReference
                && type->getReferenceType()==AbstractMetaType::NoReference
                && type->indirections().isEmpty()
                && !type->isPrimitive()
                && !type->isEnum()
-               && !type->isFlags())){
+               && !type->isFlags()
+             )){
         s << "const ";
     }
     if(type->isVolatile()){
@@ -170,16 +192,25 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const AbstractMetaType *type, O
         }
     }
 
-    if (type->getReferenceType()==AbstractMetaType::Reference && !(options & ExcludeReference)){
-        s << "&";
-    }else if (type->getReferenceType()==AbstractMetaType::RReference && !(options & ExcludeReference)){
-        s << "&&";
-    }else if((options & ForceConstReference) == ForceConstReference
-             && type->indirections().isEmpty()
-             && !type->isPrimitive()
-             && !type->isEnum()
-             && !type->isFlags()){
-        s << "&";
+    if((options & FunctionOverride) == FunctionOverride){
+        if (type->getReferenceType()==AbstractMetaType::Reference){
+            s << "&";
+        }else if (type->getReferenceType()==AbstractMetaType::RReference){
+            s << "&&";
+        }
+    }else{
+        if (type->getReferenceType()==AbstractMetaType::Reference && !(options & ExcludeReference)){
+            s << "&";
+        }else if (type->getReferenceType()==AbstractMetaType::RReference && !(options & ExcludeReference)){
+            s << "&&";
+        }else if((options & ForceConstReference) == ForceConstReference
+                 && !(options & FunctionOverride)
+                 && type->indirections().isEmpty()
+                 && !type->isPrimitive()
+                 && !type->isEnum()
+                 && !type->isFlags()){
+            s << "&";
+        }
     }
 
     if (!(options & SkipName))
@@ -191,7 +222,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
         const AbstractMetaArgumentList &arguments,
         Option option,
         int numArguments) {
-    if (numArguments < 0) numArguments = arguments.size();
+    if (numArguments < 0) numArguments = int(arguments.size());
 
     bool needComma = false;
     for (int i = 0; i < numArguments; ++i) {
@@ -219,10 +250,12 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
             s << " = ";
 
             QString expr = arg->originalDefaultValueExpression();
-            if (arg->type()->typeEntry()->isEnum() && expr.indexOf("::") < 0)
-                s << static_cast<const EnumTypeEntry *>(arg->type()->typeEntry())->qualifier() << "::";
-            if (arg->type()->typeEntry()->isFlags() && expr.indexOf("::") < 0)
-                s << static_cast<const FlagsTypeEntry *>(arg->type()->typeEntry())->originator()->qualifier() << "::";
+            if(expr!="{}"){
+                if (arg->type()->typeEntry()->isEnum() && expr.indexOf("::") < 0)
+                    s << static_cast<const EnumTypeEntry *>(arg->type()->typeEntry())->qualifier() << "::";
+                if (arg->type()->typeEntry()->isFlags() && expr.indexOf("::") < 0)
+                    s << static_cast<const FlagsTypeEntry *>(arg->type()->typeEntry())->originator()->qualifier() << "::";
+            }
             s << expr;
         }
     }
@@ -283,12 +316,16 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
             s << classname_prefix << implementor->qualifiedCppName() << "::";
     }
 
-
     QString function_name;
     if (option & OriginalName)
         function_name = java_function->originalName();
     else
         function_name = java_function->name();
+
+    if (java_function->attributes() & AbstractMetaAttributes::SetterFunction
+            || java_function->attributes() & AbstractMetaAttributes::GetterFunction){
+        option = Option(option | EnumAsInts);
+    }
 
     if (option & UnderscoreSpaces)
         function_name = function_name.replace(' ', '_');
@@ -298,29 +335,22 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 
     s << name_prefix << function_name;
 
-    if (java_function->attributes() & AbstractMetaAttributes::SetterFunction){
-        s << "_setter";
-        option = Option(option | EnumAsInts);
-    }else if (java_function->attributes() & AbstractMetaAttributes::GetterFunction){
-        s << "_getter";
-        option = Option(option | EnumAsInts);
-    }
-
     s << "(";
 
     AbstractMetaArgumentList tmpList;
     if ((option & SkipRemovedArguments) == SkipRemovedArguments) {	// this should be a method
         const AbstractMetaArgumentList& arguments = java_function->arguments();
         for (int i = 0; i < arguments.size(); ++i) {
-            if(java_function->argumentRemoved(i + 1)!=ArgumentRemove_No){
+            AbstractMetaArgument* argument = arguments.at(i);
+            if(java_function->argumentRemoved(argument->argumentIndex() + 1)!=ArgumentRemove_No){
                 if(!java_function->isConstructor()
-                        || ( !arguments.at(i)->originalDefaultValueExpression().isEmpty()
-                             && java_function->conversionRule(TypeSystem::NativeCode, i + 1).isEmpty()
-                             && java_function->conversionRule(TypeSystem::TargetLangCode, i + 1).isEmpty() )){
+                        || ( !argument->originalDefaultValueExpression().isEmpty()
+                             && java_function->conversionRule(TypeSystem::NativeCode, argument->argumentIndex() + 1).isEmpty()
+                             && java_function->conversionRule(TypeSystem::TargetLangCode, argument->argumentIndex() + 1).isEmpty() )){
                     continue;
                 }
             }
-            tmpList.append(arguments.at(i));
+            tmpList.append(argument);
         }
     } else {
         tmpList.append(java_function->arguments());

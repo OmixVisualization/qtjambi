@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -60,7 +60,7 @@ void ClassListGenerator::generate() {
         std::sort(classes.begin(), classes.end(), [](AbstractMetaClass *a, AbstractMetaClass *b) ->bool {return a->name() < b->name();});
 
         int numColumns = 4;
-        int numRows = (classes.size() + numColumns - 1) / numColumns;
+        int numRows = int((classes.size() + numColumns - 1) / numColumns);
 
         for (int i = 0; i < numRows; ++i) {
             s << Qt::endl << "\\row ";

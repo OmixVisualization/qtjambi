@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -42,9 +42,7 @@
 
 #include "typesystem/typesystem.h"
 
-#include <QSet>
-#include <QStringList>
-#include <QTextStream>
+#include <QtCore/QtCore>
 #include "typesystem/typeentry.h"
 
 class EnumTypeEntry;
@@ -118,6 +116,7 @@ class AbstractMetaAttributes {
             PropertyWriter              = 0x00008000,
             PropertyResetter            = 0x00010000,
             PropertyNotify              = 0x00400000,
+            PropertyBindable            = 0x02000000,
 
             Fake                        = 0x00020000,
 
@@ -162,6 +161,7 @@ class AbstractMetaAttributes {
         bool isInvokable() const { return m_attributes & Invokable; }
 
         bool isPropertyReader() const { return m_attributes & PropertyReader; }
+        bool isPropertyBindable() const { return m_attributes & PropertyBindable; }
         bool isPropertyWriter() const { return m_attributes & PropertyWriter; }
         bool isPropertyResetter() const { return m_attributes & PropertyResetter; }
         bool isPropertyNotify() const { return m_attributes & PropertyNotify; }
@@ -227,7 +227,8 @@ class AbstractMetaType {
             ArrayPattern,
             ThreadPattern,
             TemplateArgumentPattern,
-            RValuePattern
+            RValuePattern,
+            NullptrPattern
         };
 
         AbstractMetaType() :
@@ -304,6 +305,8 @@ class AbstractMetaType {
 
         // returns true if the typs is used as a non complex primitive, no & or *'s
         bool isPrimitive() const { return m_pattern == PrimitivePattern; }
+
+        bool isNullPtr() const { return m_pattern == NullptrPattern; }
 
         // returns true if the type is used as an enum
         bool isEnum() const { return m_pattern == EnumPattern; }
@@ -453,12 +456,16 @@ class AbstractMetaVariable {
         AbstractMetaType *type() const { return m_type; }
         void setType(AbstractMetaType *type) { m_type = type; }
 
-        QString name() const { return m_name; }
+        const QString & name() const { return m_name; }
         void setName(const QString &name) { m_name = name; }
+
+        const QString & defaultType() const { return m_defaultType; }
+        void setDefaultType(const QString &type) { m_defaultType = type; }
 
     private:
         QString m_name;
         AbstractMetaType *m_type;
+        QString m_defaultType;
 };
 
 class AbstractMetaTemplateParameter : public AbstractMetaVariable {
@@ -541,7 +548,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
             PrivateSignalFunction,
             EmptyFunction,
             SlotFunction,
-            GlobalScopeFunction
+            GlobalScopeFunction,
+            BaseClassDelegateFunction
         };
 
         enum CompareResult {
@@ -577,7 +585,9 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_invalid(false),
                 m_actualMinimumArgumentCount(-1),
                 m_accessedField(nullptr),
-                m_jumptable_id(-1) {
+                m_jumptable_id(-1),
+                m_functionReferenceType(AbstractMetaType::NoReference)
+        {
         }
 
         ~AbstractMetaFunction();
@@ -593,7 +603,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         QString minimalSignature() const;
         void setOriginalSignature(const QString &signature) { m_original_signature = signature; }
         const QString& originalSignature() const { return m_original_signature; }
-        QStringList possibleIntrospectionCompatibleSignatures() const;
 
         QString marshalledName() const;
 
@@ -647,12 +656,13 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
          */
         bool isCopyConstructor() const;
         bool hasRReferences() const;
-        bool isNormal() const { return functionType() == NormalFunction || isSlot() || isInGlobalScope(); }
+        bool isNormal() const { return functionType() == NormalFunction || isSlot() || isInGlobalScope() || isBaseClassDelegateFunction(); }
         bool isInGlobalScope() const { return functionType() == GlobalScopeFunction; }
         bool isSignal() const { return functionType() == SignalFunction || functionType() == PrivateSignalFunction; }
         bool isPrivateSignal() const { return functionType() == PrivateSignalFunction; }
         bool isSlot() const { return functionType() == SlotFunction; }
         bool isEmptyFunction() const { return functionType() == EmptyFunction; }
+        bool isBaseClassDelegateFunction() const { return functionType() == BaseClassDelegateFunction; }
         bool hasTemplateArgumentTypes() const{
             for(const AbstractMetaArgument *arg : m_arguments) {
                 if (arg->type()->isTemplateArgument())
@@ -698,6 +708,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         bool isAllowedAsSlot() const;
         bool isThreadAffine() const;
         bool isUIThreadAffine() const;
+        bool isPixmapThreadAffine() const;
 
         int argumentTypeArrayLengthIndex(int argument_index) const;
         int argumentTypeArrayLengthMinValue(int argument_index) const;
@@ -712,11 +723,13 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         bool isRemovedFrom(const AbstractMetaClass *, TypeSystem::Language language) const;
 
         ArgumentRemove argumentRemoved(int) const;
+        ThreadAffinity argumentThreadAffinity(int) const;
 
         QList<const ArgumentModification*> addedArguments() const;
 
         QString argumentReplaced(int key) const;
         bool needsSuppressUncheckedWarning() const;
+        bool needsSuppressRawTypeWarning() const;
 
         bool hasModifications(const AbstractMetaClass *implementor) const;
         FunctionModificationList modifications(const AbstractMetaClass *implementor) const;
@@ -755,6 +768,14 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         bool isVariadics() const { return m_variadics; }
         void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
 
+        AbstractMetaType::ReferenceType functionReferenceType() const{
+            return m_functionReferenceType;
+        }
+
+        void setFunctionReferenceType(AbstractMetaType::ReferenceType functionReferenceType) {
+            m_functionReferenceType = functionReferenceType;
+        }
+
     private:
         QString m_name;
         QString m_original_name;
@@ -781,6 +802,7 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         const AbstractMetaField *m_accessedField;
         int m_jumptable_id;
         QString m_deprecatedComment;
+        AbstractMetaType::ReferenceType m_functionReferenceType;
 };
 
 class AbstractMetaEnum;
@@ -897,6 +919,8 @@ class AbstractMetaFunctional : public AbstractMetaAttributes {
         bool resetObjectAfterUse(int argument_idx) const;
         bool isFunctionPointer() const { return m_isFunctionPointer; }
         void setFunctionPointer(bool isFunctionPointer) { m_isFunctionPointer = isFunctionPointer; }
+        bool isNoExcept() const;
+        bool nullPointersDisabled(int argument_idx = 0) const;
 
     private:
         QString m_base_type_name;
@@ -1050,7 +1074,8 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         void setFunctionals(const AbstractMetaFunctionalList &functionals) { m_functionals = functionals; }
         void addFunctional(AbstractMetaFunctional *e) {
             m_functionals << e;
-            e->setEnclosingClass(this);
+            if(!isFake())
+                e->setEnclosingClass(this);
         }
 
         AbstractMetaEnum *findEnum(const QString &enumName);
@@ -1095,6 +1120,9 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         bool isInterface() const { return m_type_entry->isInterface(); }
         bool isNamespace() const { return m_type_entry->isNamespace(); }
         bool isQObject() const { return m_type_entry->isQObject(); }
+        bool isQWidget() const { return m_type_entry->isQWidget(); }
+        bool isQWindow() const { return m_type_entry->isQWindow(); }
+        bool isQCoreApplication() const { return m_type_entry->isQCoreApplication(); }
         bool isQtNamespace() const { return isNamespace() && name() == "Qt"; }
         QString qualifiedCppName() const { return m_type_entry->qualifiedCppName(); }
 
@@ -1121,8 +1149,8 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         bool hasProtectedFieldAccessors() const;
 
         // only valid during metajavabuilder's run
-        const QStringList& baseClassNames() const { return m_base_class_names; }
-        void setBaseClassNames(const QStringList &names) { m_base_class_names = names; }
+        const QList<QPair<QString,bool>>& baseClassNames() const { return m_base_class_names; }
+        void setBaseClassNames(const QList<QPair<QString,bool>> &names) { m_base_class_names = names; }
 
         AbstractMetaClass *primaryInterfaceImplementor() const { return m_primary_interface_implementor; }
         void setPrimaryInterfaceImplementor(AbstractMetaClass *cl) { m_primary_interface_implementor = cl; }
@@ -1152,6 +1180,7 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         QPropertySpec *propertySpecForWrite(const QString &name) const;
         QPropertySpec *propertySpecForReset(const QString &name) const;
         QPropertySpec *propertySpecForNotify(const QString &name) const;
+        QPropertySpec *propertySpecForBindable(const QString &name) const;
 
         QList<ReferenceCount> referenceCounts() const;
         QList<TemplateInstantiation> templateInstantiations() const;
@@ -1164,6 +1193,9 @@ class AbstractMetaClass : public AbstractMetaAttributes {
 
         void setLessThanFunctions(const AbstractMetaFunctionList &lst) { m_less_than_functions = lst; }
         const AbstractMetaFunctionList& lessThanFunctions() const { return m_less_than_functions; }
+
+        void setCompareFunctions(const AbstractMetaFunctionList &lst) { m_compare_functions = lst; }
+        const AbstractMetaFunctionList& compareFunctions() const { return m_compare_functions; }
 
         void setGreaterThanFunctions(const AbstractMetaFunctionList &lst) { m_greater_than_functions = lst; }
         const AbstractMetaFunctionList& greaterThanFunctions() const { return m_greater_than_functions; }
@@ -1181,6 +1213,11 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         const AbstractMetaFunctionList& endFunctions() const { return m_endFunctions; }
 
         void sortFunctions();
+        void sortEnums();
+        void sortFields();
+        void sortFunctionals();
+
+        const ContainerTypeEntry* findContainerSuperClass(QList<const AbstractMetaType *>* instantiations = nullptr) const;
 
         const AbstractMetaClass *templateBaseClass() const { return m_template_base_class; }
         void setTemplateBaseClass(const AbstractMetaClass *cls) { m_template_base_class = cls; }
@@ -1258,6 +1295,7 @@ private:
         AbstractMetaFunctionList m_equals_functions;
         AbstractMetaFunctionList m_nequals_functions;
 
+        AbstractMetaFunctionList m_compare_functions;
         AbstractMetaFunctionList m_less_than_functions;
         AbstractMetaFunctionList m_greater_than_functions;
         AbstractMetaFunctionList m_less_than_eq_functions;
@@ -1265,7 +1303,7 @@ private:
         AbstractMetaFunctionList m_beginFunctions;
         AbstractMetaFunctionList m_endFunctions;
 
-        QStringList m_base_class_names;
+        QList<QPair<QString,bool>> m_base_class_names;
         QList<TypeEntry *> m_template_args;
         ComplexTypeEntry *m_type_entry;
         FunctionModelItem m_qDebug_stream_function;
@@ -1278,6 +1316,7 @@ class QPropertySpec {
             : m_name(),
                 m_read(),
                 m_write(),
+                m_bindable(),
                 m_designable(),
                 m_scriptable(),
                 m_reset(),
@@ -1299,6 +1338,9 @@ class QPropertySpec {
 
         QString write() const { return m_write; }
         void setWrite(const QString &write) { m_write = write; }
+
+        QString bindable() const { return m_bindable; }
+        void setBindable(const QString &bindable) { m_bindable = bindable; }
 
         QString designable() const { return m_designable; }
         void setDesignable(const QString &designable) { m_designable = designable; }
@@ -1337,6 +1379,7 @@ class QPropertySpec {
         QString m_name;
         QString m_read;
         QString m_write;
+        QString m_bindable;
         QString m_designable;
         QString m_scriptable;
         QString m_reset;

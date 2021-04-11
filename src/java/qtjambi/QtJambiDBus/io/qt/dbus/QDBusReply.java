@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,7 +29,7 @@
 
 package io.qt.dbus;
 
-import static io.qt.internal.QtJambiInternal.checkedNativeId;
+import static io.qt.internal.QtJambiInternal.nativeId;
 
 import java.util.Objects;
 
@@ -80,7 +80,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
 
     @io.qt.QtUninvokable
     private final void set(io.qt.dbus.QDBusReply<T> other){
-        __qt_QDBusReply_set_cref_QDBusReply(checkedNativeId(this), other);
+        __qt_QDBusReply_set_cref_QDBusReply(nativeId(this), other);
     }
     
     @io.qt.QtUninvokable
@@ -88,7 +88,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     
     @io.qt.QtUninvokable
     public final io.qt.dbus.QDBusError error(){
-        return __qt_QDBusReply_error_constfct(checkedNativeId(this));
+        return __qt_QDBusReply_error_constfct(nativeId(this));
     }
     
     @io.qt.QtUninvokable
@@ -96,7 +96,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     
     @io.qt.QtUninvokable
     public final boolean isValid(){
-        return __qt_QDBusReply_isValid_constfct(checkedNativeId(this));
+        return __qt_QDBusReply_isValid_constfct(nativeId(this));
     }
     
     @io.qt.QtUninvokable
@@ -104,7 +104,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
 
     @SuppressWarnings("unchecked")
 	public final T value(){
-        return valueType==null ? (T)__qt_QDBusReply__value_constfct(checkedNativeId(this)) : QVariant.convert(__qt_QDBusReply__value_constfct(checkedNativeId(this)), valueType);
+        return valueType==null ? (T)__qt_QDBusReply__value_constfct(nativeId(this)) : QVariant.convert(__qt_QDBusReply__value_constfct(nativeId(this)), valueType);
     }
 
     @io.qt.QtUninvokable

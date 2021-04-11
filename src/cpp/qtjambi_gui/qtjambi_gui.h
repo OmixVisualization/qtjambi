@@ -1,7 +1,8 @@
 #ifndef QTJAMBI_GUI_H
 #define QTJAMBI_GUI_H
 
-#include <QtGui/QtGui>
+#include <QtGui/QPainter>
+#include <QtGui/QPaintDevice>
 
 class PaintDeviceAccess : public QPaintDevice
 {

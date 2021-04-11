@@ -10,7 +10,7 @@ DLLDESTDIR = ../../bin
 
 QT += core gui qml 3dcore 3danimation
 
-HEADERS +=
+HEADERS += \
+    qtjambi_3danimation_hashes.h
 
-SOURCES += \
-    qtjambi_3danimation.cpp
+SOURCES +=

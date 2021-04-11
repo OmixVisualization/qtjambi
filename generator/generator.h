@@ -91,14 +91,15 @@ class Generator : public QObject {
             CollectionAsCollection          = 0x004000000,
             NoQCollectionContainers         = 0x008000000,
 
-            NoTmpVariable                   = 0x010000000,
-            DirectReturn                    = 0x020000000,
-            ForceConstReference             = 0x040000000,
-            ShowOverride                    = 0x080000000,
-            OptionalScope                   = 0x100000000,
-            SkipArray                       = 0x200000000,
-            EnumFromInt                     = 0x400000000,
-            InFunctionComment               = 0x800000000,
+            NoTmpVariable                   = 0x0010000000,
+            DirectReturn                    = 0x0020000000,
+            ForceConstReference             = 0x0040000000,
+            ShowOverride                    = 0x0080000000,
+            OptionalScope                   = 0x0100000000,
+            SkipArray                       = 0x0200000000,
+            EnumFromInt                     = 0x0400000000,
+            InFunctionComment               = 0x0800000000,
+            FunctionOverride                = 0x1000000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };
@@ -131,7 +132,7 @@ class Generator : public QObject {
         bool hasDefaultConstructor(const AbstractMetaType *type);
         bool hasPublicDefaultConstructor(const AbstractMetaType *type);
         bool hasPublicAssignmentOperator(const AbstractMetaType *type);
-
+        void setQtVersion(uint qtVersion) {m_qtVersion = qtVersion;}
 
     protected:
         void writeInclude(QTextStream &s, const Include &inc, QSet<QString> &dedupe);
@@ -141,6 +142,7 @@ class Generator : public QObject {
         int m_num_generated;
         int m_num_generated_written;
         QString m_out_dir;
+        uint m_qtVersion;
 };
 
 class Indentor {

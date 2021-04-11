@@ -4,24 +4,34 @@
 
 // Qt
 #define QOBJECTDEFS_H
+#define QTMETAMACROS_H
+#define QFLAGS_H
+#define __VA_ARGS__
+#define decltype(A) DECL_TYPE
 
 // not yet supported
 #define Q_COMPILER_DELETE_MEMBERS
 #define Q_COMPILER_DEFAULT_MEMBERS
 #define Q_COMPILER_NULLPTR
 #define Q_COMPILER_EXPLICIT_OVERRIDES
-#define constexpr
+//#define constexpr
 
-#define noexcept(X)
-#define Q_DECL_NOEXCEPT
-#define Q_DECL_NOEXCEPT_EXPR(x)
-#define Q_DECL_NOTHROW
+//#define noexcept(X)
+//#define Q_DECL_NOEXCEPT
+//#define Q_DECL_NOEXCEPT_EXPR(x)
+//#define Q_DECL_NOTHROW
+#define Q_MOC_INCLUDE(X)
 
 #define Q_SLOTS slots
 #define Q_SLOT Q_INVOKABLE
 #define Q_SIGNALS public signals
 #define Q_FLAGS(a)
 #define Q_FLAG(x) Q_ENUM(x)
+#define Q_ENUM_NS(x) Q_ENUM(x)
+#define Q_FLAG_NS(x) Q_ENUM(x)
+#define Q_DECLARE_FLAGS(F,E) Q_ENUM(E)
+#define Q_DECLARE_INCOMPATIBLE_FLAGS(X)
+#define Q_DECLARE_OPERATORS_FOR_FLAGS(X)
 #define Q_CLASSINFO(A,B)
 #define Q_REVISION(A)
 #define QDOC_PROPERTY(A)
@@ -30,6 +40,9 @@
 #define JNICALL
 #define __forceinline
 #define __stdcall
+#define QT_WARNING_DISABLE_INVALID_OFFSETOF
+#define Q_OBJECT_BINDABLE_PROPERTY(Class, Type, name, ...)
+#define Q_OBJECT_COMPUTED_PROPERTY(Class, Type, name, ...)
 
 #define Q_PRIVATE_SLOT(a, b)
 #define Q_DECLARE_INTERFACE(a,b)
@@ -45,6 +58,7 @@
 #define emit
 #define SIGNAL(A) #A
 #define SLOT(A) #A
+#define Q_NAMESPACE_EXPORT()
 #define Q_COMPILER_INITIALIZER_LISTS
 #define Q_DECL_DEPRECATED QTJAMBI_DEPRECATED
 #define Q_DECL_DEPRECATED_X(text) QTJAMBI_DEPRECATED_X(text)

@@ -5,6 +5,9 @@ SUBDIRS =   qtjambi qtjambi_core qtjambi_plugin
 
 contains(QT_CONFIG, qtjambi-gui):                 SUBDIRS += qtjambi_gui
 contains(QT_CONFIG, qtjambi-widgets):             SUBDIRS += qtjambi_widgets
+contains(QT_CONFIG, qtjambi-uitools):             SUBDIRS += qtjambi_uitools
+contains(QT_CONFIG, qtjambi-opengl):              SUBDIRS += qtjambi_opengl
+contains(QT_CONFIG, qtjambi-openglwidgets):       SUBDIRS += qtjambi_openglwidgets
 contains(QT_CONFIG, qtjambi-network):             SUBDIRS += qtjambi_network
 contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_qml
 contains(QT_CONFIG, qtjambi-qml):                 SUBDIRS += qtjambi_jarimport
@@ -21,12 +24,14 @@ contains(QT_CONFIG, qtjambi-scxml):               SUBDIRS += qtjambi_scxml
 contains(QT_CONFIG, qtjambi-quickcontrols2):      SUBDIRS += qtjambi_quick_controls2
 contains(QT_CONFIG, qtjambi-networkauth):         SUBDIRS += qtjambi_network_auth
 contains(QT_CONFIG, qtjambi-printsupport):        SUBDIRS += qtjambi_printsupport
+contains(QT_CONFIG, qtjambi-charts):              SUBDIRS += qtjambi_charts
+contains(QT_CONFIG, qtjambi-virtualkeyboard):     SUBDIRS += qtjambi_virtkey
 
 contains(QT_CONFIG, qtjambi-sql):                 SUBDIRS += qtjambi_sql
 contains(QT_CONFIG, qtjambi-svg):                 SUBDIRS += qtjambi_svg
+contains(QT_CONFIG, qtjambi-svgwidgets):          SUBDIRS += qtjambi_svgwidgets
 contains(QT_CONFIG, qtjambi-concurrent):          SUBDIRS += qtjambi_concurrent
 contains(QT_CONFIG, qtjambi-xmlpatterns):         SUBDIRS += qtjambi_xmlpatterns
-#contains(QT_CONFIG, qtjambi-opengl):             SUBDIRS += qtjambi_opengl
 contains(QT_CONFIG, qtjambi-script):              SUBDIRS += qtjambi_script
 contains(QT_CONFIG, qtjambi-scripttools):         SUBDIRS += qtjambi_scripttools
 
@@ -45,8 +50,7 @@ contains(QT_CONFIG, qtjambi-help):                SUBDIRS += qtjambi_help
 contains(QT_CONFIG, qtjambi-websockets):          SUBDIRS += qtjambi_websockets
 contains(QT_CONFIG, qtjambi-webchannel):          SUBDIRS += qtjambi_webchannel
 contains(QT_CONFIG, qtjambi-webview):             SUBDIRS += qtjambi_webview
-#contains(QT_CONFIG, qtjambi-designer):           SUBDIRS += qtjambi_designer
-#contains(QT_CONFIG, qtjambi-designer):           SUBDIRS += designer-integration
+contains(QT_CONFIG, qtjambi-designer):            SUBDIRS += qtjambi_designer
 contains(QT_CONFIG, qtjambi-serialport):          SUBDIRS += qtjambi_serialport
 contains(QT_CONFIG, qtjambi-serialbus):           SUBDIRS += qtjambi_serialbus
 contains(QT_CONFIG, qtjambi-winextras):           SUBDIRS += qtjambi_winextras

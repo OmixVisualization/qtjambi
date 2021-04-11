@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,44 +31,46 @@
 #ifndef QTJAMBI_REPOSITORY_H
 #define QTJAMBI_REPOSITORY_H
 
-#include "qtjambi_core.h"
+#include "qtjambi_global.h"
 
 #include "qtjambi_repodefines.h"
 
+QTJAMBI_EXPORT jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader = nullptr);
+
 #ifdef QTJAMBI_STACKTRACE
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: inline void throwNew(JNIEnv* env, const char* message, const char *methodName, const char *fileName, int lineNumber) const {\
+    public: static inline void throwNew(JNIEnv* env, const char* message, const char *methodName, const char *fileName, int lineNumber){\
         JavaException(env, newInstanceWithMessage(env, message)).raise(env, methodName, fileName, lineNumber);\
     }\
-    public: inline void throwNew(JNIEnv* env, const QString& message, const char *methodName, const char *fileName, int lineNumber) const {\
+    public: static inline void throwNew(JNIEnv* env, const QString& message, const char *methodName, const char *fileName, int lineNumber){\
         JavaException(env, newInstanceWithMessage(env, message)).raise(env, methodName, fileName, lineNumber);\
     }
 #else
 #define QTJAMBI_REPOSITORY_DECLARE_THROW_NEW\
-    public: inline void throwNew(JNIEnv* env, const char* message) const {\
+    public: static inline void throwNew(JNIEnv* env, const char* message){\
         JavaException(env, newInstanceWithMessage(env, message)).raise();\
     }\
-    public: inline void throwNew(JNIEnv* env, const QString& message) const {\
+    public: static inline void throwNew(JNIEnv* env, const QString& message){\
         JavaException(env, newInstanceWithMessage(env, message)).raise();\
     }
 #endif
 
 #define QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()\
     private: jmethodID __constructor;\
-    public: inline jthrowable newInstance(JNIEnv* env,...) const {\
-        __qt_resolve(env, this);\
+    public: static inline jthrowable newInstance(JNIEnv* env,...){\
+        auto _this = __qt_get_this(env);\
         va_list args;\
         jobject result;\
         va_start(args, env);\
-        result = env->NewObjectV(class_ref,__constructor,args);\
+        result = env->NewObjectV(_this.class_ref,_this.__constructor,args);\
         va_end(args);\
         qtjambi_throw_java_exception_no_stackinfo(env)\
         return jthrowable(result);\
     }\
-    public: inline jthrowable newInstanceWithMessage(JNIEnv* env,const char* message) const {\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const char* message){\
         return newInstance(env, env->NewStringUTF(message));\
     }\
-    public: inline jthrowable newInstanceWithMessage(JNIEnv* env,const QString& message) const {\
+    public: static inline jthrowable newInstanceWithMessage(JNIEnv* env,const QString& message){\
         return newInstance(env, env->NewStringUTF(qPrintable(message)));\
     }\
     QTJAMBI_REPOSITORY_DECLARE_THROW_NEW
@@ -76,12 +78,24 @@
 QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
 
 namespace Java{
-class QTJAMBI_EXPORT Runtime
+namespace Runtime
 {
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Runnable,
-                  QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Object,
+              QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+              QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(equals)
+              QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(hashCode)
+              QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(toString))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Number,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Supplier,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Consumer,
+                  QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runnable,
+                  QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(run))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Function,
+                  QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Number,
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(intValue)
                   QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(doubleValue)
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
@@ -89,46 +103,47 @@ class QTJAMBI_EXPORT Runtime
                   QTJAMBI_REPOSITORY_DECLARE_SHORT_METHOD(shortValue)
                   QTJAMBI_REPOSITORY_DECLARE_BYTE_METHOD(byteValue))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Integer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Integer,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Double,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Double,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Boolean,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Boolean,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(booleanValue)
+                  QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(getBoolean)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Long,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Long,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Float,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Float,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Short,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Short,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Character,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Character,
                   QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(charValue)
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Byte,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Byte,
                   QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(valueOf)
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Void,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Void,
                   DECLARE_CLASS_REF(TYPE))
 
-    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(Runtime,String)
+    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(String)
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,ByteBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asCharBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asDoubleBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asFloatBuffer)
@@ -139,37 +154,37 @@ class QTJAMBI_EXPORT Runtime
                   QTJAMBI_REPOSITORY_DECLARE_BYTE_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,IntBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(IntBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,LongBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(LongBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,ShortBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(ShortBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_SHORT_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,FloatBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(FloatBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,DoubleBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(DoubleBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,CharBuffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(CharBuffer,
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(asReadOnlyBuffer)
                   QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(put))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Buffer,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDirect)
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isReadOnly)
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(capacity)
@@ -180,67 +195,208 @@ class QTJAMBI_EXPORT Runtime
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasArray)
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(arrayOffset))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,AtomicBoolean,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(AtomicBoolean,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(set))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,AtomicReference,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(AtomicReference,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(set))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,AtomicInteger,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(AtomicInteger,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(set))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,AtomicLong,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(AtomicLong,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(get)
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(set))
-private:
-    Runtime() = delete;
-    ~Runtime() = delete;
-    Q_DISABLE_COPY_MOVE(Runtime)
-};
+}
 
-class QTJAMBI_EXPORT QtCore{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QCoreApplication,
+namespace QtCore{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QCoreApplication,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_FIELD(__qt_isInitializing))
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QObject$QDeclarativeConstructor,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QDeclarativeConstructor,
                   QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                   QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(placement)
                   QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(cls))
 
 #ifndef QT_QTJAMBI_PORT
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QThread,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QThread,
         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(javaThread)
         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_FIELD(interruptible))
 #else
-    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtCore,QThread)
+    QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QThread)
 #endif
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtCore,QMetaObject$Slot1,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaObject$Slot1,
                   QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
 
-private:
-    QtCore() = delete;
-    ~QtCore() = delete;
-    Q_DISABLE_COPY_MOVE(QtCore)
-};
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMetaType$GenericValue, QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(type))
 
-class QTJAMBI_EXPORT QtGui{
-QTJAMBI_REPOSITORY_DECLARE_CLASS(QtGui,QValidator$QValidationData,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QBindable,
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(createBinding)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QBooleanProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QCharProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QByteProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_BYTE_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QIntProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QShortProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_SHORT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QLongProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QDoubleProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QFloatProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(setValue)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(binding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(makeBinding)
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasSignal)
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(emitSignal)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QAbstractComputedProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(bindingData)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedBooleanProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedCharProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedByteProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_BYTE_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedIntProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedShortProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_SHORT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedLongProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedDoubleProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QObject$QComputedFloatProperty,
+                                     QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(value)
+                                     QTJAMBI_REPOSITORY_DECLARE_METHOD_ID(value)
+                                     )
+}
+
+namespace QtGui{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QValidator$QValidationData,
               QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
               QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(string)
               QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(position))
-private:
-    QtGui() = delete;
-    ~QtGui() = delete;
-    Q_DISABLE_COPY_MOVE(QtGui)
-};
+}
 }
 
 #undef DECLARE_CLASS_REF

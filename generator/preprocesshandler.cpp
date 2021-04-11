@@ -43,7 +43,7 @@
 #include "wrapper.h"
 
 PreprocessHandler::PreprocessHandler(QString sourceFile, QString targetFile,
-                                     const std::function<void(std::string,std::string)> &featureRegistry,
+                                     const std::function<void(std::string,std::string,std::string)> &featureRegistry,
                                      const QString &phononInclude,
     const QStringList &includePathList, const QStringList &inputDirectoryList, int verbose) :
         env(featureRegistry),

@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,6 +44,9 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.network.auth" default-superclass="io.qt.QtObject">
+    <!--inject-code position="2" since="6.0.0">
+        io.qt.QtUtilities.initializePackage("io.qt.network");
+    </inject-code-->
     <object-type name="QOAuthHttpServerReplyHandler">
         <modify-function signature="listen(const QHostAddress &amp;, unsigned short)">
             <modify-argument index="1">
@@ -61,7 +64,10 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.network.QNetworkRequest"/>
                 <conversion-rule class="native">
-                    QNetworkRequest *%out = reinterpret_cast&lt;QNetworkRequest *>(qtjambi_to_object(%env, %in));
+                    QNetworkRequest *%out = qtjambi_cast&lt;QNetworkRequest *>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -69,7 +75,10 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.network.QNetworkRequest"/>
                 <conversion-rule class="native">
-                    QNetworkRequest *%out = reinterpret_cast&lt;QNetworkRequest *>(qtjambi_to_object(%env, %in));
+                    QNetworkRequest *%out = qtjambi_cast&lt;QNetworkRequest *>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -79,7 +88,10 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.network.QNetworkRequest"/>
                 <conversion-rule class="native">
-                    QNetworkRequest *%out = reinterpret_cast&lt;QNetworkRequest *>(qtjambi_to_object(%env, %in));
+                    QNetworkRequest *%out = qtjambi_cast&lt;QNetworkRequest *>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>

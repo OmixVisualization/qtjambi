@@ -104,6 +104,7 @@ Visitor::visitor_fun_ptr Visitor::_S_table[AST::NODE_KIND_COUNT] = {
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSimpleTypeSpecifier),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitAutoTypeSpecifier),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSizeofExpression),
+    reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitAlignofExpression),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitTypeidExpression),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitStringLiteral),
     reinterpret_cast<Visitor::visitor_fun_ptr>(&Visitor::visitSubscriptExpression),

@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,9 +47,13 @@
   <namespace-type name="QtConcurrent">
         <extra-includes>
             <include file-name="io.qt.core.*" location="java"/>
+            <include file-name="static io.qt.internal.QtJambiInternal.*" location="java" since="6.0.0"/>
         </extra-includes>
     <inject-code class="java">
         <import-file name="typesystem/java/typesystem_concurrent-java.java" quote-after-line="class QtConcurrent___" quote-before-line="}// class"/>
+    </inject-code>
+    <inject-code class="java" since="6.0.0">
+        <import-file name="typesystem/java/typesystem_concurrent-java.java" quote-after-line="class QtConcurrent_6__" quote-before-line="}// class"/>
     </inject-code>
   </namespace-type>
 </typesystem>

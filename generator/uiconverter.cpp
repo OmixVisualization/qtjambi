@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -117,11 +117,11 @@ void UiConverter::traverseCustomWidgetFile(const QString &customWidgetFile) {
     QXmlStreamReader reader(&file);
     while (!reader.atEnd()) {
         reader.readNext();
-        if (reader.isStartElement() && reader.name() == "qt-jambi-custom-widget") {
+        if (reader.isStartElement() && reader.name() == QLatin1String("qt-jambi-custom-widget")) {
             QXmlStreamAttributes attributes = reader.attributes();
             QString className = attributes.value("class").toString();
 
-            int pos = className.lastIndexOf(".");
+            auto pos = className.lastIndexOf(".");
             m_custom_widgets.insert(className.mid(pos + 1), CustomWidget(className, nullptr));
         }
     }
@@ -212,8 +212,7 @@ void UiConverter::fixCustomWidgetNode(QDomElement el, QDomDocument *) {
     QString fullName = fullNames.at(0).first;
     classes.at(0).namedItem("#text").toText().setData(fullName);
 
-    QMap<QString, CustomWidget>::iterator it;
-    for (it = m_custom_widgets.begin(); it != m_custom_widgets.end(); ++it) {
+    for (auto it = m_custom_widgets.begin(); it != m_custom_widgets.end(); ++it) {
         if (it.key() == className)
             (*it).second = javaClass;
     }

@@ -51,7 +51,7 @@
                 slot = cppSlotSignature(slot);
             </inject-code>
         </modify-function>
-        <modify-function signature="connect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList&lt;QString&gt; &amp;, const QString &amp;, QObject *, const char *)">
+        <modify-function signature="connect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList &amp;, const QString &amp;, QObject *, const char *)">
             <modify-argument index="8">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
@@ -75,7 +75,7 @@
                 slot = cppSlotSignature(slot);
             </inject-code>
         </modify-function>
-        <modify-function signature="disconnect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList&lt;QString&gt; &amp;, const QString &amp;, QObject *, const char *)">
+        <modify-function signature="disconnect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList &amp;, const QString &amp;, QObject *, const char *)">
             <modify-argument index="8">
                 <replace-type modified-type="java.lang.String"/>
            </modify-argument>
@@ -109,7 +109,7 @@
         <modify-function signature="operator&lt;&lt;(const QDBusVariant &amp;)" rename="append">
             <modify-argument index="0" replace-value="this"/>
         </modify-function>
-        <modify-function signature="operator&lt;&lt;(const QStringList&lt;QString> &amp;)" rename="append">
+        <modify-function signature="operator&lt;&lt;(const QStringList &amp;)" rename="append">
             <modify-argument index="0" replace-value="this"/>
         </modify-function>
         <modify-function signature="operator&lt;&lt;(const QByteArray &amp;)" rename="append">
@@ -289,7 +289,7 @@
                 </conversion-rule>
           </modify-argument>
         </modify-function>
-        <modify-function signature="operator>>(QStringList&lt;QString> &amp;)const" rename="extractStrings">
+        <modify-function signature="operator>>(QStringList &amp;)const" rename="extractStrings">
           <modify-argument index="0">
                 <replace-type modified-type="java.util.List&lt;java.lang.String>"/>
                 <conversion-rule class="native">
@@ -320,11 +320,49 @@
           </modify-argument>
         </modify-function>
     </value-type>
+    <interface-type name="QDBusContext">
+        <inject-code class="java" position="beginning">
+            private static void checkCalledFromDBus(QDBusContext instance){
+                if(!instance.calledFromDBus())
+                    throw new IllegalStateException("QDBusContext has not ben called from DBus.");
+            }
+        </inject-code>
+        <modify-function signature="connection() const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="message() const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="isDelayedReply() const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="setDelayedReply(bool)const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="sendErrorReply(const QString &amp;, const QString &amp;) const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+        <modify-function signature="sendErrorReply(QDBusError::ErrorType, const QString &amp;) const">
+            <inject-code class="java" position="beginning">
+                QDBusContext.Impl.checkCalledFromDBus(%this);
+            </inject-code>
+        </modify-function>
+    </interface-type>
     <object-type name="QDBusAbstractInterface"><!-- since 4.2, looks like interface -->
-        <modify-function signature="asyncCall(const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all"/>
-        <modify-function signature="call(const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all"/>
+        <modify-function signature="asyncCall(const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all" until="5.*"/>
+        <modify-function signature="call(const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all" until="5.*"/>
         <modify-function signature="call(const QString &amp;)" remove="all"/>
-        <modify-function signature="call(QDBus::CallMode, const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all"/>
+        <modify-function signature="call(QDBus::CallMode, const QString &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;, const QVariant &amp;)" remove="all" until="5.*"/>
         <modify-function signature="call(QDBus::CallMode, const QString &amp;)" remove="all"/>
         <modify-function signature="asyncCallWithArgumentList(const QString &amp;, const QList&lt;QVariant > &amp;)">
             <modify-argument index="return">

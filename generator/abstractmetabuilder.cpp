@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,12 +51,16 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QTextCodec>
+#endif
 #include <QTextStream>
 #include <QVariant>
 
+static const char* GLOBAL_PACKAGE = "package_global";
+
 static QString strip_template_args(const QString &name) {
-    int pos = name.indexOf('<');
+    auto pos = name.indexOf('<');
     return pos < 0 ? name : name.left(pos);
 }
 
@@ -66,65 +70,70 @@ static QString strip_template_args(const QString &name) {
  *
  * For example for "+" return "operator_add"
  */
-QString AbstractMetaBuilder::rename_operator(const QString &oper) {
+AbstractMetaBuilder::RenamedOperator AbstractMetaBuilder::rename_operator(const QString &oper) {
     QString op = oper.trimmed();
-    static QHash<QString, QString> *operator_names = nullptr;
-    if (!operator_names) {
-        operator_names = new QHash<QString, QString>();
-
-        operator_names->insert("+", "add");
-        operator_names->insert("-", "subtract");
-        operator_names->insert("*", "multiply");
-        operator_names->insert("/", "divide");
-        operator_names->insert("%", "modulo");
-        operator_names->insert("&", "and");
-        operator_names->insert("|", "or");
-        operator_names->insert("^", "xor");
-        operator_names->insert("~", "negate");
-        operator_names->insert("<<", "shift_left");
-        operator_names->insert(">>", "shift_right");
+    static const QHash<QString, QString> operator_names{
+        {"+", "add"},
+        {"-", "subtract"},
+        {"*", "multiply"},
+        {"/", "divide"},
+        {"%", "modulo"},
+        {"&", "and"},
+        {"|", "or"},
+        {"^", "xor"},
+        {"~", "negate"},
+        {"<<", "shift_left"},
+        {">>", "shift_right"},
 
         // assigments
-        operator_names->insert("=", "assign");
-        operator_names->insert("+=", "add_assign");
-        operator_names->insert("-=", "subtract_assign");
-        operator_names->insert("*=", "multiply_assign");
-        operator_names->insert("/=", "divide_assign");
-        operator_names->insert("%=", "modulo_assign");
-        operator_names->insert("&=", "and_assign");
-        operator_names->insert("|=", "or_assign");
-        operator_names->insert("^=", "xor_assign");
-        operator_names->insert("<<=", "shift_left_assign");
-        operator_names->insert(">>=", "shift_right_assign");
+        {"=", "assign"},
+        {"+=", "add_assign"},
+        {"-=", "subtract_assign"},
+        {"*=", "multiply_assign"},
+        {"/=", "divide_assign"},
+        {"%=", "modulo_assign"},
+        {"&=", "and_assign"},
+        {"|=", "or_assign"},
+        {"^=", "xor_assign"},
+        {"<<=", "shift_left_assign"},
+        {">>=", "shift_right_assign"},
 
         // Logical
-        operator_names->insert("&&", "logical_and");
-        operator_names->insert("||", "logical_or");
-        operator_names->insert("!", "not");
+        {"&&", "logical_and"},
+        {"||", "logical_or"},
+        {"!", "not"},
 
         // incr/decr
-        operator_names->insert("++", "increment");
-        operator_names->insert("--", "decrement");
+        {"++", "increment"},
+        {"--", "decrement"},
 
         // compare
-        operator_names->insert("<", "less");
-        operator_names->insert(">", "greater");
-        operator_names->insert("<=", "less_or_equal");
-        operator_names->insert(">=", "greater_or_equal");
-        operator_names->insert("<<=", "shift_left_assign");
-        operator_names->insert(">>=", "shift_right_assign");
-        operator_names->insert("!=", "not_equal");
-        operator_names->insert("==", "equal");
+        {"<", "less"},
+        {">", "greater"},
+        {"<=", "less_or_equal"},
+        {"<=>", "compare"},
+        {">=", "greater_or_equal"},
+        {"<<=", "shift_left_assign"},
+        {">>=", "shift_right_assign"},
+        {"!=", "not_equal"},
+        {"==", "equal"},
 
         // other
-        operator_names->insert("[]", "subscript");
-        operator_names->insert("->", "pointer");
-        operator_names->insert("()", "call");
-        operator_names->insert("new", "cunstruct");
-        operator_names->insert("delete", "destruct");
-    }
+        {"[]", "subscript"},
+        {"->", "pointer"},
+        {"->.", "pointer_to_deref"},
+        {".", "deref"},
+        {".*", "deref_indirection"},
+        {",", "comma"},
+        {"()", "call"},
+        {"new", "cunstruct"},
+        {"delete", "destruct"}
+    };
 
-    if (!operator_names->contains(op)) {
+    if(op.startsWith("typename")){
+        return {{},nullptr,true};
+    }
+    if (!operator_names.contains(op)) {
         TypeDatabase *tb = TypeDatabase::instance();
 
         TypeParser::Info typeInfo = TypeParser::parse(op);
@@ -132,36 +141,30 @@ QString AbstractMetaBuilder::rename_operator(const QString &oper) {
         TypeEntry *te = tb->findType(cast_to_name);
         if ((te && te->codeGeneration() == TypeEntry::GenerateNothing)
                 || tb->isClassRejected(cast_to_name)) {
-            return QString();
+            return {{},te,true};
         } else if (te) {
-            return "operator_cast_" + typeInfo.qualified_name.join("::");
+            return {{},te,false};
         } else {
             TypeAliasModelItem typeAlias = currentScope()->findTypeAlias(cast_to_name);
             if(typeAlias && typeAlias->type().qualifiedName().join("::")!=cast_to_name){
                 return rename_operator(typeAlias->type().qualifiedName().join("::"));
             }else{
-                ReportHandler::warning(QString("unknown operator '%1'").arg(op));
-                return "operator " + op;
+                return {{},nullptr,false};
             }
         }
     }
 
-    return "operator_" + operator_names->value(op);
+    return {QString("operator_%1").arg(operator_names.value(op)),nullptr,false};
 }
 
 AbstractMetaBuilder::AbstractMetaBuilder()
-        : m_current_class(nullptr), m_docModel(nullptr) {
+        : m_current_class(nullptr),
+          m_features(nullptr),
+          m_qtVersion(QT_VERSION) {
 }
 
 AbstractMetaBuilder::~AbstractMetaBuilder() {
-    delete m_docModel;
 }
-
-void AbstractMetaBuilder::setDocDirectory(const QString &docsDir){
-    DocIndexReader reader;
-    m_docModel = reader.readDocIndexes(docsDir);
-}
-
 
 /**
  * This function is here, simply to print out warnings about
@@ -207,7 +210,7 @@ void AbstractMetaBuilder::checkFunctionModifications() {
                         possibleSignatures.append(function->minimalSignature() + " in " + function->implementingClass()->name());
                 }
 
-                if (!found) {
+                if (!found && clazz->typeEntry()->codeGeneration()!=TypeEntry::GenerateNothing) {
                     QString warning
                     = QString("signature '%1' for function modification in '%2' not found. Possible candidates: %3")
                       .arg(signature)
@@ -286,7 +289,6 @@ void AbstractMetaBuilder::traverseCompareOperator(FunctionModelItem item) {
                 AbstractMetaArgumentList arguments = meta_function->arguments();
                 arguments.pop_front();
                 meta_function->setArguments(arguments);
-
                 meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
 
                 meta_function->setOriginalAttributes(meta_function->attributes());
@@ -306,7 +308,6 @@ void AbstractMetaBuilder::traverseCompareOperator(FunctionModelItem item) {
                         else if (mod.isFriendly())
                             meta_function->setVisibility(AbstractMetaAttributes::Friendly);
                     }
-
                 }
 
                 comparer_class->addFunction(meta_function);
@@ -354,6 +355,10 @@ void AbstractMetaBuilder::traverseStreamOperator(FunctionModelItem item) {
 
                 streamedClass->addFunction(streamFunction);
                 streamedClass->typeEntry()->addExtraInclude(streamClass->typeEntry()->include());
+                FunctionModification mod;
+                mod.signature = streamFunction->minimalSignature();
+                mod.modifiers |= Modification::NonFinal;
+                m_current_class->typeEntry()->addFunctionModification(mod);
 
                 m_current_class = old_current_class;
             }
@@ -366,9 +371,16 @@ void AbstractMetaBuilder::fixQObjectForScope(TypeDatabase *types,
     for(QHash<QString, ClassModelItem>::const_iterator i = scope->classMap().begin(); i!=scope->classMap().end(); i++){
         QString qualified_name = i.value()->qualifiedName().join("::");
         TypeEntry *entry = types->findType(qualified_name);
-        if (entry) {
-            if (isQObject(qualified_name) && entry->isComplex()) {
+        if (entry && entry->isComplex()) {
+            if (isQObject(qualified_name)) {
                 static_cast<ComplexTypeEntry *>(entry)->setQObject(true);
+                if (isQWidget(qualified_name)) {
+                    static_cast<ComplexTypeEntry *>(entry)->setQWidget(true);
+                }else if (isQWindow(qualified_name)) {
+                    static_cast<ComplexTypeEntry *>(entry)->setQWindow(true);
+                }else if (isQCoreApplication(qualified_name)) {
+                    static_cast<ComplexTypeEntry *>(entry)->setQCoreApplication(true);
+                }
             }
         }
     }
@@ -386,6 +398,9 @@ void AbstractMetaBuilder::sortLists() {
               });
     for(AbstractMetaClass *cls : m_meta_classes) {
         cls->sortFunctions();
+        cls->sortEnums();
+        cls->sortFields();
+        cls->sortFunctionals();
     }
 }
 
@@ -454,7 +469,7 @@ void writeContent(QTextStream &stream,
     }
     {
         QMap<QString, FunctionDefinitionModelItem> _map;
-        for(QHash<QString, FunctionDefinitionModelItem>::const_iterator i = functionDefinitionMap.begin(); i!=functionDefinitionMap.end(); i++){
+        for(QMultiHash<QString, FunctionDefinitionModelItem>::const_iterator i = functionDefinitionMap.begin(); i!=functionDefinitionMap.end(); i++){
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
@@ -467,7 +482,7 @@ void writeContent(QTextStream &stream,
     }
     {
         QMap<QString, FunctionModelItem> _map;
-        for(QHash<QString, FunctionModelItem>::const_iterator i = functionMap.begin(); i!=functionMap.end(); i++){
+        for(QMultiHash<QString, FunctionModelItem>::const_iterator i = functionMap.begin(); i!=functionMap.end(); i++){
             _map.insert(i.key(), i.value());
         }
         if(!_map.isEmpty()){
@@ -507,7 +522,11 @@ bool AbstractMetaBuilder::build() {
     QByteArray contents;
     {
         QTextStream stream(&file);
-        stream.setCodec(QTextCodec::codecForName("UTF-8"));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    stream.setCodec(QTextCodec::codecForName("UTF-8"));
+#else
+    stream.setEncoding(QStringConverter::Utf8);
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         contents = stream.readAll().toUtf8();
     }
     file.close();
@@ -541,11 +560,14 @@ bool AbstractMetaBuilder::build() {
     // fix up QObject's in the type system..
     TypeDatabase *types = TypeDatabase::instance();
     fixQObjectForScope(types, model_dynamic_cast<NamespaceModelItem>(m_dom));
-    {
+    if(m_qtVersion < QT_VERSION_CHECK(6, 0, 0)){
         ClassModelItem const_iterator = m_dom->classMap().value("QVector__const_iterator");
         if(const_iterator){
             m_dom->removeClass(const_iterator);
             ClassModelItem qvec = m_dom->classMap().value("QVector");
+            if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+                qvec = m_dom->classMap().value("QList");
+            }
             if(qvec){
                 const_iterator->setName("const_iterator");
                 qvec->addClass(const_iterator);
@@ -565,13 +587,90 @@ bool AbstractMetaBuilder::build() {
                    << "QMultiHash"
                    << "QSet<T>"
                    << "QSet";
+        if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+            classNames << "QVector<T>"
+                       << "QVector"
+                       << "QList<T>"
+                       << "QList";
+        }
+//        QList<QString> key = m_dom->classMap().keys();
+//        printf("%s\n", qPrintable(key.join("\n")));
         for(const QString& className : classNames) {
             if(ClassModelItem mapClass = m_dom->classMap().value(className)){
                 for(const FunctionModelItem& fct : mapClass->functionMap().values("insert")){
-                    TypeInfo type = fct->type();
-                    if(type.qualifiedName().join("::")=="iterator"){
+                    if(fct->type().qualifiedName().join("::")=="iterator"
+                            || fct->type().qualifiedName().join("::").endsWith("::iterator")){
+                        TypeInfo type;
                         type.setQualifiedName(QStringList()<<"void");
                         fct->setType(type);
+                    }
+                }
+                if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+                    if(mapClass->name().startsWith("QMap") || mapClass->name().startsWith("QMultiMap")){
+                        for(const FunctionModelItem& fct : mapClass->functionMap().values("size")){
+                            if(fct->type().qualifiedName().join("::")=="size_type"
+                                    || fct->type().qualifiedName().join("::").endsWith("::size_type")){
+                                TypeInfo type;
+                                type.setQualifiedName(QStringList()<<"qsizetype");
+                                fct->setType(type);
+                            }
+                        }
+                    }else if(mapClass->name().startsWith("QList")){
+                        QList<FunctionModelItem> functions = mapClass->functionMap().values();
+                        for(const FunctionModelItem& fct : functions){
+                            if(fct->type().qualifiedName().join("::")=="const_reference"
+                                    || fct->type().qualifiedName().join("::").endsWith("::const_reference")){
+                                TypeInfo type;
+                                type.setQualifiedName(QStringList()<<"T");
+                                type.setConstant(true);
+                                type.setReferenceType(TypeInfo::Reference);
+                                fct->setType(type);
+                            }
+                            if(fct->type().qualifiedName().join("::")=="value_type"
+                                    || fct->type().qualifiedName().join("::").endsWith("::value_type")
+                                    || fct->type().qualifiedName().join("::")=="Type"
+                                    || fct->type().qualifiedName().join("::").endsWith("::Type")){
+                                TypeInfo type;
+                                type.setQualifiedName(QStringList()<<"T");
+                                fct->setType(type);
+                            }
+                            for(const ArgumentModelItem& argument : fct->arguments()){
+                                if(argument->type().qualifiedName().join("::")=="parameter_type"
+                                        || argument->type().qualifiedName().join("::").endsWith("::parameter_type")
+                                        || argument->type().qualifiedName().join("::")=="const_reference"
+                                        || argument->type().qualifiedName().join("::").endsWith("::const_reference")){
+                                    TypeInfo type;
+                                    type.setQualifiedName(QStringList()<<"T");
+                                    type.setConstant(true);
+                                    type.setReferenceType(TypeInfo::Reference);
+                                    argument->setType(type);
+                                }
+                            }
+                            if(fct->name()=="insert"){
+                                if(fct->templateParameters().size()==1){
+                                    fct->setTemplateParameters({});
+                                }
+                            }
+                            if(fct->name()=="fill"){
+                                if(fct->type().qualifiedName().join("::")=="QList<T>"){
+                                    TypeInfo type;
+                                    type.setQualifiedName(QStringList()<<"void");
+                                    fct->setType(type);
+                                }
+                                fct->setTemplateParameters({});
+                            }
+                        }
+                        for(const FunctionModelItem& fct : mapClass->functionMap().values("operator==")){
+                            if(fct->arguments().size()==2){
+                                if(fct->arguments()[0]->type().qualifiedName().join("::")=="QList"
+                                        && fct->arguments()[1]->type().qualifiedName().join("::")=="QList"){
+                                    const_cast<ArgumentList&>(fct->arguments()).removeFirst();
+                                    fct->setConstant(true);
+                                    fct->setStatic(false);
+                                    fct->setFriend(false);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -596,14 +695,11 @@ bool AbstractMetaBuilder::build() {
         AbstractMetaEnum *meta_enum = traverseEnum(i.value(), nullptr, QSet<QString>());
 
         if (meta_enum) {
-            QString package = meta_enum->typeEntry()->javaPackage();
-            QString globalName = TypeDatabase::globalNamespaceClassName();
-
-            AbstractMetaClass *global = m_meta_classes.findClass(package.isEmpty() ? globalName : package + "." + globalName);
+            AbstractMetaClass *global = m_meta_classes.findClass(meta_enum->typeEntry()->targetTypeSystem() + "." + GLOBAL_PACKAGE);
             if (!global) {
-                ComplexTypeEntry *gte = new ObjectTypeEntry(globalName);
-                gte->setTargetLangPackage(meta_enum->typeEntry()->javaPackage());
+                ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
                 gte->setTargetTypeSystem(meta_enum->typeEntry()->targetTypeSystem());
+                gte->setTargetLangPackage(meta_enum->typeEntry()->targetTypeSystem());
                 gte->setCodeGeneration(TypeEntry::GenerateNothing);
                 global = createMetaClass();
                 global->setTypeEntry(gte);
@@ -709,12 +805,11 @@ bool AbstractMetaBuilder::build() {
             AbstractMetaClass *cls = m_meta_classes.findClass(name);
 
             if(!cls && static_cast<const EnumTypeEntry *>(entry)->javaQualifier().isEmpty()){
-                QString globalName = TypeDatabase::globalNamespaceClassName();
-                cls = m_meta_classes.findClass(pkg + "." + globalName);
+                cls = m_meta_classes.findClass(entry->targetTypeSystem() + "." + GLOBAL_PACKAGE);
                 if (!cls) {
-                    ComplexTypeEntry *gte = new ObjectTypeEntry(globalName);
-                    gte->setTargetTypeSystem(entry->javaPackage());
+                    ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
                     gte->setTargetLangPackage(entry->targetTypeSystem());
+                    gte->setTargetTypeSystem(entry->targetTypeSystem());
                     gte->setCodeGeneration(TypeEntry::GenerateNothing);
                     cls = createMetaClass();
                     cls->setTypeEntry(gte);
@@ -725,15 +820,17 @@ bool AbstractMetaBuilder::build() {
                 }
             }
 
-            if (!cls) {
-                ReportHandler::warning(QString("namespace '%1' for enum '%2' is not declared")
-                                       .arg(name).arg(entry->targetLangName()));
-            } else {
-                AbstractMetaEnum *e = cls->findEnum(entry->targetLangName());
-                if (!e)
-                    ReportHandler::warning(QString("enum '%1' is specified in typesystem, "
-                                                   "but not declared")
-                                           .arg(entry->qualifiedCppName()));
+            if(entry->codeGeneration()==TypeEntry::GenerateAll){
+                if (!cls) {
+                    ReportHandler::warning(QString("namespace '%1' for enum '%2' is not declared")
+                                           .arg(name).arg(entry->targetLangName()));
+                } else {
+                    AbstractMetaEnum *e = cls->findEnum(entry->targetLangName());
+                    if (!e)
+                        ReportHandler::warning(QString("enum '%1' is specified in typesystem, "
+                                                       "but not declared")
+                                               .arg(entry->qualifiedCppName()));
+                }
             }
         }
 
@@ -744,13 +841,11 @@ bool AbstractMetaBuilder::build() {
             AbstractMetaClass *cls = m_meta_classes.findClass(name);
 
             if(!cls && static_cast<const FunctionalTypeEntry *>(entry)->javaQualifier().isEmpty()){
-                QString globalName = TypeDatabase::globalNamespaceClassName();
-                name += globalName;
-                cls = m_meta_classes.findClass(name);
+                cls = m_meta_classes.findClass(entry->targetTypeSystem() + "." + GLOBAL_PACKAGE);
                 if (!cls) {
-                    ComplexTypeEntry *gte = new ObjectTypeEntry(globalName);
-                    gte->setTargetTypeSystem(entry->javaPackage());
+                    ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
                     gte->setTargetLangPackage(entry->targetTypeSystem());
+                    gte->setTargetTypeSystem(entry->targetTypeSystem());
                     gte->setCodeGeneration(TypeEntry::GenerateNothing);
                     cls = createMetaClass();
                     cls->setTypeEntry(gte);
@@ -761,18 +856,20 @@ bool AbstractMetaBuilder::build() {
                 }
             }
 
-            if (!cls) {
-                ReportHandler::warning(QString("namespace '%1' for functional '%2' is not declared")
-                                       .arg(name).arg(entry->targetLangName()));
-            } else {
-                AbstractMetaFunctional *e = cls->findFunctional(entry->targetLangName());
-                if (!e){
-                    e = findFunctional(cls, static_cast<const FunctionalTypeEntry *>(entry));
+            if(entry->codeGeneration()==TypeEntry::GenerateAll){
+                if (!cls) {
+                    ReportHandler::warning(QString("namespace '%1' for functional '%2' is not declared")
+                                           .arg(name).arg(entry->targetLangName()));
+                } else {
+                    AbstractMetaFunctional *e = cls->findFunctional(entry->targetLangName());
+                    if (!e){
+                        e = findFunctional(cls, static_cast<const FunctionalTypeEntry *>(entry));
+                    }
+                    if (!e)
+                        ReportHandler::warning(QString("function '%1' is specified in typesystem, "
+                                                       "but not declared")
+                                               .arg(entry->qualifiedCppName()));
                 }
-                if (!e)
-                    ReportHandler::warning(QString("function '%1' is specified in typesystem, "
-                                                   "but not declared")
-                                           .arg(entry->qualifiedCppName()));
             }
         }
     }
@@ -820,22 +917,24 @@ bool AbstractMetaBuilder::build() {
         setupClonable(cls);
         setupBeginEnd(cls);
     }
-
     dumpLog();
-
     sortLists();
+    return true;
+}
 
-    if(m_docModel){
+void AbstractMetaBuilder::applyDocs(const DocModel* docModel){
+    if(docModel){
         QHash<QString, QSharedPointer<AbstractMetaType>> analyzedTypes;
+        AbstractMetaFunctionalList meta_functionals = m_meta_functionals;
         for(AbstractMetaClass *meta_class : m_meta_classes) {
             if(meta_class->isNamespace() || meta_class->isFake()){
-                const DocNamespace* ns = m_docModel->getNamespace(meta_class->isFake() ? "" : meta_class->qualifiedCppName());
+                const DocNamespace* ns = docModel->getNamespace(meta_class->isFake() ? "" : meta_class->qualifiedCppName());
                 if(!ns && !meta_class->isFake()){
                     QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
                     if(!qualifiedCppName.isEmpty()){
                         if(qualifiedCppName.last().startsWith("QtJambi")){
                             qualifiedCppName.last().replace("QtJambi", "Q");
-                            ns = m_docModel->getNamespace(qualifiedCppName.join("::"));
+                            ns = docModel->getNamespace(qualifiedCppName.join("::"));
                         }
                     }
                 }
@@ -887,13 +986,17 @@ bool AbstractMetaBuilder::build() {
                     }
                 }
             }else{
-                const DocClass* cls = m_docModel->getClass(meta_class->qualifiedCppName());
+                const DocClass* cls = docModel->getClass(meta_class->qualifiedCppName());
                 if(!cls){
                     QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
                     if(!qualifiedCppName.isEmpty()){
                         if(qualifiedCppName.last().startsWith("QtJambi")){
                             qualifiedCppName.last().replace("QtJambi", "Q");
-                            cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                            cls = docModel->getClass(qualifiedCppName.join("::"));
+                        }
+                        if(!cls && qualifiedCppName.size()>1){
+                            qualifiedCppName.takeFirst();
+                            cls = docModel->getClass(qualifiedCppName.join("::"));
                         }
                     }
                 }
@@ -903,13 +1006,17 @@ bool AbstractMetaBuilder::build() {
                     for(AbstractMetaFunction * meta_function : meta_class->functions()){
                         const DocClass* _cls = cls;
                         if(meta_function->declaringClass()!=meta_class){
-                            const DocClass* __cls = m_docModel->getClass(meta_function->declaringClass()->qualifiedCppName());
+                            const DocClass* __cls = docModel->getClass(meta_function->declaringClass()->qualifiedCppName());
                             if(!__cls){
                                 QStringList qualifiedCppName = meta_function->declaringClass()->qualifiedCppName().split("::");
                                 if(!qualifiedCppName.isEmpty()){
                                     if(qualifiedCppName.last().startsWith("QtJambi")){
                                         qualifiedCppName.last().replace("QtJambi", "Q");
-                                        __cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                                        __cls = docModel->getClass(qualifiedCppName.join("::"));
+                                    }
+                                    if(!__cls && qualifiedCppName.size()>1){
+                                        qualifiedCppName.takeFirst();
+                                        __cls = docModel->getClass(qualifiedCppName.join("::"));
                                     }
                                 }
                             }
@@ -975,28 +1082,93 @@ bool AbstractMetaBuilder::build() {
                 }
 
                 for(AbstractMetaEnum* meta_enum : meta_class->enums()){
-                    const DocEnum* docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
+                    const DocEnum* docEnum = docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
                     if(!docEnum){
-                        docEnum = m_docModel->getEnum(meta_class->qualifiedCppName()+"::"+meta_enum->typeEntry()->name());
+                        QStringList qualifiedCppName = meta_enum->typeEntry()->qualifiedCppName().split("::");
+                        if(!qualifiedCppName.isEmpty()){
+                            if(qualifiedCppName.last().startsWith("QtJambi")){
+                                qualifiedCppName.last().replace("QtJambi", "Q");
+                                docEnum = docModel->getEnum(qualifiedCppName.join("::"));
+                            }
+                            if(!docEnum && qualifiedCppName.size()>1){
+                                qualifiedCppName.takeFirst();
+                                docEnum = docModel->getEnum(qualifiedCppName.join("::"));
+                            }
+                        }
                     }
                     if(!docEnum){
-                        docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                        docEnum = docModel->getEnum(meta_class->qualifiedCppName()+"::"+meta_enum->typeEntry()->name());
+                        if(!docEnum){
+                            QStringList qualifiedCppName = meta_class->qualifiedCppName().split("::");
+                            if(!qualifiedCppName.isEmpty()){
+                                if(qualifiedCppName.last().startsWith("QtJambi")){
+                                    qualifiedCppName.last().replace("QtJambi", "Q");
+                                    docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                                }
+                                if(!docEnum && qualifiedCppName.size()>1){
+                                    qualifiedCppName.takeFirst();
+                                    docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                                }
+                            }
+                        }
+                    }
+                    if(!docEnum){
+                        docEnum = docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                        if(!docEnum){
+                            QStringList qualifiedCppName = meta_enum->typeEntry()->qualifier().split("::");
+                            if(!qualifiedCppName.isEmpty()){
+                                if(qualifiedCppName.last().startsWith("QtJambi")){
+                                    qualifiedCppName.last().replace("QtJambi", "Q");
+                                    docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                                }
+                                if(!docEnum && qualifiedCppName.size()>1){
+                                    qualifiedCppName.takeFirst();
+                                    docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                                }
+                            }
+                        }
                     }
                     if(docEnum){
                         meta_enum->setHref(docEnum->href());
                         meta_enum->setBrief(docEnum->brief());
                     }
                 }
+
+                meta_functionals << meta_class->functionals();
             }
         }
-        for(AbstractMetaFunctional *meta_class : m_meta_functionals) {
-            const DocClass* cls = m_docModel->getClass(meta_class->typeEntry()->qualifiedCppName());
+        for(AbstractMetaFunctional *meta_class : meta_functionals) {
+            const DocClass* cls = docModel->getClass(meta_class->typeEntry()->qualifiedCppName());
             if(!cls){
                 QStringList qualifiedCppName = meta_class->typeEntry()->qualifiedCppName().split("::");
                 if(!qualifiedCppName.isEmpty()){
                     if(qualifiedCppName.last().startsWith("QtJambi")){
                         qualifiedCppName.last().replace("QtJambi", "Q");
-                        cls = m_docModel->getClass(qualifiedCppName.join("::"));
+                        cls = docModel->getClass(qualifiedCppName.join("::"));
+                    }
+                    if(!cls && qualifiedCppName.size()>1){
+                        qualifiedCppName.takeFirst();
+                        cls = docModel->getClass(qualifiedCppName.join("::"));
+                    }
+                }
+                if(!cls && meta_class->enclosingClass()){
+                    QString functionalName = qualifiedCppName.takeLast();
+                    const DocClass* embeddingClass = docModel->getClass(meta_class->enclosingClass()->typeEntry()->qualifiedCppName());
+                    if(!embeddingClass
+                            && !( qualifiedCppName = meta_class->enclosingClass()->typeEntry()->qualifiedCppName().split("::") ).isEmpty()
+                            && qualifiedCppName.last().startsWith("QtJambi")){
+                        qualifiedCppName.last().replace("QtJambi", "Q");
+                        embeddingClass = docModel->getClass(qualifiedCppName.join("::"));
+                        if(!embeddingClass && qualifiedCppName.size()>1){
+                            qualifiedCppName.takeFirst();
+                            embeddingClass = docModel->getClass(qualifiedCppName.join("::"));
+                        }
+                    }
+                    if(embeddingClass){
+                        if(const DocTypeDef* def = embeddingClass->getTypeDef(functionalName)){
+                            meta_class->setHref(def->href());
+                            meta_class->setBrief(def->brief());
+                        }
                     }
                 }
             }
@@ -1007,9 +1179,22 @@ bool AbstractMetaBuilder::build() {
         }
         for(AbstractMetaEnum* meta_enum : m_enums){
             if(meta_enum->href().isEmpty() && meta_enum->brief().isEmpty()){
-                const DocEnum* docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
+                const DocEnum* docEnum = docModel->getEnum(meta_enum->typeEntry()->qualifiedCppName());
                 if(!docEnum){
-                    docEnum = m_docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                    docEnum = docModel->getEnum(meta_enum->typeEntry()->qualifier()+"::"+meta_enum->typeEntry()->name());
+                    if(!docEnum){
+                        QStringList qualifiedCppName = meta_enum->typeEntry()->qualifier().split("::");
+                        if(!qualifiedCppName.isEmpty()){
+                            if(qualifiedCppName.last().startsWith("QtJambi")){
+                                qualifiedCppName.last().replace("QtJambi", "Q");
+                                docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                            }
+                            if(!docEnum && qualifiedCppName.size()>1){
+                                qualifiedCppName.takeFirst();
+                                docEnum = docModel->getEnum(qualifiedCppName.join("::")+"::"+meta_enum->typeEntry()->name());
+                            }
+                        }
+                    }
                 }
                 if(docEnum){
                     meta_enum->setHref(docEnum->href());
@@ -1018,7 +1203,6 @@ bool AbstractMetaBuilder::build() {
             }
         }
     }
-    return true;
 }
 
 AbstractMetaFunctional * AbstractMetaBuilder::findFunctional(AbstractMetaClass *cls, const FunctionalTypeEntry * fentry)
@@ -1038,7 +1222,7 @@ AbstractMetaFunctional * AbstractMetaBuilder::findFunctional(AbstractMetaClass *
                 bool ok = false;
                 QString functionalReturnType = _using.mid(14).chopped(1);
                 QString functionalArguments = functionalReturnType;
-                int idx = functionalReturnType.indexOf("(");
+                auto idx = functionalReturnType.indexOf("(");
                 functionalReturnType = functionalReturnType.mid(0, idx).trimmed();
                 functionalArguments = functionalArguments.mid(idx+1).chopped(1).trimmed();
                 meta_functional->setFunctionPointer(false);
@@ -1163,11 +1347,10 @@ void AbstractMetaBuilder::addAbstractMetaFunctional(AbstractMetaFunctional *cls)
     cls->setOriginalAttributes(cls->attributes());
     m_meta_functionals << cls;
     QString pkg = cls->typeEntry()->javaPackage();
-    QString globalName = TypeDatabase::globalNamespaceClassName();
-    AbstractMetaClass *_cls = m_meta_classes.findClass(pkg + "." + globalName);
+    AbstractMetaClass *_cls = m_meta_classes.findClass(cls->typeEntry()->targetTypeSystem() + "." + GLOBAL_PACKAGE);
     if(!_cls){
-        ComplexTypeEntry *gte = new ObjectTypeEntry(globalName);
-        gte->setTargetLangPackage(cls->typeEntry()->javaPackage());
+        ComplexTypeEntry *gte = new GlobalTypeEntry(GLOBAL_PACKAGE);
+        gte->setTargetLangPackage(cls->typeEntry()->targetTypeSystem());
         gte->setTargetTypeSystem(cls->typeEntry()->targetTypeSystem());
         gte->setCodeGeneration(TypeEntry::GenerateNothing);
         _cls = createMetaClass();
@@ -1186,7 +1369,8 @@ void AbstractMetaBuilder::addAbstractMetaClass(AbstractMetaClass *cls) {
         return;
 
     cls->setOriginalAttributes(cls->attributes());
-    if (cls->typeEntry()->isContainer()) {
+    if (cls->typeEntry()->isContainer()
+            && static_cast<const ContainerTypeEntry *>(cls->typeEntry())->type()!=ContainerTypeEntry::StringListContainer) {
         m_templates << cls;
         ReportHandler::debugSparse(" -> container "+cls->qualifiedCppName());
     } else {
@@ -1464,7 +1648,7 @@ QString Operator::toString(QString x) {
     QString result;
     switch (type) {
         case Plus:
-        if(value.type()==QVariant::String){
+        if(value.userType()==QMetaType::QString){
             result = "(" + x + "+" + value.toString() + ")";
         }else if(value.isValid()){
             switch(size){
@@ -1489,7 +1673,7 @@ QString Operator::toString(QString x) {
         }
         break;
         case Minus:
-        if(value.type()==QVariant::String){
+        if(value.userType()==QMetaType::QString){
             result = "(" + x + "-" + value.toString() + ")";
         }else if(value.isValid()){
             switch(size){
@@ -1514,7 +1698,7 @@ QString Operator::toString(QString x) {
         }
         break;
         case ShiftLeft:
-        if(value.type()==QVariant::String){
+        if(value.userType()==QMetaType::QString){
             result = "(" + x + " << " + value.toString() + ")";
         }else{
             switch(size){
@@ -1561,7 +1745,7 @@ Operator AbstractMetaBuilder::findOperator(const uint size, QString *s,
     for (int i = 0; i < Operator::None; ++i) {
         QString name = QLatin1String(names[i]);
         QString str = *s;
-        int splitPoint = str.indexOf(name);
+        auto splitPoint = str.indexOf(name);
         if (splitPoint > 0) {
             QString right = str.mid(splitPoint + name.length());
             Operator op(size);
@@ -1631,7 +1815,7 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
     if (stringValue.startsWith(keyword_static_cast)) {
         stringValue = stringValue.remove(0, keyword_static_cast.length()).trimmed();
         if (stringValue.length() > 0 && stringValue.at(0) == QChar('<')) {
-            int end_pos = stringValue.indexOf(QChar('>'));
+            auto end_pos = stringValue.indexOf(QChar('>'));
             if (end_pos >= 0)	// remove the whole "<FooBar::Type>"
                 stringValue = stringValue.remove(0, end_pos).trimmed();
         }
@@ -1639,21 +1823,21 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
     // This block deals with "FooBar::Type(.....)" around the part we really want "....."
     // or with "(type)....."
     {
-        int beg_pos = stringValue.indexOf(QChar('('));
+        auto beg_pos = stringValue.indexOf(QChar('('));
         if (beg_pos >= 0) {
             QString tmp_stringValue = stringValue;
             tmp_stringValue = tmp_stringValue.remove(0, beg_pos+1).trimmed();	// remove "FooBar::Type("
             if (beg_pos == 0) { // was "(type)....."
-                int nextClose_pos = tmp_stringValue.indexOf(QChar(')'));
+                auto nextClose_pos = tmp_stringValue.indexOf(QChar(')'));
                 if(nextClose_pos>0){
                     tmp_stringValue = tmp_stringValue.remove(0, nextClose_pos+1).trimmed();	// remove "type)"
                 }
             }
 
-            int nextClose_pos = tmp_stringValue.indexOf(QChar(')'));
-            int nextOpen_pos = tmp_stringValue.indexOf(QChar('('));
+            auto nextClose_pos = tmp_stringValue.indexOf(QChar(')'));
+            auto nextOpen_pos = tmp_stringValue.indexOf(QChar('('));
             if(nextOpen_pos<0 || nextOpen_pos<nextClose_pos){
-                int end_pos = tmp_stringValue.lastIndexOf(QChar(')'));
+                auto end_pos = tmp_stringValue.lastIndexOf(QChar(')'));
                 if (end_pos >= 0)
                     tmp_stringValue = tmp_stringValue.remove(end_pos, 1).trimmed();	// remove ")"
                 stringValue = tmp_stringValue;
@@ -1681,7 +1865,7 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
         if (s.startsWith(keyword_static_cast)) {
             s = s.remove(0, keyword_static_cast.length()).trimmed();
             if (s.length() > 0 && s.at(0) == QChar('<')) {
-                int end_pos = s.indexOf(QChar('>'));
+                auto end_pos = s.indexOf(QChar('>'));
                 if (end_pos >= 0)	// remove the whole "<FooBar::Type>"
                     s = s.remove(0, end_pos).trimmed();
             }
@@ -1689,21 +1873,21 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
         // This block deals with "FooBar::Type(.....)" around the part we really want "....."
         // or with "(type)....."
         {
-            int beg_pos = s.indexOf(QChar('('));
+            auto beg_pos = s.indexOf(QChar('('));
             if (beg_pos >= 0) {
                 QString tmp_string = s;
                 tmp_string = tmp_string.remove(0, beg_pos+1).trimmed();	// remove "FooBar::Type("
                 if (beg_pos == 0) { // was "(type)....."
-                    int nextClose_pos = tmp_string.indexOf(QChar(')'));
+                    auto nextClose_pos = tmp_string.indexOf(QChar(')'));
                     if(nextClose_pos>0){
                         tmp_string = tmp_string.remove(0, nextClose_pos+1).trimmed();	// remove "type)"
                     }
                 }
 
-                int nextClose_pos = tmp_string.indexOf(QChar(')'));
-                int nextOpen_pos = tmp_string.indexOf(QChar('('));
+                auto nextClose_pos = tmp_string.indexOf(QChar(')'));
+                auto nextOpen_pos = tmp_string.indexOf(QChar('('));
                 if(nextOpen_pos<0 || nextOpen_pos<nextClose_pos){
-                    int end_pos = tmp_string.lastIndexOf(QChar(')'));
+                    auto end_pos = tmp_string.lastIndexOf(QChar(')'));
                     if (end_pos >= 0)
                         tmp_string = tmp_string.remove(end_pos, 1).trimmed();	// remove ")"
                     s = tmp_string;
@@ -1712,15 +1896,15 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
         }
 
         {
-            int beg_pos = s.indexOf(QChar('('));
+            auto beg_pos = s.indexOf(QChar('('));
             if (beg_pos >= 0) {
                 QString tmp_stringValue = s;
                 tmp_stringValue = tmp_stringValue.remove(0, beg_pos+1).trimmed();	// remove "("
 
-                int nectClose_pos = tmp_stringValue.indexOf(QChar(')'));
-                int nextOpen_pos = tmp_stringValue.indexOf(QChar('('));
+                auto nectClose_pos = tmp_stringValue.indexOf(QChar(')'));
+                auto nextOpen_pos = tmp_stringValue.indexOf(QChar('('));
                 if(nextOpen_pos<0 || nextOpen_pos<nectClose_pos){
-                    int end_pos = tmp_stringValue.lastIndexOf(QChar(')'));
+                    auto end_pos = tmp_stringValue.lastIndexOf(QChar(')'));
                     if (end_pos >= 0)
                         tmp_stringValue = tmp_stringValue.remove(end_pos, 1).trimmed();	// remove ")"
                     s = tmp_stringValue;
@@ -1938,9 +2122,8 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
                                     }
                                 }
                             }else{
-                                QString globalName = TypeDatabase::globalNamespaceClassName();
                                 for(AbstractMetaClass *cls : m_meta_classes){
-                                    if(cls->name()==globalName){
+                                    if(cls->typeEntry()->isGlobal()){
                                         if(AbstractMetaEnum* target_meta_enum = cls->findEnum(ownerTypeName)){
                                             QVariant variant = figureOutEnumValue(target_meta_enum->typeEntry()->size(), ev->stringValue(), target_meta_enum->values().indexOf(ev), cls, target_meta_enum, nullptr, warnings);
                                             if(variant.isValid()){
@@ -2097,7 +2280,7 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
             }
         }
 
-        if(v.type()==QVariant::String){
+        if(v.userType()==QMetaType::QString){
             disjointReturnValueStrings << op.toString(v.toString());
             disjointReturnValues << QVariant();
             hasValidNumberVariants = false;
@@ -2122,7 +2305,7 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
             }
             disjointReturnValueStrings << op.toString(number);
             QVariant result = op.calculate(v);
-            if(!result.isValid() || result.type()==QVariant::String){
+            if(!result.isValid() || result.userType()==QMetaType::QString){
                 hasValidNumberVariants = false;
                 disjointReturnValues << QVariant();
             }else{
@@ -2177,7 +2360,7 @@ QVariant AbstractMetaBuilder::figureOutEnumValue(
                 stringResult += "|" + disjointReturnValueStrings.at(i);
             }
         }
-        returnValue.setValue<QString>(stringResult);
+        returnValue.setValue(stringResult);
     }
 
     if(negate){
@@ -2237,7 +2420,6 @@ void AbstractMetaBuilder::figureOutEnumValuesForClass(AbstractMetaClass *meta_cl
     for(AbstractMetaEnum *e : enums) {
         if (!e)
             ReportHandler::warning("bad enum in class " + meta_class->name());
-        AbstractMetaEnumValueList lst = e->values();
         QVariant value;
         switch(e->typeEntry()->size()){
         case 8:
@@ -2251,19 +2433,19 @@ void AbstractMetaBuilder::figureOutEnumValuesForClass(AbstractMetaClass *meta_cl
         default:
             value = QVariant::fromValue<qint32>(0); break;
         }
-        for (int i = 0; i < lst.size(); ++i) {
+        for(AbstractMetaEnumValue *v : e->values()) {
             // value could have been computed previously
-            if(!lst.at(i)->value().isValid() || lst.at(i)->value().type()==QVariant::String){
-                QVariant _value = figureOutEnumValue(e->typeEntry()->size(), lst.at(i)->stringValue(), value, nullptr, e, nullptr, warnings);
+            if(!v->value().isValid() || v->value().userType()==QMetaType::QString){
+                QVariant _value = figureOutEnumValue(e->typeEntry()->size(), v->stringValue(), value, nullptr, e, nullptr, warnings);
                 if(_value.isValid()){
-                    lst.at(i)->setValue(_value);
+                    v->setValue(_value);
                     value = _value;
                 }
             }else{
-                value = lst.at(i)->value();
+                value = v->value();
             }
-            if(value.type()==QVariant::String){
-                value.setValue<QString>(value.toString()+"+1");
+            if(value.userType()==QMetaType::QString){
+                value.setValue(value.toString()+QLatin1String("+1"));
                 hasStringEnumValues = true;
             }else{
                 switch(e->typeEntry()->size()){
@@ -2285,11 +2467,11 @@ void AbstractMetaBuilder::figureOutEnumValuesForClass(AbstractMetaClass *meta_cl
         EnumTypeEntry *ete = e->typeEntry();
         if (!ete->forceInteger()) {
             QHash<qint64, AbstractMetaEnumValue *> entries;
-            for(AbstractMetaEnumValue *v : lst) {
+            for(AbstractMetaEnumValue *v : e->values()) {
 
                 bool vRejected = ete->isEnumValueRejected(v->name());
 
-                if(v->value().isValid() && v->value().type()!=QVariant::String){
+                if(v->value().isValid() && v->value().userType()!=QMetaType::QString){
                     AbstractMetaEnumValue *current = entries.value(v->value().value<qint64>());
                     if (current) {
                         bool currentRejected = ete->isEnumValueRejected(current->name());
@@ -2313,19 +2495,21 @@ void AbstractMetaBuilder::figureOutEnumValuesForClass(AbstractMetaClass *meta_cl
 
             // Entries now contain all the original entries, no
             // rejected ones... Use this to generate the enumValueRedirection table.
-            for(AbstractMetaEnumValue *reject : lst) {
+            for(AbstractMetaEnumValue *reject : e->values()) {
                 if (!ete->isEnumValueRejected(reject->name()))
                     continue;
 
-                AbstractMetaEnumValue *used = entries.value(reject->value().value<qint64>());
-                if (!used) {
-                    ReportHandler::warning(
-                        QString::fromLatin1("Rejected enum has no alternative...: %1::%2\n")
-                        .arg(meta_class->name())
-                        .arg(reject->name()));
-                    continue;
+                if(reject->value().isValid() && reject->value().userType()!=QMetaType::QString){
+                    AbstractMetaEnumValue *used = entries.value(reject->value().value<qint64>());
+                    if (!used) {
+                        ReportHandler::warning(
+                            QString::fromLatin1("Rejected enum has no alternative...: %1::%2\n")
+                            .arg(meta_class->name())
+                            .arg(reject->name()));
+                        continue;
+                    }
+                    ete->addEnumValueRedirection(reject->name(), used->name());
                 }
-                ete->addEnumValueRedirection(reject->name(), used->name());
             }
 
         }
@@ -2372,7 +2556,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
         for(AbstractMetaClass *c : repeatClasses) {
             for(const AbstractMetaEnum* enm : c->enums()){
                 for(const AbstractMetaEnumValue* value : enm->values()) {
-                    if(value->value().type()==QVariant::String){
+                    if(value->value().userType()==QMetaType::QString){
                         QString warn = QString("possible compilation error in enum value %1").arg(value->value().toString());
                         ReportHandler::warning(warn);
                     }
@@ -2385,8 +2569,7 @@ void AbstractMetaBuilder::figureOutEnumValues() {
 void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
     for(AbstractMetaClass *meta_class : m_meta_classes) {
         QString package = meta_class->typeEntry()->javaPackage();
-        QString globalName = TypeDatabase::globalNamespaceClassName();
-        AbstractMetaClass *global = m_meta_classes.findClass(package.isEmpty() ? globalName : package + "." + globalName);
+        AbstractMetaClass *global = m_meta_classes.findClass(meta_class->typeEntry()->targetTypeSystem() + "." + GLOBAL_PACKAGE);
 
         for(AbstractMetaFunction *meta_function : meta_class->functions()) {
             for(AbstractMetaArgument *arg : meta_function->arguments()) {
@@ -2406,6 +2589,11 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                     if (lst.size() == 1
                             || (arg->type()->typeEntry()->isScopedEnum() && lst.size() == 2)) {
                         QVector<AbstractMetaClass *> classes(1, meta_class);
+                        if(!meta_class->typeEntry()->isInterface()
+                                && meta_class->typeEntry()->designatedInterface()
+                                && meta_class->extractInterface()){
+                            classes << meta_class->extractInterface();
+                        }
                         AbstractMetaEnum *e = nullptr;
                         AbstractMetaEnumValue *ev = nullptr;
                         while (!classes.isEmpty() && !e) {
@@ -2526,8 +2714,7 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                     }
 
                 } else if (arg->type()->isFlags()) {
-                    const FlagsTypeEntry *flagsEntry =
-                        static_cast<const FlagsTypeEntry *>(arg->type()->typeEntry());
+                    const FlagsTypeEntry *flagsEntry = static_cast<const FlagsTypeEntry *>(arg->type()->typeEntry());
                     const EnumTypeEntry *enumEntry = flagsEntry->originator();
                     AbstractMetaEnum *meta_enum = m_meta_classes.findEnum(enumEntry);
                     if (!meta_enum) {
@@ -2537,7 +2724,7 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                     AbstractMetaEnumValue * v = meta_enum->values().find(expr);
                     if(v){
                         if(v->value().isValid()){
-                            if(v->value().type()==QVariant::String){
+                            if(v->value().userType()==QMetaType::QString){
                                 new_expr = v->value().toString();
                                 ReportHandler::warning(QString("possible compilation error in enum value %1 when parsing default value of '%2' in class '%3'")
                                                        .arg(new_expr)
@@ -2546,11 +2733,13 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                             }else{
                                 new_expr = QString::number(v->value().value<qint32>());
                             }
+                        }else if(expr.trimmed()=="{}"){
+                            new_expr = "  ";
                         }else{
                             QVariant value = figureOutEnumValue(32, expr, meta_enum->values().indexOf(v), global, meta_enum, meta_function);
                             if(value.isValid()){
                                 v->setValue(value);
-                                if(value.type()==QVariant::String){
+                                if(value.userType()==QMetaType::QString){
                                     new_expr = value.toString();
                                     ReportHandler::warning(QString("possible compilation error in enum value %1 when parsing default value of '%2' in class '%3'")
                                                            .arg(new_expr)
@@ -2564,7 +2753,7 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                     }else{
                         QVariant value = figureOutEnumValue(32, expr, QVariant::fromValue<QString>(expr), global, meta_enum, meta_function);
                         if(value.isValid()){
-                            if(value.type()==QVariant::String){
+                            if(value.userType()==QMetaType::QString){
                                 new_expr = value.toString();
                             }else{
                                 new_expr = QString::number(value.value<qint32>());
@@ -2572,10 +2761,14 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                         }
                     }
                 } else if (arg->type()->isPrimitive()) {
-                    int baseTypeId = QMetaType::type(qPrintable(arg->type()->typeEntry()->qualifiedCppName()));
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                    QMetaType baseTypeId(QMetaType::type(qPrintable(arg->type()->typeEntry()->qualifiedCppName())));
+#else
+                    QMetaType baseTypeId = QMetaType::fromName(qPrintable(arg->type()->typeEntry()->qualifiedCppName()));
+#endif
                     uint size = 32;
-                    if(baseTypeId!=QMetaType::UnknownType){
-                        size = uint(QMetaType::sizeOf(baseTypeId))*8;
+                    if(baseTypeId.isValid()){
+                        size = uint(baseTypeId.sizeOf())*8;
                         if(size!=8 && size!=16 && size!=32 && size!=64){
                             size = 32;
                         }
@@ -2595,7 +2788,7 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
                         vvalue = figureOutEnumValue(size, expr, 0, global, nullptr);
                     }
                     if(vvalue.isValid()){
-                        if(vvalue.type()==QVariant::String){
+                        if(vvalue.userType()==QMetaType::QString){
                             new_expr = vvalue.toString();
                         }else{
                             switch(size){
@@ -2628,11 +2821,11 @@ void AbstractMetaBuilder::figureOutDefaultEnumArguments() {
 
 AbstractMetaEnum *AbstractMetaBuilder::traverseEnum(EnumModelItem enum_item, AbstractMetaClass *enclosing, const QSet<QString> &enumsDeclarations) {
     // Skipping private enums.
+    QString qualified_name = enum_item->qualifiedName().join("::");
     if (enum_item->accessPolicy() == CodeModel::Private) {
+        m_rejected_enums.insert({qualified_name, enum_item->fileName()}, IsPrivate);
         return nullptr;
     }
-
-    QString qualified_name = enum_item->qualifiedName().join("::");
 
     TypeEntry *type_entry = TypeDatabase::instance()->findType(qualified_name);
     QString enum_name = enum_item->name();
@@ -2650,7 +2843,10 @@ AbstractMetaEnum *AbstractMetaBuilder::traverseEnum(EnumModelItem enum_item, Abs
         //QString context = m_current_class ? m_current_class->name() : QLatin1String("");
         ReportHandler::warning(QString("enum '%1' does not have a type entry or is not an enum")
                                .arg(qualified_name));
-        m_rejected_enums.insert({qualified_name, enum_item->fileName()}, NotInTypeSystem);
+        if(qualified_name.startsWith("QtPrivate::") || enum_item->fileName().startsWith("_p.h"))
+            m_rejected_enums.insert({qualified_name, enum_item->fileName()}, IsPrivate);
+        else
+            m_rejected_enums.insert({qualified_name, enum_item->fileName()}, NotInTypeSystem);
         return nullptr;
     }
 
@@ -2697,9 +2893,13 @@ AbstractMetaEnum *AbstractMetaBuilder::traverseEnum(EnumModelItem enum_item, Abs
         TypeEntry *base_class_entry = types->findType(qPrintable(baseType));
         if(base_class_entry)
             baseType = base_class_entry->qualifiedCppName();
-        int baseTypeId = QMetaType::type(qPrintable(baseType));
-        if(baseTypeId!=QMetaType::UnknownType){
-            size = uint(QMetaType::sizeOf(baseTypeId)*8);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        QMetaType baseTypeId(QMetaType::type(qPrintable(baseType)));
+#else
+        QMetaType baseTypeId = QMetaType::fromName(qPrintable(baseType));
+#endif
+        if(baseTypeId.isValid()){
+            size = uint(baseTypeId.sizeOf()*8);
             if(size!=8 && size!=16 && size!=32 && size!=64){
                 size = 32;
             }
@@ -2834,13 +3034,17 @@ AbstractMetaFunctional *AbstractMetaBuilder::traverseFunctional(TypeAliasModelIt
             }
         }
     }else{
-        m_rejected_functionals.insert({item->qualifiedName().join("::"), item->fileName()}, NotInTypeSystem);
+        if(item->accessPolicy()==CodeModel::Private || item->qualifiedName().join("::").startsWith("QtPrivate::") || item->fileName().startsWith("_p.h"))
+            m_rejected_functionals.insert({item->qualifiedName().join("::"), item->fileName()}, IsPrivate);
+        else
+            m_rejected_functionals.insert({item->qualifiedName().join("::"), item->fileName()}, NotInTypeSystem);
     }
     return meta_functional.take();
 }
 
 AbstractMetaClass *AbstractMetaBuilder::traverseTypeAlias(TypeAliasModelItem typeAlias) {
     QString class_name = strip_template_args(typeAlias->name());
+
 
     QString full_class_name = class_name;
     // we have an inner class
@@ -2854,8 +3058,18 @@ AbstractMetaClass *AbstractMetaBuilder::traverseTypeAlias(TypeAliasModelItem typ
     if (!type)
         return nullptr;
 
-    if (type->isObject())
-        static_cast<ObjectTypeEntry *>(type)->setQObject(isQObject(strip_template_args(typeAlias->type().qualifiedName().join("::"))));
+    if (type->isObject()){
+        if(isQObject(strip_template_args(typeAlias->type().qualifiedName().join("::")))){
+            type->setQObject(true);
+            if(isQWidget(strip_template_args(typeAlias->type().qualifiedName().join("::")))){
+                type->setQWidget(true);
+            }else if(isQWindow(strip_template_args(typeAlias->type().qualifiedName().join("::")))){
+                type->setQWindow(true);
+            }else if(isQCoreApplication(strip_template_args(typeAlias->type().qualifiedName().join("::")))){
+                type->setQCoreApplication(true);
+            }
+        }
+    }
 
     AbstractMetaClass *meta_class = createMetaClass();
     meta_class->setTypeAlias(true);
@@ -2869,7 +3083,7 @@ AbstractMetaClass *AbstractMetaBuilder::traverseTypeAlias(TypeAliasModelItem typ
         typeAliasType->setReferenceType(AbstractMetaType::ReferenceType(typeAlias->type().getReferenceType()));
         meta_class->setTypeAliasType(typeAliasType);
     }else{
-        meta_class->setBaseClassNames(QStringList() << typeAlias->type().qualifiedName().join("::"));
+        meta_class->setBaseClassNames({{typeAlias->type().qualifiedName().join("::"), true}});
     }
     *meta_class += AbstractMetaAttributes::Public;
 
@@ -2922,6 +3136,8 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
         TypeEntry *te = TypeDatabase::instance()->findType(full_class_name);
         if (te && !te->isComplex())
             reason = RedefinedToNotClass;
+        else if(class_item->accessPolicy()==CodeModel::Private || full_class_name.startsWith("QtPrivate::") || class_item->fileName().endsWith("_p.h"))
+            reason = IsPrivate;
         else
             reason = NotInTypeSystem;
     } else if (type->codeGeneration() == TypeEntry::GenerateNothing) {
@@ -2934,12 +3150,33 @@ AbstractMetaClass *AbstractMetaBuilder::traverseClass(ClassModelItem class_item)
     }
 
     if (type->isObject()) {
-        static_cast<ObjectTypeEntry *>(type)->setQObject(isQObject(full_class_name));
+        if(isQObject(full_class_name)){
+            type->setQObject(true);
+            if(isQWidget(full_class_name)){
+                type->setQWidget(true);
+            }else if(isQWindow(full_class_name)){
+                type->setQWindow(true);
+            }else if(isQCoreApplication(full_class_name)){
+                type->setQCoreApplication(true);
+            }
+        }
     }
 
     AbstractMetaClass *meta_class = createMetaClass();
     meta_class->setTypeEntry(type);
-    meta_class->setBaseClassNames(class_item->baseClasses());
+    if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0)){
+        QList<QPair<QString,bool>> baseClasses = class_item->baseClasses();
+        for(int i=0; i<baseClasses.size(); ++i){
+            if(baseClasses[i].first=="QList<QString>"){
+                baseClasses[i].first = "QStringList";
+            }else if(baseClasses[i].first=="QByteArrayList"){
+                baseClasses[i].first = "QList<QByteArray>";
+            }
+        }
+        meta_class->setBaseClassNames(baseClasses);
+    }else{
+        meta_class->setBaseClassNames(class_item->baseClasses());
+    }
     meta_class->setHas_Q_GADGET(class_item->has_Q_GADGET());
     meta_class->setHas_Q_OBJECT(class_item->has_Q_OBJECT());
     *meta_class += AbstractMetaAttributes::Public;
@@ -3136,7 +3373,7 @@ void AbstractMetaBuilder::setupFunctionDefaults(AbstractMetaFunction *meta_funct
     // to function properly. Such as function modifications
     meta_function->setImplementingClass(meta_class);
 
-    if (meta_function->name() == "operator_equal")
+    if (meta_function->originalName() == "operator==")
         meta_class->setHasEqualsOperator(true);
 }
 
@@ -3156,7 +3393,18 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
         AbstractMetaFunction *meta_function = traverseFunction(function);
 
         if (meta_function) {
-
+            if(function->isInline() && !meta_function->isConstructor() && !meta_function->originalSignature().isEmpty()){
+                for(AbstractMetaFunction *f : meta_class->queryFunctionsByName(meta_function->originalName())) {
+                    if(f->originalSignature()==meta_function->originalSignature()
+                            || f->minimalSignature()==meta_function->minimalSignature()){
+                        delete meta_function;
+                        meta_function = nullptr;
+                        break;
+                    }
+                }
+                if(!meta_function)
+                    continue;
+            }
             QList<FunctionModification> mods = meta_function->modifications(meta_class);
             for (int i = 0; i < mods.size(); ++i) {
                 if (mods.at(i).isPrivateSignal()) {
@@ -3186,6 +3434,10 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
                     *meta_function += AbstractMetaAttributes::PropertyResetter;
                     meta_function->setPropertySpec(reset);
                 } else if (QPropertySpec *reset =
+                               meta_class->propertySpecForBindable(meta_function->name())) {
+                    *meta_function += AbstractMetaAttributes::PropertyBindable;
+                    meta_function->setPropertySpec(reset);
+                } else if (QPropertySpec *reset =
                                meta_class->propertySpecForNotify(meta_function->name())) {
                     *meta_function += AbstractMetaAttributes::PropertyNotify;
                     meta_function->setPropertySpec(reset);
@@ -3193,7 +3445,7 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
             }
 
             if(meta_function->isDestructor()){
-                hasVirtualDestructor = function.data()->isVirtual();
+                hasVirtualDestructor = function->isVirtual();
                 hasPrivateDestructor = meta_function->isPrivate();
                 hasPublicDestructor = meta_function->isPublic();
             }else if(meta_function->isConstructor()){
@@ -3237,7 +3489,6 @@ void AbstractMetaBuilder::traverseFunctions(ScopeModelItem scope_item, AbstractM
                                    .arg(meta_function->name()).arg(meta_class->name());
                     ReportHandler::warning(warn);
                 }
-
                 meta_class->addFunction(meta_function);
             }else if(!meta_function->isDestructor() &&
                      !meta_function->isConstructor() &&
@@ -3344,19 +3595,53 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
         return true;
     m_setup_inheritance_done.insert(meta_class);
 
-    QStringList base_classes = meta_class->baseClassNames();
+    QStringList publicBaseClasses;
+    QStringList protectedBaseClasses;
+    for(const QPair<QString,bool>& pair : meta_class->baseClassNames()){
+        if(pair.second){
+            publicBaseClasses << pair.first;
+        }else{
+            protectedBaseClasses << pair.first;
+        }
+    }
 
     TypeDatabase *types = TypeDatabase::instance();
+
+    if(publicBaseClasses.isEmpty() && meta_class->typeAliasType()){
+        const AbstractMetaType* typeAliasType = meta_class->typeAliasType();
+        if(typeAliasType->typeEntry() && typeAliasType->typeEntry()->isAlias()){
+            if(AbstractMetaClass *cls = m_meta_classes.findClass(typeAliasType->typeEntry()->qualifiedCppName())){
+                setupInheritance(cls);
+                if(cls->typeAliasType()){
+                    AbstractMetaType* newTypeAliasType = cls->typeAliasType()->copy();
+                    if(newTypeAliasType->indirections().isEmpty()
+                            && newTypeAliasType->getReferenceType()==AbstractMetaType::NoReference
+                            && !newTypeAliasType->typeEntry()->isPrimitive()){
+                        newTypeAliasType->setReferenceType(typeAliasType->getReferenceType());
+                    }
+                    newTypeAliasType->setIndirections( QList<bool>() << newTypeAliasType->indirections() << typeAliasType->indirections());
+                    if((!newTypeAliasType->typeEntry()->isPrimitive() || !newTypeAliasType->indirections().isEmpty()) && typeAliasType->isConstant())
+                        newTypeAliasType->setConstant(true);
+                    AbstractMetaBuilder::decideUsagePattern(newTypeAliasType);
+                    delete meta_class->typeAliasType();
+                    meta_class->setTypeAliasType(newTypeAliasType);
+                }
+            }
+        }
+    }
 
     QStringList scope = meta_class->typeEntry()->qualifiedCppName().split("::");
     scope.removeLast();
     // we only support our own containers and ONLY if there is only one baseclass
-    if (base_classes.size() == 1 && base_classes.first().count('<') == 1) {
-        for (int i = scope.size(); i >= 0; --i) {
+    if (publicBaseClasses.size() == 1 && publicBaseClasses.first().count('<') == 1) {
+        for (auto i = scope.size(); i >= 0; --i) {
             QString prefix = i > 0 ? QStringList(scope.mid(0, i)).join("::") + "::" : QString();
-            QString complete_name = prefix + base_classes.first();
+            QString complete_name = prefix + publicBaseClasses.first();
             TypeParser::Info info = TypeParser::parse(complete_name);
             QString base_name = info.qualified_name.join("::");
+            if(m_qtVersion >= QT_VERSION_CHECK(6, 0, 0) && base_name=="QVector"){
+                base_name = "QList";
+            }
 
             AbstractMetaClass *templ = nullptr;
             for(AbstractMetaClass *c : m_templates) {
@@ -3377,20 +3662,20 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
         }
 
         ReportHandler::warning(QString("template baseclass '%1' of '%2' is not known")
-                               .arg(base_classes.first())
+                               .arg(publicBaseClasses.first())
                                .arg(meta_class->name()));
         return false;
     }
 
     if(!scope.isEmpty()){
-        for (int i = 0; i < base_classes.size(); ++i) {
-            for (int l = scope.size(); l >= 0; --l) {
+        for (int i = 0; i < publicBaseClasses.size(); ++i) {
+            for (auto l = scope.size(); l >= 0; --l) {
                 QString prefix = l > 0 ? QStringList(scope.mid(0, l)).join("::") + "::" : QString();
-                QString complete_name = prefix + base_classes.at(i);
+                QString complete_name = prefix + publicBaseClasses.at(i);
                 TypeParser::Info info = TypeParser::parse(complete_name);
                 QString base_name = info.qualified_name.join("::");
                 if(types->findType(base_name)){
-                    base_classes.replace(i, base_name);
+                    publicBaseClasses.replace(i, base_name);
                     continue;
                 }
             }
@@ -3399,38 +3684,101 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
 
     int primary = -1;
     int primaries = 0;
-    for (int i = 0; i < base_classes.size(); ++i) {
-        if (types->isClassRejected(base_classes.at(i)))
+    for (int i = 0; i < publicBaseClasses.size(); ++i) {
+        QString base_class_name = publicBaseClasses.at(i);
+        if (types->isClassRejected(base_class_name))
             continue;
 
-        TypeEntry *base_class_entry = types->findType(base_classes.at(i));
+        TypeEntry *base_class_entry = types->findType(base_class_name);
         if (!base_class_entry) {
             ReportHandler::warning(QString("class '%1' inherits from unknown base class '%2'")
-                                   .arg(meta_class->name()).arg(base_classes.at(i)));
+                                   .arg(meta_class->name()).arg(base_class_name));
         }
 
         // true for primary base class
         else if (!base_class_entry->designatedInterface()) {
             if (primaries > 0) {
-                ReportHandler::warning(QString("class '%1' has multiple primary base classes"
-                                               " '%2' and '%3'")
-                                       .arg(meta_class->name())
-                                       .arg(base_classes.at(primary))
-                                       .arg(base_class_entry->name()));
+                if(meta_class->typeEntry()->deletatedBaseClasses().contains(base_class_name)){
+                    QString delegate = meta_class->typeEntry()->deletatedBaseClasses()[base_class_name];
+                    if(delegate.isEmpty()){
+                        if(base_class_name.startsWith("Q")){
+                            delegate = QString("to%1").arg(base_class_name.mid(1));
+                        }else{
+                            delegate = QString("to%1").arg(base_class_name);
+                        }
+                    }
+                    AbstractMetaFunction * delegateFunction = createMetaFunction();
+                    AbstractMetaType* type = createMetaType();
+                    type->setTypeEntry(base_class_entry);
+                    type->setIndirections({false});
+                    decideUsagePattern(type);
+                    delegateFunction->setType(type);
+                    delegateFunction->setName(delegate);
+                    delegateFunction->setOriginalName(delegate);
+                    delegateFunction->setFunctionType(AbstractMetaFunction::BaseClassDelegateFunction);
+                    delegateFunction->setOriginalAttributes(AbstractMetaAttributes::Final | AbstractMetaAttributes::Protected);
+                    *delegateFunction += AbstractMetaAttributes::Final;
+                    *delegateFunction += AbstractMetaAttributes::Public;
+                    delegateFunction->setDeclaringClass(meta_class);
+                    delegateFunction->setImplementingClass(meta_class);
+                    meta_class->addFunction(delegateFunction);
+                }else{
+                    ReportHandler::warning(QString("class '%1' has multiple primary public base classes"
+                                                   " '%2' and '%3'")
+                                           .arg(meta_class->name())
+                                           .arg(publicBaseClasses.at(primary))
+                                           .arg(base_class_entry->name()));
+                }
                 return false;
+            }else{
+                primaries++;
+                primary = i;
             }
-            primaries++;
-            primary = i;
         }
+    }
+    for (int i = 0; i < protectedBaseClasses.size(); ++i) {
+        QString base_class_name = protectedBaseClasses.at(i);
+        if (types->isClassRejected(base_class_name))
+            continue;
+
+        TypeEntry *base_class_entry = types->findType(base_class_name);
+        if (!base_class_entry) {
+            ReportHandler::warning(QString("class '%1' inherits from unknown base class '%2'")
+                                   .arg(meta_class->name()).arg(base_class_name));
+        }
+        QString delegate;
+        if(base_class_name.startsWith("Q")){
+            delegate = QString("to%1").arg(base_class_name.mid(1));
+        }else{
+            delegate = QString("to%1").arg(base_class_name);
+        }
+        if(!meta_class->typeEntry()->deletatedBaseClasses()[base_class_name].isEmpty()){
+            delegate = meta_class->typeEntry()->deletatedBaseClasses()[base_class_name];
+        }
+        AbstractMetaFunction * delegateFunction = createMetaFunction();
+        AbstractMetaType* type = createMetaType();
+        type->setTypeEntry(base_class_entry);
+        type->setIndirections({false});
+        decideUsagePattern(type);
+        delegateFunction->setType(type);
+        delegateFunction->setName(delegate);
+        delegateFunction->setOriginalName(delegate);
+        delegateFunction->setFunctionType(AbstractMetaFunction::BaseClassDelegateFunction);
+        delegateFunction->setOriginalAttributes(AbstractMetaAttributes::Final | AbstractMetaAttributes::Protected);
+        *delegateFunction += AbstractMetaAttributes::Final;
+        *delegateFunction += AbstractMetaAttributes::Protected;
+        delegateFunction->setDeclaringClass(meta_class);
+        delegateFunction->setImplementingClass(meta_class);
+        meta_class->addFunction(delegateFunction);
     }
 
     if (primary >= 0) {
-        AbstractMetaClass *base_class = m_meta_classes.findClass(base_classes.at(primary));
+        AbstractMetaClass *base_class = m_meta_classes.findClass(publicBaseClasses.at(primary));
         if (!base_class) {
             if(!meta_class->isTypeAlias()){
                 ReportHandler::warning(QString("unknown baseclass for '%1': '%2'")
                                        .arg(meta_class->name())
-                                       .arg(base_classes.at(primary)));
+                                       .arg(publicBaseClasses.at(primary)));
             }
             return false;
         }
@@ -3455,25 +3803,22 @@ bool AbstractMetaBuilder::setupInheritance(AbstractMetaClass *meta_class) {
             inheritHiddenBaseType(meta_class, base_class, TypeParser::Info());
         }*/
 
-        if (meta_class->typeEntry()->designatedInterface() && meta_class->isQObject()) {
-            ReportHandler::warning(QString("QObject extended by interface type '%1'. This is not supported and the generated Java code will not compile.")
-                                   .arg(meta_class->name()));
-        } else if (meta_class->typeEntry()->designatedInterface() && base_class && !base_class->isInterface()) {
-            ReportHandler::warning(QString("object type '%1' extended by interface type '%2'. The resulting API will be less expressive than the original.")
+        if (meta_class->typeEntry()->designatedInterface() && base_class && !base_class->isInterface()) {
+            ReportHandler::warning(QString("Interface type '%2' extending object type '%1'. This is not supported and the generated Java code will not compile.")
                                    .arg(base_class->name())
-                                   .arg(meta_class->name()));
+                                   .arg(meta_class->typeEntry()->designatedInterface()->name()));
         }
 
     }
 
-    for (int i = 0; i < base_classes.size(); ++i) {
-        if (types->isClassRejected(base_classes.at(i)))
+    for (int i = 0; i < publicBaseClasses.size(); ++i) {
+        if (types->isClassRejected(publicBaseClasses.at(i)))
             continue;
 
         if (i != primary) {
-            AbstractMetaClass *base_class = m_meta_classes.findClass(base_classes.at(i), AbstractMetaClassList::QualifiedCppName);
+            AbstractMetaClass *base_class = m_meta_classes.findClass(publicBaseClasses.at(i), AbstractMetaClassList::QualifiedCppName);
             if (!base_class) {
-                ReportHandler::warning(QString("class not found for setup inheritance '%1'").arg(base_classes.at(i)));
+                ReportHandler::warning(QString("class not found for setup inheritance '%1'").arg(publicBaseClasses.at(i)));
                 continue;
             }
 
@@ -3539,7 +3884,7 @@ AbstractMetaClass * AbstractMetaBuilder::instantiateIterator(IteratorTypeEntry *
             for(const Include& inc : iteratorTypeEntry->extraIncludes()){
                 targetClass->typeEntry()->addExtraInclude(inc);
             }
-            IteratorTypeEntry * newIteratorTypeEntry = iteratorTypeEntry->clone(targetClass->typeEntry(), targetClass->baseClassNames().at(0));
+            IteratorTypeEntry * newIteratorTypeEntry = iteratorTypeEntry->clone(targetClass->typeEntry(), targetClass->baseClassNames().at(0).first);
             TypeDatabase::instance()->addType(newIteratorTypeEntry);
             instantiationClass = createMetaClass();
             instantiationClass->setTypeEntry(newIteratorTypeEntry);
@@ -3581,6 +3926,10 @@ void AbstractMetaBuilder::traverseEnums(ScopeModelItem scope_item, AbstractMetaC
 }
 
 AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem function_item) {
+    if(function_item->referenceType()==TypeInfo::RReference)
+        return nullptr;
+    if(function_item->name()=="static_assert")
+        return nullptr;
     const ArgumentList& arguments = function_item->arguments();
     QString function_name = function_item->name();
     QString class_name = m_current_class->typeEntry()->qualifiedCppName();
@@ -3610,7 +3959,12 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             _function_name += "&";
         ++counter;
     }
-    _function_name += ") -> ";
+    _function_name += ") ";
+    if(function_item->isConstant())
+        _function_name += "const ";
+    if(function_item->referenceType()==TypeInfo::Reference)
+        _function_name += "& ";
+    _function_name += "-> ";
     if(function_item->type().isConstant())
         _function_name += "const ";
     _function_name += function_item->type().qualifiedName().join("::");
@@ -3627,32 +3981,32 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         return nullptr;
     }
 
-
     Q_ASSERT(function_item->functionType() == CodeModel::Normal
              || function_item->functionType() == CodeModel::Signal
              || function_item->functionType() == CodeModel::PrivateSignal
              || function_item->functionType() == CodeModel::Slot);
 
-    if (function_item->isFriend())
+    if (function_item->isFriend() && function_item->hasBody() && function_name=="qHash"){
+        ArgumentList arguments = function_item->arguments();
+        bool hasDefaultArgs = arguments.size() > 0;
+        for(int i=1; i<arguments.size(); i++){
+            hasDefaultArgs &= arguments.at(i)->defaultValue();
+        }
+        if (arguments.size() == 1 || hasDefaultArgs) {
+            if (m_current_class == argumentToClass(arguments.at(0), "AbstractMetaBuilder::registerHashFunction")) {
+                m_current_class->setHasHashFunction(true);
+            }
+        }
+        registerHashFunction(function_item);
         return nullptr;
-
-    QString cast_type;
-
-    if (function_name.startsWith("operator")) {
-        function_name = rename_operator(function_name.mid(8));
-        if (function_name.isEmpty()) {
-            m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()},
-                                        GenerationDisabled);
-            return nullptr;
-        }
-        if (function_name.startsWith("operator_cast_")){
-            cast_type = function_name.mid(14).trimmed();
-            function_name = function_name.replace(" ", "_").replace("*", "_ast").replace("&", "_amp").replace("::", "_");
-        }
     }
 
-    AbstractMetaFunction *meta_function = createMetaFunction();
+    if (function_item->isFriend() && !function_item->hasBody()/* && !isOperator*/)
+        return nullptr;
+
+    QScopedPointer<AbstractMetaFunction> meta_function(createMetaFunction());
     meta_function->setConstant(function_item->isConstant());
+    meta_function->setFunctionReferenceType(AbstractMetaType::ReferenceType(function_item->referenceType()));
 
     ReportHandler::debugMedium(QString(" - %2()").arg(function_name));
     meta_function->setName(function_name);
@@ -3661,8 +4015,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
 
     if (function_item->isAbstract())
         *meta_function += AbstractMetaAttributes::Abstract;
-
-    if (!meta_function->isAbstract())
+    else
         *meta_function += AbstractMetaAttributes::Native;
 
     if (!function_item->isVirtual())
@@ -3706,13 +4059,14 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             AbstractMetaTemplateParameter* tp = new AbstractMetaTemplateParameter();
             tp->setName(p->name());
             tp->setType(type);
+            tp->setDefaultType(p->defaultValue());
             metaTemplateParameters[p->name()] = tp;
             meta_function->addTemplateParameter(tp);
         }
     }
 
     QString stripped_class_name = class_name;
-    int cc_pos = stripped_class_name.lastIndexOf("::");
+    auto cc_pos = stripped_class_name.lastIndexOf("::");
     if (cc_pos > 0)
         stripped_class_name = stripped_class_name.mid(cc_pos + 2);
 
@@ -3736,13 +4090,13 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
         }
 
         if(!ok){
-            if (!cast_type.isEmpty()) {
-                TypeInfo info;
-                info.setQualifiedName(QStringList(cast_type));
-                type = translateType(info, &ok, QString("traverseField %1.%2").arg(class_name).arg(function_name));
-            } else {
-                type = translateType(function_type, &ok, QString("traverseField %1.%2").arg(class_name).arg(function_name));
+            if(function_type.qualifiedName().isEmpty() && meta_function->originalName().startsWith("operator ")){
+                TypeParser::Info typeInfo = TypeParser::parse(meta_function->originalName().mid(9));
+                if(!typeInfo.qualified_name.isEmpty()){
+                    function_type.setQualifiedName(typeInfo.qualified_name);
+                }
             }
+            type = translateType(function_type, &ok, QString("traverseField %1.%2").arg(class_name).arg(function_name));
         }
 
         if (!ok) {
@@ -3753,7 +4107,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] =
                 UnmatchedReturnType;
             meta_function->setInvalid(true);
-            return meta_function;
+            return meta_function.take();
         }
         meta_function->setType(type);
 
@@ -3765,10 +4119,19 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             meta_function->setFunctionType(AbstractMetaFunction::SlotFunction);
     }
 
+    QHash<AbstractMetaArgument *,ArgumentModelItem> argumentModelItems;
     AbstractMetaArgumentList meta_arguments;
 
     QString originalSignature = function_item->name();
     originalSignature += "(";
+
+    FunctionModification mod;
+    if(meta_function->functionType()!=AbstractMetaFunction::DestructorFunction
+            && function_item->accessPolicy() != CodeModel::Private
+            && (TypeDatabase::instance()->isPixmapType(m_current_class->typeEntry())
+                || (meta_function->type() && TypeDatabase::instance()->isPixmapType(meta_function->type()->typeEntry())))){
+        mod.modifiers = Modification::PixmapThreadAffine;
+    }
 
     int first_default_argument = 0;
     for (int i = 0; i < arguments.size(); ++i) {
@@ -3828,8 +4191,22 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             m_rejected_functions[{class_name + "::" + _function_name, function_item->fileName()}] =
                 UnmatchedArgumentType;
             meta_function->setInvalid(true);
-            return meta_function;
+            return meta_function.take();
         }
+
+        if (function_item->isFriend() && function_item->hasBody() && i==0){
+            if(meta_type->typeEntry()==m_current_class->typeEntry()
+                    && meta_type->indirections().isEmpty()){
+                meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
+                meta_function->setOriginalAttributes(meta_function->attributes());
+                continue;
+            }else{
+                return nullptr;
+            }
+        }
+
+        ArgumentModification argumentModification(int(meta_arguments.size()+1));
+
         if(m_current_class->typeEntry()->isValue() &&
                 arguments.size()==1 &&
                 meta_type->getReferenceType()==AbstractMetaType::Reference &&
@@ -3837,57 +4214,110 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
                 meta_type->typeEntry()==m_current_class->typeEntry() &&
                 meta_function->name()=="swap"){
             meta_type->setTypeUsagePattern(AbstractMetaType::ValuePattern);
-            FunctionModification mod;
-            mod.signature = meta_function->minimalSignature();
-            mod.argument_mods << ArgumentModification(1);
-            mod.argument_mods[0].no_null_pointers = true;
-            m_current_class->typeEntry()->addFunctionModification(mod);
+            argumentModification.no_null_pointers = true;
+        }
+        if(TypeDatabase::instance()->isPixmapType(meta_type->typeEntry())){
+            argumentModification.thread_affine = ThreadAffinity::Pixmap;
+        }
+        if(argumentModification.no_null_pointers || argumentModification.thread_affine!=ThreadAffinity::None){
+            mod.argument_mods << argumentModification;
         }
         AbstractMetaArgument *meta_argument = createMetaArgument();
         meta_argument->setType(meta_type);
         meta_argument->setName(arg->name());
-        meta_argument->setArgumentIndex(i);
+        meta_argument->setArgumentIndex(int(meta_arguments.size()));
         meta_arguments << meta_argument;
+        argumentModelItems[meta_argument] = arg;
     }
-
+    meta_function->setArguments(meta_arguments);
     originalSignature += ")";
     if(function_item->isConstant()){
         originalSignature += "const";
     }
     meta_function->setOriginalSignature(QLatin1String(QMetaObject::normalizedSignature(qPrintable(originalSignature)).data()));
-
-    meta_function->setArguments(meta_arguments);
-
-    for(ArgumentModification argumentModification : m_current_class->typeEntry()->functionArgumentModifications(meta_function->originalSignature())){
-        if(!argumentModification.modified_name.isEmpty() && argumentModification.index>0 && argumentModification.index<=meta_arguments.size()){
-            meta_arguments[argumentModification.index-1]->setModifiedName(argumentModification.modified_name);
+    if (function_item->isFriend() && function_item->hasBody()){
+        meta_function->setFunctionType(AbstractMetaFunction::GlobalScopeFunction);
+        meta_function->setOriginalAttributes(meta_function->attributes());
+        if(!meta_function->hasModifications(m_current_class)){
+            QString function_name = meta_function->originalName();
+            if(function_name!="operator=="
+                    && function_name!="operator!="
+                    && function_name!="operator<="
+                    && function_name!="operator>="
+                    && function_name!="operator<"
+                    && function_name!="operator>"
+                    && function_name!="operator>>"
+                    && function_name!="operator<<")
+                ReportHandler::warning(QString("Mapping unmodified inline global friend of class %1: %2").arg(m_current_class->qualifiedCppName()).arg(originalSignature));
         }
     }
 
+    bool isRemoved = false;
+    bool isRenamed = false;
+    for(const FunctionModification& mod : m_current_class->typeEntry()->functionModifications(meta_function->minimalSignature())){
+        if(mod.removal & TypeSystem::TargetLangCode){
+            isRemoved = true;
+        }
+        if (mod.isRenameModifier())
+            isRenamed = true;
+        for(const ArgumentModification& argumentModification : mod.argument_mods){
+            if(!argumentModification.modified_name.isEmpty() && argumentModification.index>0 && argumentModification.index<=meta_arguments.size()){
+                meta_arguments[argumentModification.index-1]->setModifiedName(argumentModification.modified_name);
+            }
+        }
+    }
+
+    if (!isRemoved && meta_function->originalName().startsWith("operator")) {
+        RenamedOperator renamedOperator = rename_operator(meta_function->originalName().mid(8));
+        if(isRenamed){
+            if(renamedOperator.castType)
+                meta_function->type()->setTypeEntry(renamedOperator.castType);
+        }else{
+            if(renamedOperator.newName.isEmpty()){
+                if(renamedOperator.castType){
+                    meta_function->setName(QString("operator_cast_%1").arg(renamedOperator.castType->targetLangName().replace(".", "_").replace("$", "_")));
+                    meta_function->type()->setTypeEntry(renamedOperator.castType);
+                }else{
+                    if(!renamedOperator.skip){
+                        ReportHandler::warning(QString("Operator type unknown: %1::%2").arg(m_current_class->qualifiedCppName()).arg(meta_function->originalSignature()));
+                    }
+                    m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()},
+                                            GenerationDisabled);
+                    return nullptr;
+                }
+            }else{
+                meta_function->setName(renamedOperator.newName);
+                if(renamedOperator.castType)
+                    meta_function->type()->setTypeEntry(renamedOperator.castType);
+            }
+        }
+    }
+
+    if(!mod.argument_mods.isEmpty() || mod.modifiers!=0){
+        mod.signature = meta_function->minimalSignature();
+        m_current_class->typeEntry()->addFunctionModification(mod);
+    }
+
     // Find the correct default values
-    for (int i = 0; i < arguments.size(); ++i) {
-        ArgumentModelItem arg = arguments.at(i);
+    for (int i = 0; i < meta_arguments.size(); ++i) {
+        AbstractMetaArgument *meta_arg = meta_arguments[i];
+        ArgumentModelItem arg = argumentModelItems[meta_arg];
         if(arg->type().toString()=="void"
                 && arg->type().getReferenceType()==TypeInfo::NoReference
                 && arg->type().indirections().isEmpty()
-                && arguments.size()==1){
+                && meta_arguments.size()==1){
             continue;
         }
-        AbstractMetaArgument *meta_arg = meta_arguments.at(i);
         if (arg->defaultValue()) {
             QString expr = arg->defaultValueExpression();
             if (!expr.isEmpty())
                 meta_arg->setOriginalDefaultValueExpression(expr);
 
-            expr = translateDefaultValue(arg->defaultValueExpression(), meta_arg->type(), meta_function, m_current_class, i);
+            expr = translateDefaultValue(arg->defaultValueExpression(), meta_arg->type(), meta_function.get(), m_current_class, i);
             if (expr.isEmpty()) {
                 first_default_argument = i;
             } else {
                 meta_arg->setDefaultValueExpression(expr);
-            }
-
-            if (meta_arg->type()->isEnum() || meta_arg->type()->isFlags()) {
-                m_enum_default_arguments << QPair<AbstractMetaArgument *, AbstractMetaFunction *>(meta_arg, meta_function);
             }
 
         /*}else{
@@ -3908,7 +4338,7 @@ AbstractMetaFunction *AbstractMetaBuilder::traverseFunction(FunctionModelItem fu
             ReportHandler::debugFull("   - " + arg->toString());
     }
 
-    return meta_function;
+    return meta_function.take();
 }
 
 
@@ -3919,6 +4349,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         bool resolveType,
         bool resolveScope,
         bool prependScope) {
+    QSet<QString> visitedNames;
     Q_ASSERT(ok);
     *ok = true;
 
@@ -3935,15 +4366,18 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
             TypeInfo tmp_type_info = type_info;
             QStringList qualifiedName = tmp_type_info.qualifiedName();
             if(!qualifiedName.join("::").startsWith(scopes[0])){
-                for(int i=scopes.size()-1; i>=0; i--){
+                for(auto i=scopes.size()-1; i>=0; i--){
                     qualifiedName.insert(0, scopes[i]);
                 }
                 tmp_type_info.setQualifiedName(qualifiedName);
 
-                bool _ok;
-                AbstractMetaType * result = translateType(tmp_type_info, &_ok, contextString, resolveType, resolveScope, false);
-                if(result && _ok){
-                    return result;
+                if(!visitedNames.contains(tmp_type_info.qualifiedName().join("::"))){
+                    visitedNames.insert(tmp_type_info.qualifiedName().join("::"));
+                    bool _ok;
+                    AbstractMetaType * result = translateType(tmp_type_info, &_ok, contextString, resolveType, resolveScope, false);
+                    if(result && _ok){
+                        return result;
+                    }
                 }
             }
             scopes.removeLast();
@@ -3972,7 +4406,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         // the global scope when they are referenced from inside a namespace.
         // This is a work around to fix this bug since fixing it in resolveType
         // seemed non-trivial
-        int i = m_scopes.size() - 1;
+        auto i = m_scopes.size() - 1;
         while (i >= 0) {
             typei = TypeInfo::resolveType(type_info, m_scopes.at(i--)->toItem());
             if (typei.qualifiedName().join("::") != type_info.qualifiedName().join("::"))
@@ -4043,7 +4477,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
                 return nullptr;
             }
 
-            for (int i = typeInfo.arrays.size() - 1; i >= 0; --i) {
+            for (auto i = typeInfo.arrays.size() - 1; i >= 0; --i) {
                 QString s = typeInfo.arrays.at(i);
                 bool ok;
 
@@ -4057,7 +4491,7 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
                 AbstractMetaType *arrayType = createMetaType();
                 arrayType->setArrayElementCount(elems);
                 arrayType->setArrayElementType(elementType);
-                arrayType->setTypeEntry(new ArrayTypeEntry(elementType->typeEntry(), elementType->indirections().size()));
+                arrayType->setTypeEntry(new ArrayTypeEntry(elementType->typeEntry(), int(elementType->indirections().size())));
                 decideUsagePattern(arrayType);
 
                 elementType = arrayType;
@@ -4129,9 +4563,13 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
 
     // 9. Try finding the type by prefixing it with
     //     all baseclasses of the containing class
-    if (!type && !TypeDatabase::instance()->isClassRejected(qualified_name) && containing_class && resolveScope) {
+    bool isClassRejected = TypeDatabase::instance()->isClassRejected(qualified_name);
+    if (!type && !isClassRejected && containing_class && resolveScope) {
         QStringList contexts;
-        contexts.append(containing_class->baseClasses());
+        QSet<QString> visitedContexts;
+        for(const QPair<QString,bool>& p : containing_class->baseClasses())
+            contexts.append(p.first);
+        contexts.removeDuplicates();
 
         // qDebug() << "9."<< contexts;
 
@@ -4139,39 +4577,57 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         while (!contexts.isEmpty() && !type) {
             //type = TypeDatabase::instance()->findType(contexts.at(0) + "::" + qualified_name);
 
-            bool ok;
-            info.setQualifiedName(QStringList() << contexts.at(0) << name);
-            //   qDebug()<< "whiling in 9. type," << info.toString();
-            AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
-            if (t && ok) {
-                //     qDebug()<<"Returning ok from t != 0 && ok"<<t->fullName();
-                return t;
-            }
-
-            //10. Try if the type is in a base class
-            //e.g. MimeType is QWebPluginFactory::MimeType and called by QWebPluginFactory::Plugin
             QString base = contexts.at(0);
-            QStringList parts = base.split("::");
-            while (parts.size() > 1) {
-                parts.removeLast();
-                info.setQualifiedName(QStringList() << parts << name);
-                AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
-                if (t && ok) {
-                    //       qDebug()<<"Returning ok from 11. method"<<t->fullName();
-                    return t;
+            if(!visitedContexts.contains(base)){
+                visitedContexts.insert(base);
+                bool ok;
+                if(!name.startsWith(contexts.at(0))){
+                    info.setQualifiedName(QStringList() << contexts.at(0) << name.split("::"));
+                    if(!visitedNames.contains(info.qualifiedName().join("::"))){
+                        visitedNames.insert(info.qualifiedName().join("::"));
+                        //   qDebug()<< "whiling in 9. type," << info.toString();
+                        AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
+                        if (t && ok) {
+                            //     qDebug()<<"Returning ok from t != 0 && ok"<<t->fullName();
+                            return t;
+                        }
+                    }
                 }
-            }
 
-            ClassModelItem item = m_dom->findClass(contexts.at(0));
-            if (item) {
-                contexts += item->baseClasses();
-            }else{
-                AbstractMetaClass* cls = m_meta_classes.findClass(contexts.at(0));
-                if(cls &&
-                    !cls->baseClassNames().isEmpty() &&
-                    !cls->baseClassNames()[0].isEmpty()){
-                    contexts.insert(1, cls->baseClassNames()[0]);
+                //10. Try if the type is in a base class
+                //e.g. MimeType is QWebPluginFactory::MimeType and called by QWebPluginFactory::Plugin
+                QStringList parts = base.split("::");
+                while (parts.size() > 1) {
+                    parts.removeLast();
+                    if(!name.startsWith(parts.join("::"))){
+                        info.setQualifiedName(QStringList() << parts << name.split("::"));
+                        if(!visitedNames.contains(info.qualifiedName().join("::"))){
+                            visitedNames.insert(info.qualifiedName().join("::"));
+                            AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
+                            if (t && ok) {
+                                //       qDebug()<<"Returning ok from 11. method"<<t->fullName();
+                                return t;
+                            }
+                        }
+                    }
                 }
+
+                ClassModelItem item = m_dom->findClass(contexts.at(0));
+                if (item) {
+                    for(const QPair<QString,bool>& p : item->baseClasses())
+                        contexts.append(p.first);
+                }else{
+                    AbstractMetaClass* cls = m_meta_classes.findClass(contexts.at(0));
+                    if(cls){
+                        for(const QPair<QString,bool>& p : cls->baseClassNames()){
+                            if(p.second){
+                                contexts.insert(1,p.first);
+                                break;
+                            }
+                        }
+                    }
+                }
+                contexts.removeDuplicates();
             }
             contexts.removeFirst();
         }
@@ -4179,14 +4635,18 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
 
     // 12. Try finding the type by prefixing it with the current
     //    context and all baseclasses of the current context
-    if (!type && !TypeDatabase::instance()->isClassRejected(qualified_name) && m_current_class && resolveScope) {
+    if (!type && !isClassRejected && m_current_class && resolveScope) {
         QStringList contexts;
+        QSet<QString> visitedContexts;
         contexts.append(m_current_class->qualifiedCppName());
-        if(!m_current_class->baseClassNames().isEmpty() &&
-                !m_current_class->baseClassNames()[0].isEmpty()){
-            contexts.append(m_current_class->baseClassNames()[0]);
+        for(const QPair<QString,bool>& p : m_current_class->baseClassNames()){
+            if(p.second){
+                contexts.append(p.first);
+                break;
+            }
         }
         contexts.append(currentScope()->qualifiedName().join("::"));
+        contexts.removeDuplicates();
 
         // qDebug() << "9."<< contexts;
 
@@ -4197,36 +4657,52 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
             //type = TypeDatabase::instance()->findType(contexts.at(0) + "::" + qualified_name);
 
             bool ok;
-            info.setQualifiedName(QStringList() << contexts.at(0) << qualified_name);
-            //   qDebug()<< "whiling in 9. type," << info.toString();
-            AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
-            if (t && ok) {
-                //     qDebug()<<"Returning ok from t != 0 && ok"<<t->fullName();
-                return t;
-            }
-
-            //13. Try if the type is in a base class
-            //e.g. MimeType is QWebPluginFactory::MimeType and called by QWebPluginFactory::Plugin
             QString base = contexts.at(0);
-            QStringList parts = base.split("::");
-            while (parts.size() > 1) {
-                parts.removeLast();
-                info.setQualifiedName(QStringList() << parts << qualified_name);
-                AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
-                if (t && ok) {
-                    //       qDebug()<<"Returning ok from 11. method"<<t->fullName();
-                    return t;
+            if(!visitedContexts.contains(base)){
+                visitedContexts.insert(base);
+                info.setQualifiedName(QStringList() << base << qualified_name.split("::"));
+                //   qDebug()<< "whiling in 9. type," << info.toString();
+                if(!visitedNames.contains(info.qualifiedName().join("::"))){
+                    visitedNames.insert(info.qualifiedName().join("::"));
+                    AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
+                    if (t && ok) {
+                        //     qDebug()<<"Returning ok from t != 0 && ok"<<t->fullName();
+                        return t;
+                    }
                 }
-            }
 
-            ClassModelItem item = m_dom->findClass(contexts.at(0));
-            if (item) {
-                contexts += item->baseClasses();
-            }else if(current_class &&
-                     !current_class->baseClassNames().isEmpty() &&
-                     !current_class->baseClassNames()[0].isEmpty()){
-                contexts.insert(1, current_class->baseClassNames()[0]);
-                current_class = m_meta_classes.findClass(current_class->baseClassNames()[0]);
+                //13. Try if the type is in a base class
+                //e.g. MimeType is QWebPluginFactory::MimeType and called by QWebPluginFactory::Plugin
+                QStringList parts = base.split("::");
+                while (parts.size() > 1) {
+                    parts.removeLast();
+                    if(!qualified_name.startsWith(parts.join("::"))){
+                        info.setQualifiedName(QStringList() << parts << qualified_name.split("::"));
+                        if(!visitedNames.contains(info.qualifiedName().join("::"))){
+                            visitedNames.insert(info.qualifiedName().join("::"));
+                            AbstractMetaType *t = translateType(info, &ok, contextString, true, false, prependScope);
+                            if (t && ok) {
+                                //       qDebug()<<"Returning ok from 11. method"<<t->fullName();
+                                return t;
+                            }
+                        }
+                    }
+                }
+
+                ClassModelItem item = m_dom->findClass(contexts.at(0));
+                if (item) {
+                    for(const QPair<QString,bool>& p : item->baseClasses())
+                        contexts += p.first;
+                }else if(current_class){
+                    for(const QPair<QString,bool>& p : m_current_class->baseClassNames()){
+                        if(p.second){
+                            contexts.insert(1, p.first);
+                            current_class = m_meta_classes.findClass(p.first);
+                            break;
+                        }
+                    }
+                }
+                contexts.removeDuplicates();
             }
             contexts.removeFirst();
 
@@ -4323,7 +4799,8 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
 
     }else if (meta_type->typeEntry()->isPointerContainer()) {
         PointerContainerTypeEntry::Type pointer_container_type = static_cast<const PointerContainerTypeEntry *>(type)->type();
-        if (    pointer_container_type == PointerContainerTypeEntry::QSharedPointer
+        if (    pointer_container_type == PointerContainerTypeEntry::QPointer
+             || pointer_container_type == PointerContainerTypeEntry::QSharedPointer
              || pointer_container_type == PointerContainerTypeEntry::QWeakPointer
              || pointer_container_type == PointerContainerTypeEntry::QScopedPointer
              || pointer_container_type == PointerContainerTypeEntry::unique_ptr
@@ -4474,16 +4951,21 @@ AbstractMetaType *AbstractMetaBuilder::translateType(const TypeInfo& type_info,
         bool found = false;
         if(AbstractMetaClass * iteratorClass = classes().findClass(iteratorType->qualifiedCppName(), AbstractMetaClassList::QualifiedCppName)){
             if(iteratorClass->typeAliasType()){
-                AbstractMetaType* typeAliasType = iteratorClass->typeAliasType()->copy();
-                QList<bool> indirections = typeAliasType->indirections();
-                if(!indirections.isEmpty()){
-                    indirections.takeFirst();
-                    typeAliasType->setIndirections(indirections);
+                if(iteratorClass->typeAliasType()->typeEntry()->isAlias()){
+                    m_missing_iterators << MissingIterator(iteratorType, meta_type, m_current_class);
+                    found = true;
+                }else{
+                    AbstractMetaType* typeAliasType = iteratorClass->typeAliasType()->copy();
+                    QList<bool> indirections = typeAliasType->indirections();
+                    if(!indirections.isEmpty()){
+                        indirections.takeFirst();
+                        typeAliasType->setIndirections(indirections);
+                    }
+                    typeAliasType->setReferenceType(AbstractMetaType::Reference);
+                    AbstractMetaBuilder::decideUsagePattern(typeAliasType);
+                    meta_type->addIteratorInstantiation(typeAliasType);
+                    found = true;
                 }
-                typeAliasType->setReferenceType(AbstractMetaType::Reference);
-                AbstractMetaBuilder::decideUsagePattern(typeAliasType);
-                meta_type->addIteratorInstantiation(typeAliasType);
-                found = true;
             }
         }
         if(!found && m_current_class){
@@ -4505,13 +4987,29 @@ void AbstractMetaBuilder::fixMissingIterator(){
         bool found = false;
         if(AbstractMetaClass * iteratorClass = classes().findClass(missingIterator.iteratorType->qualifiedCppName(), AbstractMetaClassList::QualifiedCppName)){
             if(iteratorClass->typeAliasType()){
-                AbstractMetaType* typeAliasType = iteratorClass->typeAliasType()->copy();
-                QList<bool> indirections = typeAliasType->indirections();
-                if(!indirections.isEmpty()){
-                    indirections.takeFirst();
-                    typeAliasType->setIndirections(indirections);
+                AbstractMetaType* typeAliasType = nullptr;
+                if(iteratorClass->typeAliasType()->typeEntry()->isAlias()){
+                    if(AbstractMetaClass *cls = m_meta_classes.findClass(iteratorClass->typeEntry()->qualifiedCppName())){
+                        if(cls->typeAliasType()){
+                            typeAliasType = cls->typeAliasType()->copy();
+                            if(typeAliasType->indirections().isEmpty() && typeAliasType->getReferenceType()==AbstractMetaType::NoReference){
+                                typeAliasType->setReferenceType(iteratorClass->typeAliasType()->getReferenceType());
+                            }
+                            typeAliasType->setIndirections( QList<bool>() << typeAliasType->indirections() << typeAliasType->indirections());
+                            if(iteratorClass->typeAliasType()->isConstant())
+                                typeAliasType->setConstant(true);
+                        }
+                    }
                 }
-                typeAliasType->setReferenceType(AbstractMetaType::Reference);
+                if(!typeAliasType){
+                    typeAliasType = iteratorClass->typeAliasType()->copy();
+                    QList<bool> indirections = typeAliasType->indirections();
+                    if(!indirections.isEmpty()){
+                        indirections.takeFirst();
+                        typeAliasType->setIndirections(indirections);
+                    }
+                    typeAliasType->setReferenceType(AbstractMetaType::Reference);
+                }
                 AbstractMetaBuilder::decideUsagePattern(typeAliasType);
                 missingIterator.meta_type->addIteratorInstantiation(typeAliasType);
                 found = true;
@@ -4525,7 +5023,10 @@ void AbstractMetaBuilder::fixMissingIterator(){
             if(missingIterator.current_class->templateBaseClass()){
                 if(missingIterator.iteratorType->containerType()==missingIterator.current_class->templateBaseClass()->typeEntry()){
                     missingIterator.meta_type->setIteratorInstantiations(missingIterator.current_class->templateBaseClassInstantiations());
-                    IteratorTypeEntry* newIteratorType = missingIterator.iteratorType->clone(missingIterator.iteratorType->containerType(), missingIterator.current_class->baseClassNames().join("::"));
+                    QStringList baseClassNames;
+                    for(const QPair<QString,bool>& p : missingIterator.current_class->baseClassNames())
+                        baseClassNames << p.first;
+                    IteratorTypeEntry* newIteratorType = missingIterator.iteratorType->clone(missingIterator.iteratorType->containerType(), baseClassNames.join("::"));
                     missingIterator.meta_type->setTypeEntry(newIteratorType);
                     found = true;
                 }
@@ -4545,7 +5046,10 @@ void AbstractMetaBuilder::decideUsagePattern(AbstractMetaType *meta_type) {
 
     } else if (type->isPrimitive() && (meta_type->actualIndirections() == 0
                                 || (meta_type->isConstant() && meta_type->getReferenceType()==AbstractMetaType::Reference && meta_type->indirections().size() == 0))) {
-        meta_type->setTypeUsagePattern(AbstractMetaType::PrimitivePattern);
+        if(type->qualifiedCppName()=="std::nullptr_t")
+            meta_type->setTypeUsagePattern(AbstractMetaType::NullptrPattern);
+        else
+            meta_type->setTypeUsagePattern(AbstractMetaType::PrimitivePattern);
 
     } else if (type->isVoid()) {
         meta_type->setTypeUsagePattern(AbstractMetaType::NativePointerPattern);
@@ -4713,9 +5217,9 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
         } else if (expr == "ULONG_MAX") {
             return "Long.MAX_VALUE";
         } else if (expr == "QVariant::Invalid") {
-            return QString::number(QVariant::Invalid);
+            return "0";
         } else {
-            if(expr == type->name()+"()"){
+            if(expr == type->name()+"()" || expr == "{}"){
                 return "0";
             }
             // This can be an enum or flag so I need to delay the
@@ -4724,6 +5228,8 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             return expr;
         }
     } else if (type && (type->isFlags() || type->isEnum())) {
+        if(expr == "{}")
+            return "0";
         // Same as with enum explanation above...
         return expr;
 
@@ -4731,26 +5237,24 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
         // constructor or functioncall can be a bit tricky...
         if (expr == "QVariant()" || expr == "QModelIndex()") {
             return "null";
-        } else if (expr == "QStringList()") {
-            return "new java.util.ArrayList<>()";
-        } else if (expr == "QVariantHash()") {
-            return "new java.util.HashMap<>()";
-        } else if (expr == "QVariantMap()") {
-            return "new java.util.TreeMap<>()";
-        } else if ((expr.startsWith("QVector<") || expr.startsWith("QSet<") || expr.startsWith("QList<") || expr.startsWith("QStack<") || expr.startsWith("QQueue<")) && expr.endsWith(">()")) {
-            QString collectionType = expr.startsWith("QSet") ? "java.util.HashSet" : "java.util.ArrayList";
-            QString typeParam = expr.remove(0, expr.indexOf("<")+1);
-            typeParam = typeParam.left(typeParam.indexOf(">"));
-            TypeEntry *typeEntry = TypeDatabase::instance()->findType(typeParam);
-            if(typeEntry){
-                return "new " + collectionType + "<>()";
-            }
+        } else if (expr == "QStringList()"
+                   || ((expr.startsWith("QVector<") || expr.startsWith("QList<") || expr.startsWith("QStack<") || expr.startsWith("QQueue<")) && expr.endsWith(">()"))
+                  ) {
+            return "java.util.Collections.emptyList()";
+        } else if (expr == "QVariantHash()"
+                   || ((expr.startsWith("QHash<") || expr.startsWith("QMultiHash<")) && expr.endsWith(">()"))) {
+            return "java.util.Collections.emptyMap()";
+        } else if (expr == "QVariantMap()"
+                   || ((expr.startsWith("QMap<") || expr.startsWith("QMultiMap<")) && expr.endsWith(">()"))) {
+            return "java.util.Collections.emptyNavigableMap()";
+        } else if (expr.startsWith("QSet<") && expr.endsWith(">()")) {
+            return "java.util.Collections.emptySet()";
         } else if (expr.endsWith(")") && expr.contains("::")) {
             TypeEntry *typeEntry = TypeDatabase::instance()->findType(expr.left(expr.indexOf("::")));
             if (typeEntry)
                 return typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr.right(expr.length() - expr.indexOf("::") - 2);
         } else if (expr.endsWith(")") && type->isValue()) {
-            int pos = expr.indexOf("(");
+            auto pos = expr.indexOf("(");
 
             TypeEntry *typeEntry = TypeDatabase::instance()->findType(expr.left(pos));
             if (typeEntry)
@@ -4759,7 +5263,7 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
                 return expr;
         } else if (expr == "0" || expr == "Q_NULLPTR" || expr == "nullptr" || expr == "NULL") {
             return "null";
-        } else if (type->isTargetLangString()) {
+        } else if (type->isTargetLangString() || type->isTargetLangStringView()) {
             if (expr == "{}" || expr == "QString()" || expr == "QStringRef()" || expr == "QStringView()") {
                 return "\"\"";
             }
@@ -4799,6 +5303,38 @@ QString AbstractMetaBuilder::translateDefaultValue(const QString& defaultValueEx
             return "null";
         } else if (expr == "QChar()") {
             return "'\\0'";
+        } else if (type && type->isContainer() && type->typeEntry() && type->typeEntry()->isContainer() && expr == "{}") {
+            const ContainerTypeEntry* cte = reinterpret_cast<const ContainerTypeEntry*>(type->typeEntry());
+            switch(cte->type()){
+            case ContainerTypeEntry::QArrayContainer:
+            case ContainerTypeEntry::QVector2DArrayContainer:
+            case ContainerTypeEntry::QVector3DArrayContainer:
+            case ContainerTypeEntry::QVector4DArrayContainer:
+            case ContainerTypeEntry::StringListContainer:
+            case ContainerTypeEntry::ByteArrayListContainer:
+            case ContainerTypeEntry::ListContainer:
+            case ContainerTypeEntry::std_vector:
+            case ContainerTypeEntry::InitializerListContainer:
+            case ContainerTypeEntry::LinkedListContainer:
+            case ContainerTypeEntry::VectorContainer:
+            case ContainerTypeEntry::QArrayDataContainer:
+            case ContainerTypeEntry::QTypedArrayDataContainer:
+                return "java.util.Collections.emptyList()";
+            case ContainerTypeEntry::StackContainer: return "java.util.new ArrayDeque<>()";
+            case ContainerTypeEntry::QueueContainer: return "java.util.new ArrayDeque<>()";
+            case ContainerTypeEntry::SetContainer:
+                return "java.util.Collections.emptySet()";
+            case ContainerTypeEntry::MultiMapContainer:
+            case ContainerTypeEntry::MapContainer:
+                return "java.util.Collections.emptyNavigableMap()";
+            case ContainerTypeEntry::QDBusReplyContainer: return "new io.qt.dbus.QDBusReply()";
+            case ContainerTypeEntry::HashContainer: return "java.util.Collections.emptyMap()";
+            case ContainerTypeEntry::MultiHashContainer: return "java.util.Collections.emptyMap()";
+            case ContainerTypeEntry::PairContainer: return "new io.qt.core.QPair<>()";
+            case ContainerTypeEntry::std_optional: return "java.util.Optional.empty()";
+            default:
+                break;
+            }
         }
     }
 
@@ -4828,16 +5364,106 @@ bool AbstractMetaBuilder::isQObject(const QString &qualified_name) {
     bool isqobject = class_item && class_item->extendsClass("QObject");
 
     if (class_item && !isqobject) {
-        QStringList baseClasses = class_item->baseClasses();
-        for (int i = 0; i < baseClasses.count(); ++i) {
-
-            isqobject = isQObject(baseClasses.at(i));
-            if (isqobject)
-                break;
+        for(const QPair<QString,bool>& p : class_item->baseClasses()){
+            if(p.second){
+                isqobject = isQObject(p.first);
+                if (isqobject)
+                    break;
+            }
         }
     }
 
     return isqobject;
+}
+
+bool AbstractMetaBuilder::isQWindow(const QString &qualified_name) {
+    if (qualified_name == "QWindow")
+        return true;
+
+    ClassModelItem class_item = m_dom->findClass(qualified_name);
+
+    if (!class_item) {
+        QStringList names = qualified_name.split(QLatin1String("::"));
+        NamespaceModelItem ns = model_dynamic_cast<NamespaceModelItem>(m_dom);
+        for (int i = 0; i < names.size() - 1 && ns; ++i)
+            ns = ns->namespaceMap().value(names.at(i));
+        if (ns && names.size() >= 2)
+            class_item = ns->findClass(names.at(names.size() - 1));
+    }
+
+    bool isqwindow = class_item && class_item->extendsClass("QWindow");
+
+    if (class_item && !isqwindow) {
+        for(const QPair<QString,bool>& p : class_item->baseClasses()){
+            if(p.second){
+                isqwindow = isQWindow(p.first);
+                if (isqwindow)
+                    break;
+            }
+        }
+    }
+
+    return isqwindow;
+}
+
+bool AbstractMetaBuilder::isQWidget(const QString &qualified_name) {
+    if (qualified_name == "QWidget")
+        return true;
+
+    ClassModelItem class_item = m_dom->findClass(qualified_name);
+
+    if (!class_item) {
+        QStringList names = qualified_name.split(QLatin1String("::"));
+        NamespaceModelItem ns = model_dynamic_cast<NamespaceModelItem>(m_dom);
+        for (int i = 0; i < names.size() - 1 && ns; ++i)
+            ns = ns->namespaceMap().value(names.at(i));
+        if (ns && names.size() >= 2)
+            class_item = ns->findClass(names.at(names.size() - 1));
+    }
+
+    bool isqwidget = class_item && class_item->extendsClass("QWidget");
+
+    if (class_item && !isqwidget) {
+        for(const QPair<QString,bool>& p : class_item->baseClasses()){
+            if(p.second){
+                isqwidget = isQWidget(p.first);
+                if (isqwidget)
+                    break;
+            }
+        }
+    }
+
+    return isqwidget;
+}
+
+bool AbstractMetaBuilder::isQCoreApplication(const QString &qualified_name) {
+    if (qualified_name == "QCoreApplication")
+        return true;
+
+    ClassModelItem class_item = m_dom->findClass(qualified_name);
+
+    if (!class_item) {
+        QStringList names = qualified_name.split(QLatin1String("::"));
+        NamespaceModelItem ns = model_dynamic_cast<NamespaceModelItem>(m_dom);
+        for (int i = 0; i < names.size() - 1 && ns; ++i)
+            ns = ns->namespaceMap().value(names.at(i));
+        if (ns && names.size() >= 2)
+            class_item = ns->findClass(names.at(names.size() - 1));
+    }
+
+    bool isapp = class_item && class_item->extendsClass("QCoreApplication");
+
+    if (class_item && !isapp) {
+        for(const QPair<QString,bool>& p : class_item->baseClasses()){
+            if(p.second){
+                isapp = isQCoreApplication(p.first);
+                if (isapp)
+                    break;
+            }
+        }
+    }
+
+    return isapp;
 }
 
 
@@ -4935,6 +5561,50 @@ bool AbstractMetaBuilder::inheritHiddenBaseType(AbstractMetaClass *subclass,
         template_types_by_name.insert(hidden_base_class->templateArguments().at(i), template_types.at(i));
     }
 
+    {
+        if(!info.template_instantiations.isEmpty()){
+            subclass->setTemplateBaseClass(hidden_base_class);
+            subclass->setTemplateBaseClassInstantiations(template_types);
+
+            subclass->setInterfaces(hidden_base_class->interfaces());
+            subclass->setBaseClass(hidden_base_class->baseClass());
+        }
+
+        QString implements = hidden_base_class->typeEntry()->implements();
+        if(!implements.isEmpty()){
+            for (QMap<const TypeEntry *,const AbstractMetaType *>::const_iterator ki = template_types_by_name.begin();
+                 ki != template_types_by_name.end(); ki++) {
+                const TypeEntry * t_entry = ki.value()->typeEntry();
+                if(t_entry->isTemplateArgument())
+                    implements = implements.replace("%"+ki.key()->name(),"%"+t_entry->qualifiedCppName());
+                else
+                    implements = implements.replace("%"+ki.key()->name(),t_entry->qualifiedTargetLangName());
+            }
+            if(subclass->typeEntry()->implements().isEmpty())
+                subclass->typeEntry()->setImplements(implements);
+            else
+                subclass->typeEntry()->setImplements(subclass->typeEntry()->implements()+", "+implements);
+        }
+    }
+
+    if(hidden_base_class->typeEntry()->isContainer()){
+        const ContainerTypeEntry* ctype = static_cast<const ContainerTypeEntry*>(hidden_base_class->typeEntry());
+        switch(ctype->type()){
+        case ContainerTypeEntry::ListContainer:
+        case ContainerTypeEntry::LinkedListContainer:
+        case ContainerTypeEntry::VectorContainer:
+        case ContainerTypeEntry::StackContainer:
+        case ContainerTypeEntry::QueueContainer:
+        case ContainerTypeEntry::SetContainer:
+        case ContainerTypeEntry::MapContainer:
+        case ContainerTypeEntry::HashContainer:
+        case ContainerTypeEntry::MultiMapContainer:
+        case ContainerTypeEntry::MultiHashContainer:
+            return true;
+        default: break;
+        }
+    }
+
     IteratorTypeEntry * iteratorTypeEntry = TypeDatabase::instance()->findIteratorType(hidden_base_class->typeEntry());
     AbstractMetaClass * newIteratorClass = nullptr;
     if(iteratorTypeEntry){
@@ -5003,7 +5673,7 @@ bool AbstractMetaBuilder::inheritHiddenBaseType(AbstractMetaClass *subclass,
                 QString exp = arg->defaultValueExpression();
                 arg->setOriginalDefaultValueExpression(exp);
                 exp = exp.replace(argument->type()->typeEntry()->qualifiedCppName(), arg->type()->typeEntry()->qualifiedCppName());
-                exp = translateDefaultValue(exp, arg->type(), f, subclass, f->arguments().size());
+                exp = translateDefaultValue(exp, arg->type(), f, subclass, int(f->arguments().size()));
                 arg->setDefaultValueExpression(exp);
             }
             f->addArgument(arg);
@@ -5022,7 +5692,12 @@ bool AbstractMetaBuilder::inheritHiddenBaseType(AbstractMetaClass *subclass,
         // supposed to disappear. This allows us to make certain function modifications
         // on the inherited functions.
         f->setDeclaringClass(subclass);
-        f->setDeclaringTemplate(subclass->baseClassNames().at(0));
+        for(const QPair<QString,bool>& p : subclass->baseClassNames()){
+            if(p.second){
+                f->setDeclaringTemplate(p.first);
+                break;
+            }
+        }
 
         if (f->isConstructor() && subclass->isTypeAlias()) {
             f->setName(subclass->simpleName());
@@ -5126,32 +5801,6 @@ bool AbstractMetaBuilder::inheritHiddenBaseType(AbstractMetaClass *subclass,
             subclass->typeEntry()->addFunctionModification(mod2);
         }
     }
-
-    {
-        if(!info.template_instantiations.isEmpty()){
-            subclass->setTemplateBaseClass(hidden_base_class);
-            subclass->setTemplateBaseClassInstantiations(template_types);
-
-            subclass->setInterfaces(hidden_base_class->interfaces());
-            subclass->setBaseClass(hidden_base_class->baseClass());
-        }
-
-        QString implements = hidden_base_class->typeEntry()->implements();
-        if(!implements.isEmpty()){
-            for (QMap<const TypeEntry *,const AbstractMetaType *>::const_iterator ki = template_types_by_name.begin();
-                 ki != template_types_by_name.end(); ki++) {
-                const TypeEntry * t_entry = ki.value()->typeEntry();
-                if(t_entry->isTemplateArgument())
-                    implements = implements.replace("%"+ki.key()->name(),"%"+t_entry->qualifiedCppName());
-                else
-                    implements = implements.replace("%"+ki.key()->name(),t_entry->qualifiedTargetLangName());
-            }
-            if(subclass->typeEntry()->implements().isEmpty())
-                subclass->typeEntry()->setImplements(implements);
-            else
-                subclass->typeEntry()->setImplements(subclass->typeEntry()->implements()+", "+implements);
-        }
-    }
     subclass->setHasJustPrivateConstructors(hidden_base_class->hasJustPrivateConstructors());
     subclass->setHasPublicDestructor(hidden_base_class->hasPublicDestructor());
     subclass->setHasVirtualDestructor(hidden_base_class->hasVirtualDestructor());
@@ -5170,7 +5819,7 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
         */
         {
             QString newP = QString();
-            const int len = p.length();
+            auto len = p.length();
             int state = 0;
             int j;
             for (j = 0; j < len; j++) {
@@ -5195,7 +5844,7 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
                 }
             }
 
-            const int newplen = newP.length();
+            auto newplen = newP.length();
 
             // remove that last space we added
             if(state >= 2 && newplen > 1 && newP.at(newplen - 1) == QChar(' ')) {
@@ -5220,7 +5869,7 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
         */
         {
             QString newFirstWord = QString();
-            const int len = p.length();
+            auto len = p.length();
 
             /*
             0 = start (expect isalnum() || :)
@@ -5297,12 +5946,12 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
         QStringList l = p.split(QLatin1String(" "));
         {
             QStringList newL = QStringList();
-            const int l_size = l.size();
+            auto l_size = l.size();
             int nest = 0;
             QString newItem = QString(); // recombined item
             for (int j = 0; j < l_size; j++) {
                 const QString item = l.at(j); // original item
-                const int item_length = item.length();
+                auto item_length = item.length();
                 for (int k = 0; k < item_length; k++) {
                     const QChar ch = item.at(k);
                     if (ch == QChar('('))
@@ -5328,79 +5977,99 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
             l = newL;
         }
 
-        QString typeName = l.at(0);
+        QString typeName = l.takeAt(0);
+        if(typeName=="const")
+            typeName += " " + l.takeAt(0);
         QPropertySpec *spec = new QPropertySpec();
-        spec->setName(l.at(1));
+        QString name = l.takeAt(0);
+        if(name.startsWith("*")){
+            typeName += "*";
+            name = name.mid(1);
+        }
+        spec->setName(name);
         spec->setIndex(i);
 
-        for (int pos = 2; pos < l.size(); pos ++) {
+        for (int pos = 0; pos < l.size(); pos ++) {
             // I have seen DESIGNABLE and SCRIPTABLE examples that do not have
             //  a true/false after but another keyword.
-            if (l.at(pos) == QLatin1String("READ")){
+            const QString& aspect = l.at(pos);
+            if (aspect == QLatin1String("READ")){
                 if(pos < l.size()-1)
                     spec->setRead(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("WRITE")){
+            else if (aspect == QLatin1String("WRITE")){
                 if(pos < l.size()-1)
                     spec->setWrite(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("DESIGNABLE")){
+            else if (aspect == QLatin1String("BINDABLE")){
+                if(pos < l.size()-1)
+                    spec->setBindable(l.at(++pos));
+                else
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
+            }
+            else if (aspect == QLatin1String("DESIGNABLE")){
                 if(pos < l.size()-1)
                     spec->setDesignable(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("SCRIPTABLE")){
+            else if (aspect == QLatin1String("SCRIPTABLE")){
                 if(pos < l.size()-1)
                     spec->setScriptable(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("RESET")){
+            else if (aspect == QLatin1String("RESET")){
                 if(pos < l.size()-1)
                     spec->setReset(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("NOTIFY")){
+            else if (aspect == QLatin1String("NOTIFY")){
                 if(pos < l.size()-1)
                     spec->setNotify(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("USER")){
+            else if (aspect == QLatin1String("USER")){
                 if(pos < l.size()-1)
                     spec->setUser(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("STORED")){
+            else if (aspect == QLatin1String("STORED")){
                 if(pos < l.size()-1)
                     spec->setStored(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("REVISION")){
+            else if (aspect == QLatin1String("REVISION")){
                 if(pos < l.size()-1)
                     spec->setRevision(l.at(++pos));
                 else
-                    qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): aspect " << l.at(pos) << " requires argument";
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(p).arg(aspect));
             }
-            else if (l.at(pos) == QLatin1String("CONSTANT")){
+            else if (aspect.startsWith(QLatin1String("REVISION(")) && aspect.endsWith(QLatin1String(")"))){
+                QString revision = aspect;
+                revision.chop(1);
+                revision = revision.mid(9);
+                spec->setRevision(revision);
+            }
+            else if (aspect == QLatin1String("CONSTANT")){
                 spec->setConstant(true);
             }
-            else if (l.at(pos) == QLatin1String("REQUIRED")){
+            else if (aspect == QLatin1String("REQUIRED")){
                 spec->setRequired(true);
             }
-            else if (l.at(pos) == QLatin1String("FINAL")){
+            else if (aspect == QLatin1String("FINAL")){
                 spec->setFinal(true);
             }
             else
-                qDebug() << "WARNING: Q_PROPERTY(" << spec->name() << ", " << typeName << "): unknown aspect " << l.at(pos);
+                ReportHandler::warning(QString("Q_PROPERTY(%1): unknown aspect %2").arg(p).arg(aspect));
         }
 
         meta_class->addPropertySpec(spec);
@@ -5409,10 +6078,17 @@ void AbstractMetaBuilder::parseQ_Property(AbstractMetaClass *meta_class, const Q
 
 static void hide_functions(const AbstractMetaFunctionList &l) {
     for(AbstractMetaFunction *f : l) {
-        FunctionModification mod;
-        mod.signature = f->minimalSignature();
-        mod.modifiers = FunctionModification::Private;
-        const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
+        if(!f->declaringClass()->isInterface()
+                && !f->isAbstract()
+                && f->name().startsWith("operator_")){
+            FunctionModification mod;
+            mod.signature = f->minimalSignature();
+            if(f->implementingClass()->isInterface())
+                mod.modifiers = FunctionModification::Friendly;
+            else
+                mod.modifiers = FunctionModification::Private;
+            const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
+        }
     }
 }
 
@@ -5427,8 +6103,8 @@ static AbstractMetaFunctionList filter_functions(const AbstractMetaFunctionList 
     AbstractMetaFunctionList functions;
     for(AbstractMetaFunction *f : lst) {
         QString signature = f->minimalSignature();
-        int start = signature.indexOf(QLatin1Char('(')) + 1;
-        int end = signature.lastIndexOf(QLatin1Char(')'));
+        auto start = signature.indexOf(QLatin1Char('(')) + 1;
+        auto end = signature.lastIndexOf(QLatin1Char(')'));
         signature = signature.mid(start, end - start);
         if (signatures->contains(signature)) {
             remove_function(f);
@@ -5480,22 +6156,24 @@ void AbstractMetaBuilder::setupEquals(AbstractMetaClass *cls) {
     AbstractMetaFunctionList equals;
     AbstractMetaFunctionList nequals;
 
-    QString op_equals = QLatin1String("operator_equal");
-    QString op_nequals = QLatin1String("operator_not_equal");
+    QString op_equals = QLatin1String("operator==");
+    QString op_nequals = QLatin1String("operator!=");
 
-    AbstractMetaFunctionList functions = cls->queryFunctions(AbstractMetaClass::ClassImplements
-                                         | AbstractMetaClass::NotRemovedFromTargetLang);
+    AbstractMetaFunctionList functions = cls->queryFunctions(
+                                        AbstractMetaClass::ClassImplements
+                                        | AbstractMetaClass::Visible
+                                        | AbstractMetaClass::NotRemovedFromTargetLang);
     for(AbstractMetaFunction *f : functions) {
         if(f->arguments().size()==1){
-            if (f->name() == op_equals)
+            if (f->originalName() == op_equals)
                 equals << f;
-            else if (f->name() == op_nequals)
+            else if (f->originalName() == op_nequals)
                 nequals << f;
         }
     }
 
     if (equals.size() || nequals.size()) {
-        if (!cls->hasHashFunction() && cls->typeEntry()->isValue()) {
+        if (!cls->hasHashFunction() && cls->typeEntry()->isValue() && cls->typeEntry()->codeGeneration()==TypeEntry::GenerateAll) {
             ReportHandler::warning(QString::fromLatin1("Class '%1' has equals operators but no qHash() function. Hashcode of objects will consistently be 0.")
                                    .arg(cls->name()));
         }
@@ -5517,23 +6195,29 @@ void AbstractMetaBuilder::setupComparable(AbstractMetaClass *cls) {
     AbstractMetaFunctionList greaterEquals;
     AbstractMetaFunctionList less;
     AbstractMetaFunctionList lessEquals;
+    AbstractMetaFunctionList compare;
 
-    QString op_greater = QLatin1String("operator_greater");
-    QString op_greater_eq = QLatin1String("operator_greater_or_equal");
-    QString op_less = QLatin1String("operator_less");
-    QString op_less_eq = QLatin1String("operator_less_or_equal");
+    QString op_greater = QLatin1String("operator>");
+    QString op_greater_eq = QLatin1String("operator>=");
+    QString op_less = QLatin1String("operator<");
+    QString op_less_eq = QLatin1String("operator<=");
+    QString op_compare = QLatin1String("operator<=>");
 
     AbstractMetaFunctionList functions = cls->queryFunctions(AbstractMetaClass::ClassImplements
                                          | AbstractMetaClass::NotRemovedFromTargetLang);
     for(AbstractMetaFunction *f : functions) {
-        if (f->name() == op_greater)
-            greater << f;
-        else if (f->name() == op_greater_eq)
-            greaterEquals << f;
-        else if (f->name() == op_less)
-            less << f;
-        else if (f->name() == op_less_eq)
-            lessEquals << f;
+        if(f->arguments().size()==1){
+            if (f->originalName() == op_greater)
+                greater << f;
+            else if (f->originalName() == op_greater_eq)
+                greaterEquals << f;
+            else if (f->originalName() == op_less)
+                less << f;
+            else if (f->originalName() == op_less_eq)
+                lessEquals << f;
+            else if (f->originalName() == op_compare)
+                compare << f;
+        }
     }
 
     bool hasEquals = cls->equalsFunctions().size() || cls->notEqualsFunctions().size();
@@ -5543,7 +6227,7 @@ void AbstractMetaBuilder::setupComparable(AbstractMetaClass *cls) {
     //     >, ==                - Less than becomes else case
     //     <, ==                - Greater than becomes else case
     //     >=, <=               - if (<= && >=) -> equal
-    bool mightBeComparable = greater.size() || greaterEquals.size() || less.size() || lessEquals.size()
+    bool mightBeComparable = compare.size() || greater.size() || greaterEquals.size() || less.size() || lessEquals.size()
                              || greaterEquals.size() == 1 || lessEquals.size() == 1;
 
     if (mightBeComparable) {
@@ -5553,7 +6237,10 @@ void AbstractMetaBuilder::setupComparable(AbstractMetaClass *cls) {
         bool wasComparable = false;
 
         // The three upper cases, prefer the <, == approach
-        if (hasEquals && (greater.size() || less.size())) {
+        if(compare.size()){
+            cls->setCompareFunctions(filter_functions(compare, &signatures));
+            wasComparable = true;
+        }else if (hasEquals && (greater.size() || less.size())) {
             cls->setLessThanFunctions(filter_functions(less, &signatures));
             cls->setGreaterThanFunctions(filter_functions(greater, &signatures));
             filter_functions(greaterEquals, &signatures);
@@ -5580,6 +6267,7 @@ void AbstractMetaBuilder::setupComparable(AbstractMetaClass *cls) {
         }
 
         if (wasComparable) {
+            hide_functions(compare);
             hide_functions(greater);
             hide_functions(greaterEquals);
             hide_functions(less);
@@ -5619,50 +6307,55 @@ static void write_reject_log_file(QFile *f,
 
     QTextStream s(f);
 
-    int maxSize = 0;
+    decltype(QString().size()) maxSize = 0;
     for (QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason>::const_iterator it = rejects.constBegin();
             it != rejects.constEnd(); ++it) {
         maxSize = qMax(maxSize, it.key().first.size());
     }
 
     for (int reason = 0; reason < AbstractMetaBuilder::NoReason; ++reason) {
-        s << QString(72, '*') << Qt::endl;
+        QString headline;
         switch (reason) {
             case AbstractMetaBuilder::NotInTypeSystem:
-                s << "Not in type system";
+                headline = "Not in type system";
+                break;
+            case AbstractMetaBuilder::IsPrivate:
+                headline = "Is private";
                 break;
             case AbstractMetaBuilder::GenerationDisabled:
-                s << "Generation disabled by type system";
+                headline = "Generation disabled by type system";
                 break;
             case AbstractMetaBuilder::RedefinedToNotClass:
-                s << "Type redefined to not be a class";
+                headline = "Type redefined to not be a class";
                 break;
 
             case AbstractMetaBuilder::UnmatchedReturnType:
-                s << "Unmatched return type";
+                headline = "Unmatched return type";
                 break;
 
             case AbstractMetaBuilder::UnmatchedArgumentType:
-                s << "Unmatched argument type";
+                headline = "Unmatched argument type";
                 break;
 
             default:
-                s << "unknown reason";
+                headline = "unknown reason";
                 break;
         }
-
-        s << Qt::endl;
 
         for (QMap<QPair<QString,QString>, AbstractMetaBuilder::RejectReason>::const_iterator it = rejects.constBegin();
                 it != rejects.constEnd(); ++it) {
             if (it.value() != reason)
                 continue;
+            if(!headline.isEmpty()){
+                s << QString(72, '*') << Qt::endl << headline << Qt::endl;
+                headline.clear();
+            }
             QString space;
             space.fill(QLatin1Char(' '), maxSize+5-it.key().first.size());
             s << " - " << it.key().first << space << it.key().second << Qt::endl;
         }
-
-        s << QString(72, '*') << Qt::endl << Qt::endl;
+        if(headline.isEmpty())
+            s << QString(72, '*') << Qt::endl << Qt::endl;
     }
 
 }
@@ -5707,23 +6400,6 @@ void AbstractMetaBuilder::dumpLog() {
         if (!outputDirectory().isNull())
             file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
         write_reject_log_file(&file, m_rejected_fields);
-    }
-
-    {
-        QString fileName("reported_warnings.log");
-        QFile file(fileName);
-        if (!outputDirectory().isNull())
-            file.setFileName(QDir(outputDirectory()).absoluteFilePath(fileName));
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            {
-                QTextStream s(&file);
-                for(const QString& w : ReportHandler::reportedWarnings()){
-                    if(!w.contains("Suppressed warning with no text specified"))
-                        s << w << Qt::endl;
-                }
-            }
-            file.close();
-        }
     }
 }
 

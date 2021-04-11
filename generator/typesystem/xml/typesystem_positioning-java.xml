@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -58,11 +58,11 @@
                 if(!%in)
                     JavaException::raiseNullPointerException(%env, "Parameter 'signal' must not be null." QTJAMBI_STACKTRACEINFO);
                 if(jobject __java_this = qtjambi_java_object_reference(__this_nativeId, %env)) {
-                    jobject containingObject = Java::QtPositioning::QtJambiSignals$AbstractSignal.containingObject(%env, %in);
+                    jobject containingObject = Java::QtJambi::QtJambiSignals$AbstractSignal::containingObject(%env, %in);
                     if(!%env->IsSameObject(__java_this, containingObject)){
                         JavaException::raiseIllegalArgumentException(%env, "Given signal has to be one of the instance's signals." QTJAMBI_STACKTRACEINFO);
                     }
-                    jint signalIndex = Java::QtPositioning::QtJambiSignals$AbstractSignal.methodIndex(%env, %in);
+                    jint signalIndex = Java::QtJambi::QtJambiSignals$AbstractSignal::methodIndex(%env, %in);
                     QMetaMethod metaSignal = __qt_this->metaObject()->method(signalIndex);
                     if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)
                         return false;
@@ -76,7 +76,7 @@
                 jobject __java_metaSignal = qtjambi_cast&lt;jobject>(%env, metaSignal);
                 if(!__java_metaSignal)
                     return false;
-                jobject %out = Java::QtPositioning::QMetaMethod.toSignal(%env, __java_metaSignal, __java_this);
+                jobject %out = Java::QtCore::QMetaMethod::toSignal(%env, __java_metaSignal, __java_this);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -91,7 +91,7 @@
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(%in){
-                        %out = Java::QtPositioning::QNmeaPositionInfoSource$Result.newInstance(
+                        %out = Java::QtPositioning::QNmeaPositionInfoSource$Result::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %3), %4);
                     }
                 </conversion-rule>
@@ -99,11 +99,11 @@
                     bool %out = false;
                     if(%in){
                         if(%3){
-                            jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result.info(%env, %in);
+                            jobject __java_%3 = Java::QtPositioning::QNmeaPositionInfoSource$Result::info(%env, %in);
                             *%3 = qtjambi_cast&lt;QGeoPositionInfo>(%env, __java_%3);
                         }
                         if(%4){
-                            *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result.hasFix(%env, %in);
+                            *%4 = Java::QtPositioning::QNmeaPositionInfoSource$Result::hasFix(%env, %in);
                         }
                     }
                 </conversion-rule>

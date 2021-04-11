@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,7 +32,7 @@
 
 #include <Qt3DCore/QNodeId>
 /*
-inline uint qHash(const Qt3DCore::QNodeId& p){
+inline hash_type qHash(const Qt3DCore::QNodeId& p){
     return qHash(p.id());
 }
 */

@@ -50,54 +50,26 @@ import static org.junit.Assume.assumeTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.opengl.QGLBuffer;
-import io.qt.opengl.QGLColormap;
-import io.qt.opengl.QGLFormat;
-import io.qt.opengl.QGLFramebufferObjectFormat;
-import io.qt.unittests.support.FilterOpenGL;
+import io.qt.opengl.*;
 
 public class TestCloneableOpenGL extends QApplicationTest {
 
-    @BeforeClass
-    public static void testInitialize() throws Exception {
-        assumeTrue(FilterOpenGL.detectStatic());
-        QApplicationTest.testInitialize(null);
-    }
-
-    @Test
-    public void run_clone_QGLColormap() {
-        QGLColormap org = new QGLColormap();
-        QGLColormap clone = org.clone();
-        org.dispose();
-        QGLColormap clone2 = clone.clone();
-        assertEquals(clone.find(4), clone2.find(4));
-    }
-
-    @Test
-    public void run_clone_QGLFormat() {
-        QGLFormat org = new QGLFormat();
-        QGLFormat clone = org.clone();
-        org.dispose();
-        QGLFormat clone2 = clone.clone();
-        assertEquals(clone, clone2);
-    }
-
     // this test does not make sense because QGLBuffer does not have an equals operator
     //@Test
-	public void run_clone_QGLBuffer() {
-		QGLBuffer org = new QGLBuffer();
-		QGLBuffer clone = org.clone();
+	public void run_clone_QOpenGLBuffer() {
+		QOpenGLBuffer org = new QOpenGLBuffer();
+		QOpenGLBuffer clone = org.clone();
 		org.dispose();
-		QGLBuffer clone2 = clone.clone();
+		QOpenGLBuffer clone2 = clone.clone();
 		assertEquals(clone, clone2);
 	}
 
 	@Test
-	public void run_clone_QGLFramebufferObjectFormat() {
-		QGLFramebufferObjectFormat org = new QGLFramebufferObjectFormat();
-		QGLFramebufferObjectFormat clone = org.clone();
+	public void run_clone_QOpenGLFramebufferObjectFormat() {
+		QOpenGLFramebufferObjectFormat org = new QOpenGLFramebufferObjectFormat();
+		QOpenGLFramebufferObjectFormat clone = org.clone();
 		org.dispose();
-		QGLFramebufferObjectFormat clone2 = clone.clone();
+		QOpenGLFramebufferObjectFormat clone2 = clone.clone();
 		assertEquals(clone, clone2);
 	}
 

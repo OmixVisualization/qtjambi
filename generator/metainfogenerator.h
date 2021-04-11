@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,12 +46,13 @@ class MetaInfoGenerator : public JavaGenerator {
     public:
         MetaInfoGenerator(PriGenerator *pri);
 
-        enum GenerationFlags {
-            GeneratedJavaClasses = 0x1,
-            GeneratedMetaInfo = 0x2
+        enum GenerationFlags : quint8 {
+            None = 0,
+            GeneratedJavaClasses = 0x01,
+            GeneratedMetaInfo = 0x02
         };
 
-        enum OutputDirectoryType {
+        enum OutputDirectoryType : quint8 {
             CppDirectory,
             JavaDirectory
         };
@@ -67,12 +68,8 @@ class MetaInfoGenerator : public JavaGenerator {
 
         static QString subDirectoryForClass(const AbstractMetaClass *, OutputDirectoryType type);
         static QString subDirectoryForClass(const AbstractMetaFunctional *, OutputDirectoryType type);
-        static QString subDirectoryForPackage(const QString &package, OutputDirectoryType type);
+        static QString subDirectoryForPackage(const QString &typeSystem, const QString &package, OutputDirectoryType type);
         virtual bool shouldGenerate(const AbstractMetaClass *) const override;
-
-        bool generated(const AbstractMetaClass *cls) const;
-        bool generatedJavaClasses(const QString &package) const;
-        bool generatedMetaInfo(const QString &package) const;
 
         QString cppOutputDirectory() const {
             if (!m_cpp_out_dir.isNull())
@@ -90,7 +87,8 @@ class MetaInfoGenerator : public JavaGenerator {
         void writeLibraryInitializers();
         void buildSkipList();
 
-        QHash<QString, int> m_skip_list;
+        QHash<QString, quint8> m_packageGenerationPolicies;
+        QHash<QString, QString> m_typeSystemByPackage;
         QString m_filenameStub;
 
         //QHash<OutputDirectoryType, QString> m_out_dir;

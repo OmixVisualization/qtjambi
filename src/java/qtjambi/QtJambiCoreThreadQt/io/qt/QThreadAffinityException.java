@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -77,10 +77,12 @@ public class QThreadAffinityException extends RuntimeException {
         s.append(getMessage());
         if(!getMessage().endsWith(".") && !getMessage().endsWith(",") && !getMessage().endsWith("!") && !getMessage().endsWith(":"))
         	s.append(":");
-        if(object.isDisposed()) {
-        	s.append(" object=").append(object.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(object)));
-        }else {
-        	s.append(" object=").append(object);
+        if(object!=null) {
+	        if(object.isDisposed()) {
+	        	s.append(" object=").append(object.getClass().getName()).append("@").append(Integer.toHexString(System.identityHashCode(object)));
+	        }else {
+	        	s.append(" object=").append(object);
+	        }
         }
         Thread expectedJavaThread = null;
         try {

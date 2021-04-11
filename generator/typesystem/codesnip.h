@@ -104,6 +104,10 @@ class CodeSnip : public CodeSnipAbstract {
             Position2,
             Position3,
             Position4,
+            Equals,
+            Compare,
+            HashCode,
+            ToString
         };
 
         CodeSnip() : language(TypeSystem::TargetLangCode) { }

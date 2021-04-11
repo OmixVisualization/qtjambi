@@ -222,6 +222,7 @@ void Lexer::initialize_scan_table() {
     s_scan_table[int(',')] = &Lexer::scan_comma;
     s_scan_table[int('-')] = &Lexer::scan_minus;
     s_scan_table[int('/')] = &Lexer::scan_divide;
+    s_scan_table[int('\\')] = &Lexer::scan_backslash;
     s_scan_table[int(':')] = &Lexer::scan_colon;
     s_scan_table[int(';')] = &Lexer::scan_semicolon;
     s_scan_table[int('<')] = &Lexer::scan_less;
@@ -350,6 +351,13 @@ void Lexer::scan_identifier_or_literal() {
                 scan_string_constant();
                 return;
             }
+            if(*(cursor + 1)=='8' && *(cursor + 2)=='\''){
+                ++cursor;
+                ++cursor;
+                ++cursor;
+                scan_char_constant();
+                return;
+            }
             Q_FALLTHROUGH();
         case 'U':
         case 'L':
@@ -357,6 +365,12 @@ void Lexer::scan_identifier_or_literal() {
                 ++cursor;
                 ++cursor;
                 scan_string_constant();
+                return;
+            }
+            if(*(cursor + 1)=='\''){
+                ++cursor;
+                ++cursor;
+                scan_char_constant();
                 return;
             }
         break;
@@ -561,6 +575,22 @@ void Lexer::scan_divide() {
     }
 }
 
+void Lexer::scan_backslash() {
+    /*
+      '\\'     ::= \
+    */
+
+    if (*(cursor+1) == '\n') {
+        ++cursor;
+        scan_newline();
+    } else if (*(cursor+1) == '\r' && *(cursor+2) == '\n') {
+        ++cursor;
+        scan_newline();
+    } else {
+        scan_invalid_input();
+    }
+}
+
 void Lexer::scan_colon() {
     ++cursor;
     if (*cursor == ':') {
@@ -582,12 +612,18 @@ void Lexer::scan_less() {
       '<<'        ::= left_shift
       '<<='       ::= left_shift_equal
       '<='        ::= less_equal
+      '<=>'       ::= compare
     */
 
     ++cursor;
     if (*cursor == '=') {
         ++cursor;
-        token_stream[index++].kind = Token_leq;
+        if (*cursor == '>') {
+            ++cursor;
+            token_stream[index++].kind = Token_compare;
+        }else{
+            token_stream[index++].kind = Token_leq;
+        }
     } else if (*cursor == '<') {
         ++cursor;
         if (*cursor == '=') {
@@ -1290,11 +1326,16 @@ void Lexer::scanKeyword7() {
             if (*(cursor + 1) == 'l' &&
                     *(cursor + 2) == 'i' &&
                     *(cursor + 3) == 'g' &&
-                    *(cursor + 4) == 'n' &&
-                    *(cursor + 5) == 'a' &&
-                    *(cursor + 6) == 's') {
-                token_stream[index++].kind = Token_alignas;
-                return;
+                    *(cursor + 4) == 'n') {
+                if(*(cursor + 5) == 'a' &&
+                        *(cursor + 6) == 's'){
+                    token_stream[index++].kind = Token_alignas;
+                    return;
+                }else if(*(cursor + 5) == 'o' &&
+                         *(cursor + 6) == 'f'){
+                     token_stream[index++].kind = Token_alignof;
+                     return;
+                 }
             }
             break;
         case 'd':
@@ -1445,6 +1486,19 @@ void Lexer::scanKeyword8() {
                     *(cursor + 6) == 'i' &&
                     *(cursor + 7) == 't') {
                 token_stream[index++].kind = Token_explicit;
+                return;
+            }
+            break;
+
+        case 'n':
+            if (*(cursor + 1) == 'o' &&
+                    *(cursor + 2) == 'e' &&
+                    *(cursor + 3) == 'x' &&
+                    *(cursor + 4) == 'c' &&
+                    *(cursor + 5) == 'e' &&
+                    *(cursor + 6) == 'p' &&
+                    *(cursor + 7) == 't') {
+                token_stream[index++].kind = Token_noexcept;
                 return;
             }
             break;

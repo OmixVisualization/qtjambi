@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,15 +32,15 @@
 #include <QtNetwork/QtNetwork>
 #include <QtCore/QDeadlineTimer>
 
-inline uint qHash(const QHstsPolicy& p){
-    uint hashCode = qHash(p.expiry());
+inline hash_type qHash(const QHstsPolicy& p){
+    hash_type hashCode = qHash(p.expiry());
     hashCode = hashCode * 31 + qHash(p.includesSubDomains());
     hashCode = hashCode * 31 + qHash(p.host());
     return hashCode;
 }
 
-inline uint qHash(const QNetworkAddressEntry& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QNetworkAddressEntry& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(p.dnsEligibility()));
     hashCode = hashCode * 31 + qHash(p.ip());
     hashCode = hashCode * 31 + qHash(p.netmask());
@@ -52,8 +52,8 @@ inline uint qHash(const QNetworkAddressEntry& p){
     return hashCode;
 }
 
-inline uint qHash(const QNetworkCacheMetaData& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QNetworkCacheMetaData& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.isValid());
     hashCode = hashCode * 31 + qHash(p.url());
     hashCode = hashCode * 31 + qHash(p.lastModified());
@@ -73,8 +73,9 @@ inline uint qHash(const QNetworkCacheMetaData& p){
     return hashCode;
 }
 
-inline uint qHash(const QNetworkConfiguration& p){
-    uint hashCode = 1;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+inline hash_type qHash(const QNetworkConfiguration& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(p.state()));
     hashCode = hashCode * 31 + qHash(int(p.type()));
     hashCode = hashCode * 31 + qHash(int(p.purpose()));
@@ -89,9 +90,20 @@ inline uint qHash(const QNetworkConfiguration& p){
     hashCode = hashCode * 31 + qHash(p.children().size());
     return hashCode;
 }
+#endif
 
-inline uint qHash(const QNetworkCookie& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value){
+    hash_type hashCode = 1;
+    hashCode = hashCode * 31 + qHash(value.identityHint());
+    hashCode = hashCode * 31 + qHash(value.identity());
+    hashCode = hashCode * 31 + qHash(value.maximumIdentityLength());
+    hashCode = hashCode * 31 + qHash(value.preSharedKey());
+    hashCode = hashCode * 31 + qHash(value.maximumPreSharedKeyLength());
+    return hashCode;
+}
+
+inline hash_type qHash(const QNetworkCookie& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.isSecure());
     hashCode = hashCode * 31 + qHash(p.isHttpOnly());
     hashCode = hashCode * 31 + qHash(p.isSessionCookie());
@@ -103,8 +115,8 @@ inline uint qHash(const QNetworkCookie& p){
     return hashCode;
 }
 
-inline uint qHash(const QNetworkProxy& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QNetworkProxy& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(p.type()));
     hashCode = hashCode * 31 + qHash(p.capabilities());
     hashCode = hashCode * 31 + qHash(p.isCachingProxy());
@@ -119,8 +131,8 @@ inline uint qHash(const QNetworkProxy& p){
     return hashCode;
 }
 
-inline uint qHash(const QNetworkProxyQuery& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QNetworkProxyQuery& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(p.queryType()));
     hashCode = hashCode * 31 + qHash(p.peerPort());
     hashCode = hashCode * 31 + qHash(p.peerHostName());
@@ -130,8 +142,8 @@ inline uint qHash(const QNetworkProxyQuery& p){
     return hashCode;
 }
 
-inline uint qHash(const QNetworkRequest& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QNetworkRequest& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.url());
     hashCode = hashCode * 31 + qHash(quintptr(p.originatingObject()));
     hashCode = hashCode * 31 + qHash(int(p.priority()));
@@ -139,10 +151,10 @@ inline uint qHash(const QNetworkRequest& p){
     return hashCode;
 }
 
-inline uint qHash(const QAuthenticator& p){
+inline hash_type qHash(const QAuthenticator& p){
     if(p.isNull())
         return 0;
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.user());
     hashCode = hashCode * 31 + qHash(p.password());
     hashCode = hashCode * 31 + qHash(p.realm());
@@ -152,10 +164,10 @@ inline uint qHash(const QAuthenticator& p){
 
 #ifndef QT_NO_SSL
 
-inline uint qHash(const QSslKey& p){
+inline hash_type qHash(const QSslKey& p){
     if(p.isNull())
         return 0;
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.type());
     hashCode = hashCode * 31 + qHash(quintptr(p.handle()));
     hashCode = hashCode * 31 + qHash(p.length());
@@ -163,10 +175,10 @@ inline uint qHash(const QSslKey& p){
     return hashCode;
 }
 
-inline uint qHash(const QSslCipher& p){
+inline hash_type qHash(const QSslCipher& p){
     if(p.isNull())
         return 0;
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.name());
     hashCode = hashCode * 31 + qHash(quintptr(p.protocol()));
     hashCode = hashCode * 31 + qHash(p.usedBits());
@@ -178,10 +190,10 @@ inline uint qHash(const QSslCipher& p){
     return hashCode;
 }
 
-inline uint qHash(const QSslConfiguration& p){
+inline hash_type qHash(const QSslConfiguration& p){
     if(p.isNull())
         return 0;
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.ciphers());
     hashCode = hashCode * 31 + qHash(quintptr(p.protocol()));
     hashCode = hashCode * 31 + qHash(p.privateKey());
@@ -215,8 +227,8 @@ inline uint qHash(const QSslConfiguration& p){
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
-inline uint qHash(const QHttp2Configuration& p){
-    uint hashCode = 1;
+inline hash_type qHash(const QHttp2Configuration& p){
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(p.serverPushEnabled());
     hashCode = hashCode * 31 + qHash(quintptr(p.huffmanCompressionEnabled()));
     hashCode = hashCode * 31 + qHash(p.sessionReceiveWindowSize());

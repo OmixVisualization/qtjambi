@@ -67,7 +67,7 @@ typedef QList<Include> IncludeList;
 
 struct ExpensePolicy {
     ExpensePolicy() : limit(-1) { }
-    int limit;
+    qint64 limit;
     QString cost;
     bool isValid() const {
         return limit >= 0;
@@ -87,6 +87,7 @@ struct EnumValueRedirection {
 class TypeEntry {
     public:
         enum Type {
+            AliasType,
             PrimitiveType,
             VoidType,
             FlagsType,
@@ -123,7 +124,8 @@ class TypeEntry {
             QMetaObjectConnectionType,
             QMetaMethodType,
             QMetaPropertyType,
-            QMetaEnumType
+            QMetaEnumType,
+            GlobalType,
         };
 
         enum CodeGeneration {
@@ -135,6 +137,13 @@ class TypeEntry {
             GenerateNothing         = 0,
             GenerateAll             = 0xff0f,
             GenerateCode            = GenerateTargetLang | GenerateCpp
+        };
+
+        enum ConstructorType{
+            LegacyCopyConstructor,
+            DefaultConstructor,
+            CopyConstructor,
+            MoveConstructor
         };
 
         TypeEntry(const QString &name, Type t)
@@ -150,6 +159,9 @@ class TypeEntry {
         Type type() const {
             return m_type;
         }
+        bool isAlias() const {
+            return m_type == AliasType;
+        }
         bool isPrimitive() const {
             return m_type == PrimitiveType;
         }
@@ -158,6 +170,9 @@ class TypeEntry {
         }
         bool isFunctional() const {
             return m_type == FunctionalType;
+        }
+        bool isGlobal() const {
+            return m_type == GlobalType;
         }
         bool isQModelIndexType() const {
             return m_type == QModelIndexType;
@@ -325,11 +340,11 @@ class TypeEntry {
             return nullptr;
         }
 
-        void setCustomConstructor(const CustomFunction &func) {
-            m_customConstructor = func;
+        void setCustomConstructor(const CustomFunction &func, ConstructorType type = CopyConstructor) {
+            m_customConstructors[type] = func;
         }
-        const CustomFunction& customConstructor() const {
-            return m_customConstructor;
+        CustomFunction customConstructor(ConstructorType type = CopyConstructor) const {
+            return m_customConstructors[type];
         }
 
         void setCustomDestructor(const CustomFunction &func) {
@@ -367,7 +382,7 @@ class TypeEntry {
         QString m_name;
         Type m_type;
         uint m_code_generation;
-        CustomFunction m_customConstructor;
+        QHash<ConstructorType,CustomFunction> m_customConstructors;
         CustomFunction m_customDestructor;
         // currently not yet in use:
         QString m_type_flags;
@@ -441,6 +456,10 @@ class TypeSystemTypeEntry : public TypeEntry {
 
         void addRequiredQtLibrary(const QString& entry){
             m_requiredQtLibraries.append(entry);
+        }
+
+        void addCodeSnip(const CodeSnip &snip) {
+            snips << snip;
         }
 
         QList<CodeSnip> snips;
@@ -521,7 +540,6 @@ class ArrayTypeEntry : public TypeEntry {
         const TypeEntry *m_nested_type;
         int m_indirections;
 };
-
 
 class PrimitiveTypeEntry : public TypeEntry {
     public:
@@ -659,8 +677,16 @@ class FunctionalTypeEntry : public TypeEntry {
             argument_mods << argumentModification;
         }
 
+        void addModification(const Modification &modification) {
+            m_modifications << modification;
+        }
+
         const QList<ArgumentModification>& argumentModification() const{
             return argument_mods;
+        }
+
+        const QList<Modification>& modifications() const{
+            return m_modifications;
         }
 
         void setCount(uint count) { m_count = count; }
@@ -711,6 +737,7 @@ class FunctionalTypeEntry : public TypeEntry {
         QString m_java_name;
         Include m_include;
         IncludeList m_extra_includes;
+        QList<Modification> m_modifications;
         QHash<QString, bool> m_includes_used;
         QList<ArgumentModification> argument_mods;
         uint m_count;
@@ -912,6 +939,10 @@ class EnumTypeEntry : public TypeEntry {
             m_code_snips = snips;
         }
 
+        void addCodeSnip(const CodeSnip &snip) {
+            m_code_snips << snip;
+        }
+
     private:
         QString m_implements;
         QString m_package_name;
@@ -1012,9 +1043,8 @@ class ComplexTypeEntry : public TypeEntry {
     public:
         enum TypeFlag {
             ForceAbstract       = 0x01,
-            DeleteInMainThread  = 0x02,
+            ThreadAffine        = 0x02,
             Deprecated          = 0x04,
-            DeleteInOwnerThread = 0x08,
             ForceFriendly       = 0x10,
         };
         typedef QFlags<TypeFlag> TypeFlags;
@@ -1023,7 +1053,10 @@ class ComplexTypeEntry : public TypeEntry {
             : TypeEntry(QString(name).replace("::", "$"), t), // the A$B notation is the java binary name of an embedded class
                 m_pp_condition(),
                 m_qualified_cpp_name(name),
-                m_qobject(false),
+                m_is_qobject(false),
+                m_is_qwidget(false),
+                m_is_qwindow(false),
+                m_is_qapplication(false),
                 m_polymorphic_base(false),
                 m_generic_class(false),
                 m_type_flags() {
@@ -1059,6 +1092,9 @@ class ComplexTypeEntry : public TypeEntry {
             centry->setFunctionModifications(functionModifications());
             centry->setFieldModifications(fieldModifications());
             centry->setQObject(isQObject());
+            centry->setQWidget(isQWidget());
+            centry->setQWindow(isQWindow());
+            centry->setQCoreApplication(isQCoreApplication());
             centry->setDefaultSuperclass(defaultSuperclass());
             centry->setCodeSnips(codeSnips());
             centry->setTargetLangPackage(javaPackage());
@@ -1071,11 +1107,11 @@ class ComplexTypeEntry : public TypeEntry {
             m_lookup_name = name;
         }
 
-        virtual QString lookupName() const {
+        virtual QString lookupName() const override {
             return m_lookup_name.isEmpty() ? targetLangName() : m_lookup_name;
         }
 
-        QString jniName() const {
+        QString jniName() const override {
             return strings_jobject;
         }
 
@@ -1122,8 +1158,6 @@ class ComplexTypeEntry : public TypeEntry {
         }
         FunctionModificationList functionModifications(const QString &signature) const;
 
-        QList<ArgumentModification> functionArgumentModifications(const QString &signature) const;
-
         bool hasFunctionCodeInjections(const QString &methodSignature, TypeSystem::Language language, const QSet<CodeSnip::Position>& positions) const;
 
         FieldModification fieldModification(const QString &name) const;
@@ -1140,14 +1174,14 @@ class ComplexTypeEntry : public TypeEntry {
             return m_field_mods;
         }
 
-        QString javaPackage() const {
+        QString javaPackage() const override {
             return m_package;
         }
         void setTargetLangPackage(const QString &package) {
             m_package = package;
         }
 
-        QString targetTypeSystem() const {
+        QString targetTypeSystem() const override {
             return m_target_typesystem;
         }
 
@@ -1156,10 +1190,31 @@ class ComplexTypeEntry : public TypeEntry {
         }
 
         bool isQObject() const {
-            return m_qobject;
+            return m_is_qobject;
         }
         void setQObject(bool qobject) {
-            m_qobject = qobject;
+            m_is_qobject = qobject;
+        }
+
+        bool isQWidget() const {
+            return m_is_qwidget;
+        }
+        void setQWidget(bool qWidget) {
+            m_is_qwidget = qWidget;
+        }
+
+        bool isQWindow() const {
+            return m_is_qwindow;
+        }
+        void setQWindow(bool qw) {
+            m_is_qwindow = qw;
+        }
+
+        bool isQCoreApplication() const {
+            return m_is_qapplication;
+        }
+        void setQCoreApplication(bool qw) {
+            m_is_qapplication = qw;
         }
 
         const QString& defaultSuperclass() const {
@@ -1169,7 +1224,7 @@ class ComplexTypeEntry : public TypeEntry {
             m_default_superclass = sc;
         }
 
-        virtual QString qualifiedCppName() const;
+        QString qualifiedCppName() const override;
 
         /**
          * the class-type attribute 'implements' can be used to extend the list of interfaces used by a class
@@ -1218,7 +1273,7 @@ class ComplexTypeEntry : public TypeEntry {
             m_target_type = code;
         }
 
-        QString targetLangName() const {
+        QString targetLangName() const override {
             if(m_java_name.isEmpty()){
                 return TypeEntry::targetLangName();
             }else{
@@ -1236,18 +1291,26 @@ class ComplexTypeEntry : public TypeEntry {
             m_generic_class = isGeneric;
         }
 
-        const QString& owner() const {
-            return m_owner;
+        const QString& threadAffinity() const {
+            return m_threadAffinity;
         }
-        void setOwner(const QString &code) {
-            m_owner = code;
+        void setThreadAffinity(const QString &code) {
+            m_threadAffinity = code;
         }
 
-        const QString& ppCondition() const {
+        const QString& ppCondition() const override {
             return m_pp_condition;
         }
         void setPPCondition(const QString &pp_condition) {
             m_pp_condition = pp_condition;
+        }
+
+        void addDelegatedBaseClass(QString baseClass, QString delegate){
+            m_deletatedBaseClasses.insert(baseClass, delegate);
+        }
+
+        const QMap<QString,QString>& deletatedBaseClasses() const{
+            return m_deletatedBaseClasses;
         }
 
     private:
@@ -1264,14 +1327,14 @@ class ComplexTypeEntry : public TypeEntry {
         QString m_qualified_cpp_name;
         QString m_java_name;
         QString m_implements;
-        QString m_owner;
+        QString m_threadAffinity;
 
-    uint m_qobject :
-        1;
-    uint m_polymorphic_base :
-        1;
-    uint m_generic_class :
-        1;
+        uint m_is_qobject : 1;
+        uint m_is_qwidget : 1;
+        uint m_is_qwindow : 1;
+        uint m_is_qapplication : 1;
+        uint m_polymorphic_base : 1;
+        uint m_generic_class : 1;
 
         QString m_polymorphic_id_value;
         QMap<QString,QString> m_interface_polymorphic_id_values;
@@ -1279,6 +1342,30 @@ class ComplexTypeEntry : public TypeEntry {
         QString m_target_type;
         ExpensePolicy m_expense_policy;
         TypeFlags m_type_flags;
+        QMap<QString,QString> m_deletatedBaseClasses;
+};
+
+class AliasTypeEntry : public ComplexTypeEntry {
+    public:
+        AliasTypeEntry(const QString &name, QString typeSystemPackage)
+                : ComplexTypeEntry(name, AliasType) {
+            setCodeGeneration(GenerateNothing);
+            setTargetLangPackage(typeSystemPackage);
+        }
+
+        QString targetLangName() const override {
+            return "";
+        }
+
+        QString jniName() const override {
+            return "";
+        }
+
+        virtual bool preferredTargetLangType() const {
+            return false;
+        }
+        virtual void setPreferredTargetLangType(bool) {
+        }
 };
 
 class NamespaceTypeEntry : public ComplexTypeEntry {
@@ -1294,12 +1381,16 @@ class InterfaceTypeEntry : public ComplexTypeEntry {
                 : ComplexTypeEntry(name, InterfaceType), m_origin(nullptr) {
         }
 
-        static QString interfaceName(const QString &name) {
-            return name + "Interface";
-        }
-
         static QString implName(const QString &name) {
             return name + "::Impl";
+        }
+
+        bool noImpl() const{
+            return m_noImpl;
+        }
+
+        void setNoImpl(bool noImpl){
+            m_noImpl = noImpl;
         }
 
         ImplementorTypeEntry *origin() const {
@@ -1315,6 +1406,7 @@ class InterfaceTypeEntry : public ComplexTypeEntry {
 
     private:
         ImplementorTypeEntry *m_origin;
+        bool m_noImpl;
 };
 
 class ImplementorTypeEntry : public ComplexTypeEntry {
@@ -1338,6 +1430,18 @@ private:
     InterfaceTypeEntry *m_interface;
 };
 
+class GlobalTypeEntry : public ComplexTypeEntry {
+public:
+    GlobalTypeEntry(const QString &name)
+            : ComplexTypeEntry(name, GlobalType) {
+    }
+
+    virtual bool isNativeIdBased() const {
+        return false;
+    }
+
+private:
+};
 
 class TemplateTypeEntry : public ImplementorTypeEntry {
     public:
@@ -1466,6 +1570,7 @@ class PointerContainerTypeEntry: public ValueTypeEntry {
             QSharedPointer,
             QWeakPointer,
             QScopedPointer,
+            QPointer,
             unique_ptr,
             shared_ptr,
             weak_ptr
@@ -1550,7 +1655,12 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             QDeclarativeListPropertyContainer,
             QArrayDataContainer,
             QTypedArrayDataContainer,
-            std_atomic
+            QModelRoleDataSpanContainer,
+            QBindableContainer,
+            QPropertyBindingContainer,
+            std_atomic,
+            std_optional,
+            std_vector
         };
 
         ContainerTypeEntry(const QString &name, Type type)

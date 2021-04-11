@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -68,46 +68,42 @@ public class TestMetaObjectQtMetaCast extends QApplicationTest {
             }
         }
     }
-    private static class MetaObjectQtMetaCastSubclass extends MetaObjectQtMetaCast {
-    }
 
     @Test
     public void testBasicUsage() {
-        MetaObjectQtMetaCastSubclass moqmc = new MetaObjectQtMetaCastSubclass();
-
         String thisClass = TestMetaObjectQtMetaCast.class.getName().replace(".", "::");
         String s;
 
         MyLauncher myLauncher = new MyLauncher();  // the target of our inspection
 
-        s = moqmc.className(myLauncher);
+        s = myLauncher.metaObject().className();
         assertEquals(thisClass + "$MyLauncher", s);
 
-        s = moqmc.superClassName(myLauncher, 0);
+        s = MetaObjectQtMetaCast.superClassName(myLauncher, 0);
         assertEquals("QWidget", s);
 
-        s = moqmc.superClassName(myLauncher, 1);
+        s = MetaObjectQtMetaCast.superClassName(myLauncher, 1);
         assertEquals("QObject", s);
 
-        s = moqmc.superClassName(myLauncher, 2);
+        s = MetaObjectQtMetaCast.superClassName(myLauncher, 2);
         assertEquals("", s); // FIXME: expected null here 
 
-        assertTrue(moqmc.inherits(myLauncher, "QObject"));
-        assertTrue(moqmc.inherits(myLauncher, "QWidget"));
+        assertTrue(myLauncher.inherits("QObject"));
+        assertTrue(myLauncher.inherits("QWidget"));
 
         //assertTrue(moqmc.inherits(myLauncher, thisClass + "$MyLauncher"));
 
         long l;
-        l = moqmc.do_qt_metacast(myLauncher, "QObject");
+        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, "QObject");
         assertTrue(isMetacastSuccessful(l));
 
-        l = moqmc.do_qt_metacast(myLauncher, "QWidget");
+        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, "QWidget");
         assertTrue(isMetacastSuccessful(l));
 
-        l = moqmc.do_qt_metacast(myLauncher, "QPushButton");
+        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, "QPushButton");
         assertFalse(isMetacastSuccessful(l));  // NOT
 
-        l = moqmc.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
+        l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
         assertTrue(isMetacastSuccessful(l));
     }
 
@@ -116,18 +112,16 @@ public class TestMetaObjectQtMetaCast extends QApplicationTest {
      */
     @Test
     public void testBug213() {
-        MetaObjectQtMetaCastSubclass moqmc = new MetaObjectQtMetaCastSubclass();
-
         MyLauncher myLauncher = new MyLauncher();  // the target of our inspection
 
-        assertTrue(moqmc.inherits(myLauncher, "QObject"));
-        assertTrue(moqmc.inherits(myLauncher, "QWidget"));
+        assertTrue(myLauncher.inherits("QObject"));
+        assertTrue(myLauncher.inherits("QWidget"));
 
         // This is the bug being reported
         String thisClass = TestMetaObjectQtMetaCast.class.getName().replace(".", "::");
-        assertTrue(moqmc.inherits(myLauncher, thisClass + "$MyLauncher"));
+        assertTrue(myLauncher.inherits(thisClass + "$MyLauncher"));
 
-        long l = moqmc.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
+        long l = MetaObjectQtMetaCast.do_qt_metacast(myLauncher, thisClass + "$MyLauncher");
         assertTrue(isMetacastSuccessful(l));
     }
 
@@ -178,7 +172,7 @@ public class TestMetaObjectQtMetaCast extends QApplicationTest {
     	assertTrue(o.inherits("QLabel"));
     	assertTrue(o.inherits("QLayoutItem"));
     	assertTrue(o.inherits("QTextObjectInterface"));
-    	QRect geometry = MetaObjectQtMetaCast.geometry(test);
+    	QRect geometry = MetaObjectQtMetaCast.layoutItemGeometry(test);
     	assertEquals(new QRect(3, 6, 9, 12), test.geometry());
     	assertEquals(new QRect(3, 6, 9, 12), geometry);
     }

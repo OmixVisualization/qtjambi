@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,11 +27,13 @@
 **
 ****************************************************************************/
 
+#ifdef QT_QTJAMBI_PORT
 #include <QtCore>
 #include <QtWidgets>
 #include <qtjambi/qtjambi_repository.h>
 
-#ifdef QT_QTJAMBI_PORT
+class QtJambiLink;
+
 void initialize_meta_info_QSignalMapper_connection(){
     registerSignalMapperConnector([](QSignalMapper* object, QWeakPointer<QtJambiLink> link, QSignalMapperMapped signalMapperMapped)->QMetaObject::Connection {
         return QObject::connect(object, QOverload<QWidget*>::of(&QSignalMapper::mapped), object, [link, signalMapperMapped](QWidget*  arg__1){signalMapperMapped(arg__1, link);});

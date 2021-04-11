@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,171 +40,188 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMapObject<K,V> implements NavigableMap<K,List<V>> {
 
-	protected QtJambiMultiMapObject(Class<K> keyType, Class<V> valueType) {
-		super(keyType, valueType);
+	protected QtJambiMultiMapObject() {
+		super();
 	}
 
-    protected QtJambiMultiMapObject(QPrivateConstructor p, Class<K> keyType, Class<V> valueType) {
-		super(p, keyType, valueType);
+    protected QtJambiMultiMapObject(QPrivateConstructor p) {
+		super(p);
 	}
     
+    @QtUninvokable
     protected abstract QtJambiMapIteratorObject<K,V> find(K key);
+    @QtUninvokable
     protected abstract QtJambiMapIteratorObject<K,V> lowerBound(K key);
+    @QtUninvokable
     protected abstract QtJambiMapIteratorObject<K,V> upperBound(K key);
 
 	@Override
-	public NavigableMap<K,List<V>> subMap(K fromKey, K toKey) {
+    @QtUninvokable
+	public final NavigableMap<K,List<V>> subMap(K fromKey, K toKey) {
 		return subMap(fromKey, true, toKey, false);
 	}
 
 	@Override
-	public NavigableMap<K,List<V>> headMap(K toKey) {
+    @QtUninvokable
+	public final NavigableMap<K,List<V>> headMap(K toKey) {
 		return headMap(toKey, false);
 	}
 
 	@Override
-	public NavigableMap<K,List<V>> tailMap(K fromKey) {
+    @QtUninvokable
+	public final NavigableMap<K,List<V>> tailMap(K fromKey) {
 		return tailMap(fromKey, true);
 	}
 
     @Override
-	public Entry<K, List<V>> lowerEntry(K key) {
+    @QtUninvokable
+	public final Entry<K, List<V>> lowerEntry(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(!iterator.equals(end()) && !iterator.equals(begin()) && Objects.equals(iterator._key(), key))
-    		iterator._decrement();
+    	if(!iterator.equals(end()) && !iterator.equals(begin()) && Objects.equals(iterator.checkedKey(), key))
+    		iterator.decrement();
     	if(iterator.equals(end()))
     		return null;
     	else {
     		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
+    		K _key = iterator.checkedKey();
     		Comparator<? super K> comparator = comparator();
-    		for(; comparator.compare(_key, iterator._key())==0 && !iterator.equals(end()); iterator._increment()) {
-    			values.add(iterator._value());
+    		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(end()); iterator.increment()) {
+    			values.add(iterator.checkedValue());
     		}
-    		return new AbstractMap.SimpleImmutableEntry<>(iterator._key(), values);
+    		return new AbstractMap.SimpleImmutableEntry<>(iterator.checkedKey(), values);
     	}
 	}
 
 	@Override
-	public K lowerKey(K key) {
+    @QtUninvokable
+	public final K lowerKey(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(!iterator.equals(end()) && !iterator.equals(begin()) && Objects.equals(iterator._key(), key))
-    		iterator._decrement();
+    	if(!iterator.equals(end()) && !iterator.equals(begin()) && Objects.equals(iterator.checkedKey(), key))
+    		iterator.decrement();
     	if(iterator.equals(end()))
     		return null;
-    	else return iterator._key();
+    	else return iterator.checkedKey();
 	}
 
 	@Override
-	public Entry<K, List<V>> floorEntry(K key) {
+    @QtUninvokable
+	public final Entry<K, List<V>> floorEntry(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
     	if(iterator.equals(end()))
     		return null;
     	else {
     		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
+    		K _key = iterator.checkedKey();
     		Comparator<? super K> comparator = comparator();
-    		for(; comparator.compare(_key, iterator._key())==0 && !iterator.equals(end()); iterator._increment()) {
-    			values.add(iterator._value());
-    		}
-    		return new AbstractMap.SimpleImmutableEntry<>(_key, values);
-    	}
-	}
-
-	@Override
-	public K floorKey(K key) {
-    	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(iterator.equals(end()))
-    		return null;
-    	else return iterator._key();
-	}
-
-	@Override
-	public Entry<K, List<V>> ceilingEntry(K key) {
-    	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(iterator.equals(end()))
-    		return null;
-    	else {
-    		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
-    		Comparator<? super K> comparator = comparator();
-    		for(; comparator.compare(_key, iterator._key())==0 && !iterator.equals(end()); iterator._increment()) {
-    			values.add(iterator._value());
+    		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(end()); iterator.increment()) {
+    			values.add(iterator.checkedValue());
     		}
     		return new AbstractMap.SimpleImmutableEntry<>(_key, values);
     	}
 	}
 
 	@Override
-	public K ceilingKey(K key) {
+    @QtUninvokable
+	public final K floorKey(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
     	if(iterator.equals(end()))
     		return null;
-    	else return iterator._key();
+    	else return iterator.checkedKey();
 	}
 
 	@Override
-	public Entry<K, List<V>> higherEntry(K key) {
+    @QtUninvokable
+	public final Entry<K, List<V>> ceilingEntry(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(!iterator.equals(end()) && Objects.equals(iterator._key(), key))
-    		iterator._increment();
     	if(iterator.equals(end()))
     		return null;
     	else {
     		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
+    		K _key = iterator.checkedKey();
     		Comparator<? super K> comparator = comparator();
-    		for(; comparator.compare(_key, iterator._key())==0 && !iterator.equals(end()); iterator._increment()) {
-    			values.add(iterator._value());
+    		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(end()); iterator.increment()) {
+    			values.add(iterator.checkedValue());
     		}
     		return new AbstractMap.SimpleImmutableEntry<>(_key, values);
     	}
 	}
 
 	@Override
-	public K higherKey(K key) {
+    @QtUninvokable
+	public final K ceilingKey(K key) {
     	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
-    	if(!iterator.equals(end()) && Objects.equals(iterator._key(), key))
-    		iterator._increment();
+    	if(iterator.equals(end()))
+    		return null;
+    	else return iterator.checkedKey();
+	}
+
+	@Override
+    @QtUninvokable
+	public final Entry<K, List<V>> higherEntry(K key) {
+    	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
+    	if(!iterator.equals(end()) && Objects.equals(iterator.checkedKey(), key))
+    		iterator.increment();
+    	if(iterator.equals(end()))
+    		return null;
+    	else {
+    		List<V> values = new ArrayList<>();
+    		K _key = iterator.checkedKey();
+    		Comparator<? super K> comparator = comparator();
+    		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(end()); iterator.increment()) {
+    			values.add(iterator.checkedValue());
+    		}
+    		return new AbstractMap.SimpleImmutableEntry<>(_key, values);
+    	}
+	}
+
+	@Override
+    @QtUninvokable
+	public final K higherKey(K key) {
+    	QtJambiMapIteratorObject<K,V> iterator = lowerBound(key);
+    	if(!iterator.equals(end()) && Objects.equals(iterator.checkedKey(), key))
+    		iterator.increment();
     	if(iterator.equals(end()))
     		return null;
     	else
-    		return iterator._key();
+    		return iterator.checkedKey();
 	}
 
 	@Override
-	public Entry<K, List<V>> firstEntry() {
+    @QtUninvokable
+	public final Entry<K, List<V>> firstEntry() {
 		if(isEmpty())
 			return null;
 		else {
 			QtJambiMapIteratorObject<K,V> iterator = begin();
     		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
+    		K _key = iterator.checkedKey();
     		Comparator<? super K> comparator = comparator();
-    		for(; comparator.compare(_key, iterator._key())==0 && !iterator.equals(end()); iterator._increment()) {
-    			values.add(iterator._value());
+    		for(; comparator.compare(_key, iterator.checkedKey())==0 && !iterator.equals(end()); iterator.increment()) {
+    			values.add(iterator.checkedValue());
     		}
     		return new AbstractMap.SimpleImmutableEntry<>(_key, values);
 		}
 	}
 
 	@Override
-	public Entry<K, List<V>> lastEntry() {
+    @QtUninvokable
+	public final Entry<K, List<V>> lastEntry() {
 		if(isEmpty())
 			return null;
 		else {
 			QtJambiMapIteratorObject<K,V> iterator = end();
-			iterator._decrement();
+			iterator.decrement();
     		List<V> values = new ArrayList<>();
-    		K _key = iterator._key();
+    		K _key = iterator.checkedKey();
     		Comparator<? super K> comparator = comparator();
-    		while(comparator.compare(_key, iterator._key())==0) {
-    			values.add(0, iterator._value());
-    			iterator._decrement();
+    		while(comparator.compare(_key, iterator.checkedKey())==0) {
+    			values.add(0, iterator.checkedValue());
+    			iterator.decrement();
     			if(iterator.equals(begin())) {
     				
     			}
@@ -214,7 +231,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 	}
 
 	@Override
-	public Entry<K, List<V>> pollFirstEntry() {
+    @QtUninvokable
+	public final Entry<K, List<V>> pollFirstEntry() {
 		Entry<K, List<V>> entry = firstEntry();
 		if(entry!=null) {
 			remove(entry.getKey());
@@ -223,7 +241,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 	}
 
 	@Override
-	public Entry<K, List<V>> pollLastEntry() {
+    @QtUninvokable
+	public final Entry<K, List<V>> pollLastEntry() {
 		Entry<K, List<V>> entry = lastEntry();
 		if(entry!=null) {
 			remove(entry.getKey());
@@ -232,7 +251,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 	}
 
 	@Override
-	public NavigableMap<K, List<V>> descendingMap() {
+    @QtUninvokable
+	public final NavigableMap<K, List<V>> descendingMap() {
 		Comparator<? super K> comparator = this.comparator();
 		TreeMap<K, List<V>> descendingMap = new TreeMap<>((K o1, K o2)-> -1*comparator.compare(o1, o2));
 		descendingMap.putAll(this);
@@ -240,14 +260,16 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 	}
 
 	@Override
-	public NavigableSet<K> navigableKeySet() {
+    @QtUninvokable
+	public final NavigableSet<K> navigableKeySet() {
 		TreeSet<K> set = new TreeSet<>(this.comparator());
 		set.addAll(this.keySet());
 		return set;
 	}
 
 	@Override
-	public NavigableSet<K> descendingKeySet() {
+    @QtUninvokable
+	public final NavigableSet<K> descendingKeySet() {
 		Comparator<? super K> comparator = this.comparator();
 		TreeSet<K> set = new TreeSet<>((K o1, K o2)-> -1*comparator.compare(o1, o2));
 		set.addAll(this.keySet());
@@ -256,7 +278,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public NavigableMap<K, List<V>> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
+    @QtUninvokable
+	public final NavigableMap<K, List<V>> subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive) {
 		NavigableMap<K,List<V>> map;
 		try {
 			map = this.getClass().getConstructor().newInstance();
@@ -267,13 +290,13 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 		if(!k2.equals(end())) {
 			QtJambiMapIteratorObject<K,V> k1 = lowerBound(fromKey);
 			if(!fromInclusive) {
-				k1._increment();
+				k1.increment();
 			}
-			for(; !k1.equals(k2); k1._increment()) {
-				map.computeIfAbsent(k1._key(), k->new ArrayList<>()).add(k1._value());
+			for(; !k1.equals(k2); k1.increment()) {
+				map.computeIfAbsent(k1.checkedKey(), k->new ArrayList<>()).add(k1.checkedValue());
 			}
 			if(toInclusive) {
-				map.computeIfAbsent(k2._key(), k->new ArrayList<>()).add(k2._value());
+				map.computeIfAbsent(k2.checkedKey(), k->new ArrayList<>()).add(k2.checkedValue());
 			}
 		}
 		return map;
@@ -281,7 +304,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public NavigableMap<K, List<V>> headMap(K toKey, boolean inclusive) {
+    @QtUninvokable
+    public final NavigableMap<K, List<V>> headMap(K toKey, boolean inclusive) {
 		QtJambiMapIteratorObject<K,V> k = lowerBound(toKey);
 		NavigableMap<K,List<V>> map;
 		try {
@@ -290,11 +314,11 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 			map = new TreeMap<>(comparator());
 		}
 		if(!k.equals(end())) {
-			for(QtJambiMapIteratorObject<K,V> iterator = begin(); !iterator.equals(k); iterator._increment()) {
-				map.computeIfAbsent(iterator._key(), _k->new ArrayList<>()).add(iterator._value());
+			for(QtJambiMapIteratorObject<K,V> iterator = begin(); !iterator.equals(k); iterator.increment()) {
+				map.computeIfAbsent(iterator.checkedKey(), _k->new ArrayList<>()).add(iterator.checkedValue());
 			}
 			if(inclusive) {
-				map.computeIfAbsent(k._key(), _k->new ArrayList<>()).add(k._value());
+				map.computeIfAbsent(k.checkedKey(), _k->new ArrayList<>()).add(k.checkedValue());
 			}
 		}
 		return map;
@@ -302,7 +326,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public NavigableMap<K, List<V>> tailMap(K fromKey, boolean inclusive) {
+    @QtUninvokable
+	public final NavigableMap<K, List<V>> tailMap(K fromKey, boolean inclusive) {
 		QtJambiMapIteratorObject<K,V> k = lowerBound(fromKey);
 		QtJambiMapIteratorObject<K,V> end = end();
 		NavigableMap<K,List<V>> map;
@@ -313,17 +338,18 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 		}
 		if(!k.equals(end)) {
 			if(!inclusive) {
-				k._increment();
+				k.increment();
 			}
-			for(;!k.equals(end); k._increment()) {
-				map.computeIfAbsent(k._key(), _k->new ArrayList<>()).add(k._value());
+			for(;!k.equals(end); k.increment()) {
+				map.computeIfAbsent(k.checkedKey(), _k->new ArrayList<>()).add(k.checkedValue());
 			}
 		}
 		return map;
 	}
 	
 	@Override
-	public Set<Entry<K, List<V>>> entrySet() {
+    @QtUninvokable
+	public final Set<Entry<K, List<V>>> entrySet() {
 		Comparator<? super K> comparator = comparator();
 		Set<Entry<K, List<V>>> entrySet = new TreeSet<>((e1, e2)->comparator.compare(e1.getKey(), e2.getKey()));
 		if(!this.isEmpty()) {
@@ -351,7 +377,8 @@ public abstract class QtJambiMultiMapObject<K,V> extends QtJambiAbstractMultiMap
 	}
 	
 	@Override
-	public Set<K> keySet() {
+    @QtUninvokable
+	public final Set<K> keySet() {
 		TreeSet<K> set = new TreeSet<>(comparator());
 		set.addAll(keys());
 		return set;

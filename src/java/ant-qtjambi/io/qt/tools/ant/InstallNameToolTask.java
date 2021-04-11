@@ -55,8 +55,10 @@ public class InstallNameToolTask extends Task {
 
     private String msg = "";
     private String dir = ".";
-    private String appname = "";
-    private boolean debug = false;
+    private String libname = "";
+    private String suffix = "dylib";
+
+	private boolean debug = false;
 
     @Override
     public void execute() throws NullPointerException {
@@ -74,18 +76,21 @@ public class InstallNameToolTask extends Task {
         }
         String[] libraries = {"Network", "Core", "Gui", "Widgets", "Quick", "Sql", "Xml", "Qml", "QmlModels"};
         File dirExecute = null;
-        String libraryName = "lib"+appname+debugLib1+".jnilib";
+        String libraryName = "lib"+libname+debugLib1+"."+suffix;
         if(dir != null){
             dirExecute = new File(dir);
             if(!new File(dirExecute, libraryName).exists()){
+            	System.err.println("install_name_tool: Unable to find file "+new File(dirExecute, libraryName).getAbsolutePath());
                 return;
             }
         }
         boolean no_otool = false;
         try {
         	String[] out = Exec.executeCaptureOutput(this, Arrays.asList("otool", "--version"), dirExecute, getProject(), null, null, false);
-        	if(out.length<2 || out[0]==null || !out[0].contains("Apple")) {
-        		no_otool = true;
+        	if(out==null || out.length<2 || out[0]==null || !out[0].contains("Apple")) {
+        		if(out==null || out.length<=2 || out[1]==null || !out[1].contains("Apple")) {
+        			no_otool = true;
+        		}
         	}
         } catch ( Exception e ) {
         	no_otool = true;
@@ -112,11 +117,19 @@ public class InstallNameToolTask extends Task {
         boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK));
         boolean convertQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK));
         if(convertQtFrameworks){
-            for (String library : libraries) {
-                command.set(2, "@rpath/Qt"+library+".framework/Versions/"+qtMajorVersion+"/Qt"+library);
-                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-                Exec.execute(this, command, dirExecute, getProject());
-            }
+        	if(qtMajorVersion<6) {
+	            for (String library : libraries) {
+	                command.set(2, "@rpath/Qt"+library+".framework/Versions/"+qtMajorVersion+"/Qt"+library);
+	                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
+	                Exec.execute(this, command, dirExecute, getProject());
+	            }
+        	}else {
+        		for (String library : libraries) {
+	                command.set(2, "@rpath/Qt"+library+".framework/Versions/A/Qt"+library);
+	                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
+	                Exec.execute(this, command, dirExecute, getProject());
+	            }
+        	}
         }else {
         	if(!useFrameworks) {
 	        	for (String library : libraries) {
@@ -142,6 +155,10 @@ public class InstallNameToolTask extends Task {
         }
         Set<String> deleteCommands = new TreeSet<>();
         String path = "@executable_path/../Frameworks";
+        if(otoolOut==null || otoolOut.rpaths.contains(path)) {
+        	deleteCommands.add(path);
+        }
+        path = "@loader_path/Frameworks";
         if(otoolOut==null || otoolOut.rpaths.contains(path)) {
         	deleteCommands.add(path);
         }
@@ -177,11 +194,11 @@ public class InstallNameToolTask extends Task {
     }
 
 	public String getLibname() {
-		return appname;
+		return libname;
 	}
 
-	public void setLibname(String executable) {
-		this.appname = executable;
+	public void setLibname(String libname) {
+		this.libname = libname;
 	}
 
 	public boolean isDebug() {
@@ -190,5 +207,12 @@ public class InstallNameToolTask extends Task {
 
 	public void setDebug(boolean debug) {
 		this.debug = debug;
+	}
+    public String getSuffix() {
+		return suffix;
+	}
+
+	public void setSuffix(String suffix) {
+		this.suffix = suffix;
 	}
 }

@@ -42,6 +42,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QCoreApplication>
 #include "memorymanagement.h"
 
 // PolymorphicObjectType

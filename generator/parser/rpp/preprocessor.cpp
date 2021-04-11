@@ -64,12 +64,12 @@ static QHash<QString, QStringList> includedFiles;
     includedFiles[QString::fromStdString ( fileName ) ].append ( QString::fromStdString ( filePath ) );
 }*/
 
-Preprocessor::Preprocessor(const std::function<void(std::string,std::string)>& featureRegistry) {
+Preprocessor::Preprocessor(const std::function<void(std::string,std::string,std::string)>& featureRegistry) {
     d = new PreprocessorPrivate(featureRegistry);
     includedFiles.clear();
 }
 
-PreprocessorPrivate::PreprocessorPrivate(const std::function<void(std::string,std::string)>& featureRegistry)
+PreprocessorPrivate::PreprocessorPrivate(const std::function<void(std::string,std::string,std::string)>& featureRegistry)
     : result(),
       env(featureRegistry),
       includePaths()

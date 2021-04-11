@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -194,6 +194,7 @@ class QJdbcSqlDriver extends QSqlDriver
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public QSqlRecord record(String tableName)
     {
         if (connection == null)
@@ -232,6 +233,7 @@ class QJdbcSqlDriver extends QSqlDriver
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public QSqlIndex primaryIndex(String tableName) {
         try {
             DatabaseMetaData metaData = connection.getMetaData();

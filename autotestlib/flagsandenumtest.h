@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,6 +46,7 @@
 #define FLAGSANDENUMTEST_H
 
 #include <QtCore/QtCore>
+#include "general.h"
 
 class HiddenObject : public QObject
 {
@@ -65,8 +66,8 @@ public:
     };
     Q_ENUM(HiddenEnumClass)
 
-    Q_PROPERTY(HiddenFlags hiddenFlags READ hiddenFlags WRITE setHiddenFlags NOTIFY hiddenFlagsChanged)
-    Q_PROPERTY(HiddenEnumClass hiddenEnum READ hiddenEnum WRITE setHiddenEnum NOTIFY hiddenEnumChanged)
+    Q_PROPERTY(HiddenObject::HiddenFlags hiddenFlags READ hiddenFlags WRITE setHiddenFlags NOTIFY hiddenFlagsChanged)
+    Q_PROPERTY(HiddenObject::HiddenEnumClass hiddenEnum READ hiddenEnum WRITE setHiddenEnum NOTIFY hiddenEnumChanged)
 
     Q_INVOKABLE HiddenObject::HiddenEnumClass hiddenEnum() const;
     Q_INVOKABLE void setHiddenEnum(HiddenObject::HiddenEnumClass hiddenEnumClass);
@@ -122,5 +123,14 @@ private:
 	QList<Qt::WidgetAttribute> m_attributes;
     QList<int> m_ints;
 };
+
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+template<typename T>
+struct QtPrivate::QEqualityOperatorForType<std::initializer_list<T>,true>
+{
+    static bool equals(const QMetaTypeInterface *, const void *a, const void *b)
+    { return initializer_list_equals<T>(*reinterpret_cast<const std::initializer_list<T> *>(a), *reinterpret_cast<const std::initializer_list<T> *>(b)); }
+};
+#endif
 
 #endif // FLAGSANDENUMTEST_H

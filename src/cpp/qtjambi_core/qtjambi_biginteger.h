@@ -1,8 +1,7 @@
 #ifndef QTJAMBI_BIGINTEGER_H
 #define QTJAMBI_BIGINTEGER_H
 
-#include <QtCore/QtCore>
-#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_global.h>
 
 struct BigIntegerValue{
     quint64 value;

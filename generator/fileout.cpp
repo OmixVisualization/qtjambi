@@ -61,8 +61,8 @@ FileOut::FileOut(QString n):
         isDone(false) {}
 
 static int* lcsLength(QList<QByteArray> a, QList<QByteArray> b) {
-    const int height = a.size() + 1;
-    const int width = b.size() + 1;
+    const auto height = a.size() + 1;
+    const auto width = b.size() + 1;
 
     int *res = new int[size_t(width * height)];
 
@@ -147,7 +147,7 @@ static QList<Unit*> *diffHelper(int *lcs, QList<QByteArray> a, QList<QByteArray>
     if (row > 0 && col > 0 && (a[row-1] == b[col-1])) {
         return unitAppend(diffHelper(lcs, a, b, row - 1, col - 1), Unchanged, row - 1);
     } else {
-        int width = b.size() + 1;
+        auto width = b.size() + 1;
         if ((col > 0) && ((row == 0) ||
                           lcs[width * row + col-1] >= lcs[width * (row-1) + col])) {
             return unitAppend(diffHelper(lcs, a, b, row, col - 1), Add, col - 1);
@@ -161,7 +161,7 @@ static QList<Unit*> *diffHelper(int *lcs, QList<QByteArray> a, QList<QByteArray>
 }
 
 static void diff(QList<QByteArray> a, QList<QByteArray> b) {
-    QList<Unit*> *res = diffHelper(lcsLength(a, b), a, b, a.size(), b.size());
+    QList<Unit*> *res = diffHelper(lcsLength(a, b), a, b, int(a.size()), int(b.size()));
     for (int i = 0; i < res->size(); i++) {
         Unit *unit = res->at(i);
         unit->print(a, b);

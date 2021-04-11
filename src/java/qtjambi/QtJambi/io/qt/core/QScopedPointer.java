@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,6 +36,18 @@ import io.qt.QtUninvokable;
 import io.qt.internal.QtJambiInternal;
 import io.qt.internal.QtJambiObject;
 
+/**
+ * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qscopedpointer.html">QScopedPointer</a>
+ * to be used inside a try-with-resource block.</p>
+ * <p>Example:</p>
+ * <code>
+ * try(var pointer = QScopedPointer.disposing(new QDialog())){<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;QDialog dialog = pointer.get();<br>
+ * &nbsp;&nbsp;&nbsp;&nbsp;dialog.exec();<br>
+ * }<br>
+ * &#47;&#47; dialog is disposed
+ * </code>
+ */
 public final class QScopedPointer<O> implements AutoCloseable {
 	
 	private static class Data<O>{

@@ -55,24 +55,26 @@
 #include "type_compiler.h"
 #include "lexer.h"
 #include "binder.h"
+#include "tokens.h"
 
 class TokenStream;
 class Binder;
 
 class ClassCompiler: protected DefaultVisitor {
     public:
-        ClassCompiler(Binder *binder): _M_binder(binder),
+        ClassCompiler(Binder *binder): m_isClass(false), _M_binder(binder),
                 _M_token_stream(binder->tokenStream()),
                 name_cc(_M_binder),
                 type_cc(_M_binder) {
         }
 
-        virtual ~ClassCompiler(){}
+        ~ClassCompiler() override {}
 
         inline QString name() const { return _M_name; }
-        inline QStringList baseClasses() const { return _M_base_classes; }
+        inline QList<QPair<QString,bool>> baseClasses() const { return _M_base_classes; }
 
         void run(ClassSpecifierAST *node){
+            m_isClass = _M_token_stream->kind(node->class_key)==Token_class;
             name_cc.run(node->name);
             _M_name = name_cc.name();
             _M_base_classes.clear();
@@ -81,18 +83,32 @@ class ClassCompiler: protected DefaultVisitor {
         }
 
     protected:
-        virtual void visitBaseSpecifier(BaseSpecifierAST *node){
+        virtual void visitBaseSpecifier(BaseSpecifierAST *node) override {
             name_cc.run(node->name);
             QString name = name_cc.name();
-            if (! name.isEmpty())
-                _M_base_classes.append(name);
+            if (! name.isEmpty()){
+                if(node->access_specifier>0){
+                    switch(_M_token_stream->kind(node->access_specifier)){
+                    case Token_protected:
+                        _M_base_classes.append({name, false});
+                        break;
+                    case Token_public:
+                        _M_base_classes.append({name, true});
+                        break;
+                    default:break;
+                    }
+                }else if(!m_isClass){
+                    _M_base_classes.append({name, true});
+                }
+            }
         }
 
     private:
+        bool m_isClass;
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QString _M_name;
-        QStringList _M_base_classes;
+        QList<QPair<QString,bool>> _M_base_classes;
         NameCompiler name_cc;
         TypeCompiler type_cc;
 };
@@ -105,7 +121,7 @@ class EnumCompiler: protected DefaultVisitor {
                 type_cc(_M_binder) {
         }
 
-        virtual ~EnumCompiler(){}
+        ~EnumCompiler() override {}
 
         inline QString name() const { return _M_name; }
         inline TypeInfo baseType() const { return _M_base_type; }

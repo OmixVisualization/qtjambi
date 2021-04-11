@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,9 +43,9 @@ public class TestCollator extends QApplicationTest {
     	QCollatorSortKey key1 = collator.sortKey("ABC");
     	QCollatorSortKey key2 = collator.sortKey("DEFG");
     	Assert.assertTrue(key1!=null);
-    	int r1 = key1.compare(key2);
+    	int r1 = key1.compareTo(key2);
     	collator.dispose();
-    	int r2 = key2.compare(key1);
+    	int r2 = key2.compareTo(key1);
     	Assert.assertTrue(r1!=0);
     	Assert.assertTrue(r2!=0);
     }

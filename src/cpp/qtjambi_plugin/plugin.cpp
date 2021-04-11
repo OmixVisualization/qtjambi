@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,7 +28,7 @@
 ****************************************************************************/
 
 #include <qtjambi/qtjambi_plugin.h>
-
+#include <QtCore/QtPlugin>
 
 QT_PLUGIN_METADATA_SECTION
 static constexpr unsigned char qt_pluginMetaData[] = {

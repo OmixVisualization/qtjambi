@@ -113,6 +113,7 @@ class Visitor {
         virtual void visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *) {}
         virtual void visitAutoTypeSpecifier(AutoTypeSpecifierAST *) {}
         virtual void visitSizeofExpression(SizeofExpressionAST *) {}
+        virtual void visitAlignofExpression(AlignofExpressionAST *) {}
         virtual void visitTypeidExpression(TypeidExpressionAST *) {}
         virtual void visitStringLiteral(StringLiteralAST *) {}
         virtual void visitSubscriptExpression(SubscriptExpressionAST *) {}

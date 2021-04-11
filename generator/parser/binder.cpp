@@ -43,6 +43,7 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QStringList>
 #include "binder.h"
 #include "lexer.h"
 #include "control.h"
@@ -274,7 +275,24 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
                 fun->setAbstract(true);
             }
         }
-        fun->setConstant(declarator->fun_cv != nullptr);
+        if(declarator->fun_cv){
+            for(int i=0; i<declarator->fun_cv->count(); ++i){
+                int kind = decode_token(declarator->fun_cv->at(i)->element);
+                if(kind==Token_const){
+                    fun->setConstant(true);
+                }else if(kind==Token_volatile){
+                    fun->setVolatile(true);
+                }
+            }
+        }
+        if(declarator->fun_reference!=0){
+            int kind = decode_token(declarator->fun_reference);
+            if(kind==Token_and){
+                fun->setReferenceType(TypeInfo::RReference);
+            }else if(kind=='&'){
+                fun->setReferenceType(TypeInfo::Reference);
+            }
+        }
         fun->setDeclFinal(declarator->decl_final != nullptr);
         fun->setTemplateParameters(_M_current_template_parameters);
         applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
@@ -330,13 +348,14 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
             In order to implement "const&" in Java it would need to provide an read-only
             encapsulated version of such objects, which has no setters methods.
             */
+            /*
             CodeModelItem scope = model()->findItem(_M_context, _M_current_file->toItem());
             if(ClassModelItem class_scope = model_dynamic_cast<ClassModelItem> (scope)) {
 
                 // found the class that is the: typedef QFlag<QScriptValue::PropertyFlag> QScriptValue::PropertyFlags
                 QStringList enumQualifiedName(tti.qualifiedName());
                 QString last = enumQualifiedName.takeLast();
-                int lastCharOffset = last.length() - 1;
+                auto lastCharOffset = last.length() - 1;
 
                 if(lastCharOffset >= 0) {
                     const QChar lastChar = last.at(lastCharOffset);
@@ -367,6 +386,8 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
             }
 
             // End of code for QScriptValue::setProperty(... const QScriptValue::PropertyFlag & ...) support
+            */
+
             arg->setType(tti);
             arg->setName(p.name);
             arg->setDefaultValue(p.defaultValue);
@@ -466,12 +487,33 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     _M_current_function->setType(qualifyType(tmp_type, _M_context));
     _M_current_function->setAccessPolicy(_M_current_access);
     _M_current_function->setFunctionType(_M_current_function_type);
-    _M_current_function->setConstant(declarator->fun_cv != nullptr);
+    if(declarator->fun_cv){
+        for(int i=0; i<declarator->fun_cv->count(); ++i){
+            int kind = decode_token(declarator->fun_cv->at(i)->element);
+            if(kind==Token_const){
+                _M_current_function->setConstant(true);
+            }else if(kind==Token_volatile){
+                _M_current_function->setVolatile(true);
+            }
+        }
+    }
+    if(declarator->fun_reference!=0){
+        int kind = decode_token(declarator->fun_reference);
+        if(kind==Token_and){
+            _M_current_function->setReferenceType(TypeInfo::RReference);
+        }else if(kind=='&'){
+            _M_current_function->setReferenceType(TypeInfo::Reference);
+        }
+    }
     _M_current_function->setTemplateParameters(_M_current_template_parameters);
     _M_current_function->setDeclFinal(declarator->decl_final != nullptr);
+    _M_current_function->setHasBody(node->function_body);
 
     applyStorageSpecifiers(node->storage_specifiers,
                            model_static_cast<MemberModelItem>(_M_current_function));
+    if(_M_current_function->isFriend()){
+        _M_current_function->setAccessPolicy(CodeModel::Public);
+    }
     applyFunctionSpecifiers(node->function_specifiers,
                             model_static_cast<FunctionModelItem>(_M_current_function));
     if(_M_current_function->isDeprecated() && node->deprecationComment){
@@ -553,6 +595,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
         TemplateParameterAST *parameter = it->element;
         TypeParameterAST *type_parameter = parameter->type_parameter;
 
+        QString defaultType;
         NameAST *name;
         if (!type_parameter) {
             // A hacky hack to work around missing support for parameter declarations in
@@ -577,11 +620,15 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             assert(tk == Token_typename || tk == Token_class);
 
             name = type_parameter->name;
+            if(type_parameter->type_expression){
+                defaultType = type_parameter->type_expression->toString(this->tokenStream());
+            }
         }
 
         TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
         name_cc.run(name);
         p->setName(name_cc.name());
+        p->setDefaultValue(defaultType);
 
         _M_current_template_parameters.append(p);
         it = it->next;
@@ -647,6 +694,7 @@ void Binder::visitTypedef(TypedefAST *node) {
         typeAlias->setName(alias_name);
         typeAlias->setType(qualifyType(typeInfo, currentScope()->qualifiedName()));
         typeAlias->setScope(typedefScope->qualifiedName());
+        typeAlias->setAccessPolicy(_M_current_access);
         _M_qualified_types[typeAlias->qualifiedName().join(".")] = QString();
         currentScope()->addTypeAlias(typeAlias);
     } while (it != end);
@@ -720,13 +768,14 @@ void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     _M_current_class->setName(class_cc.name());
     _M_current_class->setDeclFinal(node->is_final);
     _M_current_class->setDeclDeprecated(node->is_deprecated);
+    _M_current_class->setAccessPolicy(_M_current_access);
     if(node->deprecationComment)
         _M_current_class->setDeclDeprecatedComment(node->deprecationComment->toString(tokenStream()));
 
-    QStringList baseClasses = class_cc.baseClasses(); TypeInfo info;
+    QList<QPair<QString,bool>> baseClasses = class_cc.baseClasses(); TypeInfo info;
     for (int i = 0; i < baseClasses.size(); ++i) {
-        info.setQualifiedName(baseClasses.at(i).split("::"));
-        baseClasses[i] = qualifyType(info, scope->qualifiedName()).qualifiedName().join("::");
+        info.setQualifiedName(baseClasses.at(i).first.split("::"));
+        baseClasses[i].first = qualifyType(info, scope->qualifiedName()).qualifiedName().join("::");
     }
 
     _M_current_class->setBaseClasses(baseClasses);
@@ -825,6 +874,7 @@ void Binder::visitUsingAs(UsingAsAST *node) {
         typeAlias->setName(alias_name);
         typeAlias->setType(qualifyType(typeInfo, currentScope()->qualifiedName()));
         typeAlias->setScope(typedefScope->qualifiedName());
+        typeAlias->setAccessPolicy(_M_current_access);
         _M_qualified_types[typeAlias->qualifiedName().join(".")] = QString();
         currentScope()->addTypeAlias(typeAlias);
         //visitNodes(this, node->template_arguments);
@@ -871,7 +921,7 @@ void Binder::visitEnumSpecifier(EnumSpecifierAST *node) {
     enum_cc.run(node);
     TypeInfo baseType = enum_cc.baseType();
     if(!baseType.qualifiedName().isEmpty()) {
-        TypeAliasModelItem alias = scope->typeAliasMap()[baseType.qualifiedName().join("::")];
+        TypeAliasModelItem alias = scope->findTypeAlias(baseType.qualifiedName().join("::"));
         if(alias){
             baseType.setQualifiedName(alias->name().split("::"));
         }
@@ -1072,10 +1122,10 @@ TypeInfo Binder::qualifyType(const TypeInfo &type, const QStringList &context) c
             CodeModelItem scope = model()->findItem(context, _M_current_file->toItem());
 
             if (ClassModelItem klass = model_dynamic_cast<ClassModelItem> (scope)) {
-                for(const QString& base : klass->baseClasses()) {
+                for(const QPair<QString,bool>& base : klass->baseClasses()) {
                     QStringList ctx = context;
-                    if(ctx.takeLast()!=base){
-                        ctx.append(base);
+                    if(ctx.takeLast()!=base.first){
+                        ctx.append(base.first);
 
                         TypeInfo qualified = qualifyType(type, ctx);
                         if (qualified != type)

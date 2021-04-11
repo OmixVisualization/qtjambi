@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,7 +29,11 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
+import static io.qt.core.QLogging.*;
+import static org.junit.Assert.*;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -37,35 +41,16 @@ import org.junit.Test;
 
 import io.qt.autotests.generated.MessageHandler;
 import io.qt.core.QCoreApplication;
-import io.qt.core.QMessageHandler;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QLoggingCategory;
 import io.qt.core.QThread;
+import io.qt.core.QtMessageHandler;
+import io.qt.core.QtMsgType;
+import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 
-public class TestQMessageHandler extends QMessageHandler {
-	static {
-		io.qt.QtUtilities.initializePackage("io.qt.autotests.generated");
-	}
+public class TestQMessageHandler{
 	
-    @Override
-    public void debug(String message) {
-        lastDebug = message;
-    }
-
-    @Override
-    public void warning(String message) {
-        lastWarning = message;
-    }
-
-    @Override
-    public void critical(String message) {
-        lastCritical = message;
-    }
-
-    @Override
-    public void fatal(String message) {
-        lastFatal = message;
-    }
-
     // We don't use QApplicationTest since that will by default initialize QMessageHandler
     @BeforeClass
     public static void testInitialize() throws Exception {
@@ -85,87 +70,212 @@ public class TestQMessageHandler extends QMessageHandler {
     public static void testDispose() throws Exception {
     	QApplicationTest.testDispose();
     }
-
+    
     @Test
-    public void testOneHandler() {
+    public void testInstallHandler() {
+    	QtMessageHandler handler = (messageType, context, message)->{
+    		lastMessage.put(messageType, message);
+    		lastFile.put(messageType, context.file());
+    		lastFunction.put(messageType, context.function());
+    	};
         try {
-            QMessageHandler.installMessageHandler(this);
-
+        	QtMessageHandler oldHandler = qInstallMessageHandler(handler);
+        	assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(oldHandler));
+        	assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(handler));
+        	oldHandler = qInstallMessageHandler(null);
+        	assertEquals(oldHandler, handler);
+        	assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(handler));
+        	oldHandler = qInstallMessageHandler(handler, QtMsgType.QtDebugMsg);
+        	assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(handler));
             MessageHandler.sendDebug("debug sent");
-            assertEquals("debug sent", lastDebug);
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
 
             MessageHandler.sendWarning("warning sent");
-            assertEquals("warning sent", lastWarning);
+            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
 
             MessageHandler.sendCritical("critical sent");
-            assertEquals("critical sent", lastCritical);
+            assertEquals(null, lastMessage.get(QtMsgType.QtCriticalMsg));
+            
+            oldHandler = qInstallMessageHandler(handler);
 
-            // Want to send fatal, but that will shut down app...
-            //MessageHandler.sendFatal("fatal sent");
-            //assertEquals(lastFatal, "fatal sent");
-        } finally {
-            QMessageHandler.removeMessageHandler(this);
-        }
-    }
+            MessageHandler.sendDebug("debug sent");
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
 
-    @Test
-    public void testMultipleHandlers() {
-        TestQMessageHandler handlerOne = null;
-        TestQMessageHandler handlerTwo = null;
-        try {
-            QMessageHandler.installMessageHandler(this);
-            handlerOne = new TestQMessageHandler();
-            QMessageHandler.installMessageHandler(handlerOne);
-            handlerTwo = new TestQMessageHandler();
-            QMessageHandler.installMessageHandler(handlerTwo);
+            MessageHandler.sendWarning("warning sent");
+            assertEquals("warning sent", lastMessage.get(QtMsgType.QtWarningMsg));
 
-            for(int i = 0; i < 5; i++) {
-                int j = i;
-                if(j == 4)
-                    j = 3;	// No handlers so nothing got updated
-
-                MessageHandler.sendDebug("debug sent: " + j);
-                assertEquals("debug sent: " + j, lastDebug);
-
-                MessageHandler.sendWarning("warning sent: " + j);
-                assertEquals("warning sent: " + j, lastWarning);
-
-                MessageHandler.sendCritical("critical sent: " + j);
-                assertEquals("critical sent: " + j, lastCritical);
-
-                // Want to send fatal, but that will shut down app...
-                //MessageHandler.sendFatal("fatal sent: " + j);
-                //assertEquals(lastFatal, "fatal sent: " + j);
-
-                if(i == 0) {
-                    QMessageHandler.removeMessageHandler(handlerOne);
-                } else if(i == 1) {
-                    QMessageHandler.removeMessageHandler(handlerTwo);
-                } else if(i == 2) {
-                    QMessageHandler.installMessageHandler(handlerOne);
-                    QMessageHandler.installMessageHandler(handlerTwo);
-                } else if(i == 3) {
-                    QMessageHandler.removeMessageHandler(this);
-                } else if(i == 4) {
-                    QMessageHandler.removeMessageHandler(handlerOne);
-                    QMessageHandler.removeMessageHandler(handlerTwo);
-                }
+            MessageHandler.sendCritical("critical sent");
+            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
+            qDebug("debug sent");
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
             }
+
+            qWarning("warning sent");
+            assertEquals("warning sent", lastMessage.get(QtMsgType.QtWarningMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtWarningMsg));
+            }
+
+            qCritical("critical sent");
+            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+            }
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
+            qDebug().append("debug").append("sent").close();
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+            }
+
+            qWarning().append("warning").append("sent").close();
+            assertEquals("warning sent", lastMessage.get(QtMsgType.QtWarningMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtWarningMsg));
+            }
+
+            qCritical().append("critical").append("sent").close();
+            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+            }
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
+            QLoggingCategory category = new QLoggingCategory("test");
+            QLoggingCategory.installFilter(_category->{
+            	if("test".equals(_category.categoryName()))
+        		_category.setEnabled(QtMsgType.QtWarningMsg, false);
+            });
+            assertFalse(category.isWarningEnabled());
+            
+            qCDebug(category, "debug sent");
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+            }
+
+            qCWarning(category, "warning sent");
+            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
+            }
+
+            qCCritical(category, "critical sent");
+            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+            }
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
+            qCDebug(category).append("debug").append("sent").close();
+            assertEquals("debug sent", lastMessage.get(QtMsgType.QtDebugMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtDebugMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtDebugMsg));
+            }
+
+            qCWarning(category).append("warning").append("sent").close();
+            assertEquals(null, lastMessage.get(QtMsgType.QtWarningMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(null, lastFile.get(QtMsgType.QtWarningMsg));
+	            assertEquals(null, lastFunction.get(QtMsgType.QtWarningMsg));
+            }
+
+            qCCritical(category).append("critical").append("sent").close();
+            assertEquals("critical sent", lastMessage.get(QtMsgType.QtCriticalMsg));
+            if(QLibraryInfo.isDebugBuild()) {
+	            assertEquals(TestQMessageHandler.class.getName(), lastFile.get(QtMsgType.QtCriticalMsg));
+	            assertEquals("testInstallHandler", lastFunction.get(QtMsgType.QtCriticalMsg));
+            }
+            
+            qCDebug(category, "This must not lead to crash: %s");
+            assertEquals("This must not lead to crash: %s", lastMessage.get(QtMsgType.QtDebugMsg));
+            qCCritical(category, "critical sent (%1$s,%2$s,%3$s,%4$s)", 5, 6, 7, 8.2);
+            assertEquals("critical sent (5,6,7,8.2)", lastMessage.get(QtMsgType.QtCriticalMsg));
+            
+            // should not crash
+            qWarning()
+            	.ws()
+            	.uppercasedigits()
+            	.uppercasebase()
+            	.showbase()
+            	.scientific()
+	            .right()
+	            .reset()
+	            .qSetRealNumberPrecision(2)
+	            .qSetPadChar('A')
+	            .qSetFieldWidth(4)
+	            .bin()
+	            .bom()
+	            .center()
+	            .dec()
+	            .endl()
+	            .fixed()
+	            .flush()
+	            .forcepoint()
+	            .forcesign()
+	            .left()
+	            .center()
+	            .hex()
+	            .oct()
+	            .lowercasebase()
+	            .lowercasedigits()
+	            .noforcepoint()
+	            .noforcesign()
+	            .noshowbase()
+	            .append("warning")
+	            .close();
+            
+            lastMessage.clear();
+            lastFile.clear();
+            lastFunction.clear();
+            
+            qInstallExceptionMessageHandler();
+            try {
+				qWarning("EXN");
+				fail("Exception expected to be thrown.");
+			} catch (RuntimeException e) {
+			}
+            
+            try {
+				qWarning().append("EXN").close();
+				fail("Exception expected to be thrown.");
+			} catch (RuntimeException e) {
+			}
         } finally {
-            // Ensure they are removed
-           QMessageHandler.removeMessageHandler(this);
-           if(handlerOne != null)
-               QMessageHandler.removeMessageHandler(handlerOne);
-           if(handlerTwo != null)
-               QMessageHandler.removeMessageHandler(handlerTwo);
+        	qInstallMessageHandler(null);
         }
     }
 
-    private String lastDebug;
-    private String lastWarning;
-    private String lastCritical;
-    @SuppressWarnings("unused")
-	private String lastFatal;
+    private Map<QtMsgType,String> lastMessage = new EnumMap<>(QtMsgType.class);
+    private Map<QtMsgType,String> lastFile = new EnumMap<>(QtMsgType.class);
+    private Map<QtMsgType,String> lastFunction = new EnumMap<>(QtMsgType.class);
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQMessageHandler.class.getName());

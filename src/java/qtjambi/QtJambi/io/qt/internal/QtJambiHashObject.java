@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,25 +33,28 @@ import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiHashObject<K, V> extends QtJambiAbstractMapObject<K, V> {
 
-	protected QtJambiHashObject(Class<K> keyType, Class<V> valueType) {
-		super(keyType, valueType);
+	protected QtJambiHashObject() {
+		super();
 	}
 
-	protected QtJambiHashObject(QPrivateConstructor p, Class<K> keyType, Class<V> valueType) {
-		super(p, keyType, valueType);
+	protected QtJambiHashObject(QPrivateConstructor p) {
+		super(p);
 	}
 	
 	@Override
-	public Set<K> keySet() {
+    @QtUninvokable
+	public final Set<K> keySet() {
 		return new HashSet<>(keys());
 	}
 	
 	@Override
-	public Set<Entry<K, V>> entrySet() {
+    @QtUninvokable
+	public final Set<Entry<K, V>> entrySet() {
 		Set<Entry<K, V>> entrySet = new HashSet<>();
 		for(QPair<K,V> pair : this) {
 			entrySet.add(new AbstractMap.SimpleImmutableEntry<>(pair.first, pair.second));

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,30 +30,23 @@
 #ifndef QTJAMBI_QML_REPOSITORY_H
 #define QTJAMBI_QML_REPOSITORY_H
 
+#include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_repository.h>
 
 namespace Java{
-class QtQml
-{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtQml,QQmlExpression$ValueIsUndefined,
+namespace QtQml {
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlExpression$ValueIsUndefined,
                                      QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
 
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtQml,QQmlIncubationController$WhileFlag,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QQmlIncubationController$WhileFlag,
                                      QTJAMBI_REPOSITORY_DECLARE_LONG_FIELD(flag))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtQml,QmlTypes,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QmlTypes,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(registerModule))
-private:
-    QtQml() = delete;
-};
+}
 
-namespace Private {
-class Runtime{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(Runtime,Method,
+namespace Runtime{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(Method,
         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getReturnType))
-private:
-    Runtime() = delete;
-};
-
 }
 }
 

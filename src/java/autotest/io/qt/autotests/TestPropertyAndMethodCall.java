@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.AfterClass;
@@ -44,6 +45,8 @@ import org.junit.Test;
 import io.qt.QFlags;
 import io.qt.QNoSuchEnumValueException;
 import io.qt.QtFlagEnumerator;
+import io.qt.QtPointerType;
+import io.qt.QtPropertyMember;
 import io.qt.QtPropertyNotify;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
@@ -64,11 +67,13 @@ import io.qt.widgets.QWidget;
 
 public class TestPropertyAndMethodCall extends QApplicationTest {
 
-	private static PropertyAndMethodCallTest object = new PropertyAndMethodCallTest();
-	private static TestQObject javaObject = new TestQObject(null);
+	private static PropertyAndMethodCallTest object;
+	private static TestQObject javaObject;
+//	private static TestPtrQObject javaObject2;
 
 	@BeforeClass
 	public static void testInitialize() throws Exception {
+		QApplicationTest.testInitialize();
 		QMetaType.registerMetaType(TestQObject.DerivedQObject.class);
 		QMetaType.registerMetaType(TestQObject.CustomQtValue.class);
 		QMetaType.registerMetaType(TestQObject.CustomQtInterfaceValue.class);
@@ -82,8 +87,10 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 		QMetaType.registerMetaType(QDrag.class);
 		QMetaType.registerMetaType(Qt.AspectRatioMode.class);
 		QMetaType.registerMetaType(Qt.Orientations.class);
-		QMetaType.registerMetaType(List.class);
-		QApplicationTest.testInitialize();
+		object = new PropertyAndMethodCallTest();
+		javaObject = new TestQObject(null);
+//		javaObject.metaObject().methods().forEach(m->System.out.println(m.typeName() + " " + m.cppMethodSignature()));
+//		javaObject.metaObject().properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 	}
 	
 	@AfterClass
@@ -96,6 +103,11 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 	@Test
 	public void testMethodCallColor() {
 		assertTrue(PropertyAndMethodCallTest.testMethodCallColor(javaObject));
+	}
+	
+	@Test
+	public void testMethodCallColorPtr() {
+		assertTrue(PropertyAndMethodCallTest.testMethodCallColorPtr(javaObject));
 	}
 
 	@Test
@@ -157,6 +169,11 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 	public void testFetchPropertyColorCPP() {
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyColor(javaObject));
 	}
+	
+	@Test
+	public void testFetchPropertyColorPtrCPP() {
+		assertTrue(PropertyAndMethodCallTest.testFetchPropertyColorPtr(javaObject));
+	}
 
 	@Test
 	public void testFetchPropertyCustomQtEnumCPP() {
@@ -192,7 +209,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 	public void testFetchPropertyNumberCPP() {
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyNumber(javaObject));
 	}
-
+	
 	@Test
 	public void testFetchPropertyQtEnumCPP() {
 		assertTrue(PropertyAndMethodCallTest.testFetchPropertyQtEnum(javaObject));
@@ -211,6 +228,18 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 	@Test
 	public void testFetchPropertyColorJAVA() {
 		assertEquals(javaObject.getColor(), javaObject.property("color"));
+	}
+	
+	@Test
+	public void testMemberProperty() {
+		assertEquals(javaObject.memberProperty, javaObject.property("member"));
+		assertTrue(javaObject.setProperty("member", "null"));
+		assertEquals("null", javaObject.memberProperty);
+	}
+	
+	@Test
+	public void testFetchPropertyColorPtrJAVA() {
+		assertEquals(javaObject.getColorPtr(), javaObject.property("colorPtr"));
 	}
 
 	@Test
@@ -466,6 +495,10 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 		private CustomQtFlags customQtFlags = new CustomQtFlags();
 		private Qt.AspectRatioMode qtEnum = Qt.AspectRatioMode.KeepAspectRatio;
 		private Qt.Orientations qtFlags = new Qt.Orientations(Qt.Orientation.Horizontal);
+		private final QColor colorPtr = new QColor(0x01abcdef);
+		
+		@QtPropertyMember(name="member")
+		private String memberProperty = "QtPropertyMember";
 
 		{
 			setObjectName("MyDataSet");
@@ -484,7 +517,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 			o.setObjectName("custom property");
 			return o;
 		}
-
+		
 		@QtPropertyReader(name = "model")
 		public QStringListModel getModel() {
 			return myModel;
@@ -499,6 +532,15 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 			return myModel == this.myModel;
 		}
 
+		@QtPropertyReader(name = "intArray")
+		public int[] getIntArray() {
+			return new int[]{1,2,3,4,5};
+		}
+
+		public boolean testIntArray(int[] array) {
+			return Arrays.equals(array, new int[]{1,2,3,4,5});
+		}
+
 		@QtPropertyReader(name = "color")
 		public QColor getColor() {
 			return new QColor("red");
@@ -506,6 +548,15 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 
 		public boolean testColor(QColor c) {
 			return new QColor("red").equals(c);
+		}
+		
+		@QtPropertyReader(name = "colorPtr")
+		public @QtPointerType QColor getColorPtr() {
+			return colorPtr;
+		}
+
+		public boolean testColorPtr(@QtPointerType QColor c) {
+			return colorPtr==c;
 		}
 
 		@QtPropertyReader(name = "customEnum")
@@ -554,7 +605,13 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 		@QtPropertyNotify(name = "customColor")
 		public final Signal1<QColor> customColorChanged = new Signal1<QColor>();
 
-		@QtPropertyNotify(name = "customColor")
+		@QtPropertyNotify(name = "customColorPtr")
+		public final Signal1<@QtPointerType QColor> customColorPtrChanged = new Signal1<>();
+
+		@QtPropertyNotify(name = "intArray")
+		public final Signal1<int[]> customIntArrayChanged = new Signal1<>();
+
+		@QtPropertyNotify(name = "derivedQObject")
 		public final Signal1<DerivedQObject> derivedQObjectChanged = new Signal1<DerivedQObject>();
 
 		@QtPropertyReader(name = "list")

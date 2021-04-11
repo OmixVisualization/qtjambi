@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -345,26 +345,26 @@ public final class QThread extends Thread implements QtObjectInterface {
         
         @QtBlockedSlot
         private final void preStarted()    {
-            __qt_preStarted(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            __qt_preStarted(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         private native void __qt_preStarted(long __this__nativeId);
         
         @QtBlockedSlot
         private final void started()    {
-            __qt_started(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            __qt_started(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         private native void __qt_started(long __this__nativeId);
         
         @QtBlockedSlot
         private final void finished()    {
-            __qt_finished(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            __qt_finished(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         private native void __qt_finished(long __this__nativeId);
         
         @QtBlockedSlot
         private int exec(){
             io.qt.internal.QtJambiInternal.threadCheck(this);
-            return exec_internal(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            return exec_internal(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         
         @QtBlockedSlot
@@ -372,7 +372,7 @@ public final class QThread extends Thread implements QtObjectInterface {
         
         @QtBlockedSlot
         public final int loopLevel(){
-            return __qt_loopLevel(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            return __qt_loopLevel(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         
         @QtBlockedSlot
@@ -380,18 +380,18 @@ public final class QThread extends Thread implements QtObjectInterface {
         
         @QtBlockedSlot
         public final QAbstractEventDispatcher eventDispatcher(){
-            return __qt_eventDispatcher(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            return __qt_eventDispatcher(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         
         private final native QAbstractEventDispatcher __qt_eventDispatcher(long nativeId);
         
         @QtBlockedSlot
         public void requestInterruption() {
-            __qt_requestInterruption(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            __qt_requestInterruption(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         
         public void terminate(){
-            __qt_terminate(io.qt.internal.QtJambiInternal.checkedNativeId(this));
+            __qt_terminate(io.qt.internal.QtJambiInternal.nativeId(this));
         }
         
         private final native void __qt_requestInterruption(long nativeId);
@@ -411,7 +411,7 @@ public final class QThread extends Thread implements QtObjectInterface {
         }
         
         public final void exit(int retcode){
-            __qt_exit(io.qt.internal.QtJambiInternal.checkedNativeId(this), retcode);
+            __qt_exit(io.qt.internal.QtJambiInternal.nativeId(this), retcode);
         }
         
         private Wrapper(Thread thread, QPrivateConstructor p) { 
@@ -665,7 +665,7 @@ public final class QThread extends Thread implements QtObjectInterface {
                         if(args.length==1 && args[0] instanceof Thread) {
                             QThread qthread = thread((Thread)args[0]);
                             if(qthread!=null && !qthread.isDisposed()){
-                                qthread.__qt_QThread_requestInterruption(checkedNativeId(qthread));
+                                qthread.__qt_QThread_requestInterruption(nativeId(qthread));
                             }
                         }
                         return null;

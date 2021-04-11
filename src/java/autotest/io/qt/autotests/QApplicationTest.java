@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,17 +45,13 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
-import io.qt.core.QMessageHandler;
+import io.qt.core.QObject;
 import io.qt.core.QThread;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 
-public abstract class QApplicationTest {
-	static {
-		io.qt.QtUtilities.initializePackage("io.qt.autotests.generated");
-	}
-    
+public abstract class QApplicationTest {    
     public static Matcher<Boolean> trueMatcher(final String message) {
 		return new BaseMatcher<Boolean>() {
 			//@Override // Java6 only
@@ -75,37 +71,10 @@ public abstract class QApplicationTest {
 	
 	protected static final List<WeakReference<QtObjectInterface>> instances = Collections.synchronizedList(new ArrayList<>());
 	
-    public static class MyQMessageHandler extends QMessageHandler {
-        @Override
-        public void debug(String message) {
-            System.out.println("DEBUG: " + message);
-            System.out.flush();
-        }
-
-        @Override
-        public void warning(String message) {
-            System.out.println("WARN: " + message);
-            System.out.flush();
-        }
-
-        @Override
-        public void critical(String message) {
-            System.out.println("CRIT: " + message);
-            System.out.flush();
-        }
-
-        @Override
-        public void fatal(String message) {
-            System.out.println("FATAL: " + message);
-            System.out.flush();
-        }
-    }
-
-    private static QMessageHandler myQMessageHandler;
-
     @BeforeClass
 	public static void testInitialize() throws Exception {
         try {
+        	System.setProperty("io.qt.log.messages", "ALL");
 			if(QCoreApplication.instance()==null) {
 				Utils.println(2, "QApplicationTest.testInitialize(): begin");
 			    io.qt.QtResources.addSearchPath(".");
@@ -113,11 +82,6 @@ public abstract class QApplicationTest {
 			    QApplication.initialize(new String[]{"arg1", "arg2", "arg3"});
 			    Utils.println(2, "QApplicationTest.testInitialize(): done");
 		        QThread.currentThread().setObjectName("main");
-			}else if(myQMessageHandler==null) {
-				Utils.println(2, "QApplicationTest.testInitialize(): begin");
-			    myQMessageHandler = new MyQMessageHandler();
-			    QMessageHandler.installMessageHandler(myQMessageHandler);        		
-			    Utils.println(2, "QApplicationTest.testInitialize(): done");
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -128,11 +92,17 @@ public abstract class QApplicationTest {
     @AfterClass
     public static void testDispose() throws Exception {
     	try {
+    		Object currentThread = QThread.currentThread();
     		while(!instances.isEmpty()) {
     			WeakReference<QtObjectInterface> weak = instances.remove(0);
     			QtObjectInterface o = weak.get();
-    			if(o!=null && !o.isDisposed())
-    				o.dispose();
+    			if(o!=null && QtJambiInternal.ownership(o)==QtJambiInternal.Ownership.Cpp && !o.isDisposed()) {
+    				if(o instanceof QObject && ((QObject) o).thread()!=currentThread) {
+    					((QObject) o).disposeLater();
+    				}else {
+    					o.dispose();
+    				}
+    			}
     		}
 	        Utils.println(2, "QApplicationTest.testDispose(): BEGIN");
 	        System.gc();
@@ -202,12 +172,6 @@ public abstract class QApplicationTest {
 	                Utils.println(3, "QApplicationTest.testDispose(): done  io.qt.QNoNativeResourcesException: app="+e.getMessage());
 	            }
 	            app = null;		// kill hard-reference
-	        }
-	        if(myQMessageHandler != null) {
-	    		Utils.println(3, "QApplicationTest.testDispose(): QMessageHandler.removeMessageHandler() PRE");
-	            QMessageHandler.removeMessageHandler(myQMessageHandler);
-	    		Utils.println(3, "QApplicationTest.testDispose(): QMessageHandler.removeMessageHandler() POST");
-	            myQMessageHandler = null;
 	        }
 			Utils.println(3, "QApplicationTest.testDispose(): garbage PRE");
 	        System.gc();

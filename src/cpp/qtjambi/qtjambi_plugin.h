@@ -1,8 +1,9 @@
 #ifndef QTJAMBI_PLUGIN_H
 #define QTJAMBI_PLUGIN_H
 
-#include <QtCore>
 #include "qtjambi_global.h"
+
+class QObject;
 
 typedef const char* (*QueryMetadata)();
 

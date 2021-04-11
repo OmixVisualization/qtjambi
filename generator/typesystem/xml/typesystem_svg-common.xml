@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,22 +44,16 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtSvg">
-   <rejection class="QGraphicsSvgItem" enum-name="enum_1"/>
+   <rejection class="QGraphicsSvgItem" enum-name="enum_1" until="5.*"/>
    
    <namespace-type name="QSvg" />
 
-  <enum-type name="QGraphicsSvgItem::enum_1"/>
+  <enum-type name="QGraphicsSvgItem::enum_1" until="5.*"/>
 
   <object-type name="QSvgRenderer">
-    <extra-includes>
-        <include file-name="QRectF" location="global" />
-        <include file-name="QMatrix" location="global" />
-        <include file-name="QSize" location="global" />
-        <include file-name="QByteArray" location="global" />
-    </extra-includes>
   </object-type>
 
-  <object-type name="QSvgWidget">
+  <object-type name="QSvgWidget" until="5.*">
     <extra-includes>
         <include file-name="QByteArray" location="global" />
         <include file-name="QSvgRenderer" location="global" />
@@ -77,20 +71,21 @@
     <modify-function signature="devType() const" remove="all" />
   </object-type>
   
-  <object-type name="QGraphicsSvgItem">
+  <object-type name="QGraphicsSvgItem" until="5.*">
     <extra-includes>
         <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
         <include file-name="QGraphicsItem" location="global" />
         <include file-name="QSvgRenderer" location="global" />
         <include file-name="QSize" location="global" />
     </extra-includes>
-
-<!--     <modify-function signature="matrix()const" remove="all"/> -->
-<!--     <modify-function signature="resetMatrix()" remove="all"/> -->
-<!--     <modify-function signature="sceneMatrix()const" remove="all"/> -->
-<!--     <modify-function signature="setMatrix(QMatrix, bool)" remove="all"/> -->
-        <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==(int)QGraphicsSvgItem::Type" />
+    <modify-function signature="type() const" remove="all" />
+    <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSvgItem::Type)" />
+    <modify-function signature="QGraphicsSvgItem(QGraphicsItem*)">
+        <modify-argument index="1" thread-affine="yes"/>
+    </modify-function>
+    <modify-function signature="QGraphicsSvgItem(QString,QGraphicsItem*)">
+        <modify-argument index="2" thread-affine="yes"/>
+    </modify-function>
  </object-type>
 
 </typesystem>

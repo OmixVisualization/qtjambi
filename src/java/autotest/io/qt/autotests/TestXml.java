@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
 import org.junit.Test;
 
 import io.qt.core.QFile;
-import io.qt.core.QIODevice.OpenModeFlag;
+import io.qt.core.QIODevice;
 import io.qt.xml.QDomComment;
 import io.qt.xml.QDomDocument;
 import io.qt.xml.QDomDocument.Result;
@@ -82,7 +82,7 @@ public class TestXml extends QApplicationTest {
     public void readDocument() {
         QDomDocument doc = new QDomDocument("mydocument");
         QFile file = new QFile("classpath:generator/typesystem_core.txt");
-        if (!file.open(OpenModeFlag.ReadOnly))
+        if (!file.open(QIODevice.OpenModeFlag.ReadOnly))
             return;
         Result res = doc.setContent(file);
         if (!res.success) {

@@ -3,8 +3,12 @@
         <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <subant target="build" inheritall="true" verbose="true">
             <filelist dir="${basedir}/src/java/qtjambi" files="QtJambi
+                                                                        QtJambiOpenGL
+                                                                        QtJambiOpenGLWidgets
                                                                         QtJambiNetwork
                                                                         QtJambiNetworkAuth
+                                                                        QtJambiDataVisualization
+                                                                        QtJambiCharts
                                                                         QtJambiQml
                                                                         QtJambiQuick
                                                                         QtJambiQuickControls2
@@ -13,8 +17,11 @@
                                                                         QtJambiSql
                                                                         QtJambiXml
                                                                         QtJambiSvg
+                                                                        QtJambiSvgWidgets
                                                                         QtJambiConcurrent
                                                                         QtJambiHelp
+                                                                        QtJambiDesigner
+                                                                        QtJambiUiTools
                                                                         QtJambiPositioning
                                                                         QtJambiLocation
                                                                         QtJambiScript
@@ -42,6 +49,8 @@
                                                                         QtJambiNfc
                                                                         QtJambiRemoteObjects
                                                                         QtJambiXmlPatterns
+                                                                        QtJambiVirtualKeyboard
+                                                                        QtJambiQuick3D
                                                                         QtJambi3DCore
                                                                         QtJambi3DRender
                                                                         QtJambi3DInput
@@ -222,7 +231,7 @@
     </target>
 
     <!-- Same as "compile" target but with 3 sourcedirs -->
-    <target name="compile6" depends="jar_init">
+    <target name="compile7" depends="jar_init">
         <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${deploymentdir}"/>
         <mkdir dir="${java.outdir}/${module}"/>
@@ -244,6 +253,9 @@
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir6}"/>
         </antcall>
+        <antcall inheritrefs="true" target="copy-resources">
+            <param name="modulesrc" value="${sourcedir7}"/>
+        </antcall>
         <if>
             <istrue value="${java.module.based}"/>
             <then>
@@ -261,6 +273,7 @@
                     <src path="${sourcedir4}"/>
                     <src path="${sourcedir5}"/>
                     <src path="${sourcedir6}"/>
+                    <src path="${sourcedir7}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                 </javac>
             </then>
@@ -278,6 +291,7 @@
                     <src path="${sourcedir4}"/>
                     <src path="${sourcedir5}"/>
                     <src path="${sourcedir6}"/>
+                    <src path="${sourcedir7}"/>
                     <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
                 </javac>
             </else>
@@ -288,7 +302,7 @@
     </target>
     <target name="createjar3" depends="compile3,createjar">
     </target>
-    <target name="createjar6" depends="compile6,createjar">
+    <target name="createjar7" depends="compile7,createjar">
     </target>
     
     <target name="createjar" depends="jar_init">
@@ -382,7 +396,7 @@
             <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class"/>
         </jar>
     </target>
-    <target name="createsrcjar6">
+    <target name="createsrcjar7">
         <property name="moduledash" value="${module}"/>
         <stringreplace property="moduledash" target="." replacement="-"/>
         <echo message="Creating source file for ${module}"/>
@@ -405,6 +419,9 @@
         </antcall>
         <antcall inheritrefs="true" target="copy-src-resources">
             <param name="modulesrc" value="${sourcedir6}"/>
+        </antcall>
+        <antcall inheritrefs="true" target="copy-src-resources">
+            <param name="modulesrc" value="${sourcedir7}"/>
         </antcall>
         <delete file="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar"/>
         <jar destfile="${destdir}/${moduledash}-${qtjambi.jar.version}-src.jar" excludes="${jar.excludes}">

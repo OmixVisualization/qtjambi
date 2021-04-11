@@ -41,32 +41,67 @@
 
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 
-inline uint qHash(const QCursor &cursor)
+#ifndef QT_JAMBI_RUN
+inline bool operator <(const QPointF& p1, const QPointF& p2){
+    if(p1.x()>=p2.x())
+        return p1.y()<p2.y();
+    return p1.x()<p2.x();
+}
+
+inline bool operator <(const QPoint& p1, const QPoint& p2){
+    if(p1.x()>=p2.x())
+        return p1.y()<p2.y();
+    return p1.x()<p2.x();
+}
+
+inline bool operator <(const QColor& c1, const QColor& c2){
+    return quint64(c1.rgba64())<quint64(c2.rgba64());
+}
+#endif
+
+inline hash_type qHash(const QPixmap &value)
 {
-    uint hashCode = qHash(int(cursor.shape()));
+    return genericHash(value.handle());
+}
+
+inline hash_type qHash(const QCursor &cursor)
+{
+    hash_type hashCode = qHash(int(cursor.shape()));
     if(cursor.shape()==Qt::BitmapCursor){
+#if QT_VERSION <= QT_VERSION_CHECK(5, 15, 0)
+        hashCode = hashCode * 31 + qHash(cursor.bitmap(Qt::ReturnByValue));
+        hashCode = hashCode * 31 + qHash(cursor.mask(Qt::ReturnByValue));
+#else
         hashCode = hashCode * 31 + qHash(cursor.bitmap());
+        hashCode = hashCode * 31 + qHash(cursor.mask());
+#endif
         hashCode = hashCode * 31 + qHash(cursor.pixmap());
+        hashCode = hashCode * 31 + qHash(cursor.hotSpot());
     }
     return hashCode;
 }
 
-inline uint qHash(const QColor &color)
+inline hash_type qHash(const QPixelFormat &value)
+{
+    return genericHash(value);
+}
+
+inline hash_type qHash(const QColor &color)
 {
     return qHash(quint64(color.rgba64()));
 }
 
-inline uint qHash(const QBrush &brush)
+inline hash_type qHash(const QBrush &brush)
 {
-    uint hashCode = qHash(int(brush.style()));
+    hash_type hashCode = qHash(int(brush.style()));
     hashCode = hashCode * 31 + qHash(brush.color());
     return hashCode;
 }
 
 #if QT_VERSION >= 0x050000
-inline uint qHash(const QGradient &gradient)
+inline hash_type qHash(const QGradient &gradient)
 {
-    uint hashCode = qHash(int(gradient.interpolationMode()));
+    hash_type hashCode = qHash(int(gradient.interpolationMode()));
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
@@ -77,9 +112,9 @@ inline uint qHash(const QGradient &gradient)
     return hashCode;
 }
 
-inline uint qHash(const QLinearGradient &gradient)
+inline hash_type qHash(const QLinearGradient &gradient)
 {
-    uint hashCode = qHash(int(gradient.interpolationMode()));
+    hash_type hashCode = qHash(int(gradient.interpolationMode()));
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
@@ -92,9 +127,9 @@ inline uint qHash(const QLinearGradient &gradient)
     return hashCode;
 }
 
-inline uint qHash(const QRadialGradient &gradient)
+inline hash_type qHash(const QRadialGradient &gradient)
 {
-    uint hashCode = qHash(int(gradient.interpolationMode()));
+    hash_type hashCode = qHash(int(gradient.interpolationMode()));
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
@@ -110,9 +145,9 @@ inline uint qHash(const QRadialGradient &gradient)
     return hashCode;
 }
 
-inline uint qHash(const QConicalGradient &gradient)
+inline hash_type qHash(const QConicalGradient &gradient)
 {
-    uint hashCode = qHash(int(gradient.interpolationMode()));
+    hash_type hashCode = qHash(int(gradient.interpolationMode()));
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
@@ -126,27 +161,27 @@ inline uint qHash(const QConicalGradient &gradient)
 }
 #endif
 
-inline uint qHash(const QRegion &region)
+inline hash_type qHash(const QRegion &region)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(region.rectCount());
     for(const QRect& rect : region)
         hashCode = hashCode * 31 + qHash(rect);
     return hashCode;
 }
 
-inline uint qHash(const QPolygon &polygon)
+inline hash_type qHash(const QPolygon &polygon)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(polygon.size());
     for (int i=0; i<polygon.size(); ++i)
         hashCode = hashCode * 31 + qHash(polygon.at(i));
     return hashCode;
 }
 
-inline uint qHash(const QPalette &palette)
+inline hash_type qHash(const QPalette &palette)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     for (int role=0;role<int(QPalette::NColorRoles);++role) {
         for (int group=0;group<int(QPalette::NColorGroups);++group) {
             hashCode = hashCode * 31 + qHash(palette.color(QPalette::ColorGroup(group), QPalette::ColorRole(role)));
@@ -156,9 +191,9 @@ inline uint qHash(const QPalette &palette)
 }
 
 #if QT_VERSION < 0x050300
-inline uint qHash(const QFont &font)
+inline hash_type qHash(const QFont &font)
 {
-    uint hashCode = font.pixelSize();
+    hash_type hashCode = font.pixelSize();
     hashCode = hashCode * 31 + font.weight();
     hashCode = hashCode * 31 + int(font.style());
     hashCode = hashCode * 31 + font.stretch();
@@ -176,9 +211,10 @@ inline uint qHash(const QFont &font)
 #endif
 
 
-inline uint qHash(const QMatrix &matrix)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+inline hash_type qHash(const QMatrix &matrix)
 {
-    uint hashCode = qHash(matrix.m11());
+    hash_type hashCode = qHash(matrix.m11());
     hashCode = hashCode * 31 + qHash(matrix.m12());
     hashCode = hashCode * 31 + qHash(matrix.m21());
     hashCode = hashCode * 31 + qHash(matrix.m22());
@@ -186,15 +222,18 @@ inline uint qHash(const QMatrix &matrix)
     hashCode = hashCode * 31 + qHash(matrix.dy());
     return hashCode;
 }
+#endif
 
-inline uint qHash(const QImage &image)
+inline hash_type qHash(const QImage &image)
 {
+    if(image.isNull())
+        return 0;
     return qHash(image.cacheKey());
 }
 
-inline uint qHash(const QPen &pen)
+inline hash_type qHash(const QPen &pen)
 {
-    uint hashCode = qHash(int(pen.style()));
+    hash_type hashCode = qHash(int(pen.style()));
     hashCode = hashCode * 31 + qHash(int(pen.capStyle()));
     hashCode = hashCode * 31 + qHash(int(pen.joinStyle()));
     hashCode = hashCode * 31 + qHash(pen.width());
@@ -222,35 +261,35 @@ inline int qHash(const QTransform &transform)
 }
 #endif
 
-inline uint qHash(const QPolygonF &polygon)
+inline hash_type qHash(const QPolygonF &polygon)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(polygon.size());
     for (int i=0; i<polygon.size(); ++i)
         hashCode = hashCode * 31 + qHash(polygon.at(i));
     return hashCode;
 }
 
-inline uint qHash(const QVector2D &vec)
+inline hash_type qHash(const QVector2D &vec)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(vec.x());
     hashCode = hashCode * 31 + qHash(vec.y());
     return hashCode;
 }
 
-inline uint qHash(const QVector3D &vec)
+inline hash_type qHash(const QVector3D &vec)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(vec.x());
     hashCode = hashCode * 31 + qHash(vec.y());
     hashCode = hashCode * 31 + qHash(vec.z());
     return hashCode;
 }
 
-inline uint qHash(const QVector4D &vec)
+inline hash_type qHash(const QVector4D &vec)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(vec.x());
     hashCode = hashCode * 31 + qHash(vec.y());
     hashCode = hashCode * 31 + qHash(vec.z());
@@ -270,33 +309,33 @@ inline int qHash(const QInputMethodEvent::Attribute &attr)
     return hashCode;
 }*/
 
-inline uint qHash(const QFontMetrics &value)
+inline hash_type qHash(const QFontMetrics &value)
 {
     struct FontMetrics{
         QExplicitlySharedDataPointer<void*> p;
     };
     const FontMetrics* fontMetrics = reinterpret_cast<const FontMetrics* >(&value);
 
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(quintptr(fontMetrics->p.data()));
     return hashCode;
 }
 
-inline uint qHash(const QFontMetricsF &value)
+inline hash_type qHash(const QFontMetricsF &value)
 {
     struct FontMetricsF{
         QExplicitlySharedDataPointer<void*> p;
     };
     const FontMetricsF* fontMetrics = reinterpret_cast<const FontMetricsF* >(&value);
 
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(quintptr(fontMetrics->p.data()));
     return hashCode;
 }
 
-inline uint qHash(const QGlyphRun &value)
+inline hash_type qHash(const QGlyphRun &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.rawFont());
     hashCode = hashCode * 31 + qHash(value.glyphIndexes());
     hashCode = hashCode * 31 + qHash(value.positions());
@@ -310,59 +349,60 @@ inline uint qHash(const QGlyphRun &value)
     return hashCode;
 }
 
-inline uint qHash(const QAccessible::State &value)
+inline hash_type qHash(const QAccessible::State &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix2x2 &value)
+inline hash_type qHash(const QMatrix2x2 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix2x3 &value)
+inline hash_type qHash(const QMatrix2x3 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix2x4 &value)
+inline hash_type qHash(const QMatrix2x4 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix3x2 &value)
+inline hash_type qHash(const QMatrix3x2 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix3x3 &value)
+inline hash_type qHash(const QMatrix3x3 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix3x4 &value)
+inline hash_type qHash(const QMatrix3x4 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix4x2 &value)
+inline hash_type qHash(const QMatrix4x2 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix4x3 &value)
+inline hash_type qHash(const QMatrix4x3 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QMatrix4x4 &value)
+inline hash_type qHash(const QMatrix4x4 &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QOpenGLDebugMessage &value)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+inline hash_type qHash(const QOpenGLDebugMessage &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.source()));
     hashCode = hashCode * 31 + qHash(int(value.type()));
     hashCode = hashCode * 31 + qHash(int(value.severity()));
@@ -371,9 +411,9 @@ inline uint qHash(const QOpenGLDebugMessage &value)
     return hashCode;
 }
 
-inline uint qHash(const QOpenGLFramebufferObjectFormat &value)
+inline hash_type qHash(const QOpenGLFramebufferObjectFormat &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.samples());
     hashCode = hashCode * 31 + qHash(value.mipmap());
     hashCode = hashCode * 31 + qHash(int(value.attachment()));
@@ -381,10 +421,65 @@ inline uint qHash(const QOpenGLFramebufferObjectFormat &value)
     hashCode = hashCode * 31 + qHash(value.internalTextureFormat());
     return hashCode;
 }
-
-inline uint qHash(const QPageSize &value)
+#else
+inline hash_type qHash(const QEventPoint &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
+    hashCode = hashCode * 31 + qHash(quintptr(value.device()));
+    hashCode = hashCode * 31 + qHash(value.ellipseDiameters());
+    hashCode = hashCode * 31 + qHash(value.globalGrabPosition());
+    hashCode = hashCode * 31 + qHash(value.globalLastPosition());
+    hashCode = hashCode * 31 + qHash(value.globalPosition());
+    hashCode = hashCode * 31 + qHash(value.globalPressPosition());
+    hashCode = hashCode * 31 + qHash(value.grabPosition());
+    hashCode = hashCode * 31 + qHash(value.id());
+    hashCode = hashCode * 31 + qHash(value.isAccepted());
+    hashCode = hashCode * 31 + qHash(value.lastPosition());
+    hashCode = hashCode * 31 + qHash(value.lastTimestamp());
+    hashCode = hashCode * 31 + qHash(value.normalizedPosition());
+    hashCode = hashCode * 31 + qHash(value.position());
+    hashCode = hashCode * 31 + qHash(value.pressPosition());
+    hashCode = hashCode * 31 + qHash(value.pressTimestamp());
+    hashCode = hashCode * 31 + qHash(value.pressure());
+    hashCode = hashCode * 31 + qHash(value.rotation());
+    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition());
+    hashCode = hashCode * 31 + qHash(value.sceneLastPosition());
+    hashCode = hashCode * 31 + qHash(value.scenePosition());
+    hashCode = hashCode * 31 + qHash(value.scenePressPosition());
+    hashCode = hashCode * 31 + qHash(value.state());
+    hashCode = hashCode * 31 + qHash(value.timeHeld());
+    hashCode = hashCode * 31 + qHash(value.timestamp());
+    hashCode = hashCode * 31 + qHash(value.uniqueId());
+    hashCode = hashCode * 31 + qHash(value.velocity());
+    return hashCode;
+}
+
+inline hash_type qHash(const QPageRanges::Range &value)
+{
+    return genericHash(value);
+}
+
+inline hash_type qHash(const QPageRanges &value)
+{
+    return qHash(value.toRangeList());
+}
+
+#endif
+
+hash_type qHash(const QTextFormat &value);
+
+inline hash_type qHash(const QTextLayout::FormatRange &value)
+{
+    hash_type hashCode = 1;
+    hashCode = hashCode * 31 + qHash(value.start);
+    hashCode = hashCode * 31 + qHash(value.length);
+    hashCode = hashCode * 31 + qHash(value.format);
+    return hashCode;
+}
+
+inline hash_type qHash(const QPageSize &value)
+{
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.isValid());
     hashCode = hashCode * 31 + qHash(value.key());
     hashCode = hashCode * 31 + qHash(int(value.id()));
@@ -397,9 +492,9 @@ inline uint qHash(const QPageSize &value)
     return hashCode;
 }
 
-inline uint qHash(const QPageLayout &value)
+inline hash_type qHash(const QPageLayout &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.isValid());
     hashCode = hashCode * 31 + qHash(value.pageSize());
     hashCode = hashCode * 31 + qHash(int(value.mode()));
@@ -415,18 +510,18 @@ inline uint qHash(const QPageLayout &value)
     return hashCode;
 }
 
-inline uint qHash(const QPainterPath::Element &value)
+inline hash_type qHash(const QPainterPath::Element &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.type));
     hashCode = hashCode * 31 + qHash(value.x);
     hashCode = hashCode * 31 + qHash(value.y);
     return hashCode;
 }
 
-inline uint qHash(const QPainterPath &value)
+inline hash_type qHash(const QPainterPath &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.fillRule()));
     hashCode = hashCode * 31 + qHash(value.elementCount());
     for(int i=0; i<value.elementCount(); ++i){
@@ -435,14 +530,14 @@ inline uint qHash(const QPainterPath &value)
     return hashCode;
 }
 
-inline uint qHash(const QTextOption::Tab &value)
+inline hash_type qHash(const QTextOption::Tab &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QTextOption &value)
+inline hash_type qHash(const QTextOption &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.alignment()));
     hashCode = hashCode * 31 + qHash(int(value.textDirection()));
     hashCode = hashCode * 31 + qHash(int(value.wrapMode()));
@@ -454,9 +549,9 @@ inline uint qHash(const QTextOption &value)
     return hashCode;
 }
 
-inline uint qHash(const QStaticText &value)
+inline hash_type qHash(const QStaticText &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.textFormat()));
     hashCode = hashCode * 31 + qHash(int(value.performanceHint()));
     hashCode = hashCode * 31 + qHash(value.text());
@@ -466,14 +561,30 @@ inline uint qHash(const QStaticText &value)
     return hashCode;
 }
 
-inline uint qHash(const QSurfaceFormat &value)
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+inline hash_type qHash(const QColorSpace &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
+    hashCode = hashCode * 31 + qHash(hash_type(value.primaries()));
+    hashCode = hashCode * 31 + qHash(hash_type(value.transferFunction()));
+    hashCode = hashCode * 31 + qHash(value.gamma());
+    hashCode = hashCode * 31 + qHash(value.isValid());
+    return hashCode;
+}
+#endif
+
+inline hash_type qHash(const QSurfaceFormat &value)
+{
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(int(value.swapBehavior()));
     hashCode = hashCode * 31 + qHash(int(value.profile()));
     hashCode = hashCode * 31 + qHash(int(value.renderableType()));
     hashCode = hashCode * 31 + qHash(int(value.options()));
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    hashCode = hashCode * 31 + qHash(value.colorSpace());
+#else
     hashCode = hashCode * 31 + qHash(int(value.colorSpace()));
+#endif
     hashCode = hashCode * 31 + qHash(value.depthBufferSize());
     hashCode = hashCode * 31 + qHash(value.stencilBufferSize());
     hashCode = hashCode * 31 + qHash(value.redBufferSize());
@@ -489,81 +600,119 @@ inline uint qHash(const QSurfaceFormat &value)
     return hashCode;
 }
 
-inline uint qHash(const QQuaternion &value)
+inline hash_type qHash(const QQuaternion &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QPixmapCache::Key &value)
+inline hash_type qHash(const QPixmapCache::Key &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QTextFragment &value)
+inline hash_type qHash(const QTextFragment &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.position());
     hashCode = hashCode * 31 + qHash(value.length());
     return hashCode;
 }
 
-inline uint qHash(const QTextBlock::iterator &value)
+inline hash_type qHash(const QTextBlock::iterator &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QTextBlock &value)
+inline hash_type qHash(const QTextBlock &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.position());
     hashCode = hashCode * 31 + qHash(value.blockNumber());
     return hashCode;
 }
 
-inline uint qHash(const QTextCursor &value)
+inline hash_type qHash(const QTextCursor &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.position());
     hashCode = hashCode * 31 + qHash(value.anchor());
     hashCode = hashCode * 31 + qHash(value.selectedText());
     return hashCode;
 }
 
-inline uint qHash(const QTextFormat &value)
+hash_type qHash(const QTextLength &value);
+
+inline hash_type qHash(const QTextFormat &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.objectIndex());
     hashCode = hashCode * 31 + qHash(value.objectType());
     hashCode = hashCode * 31 + qHash(value.propertyCount());
+    QMap<int, QVariant> properties = value.properties();
+    for(int key : properties.keys()){
+        hashCode = hashCode * 31 + qHash(key);
+        const QVariant& variant = properties[key];
+        switch(variant.userType()){
+        case QMetaType::Bool:
+            hashCode = hashCode * 31 + qHash(variant.toBool());
+            break;
+        case QMetaType::Int:
+            hashCode = hashCode * 31 + qHash(variant.toInt());
+            break;
+        case QMetaType::Float:
+            hashCode = hashCode * 31 + qHash(variant.toFloat());
+            break;
+        case QMetaType::Double:
+            hashCode = hashCode * 31 + qHash(variant.toDouble());
+            break;
+        case QMetaType::QString:
+            hashCode = hashCode * 31 + qHash(variant.toString());
+            break;
+        case QMetaType::QColor:
+            hashCode = hashCode * 31 + qHash(variant.value<QColor>());
+            break;
+        case QMetaType::QPen:
+            hashCode = hashCode * 31 + qHash(variant.value<QPen>());
+            break;
+        case QMetaType::QTextLength:
+            hashCode = hashCode * 31 + qHash(variant.value<QTextLength>());
+            break;
+        default:
+            if(variant.userType()==qMetaTypeId<QList<QTextLength>>()){
+                hashCode = hashCode * 31 + qHash(variant.value<QList<QTextLength>>());
+            }
+            break;
+        }
+    }
     return hashCode;
 }
 
-inline uint qHash(const QTextFrame &value)
+inline hash_type qHash(const QTextFrame &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.parentFrame());
     hashCode = hashCode * 31 + qHash(value.firstPosition());
     hashCode = hashCode * 31 + qHash(value.lastPosition());
     return hashCode;
 }
 
-inline uint qHash(const QTextFrame::iterator &value)
+inline hash_type qHash(const QTextFrame::iterator &value)
 {
     return genericHash(value);
 }
 
-inline uint qHash(const QTextLength &value)
+inline hash_type qHash(const QTextLength &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.rawValue());
     return hashCode;
 }
 
-inline uint qHash(const QTextTableCell &value)
+inline hash_type qHash(const QTextTableCell &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.firstPosition());
     hashCode = hashCode * 31 + qHash(value.lastPosition());
     hashCode = hashCode * 31 + qHash(value.row());
@@ -574,15 +723,41 @@ inline uint qHash(const QTextTableCell &value)
     return hashCode;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-inline uint qHash(const QColorSpace &value)
+inline hash_type qHash(const QAbstractTextDocumentLayout::Selection &value)
 {
-    uint hashCode = 1;
-    hashCode = hashCode * 31 + qHash(uint(value.primaries()));
-    hashCode = hashCode * 31 + qHash(uint(value.transferFunction()));
-    hashCode = hashCode * 31 + qHash(value.gamma());
-    hashCode = hashCode * 31 + qHash(value.isValid());
+    hash_type hashCode = qHash(value.cursor);
+    hashCode = hashCode * 31 + qHash(value.format);
     return hashCode;
 }
-#endif
+
+inline bool operator==(const QAbstractTextDocumentLayout::Selection &v1, const QAbstractTextDocumentLayout::Selection &v2){
+    return v1.cursor==v2.cursor
+            && v1.format==v2.format;
+}
+
+inline hash_type qHash(const QRgba64 &value)
+{
+    return qHash(value.operator unsigned long long());
+}
+
+inline bool operator==(const QRgba64 &v1, const QRgba64 &v2){
+    return v1.operator unsigned long long()==v2.operator unsigned long long();
+}
+
+inline hash_type qHash(const QAbstractTextDocumentLayout::PaintContext &value)
+{
+    hash_type hashCode = qHash(value.cursorPosition);
+    hashCode = hashCode * 31 + qHash(value.palette);
+    hashCode = hashCode * 31 + qHash(value.clip);
+    hashCode = hashCode * 31 + qHash(value.selections);
+    return hashCode;
+}
+
+inline bool operator==(const QAbstractTextDocumentLayout::PaintContext &v1, const QAbstractTextDocumentLayout::PaintContext &v2){
+    return v1.cursorPosition==v2.cursorPosition
+            && v1.palette==v2.palette
+            && v1.clip==v2.clip
+            && v1.selections==v2.selections;
+}
+
 #endif // QTJAMBI_GUI_QHASHES_H

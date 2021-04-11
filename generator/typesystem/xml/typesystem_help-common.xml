@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -74,14 +74,25 @@
   </object-type>
   <object-type name="QHelpIndexWidget">
     <inject-code class="native" position="beginning">
-    uint qHash(const QMap&lt;QString, QUrl> &amp;value){
-        uint hashCode = qHash(int(value.size()));
-        for(const QString&amp; key : value.keys()){
-            hashCode = hashCode * 31 + qHash(key);
-            hashCode = hashCode * 31 + qHash(value.value(key));
-        }
-        return hashCode;
+#if QT_VERSION &lt; QT_VERSION_CHECK(6,0,0)
+hash_type qHash(const QMap&lt;QString, QUrl> &amp;value){
+    hash_type hashCode = qHash(int(value.size()));
+    for(const QString&amp; key : value.keys()){
+        hashCode = hashCode * 31 + qHash(key);
+        hashCode = hashCode * 31 + qHash(value.value(key));
     }
+    return hashCode;
+}
+#else
+hash_type qHash(const QMultiMap&lt;QString, QUrl> &amp;value){
+    hash_type hashCode = qHash(int(value.keys().size()));
+    for(const QString&amp; key : value.keys()){
+        hashCode = hashCode * 31 + qHash(key);
+        hashCode = hashCode * 31 + qHash(value.values(key));
+    }
+    return hashCode;
+}
+#endif
     </inject-code>
   </object-type>
   <object-type name="QHelpIndexModel">
@@ -130,4 +141,8 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'focusInEvent(QFocusEvent * focusEvent)' in 'QHelpSearchQueryWidget'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchResultWidget'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QHelpFilterEngine::setCollectionHandler', unmatched parameter type 'QHelpCollectionHandler*'"/>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QCompressedHelpInfo."/>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpLink."/>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpSearchQuery."/>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpSearchResult."/>
 </typesystem>

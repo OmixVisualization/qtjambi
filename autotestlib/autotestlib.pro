@@ -22,13 +22,18 @@ include(../build/tests/autotest-generator/cpp/io_qt_autotests_generated/generate
 INCLUDEPATH += ./cpp/io_qt_autotests_generated
 
 HEADERS += \
+    bindableowner.h \
+    containers.h \
+    containers_qt5.h \
+    enums.h\
     abstractclass.h \
     destruction.h \
     global.h \
     injectedcode.h \
     interfaces.h \
+    internal.h \
     messagehandler.h \
-	metaobjectqtmetacast.h \
+    metaobjectqtmetacast.h \
     namespace.h \
     nativepointertester.h \
     paintengine.h \
@@ -46,6 +51,7 @@ HEADERS += \
 
 
 SOURCES += \
+    bindableowner.cpp \
     destruction.cpp \
     global.cpp \
     injectedcode.cpp \
@@ -56,12 +62,16 @@ SOURCES += \
     propertyandmethodcalltest.cpp \
     sharedpointertest.cpp \
     settingstest.cpp \
-    multisignaltest.cpp
+    multisignaltest.cpp \
+    tulip.cpp \
+    variants.cpp
 
 win32 {
     PRECOMPILED_HEADER = global.h
     CONFIG += precompile_header
 }
+msvc:QMAKE_CXXFLAGS += /bigobj
+
 win32-g++* {
     QMAKE_CXXFLAGS += -Wa,-mbig-obj
     CONFIG(debug, debug|release) {
@@ -87,5 +97,17 @@ macx:{
     }
 }
 
-QT += sql xml network widgets qml quick
+contains(QT_CONFIG, qtjambi-widgets): QT += widgets
+else:                                 DEFINES += QTJAMBI_NO_WIDGETS
+contains(QT_CONFIG, qtjambi-sql):     QT += sql
+else:                                 DEFINES += QTJAMBI_NO_SQL
+contains(QT_CONFIG, qtjambi-xml):     QT += xml
+else:                                 DEFINES += QTJAMBI_NO_XML
+contains(QT_CONFIG, qtjambi-network): QT += network
+else:                                 DEFINES += QTJAMBI_NO_NETWORK
+contains(QT_CONFIG, qtjambi-qml):     QT += qml
+else:                                 DEFINES += QTJAMBI_NO_QML
+contains(QT_CONFIG, qtjambi-quick):   QT += quick
+else:                                 DEFINES += QTJAMBI_NO_QUICK
+
 CONFIG += warn_on

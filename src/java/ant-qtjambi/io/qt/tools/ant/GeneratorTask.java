@@ -222,11 +222,8 @@ public class GeneratorTask extends Task {
         PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
 
         Object o;
-        o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_STAGE1);
+		o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_DEFINES);
         handlePreprocArgument(o, "--preproc-stage1");
-
-        o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_STAGE2);
-        handlePreprocArgument(o, "--preproc-stage2");
 
         parseArgumentFiles(commandList);
 
@@ -268,14 +265,12 @@ public class GeneratorTask extends Task {
         if(o != null) {
             if(o instanceof String[]) {
                 String[] sA = (String[]) o;
-                commandList.add(argument);
                 for(String s : sA)
-                    commandList.add(s);
+                    commandList.add("-D"+s);
             } else {
                 StringTokenizer st = new StringTokenizer(o.toString(), ",");
-                commandList.add(argument);
                 while(st.hasMoreTokens())
-                    commandList.add(st.nextToken());
+                    commandList.add("-D"+st.nextToken());
             }
         }
     }
@@ -293,7 +288,7 @@ public class GeneratorTask extends Task {
         File dirExecute = null;
         if(dir != null)
             dirExecute = new File(dir);
-        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File("build/generator/out/generator.out.txt"), new File("build/generator/out/generator.err.txt"));
+        Exec.execute(this, thisCommandList, dirExecute, getProject(), qtBinDirectory, qtLibDirectory, new File(outputDirectory+"/generator.out.txt"), new File(outputDirectory+"/generator.err.txt"));
     }
 
     public void setHeader(String header) {

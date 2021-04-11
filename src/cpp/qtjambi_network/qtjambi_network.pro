@@ -20,4 +20,5 @@ HEADERS += \
     qtjambi_network_repository.h
 
 SOURCES += \
-    qtjambi_network_repository.cpp
+    qtjambi_network_repository.cpp \
+    qtjambi_network_util.cpp

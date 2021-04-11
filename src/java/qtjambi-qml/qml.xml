@@ -1,9 +1,19 @@
 <project default="build">
     <target name="build">
         <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
-        <subant target="build" inheritall="true" verbose="true">
-            <filelist dir="${basedir}/src/java/qtjambi-qml" files="testcar,testgarage"/>
-        </subant>
+        <if>
+            <istrue value="${qtjambi.testbuild}"/>
+            <then>
+                <subant target="build" inheritall="true" verbose="true">
+                    <filelist dir="${basedir}/src/java/qtjambi-qml" files="testcar,testgarage"/>
+                </subant>
+            </then>
+            <else>
+                <!--subant target="build" inheritall="true" verbose="true">
+                    <filelist dir="${basedir}/src/java/qtjambi-qml" files=""/>
+                </subant-->
+            </else>
+        </if>
     </target>
     <target name="jar_init">
         <fail message="'module' is not set!">
@@ -16,8 +26,8 @@
     </target>
     
     <target name="copy-resources">
-        <mkdir dir="${java.outdir}/${module}"/>
-        <copy todir="${java.outdir}/${module}" includeemptydirs="false">
+        <mkdir dir="${java.outdir}/qml/${module}"/>
+        <copy todir="${java.outdir}/qml/${module}" includeemptydirs="false">
             <fileset dir="${modulesrc}">
                 <include name="**/*"/>
                 <exclude name="**/.*"/>
@@ -30,8 +40,8 @@
     </target>
 
     <target name="copy-src-resources">
-        <mkdir dir="${java.outsrcdir}/${module}"/>
-        <copy todir="${java.outsrcdir}/${module}" includeemptydirs="false">
+        <mkdir dir="${java.outsrcdir}/qml/${module}"/>
+        <copy todir="${java.outsrcdir}/qml/${module}" includeemptydirs="false">
             <fileset dir="${modulesrc}">
                 <include name="**/*"/>
                 <exclude name="build.xml"/>
@@ -41,10 +51,10 @@
     </target>
 
     <target name="compile" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
+        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/qml/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir}"/>
         </antcall>
@@ -55,7 +65,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <src path="${sourcedir}"/>
@@ -67,7 +77,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <src path="${sourcedir}"/>
@@ -81,8 +91,8 @@
     <target name="compile2" depends="jar_init">
         <echo message="Compiling java classes: ${sourcedir}, ${sourcedir2} excludes: ${module.excludes}"/>
         <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
+        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/qml/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir}"/>
         </antcall>
@@ -96,7 +106,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <src path="${sourcedir}"/>
@@ -110,7 +120,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <src path="${sourcedir}"/>
@@ -124,10 +134,10 @@
 
     <!-- Same as "compile" target but with 3 sourcedirs -->
     <target name="compile3" depends="jar_init">
-        <echo message="Compiling java classes: ${java.srcdir}/${module} excludes: ${module.excludes}"/>
+        <echo message="Compiling java classes: ${java.srcdir}/qml/${module} excludes: ${module.excludes}"/>
         <mkdir dir="${deploymentdir}"/>
-        <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <mkdir dir="${java.outdir}/${module}"/>
+        <delete dir="${java.outdir}/qml/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/qml/${module}"/>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="modulesrc" value="${sourcedir}"/>
         </antcall>
@@ -144,7 +154,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes}"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <compilerarg value="-Xlint:-module" />
@@ -160,7 +170,7 @@
                         fork="true" memorymaximumsize="1024m" verbose="false"
                         includeantruntime="true"
                         excludes="${module.excludes},module-info.java"
-                        destdir="${java.outdir}/${module}">
+                        destdir="${java.outdir}/qml/${module}">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
                     <src path="${sourcedir}"/>
@@ -227,8 +237,8 @@
     </target>
 
     <target name="createjarimpl">
-        <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${deploymentdir}/${subdir}">
-            <istrue value="${qtjambi.test.qmlmodule}"/>
+        <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${qtjambi.builddir}">
+            <istrue value="${qtjambi.testbuild}"/>
         </condition>
         <delete file="${destdir}/qml/${module-dir}/${module}.jar" verbose="true"/>
         <mkdir dir="${destdir}/qml/${module-dir}"/>
@@ -253,7 +263,7 @@
                 <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
                 <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
             </manifest>
-            <fileset dir="${java.outdir}/${module}"/>
+            <fileset dir="${java.outdir}/qml/${module}"/>
         </jar>
         <echo file="${destdir}/qml/${module-dir}/qmldir">module ${module}
 plugin jarimport</echo>
@@ -266,10 +276,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${qtjambi.builddir}/lib/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </then>
                     <else>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
+                        <copy file="${qtjambi.builddir}/lib/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
                     </else>
                 </if>
             </then>
@@ -283,10 +293,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${qtjambi.builddir}/lib/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </then>
                     <else>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
+                        <copy file="${qtjambi.builddir}/lib/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
                     </else>
                 </if>
             </then>
@@ -299,10 +309,10 @@ plugin jarimport</echo>
                 <if>
                     <istrue value="${libisdebug}"/>
                     <then>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/debug/utilities/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${qtjambi.builddir}/lib/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </then>
                     <else>
-                        <copy file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/release/utilities/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
+                        <copy file="${qtjambi.builddir}/lib/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
                     </else>
                 </if>
             </then>

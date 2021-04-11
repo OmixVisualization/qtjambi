@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,7 +51,7 @@ import io.qt.core.Qt;
 
 public class TestQSettings extends QApplicationTest implements Serializable {
     private static final long serialVersionUID = 1L;
-
+    
     @Test
     public void writeReadSettingsSimple() {
         {
@@ -217,48 +217,67 @@ public class TestQSettings extends QApplicationTest implements Serializable {
 		File file = File.createTempFile("QtJambiTest_testSettingsReadWrite", ".ini");
 		QSettings settings = new QSettings(file.getAbsolutePath(), QSettings.Format.IniFormat);
 		SettingsTest.write(settings, "java-enum", Qt.WindowType.WindowFullscreenButtonHint);
+		settings.sync();
 		assertTrue(SettingsTest.readEnum(settings));
 		SettingsTest.write(settings, "java-flag", new Qt.WindowFlags(Qt.WindowType.WindowFullscreenButtonHint, Qt.WindowType.WindowTransparentForInput));
+		settings.sync();
 		assertTrue(SettingsTest.readFlag(settings));
 		SettingsTest.write(settings, "java-int", (int)-5);
+		settings.sync();
 		assertTrue(SettingsTest.readInt(settings));
 		SettingsTest.write(settings, "java-long", (long)898776658768L);
+		settings.sync();
 		assertTrue(SettingsTest.readLong(settings));
 		SettingsTest.write(settings, "java-boolean", true);
+		settings.sync();
 		assertTrue(SettingsTest.readBoolean(settings));
 		SettingsTest.write(settings, "java-byte", (byte)578);
+		settings.sync();
 		assertTrue(SettingsTest.readByte(settings));
 		SettingsTest.write(settings, "java-string", "\"test1, test2\"");
+		settings.sync();
 		assertTrue(SettingsTest.readString(settings));
 		SettingsTest.write(settings, "java-bytearray", new QByteArray("test"));
+		settings.sync();
 		assertTrue(SettingsTest.readByteArray(settings));
 		SettingsTest.write(settings, "java-intlist", Arrays.asList(1, 2, 3, 4, 5));
+		settings.sync();
 		assertTrue(SettingsTest.readIntList(settings));
 		SettingsTest.write(settings, "java-stringlist", Arrays.asList("test1", "test2"));
+		settings.sync();
 		assertTrue(SettingsTest.readStringList(settings));
-
 		SettingsTest.writeEnum(settings);
 		assertEquals(Qt.WindowType.WindowFullscreenButtonHint, SettingsTest.read(settings, "cpp-enum"));
+		settings.sync();
 		SettingsTest.writeFlag(settings);
 		assertEquals(new Qt.WindowFlags(Qt.WindowType.WindowFullscreenButtonHint, Qt.WindowType.WindowTransparentForInput), SettingsTest.read(settings, "cpp-flag"));
 		SettingsTest.writeInt(settings);
 		assertEquals(-5, SettingsTest.read(settings, "cpp-int"));
+		settings.sync();
 		SettingsTest.writeUInt(settings);
 		assertEquals(39, SettingsTest.read(settings, "cpp-uint"));
+		settings.sync();
 		SettingsTest.writeInt64(settings);
 		assertEquals(898776658768L, SettingsTest.read(settings, "cpp-int64"));
+		settings.sync();
 		SettingsTest.writeBool(settings);
 		assertEquals(Boolean.TRUE, SettingsTest.read(settings, "cpp-bool"));
+		settings.sync();
 		SettingsTest.writeChar(settings);
 		assertEquals((byte)578, SettingsTest.read(settings, "cpp-char"));
+		settings.sync();
 		SettingsTest.writeString(settings);
 		assertEquals("\"test1, test2\"", SettingsTest.read(settings, "cpp-string"));
+		settings.sync();
 		SettingsTest.writeByteArray(settings);
 		assertEquals(new QByteArray("test"), SettingsTest.read(settings, "cpp-bytearray"));
+		settings.sync();
 		SettingsTest.writeIntList(settings);
 		assertEquals(Arrays.asList(1, 2, 3, 4, 5), SettingsTest.read(settings, "cpp-intlist"));
+		settings.sync();
 		SettingsTest.writeStringList(settings);
 		assertEquals(Arrays.asList("test1", "test2"), SettingsTest.read(settings, "cpp-stringlist"));
+		settings.sync();
 
 //		settings.clear();
 		settings.dispose();

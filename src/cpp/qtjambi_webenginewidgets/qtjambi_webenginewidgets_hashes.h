@@ -5,9 +5,9 @@
 #include <QtCore/QtCore>
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 
-inline uint qHash(const QWebEngineScript &value)
+inline hash_type qHash(const QWebEngineScript &value)
 {
-    uint hashCode = qHash(value.name());
+    hash_type hashCode = qHash(value.name());
     hashCode = hashCode * 31 + qHash(value.isNull());
     hashCode = hashCode * 31 + qHash(value.worldId());
     hashCode = hashCode * 31 + qHash(value.sourceCode());

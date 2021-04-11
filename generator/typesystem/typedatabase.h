@@ -50,6 +50,7 @@ class TypeDatabase {
 
         QList<Include> extraIncludes(const QString &className);
 
+        TypeSystemTypeEntry *findTypeSystem(const QString &name);
         ComplexTypeEntry *findComplexType(const QString &name);
         FunctionalTypeEntry *findFunctionalType(const QString &name);
         FunctionalTypeEntry *findFunctionalTypeByUsing(const QString &containingClassName, const QString &_using);
@@ -62,6 +63,10 @@ class TypeDatabase {
         IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container);
         PointerContainerTypeEntry *findPointerContainerType(const QString &name);
         InitializerListTypeEntry *findInitializerListType(const QString &name);
+
+        bool isPixmapType(const TypeEntry *e) const{
+            return e==m_pixmapType || e==m_bitmapType;
+        }
 
         TypeEntry *findType(const QString &name) const;
 
@@ -84,32 +89,7 @@ class TypeDatabase {
         bool isFieldRejected(const QString &class_name, const QString &field_name);
         bool isEnumRejected(const QString &class_name, const QString &enum_name);
 
-        void addType(TypeEntry *e) {
-            m_entries[e->qualifiedCppName()].append(e);
-            QString name = e->qualifiedCppName().contains("::") ? e->qualifiedCppName().split("::").last() : e->qualifiedCppName();
-            m_class_name_counter[name]++;
-            if(e->type()==TypeEntry::TypeSystemType){
-                TypeSystemTypeEntry* tsentry = static_cast<TypeSystemTypeEntry*>(e);
-                if(!tsentry->qtLibrary().isEmpty()){
-                    m_typeSystemsByQtLibrary[tsentry->qtLibrary()] = tsentry;
-                }
-            }
-        }
-
-        void replaceQThreadType() {
-            if(ObjectTypeEntry * threadType = findObjectType("QThread")){
-                m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-            }
-            if(ObjectTypeEntry * threadType = findObjectType("QtJambiThreadStorage")){
-                //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-                threadType->setCodeGeneration(TypeEntry::GenerateNothing);
-            }
-            if(ObjectTypeEntry * threadType = findObjectType("QThreadStorage")){
-                //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-                threadType->setCodeGeneration(TypeEntry::GenerateNothing);
-            }
-            addType(new ThreadTypeEntry());
-        }
+        void addType(TypeEntry *e);
 
         bool isUniqueClassName(QString name) {
             return m_class_name_counter[name]<=1;
@@ -160,12 +140,13 @@ class TypeDatabase {
             m_rebuild_classes = cls;
         }
 
-        static QString globalNamespaceClassName();
         QString filename() const {
             return "typesystem.txt";
         }
 
-        bool parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate = true, bool optional = false);
+        void initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion, bool isQtjambiPort);
+
+        void parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate = true, bool optional = false);
 
         bool defined(QString name);
 
@@ -174,6 +155,7 @@ class TypeDatabase {
         const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary() const { return m_typeSystemsByQtLibrary; }
 
     private:
+        uint m_qtVersion;
     uint m_suppressWarnings :
         1;
     uint m_includeEclipseWarnings :
@@ -193,6 +175,8 @@ class TypeDatabase {
 
         DefinedPtr m_defined;
         QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;
+        const TypeEntry * m_pixmapType;
+        const TypeEntry * m_bitmapType;
 };
 
 #endif

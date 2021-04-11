@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,41 +29,38 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiMapIteratorObject<K,V> extends QtJambiIteratorObject<V>{
 	
-	private final Function<QtJambiMapIteratorObject<K,V>,K> key;
-
-	@SuppressWarnings("unchecked")
-	protected <T extends QtJambiIteratorObject<?>,Q,S> QtJambiMapIteratorObject(Consumer<T> decrement, Consumer<T> increment, Function<T,Q> key, Function<T,S> value) {
-		super(decrement, increment, value);
-		this.key = (Function<QtJambiMapIteratorObject<K,V>,K>)key;
+	protected <T extends QtJambiIteratorObject<?>,Q,S> QtJambiMapIteratorObject(Object owner) {
+		super(owner);
 	}
 
-    public java.util.Iterator<QPair<K,V>> toJavaMapIterator(Supplier<QtJambiMapIteratorObject<K,V>> endSupplier){
+	@QtUninvokable
+    protected java.util.Iterator<QPair<K,V>> toJavaMapIterator(){
     	return new java.util.Iterator<QPair<K,V>>() {
+    		private final QtJambiIteratorObject<?> end = end();
+    		
             @Override
             public boolean hasNext() {
-                return !QtJambiMapIteratorObject.this.equals(endSupplier.get());
+                return !QtJambiMapIteratorObject.this.equals(end);
             }
 
             @Override
             public QPair<K,V> next() {
                 if(!hasNext())
                     throw new java.util.NoSuchElementException();
-                QPair<K,V> e = new QPair<>(_key(), _value());
-                _increment();
+            	if(!end.equals(end()))
+            		throw new IllegalMonitorStateException();
+                QPair<K,V> e = new QPair<>(checkedKey(), checkedValue());
+                increment();
                 return e;
             }
         };
     }
     
-    K _key() {
-    	return key.apply(QtJambiMapIteratorObject.this);
-    }
+    @QtUninvokable
+    protected abstract K checkedKey();
 }

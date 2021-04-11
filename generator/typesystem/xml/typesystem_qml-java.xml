@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,9 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.qml" default-superclass="io.qt.QtObject">
+    <inject-code position="2" since="6.0.0">
+        io.qt.QtUtilities.initializePackage("io.qt.network");
+    </inject-code>
     <inject-code class="metainfo" position="1">
     void initialize_meta_info_QQmlListProperty();
     </inject-code>
@@ -66,23 +69,70 @@
         </modify-function>
     </object-type>
 
+    <object-type name="QJSManagedValue">
+      <modify-function signature="jsMetaInstantiate(QList&lt;QJSValue&gt;)const">
+          <modify-argument index="0">
+            <replace-type modified-type="io.qt.qml.QJSManagedValue" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                qtjambi_set_java_ownership(%env, %out);
+            </conversion-rule>
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="jsMetaType()const">
+          <modify-argument index="0">
+            <replace-type modified-type="io.qt.qml.QJSManagedValue" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                qtjambi_set_java_ownership(%env, %out);
+            </conversion-rule>
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="prototype()const">
+          <modify-argument index="0">
+            <replace-type modified-type="io.qt.qml.QJSManagedValue" />
+            <conversion-rule class="native">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, new QJSManagedValue(std::move(%in)));
+                qtjambi_set_java_ownership(%env, %out);
+            </conversion-rule>
+          </modify-argument>
+      </modify-function>
+    </object-type>
     <value-type name="QJSValue">
         <inject-code>
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QJSValue" quote-before-line="}// class"/>
         </inject-code>
-      <modify-function signature="call(const QList&lt;QJSValue&gt; &amp;)">
+      <modify-function signature="call(const QList&lt;QJSValue&gt; &amp;)" until="5.*">
           <modify-argument index="1">
             <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
             <replace-default-expression with="java.util.Collections.emptyList()" />
           </modify-argument>
       </modify-function>
-      <modify-function signature="callWithInstance(const QJSValue &amp;, const QList&lt;QJSValue&gt; &amp;)">
+      <modify-function signature="callWithInstance(const QJSValue &amp;, const QList&lt;QJSValue&gt; &amp;)" until="5.*">
           <modify-argument index="2">
             <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
             <replace-default-expression with="java.util.Collections.emptyList()" />
           </modify-argument>
       </modify-function>
-      <modify-function signature="callAsConstructor(const QList&lt;QJSValue&gt; &amp;)">
+      <modify-function signature="callAsConstructor(const QList&lt;QJSValue&gt; &amp;)" until="5.*">
+           <modify-argument index="1">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+           </modify-argument>
+      </modify-function>
+      <modify-function signature="call(const QList&lt;QJSValue&gt; &amp;)const" since="6.0.0">
+          <modify-argument index="1">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="callWithInstance(const QJSValue &amp;, const QList&lt;QJSValue&gt; &amp;)const" since="6.0.0">
+          <modify-argument index="2">
+            <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
+            <replace-default-expression with="java.util.Collections.emptyList()" />
+          </modify-argument>
+      </modify-function>
+      <modify-function signature="callAsConstructor(const QList&lt;QJSValue&gt; &amp;)const" since="6.0.0">
            <modify-argument index="1">
             <replace-type modified-type="java.util.Collection&lt;QJSValue&gt;" />
             <replace-default-expression with="java.util.Collections.emptyList()" />
@@ -123,21 +173,37 @@
   </value-type>
 
     <object-type name="QQmlEngine">
-        <modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
+        <!--modify-function signature="warnings ( const QList&lt;QQmlError> &amp; )">
             <modify-argument index="1">
-            <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
-            <conversion-rule class="shell">
-                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
-            </conversion-rule>
-            <conversion-rule class="native">
-                QList&lt;QQmlError>  %out = qtjambi_cast&lt;QList&lt;QQmlError>>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
+                <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QList&lt;QQmlError>  %out = qtjambi_cast&lt;QList&lt;QQmlError>>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
         </modify-function>
-    <modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
-        <modify-argument index="3">
-            <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
-        </modify-argument>
+        <modify-function signature="importPlugin ( const QString &amp;, const QString &amp;, QList&lt;QQmlError> * )">
+            <modify-argument index="3">
+                <replace-type modified-type="java.util.Collection&lt;QQmlError&gt;" />
+            </modify-argument>
+        </modify-function-->
+        <modify-function signature="setUrlInterceptor(QQmlAbstractUrlInterceptor*)">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcUrlInterceptor" since="6.0.0"/>
+                <reference-count action="set" variable-name="__rcUrlInterceptor" until="5.*"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addUrlInterceptor(QQmlAbstractUrlInterceptor*)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="add" variable-name="__rcUrlInterceptor" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeUrlInterceptor(QQmlAbstractUrlInterceptor*)" since="6.0.0">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcUrlInterceptor" />
+            </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QQmlComponent">
@@ -207,9 +273,6 @@
         <inject-code class="interface">
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController__" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController_native__" quote-before-line="}// class"/>
-        </inject-code>
         <modify-function signature="incubateWhile(bool *, int)" until="5.14">
             <inject-code class="native" position="beginning">
             QTJAMBI_BLOCK_EXCEPTIONS(true)
@@ -219,13 +282,13 @@
                 <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
-                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag.flag(%env, %in);
+                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag::flag(%env, %in);
                     volatile bool* %out = reinterpret_cast&lt;volatile bool* >(ptr);
                 </conversion-rule>
                 <reference-count action="set" variable-name="__rcWhileFlag"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="incubateWhile(bool *, int)" remove="all" since="5.15"/>
+        <modify-function signature="incubateWhile(bool *, int)" remove="all" since="5.15" until="5.*"/>
         <modify-function signature="incubateWhile(std::atomic&lt;bool> *, int)" since="5.15">
             <inject-code class="native" position="beginning">
             QTJAMBI_BLOCK_EXCEPTIONS(true)
@@ -235,7 +298,7 @@
                 <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
-                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag.flag(%env, %in);
+                    jlong ptr = Java::QtQml::QQmlIncubationController$WhileFlag::flag(%env, %in);
                     std::atomic&lt;bool>* %out = reinterpret_cast&lt;std::atomic&lt;bool>* >(ptr);
                 </conversion-rule>
                 <reference-count action="set" variable-name="__rcWhileFlag"/>
@@ -333,7 +396,7 @@
             <modify-argument index="0">
                 <conversion-rule class="native">
                     if(valueIsUndefined){
-                        Java::QtQml::QQmlExpression$ValueIsUndefined.throwNew(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
+                        Java::QtQml::QQmlExpression$ValueIsUndefined::throwNew(%env, "Value is undefined." QTJAMBI_STACKTRACEINFO );
                         return nullptr;
                     }
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);

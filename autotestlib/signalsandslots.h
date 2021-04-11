@@ -45,19 +45,20 @@
 #ifndef SIGNALSANDSLOTS_H
 #define SIGNALSANDSLOTS_H
 
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
+
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QStringList>
-#include <QtNetwork>
-#include <QtWidgets>
+#include <QtCore/QDebug>
 
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #endif
-
-#include <QDebug>
 
 #ifndef SIGNAL
 #  define SIGNAL(A) #A
@@ -86,10 +87,6 @@ public:
         slot3_called = 0;
     }
 
-    static QString propertyCppType(QMetaProperty property){
-        return QLatin1String(property.typeName());
-    }
-
     static QMetaObject::Connection connectToDestroyedSignal(QObject * object, QRunnable *runnable){
         QObject* receiver = new QObject();
         receiver->moveToThread(nullptr);
@@ -98,17 +95,6 @@ public:
             delete runnable;
             delete receiver;
         }, Qt::DirectConnection);
-    }
-
-    static QVector<QString> emitAuthenticationRequired(QNetworkAccessManager* accessManager, QNetworkReply* reply){
-        QVector<QString> result;
-        QAuthenticator authenticator;
-        result << authenticator.user();
-        result << authenticator.password();
-        emit accessManager->authenticationRequired(reply, &authenticator);
-        result << authenticator.user();
-        result << authenticator.password();
-        return result;
     }
 
     QList<bool> disconnectSignals(SignalsAndSlots *obj)
@@ -258,101 +244,11 @@ public:
         return property(propertyName.toLatin1()).toByteArray();
     }
 
-    bool resetProperty(const QString &propertyName) {
-        QMetaProperty prop = metaObject()->property(metaObject()->indexOfProperty(propertyName.toLatin1()));
-        return prop.reset(this);
-    }
-
-    QString classNameFromMetaObject() {
-        return metaObject()->className();
-    }
-
-    QString classNameOfSuperClassFromMetaObject() {
-        return metaObject()->superClass()->className();
-    }
-
-    QStringList propertyNamesFromMetaObject() {
-        QStringList list;
-        for (int i=0; i<metaObject()->propertyCount(); ++i)
-            list.append(QLatin1String(metaObject()->property(i).name()));
-
-        return list;
-    }
-
-    int propertyCountFromMetaObject() {
-        return metaObject()->propertyCount();
-    }
-
-    int propertyCountOfSuperClassFromMetaObject() {
-        return metaObject()->superClass()->propertyCount();
-    }
-
     QByteArray cppProperty() const { return m_cppProperty; }
 
     void setCppProperty(const QByteArray &ba) { m_cppProperty = ba; }
 
     void resetCppProperty() { m_cppProperty = "it was the darkest and stormiest night evar"; }
-
-    int numberOfEnumTypes()
-    {
-        return metaObject()->enumeratorCount();
-    }
-
-    QStringList namesOfEnumType(const QString &name)
-    {
-        QStringList returned;
-
-        QMetaEnum metaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator(name.toUtf8().constData()));
-        int count = metaEnum.keyCount();
-        for (int i=0; i<count; ++i) {
-            returned.append(QString::fromLatin1(metaEnum.key(i)));
-        }
-
-        return returned;
-    }
-
-    QList<int> valuesOfEnumType(const QString &name)
-    {
-        QList<int> returned;
-
-        QMetaEnum metaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator(name.toUtf8().constData()));
-        int count = metaEnum.keyCount();
-        for (int i=0; i<count; ++i) {
-            returned.append(metaEnum.value(i));
-        }
-
-        return returned;
-    }
-
-    bool isFlagsType(const QString &name)
-    {
-        QMetaEnum metaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator(name.toUtf8().constData()));
-        return metaEnum.isFlag();
-    }
-
-    bool isValidEnum(const QString &name)
-    {
-        QMetaEnum metaEnum = metaObject()->enumerator(metaObject()->indexOfEnumerator(name.toUtf8().constData()));
-        return metaEnum.isValid();
-    }
-
-    static QString metaObjectMethodSignature(QObject *obj, const QString &name)
-    {
-        for (int i=0; i<obj->metaObject()->methodCount(); ++i) {
-            if (QString(obj->metaObject()->method(i).methodSignature()).contains(name)) {
-                return obj->metaObject()->method(i).methodSignature();
-            }
-        }
-
-        return "";
-    }
-
-    static bool invokeMethod(QObject *obj, const QString &name, jobject arg)
-    {
-        if(JNIEnv *env = qtjambi_current_environment()){
-            return QMetaObject::invokeMethod(obj, name.toLatin1(), Qt::DirectConnection, Q_ARG(JObjectWrapper, JObjectWrapper(env, arg)));
-        }else return false;
-    }
 
     int slot1_1_called;
     int slot1_2_called;
@@ -384,13 +280,14 @@ private:
 
 protected:
     virtual void connectNotify(const QMetaMethod & signal){
-        //QObjectPrivate* objectPrivate = QObjectPrivate::get(this);
-
-        qDebug() << QByteArray("connecting to signal "+signal.name());
+        qDebug() << "connecting signal " << signal.name();
     }
 
     virtual void disconnectNotify(const QMetaMethod & signal){
-        qDebug() << QByteArray(signal.isValid() ? "disconnecting signal "+signal.name() : "diconnectAll()");
+        if(signal.isValid())
+            qDebug() << "disconnecting signal " << signal.name();
+        else
+            qDebug() << "diconnectAll()";
     }
 };
 

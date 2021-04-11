@@ -192,4 +192,5 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature '' for function modification in 'QRemoteObjectRegistry' not found. Possible candidates: " />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator*' for function modification in 'QtRemoteObjects' not found. Possible candidates:*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'operator=(*)' for function modification in '*' not found. Possible candidates:*" />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QRemoteObjectPendingCall." />
 </typesystem>

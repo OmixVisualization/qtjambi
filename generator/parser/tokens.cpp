@@ -104,6 +104,7 @@ static char const * const _S_token_names[] = {
     "k_dcop",
     "k_dcop_signals",
     "leq",
+    "cmp",
     "long",
     "mutable",
     "namespace",
@@ -165,7 +166,9 @@ static char const * const _S_token_names[] = {
     "QTJAMBI_DEPRECATED_X",
     "decltype",
     "alignas",
+    "alignof",
 //    "nullptr"
+    "noexcept"
 };
 
 static char _S_printable[][2] = {

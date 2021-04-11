@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -95,8 +95,10 @@ public:
     }
 
     static QString shellClassName(const AbstractMetaClass *java_class) {
-        if(java_class->typeEntry()->designatedInterface()){
-            return shellClassName(java_class->enclosingClass());
+        if(java_class->typeEntry()->designatedInterface() && java_class->enclosingClass()){
+            return java_class->generateShellClass()
+                   ? java_class->enclosingClass()->name() + "_shell"
+                   : java_class->enclosingClass()->qualifiedCppName();
         }
         return java_class->generateShellClass()
                ? java_class->name() + "_shell"

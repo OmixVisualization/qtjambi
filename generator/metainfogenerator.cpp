@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -52,8 +52,8 @@ MetaInfoGenerator::MetaInfoGenerator(PriGenerator *pri):
     setFilenameStub("metainfo");
 }
 
-QString MetaInfoGenerator::subDirectoryForPackage(const QString &package, OutputDirectoryType type){
-    TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+QString MetaInfoGenerator::subDirectoryForPackage(const QString &typeSystem, const QString &package, OutputDirectoryType type){
+    TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(typeSystem));
     switch (type) {
         case CppDirectory:
             {
@@ -84,12 +84,12 @@ QString MetaInfoGenerator::subDirectoryForPackage(const QString &package, Output
 
 QString MetaInfoGenerator::subDirectoryForClass(const AbstractMetaClass *cls, OutputDirectoryType type){
     Q_ASSERT(cls);
-    return subDirectoryForPackage(cls->targetTypeSystem(), type);
+    return subDirectoryForPackage(cls->targetTypeSystem(), cls->package(), type);
 }
 
 QString MetaInfoGenerator::subDirectoryForClass(const AbstractMetaFunctional *cls, OutputDirectoryType type){
     Q_ASSERT(cls);
-    return subDirectoryForPackage(cls->targetTypeSystem(), type);
+    return subDirectoryForPackage(cls->targetTypeSystem(), cls->package(), type);
 }
 
 void MetaInfoGenerator::generate() {
@@ -115,58 +115,104 @@ void MetaInfoGenerator::write(QTextStream &, const AbstractMetaClass *, int) {
     // not used
 }
 
-bool MetaInfoGenerator::generated(const AbstractMetaClass *cls) const {
-    return generatedMetaInfo(cls->targetTypeSystem());
-}
-
-bool MetaInfoGenerator::generatedMetaInfo(const QString &package) const {
-    return (m_skip_list.value(package, 0x0) & GeneratedMetaInfo);
-}
-
-bool MetaInfoGenerator::generatedJavaClasses(const QString &package) const {
-    return (m_skip_list.value(package, 0x0) & GeneratedJavaClasses);
-}
-
 /**
  * Builds a skip list of classes that shouldn't be built.
  */
 void MetaInfoGenerator::buildSkipList() {
-    AbstractMetaClassList classList = classes();
-    for(AbstractMetaClass *cls : classList) {
-        if (!m_skip_list.contains(cls->targetTypeSystem()))
-            m_skip_list[cls->targetTypeSystem()] = 0x0;
+    for(AbstractMetaClass *cls : m_classes) {
+        if(cls->isFake()){
+            for(AbstractMetaEnum* _cls : cls->enums()){
+                if (!m_packageGenerationPolicies.contains(_cls->targetTypeSystem()))
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] = 0x0;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedMetaInfo;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang){
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedJavaClasses;
+                    if(_cls->targetTypeSystem()!=_cls->package()){
+                        if (!m_packageGenerationPolicies.contains(_cls->package()))
+                            m_packageGenerationPolicies[_cls->package()] = 0x0;
+                        m_packageGenerationPolicies[_cls->package()] |= GeneratedJavaClasses;
+                        m_typeSystemByPackage[_cls->package()] = _cls->targetTypeSystem();
+                    }
+                }
+            }
+            for(AbstractMetaFunctional* _cls : cls->functionals()){
+                if (!m_packageGenerationPolicies.contains(_cls->targetTypeSystem()))
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] = 0x0;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedMetaInfo;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang){
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedJavaClasses;
+                    if(_cls->targetTypeSystem()!=_cls->package()){
+                        if (!m_packageGenerationPolicies.contains(_cls->package()))
+                            m_packageGenerationPolicies[_cls->package()] = 0x0;
+                        m_packageGenerationPolicies[_cls->package()] |= GeneratedJavaClasses;
+                        m_typeSystemByPackage[_cls->package()] = _cls->targetTypeSystem();
+                    }
+                }
+            }
+            for(AbstractMetaClass *_cls : cls->enclosedClasses()) {
+                if (!m_packageGenerationPolicies.contains(_cls->targetTypeSystem()))
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] = 0x0;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedMetaInfo;
+
+                if (_cls->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang){
+                    m_packageGenerationPolicies[_cls->targetTypeSystem()] |= GeneratedJavaClasses;
+                    if(_cls->targetTypeSystem()!=_cls->package()){
+                        if (!m_packageGenerationPolicies.contains(_cls->package()))
+                            m_packageGenerationPolicies[_cls->package()] = 0x0;
+                        m_packageGenerationPolicies[_cls->package()] |= GeneratedJavaClasses;
+                        m_typeSystemByPackage[_cls->package()] = _cls->targetTypeSystem();
+                    }
+                }
+            }
+        }
+        if (!m_packageGenerationPolicies.contains(cls->targetTypeSystem()))
+            m_packageGenerationPolicies[cls->targetTypeSystem()] = 0x0;
 
         if (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
-            m_skip_list[cls->targetTypeSystem()] |= GeneratedMetaInfo;
+            m_packageGenerationPolicies[cls->targetTypeSystem()] |= GeneratedMetaInfo;
 
-        if (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang)
-            m_skip_list[cls->targetTypeSystem()] |= GeneratedJavaClasses;
+        if (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateTargetLang){
+            m_packageGenerationPolicies[cls->targetTypeSystem()] |= GeneratedJavaClasses;
+            if(cls->targetTypeSystem()!=cls->package()){
+                if (!m_packageGenerationPolicies.contains(cls->package()))
+                    m_packageGenerationPolicies[cls->package()] = 0x0;
+                m_packageGenerationPolicies[cls->package()] |= GeneratedJavaClasses;
+                m_typeSystemByPackage[cls->package()] = cls->targetTypeSystem();
+            }
+        }
     }
 }
 
-static void generateInitializer(QTextStream &s, const QString &package, TypeSystem::Language language, CodeSnip::Position pos, Indentor indent);
+static void generateInitializer(QTextStream &s, const TypeSystemTypeEntry * typeSystemEntry, TypeSystem::Language language, CodeSnip::Position pos, Indentor indent);
 
 void MetaInfoGenerator::writeCppFile() {
-    TypeEntryHash entries = TypeDatabase::instance()->allEntries();
-    TypeEntryHash::iterator it;
+    const TypeEntryHash& entries = TypeDatabase::instance()->allEntries();
 
-    AbstractMetaClassList classList = classes();
     QHash<QString, FileOut *> fileHash;
     QHash<QString, QSet<QString>> writtenClasses;
 
     Indentor INDENT;
 
     // Seems continue is not supported by our foreach loop, so
-    for(AbstractMetaClass *cls : classList) {
+    for(AbstractMetaClass *cls : m_classes) {
 
         FileOut *f = fileHash.value(cls->targetTypeSystem(), nullptr);
-        if (f == nullptr && generated(cls)) {
+        if (f == nullptr && (m_packageGenerationPolicies.value(cls->targetTypeSystem(), 0x0) & GeneratedMetaInfo)) {
             f = new FileOut(cppOutputDirectory() + "/" + subDirectoryForClass(cls, CppDirectory) + "/" + cppFilename());
 
             QSet<QString> dedupe = QSet<QString>();
             writeInclude(f->stream, Include(Include::IncludePath, "qtjambi/qtjambi_core.h"), dedupe);
             QString typeSystemName = cls->targetTypeSystem();
-            if(TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(cls->targetTypeSystem()))){
+            TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(cls->targetTypeSystem()));
+            if(typeSystemEntry){
                 if(typeSystemEntry->include().type!=Include::TargetLangImport){
                     writeInclude(f->stream, typeSystemEntry->include(), dedupe);
                 }
@@ -176,9 +222,10 @@ void MetaInfoGenerator::writeCppFile() {
                     }
                 }
             }
+            writeInclude(f->stream, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), dedupe);
             f->stream << Qt::endl;
-
-            generateInitializer(f->stream, cls->targetTypeSystem(), TypeSystem::MetaInfo, CodeSnip::Position1, INDENT);
+            if(typeSystemEntry)
+                generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position1, INDENT);
 
             fileHash.insert(cls->targetTypeSystem(), f);
 
@@ -202,18 +249,20 @@ void MetaInfoGenerator::writeCppFile() {
 
     // Primitive types must be added to all packages, in case the other packages are
     // not referenced from the generated code.
-    for(const QString& package : fileHash.keys()) {
-        FileOut *f = fileHash.value(package, nullptr);
+    for(QHash<QString, FileOut *>::const_key_value_iterator iter = fileHash.constKeyValueBegin(); iter!=fileHash.constKeyValueEnd(); ++iter) {
+        const QString& package = iter->first;
+        FileOut *f = iter->second;
         if (f != nullptr) {
-            for (it = entries.begin(); it != entries.end(); ++it) {
-                QList<TypeEntry *> entries = it.value();
-                for(TypeEntry *entry : entries) {
+            for (const QList<TypeEntry *>& _entries : entries) {
+                for(TypeEntry *entry : _entries) {
                     if (shouldGenerate(entry) && entry->isPrimitive()) {
                         CppImplGenerator::writeCustomStructors(f->stream, entry);
                     }
                 }
             }
-            generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position2, INDENT);
+            TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+            if(typeSystemEntry)
+                generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position2, INDENT);
 
             // Initialization function: Registers meta types
             f->stream << Qt::endl
@@ -221,15 +270,15 @@ void MetaInfoGenerator::writeCppFile() {
                       << INDENT << "{" << Qt::endl;
             INDENTATION(INDENT)
             f->stream << INDENT << "QTJAMBI_DEBUG_METHOD_PRINT(\"native\", \"" << package << "::JNI_OnLoad(JavaVM *, void *)\")" << Qt::endl;
-            generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Beginning, INDENT);
+            if(typeSystemEntry)
+                generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Beginning, INDENT);
         }
     }
 
     {
         INDENTATION(INDENT)
-        QHash<const TypeEntry *, AbstractMetaEnum *> metaEnums;
         writtenClasses.clear();
-        for(AbstractMetaClass *cls : classList) {
+        for(AbstractMetaClass *cls : m_classes) {
             FileOut *f = fileHash.value(cls->targetTypeSystem(), nullptr);
 
             if (f != nullptr && cls) {
@@ -247,15 +296,19 @@ void MetaInfoGenerator::writeCppFile() {
         }
     }
 
-    for(const QString& package : fileHash.keys()) {
-        FileOut *f = fileHash.value(package, nullptr);
+    for(QHash<QString, FileOut *>::const_key_value_iterator iter = fileHash.constKeyValueBegin(); iter!=fileHash.constKeyValueEnd(); ++iter) {
+        const QString& package = iter->first;
+        FileOut *f = iter->second;
         if (f != nullptr) {
             {
                 INDENTATION(INDENT)
-                generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position3, INDENT);
-                generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::Position4, INDENT);
-                generateInitializer(f->stream, package, TypeSystem::MetaInfo, CodeSnip::End, INDENT);
-                f->stream << INDENT << "return JNI_VERSION_10;" << Qt::endl;
+                TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+                if(typeSystemEntry){
+                    generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position3, INDENT);
+                    generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::Position4, INDENT);
+                    generateInitializer(f->stream, typeSystemEntry, TypeSystem::MetaInfo, CodeSnip::End, INDENT);
+                }
+                f->stream << INDENT << "return JNI_VERSION_1_8;" << Qt::endl;
             }
             f->stream << "}" << Qt::endl << Qt::endl;
             if (f->done())
@@ -267,13 +320,10 @@ void MetaInfoGenerator::writeCppFile() {
     }
 }
 
-static void generateInitializer(QTextStream &s, const QString &package, TypeSystem::Language language, CodeSnip::Position pos, Indentor indent) {
-    TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+static void generateInitializer(QTextStream &s, const TypeSystemTypeEntry * typeSystemEntry, TypeSystem::Language language, CodeSnip::Position pos, Indentor indent) {
     if(typeSystemEntry){
-        QList<CodeSnip> snips = typeSystemEntry->snips;
-
         QStringList lines;
-        for(const CodeSnip &snip : snips) {
+        for(const CodeSnip &snip : typeSystemEntry->snips) {
             if (snip.position == pos && snip.language == language)
                 lines << snip.code().split("\n");
         }
@@ -332,20 +382,28 @@ void MetaInfoGenerator::writeLibraryInitializers() {
     // We need to generate a library initializer in Java for all packages
     // that have generated classes in Java, and in C++ for all packages
     // that have generated metainfo.
+    for(QHash<QString, quint8>::const_key_value_iterator iter = m_packageGenerationPolicies.constKeyValueBegin(); iter!=m_packageGenerationPolicies.constKeyValueEnd(); ++iter) {
 
-    QList<QString> known_packages = m_skip_list.keys();
-    for(const QString& package : known_packages) {
-
-        if (generatedJavaClasses(package)) {
-
-            FileOut fileOut(javaOutputDirectory() + "/" + subDirectoryForPackage(package, JavaDirectory) + "/QtJambi_LibraryInitializer.java");
+        if (iter->second & GeneratedJavaClasses) {
+            const QString& package = iter->first;
+            if(package=="io.qt.internal")
+                continue;
+            TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+            QString subDir;
+            QString typeSystemByPackage;
+            if(typeSystemEntry)
+                subDir = subDirectoryForPackage(typeSystemEntry->name(), package, JavaDirectory);
+            else if(!(typeSystemByPackage = m_typeSystemByPackage[package]).isEmpty())
+                subDir = subDirectoryForPackage(typeSystemByPackage, package, JavaDirectory);
+            else
+                continue;
+            FileOut fileOut(javaOutputDirectory() + "/" + subDir + "/QtJambi_LibraryInitializer.java");
 
             Indentor INDENT;
             QTextStream &s = fileOut.stream;
             s << INDENT << "package " << package << ";" << Qt::endl << Qt::endl;
 
-            QSet<QString> dedupe = QSet<QString>();
-            TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(TypeDatabase::instance()->findType(package));
+            QSet<QString> dedupe;
             if(typeSystemEntry){
                 if(typeSystemEntry->include().type==Include::TargetLangImport){
                     writeInclude(s, typeSystemEntry->include(), dedupe);
@@ -368,22 +426,24 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                     s << INDENT << "try {" << Qt::endl;
                     {
                         INDENTATION(INDENT)
-                        generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Beginning, INDENT);
-                        s << INDENT << "io.qt.QtUtilities.initializePackage(\"io.qt.internal\");" << Qt::endl;
-                        generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position1, INDENT);
                         if(typeSystemEntry){
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Beginning, INDENT);
+                            s << INDENT << "io.qt.QtUtilities.initializePackage(\"io.qt.internal\");" << Qt::endl;
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Position1, INDENT);
                             for(const TypeSystemTypeEntry* entry : typeSystemEntry->requiredTypeSystems()){
                                 s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << entry->name() << "\");" << Qt::endl;
                             }
-                            generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position2, INDENT);
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Position2, INDENT);
                             for(const QString& lib : typeSystemEntry->requiredQtLibraries()){
                                 if(lib.startsWith("Qt")){
-                                    s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << lib.mid(2) << "\");" << Qt::endl;
+                                    s << INDENT << "if(io.qt.QtUtilities.isAvailableQtLibrary(\"" << lib.mid(2) << "\"))" << Qt::endl
+                                      << INDENT << "    io.qt.QtUtilities.loadQtLibrary(\"" << lib.mid(2) << "\");" << Qt::endl;
                                 }else{
-                                    s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << lib << "\");" << Qt::endl;
+                                    s << INDENT << "if(io.qt.QtUtilities.isAvailableUtilityLibrary(\"" << lib << "\"))" << Qt::endl
+                                      << INDENT << "    io.qt.QtUtilities.loadUtilityLibrary(\"" << lib << "\");" << Qt::endl;
                                 }
                             }
-                            generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position3, INDENT);
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Position3, INDENT);
                             if(!typeSystemEntry->qtLibrary().isEmpty()){
                                 if(typeSystemEntry->qtLibrary().startsWith("Qt")){
                                     s << INDENT << "io.qt.QtUtilities.loadQtLibrary(\"" << typeSystemEntry->qtLibrary().mid(2) << "\");" << Qt::endl;
@@ -391,18 +451,17 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                     s << INDENT << "io.qt.QtUtilities.loadUtilityLibrary(\"" << typeSystemEntry->qtLibrary() << "\");" << Qt::endl;
                                 }
                             }
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::Position4, INDENT);
+                            if(typeSystemEntry->qtLibrary().startsWith("Qt")){
+                                QString libName = typeSystemEntry->qtLibrary();
+                                s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << Qt::endl;
+                            }else{
+                                s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
+                            }
+                            generateInitializer(s, typeSystemEntry, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
                         }else{
-                            generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position2, INDENT);
-                            generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position3, INDENT);
+                            s << INDENT << "io.qt.QtUtilities.initializePackage(\"" << typeSystemByPackage << "\");" << Qt::endl;
                         }
-                        generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::Position4, INDENT);
-                        if(typeSystemEntry->qtLibrary().startsWith("Qt")){
-                            QString libName = typeSystemEntry->qtLibrary();
-                            s << INDENT << "io.qt.QtUtilities.loadQtJambiLibrary(\"" << libName.mid(2) << "\");" << Qt::endl;
-                        }else{
-                            s << INDENT << "io.qt.QtUtilities.loadJambiLibrary(\"" << QString(package).replace(".", "_") << "\");" << Qt::endl;
-                        }
-                        generateInitializer(s, package, TypeSystem::TargetLangCode, CodeSnip::End, INDENT);
                     }
                     s << INDENT << "} catch(RuntimeException | Error t) {" << Qt::endl;
                     s << INDENT << "    throw t;" << Qt::endl;

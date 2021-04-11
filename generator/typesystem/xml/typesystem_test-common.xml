@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,9 +43,7 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtTest">
-    <rejection class="QTest" function-name="qCompare" /><!-- not public API -->
     <rejection class="QTest" function-name="compare_ptr_helper" /><!-- not public API -->
-    <rejection class="QTest::QBenchmarkIterationController" /><!-- not public API -->
     <rejection class="QTestData" />
     <rejection class="QSignalSpy" function-name="initArgs" /><!-- not public API -->
     <rejection class="QSignalSpy" function-name="qt_metacall" /><!-- not public API -->
@@ -63,39 +61,62 @@
             <include file-name="QTest" location="global"/>
         </extra-includes>
 
+        <modify-function signature="touchEvent(QWindow *, QTouchDevice *, bool)" remove="all" until="5.*"/>
+        <modify-function signature="touchEvent(QWidget *, QTouchDevice *, bool)" remove="all" until="5.*"/>
+        <modify-function signature="touchEvent(QWindow *, QPointingDevice *, bool)" remove="all" since="6.0.0"/>
+        <modify-function signature="touchEvent(QWidget *, QPointingDevice *, bool)" remove="all" since="6.0.0"/>
         <modify-function signature="formatString(const char *, const char *, size_t)" remove="all"/><!-- not public API -->
-        <modify-function signature="addColumnInternal(int,const char *)" remove="all"/><!-- not public API -->
-        <modify-function signature="asciiToKey(char)" remove="all" /><!-- not public API -->
         <modify-function signature="compare_helper(bool,const char *,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="compare_helper(bool,const char *,char *,char *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
         <modify-function signature="compare_string_helper(const char *,const char *,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="currentDataTag()" remove="all" /><!-- FIXME: returns (const char *) -->
-<!--        <modify-function signature="currentTestFailed()" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
-        <modify-function signature="keyToAscii(Qt::Key)" remove="all" /><!-- not public API -->
-        <modify-function signature="qData(const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="qElementData(const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="qExpectFail(const char *,const char *,QTest::TestFailMode,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="qFail(const char *,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="qGlobalData(const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="qSkip(const char*,const char*,int)" remove="all" /><!-- not public API -->
-<!--        <modify-function signature="qSleep(int)" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
-        <modify-function signature="qVerify(bool,const char *,const char *,const char *,int)" remove="all" /><!-- not public API -->
-<!--        <modify-function signature="qWait(int)" remove="all" /> --><!-- FIXME: This is documented API, find out why generator can not call C++ -->
-        <modify-function signature="qWarn(const char *,const char *,int)" remove="all" /><!-- not public API -->
-        <modify-function signature="testObject()" remove="all" /><!-- not public API -->
         <modify-function signature="toHexRepresentation(const char*,int)" remove="all" /><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const char*)" remove="all" /><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const void*)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
+        <modify-function signature="toString(QSizePolicy)" remove="all" />
+        <modify-function signature="toString(QSizePolicy::ControlType)" remove="all" />
+        <modify-function signature="toString(QSizePolicy::Policy)" remove="all" />
+        <modify-function signature="toString(QNetworkReply::NetworkError)" remove="all" />
+        <modify-function signature="toString(QFlags&lt;QSizePolicy::ControlType>)" remove="all" />
+        <modify-function signature="toString(QList&lt;QNetworkCookie>)" remove="all" />
+        <modify-function signature="toString(QNetworkCookie)" remove="all" />
+        <modify-function signature="toString(std::nullptr_t)" remove="all" />
         <modify-function signature="toPrettyCString(const char *, int)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toPrettyUnicode(QStringView)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
-        <modify-function signature="qFindTestData(const char*, const char*, int, const char*)" remove="all" />
+        <modify-function signature="qFindTestData(const char*, const char*, int, const char*)" remove="all" until="5.*"/>
+        <modify-function signature="qFindTestData(const char*, const char*, int, const char*, const char*)" remove="all" since="6.0.0"/>
+        <modify-function signature="qCompare(QStringView, const QLatin1String &amp;, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(QString, const QLatin1String &amp;, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(QString, QString, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(const QLatin1String &amp;, QStringView, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(const QLatin1String &amp;, QString, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(char *, char *, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(const char *, char *, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(char *, const char *, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(const char *, const char *, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(qfloat16, qfloat16, const char *, const char *, const char *, int)" remove="all"/>
+        <modify-function signature="qCompare(unsigned, unsigned, const char *, const char *, const char *, int)" remove="all"/>
     </namespace-type>
 
-    <value-type name="QTest::QTouchEventSequence"/>
+    <object-type name="QTest::QBenchmarkIterationController">
+    </object-type>
+    <enum-type name="QTest::QBenchmarkIterationController::RunMode">
+    </enum-type>
+    <object-type name="QTest::QTouchEventSequence">
+        <extra-includes>
+        <include file-name="qtjambi_test_util.h" location="local"/>
+        </extra-includes>
+    </object-type>
+    <object-type name="QTest::QTouchEventWidgetSequence" since="6.0.0">
+        <extra-includes>
+        <include file-name="qtjambi_test_util.h" location="local"/>
+        </extra-includes>
+    </object-type>
 
-    <value-type name="QTestEventList"/>
+    <!--value-type name="QTestEventList"/-->
 
     <object-type name="QSignalSpy">
+        <extra-includes>
+        <include file-name="qtjambi_test_util.h" location="local"/>
+        </extra-includes>
         <modify-function signature="wait(int)" rename="waitForTimeout" /><!-- not public API -->
         <modify-function signature="QSignalSpy(const QObject *, const char *)">
             <modify-argument index="2">
@@ -108,6 +129,70 @@
     <enum-type name="QAbstractItemModelTester::FailureReportingMode"/>
     <object-type name="QAbstractItemModelTester">
     </object-type>
+    <object-type name="QSpontaneKeyEvent">
+        <modify-field name="d" read="no" write="no"/>
+        <modify-field name="t" read="no" write="no"/>
+        <modify-function signature="setSpontaneous(QEvent*)">
+            <modify-argument index="1">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QTestEvent">
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QTestKeyEvent">
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+        <modify-field name="_action" rename="action"/>
+        <modify-field name="_delay" rename="delay"/>
+        <modify-field name="_delay" rename="delay"/>
+        <modify-field name="_modifiers" rename="modifiers"/>
+        <modify-field name="_ascii" rename="ascii"/>
+        <modify-field name="_key" rename="key"/>
+    </object-type>
+    <object-type name="QTestKeyClicksEvent">
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QTestMouseEvent">
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QTestDelayEvent">
+        <modify-function signature="clone()const">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java" />
+                <define-ownership class="shell" owner="cpp" />
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QTestEventList">
+        <inject-code class="native">
+namespace QtJambiPrivate{
+    template&lt;>
+    struct supports_stream_operators&lt;QTestEventList> : std::false_type{};
+}
+        </inject-code>
+        <modify-function signature="clear()" rename="purge" />
+    </value-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: class 'QSignalSpy' inherits from unknown base class 'QList&lt;QList&lt;QVariant>>'"/>
@@ -119,5 +204,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'compare_helper(bool,const char*,const char*,int)' for function modification in 'QTest' not found. Possible candidates: compare_helper(bool,const char*,char*,char*,const char*,const char*,const char*,int) in QTest"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::compare_ptr_helper', unmatched parameter type 'void const volatile*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addRow', unmatched return type 'QTestData&amp;'"/>
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::qCompare', unmatched parameter type '*'"/>
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QTestEventList."/>
 </typesystem>
 

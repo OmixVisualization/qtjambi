@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,27 +37,28 @@
 package io.qt;
 
 import java.io.File;
+import java.util.Collections;
 
 import io.qt.core.QMetaObject;
-import io.qt.core.QObject;
 import io.qt.internal.QtJambiInternal;
-import io.qt.widgets.QWidget;
 
 /**
  * This class contains static members that gives information and performs Qt Jambi related tasks.
 */
-public class QtUtilities {
+public final class QtUtilities {
 	
 	static {
 		initializePackage("io.qt.internal");
 	}
+	
+	private QtUtilities() {}
 	
     public static boolean isAvailableQtLibrary(String library) {
         return QtJambiInternal.isAvailableQtLibrary(library);
     }
     
     public static boolean isAvailableUtilityLibrary(String library, String versionString) {
-        return QtJambiInternal.isAvailableLibrary(null, library, null, versionString);
+        return QtJambiInternal.isAvailableLibrary(library, versionString);
     }
     
     public static void loadQtLibrary(String library) {
@@ -73,9 +74,9 @@ public class QtUtilities {
     }
     
     public static void loadJambiLibrary(String library) {
-        QtJambiInternal.loadJambiLibrary(QtJambiInternal.callerClassProvider().get(), null, library);
+        QtJambiInternal.loadJambiLibrary(QtJambiInternal.callerClassProvider().get(), library);
     }
-
+    
     public static void loadLibrary(String lib) {
         QtJambiInternal.loadLibrary(lib);
     }
@@ -100,15 +101,40 @@ public class QtUtilities {
     	return QtJambiInternal.getSignalOnDispose(object, true);
     }
     
-    public static void threadCheck(QObject object) {
-    	QtJambiInternal.threadCheck(object);
-    }
-    
-    public static void threadCheck(QWidget object) {
-    	QtJambiInternal.threadCheck(object);
+    public static void initializeNativeObject(QtObjectInterface object) {
+    	QtJambiInternal.initializeNativeObject(object, Collections.emptyMap());
     }
     
     public static void initializeNativeObject(QtObjectInterface object, QtArgument.Stream arguments) {
     	QtJambiInternal.initializeNativeObject(object, arguments.arguments());
     }
+    
+    public interface ByteSupplier{ byte getAsByte(); }
+    public interface ShortSupplier{ short getAsShort(); }
+    public interface FloatSupplier{ float getAsFloat(); }
+    public interface CharSupplier{ char getAsChar(); }
+    public interface Supplier<T> extends java.io.Serializable{ T get(); }
+    
+    /**
+     * This function sets the value of the environment variable named varName.
+     * @see https://doc.qt.io/qt/qtglobal.html#qputenv
+     * @param varName
+     * @param value
+     */
+    public static native boolean putenv(String varName, String value);
+
+    /**
+     * This function deletes the variable varName from the environment.
+     * @see https://doc.qt.io/qt/qtglobal.html#qunsetenv
+     * @param varName
+     */
+    public static native boolean unsetenv(String varName);
+    
+    /**
+     * This function gets the value of the environment variable named varName.
+     * @see https://doc.qt.io/qt/qtglobal.html#	qEnvironmentVariable
+     * @param varName
+     * @return value
+     */
+    public static native String getenv(String varName);
 }

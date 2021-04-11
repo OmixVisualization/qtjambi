@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -51,6 +51,8 @@ module qtjambi{
                               qtjambi.sql,
                               qtjambi.scxml,
                               qtjambi.quick,
+                              qtjambi.opengl,
+                              qtjambi.openglwidgets,
                               qtjambi.webenginecore,
                               qtjambi.xmlpatterns,
                               qtjambi.serialport,
@@ -79,6 +81,7 @@ module qtjambi{
                               qtjambi.printsupport,
                               qtjambi.concurrent,
                               qtjambi.svg,
+                              qtjambi.svgwidgets,
                               qtjambi.bluetooth,
                               qtjambi.remoteobjects,
                               qtjambi.purchasing,
@@ -95,5 +98,12 @@ module qtjambi{
                               qtjambi.qt3dlogic,
                               qtjambi.qt3danimation,
                               qtjambi.qt3dquickscene2d,
-                              qtjambi.plugindeployer;
+                              qtjambi.quick3d,
+                              qtjambi.virtualkeyboard,
+                              qtjambi.plugindeployer,
+                              qtjambi.uitools,
+                              qtjambi.designer,
+                              qtjambi.designertools,
+                              qtjambi.charts,
+                              qtjambi.datavisualization;
 }

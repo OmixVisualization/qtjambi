@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,9 +32,13 @@
 
 #include <QtWidgets/QtWidgets>
 #include "qtjambi_widgets_repository.h"
+#include <qtjambi/qtjambi_global.h>
 
-const QObject* __owner_function_QGraphicsLayoutItem(QGraphicsLayoutItem* __qt_this);
-const QObject* __owner_function_QGraphicsItem(QGraphicsItem* __qt_this);
-const QObject* __owner_function_QTreeWidgetItemIterator(QTreeWidgetItemIterator* __qt_this);
+const QObject* qtjambi_get_owner(const QGraphicsLayoutItem* __qt_this);
+const QObject* qtjambi_get_owner(const QGraphicsItem* __qt_this);
+const QObject* qtjambi_get_owner(const QTreeWidgetItemIterator* __qt_this);
+
+template<typename T1, typename T2>
+hash_type qHash(const std::pair<T1,T2>&);
 
 #endif // QWIDGETUTILS_H

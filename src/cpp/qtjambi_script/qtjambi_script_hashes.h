@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,9 +34,9 @@
 #include <QtScript/QtScript>
 
 
-inline uint qHash(const QScriptContextInfo &value)
+inline hash_type qHash(const QScriptContextInfo &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.scriptId());
     hashCode = hashCode * 31 + qHash(value.fileName());
     hashCode = hashCode * 31 + qHash(value.lineNumber());
@@ -50,9 +50,9 @@ inline uint qHash(const QScriptContextInfo &value)
     return hashCode;
 }
 
-inline uint qHash(const QScriptProgram &value)
+inline hash_type qHash(const QScriptProgram &value)
 {
-    uint hashCode = 1;
+    hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.fileName());
     hashCode = hashCode * 31 + qHash(value.firstLineNumber());
     hashCode = hashCode * 31 + qHash(value.sourceCode());

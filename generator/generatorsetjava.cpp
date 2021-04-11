@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,6 +48,7 @@
 #include "jumptable.h"
 
 #include <QFileInfo>
+#include <QtConcurrent>
 
 GeneratorSet *GeneratorSet::getInstance() {
     return new GeneratorSetJava();
@@ -128,26 +129,37 @@ bool GeneratorSetJava::readParameters(const QMap<QString, QString> args) {
 }
 
 void GeneratorSetJava::buildModel(const QMap<QString, QString>& features, const QString pp_file) {
+    builder.setQtVersion(qtVersion);
     builder.setFileName(pp_file);
     if (!outDir.isNull())
         builder.setOutputDirectory(outDir);
     builder.setFeatures(features);
-    builder.setDocDirectory(docsDirectory);
     builder.build();
+    const DocModel* docModel = m_docModelFuture.result();
+    m_docModelFuture = {};
+    if(docModel){
+        builder.applyDocs(docModel);
+        if(!docModel->url().isEmpty()){
+            this->docsUrl = docModel->url();
+            if(!this->docsUrl.endsWith("/"))
+                this->docsUrl += "/";
+        }
+        delete docModel;
+    }
 }
 
 void GeneratorSetJava::dumpObjectTree() {
     dumpMetaJavaTree(builder.classes());
 }
 
-QString GeneratorSetJava::generate() {
+void GeneratorSetJava::generate() {
 
     // Ui conversion...
     if (do_ui_convert) {
         UiConverter converter;
         converter.setClasses(builder.classes());
         converter.convertToJui(ui_file_name, custom_widgets);
-        return nullptr;
+        return;
     } else if (!custom_widgets.isEmpty()) {
         fprintf(stderr, "NOTE: The --custom-widgets option only has an effect when used with --convert-to-jui");
     }
@@ -234,20 +246,37 @@ QString GeneratorSetJava::generate() {
 
     if (!cppOutDir.isNull())
         priGenerator->setCppOutputDirectory(cppOutDir);
-    generators << priGenerator;
-    contexts << "PriGenerator";
 
+    QList<QFuture<void>> generated;
     for (int i = 0; i < generators.size(); ++i) {
         Generator *generator = generators.at(i);
-        ReportHandler::setContext(contexts.at(i));
+        generator->setQtVersion(qtVersion);
 
         if (generator->outputDirectory().isNull())
             generator->setOutputDirectory(outDir);
         generator->setClasses(builder.classes());
-        if (printStdout)
+        if (printStdout){
+            ReportHandler::setContext(contexts.at(i));
             generator->printClasses();
-        else
-            generator->generate();
+        }else{
+            generated << QtConcurrent::run([](Generator *generator, const QString& context){
+                         ReportHandler::setContext(context);
+                         generator->generate();
+            }, generator, contexts.at(i));
+        }
+    }
+    while(!generated.isEmpty()){
+        generated.takeFirst().waitForFinished();
+    }
+    ReportHandler::setContext("PriGenerator");
+    priGenerator->setQtVersion(qtVersion);
+    if (priGenerator->outputDirectory().isNull())
+        priGenerator->setOutputDirectory(outDir);
+    priGenerator->setClasses(builder.classes());
+    if (printStdout){
+        priGenerator->printClasses();
+    }else{
+        priGenerator->generate();
     }
 
     QString res;
@@ -270,8 +299,24 @@ QString GeneratorSetJava::generate() {
           .arg(metainfo ? metainfo->numGeneratedAndWritten() : 0)
           .arg(priGenerator->numGenerated())
           .arg(priGenerator->numGeneratedAndWritten());
+    printf("%s\n", qPrintable(res));
+    printf("Done, %d warnings (%d known issues)\n", int(ReportHandler::reportedWarnings().size()),
+           ReportHandler::suppressedCount());
 
-    return res;
+    QString fileName("reported_warnings.log");
+    QFile file(fileName);
+    if (!outDir.isNull())
+        file.setFileName(QDir(outDir).absoluteFilePath(fileName));
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        {
+            QTextStream s(&file);
+            for(const QString& w : ReportHandler::reportedWarnings()){
+                if(!w.contains("Suppressed warning with no text specified"))
+                    s << w << Qt::endl;
+            }
+        }
+        file.close();
+    }
 }
 
 void dumpMetaJavaAttributes(const AbstractMetaAttributes *attr) {

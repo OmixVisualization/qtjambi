@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -54,6 +54,7 @@
 #include <QtCore/private/qvariant_p.h>
 #include "qtjambi_core.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 class QtJambiVariant: private QVariant
 {
 
@@ -92,5 +93,6 @@ class QtJambiVariant: private QVariant
     static const QVariant::Handler *lastHandler;
 
 };
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #endif // QTJAMBIVARIANT_H

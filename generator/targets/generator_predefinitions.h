@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1137,6 +1137,11 @@ inline const char *qt_getEnumName(ENUM,bool)
 
 // first include the qglobal.h header that defines qreal.
 #include <QtCore/qglobal.h>
+#undef QT_DEPRECATED_VERSION
+#undef QT_DEPRECATED_VERSION_X
+#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
+#define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
+
 #include <QtCore/qnamespace.h>
 #undef qt_getEnumName
 #define QT_CONFIG(a) 1
@@ -1151,24 +1156,6 @@ typedef qtjambireal qreal;
 #include <QtCore/qstringliteral.h>
 #define QStringLiteral QString
 
-#undef QT_DEPRECATED_VERSION
-#undef QT_DEPRECATED_VERSION_X
-#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
-#define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
-
-// this is a trick to allow creating Java type of QVector::const_iterator
-template <typename T>
-class QVector__const_iterator{
-public:
-		inline ~const_iterator(){}
-        inline const T &operator*() const { return true; }
-        inline const_iterator &operator++() { return *this; }
-        inline const_iterator &operator--() { return *this; }
-		inline bool operator==(const const_iterator &o) const Q_DECL_NOTHROW { return false; }
-private:
-		inline const_iterator(){}
-};
-
 #undef Q_NULLPTR
 
 #define Q_NAMESPACE
@@ -1176,6 +1163,8 @@ private:
 
 //qtjambi preprocessor does not understand properly
 #define GL_APIENTRY
+#define Q_COMPILER_CONSTEXPR
+#define Q_COMPILER_UNIFORM_INIT
 
 #undef Q_STATIC_ASSERT
 #undef Q_STATIC_ASSERT_X

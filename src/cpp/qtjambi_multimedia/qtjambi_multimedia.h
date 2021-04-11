@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -35,10 +35,10 @@
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 #include <qtjambi_network/qtjambi_network.h>
 
-inline uint qHash(const QVideoFrame& value){
+inline hash_type qHash(const QVideoFrame& value){
     if(!value.isValid())
         return 0;
-    uint hashCode = qHash(value.size());
+    hash_type hashCode = qHash(value.size());
     hashCode = hashCode * 31 + qHash(value.width());
     hashCode = hashCode * 31 + qHash(value.height());
     hashCode = hashCode * 31 + qHash(value.endTime());
@@ -57,10 +57,10 @@ inline uint qHash(const QVideoFrame& value){
     return hashCode;
 }
 
-inline uint qHash(const QVideoEncoderSettings& value){
+inline hash_type qHash(const QVideoEncoderSettings& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.encodingMode());
+    hash_type hashCode = qHash(value.encodingMode());
     hashCode = hashCode * 31 + qHash(value.codec());
     hashCode = hashCode * 31 + qHash(value.bitRate());
     hashCode = hashCode * 31 + qHash(value.quality());
@@ -69,17 +69,17 @@ inline uint qHash(const QVideoEncoderSettings& value){
     return hashCode;
 }
 
-inline uint qHash(const QImageEncoderSettings& value){
+inline hash_type qHash(const QImageEncoderSettings& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.quality());
+    hash_type hashCode = qHash(value.quality());
     hashCode = hashCode * 31 + qHash(value.codec());
     hashCode = hashCode * 31 + qHash(value.resolution());
     return hashCode;
 }
 
-inline uint qHash(const QMediaTimeRange& value){
-    uint hashCode = qHash(value.isEmpty());
+inline hash_type qHash(const QMediaTimeRange& value){
+    hash_type hashCode = qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.intervals());
     hashCode = hashCode * 31 + qHash(value.latestTime());
     hashCode = hashCode * 31 + qHash(value.earliestTime());
@@ -87,17 +87,17 @@ inline uint qHash(const QMediaTimeRange& value){
     return hashCode;
 }
 
-inline uint qHash(const QMediaTimeInterval& value){
-    uint hashCode = qHash(value.start());
+inline hash_type qHash(const QMediaTimeInterval& value){
+    hash_type hashCode = qHash(value.start());
     hashCode = hashCode * 31 + qHash(value.end());
     hashCode = hashCode * 31 + qHash(value.isNormal());
     return hashCode;
 }
 
-inline uint qHash(const QMediaServiceProviderHint& value){
+inline hash_type qHash(const QMediaServiceProviderHint& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.type());
+    hash_type hashCode = qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.codecs());
     hashCode = hashCode * 31 + qHash(value.device());
     hashCode = hashCode * 31 + qHash(int(value.features()));
@@ -106,10 +106,10 @@ inline uint qHash(const QMediaServiceProviderHint& value){
     return hashCode;
 }
 
-inline uint qHash(const QMediaResource& value){
+inline hash_type qHash(const QMediaResource& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.url());
+    hash_type hashCode = qHash(value.url());
     hashCode = hashCode * 31 + qHash(value.request());
     hashCode = hashCode * 31 + qHash(value.dataSize());
     hashCode = hashCode * 31 + qHash(value.language());
@@ -124,39 +124,39 @@ inline uint qHash(const QMediaResource& value){
     return hashCode;
 }
 
-inline uint qHash(const QMediaContent& value){
+inline hash_type qHash(const QMediaContent& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.canonicalRequest());
+    hash_type hashCode = qHash(value.canonicalRequest());
     hashCode = hashCode * 31 + qHash(value.canonicalUrl());
     return hashCode;
 }
 
-inline uint qHash(const QCameraInfo& value){
+inline hash_type qHash(const QCameraInfo& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.position());
+    hash_type hashCode = qHash(value.position());
     hashCode = hashCode * 31 + qHash(value.deviceName());
     hashCode = hashCode * 31 + qHash(value.description());
     hashCode = hashCode * 31 + qHash(value.orientation());
     return hashCode;
 }
 
-inline uint qHash(const QCameraFocusZone& value){
-    uint hashCode = qHash(value.area());
+inline hash_type qHash(const QCameraFocusZone& value){
+    hash_type hashCode = qHash(value.area());
     hashCode = hashCode * 31 + qHash(value.status());
     hashCode = hashCode * 31 + qHash(value.isValid());
     return hashCode;
 }
 
-inline uint qHash(const QCamera::FrameRateRange& value){
-    uint hashCode = qHash(value.minimumFrameRate);
+inline hash_type qHash(const QCamera::FrameRateRange& value){
+    hash_type hashCode = qHash(value.minimumFrameRate);
     hashCode = hashCode * 31 + qHash(value.maximumFrameRate);
     return hashCode;
 }
 
-inline uint qHash(const QCamera& value){
-    uint hashCode = qHash(value.error());
+inline hash_type qHash(const QCamera& value){
+    hash_type hashCode = qHash(value.error());
     hashCode = hashCode * 31 + qHash(value.focus());
     hashCode = hashCode * 31 + qHash(value.state());
     hashCode = hashCode * 31 + qHash(value.status());
@@ -170,10 +170,10 @@ inline uint qHash(const QCamera& value){
     return hashCode;
 }
 
-inline uint qHash(const QAudioEncoderSettings& value){
+inline hash_type qHash(const QAudioEncoderSettings& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.codec());
+    hash_type hashCode = qHash(value.codec());
     hashCode = hashCode * 31 + qHash(value.bitRate());
     hashCode = hashCode * 31 + qHash(value.quality());
     hashCode = hashCode * 31 + qHash(value.sampleRate());
@@ -182,8 +182,8 @@ inline uint qHash(const QAudioEncoderSettings& value){
     return hashCode;
 }
 
-inline uint qHash(const QAudioFormat& value){
-    uint hashCode = qHash(value.codec());
+inline hash_type qHash(const QAudioFormat& value){
+    hash_type hashCode = qHash(value.codec());
     hashCode = hashCode * 31 + qHash(value.byteOrder());
     hashCode = hashCode * 31 + qHash(value.sampleRate());
     hashCode = hashCode * 31 + qHash(value.sampleSize());
@@ -193,10 +193,10 @@ inline uint qHash(const QAudioFormat& value){
     return hashCode;
 }
 
-inline uint qHash(const QAudioDeviceInfo& value){
+inline hash_type qHash(const QAudioDeviceInfo& value){
     if(value.isNull())
         return 0;
-    uint hashCode = qHash(value.deviceName());
+    hash_type hashCode = qHash(value.deviceName());
     hashCode = hashCode * 31 + qHash(value.preferredFormat());
     hashCode = hashCode * 31 + qHash(value.supportedCodecs());
     hashCode = hashCode * 31 + qHash(value.supportedByteOrders());

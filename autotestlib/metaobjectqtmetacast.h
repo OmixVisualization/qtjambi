@@ -48,7 +48,9 @@
 //#include <stdint.h>
 #include <QtCore/QObject>
 #include <QtCore/qmetaobject.h>
-#include <QtWidgets/QLayoutItem>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
 
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_core.h>
@@ -66,116 +68,44 @@
 #  define emit
 #endif
 
-class MetaObjectQtMetaCast : public QObject
+class MetaObjectQtMetaCast
 {
-    Q_OBJECT
-
+    MetaObjectQtMetaCast(){}
+    ~MetaObjectQtMetaCast(){}
 public:
-    MetaObjectQtMetaCast()
-    {
-    }
-
-    QString className(QObject *qobject) const
-    {
-        const QMetaObject *mo;
-        if (qobject == 0)
-            goto fail;
-        mo = qobject->metaObject();
-        if (mo == 0)
-            goto fail;
-        //return mo->className();  // const char *
-        return QString::fromLatin1(mo->className());
-    fail:
-        return QString();  // return 0;
-    }
-
-    QString superClassName(QObject *qobject, int count) const
+    static QString superClassName(QObject *qobject, int count)
     {
         const QMetaObject *mo;
         const QMetaObject *smo;
-        if (qobject == 0)
+        if (!qobject)
             goto fail;
         mo = qobject->metaObject();
-        if (mo == 0)
+        if (!mo)
             goto fail;
         smo = mo;
         do {
             smo = smo->superClass();
             count--;
-        } while(count >= 0 && smo != 0);
-        if (smo == 0)
+        } while(count >= 0 && smo);
+        if (!smo)
             goto fail;
         //return smo->className();
         return QString::fromLatin1(smo->className());
     fail:
-        return 0; //QString();  // return 0;
+        return QString();
     }
 
-    bool inherits(QObject *qobject, const QString &s) const
+    static qint64 do_qt_metacast(QObject *qobject, const QString &s)
     {
-        if (qobject == 0)
-            return false;
-        const QByteArray ba = s.toLatin1();  // anchor lifetime to scope
-        const char *str = ba.constData();
-        return qobject->inherits(str);
-    }
-
-    qint64 do_qt_metacast(QObject *qobject, const QString &s) const
-    {
-        if (qobject == 0)
+        if (!qobject)
             return -1;
-        const QByteArray ba = s.toLatin1();  // anchor lifetime to scope
-        const char *str = ba.constData();
-        void *p = qobject->qt_metacast(str);
-        return (qint64) (qintptr) p;
+        void *p = qobject->qt_metacast(qPrintable(s));
+        return qint64(p);
     }
 
-    QString propertyTypeName(QObject *qobject, const QString property) const {
-        const QMetaObject *mo;
-        if (qobject == 0)
-            return QString();  // return 0;
-        mo = qobject->metaObject();
-        if (mo == 0)
-            return QString();  // return 0;
-        //return mo->className();  // const char *
-        int idx = mo->indexOfProperty(qPrintable(property));
-        if(idx<0)
-            return QString();  // return 0;
-        QMetaProperty _property = mo->property(idx);
-        return QString::fromLatin1(_property.typeName());
-    }
-
-    int propertyType(QObject *qobject, const QString property) const {
-        const QMetaObject *mo;
-        if (qobject == 0)
-            return (int)QVariant::Invalid;  // return 0;
-        mo = qobject->metaObject();
-        if (mo == 0)
-            return (int)QVariant::Invalid;  // return 0;
-        //return mo->className();  // const char *
-        int idx = mo->indexOfProperty(qPrintable(property));
-        if(idx<0)
-            return (int)QVariant::Invalid;  // return 0;
-        QMetaProperty _property = mo->property(idx);
-        return (int)_property.type();
-    }
-
-    int propertyUserType(QObject *qobject, const QString property) const {
-        const QMetaObject *mo;
-        if (qobject == 0)
-            return 0;
-        mo = qobject->metaObject();
-        if (mo == 0)
-            return 0;
-        //return mo->className();  // const char *
-        int idx = mo->indexOfProperty(qPrintable(property));
-        if(idx<0)
-            return 0;
-        QMetaProperty _property = mo->property(idx);
-        return _property.userType();
-    }
-
-    static QRect geometry(QLayoutItem* item){ return item ? item->geometry() : QRect(); }
+#ifndef QTJAMBI_NO_WIDGETS
+    static QRect layoutItemGeometry(QLayoutItem* item){ return item ? item->geometry() : QRect(); }
+#endif
 };
 
 #endif // METAOBJECTQTMETACAST_H

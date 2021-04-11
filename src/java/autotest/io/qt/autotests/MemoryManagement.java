@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -833,12 +833,12 @@ public abstract class MemoryManagement extends QApplicationTest{
         int currentUserDataDestroyedCount;
         boolean loop = true;
         String debugPrefix = " gcAndWait(" + timeLimitMillis +
-            ", " + Utils.toStringOrNull(excessLimitMillis) +
-            ", " + Utils.toStringOrNull(finalizedCount) +
-            ", " + Utils.toStringOrNull(linkConstructedCount) +
-            ", " + Utils.toStringOrNull(linkDestroyedCount) +
-            ", " + Utils.toStringOrNull(shellDestructorCalledCount) +
-            ", " + Utils.toStringOrNull(userDataDestroyedCount) + ")";
+            ", " + excessLimitMillis +
+            ", " + finalizedCount +
+            ", " + linkConstructedCount +
+            ", " + linkDestroyedCount +
+            ", " + shellDestructorCalledCount +
+            ", " + userDataDestroyedCount + ")";
         while(loop) {
             try {
                 if (needsEventProcessing()) {
@@ -944,12 +944,8 @@ public abstract class MemoryManagement extends QApplicationTest{
         if(Utils.isDebugLevel(4)) {
             // Print array format [1, 2, 3]
             synchronized(MemoryManagement.class) {
-                String aliveString = Utils.listToString(alive);
-                String aliveAndUnderTestString = Utils.listToString(aliveAndUnderTest);
-                String weakReferenceMapString = Utils.mapValueToString(weakReferenceMap);
-                String phantomReferenceMapString = Utils.mapValueToString(phantomReferenceMap);
-                Utils.println(4, "elapsed=" + elapsed + "; alive=" + aliveString + "; aliveAndUnderTest=" + aliveAndUnderTestString +
-                        "; weakReferenceMapSize=" + weakReferenceMapString + "; phantomReferenceMapSize=" + phantomReferenceMapString);
+                Utils.println(4, "elapsed=" + elapsed + "; alive=" + alive + "; aliveAndUnderTest=" + aliveAndUnderTest +
+                        "; weakReferenceMapSize=" + weakReferenceMap.values() + "; phantomReferenceMapSize=" + phantomReferenceMap.values());
             }
         }
 

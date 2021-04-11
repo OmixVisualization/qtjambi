@@ -115,6 +115,7 @@ struct ReturnStatementAST;
 struct SimpleDeclarationAST;
 struct SimpleTypeSpecifierAST;
 struct SizeofExpressionAST;
+struct AlignofExpressionAST;
 struct TypeidExpressionAST;
 struct StatementAST;
 struct StringLiteralAST;
@@ -208,6 +209,7 @@ struct AST {
         Kind_SimpleTypeSpecifier,
         Kind_AutoTypeSpecifier,
         Kind_SizeofExpression,
+        Kind_AlignofExpression,
         Kind_TypeidExpression,
         Kind_StringLiteral,
         Kind_SubscriptExpression,
@@ -241,6 +243,7 @@ struct AST {
         Kind_NamedTypeSpecifier,
         Kind_DecltypeExpression,
         Kind_DeclTypeSpecifier,
+        Kind_NoexceptExpression,
 
         NODE_KIND_COUNT
     };
@@ -397,6 +400,7 @@ struct DeclaratorAST: public AST {
     const ListNode<ExpressionAST*> *array_dimensions;
     ParameterDeclarationClauseAST *parameter_declaration_clause;
     const ListNode<std::size_t> *fun_cv;
+    std::size_t fun_reference;
     QDeclFinalAST *decl_final;
     ExceptionSpecificationAST *exception_spec;
 };
@@ -460,6 +464,7 @@ struct ExceptionSpecificationAST: public AST {
 
     std::size_t ellipsis;
     const ListNode<TypeIdAST*> *type_ids;
+    ExpressionAST* expression;
 };
 
 struct ExpressionOrDeclarationStatementAST: public StatementAST {
@@ -745,10 +750,27 @@ struct DecltypeExpressionAST: public ExpressionAST {
     ExpressionAST *expression;
 };
 
+struct NoexceptExpressionAST: public ExpressionAST {
+    DECLARE_AST_NODE(NoexceptExpression)
+
+    std::size_t sizeof_token;
+    std::size_t ellipsis_token;
+    ExpressionAST *expression;
+};
+
 struct SizeofExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(SizeofExpression)
 
     std::size_t sizeof_token;
+    std::size_t ellipsis_token;
+    TypeIdAST *type_id;
+    ExpressionAST *expression;
+};
+
+struct AlignofExpressionAST: public ExpressionAST {
+    DECLARE_AST_NODE(AlignofExpression)
+
+    std::size_t alignof_token;
     std::size_t ellipsis_token;
     TypeIdAST *type_id;
     ExpressionAST *expression;

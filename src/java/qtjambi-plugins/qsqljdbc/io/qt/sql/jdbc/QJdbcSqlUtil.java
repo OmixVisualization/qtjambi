@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,6 +47,7 @@ import io.qt.core.QVariant;
 import io.qt.sql.QSqlError;
 import io.qt.sql.QSqlField;
 
+@SuppressWarnings("deprecation")
 class QJdbcSqlUtil
 {
     private static HashMap<String, QVariant.Type> javaToVariant = new HashMap<String, QVariant.Type>();
@@ -70,6 +71,7 @@ class QJdbcSqlUtil
         javaToVariant.put("java.net.Url", QVariant.Type.Url);          // Url
     }
 
+    @Deprecated
     static QVariant.Type javaTypeToVariantType(String javaType)
     {
     	QVariant.Type variantType = javaToVariant.get(javaType);
@@ -78,6 +80,7 @@ class QJdbcSqlUtil
         return variantType;
     }
 
+    @Deprecated
     static QVariant.Type javaTypeIdToVariantType(int variantType)
     {
         // can't use QVariant types directly, since we don't want a dependency to QtGui
@@ -141,7 +144,7 @@ class QJdbcSqlUtil
             e = e.getNextException();
         }
 
-        return new QSqlError(driverText, dbText.toString(), t, errorCode);
+        return new QSqlError(driverText, dbText.toString(), t, ""+errorCode);
     }
 
     static Object javaToQt(Object input) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,13 +29,101 @@
 ****************************************************************************/
 package io.qt.internal;
 
-public abstract class QtJambiListObject<E> extends QtJambiAbstractListObject<E> {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.ListIterator;
 
-	protected QtJambiListObject(Class<E> elementType) {
-		super(elementType);
+import io.qt.QtUninvokable;
+
+public abstract class QtJambiListObject<E> extends QtJambiCollectionObject<E> implements List<E> {
+	
+    protected QtJambiListObject() {
+		super();
 	}
 
-	protected QtJambiListObject(QPrivateConstructor p, Class<E> elementType) {
-		super(p, elementType);
+    protected QtJambiListObject(QPrivateConstructor p) {
+		super(p);
+	}
+
+    @QtUninvokable
+    protected abstract void removeAtIndex(int cursor);
+
+    @QtUninvokable
+    public abstract void append(Collection<E> c);
+
+    @Override
+    @SuppressWarnings("unchecked")
+    @QtUninvokable
+    public final boolean addAll(Collection<? extends E> c) {
+        append((Collection<E>)c);
+        return true;
+    }
+
+    @Override
+    @QtUninvokable
+    public final boolean addAll(int index, Collection<? extends E> c) {
+        for (E o : c) {
+            add(index++, o);
+        }
+        return true;
+    }
+
+    @Override
+    @QtUninvokable
+    public final E remove(int index) {
+        E result = get(index);
+        this.removeAtIndex(index);
+        return result;
+    }
+
+	@Override
+    @QtUninvokable
+	public final ListIterator<E> listIterator() {
+	    return listIterator(0);
+	}
+	
+	@Override
+    @QtUninvokable
+	public final ListIterator<E> listIterator(int index) {
+	    return begin().toJavaListIterator(this::begin, index);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+    @QtUninvokable
+	public final List<E> subList(int fromIndex, int toIndex) {
+	    if (fromIndex < 0)
+	        throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
+	    if (toIndex > size())
+	        throw new IndexOutOfBoundsException("toIndex = " + toIndex);
+	    if (fromIndex > toIndex)
+	        throw new IllegalArgumentException("fromIndex(" + fromIndex +
+	                                       ") > toIndex(" + toIndex + ")");
+	    List<E> sublist;
+	    try {
+	    	sublist = this.getClass().getConstructor().newInstance();
+	    }catch(Throwable e) {
+	    	sublist = new ArrayList<>();
+	    }
+	    for (int i = 0; i < toIndex - fromIndex; i++) {
+	        sublist.add(get(fromIndex+i));
+	    }
+	    return sublist;
+	}
+	
+	@Override
+    @QtUninvokable
+	public final boolean retainAll(Collection<?> c) {
+		boolean changed = false;
+		for(int i=0; i<size();) {
+			if(c.contains(get(i))) {
+				++i;
+			}else {
+				changed = true;
+				remove(i);
+			}
+		}
+        return changed;
 	}
 }

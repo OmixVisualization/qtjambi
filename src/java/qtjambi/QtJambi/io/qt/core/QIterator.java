@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,135 +29,111 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.lang.invoke.MethodHandle;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.function.Supplier;
 
 import io.qt.QtUninvokable;
+import io.qt.internal.QtJambiIteratorObject;
 
-public final class QIterator<T> extends io.qt.internal.QtJambiIteratorObject<T> implements java.lang.Comparable<T>, java.lang.Iterable<T> {
+public final class QIterator<T> extends io.qt.internal.QtJambiIteratorObject<T> implements java.lang.Iterable<T> {
 
 	static {
     	io.qt.core.QtJambi_LibraryInitializer.init();
     }
     
-    private static Consumer<QIterator<?>> decrementFct = QIterator::decrement;
+    private QIterator(Object owner) { 
+    	super(owner);
+	}
     
-    private static Consumer<QIterator<?>> incrementFct = QIterator::increment;
+    @QtUninvokable
+    static native boolean canLess(long __this__nativeId);
     
-    private static Function<QIterator<?>,?> valueFct = QIterator::val;
-    
-    private final Object owner;
-    private final MethodHandle endHandle;
-    private final long valueFunction;
-    private final long incrementFunction;
-    private final long decrementFunction;
-    private final long lessThanFunction;
-    private final long equalsFunction;
-
     @QtUninvokable
     private T val() {
-        if(valueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QIterator_value(io.qt.internal.QtJambiInternal.checkedNativeId(this), valueFunction);
+        return __qt_QIterator_value(io.qt.internal.QtJambiInternal.nativeId(this));
     }
-    static native <T> T __qt_QIterator_value(long __this__nativeId, long valueFunction);
+    @QtUninvokable
+    static native <T> T __qt_QIterator_value(long __this__nativeId);
 
     @QtUninvokable
-    private void increment() {
-        if(incrementFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QIterator_increment(io.qt.internal.QtJambiInternal.checkedNativeId(this), incrementFunction);
+    protected final void increment() {
+        __qt_QIterator_increment(io.qt.internal.QtJambiInternal.nativeId(this));
     }
-    static native void __qt_QIterator_increment(long __this__nativeId, long incrementFunction);
+    @QtUninvokable
+    static native void __qt_QIterator_increment(long __this__nativeId);
 
     @QtUninvokable
-    private void decrement() {
-        if(decrementFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QIterator_decrement(io.qt.internal.QtJambiInternal.checkedNativeId(this), decrementFunction);
+    protected final void decrement() {
+        __qt_QIterator_decrement(io.qt.internal.QtJambiInternal.nativeId(this));
     }
-    static native void __qt_QIterator_decrement(long __this__nativeId, long decrementFunction);
+    @QtUninvokable
+    static native void __qt_QIterator_decrement(long __this__nativeId);
 
     @QtUninvokable
-    private boolean lessThan(QIterator<T> other) {
-        if(lessThanFunction==0)
-        	throw new UnsupportedOperationException();
-        if(other.lessThanFunction!=lessThanFunction)
-        	throw new IllegalArgumentException("Incomparable objects.");
-        return __qt_QIterator_lessThan(io.qt.internal.QtJambiInternal.checkedNativeId(this), io.qt.internal.QtJambiInternal.nativeId(other), lessThanFunction);
+    private boolean lessThan(QtJambiIteratorObject<?> other) {
+        return __qt_QIterator_lessThan(io.qt.internal.QtJambiInternal.nativeId(this), io.qt.internal.QtJambiInternal.nativeId(other));
     }
-    static native boolean __qt_QIterator_lessThan(long __this__nativeId, long other, long lessThanFunction);
+    @QtUninvokable
+    static native boolean __qt_QIterator_lessThan(long __this__nativeId, long other);
 
     @QtUninvokable
     private boolean operator_equal(QIterator<T> o)        {
-        if(equalsFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QIterator_operator_equal(io.qt.internal.QtJambiInternal.checkedNativeId(this), io.qt.internal.QtJambiInternal.nativeId(o), equalsFunction);
+        return __qt_QIterator_operator_equal(io.qt.internal.QtJambiInternal.nativeId(this), io.qt.internal.QtJambiInternal.nativeId(o));
     }
-    static native boolean __qt_QIterator_operator_equal(long __this__nativeId, long o, long equalsFunction);
+    @QtUninvokable
+    static native boolean __qt_QIterator_operator_equal(long __this__nativeId, long o);
 
-    private QIterator(Object owner, long valueFunction, long incrementFunction, long decrementFunction, long lessThanFunction, long equalsFunction) { 
-    	super(decrementFct, incrementFct, valueFct);
-    	this.owner = owner;
-    	this.endHandle = this.findEndFunction(owner);
-    	this.valueFunction = valueFunction;
-    	this.incrementFunction = incrementFunction;
-    	this.decrementFunction = decrementFunction;
-    	this.lessThanFunction = lessThanFunction;
-    	this.equalsFunction = equalsFunction;
-	} 
-
-	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof QIterator) {
-            return operator_equal((QIterator<T>) other);
+        	@SuppressWarnings("unchecked")
+        	QIterator<T> iter = (QIterator<T>) other;
+        	if(compareOwners(iter))
+        		return operator_equal(iter);
         }
         return Objects.equals(other, value());
     }
 
-    @SuppressWarnings("unchecked")
-    @QtUninvokable
-	public int compareTo(Object other) {
-        if (equals(other)) return 0;
-        else if (other instanceof QIterator) {
-            if (lessThan((QIterator<T>) other)) return -1;
-            else return 1;
-        }
-        throw new ClassCastException();
-    }
-    
     @QtUninvokable
     private boolean isValid() {
-    	return this.lessThanFunction==0 ? operator_equal(end()) : compareTo(end())<0;
-    }
-    
-    @QtUninvokable
-    private QIterator<T> end() {
-    	if(endHandle!=null) {
-    		try {
-				return (QIterator<T>)endHandle.invoke(owner);
-			} catch (Throwable e) {
-				Logger.getAnonymousLogger().log(Level.SEVERE, "end()", e);
+    	long nativeId = io.qt.internal.QtJambiInternal.nativeId(this);
+    	if(nativeId==0)
+    		return false;
+    	QtJambiIteratorObject<?> end = end();
+    	if(canLess(nativeId)) {
+	    	try {
+	        	return lessThan(end);
+			} catch (Exception e) {
 			}
     	}
-    	return this;
+		return !equals(end);
     }
     
     @QtUninvokable
-    public Iterator<T> iterator(){
-    	return toJavaIterator(this::end);
+    public final Iterator<T> iterator(){
+    	return toJavaIterator();
+    }
+    
+    @QtUninvokable
+	protected final java.util.Iterator<T> descendingIterator(Supplier<? extends QtJambiIteratorObject<T>> beginSupplier) {
+    	return toJavaDescendingIterator(beginSupplier);
     }
 
     @QtUninvokable
-	public Optional<T> value() {
-		return isValid() ? Optional.empty() : Optional.ofNullable(val());
+	public final Optional<T> value() {
+		return !isValid() ? Optional.empty() : Optional.ofNullable(val());
+	}
+    
+    @QtUninvokable
+    protected final T checkedValue() {
+    	if(isValid()) {
+    		return val();
+    	}else {
+    		throw new NoSuchElementException();
+    	}
 	}
 }

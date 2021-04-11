@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CustomWidget</class>
+ <widget class="io::qt::designer::customwidgets::CustomWidget" name="CustomWidget">
+  <property name="customRect">
+   <rect>
+    <x>3</x>
+    <y>6</y>
+    <width>12</width>
+    <height>24</height>
+   </rect>
+  </property>
+  <property name="customText">
+   <string>This is custom text</string>
+  </property>
+  <property name="customKeySequence">
+   <string>CTRL+S</string>
+  </property>
+  <property name="customArrowType">
+   <string>RightArrow</string>
+  </property>
+ </widget>
+</ui>

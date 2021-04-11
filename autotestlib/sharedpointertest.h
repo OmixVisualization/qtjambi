@@ -1,8 +1,11 @@
 #ifndef SHAREDPOINTERTEST_H
 #define SHAREDPOINTERTEST_H
 
-#include <QtCore>
-#include <QtWidgets>
+#include <QtCore/QtCore>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
+
 class JObjectWrapper;
 
 class SharedPointerTest : public QObject

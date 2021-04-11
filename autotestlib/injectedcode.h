@@ -48,12 +48,19 @@
 #include <QtCore/QtCore>
 //#include <QtGui/private/qaccessible2_p.h>
 #include <QtGui/QtGui>
-#include <QtWidgets>
-#ifndef QT_NO_SQL
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
+#ifndef QTJAMBI_NO_SQL
 #include <QtSql/QtSql>
 #endif
+#ifndef QTJAMBI_NO_XML
 #include <QtXml/QtXml>
+#endif
+#ifndef QTJAMBI_NO_NETWORK
 #include <QtNetwork/QtNetwork>
+#endif
+#include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_repository.h>
 
 class SpinBoxHandler
@@ -102,6 +109,7 @@ public:
     mutable int my_received_pos;
 };
 
+#ifndef QTJAMBI_NO_WIDGETS
 class GraphicsSceneSubclass: public QGraphicsScene
 {
 public:
@@ -119,7 +127,9 @@ public:
      QRectF firstBoundingRect;
      QRectF secondBoundingRect;
 };
+#endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 class TextCodecSubclass: public QTextCodec
 {
 
@@ -156,6 +166,7 @@ protected:
         return returned;
     }
 };
+#endif
 
 class IODeviceSubclass: public QIODevice
 {
@@ -163,7 +174,7 @@ public:
     ~IODeviceSubclass() {
         if(buffer) {
             delete[] buffer;
-            buffer = 0;
+            buffer = nullptr;
         }
     }
 
@@ -228,6 +239,7 @@ public:
     }
 };
 
+#ifndef QTJAMBI_NO_WIDGETS
 class GraphicsItemSubclass: public QGraphicsItem
 {
 public:
@@ -248,6 +260,7 @@ public:
     QStyleOptionGraphicsItem option;
     QWidget *widget;
 };
+#endif
 
 class AccessibleInterfaceSubclass: public QAccessibleInterface
 {
@@ -331,17 +344,15 @@ class ImageIOHandlerSubclass: public QImageIOHandler
 {
 public:
     bool callRead(QImage *image) {
-        bool bf = read(image);
-        return bf;
+        return read(image);
     }
 
     bool read(QImage *image) {
-        bool bf = image != 0 ? image->load("classpath:io/qt/autotests/svgcards-example.png") : true;
-        return bf;
+        return image != nullptr ? image->load("classpath:io/qt/autotests/svgcards-example.png") : true;
     }
 };
 
-#ifndef QT_NO_SQL
+#ifndef QTJAMBI_NO_SQL
 class SqlTableModelSubclass: public QSqlTableModel
 {
     Q_OBJECT
@@ -363,8 +374,10 @@ public slots:
     }
 
 };
-#endif /* QT_NO_SQL */
+#endif /* QTJAMBI_NO_SQL */
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#ifndef QTJAMBI_NO_XML
 class XmlReaderSubclass: public QXmlReader
 {
 public:
@@ -382,6 +395,32 @@ public:
     mutable QString myName;
 };
 
+class XmlEntityResolverSubclass: public QXmlEntityResolver
+{
+public:
+    bool resolveEntity(const QString &publicId, const QString &systemId, QXmlInputSource *&ret)
+    {
+        if (publicId == "c++") {
+            ret = new QXmlInputSource;
+            ret->setData(QString::fromLatin1("Made in C++"));
+        }
+
+        return (systemId != "error");
+    }
+
+    QXmlInputSource *callResolveEntity(const QString &publicId, const QString &systemId)
+    {
+        QXmlInputSource *ptr = 0;
+        bool error = !resolveEntity(publicId, systemId, ptr);
+
+        if (error && ptr != 0)
+            ptr->setData(ptr->data() + QString::fromLatin1(" with error"));
+
+        return ptr;
+    }
+};
+#endif // QTJAMBI_NO_XML
+#endif
 
 class AccessibleTextInterfaceSubclass: public QAccessibleTextInterface
 {
@@ -405,7 +444,7 @@ public:
                                  int *startOffset, int *endOffset);
 };
 
-
+#ifndef QTJAMBI_NO_NETWORK
 class AbstractSocketSubclass: public QAbstractSocket
 {
     Q_OBJECT
@@ -422,7 +461,19 @@ public:
 
 private slots:
     void aSlot(const QNetworkProxy &proxy, QAuthenticator *authenticator);
+public:
+    static QList<QString> emitAuthenticationRequired(QNetworkAccessManager* accessManager, QNetworkReply* reply){
+        QList<QString> result;
+        QAuthenticator authenticator;
+        result << authenticator.user();
+        result << authenticator.password();
+        emit accessManager->authenticationRequired(reply, &authenticator);
+        result << authenticator.user();
+        result << authenticator.password();
+        return result;
+    }
 };
+#endif // QTJAMBI_NO_NETWORK
 
 class SenderQObject: public QObject
 {
@@ -440,6 +491,7 @@ signals:
     void mappedSignal(const QString &, int);
 };
 
+#ifndef QTJAMBI_NO_WIDGETS
 class StyledItemDelegateSubclass: public QStyledItemDelegate
 {
 public:
@@ -468,53 +520,29 @@ public:
         return box.lineWidth + box.midLineWidth;
     }
 };
-
-class XmlEntityResolverSubclass: public QXmlEntityResolver
-{
-public:
-    bool resolveEntity(const QString &publicId, const QString &systemId, QXmlInputSource *&ret)
-    {
-        if (publicId == "c++") {
-            ret = new QXmlInputSource;
-            ret->setData(QString::fromLatin1("Made in C++"));
-        }
-
-        return (systemId != "error");
-    }
-
-    QXmlInputSource *callResolveEntity(const QString &publicId, const QString &systemId)
-    {
-        QXmlInputSource *ptr = 0;
-        bool error = !resolveEntity(publicId, systemId, ptr);
-
-        if (error && ptr != 0)
-            ptr->setData(ptr->data() + QString::fromLatin1(" with error"));
-
-        return ptr;
-    }
-};
+#endif
 
 namespace Java{
-class QtXml
-{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlEntityResolver$ResolvedEntity,
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+namespace QtXml{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlEntityResolver$ResolvedEntity,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(error)
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(inputSource))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlNamespaceSupport$ProcessedName,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlNamespaceSupport$ProcessedName,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtXml,QXmlNamespaceSupport$SplitName,
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QXmlNamespaceSupport$SplitName,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-private:
-    QtXml() = delete;
-};
-class QtWidgets
-{
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtWidgets,QGraphicsItem$BlockedByModalPanelInfo,
+}
+#endif // QT_VERSION < QT_VERSION_CHECK(6,0,0)
+
+#ifndef QTJAMBI_NO_WIDGETS
+namespace QtWidgets{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QGraphicsItem$BlockedByModalPanelInfo,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
-private:
-    QtWidgets() = delete;
-};
+}
+#endif //def QTJAMBI_NO_WIDGETS
+
 }
 
 #endif

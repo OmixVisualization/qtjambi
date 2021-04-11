@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,20 +30,25 @@
 #ifndef QTJAMBI_CAST_P_H
 #define QTJAMBI_CAST_P_H
 
-#include "qtjambi_core.h"
 #include "qtjambi_cast_util_p.h"
 #include "qtjambi_cast_list_p.h"
 #include "qtjambi_cast_map_p.h"
-#include "qtjambi_cast_type_p.h"
 #include "qtjambi_cast_arithmetic_p.h"
 #include "qtjambi_cast_enum_p.h"
 #include "qtjambi_cast_jnitype_p.h"
 
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in);
-
+constexpr O qtjambi_cast(JNIEnv *env, T& in);
 template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in, const char* nativeTypeName);
+constexpr O qtjambi_cast(JNIEnv *env, T& in, const char* nativeTypeName);
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, const T& in);
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, const T& in, const char* nativeTypeName);
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, T* in);
+template<class O, class T>
+constexpr O qtjambi_cast(JNIEnv *env, T* in, const char* nativeTypeName);
 
 namespace QtJambiPrivate {
 
@@ -52,14 +57,7 @@ template<bool has_scope,
          typename T, bool t_is_arithmetic, bool t_is_enum, bool t_is_jni_type,
          bool is_same>
 struct qtjambi_cast_decider{
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    typedef typename std::conditional<std::is_pointer<T_noref>::value,
-                typename std::conditional<std::is_arithmetic<T_noref>::value || std::is_enum<T_noref>::value, T_noconst, T_noref>::type,
-                typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static O cast(JNIEnv *, T_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !is_same, "Cannot cast types");
-    }
+    Q_STATIC_ASSERT_X(false && !is_same, "Cannot cast types");
 };
 
 // the same type
@@ -72,7 +70,7 @@ struct qtjambi_cast_decider<has_scope, O, o_is_arithmetic, o_is_enum, o_is_jni_t
     typedef typename std::conditional<std::is_pointer<T_noref>::value,
                 typename std::conditional<std::is_arithmetic<T_noref>::value || std::is_enum<T_noref>::value, T_noconst, T_noref>::type,
                 typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
+    constexpr static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
         return in;
     }
 };
@@ -87,7 +85,7 @@ struct qtjambi_cast_decider<has_scope, O, true, false, false, T, true, false, fa
     typedef typename std::conditional<std::is_pointer<T_noref>::value,
                 typename std::conditional<std::is_arithmetic<T_noref>::value || std::is_enum<T_noref>::value, T_noconst, T_noref>::type,
                 typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
+    constexpr static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
         return static_cast<O>(in);
     }
 };
@@ -102,7 +100,7 @@ struct qtjambi_cast_decider<has_scope, O, false, true, false, T, false, true, fa
     typedef typename std::conditional<std::is_pointer<T_noref>::value,
                 typename std::conditional<std::is_arithmetic<T_noref>::value || std::is_enum<T_noref>::value, T_noconst, T_noref>::type,
                 typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
+    constexpr static O cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
         return static_cast<O>(in);
     }
 };
@@ -111,129 +109,99 @@ struct qtjambi_cast_decider<has_scope, O, false, true, false, T, false, true, fa
 template<bool has_scope,
          typename O_arith,
          typename T, bool t_is_enum>
-struct qtjambi_cast_decider<has_scope, O_arith, true, false, false, T, false, t_is_enum, false, false>{
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    typedef typename std::conditional<std::is_pointer<T_noref>::value,
-                typename std::conditional<std::is_enum<T_noref>::value, T_noconst, T_noref>::type,
-                typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static constexpr O_arith (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_arithmetic_caster<true, has_scope,
-                                    O_arith,
-                                    typename std::remove_pointer<T_noconst>::type,
-                                    t_is_enum,
-                                    std::is_pointer<T_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<T_noref>::value, typename std::remove_pointer<T_noref>::type, T_noref>::type>::value,
-                                    std::is_reference<T>::value && !std::is_pointer<T_noref>::value,
-                                    is_template<typename std::remove_pointer<T_noconst>::type>::value
-                                  >::castfwd;
-};
+struct qtjambi_cast_decider<has_scope, O_arith, true, false, false, T, false, t_is_enum, false, false>
+        :   qtjambi_arithmetic_caster<true, has_scope,
+                O_arith,
+                typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type,
+                t_is_enum,
+                std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noref>::type, typename qtjambi_cast_types<T>::T_noref>::type>::value,
+                std::is_reference<T>::value && !std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type>::value
+              >
+{};
 
 // T is arithmetic, O is non-jni
 template<bool has_scope,
          typename O, bool o_is_enum,
          typename T_arith>
-struct qtjambi_cast_decider<has_scope, O, false, o_is_enum, false, T_arith, true, false, false, false>{
-    typedef typename std::remove_reference<T_arith>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_in;
-    typedef typename std::remove_reference<O>::type O_noref;
-    typedef typename std::remove_cv<O_noref>::type O_noconst;
-    static constexpr O (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_arithmetic_caster<false, has_scope,
-                                    T_in,
-                                    typename std::remove_pointer<O_noconst>::type,
-                                    o_is_enum,
-                                    std::is_pointer<O_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<O_noref>::value, typename std::remove_pointer<O_noref>::type, O_noref>::type>::value,
-                                    std::is_reference<O>::value && !std::is_pointer<O_noref>::value,
-                                    is_template<typename std::remove_pointer<O_noconst>::type>::value
-                                >::castbck;
-};
+struct qtjambi_cast_decider<has_scope, O, false, o_is_enum, false, T_arith, true, false, false, false>
+        :   qtjambi_arithmetic_caster<false, has_scope,
+                typename qtjambi_cast_types<T_arith>::T_noconst,
+                typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type,
+                o_is_enum,
+                std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noref>::type, typename qtjambi_cast_types<O>::T_noref>::type>::value,
+                std::is_reference<O>::value && !std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type>::value
+            >
+{};
 
 // O is enum, T is non-jni
 template<bool has_scope,
          typename O_enum,
          typename T>
-struct qtjambi_cast_decider<has_scope, O_enum, false, true, false, T, false, false, false, false>{
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    typedef typename std::conditional<std::is_pointer<T_noref>::value,
-                typename std::conditional<std::is_arithmetic<T_noref>::value, T_noconst, T_noref>::type,
-                typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static constexpr O_enum (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_enum_caster<true, has_scope,
-                                    O_enum,
-                                    typename std::remove_pointer<T_noconst>::type,
-                                    std::is_pointer<T_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<T_noref>::value, typename std::remove_pointer<T_noref>::type, T_noref>::type>::value,
-                                    std::is_reference<T>::value && !std::is_pointer<T_noref>::value,
-                                    is_template<typename std::remove_pointer<T_noconst>::type>::value
-                                  >::castfwd;
-};
+struct qtjambi_cast_decider<has_scope, O_enum, false, true, false, T, false, false, false, false>
+        : qtjambi_enum_caster<true, has_scope,
+            O_enum,
+            typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type,
+            std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+            std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noref>::type, typename qtjambi_cast_types<T>::T_noref>::type>::value,
+            std::is_reference<T>::value && !std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+            is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type>::value
+          >
+{};
 
 // T is enum, O is non-jni
 template<bool has_scope,
          typename O,
          typename T_enum>
-struct qtjambi_cast_decider<has_scope, O, false, false, false, T_enum, false, true, false, false>{
-    typedef typename std::remove_reference<T_enum>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_in;
-    typedef typename std::remove_reference<O>::type O_noref;
-    typedef typename std::remove_cv<O_noref>::type O_noconst;
-    static constexpr O (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_enum_caster<false, has_scope,
-                                    T_in,
-                                    typename std::remove_pointer<O_noconst>::type,
-                                    std::is_pointer<O_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<O_noref>::value, typename std::remove_pointer<O_noref>::type, O_noref>::type>::value,
-                                    std::is_reference<O>::value && !std::is_pointer<O_noref>::value,
-                                    is_template<typename std::remove_pointer<O_noconst>::type>::value
-                                >::castbck;
-};
+struct qtjambi_cast_decider<has_scope, O, false, false, false, T_enum, false, true, false, false>
+        : qtjambi_enum_caster<false, has_scope,
+                typename qtjambi_cast_types<T_enum>::T_noconst,
+                typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type,
+                std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noref>::type, typename qtjambi_cast_types<O>::T_noref>::type>::value,
+                std::is_reference<O>::value && !std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type>::value
+            > {};
 
 // O is jni type
 template<bool has_scope,
          typename O_jni,
          typename T, bool t_is_arithmetic, bool t_is_enum>
-struct qtjambi_cast_decider<has_scope, O_jni, false, false, true, T, t_is_arithmetic, t_is_enum, false, false>{
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    typedef typename std::conditional<std::is_pointer<T_noref>::value, T_noref, typename std::add_lvalue_reference<T_noref>::type>::type T_in;
-    static constexpr O_jni (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_jnitype_caster< true, has_scope,
-                                    O_jni,
-                                    typename std::remove_pointer<T_noconst>::type,
+struct qtjambi_cast_decider<has_scope, O_jni, false, false, true, T, t_is_arithmetic, t_is_enum, false, false>
+        :   qtjambi_jnitype_caster< true, has_scope,
+                                    typename qtjambi_cast_types<O_jni>::T_noconst,
+                                    typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type,
                                     t_is_arithmetic,
                                     t_is_enum,
-                                    std::is_pointer<T_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<T_noref>::value, typename std::remove_pointer<T_noref>::type, T_noref>::type>::value,
-                                    std::is_reference<T>::value && !std::is_pointer<T_noref>::value,
-                                    std::is_function<typename std::remove_pointer<T_noconst>::type>::value,
-                                    is_template<typename std::remove_pointer<T_noconst>::type>::value
-                                  >::castfwd;
+                                    std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                                    std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noref>::type, typename qtjambi_cast_types<T>::T_noref>::type>::value,
+                                    std::is_reference<T>::value && !std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                                    std::is_function<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::value,
+                                    is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type>::value
+                                  >
+{
 };
 
 // T is jni type
 template<bool has_scope,
          typename O, bool o_is_arithmetic, bool o_is_enum,
          typename T_jni>
-struct qtjambi_cast_decider<has_scope, O, o_is_arithmetic, o_is_enum, false, T_jni, false, false, true, false>{
-    typedef typename std::remove_reference<T_jni>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_in;
-    typedef typename std::remove_reference<O>::type O_noref;
-    typedef typename std::remove_cv<O_noref>::type O_noconst;
-    static constexpr O (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-            qtjambi_jnitype_caster< false, has_scope,
-                                    T_in,
-                                    typename std::remove_pointer<O_noconst>::type,
-                                    o_is_arithmetic,
-                                    o_is_enum,
-                                    std::is_pointer<O_noref>::value,
-                                    std::is_const<typename std::conditional<std::is_pointer<O_noref>::value, typename std::remove_pointer<O_noref>::type, O_noref>::type>::value,
-                                    std::is_reference<O>::value && !std::is_pointer<O_noref>::value,
-                                    std::is_function<typename std::remove_pointer<O_noconst>::type>::value,
-                                    is_template<typename std::remove_pointer<O_noconst>::type>::value
-                                >::castbck;
+struct qtjambi_cast_decider<has_scope, O, o_is_arithmetic, o_is_enum, false, T_jni, false, false, true, false>
+        :   qtjambi_jnitype_caster< false, has_scope,
+                                        typename qtjambi_cast_types<T_jni>::T_noconst,
+                                        typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type,
+                                        o_is_arithmetic,
+                                        o_is_enum,
+                                        std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                                        std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noref>::type, typename qtjambi_cast_types<O>::T_noref>::type>::value,
+                                        std::is_reference<O>::value && !std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                                        std::is_function<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::value,
+                                        is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type>::value
+                                    >
+{
 };
 
 // T and O are non-jni non-arithmetic type
@@ -249,14 +217,10 @@ struct qtjambi_misc_caster{
     typedef typename std::conditional<t_is_reference, typename std::add_lvalue_reference<T_const>::type, T_const>::type T_constref;
     typedef typename std::conditional<t_is_pointer, typename std::add_pointer<T_const>::type, typename std::add_lvalue_reference<T_const>::type>::type T_in;
     typedef typename std::conditional<t_is_pointer, typename std::add_pointer<T_const>::type, T_constref>::type T_out;
-    static O_out castfwd(JNIEnv *, T_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-    }
-    static T_out castbck(JNIEnv *, O_in, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-    }
+    Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
 };
 
+#ifdef QSTRING_H
 // string to enum
 
 template<bool has_scope,
@@ -271,39 +235,30 @@ struct qtjambi_misc_caster<has_scope,
     static QString cast(JNIEnv *, T_in in, const char*, QtJambiScope*){
         return QString::number(qint64(in));
     }
-    static T_out castbck(JNIEnv *, QString&&, const char*, QtJambiScope*){
-        Q_STATIC_ASSERT_X(false && !has_scope, "Cannot cast types");
-    }
 };
+#endif
 
 template<bool has_scope,
          typename O,
          typename T>
-struct qtjambi_cast_decider<has_scope, O, false, false, false, T, false, false, false, false>{
-    typedef typename std::remove_reference<O>::type O_noref;
-    typedef typename std::remove_cv<O_noref>::type O_noconst;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    typedef typename std::conditional<std::is_pointer<T_noref>::value, T, typename std::add_lvalue_reference<T>::type>::type T_in;
-    static constexpr O (*cast)(JNIEnv *, T_in, const char*, QtJambiScope*) =
-                        qtjambi_misc_caster< has_scope,
-                                typename std::remove_pointer<O_noconst>::type,
-                                std::is_pointer<O_noref>::value,
-                                std::is_const<typename std::conditional<std::is_pointer<O_noref>::value, typename std::remove_pointer<O_noref>::type, O_noref>::type>::value,
-                                std::is_reference<O>::value,
-                                std::is_function<typename std::remove_pointer<O_noconst>::type>::value,
-                                std::is_base_of<QObject, typename std::remove_pointer<O_noconst>::type>::value,
-                                std::is_copy_assignable<O_noconst>::value,
-                                is_template<typename std::remove_pointer<O_noconst>::type>::value,
-                                typename std::remove_pointer<T_noconst>::type,
-                                std::is_pointer<T_noref>::value,
-                                std::is_const<typename std::conditional<std::is_pointer<T_noref>::value, typename std::remove_pointer<T_noref>::type, T_noref>::type>::value,
-                                std::is_reference<T>::value && !std::is_pointer<T_noref>::value,
-                                std::is_function<typename std::remove_pointer<T_noconst>::type>::value,
-                                std::is_base_of<QObject, typename std::remove_pointer<T_noconst>::type>::value,
-                                std::is_copy_assignable<T_noconst>::value,
-                                is_template<typename std::remove_pointer<T_noconst>::type>::value >::castbck;
-};
+struct qtjambi_cast_decider<has_scope, O, false, false, false, T, false, false, false, false>
+        :   qtjambi_misc_caster< has_scope,
+                    typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type,
+                    std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value,
+                    std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<O>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noref>::type, typename qtjambi_cast_types<O>::T_noref>::type>::value,
+                    std::is_reference<O>::value,
+                    std::is_function<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::value,
+                    std::is_base_of<QObject, typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::value,
+                    std::is_copy_assignable<typename qtjambi_cast_types<O>::T_noconst>::value,
+                    is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<O>::T_noconst>::type>::type>::value,
+                    typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type,
+                    std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                    std::is_const<typename std::conditional<std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value, typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noref>::type, typename qtjambi_cast_types<T>::T_noref>::type>::value,
+                    std::is_reference<T>::value && !std::is_pointer<typename qtjambi_cast_types<T>::T_noref>::value,
+                    std::is_function<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::value,
+                    std::is_base_of<QObject, typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::value,
+                    std::is_copy_assignable<typename qtjambi_cast_types<T>::T_noconst>::value,
+                    is_template<typename std::remove_cv<typename std::remove_pointer<typename qtjambi_cast_types<T>::T_noconst>::type>::type>::value > {};
 
 } // namespace QtJambiPrivate
 

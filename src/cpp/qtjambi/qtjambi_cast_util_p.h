@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -33,22 +33,16 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
-#include "qtjambi_core.h"
+#include "qtjambi_global.h"
 #include "qtjambi_typetests.h"
 
-template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in);
-
-template<class O, class T>
-O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in);
-
-template<class O, class T>
-O qtjambi_cast(JNIEnv *env, T&& in, const char* nativeTypeName);
-
-template<class O, class T>
-O qtjambi_cast(JNIEnv *env, QtJambiScope& scope, T&& in, const char* nativeTypeName);
-
 namespace QtJambiPrivate {
+
+template<typename T>
+struct qtjambi_cast_types{
+    typedef typename std::remove_reference<T>::type T_noref;
+    typedef typename std::remove_cv<T_noref>::type T_noconst;
+};
 
 template<bool has_scope,
          typename O, bool o_is_arithmetic, bool o_is_enum, bool o_is_jni_type,
@@ -91,22 +85,18 @@ template<>
 struct is_lightweight_java_type<QMetaObject::Connection> : std::true_type{
 };
 
-template<>
-struct is_lightweight_java_type<QMetaProperty> : std::true_type{
-};
-
-template<>
-struct is_lightweight_java_type<QMetaMethod> : std::true_type{
-};
-
-template<>
-struct is_lightweight_java_type<QMetaEnum> : std::true_type{
-};
-
+#ifdef QABSTRACTITEMMODEL_H
 template<>
 struct is_lightweight_java_type<QModelIndex> : std::true_type{
 };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+template<>
+struct is_lightweight_java_type<QModelRoleDataSpan> : std::true_type{
+};
+#endif
+#endif
 
+#ifdef QOBJECTWRAPPER_H
 template<>
 struct is_lightweight_java_type<JIteratorWrapper> : std::true_type{
 };
@@ -126,6 +116,43 @@ struct is_lightweight_java_type<JObjectWrapper> : std::true_type{
 template<>
 struct is_lightweight_java_type<JEnumWrapper> : std::true_type{
 };
+
+template<>
+struct is_lightweight_java_type<JObjectArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JIntArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JLongArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JShortArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JByteArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JBooleanArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JCharArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JDoubleArrayWrapper> : std::true_type{
+};
+
+template<>
+struct is_lightweight_java_type<JFloatArrayWrapper> : std::true_type{
+};
+#endif
 
 template<>
 struct is_lightweight_java_type<QString> : std::true_type{
@@ -235,52 +262,13 @@ template<>
 struct is_jni_array_type<jfloatArray> : std::true_type{
 };
 
-template<typename Iterator>
-struct IteratorIncrement{
- static QIteratorIncrementFunction function() { return  [](void* ptr) {
-         Iterator* iterator = static_cast<Iterator*>(ptr);
-         ++(*iterator);
-     }; }
-};
-
-template<typename Iterator>
-struct IteratorDecrement{
- static QIteratorDecrementFunction function() { return  [](void* ptr) {
-         Iterator* iterator = static_cast<Iterator*>(ptr);
-         --(*iterator);
-     }; }
-};
-
-template<typename Iterator, bool supports_less_than>
-struct IteratorLessThan{
- static QIteratorLessThanFunction function() { return nullptr; }
-};
-
-template<typename Iterator>
-struct IteratorLessThan<Iterator, true>{
- static QIteratorLessThanFunction function() { return  [](void* ptr, void* ptr2) -> jboolean {
-         Iterator* iterator = static_cast<Iterator*>(ptr);
-         Iterator* iterator2 = static_cast<Iterator*>(ptr2);
-         return (*iterator)<(*iterator2);
-     }; }
-};
-
-template<typename Iterator>
-struct IteratorEquals{
- static QIteratorEqualsFunction function() { return  [](void* ptr, void* ptr2) -> jboolean {
-         Iterator* iterator = static_cast<Iterator*>(ptr);
-         Iterator* iterator2 = static_cast<Iterator*>(ptr2);
-         return (*iterator)==(*iterator2);
-     }; }
-};
-
 template<bool is_pointer,typename O>
 struct deref_ptr{
 };
 
 template<typename O>
 struct deref_ptr<false,O>{
-    static O& deref(O& o){
+    static constexpr O& deref(O& o){
         return o;
     }
 };
@@ -299,14 +287,14 @@ struct ref_ptr{
 
 template<typename O>
 struct ref_ptr<true,O>{
-    static O* ref(O* o){
+    static constexpr O* ref(O* o){
         return o;
     }
 };
 
 template<typename O>
 struct ref_ptr<false,O>{
-    static O* ref(O& o){
+    static constexpr O* ref(O& o){
         return &o;
     }
 };
@@ -317,7 +305,7 @@ struct deref_ptr_or_default{
 
 template<typename O>
 struct deref_ptr_or_default<false,O>{
-    static O& deref(O& o){
+    static constexpr O& deref(O& o){
         return o;
     }
 };
@@ -337,15 +325,18 @@ struct qtjambi_deref_value{
 template<typename O, bool is_const, bool o_is_reference>
 struct qtjambi_deref_value<O,false, is_const, o_is_reference>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
-    static O_const& deref(JNIEnv *env, O_const* o){
-        return checked_deref<O_const>(env, o);
+    static O_const& deref(JNIEnv *env, O* o){
+        qtjambi_check_resource<O>(env, o);
+        return *o;
     }
 };
 
 template<typename O, bool has_std_constructor>
 struct qtjambi_deref_value<O,has_std_constructor,false,true>{
+    typedef O& (*_deref)(JNIEnv *env, O* o);
     static O& deref(JNIEnv *env, O* o){
-        return checked_deref<O>(env, o);
+        qtjambi_check_resource<O>(env, o);
+        return *o;
     }
 };
 
@@ -367,59 +358,14 @@ struct qtjambi_deref_value<O,true,is_const,false>{
 
 template<typename T, bool comparable>
 struct LessThan{
-  static LessThanFunction function(){ return nullptr; }
-};
-
-template<typename T>
-struct LessThan<T,false>{
-  static LessThanFunction function(){ return nullptr; }
+  static constexpr LessThanFunction function = nullptr;
 };
 
 template<typename T>
 struct LessThan<T,true>{
-  static LessThanFunction function(){
-      return [](JNIEnv *env, jobject t1, jobject t2)->bool{
-          return qtjambi_cast<T>(env, t1) < qtjambi_cast<T>(env, t2);
-      };
-  }
-};
-
-template<template<typename T> class Container, typename T>
-struct IntermediateContainer : Container<T>{
-    IntermediateContainer(JNIEnv *env, jobject object, QtJambiScope& scope) : Container<T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
-    ~IntermediateContainer(){
-        if(JNIEnv *env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-            if(!env->IsSameObject(m_object, nullptr)){
-                qtjambi_collection_clear(env, m_object);
-                for(typename Container<T>::const_iterator i = Container<T>::constBegin(); i!=Container<T>::constEnd(); ++i){
-                    qtjambi_collection_add(env, m_object, qtjambi_cast<jobject>(env, m_scope, *i));
-                }
-            }
-        }
+  static bool function(JNIEnv *env, jobject t1, jobject t2){
+        return qtjambi_scoped_cast<false,T,jobject>::cast(env, t1, nullptr, nullptr) < qtjambi_scoped_cast<false,T,jobject>::cast(env, t2, nullptr, nullptr);
     }
-    QtJambiScope& m_scope;
-    jobject m_object;
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct IntermediateBiContainer : Container<K,T>{
-    IntermediateBiContainer(JNIEnv *env, jobject object, QtJambiScope& scope) : Container<K,T>(), m_scope(scope), m_object(env->NewWeakGlobalRef(object)){}
-    ~IntermediateBiContainer(){
-        if(JNIEnv *env = qtjambi_current_environment()){
-            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-            if(!env->IsSameObject(m_object, nullptr)){
-                qtjambi_map_clear(env, m_object);
-                for(typename Container<K,T>::const_iterator i = Container<K,T>::constBegin(); i!=Container<K,T>::constEnd(); ++i){
-                    jobject key = qtjambi_cast<jobject>(env, m_scope, i.key());
-                    jobject val = qtjambi_cast<jobject>(env, m_scope, i.value());
-                    qtjambi_map_put(env, m_object, key, val);
-                }
-            }
-        }
-    }
-    QtJambiScope& m_scope;
-    jobject m_object;
 };
 
 } // namespace QtJambiPrivate

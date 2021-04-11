@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,8 +47,8 @@ import io.qt.internal.NativeAccess;
  * where T is your subclass. This should return the enum value corresponding to the
  * specified int value.
  */
-public interface QtEnumerator extends QtAbstractEnumerator {
-    /**
+public interface QtEnumerator extends QtAbstractEnumerator{
+	/**
      * This function should return an integer value for the enum
      * values of the enumeration that implements this interface.
      */

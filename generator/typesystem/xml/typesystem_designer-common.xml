@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,53 +44,103 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtDesigner">
-  <rejection class="QAbstractExtensionFactory" />
-  <rejection class="QAbstractExtensionManager" />
-  <rejection class="QAbstractFormBuilder" />
-  <rejection class="QDesignerActionEditorInterface" />
-  <rejection class="QDesignerBrushManagerInterface" />
-  <rejection class="QDesignerContainerExtension" />
-  <rejection class="QDesignerCustomWidgetCollectionInterface" />
-  <rejection class="QDesignerCustomWidgetInterface" />
-  <rejection class="QDesignerDnDItemInterface" />
-  <rejection class="QDesignerExtraInfoExtension" />
-  <rejection class="QDesignerFormEditorInterface" />
-  <rejection class="QDesignerFormEditorPluginInterface" />
-  <rejection class="QDesignerFormWindowCursorInterface" />
-  <rejection class="QDesignerFormWindowInterface" />
-  <rejection class="QDesignerFormWindowManagerInterface" />
-  <rejection class="QDesignerFormWindowToolInterface" />
-  <rejection class="QDesignerIconCacheInterface" />
-  <rejection class="QDesignerIntegrationInterface" />
-  <rejection class="QDesignerLanguageExtension" />
-  <rejection class="QDesignerLayoutDecorationExtension" />
-  <rejection class="QDesignerMetaDataBaseInterface" />
-  <rejection class="QDesignerMetaDataBaseItemInterface" />
-  <rejection class="QDesignerObjectInspectorInterface" />
-  <rejection class="QDesignerPropertyEditorInterface" />
-  <rejection class="QDesignerTaskMenuExtension" />
-  <rejection class="QDesignerWidgetBoxInterface" />
-  <rejection class="QDesignerWidgetDataBaseInterface" />
-  <rejection class="QDesignerWidgetDataBaseItemInterface" />
-  <rejection class="QDesignerWidgetFactoryInterface" />
-  <rejection class="QExtensionManager" />
-  <rejection class="QFormBuilder" />
-  <rejection class="QDesignerDynamicPropertySheetExtension" />
-  <rejection class="QDesignerPromotionInterface" />
-  <rejection class="QDesignerScriptExtension" />
-  <rejection class="QDesignerPropertySheetExtension" />
-  <rejection class="JambiPropertySheet" />
-  <rejection class="QDesignerMemberSheetExtension" />
-  <rejection class="JambiMemberSheet" />
-  <rejection class="QDesignerIntegration" />
-  <rejection class="QDesignerNewFormWidgetInterface" />
-  <rejection class="QDesignerOptionsPageInterface" />
-  <rejection class="QDesignerSettingsInterface" />
+    <rejection class="QDesignerFormWindowInterface" function-name="resourceSet" />
+    <rejection class="QDesignerFormWindowInterface" function-name="setResourceSet" />
+    <rejection class="QDesignerFormWindowManagerInterface" enum-name="Action" />
+    <rejection class="QDesignerFormWindowManagerInterface" enum-name="ActionGroup" />
+    <rejection class="QDesignerFormWindowManagerInterface" />
+    <rejection class="QtResourceSet"/>
+    <rejection class="QtGradientManager"/>
+    <rejection class="QDesignerPluginManager"/>
+    <rejection class="QDesignerIntrospectionInterface"/>
+    <rejection class="QDesignerDialogGuiInterface"/>
+    <rejection class="QtResourceModel"/>
+    <rejection class="QTextBuilder"/>
+    <rejection class="QAbstractFormBuilder::DomPropertyHash"/>
+    <rejection class="QDesignerDnDItemInterface" />
+    <rejection class="QDesignerExtraInfoExtension" />
+    <interface-type name="QDesignerLanguageExtension" />
+    <interface-type name="QDesignerFormEditorPluginInterface" />
+    <object-type name="QDesignerFormEditorInterface" />
+    <object-type name="QDesignerWidgetBoxInterface"/>
+    <enum-type name="QDesignerWidgetBoxInterface::Category::Type" />
+    <value-type name="QDesignerWidgetBoxInterface::Category" />
+    <enum-type name="QDesignerWidgetBoxInterface::Widget::Type" />
+    <value-type name="QDesignerWidgetBoxInterface::Widget">
+        <modify-function signature="operator=(QDesignerWidgetBoxInterface::Widget)" remove="all"/>
+    </value-type>
+    <interface-type name="QAbstractExtensionFactory" />
+    <interface-type name="QAbstractExtensionManager" />
+    <object-type name="QAbstractFormBuilder" />
+    <object-type name="QDesignerActionEditorInterface" />
+    <interface-type name="QDesignerBrushManagerInterface" />
+    <interface-type name="QDesignerContainerExtension" />
+    <interface-type name="QDesignerCustomWidgetCollectionInterface" />
+    <interface-type name="QDesignerCustomWidgetInterface" />
+    <enum-type name="QDesignerFormWindowCursorInterface::MoveOperation" />
+    <enum-type name="QDesignerFormWindowCursorInterface::MoveMode" />
+    <interface-type name="QDesignerFormWindowCursorInterface" />
+    <object-type name="QDesignerFormWindowInterface"/>
+    <enum-type name="QDesignerFormWindowInterface::FeatureFlag" flags="QDesignerFormWindowInterface::Feature" />
+    <enum-type name="QDesignerFormWindowInterface::ResourceFileSaveMode" />
+    <enum-type name="QDesignerIntegrationInterface::ResourceFileWatcherBehaviour" />
+    <enum-type name="QDesignerIntegrationInterface::FeatureFlag" flags="QDesignerIntegrationInterface::Feature" />
+    <object-type name="QDesignerFormWindowToolInterface" />
+    <interface-type name="QDesignerIconCacheInterface" />
+    <object-type name="QDesignerIntegrationInterface" />
+    <enum-type name="QDesignerLayoutDecorationExtension::InsertMode" />
+    <interface-type name="QDesignerLayoutDecorationExtension" />
+    <object-type name="QDesignerMetaDataBaseInterface" />
+    <interface-type name="QDesignerMetaDataBaseItemInterface" />
+    <object-type name="QDesignerObjectInspectorInterface" />
+    <object-type name="QDesignerPropertyEditorInterface" />
+    <interface-type name="QDesignerTaskMenuExtension" />
+    <object-type name="QDesignerWidgetDataBaseInterface" />
+    <interface-type name="QDesignerWidgetDataBaseItemInterface" />
+    <object-type name="QDesignerWidgetFactoryInterface" />
+    <object-type name="QExtensionFactory">
+        <interface-polymorphy interface="QAbstractExtensionFactory" condition="dynamic_cast&lt;const QAbstractExtensionFactory*>(%1)" />
+    </object-type>
+    <object-type name="QExtensionManager">
+        <interface-polymorphy interface="QAbstractExtensionManager" condition="dynamic_cast&lt;const QAbstractExtensionManager*>(%1)" />
+    </object-type>
+    <object-type name="QFormBuilder" />
+    <interface-type name="QDesignerDynamicPropertySheetExtension" />
+    <interface-type name="QDesignerPromotionInterface" />
+    <value-type name="QDesignerPromotionInterface::PromotedClass">
+        <extra-includes>
+            <include file-name="QtDesigner/QDesignerWidgetDataBaseItemInterface" location="global"/>
+        </extra-includes>
+      </value-type>
+    <interface-type name="QDesignerScriptExtension" />
+    <interface-type name="QDesignerPropertySheetExtension" />
+    <interface-type name="QDesignerMemberSheetExtension" />
+    <object-type name="QDesignerIntegration" />
+    <object-type name="QDesignerNewFormWidgetInterface" />
+    <interface-type name="QDesignerOptionsPageInterface" />
+    <interface-type name="QDesignerSettingsInterface" />
+    <object-type name="QDesignerResourceBrowserInterface">
+    </object-type>
 
-  <object-type name="QDesignerResourceBrowserInterface">
-    <include file-name="abstractresourcebrowser.h" location="global"/>
-  </object-type>
+    <!--interface-type name="QtJambiPropertySheet" />
+    <interface-type name="QtJambiMemberSheet" /-->
+    <object-type name="QtJambiResourceBrowser" />
 
-  <object-type name="JambiResourceBrowser" />
-
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtResourceModel*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerIntrospectionInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtGradientManager*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerPluginManager*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QtResourceSet*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QResourceBuilder*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QTextBuilder*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QAbstractFormBuilder::DomPropertyHash*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerDialogGuiInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerFormWindowManagerInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerWidgetBoxInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerLanguageExtension*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QDesignerFormEditorPluginInterface*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'Dom*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QList&lt;Dom*'" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QList&lt;QDesignerDnDItemInterface*'" />
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QDesigner*::*." />
 </typesystem>

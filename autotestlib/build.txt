@@ -1,6 +1,6 @@
 <typesystem package="io.qt.autotests.generated" default-superclass="io.qt.QtObject">
 
-  <inject-code location="1">
+  <inject-code position="1">
     io.qt.QtUtilities.initializePackage("io.qt.network");
     io.qt.QtUtilities.initializePackage("io.qt.xml");
     io.qt.QtUtilities.initializePackage("io.qt.sql");
@@ -73,8 +73,21 @@
     </modify-function>
   </object-type>
 
+  <object-type name="BindableOwner" />
   <object-type name="SenderQObject" />
-  <object-type name="StyledItemDelegateSubclass" />
+  <object-type name="StyledItemDelegateSubclass">
+    <modify-function signature="initStyleOptionInStyledDelegate(QStyleOptionViewItem *)">
+        <modify-argument index="1" invalidate-after-use="yes">
+            <replace-type modified-type="io.qt.widgets.QStyleOptionViewItem"/>
+            <conversion-rule class="native">
+                QStyleOptionViewItem* %out = qtjambi_cast&lt;QStyleOptionViewItem*>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+  </object-type>
   <object-type name="GraphicsWidgetSubclass">
     <extra-includes>
         <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
@@ -177,7 +190,16 @@
     </extra-includes>
   </object-type>
 
-  <object-type name="IODeviceSubclass" />
+  <object-type name="IODeviceSubclass">
+    <modify-field name="buffer_length" read="no" write="no"/>
+    <modify-field name="buffer" read="yes" write="no">
+        <replace-type modified-type="java.nio.ByteBuffer"/>
+        <conversion-rule class="native">
+            jobject %out = %env->NewDirectByteBuffer(%in, jlong(__qt_this->buffer_length));
+            qtjambi_throw_java_exception(%env)
+        </conversion-rule>
+    </modify-field>
+  </object-type>
   <object-type name="XmlReaderSubclass" deprecated="true"/>
   <object-type name="TextCodecSubclass">
     <!-- see genertor source for "HACK method ownership of constructor return value" -->
@@ -205,7 +227,19 @@
         <include file-name="qtjambi_widgets/qtjambi_widgets_core.h" location="global"/>
     </extra-includes>
   </object-type>
-  <object-type name="ImageIOHandlerSubclass" />
+  <object-type name="ImageIOHandlerSubclass">
+    <modify-function signature="callRead(QImage*)">
+        <modify-argument index="1" invalidate-after-use="yes">
+            <replace-type modified-type="io.qt.gui.QImage"/>
+            <conversion-rule class="native">
+                QImage* %out = qtjambi_cast&lt;QImage*>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+  </object-type>
   <object-type name="AccessibleInterfaceSubclass" />
   <object-type name="SqlTableModelSubclass" /><!-- might not exist if QT_NO_SQL is set -->
 
@@ -257,6 +291,14 @@
       <extra-includes>
           <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
       </extra-includes>
+        <modify-function signature="callValidate(QString *, int *)">
+            <modify-argument index="1">
+                <array-type min-length="1"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
   </object-type>
 
   <object-type name="SomeQObject" />
@@ -404,7 +446,30 @@
     <include file-name="namespace.h" location="local"/>
   </value-type>
 
-  <object-type name="AbstractSocketSubclass" />
+  <object-type name="AbstractSocketSubclass">
+    <modify-function signature="emitProxyAuthenticationRequired(QAbstractSocket *, const QNetworkProxy &amp;, QAuthenticator *)">
+        <modify-argument index="3" invalidate-after-use="yes">
+            <replace-type modified-type="io.qt.network.QAuthenticator"/>
+            <conversion-rule class="native">
+                QAuthenticator* %out = qtjambi_cast&lt;QAuthenticator*>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+    <modify-function signature="emitSignalAccessor(const QNetworkProxy &amp;, QAuthenticator *)">
+        <modify-argument index="2" invalidate-after-use="yes">
+            <replace-type modified-type="io.qt.network.QAuthenticator"/>
+            <conversion-rule class="native">
+                QAuthenticator* %out = qtjambi_cast&lt;QAuthenticator*>(%env, %in);
+            </conversion-rule>
+            <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+            </conversion-rule>
+        </modify-argument>
+    </modify-function>
+  </object-type>
 
 
   <value-type name="QHash_int" />
@@ -412,7 +477,6 @@
   <value-type name="QList_int" />
   <value-type name="QList_String" />
   <value-type name="QMap_int" />
-  <value-type name="QMultiMap_int" />
   <value-type name="QMap_int_String" />
   <value-type name="QMap_String_int" />
   <value-type name="QMap_String" />
@@ -435,9 +499,9 @@
   <value-type name="QMultiHash_String_int" />
   <value-type name="QMultiHash_int_String" />
   <object-type name="PolymorphicObjectType" />
-  <object-type name="PolymorphicOwnedObjectType" delete-in-owner-thread="yes" owner="%1->owner()"/>
+  <object-type name="PolymorphicOwnedObjectType" thread-affine="%1->owner()"/>
   <object-type name="NonPolymorphicObjectType" />
-  <object-type name="NonPolymorphicOwnedObjectType" delete-in-owner-thread="yes" owner="%1->owner()"/>
+  <object-type name="NonPolymorphicOwnedObjectType" thread-affine="%1->owner()"/>
   <object-type name="QObjectType">
       <extra-includes>
           <include file-name="io.qt.autotests.Utils" location="java"/>
@@ -462,7 +526,11 @@
     </modify-function>
     <custom-destructor>
         qtjambi_increase_destructorFunctionCalledCount("ValueType");
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        QtPrivate::QMetaTypeForType&lt;ValueType>::getDtor()(metaTypeInterface, copy);
+#else
         QtMetaTypePrivate::QMetaTypeFunctionHelper&lt;ValueType>::Destruct(copy);
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     </custom-destructor>
   </value-type>
 
@@ -540,21 +608,21 @@
   <object-type name="TestAbstractClass">
         <modify-function signature="setReferenceCountTest1(QObject*)">
             <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" condition="__qt_return_value"/>
             </modify-argument>
         </modify-function>
   </object-type>
   <object-type name="TestInterfaceImpl">
         <modify-function signature="setReferenceCountTest1(QObject*)">
             <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" condition="__qt_return_value"/>
             </modify-argument>
         </modify-function>
   </object-type>
   <object-type name="TestInterfaceObject">
     <modify-function signature="setReferenceCountTest1(QObject*)">
         <modify-argument index="1">
-            <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+            <reference-count action="set" variable-name="__rcReferenceCountTest1" condition="__qt_return_value"/>
         </modify-argument>
     </modify-function>
     <modify-function signature="create(QString)">
@@ -566,17 +634,17 @@
   <interface-type name="TestInterface">
         <modify-function signature="setReferenceCountTest1(QObject*)">
             <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcReferenceCountTest1" conditional="__qt_return_value"/>
+                <reference-count action="set" variable-name="__rcReferenceCountTest1" condition="__qt_return_value"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setReferenceCountTest2(QObject*)">
             <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcReferenceCountTest2" conditional="__qt_return_value"/>
+                <reference-count action="set" variable-name="__rcReferenceCountTest2" condition="__qt_return_value"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setReferenceCountTest3(QObject*)">
             <modify-argument index="1">
-                <reference-count action="set" variable-name="__rcReferenceCountTest3" conditional="__qt_return_value"/>
+                <reference-count action="set" variable-name="__rcReferenceCountTest3" condition="__qt_return_value"/>
             </modify-argument>
         </modify-function>
   </interface-type>
@@ -588,5 +656,7 @@
     <object-type name="FunctionalTest" />
     <functional-type name="FunctionalTest::TestFunction1"/>
     <functional-type name="FunctionalTest::TestFunction2"/>
+    <functional-type name="Tulip::TestStdFunction"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: private virtual function 'abstractFunction(const QString*)' in 'AnotherNonAbstractSubclass'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: enum 'Variants::UnknownEnum' does not have a type entry or is not an enum" />
 </typesystem>

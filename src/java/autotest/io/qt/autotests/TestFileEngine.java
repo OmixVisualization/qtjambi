@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -49,7 +49,6 @@ import io.qt.core.QIODevice;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.gui.QGuiApplication;
 import io.qt.gui.QPixmap;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QLabel;
 
 public class TestFileEngine extends QApplicationTest {
@@ -97,7 +96,8 @@ public class TestFileEngine extends QApplicationTest {
         assertEquals("io/qt/autotests/TestClassFunctionality.jar exists on CLASSPATH and is file:/// URL protocol", "file", urlProtocol);
     }
 
-    @Test
+//    @SuppressWarnings("deprecation")
+	@Test
     public void run_classPathFileEngine() {
     	io.qt.QtResources.addSearchPath(".");  // Hmm not sure on the merit of this cwd will be project top-level dir
     	String search_path = null;
@@ -215,7 +215,7 @@ public class TestFileEngine extends QApplicationTest {
 		        assertTrue(file.isOpen());
 		
 		        QByteArray ba = file.readAll();
-		        ba.append("");
+		        ba.append(new QByteArray(""));
 		        String s = ba.toString();
 		        assertTrue(s.startsWith("Qt rocks"));
 		        assertEquals(file.bytesAvailable(), 0L);
@@ -226,7 +226,7 @@ public class TestFileEngine extends QApplicationTest {
 		        assertEquals(file.bytesAvailable(), 5L);
 		
 		        ba = file.read(1000);
-		        ba.append("");
+		        ba.append(new QByteArray(""));
 		        s = ba.toString();
 		        assertTrue(s.startsWith("rocks"));
 		
@@ -236,13 +236,15 @@ public class TestFileEngine extends QApplicationTest {
 		
 		        assertEquals(file.bytesAvailable(), 7L);
 		        ba = file.read(1);
-		        ba.append("");
 		        s = ba.toString();
-		        assertEquals(s, "t");
+		        assertEquals("t", s);
+		        ba.append(new QByteArray(""));
+		        s = ba.toString();
+		        assertEquals("t", s);
 		
 		        assertEquals(file.bytesAvailable(), 6L);
 		        ba = file.read(1);
-		        ba.append("");
+		        ba.append(new QByteArray(""));
 		        s = ba.toString();
 		        assertEquals(s, " ");
 		        assertEquals(file.bytesAvailable(), 5L);
@@ -255,7 +257,7 @@ public class TestFileEngine extends QApplicationTest {
 		        file.reset();
 		
 		        ba = file.readLine();
-		        ba.append("");
+		        ba.append(new QByteArray(""));
 		        s = ba.toString();
 		        assertEquals(s, "Qt rocks");
 		

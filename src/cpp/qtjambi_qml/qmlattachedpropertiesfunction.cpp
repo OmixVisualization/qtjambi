@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/QtGlobal>
+#include <qtjambi/qtjambi_global.h>
 
 #include "qmlattachedpropertiesfunction.h"
 #include <qtjambi/qtjambi_core.h>
@@ -53,7 +55,7 @@ QQmlAttachedPropertiesFunc attachedPropertiesFunc(JNIEnv * env, jclass clazz, jo
     hash = 31 * hash + uint(qtjambi_java_object_hashcode(env, clazz));
     jmethodID qmlAttachedProperties = env->FromReflectedMethod(method);
     JObjectWrapper clazzWrapper(env, clazz);
-    return qtjambi_function_pointer<4 /*=256 options*/,QObject*(QObject*)>([clazzWrapper, qmlAttachedProperties](QObject* parent) -> QObject* {
+    return qtjambi_function_pointer<64,QObject*(QObject*)>([clazzWrapper, qmlAttachedProperties](QObject* parent) -> QObject* {
         return attachedProperties(clazzWrapper, qmlAttachedProperties, parent);
     }, hash);
 }

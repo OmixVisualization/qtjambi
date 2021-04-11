@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,10 +30,11 @@
 #ifndef QTJAMBI_TYPEINFO_P_H
 #define QTJAMBI_TYPEINFO_P_H
 
-#include <QtCore/QtCore>
+#include <QtCore/QObject>
 #include <typeindex>
 #include <typeinfo>
 #include "qtjambi_core.h"
+#include "qtjambi_registry.h"
 
 typedef std::function<void*(void *)> PointerGetterFunction;
 
@@ -274,7 +275,7 @@ public:
     jclass creatableClass() const;
     jclass implementationClass() const;
     size_t shellSize() const;
-    const QVector<FunctionInfo>* virtualFunctions() const;
+    const QVector<const FunctionInfo>* virtualFunctions() const;
     const QMap<size_t, uint>& interfaceOffsets() const;
     uint offset(const std::type_info& toType) const;
     Destructor destructor() const;
@@ -293,7 +294,7 @@ public:
                        size_t shell_size,
                        PtrDeleterFunction deleter,
                        PtrOwnerFunction owner_function,
-                       const QVector<FunctionInfo>* virtualFunctions,
+                       const QVector<const FunctionInfo>* virtualFunctions,
                        Destructor destructor,
                        const QList<const PolymorphicIdHandler*>& polymorphicHandlers
                     );
@@ -311,7 +312,7 @@ private:
     size_t m_shell_size;
     PtrDeleterFunction m_deleter;
     PtrOwnerFunction m_owner_function;
-    const QVector<FunctionInfo>* m_virtualFunctions;
+    const QVector<const FunctionInfo>* m_virtualFunctions;
     Destructor m_destructor;
     QList<const PolymorphicIdHandler*> m_polymorphicHandlers;
     friend class InterfaceValueTypeEntry;
@@ -320,7 +321,6 @@ private:
 class InterfaceValueTypeEntry : public InterfaceTypeEntry{
 public:
     bool isValue() const final;
-    int qtMetaTypeId() const;
     InterfaceValueTypeEntry(JNIEnv* env, const std::type_info& typeId,
                        const char *qt_name,
                        const char *java_name,
@@ -335,21 +335,21 @@ public:
                        size_t shell_size,
                        PtrDeleterFunction deleter,
                        PtrOwnerFunction owner_function,
-                       const QVector<FunctionInfo>* virtualFunctions,
+                       const QVector<const FunctionInfo>* virtualFunctions,
                        Destructor destructor,
                        const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
-                       int qt_meta_type
+                       const QMetaType& qt_meta_type
                     );
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
 private:
-    const int m_qt_meta_type;
+    QMetaType m_qt_meta_type;
 };
 
 class FunctionalTypeEntry : public QtJambiTypeEntry{
 public:
     bool isFunctional() const final;
-    const QVector<FunctionInfo>* virtualFunctions() const;
+    const QVector<const FunctionInfo>* virtualFunctions() const;
     jclass creatableClass() const;
     Destructor destructor() const;
     FunctionalResolver registeredFunctionalResolver() const;
@@ -364,10 +364,10 @@ public:
                         size_t shell_size,
                         jclass java_impl_class,
                         jclass java_wrapper_class,
-                        const QVector<FunctionInfo>* virtualFunctions,
+                        const QVector<const FunctionInfo>* virtualFunctions,
                         Destructor destructor,
                         FunctionalResolver registered_functional_resolver,
-                        int qt_meta_type
+                        const QMetaType& qt_meta_type
                     );
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
@@ -376,10 +376,10 @@ private:
     size_t m_shell_size;
     jclass m_java_impl_class;
     jclass m_java_wrapper_class;
-    const QVector<FunctionInfo>* m_virtualFunctions;
+    const QVector<const FunctionInfo>* m_virtualFunctions;
     Destructor m_destructor;
     FunctionalResolver m_registered_functional_resolver;
-    const int m_qt_meta_type;
+    QMetaType m_qt_meta_type;
 };
 
 class ObjectTypeEntry : public QtJambiTypeEntry{
@@ -388,7 +388,7 @@ public:
     const std::type_info* superType() const final;
     const QList<const std::type_info*>& interfaceTypes() const final;
     size_t shellSize() const;
-    const QVector<FunctionInfo>* virtualFunctions() const;
+    const QVector<const FunctionInfo>* virtualFunctions() const;
     const QMap<size_t, uint>& interfaceOffsets() const;
     Destructor destructor() const;
     uint offset(const std::type_info& toType) const;
@@ -405,7 +405,7 @@ public:
                     size_t shell_size,
                     PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<FunctionInfo>* virtualFunctions,
+                    const QVector<const FunctionInfo>* virtualFunctions,
                     Destructor destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers
                 );
@@ -421,16 +421,17 @@ private:
     size_t m_shell_size;
     PtrDeleterFunction m_deleter;
     PtrOwnerFunction m_owner_function;
-    const QVector<FunctionInfo>* m_virtualFunctions;
+    const QVector<const FunctionInfo>* m_virtualFunctions;
     Destructor m_destructor;
     QList<const PolymorphicIdHandler*> m_polymorphicHandlers;
     friend class ObjectValueTypeEntry;
+    friend class ObjectContainerTypeEntry;
+    friend class ObjectAbstractContainerTypeEntry;
 };
 
 class ObjectAbstractTypeEntry : public ObjectTypeEntry{
 public:
     jclass creatableClass() const final;
-    ~ObjectAbstractTypeEntry();
     ObjectAbstractTypeEntry(JNIEnv* env,
                     const std::type_info& typeId,
                     const char *qt_name,
@@ -444,7 +445,7 @@ public:
                     size_t shell_size,
                     PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<FunctionInfo>* virtualFunctions,
+                    const QVector<const FunctionInfo>* virtualFunctions,
                     Destructor destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                     jclass java_wrapper_class
@@ -456,7 +457,6 @@ private:
 class ObjectValueTypeEntry : public ObjectTypeEntry{
 public:
     bool isValue() const final;
-    int qtMetaTypeId() const;
     ObjectValueTypeEntry(JNIEnv* env,
                     const std::type_info& typeId,
                     const char *qt_name,
@@ -468,23 +468,23 @@ public:
                     const QList<const std::type_info*>& interface_types,
                     const QMap<size_t, uint>& interface_offsets,
                     size_t shell_size,
-                    PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<FunctionInfo>* virtualFunctions,
+                    const QVector<const FunctionInfo>* virtualFunctions,
                     Destructor destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
-                    int qt_meta_type
+                    const QMetaType& qt_meta_type
                 );
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
 private:
-    const int m_qt_meta_type;
+    QMetaType m_qt_meta_type;
+    friend class ObjectContainerTypeEntry;
+    friend class ObjectAbstractContainerTypeEntry;
 };
 
 class ObjectAbstractValueTypeEntry : public ObjectValueTypeEntry{
 public:
     jclass creatableClass() const final;
-    ~ObjectAbstractValueTypeEntry();
     ObjectAbstractValueTypeEntry(JNIEnv* env,
                     const std::type_info& typeId,
                     const char *qt_name,
@@ -496,16 +496,68 @@ public:
                     const QList<const std::type_info*>& interface_types,
                     const QMap<size_t, uint>& interface_offsets,
                     size_t shell_size,
-                    PtrDeleterFunction deleter,
                     PtrOwnerFunction owner_function,
-                    const QVector<FunctionInfo>* virtualFunctions,
+                    const QVector<const FunctionInfo>* virtualFunctions,
                     Destructor destructor,
                     const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
-                    int qt_meta_type,
+                    const QMetaType& qt_meta_type,
                     jclass java_wrapper_class
                 );
 private:
     jclass m_java_wrapper_class;
+};
+
+class ObjectContainerTypeEntry : public ObjectValueTypeEntry{
+public:
+    ObjectContainerTypeEntry(JNIEnv* env,
+                    const std::type_info& typeId,
+                    const char *qt_name,
+                    const char *java_name,
+                    jclass java_class,
+                    jmethodID creator_method,
+                    size_t value_size,
+                    const std::type_info* super_type,
+                    const QList<const std::type_info*>& interface_types,
+                    const QMap<size_t, uint>& interface_offsets,
+                    size_t shell_size,
+                    NewContainerAccessFunction containerAccessFactory,
+                    PtrOwnerFunction owner_function,
+                    const QVector<const FunctionInfo>* virtualFunctions,
+                    Destructor destructor,
+                    const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                    const QMetaType& qt_meta_type
+                );
+    bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
+private:
+    NewContainerAccessFunction m_containerAccessFactory;
+};
+
+class ObjectAbstractContainerTypeEntry : public ObjectAbstractValueTypeEntry{
+public:
+    ObjectAbstractContainerTypeEntry(JNIEnv* env,
+                    const std::type_info& typeId,
+                    const char *qt_name,
+                    const char *java_name,
+                    jclass java_class,
+                    jmethodID creator_method,
+                    size_t value_size,
+                    const std::type_info* super_type,
+                    const QList<const std::type_info*>& interface_types,
+                    const QMap<size_t, uint>& interface_offsets,
+                    size_t shell_size,
+                    NewContainerAccessFunction containerAccessFactory,
+                    PtrOwnerFunction owner_function,
+                    const QVector<const FunctionInfo>* virtualFunctions,
+                    Destructor destructor,
+                    const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
+                    const QMetaType& qt_meta_type,
+                    jclass java_wrapper_class
+                );
+    bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
+private:
+    NewContainerAccessFunction m_containerAccessFactory;
 };
 
 class QObjectTypeEntry : public QtJambiTypeEntry{
@@ -514,7 +566,7 @@ public:
     const std::type_info* superType() const;
     const QList<const std::type_info*>& interfaceTypes() const final;
     size_t shellSize() const;
-    const QVector<FunctionInfo>* virtualFunctions() const;
+    const QVector<const FunctionInfo>* virtualFunctions() const;
     const QMetaObject* originalMetaObject() const;
     uint offset(const std::type_info& toType) const;
     QObjectTypeEntry(JNIEnv* env,
@@ -528,7 +580,7 @@ public:
                      const QList<const std::type_info*>& interface_types,
                      const QMap<size_t, uint>& interface_offsets,
                      size_t shell_size,
-                     const QVector<FunctionInfo>* virtualFunctions,
+                     const QVector<const FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object
                 );
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
@@ -539,7 +591,7 @@ private:
     QList<const std::type_info*> m_interface_types;
     QMap<size_t, uint> m_interface_offsets;
     size_t m_shell_size;
-    const QVector<FunctionInfo>* m_virtualFunctions;
+    const QVector<const FunctionInfo>* m_virtualFunctions;
     const QMetaObject* m_original_meta_object;
 };
 
@@ -557,7 +609,7 @@ public:
                      const QList<const std::type_info*>& interface_types,
                      const QMap<size_t, uint>& interface_offsets,
                      size_t shell_size,
-                     const QVector<FunctionInfo>* virtualFunctions,
+                     const QVector<const FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object);
     bool convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jvalue* output, jValueType valueType) const;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, PointerDeleter sharedPointerDeleter, PointerGetterFunction sharedPointerGetter, jvalue* output, jValueType valueType) const;
@@ -579,7 +631,7 @@ public:
                      const QList<const std::type_info*>& interface_types,
                      const QMap<size_t, uint>& interface_offsets,
                      size_t shell_size,
-                     const QVector<FunctionInfo>* virtualFunctions,
+                     const QVector<const FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object,
                      jclass java_wrapper_class
                 );

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,8 +31,8 @@
 #define QTJAMBI_REMOTEOBJECTS_H
 #include <QtRemoteObjects/qtremoteobjectglobal.h>
 
-inline uint qHash(const QRemoteObjectSourceLocationInfo& info){
-    uint hashCode = qHash(info.typeName);
+inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info){
+    hash_type hashCode = qHash(info.typeName);
     hashCode = hashCode * 31 + qHash(info.hostUrl);
     return hashCode;
 }

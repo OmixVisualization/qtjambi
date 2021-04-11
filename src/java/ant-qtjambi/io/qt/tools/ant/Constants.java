@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -62,8 +62,7 @@ public abstract class Constants {
     public static final String QMLMODULESDIR            = "qtjambi.qt.qmlmodulesdir";
     public static final String TRANSLATIONSDIR          = "qtjambi.qt.translationsdir";
     public static final String RESOURCESDIR             = "qtjambi.qt.resourcesdir";
-    public static final String GENERATOR_PREPROC_STAGE1 = "qtjambi.generator.preproc.stage1";
-    public static final String GENERATOR_PREPROC_STAGE2 = "qtjambi.generator.preproc.stage2";
+    public static final String GENERATOR_PREPROC_DEFINES = "qtjambi.generator.preproc.defines";
     public static final String JAVALIBDIR               = "qtjambi.java.library.path";
     public static final String JAMBILIBDIR              = "qtjambi.jambi.libdir";
     public static final String JAMBIPLUGINSDIR          = "qtjambi.jambi.pluginsdir";
@@ -74,6 +73,7 @@ public abstract class Constants {
     public static final String BUNDLE_VERSION_MODE      = "qtjambi.version.bundle.mode";
     public static final String SUFFIX_VERSION           = "qtjambi.version.suffix";
     public static final String JAVA_HOME_TARGET         = "java.home.target"; // build
+    public static final String JAVA8_HOME_TARGET        = "java8.home.target"; // build
     public static final String JAVA_OSARCH_TARGET       = "java.osarch.target"; // target
     public static final String JAVA_OSCPU               = "java.oscpu"; // build
     public static final String JAVA_OSCPU_TARGET        = "java.oscpu.target"; // target
@@ -174,6 +174,7 @@ public abstract class Constants {
     public static final String NETWORK            = "qtjambi.network";      // mandatory with <= 4.7.x
     public static final String NETWORKAUTH        = "qtjambi.networkauth";      // mandatory with <= 4.7.x
     public static final String OPENGL             = "qtjambi.opengl";
+    public static final String OPENGLWIDGETS      = "qtjambi.openglwidgets";
     public static final String OPENGLEXTENSIONS   = "qtjambi.openglextensions";
     public static final String PLATFORMSUPPORT    = "qtjambi.platformsupport";
     public static final String OSNAME             = "qtjambi.osname";
@@ -184,6 +185,7 @@ public abstract class Constants {
     public static final String SCRIPTTOOLS        = "qtjambi.scripttools";
     public static final String SQL                = "qtjambi.sql";
     public static final String SVG                = "qtjambi.svg";
+    public static final String SVGWIDGETS         = "qtjambi.svgwidgets";
     public static final String TEST               = "qtjambi.test";
 	public static final String QT3DCORE           = "qtjambi.qt3dcore";			// new for Qt3D
 	public static final String QT3DQUICK          = "qtjambi.qt3dquick";	// new for Qt3D
@@ -208,6 +210,10 @@ public abstract class Constants {
     public static final String LABSTEMPLATES      = "qtjambi.labstemplates";
     public static final String ANGLE              = "qtjambi.angle";
     public static final String WEBVIEW            = "qtjambi.webview";
+    public static final String UITOOLS            = "qtjambi.uitools";
+    public static final String DATA_VISUALIZATION = "qtjambi.datavisualization";
+    public static final String CHARTS             = "qtjambi.charts";
+    public static final String UIPLUGIN           = "qtjambi.uiplugin";
     public static final String SCXML              = "qtjambi.scxml";
     public static final String REMOTEOBJECTS      = "qtjambi.remoteobjects";
     public static final String XML                = "qtjambi.xml";          // mandatory with <= 4.7.x
@@ -331,6 +337,7 @@ public abstract class Constants {
     public static final String QML_QTNFC_DECLARATIVE_NFC = "qtjambi.QtNfc.declarative_nfc";
     public static final String QML_QTPOSITIONING_DECLARATIVE_POSITIONING = "qtjambi.QtPositioning.declarative_positioning";
     public static final String QML_QTQML_MODELS_2_MODELSPLUGIN = "qtjambi.QtQml.Models.2.modelsplugin";
+    public static final String QML_QTQML_MODELS_MODELSPLUGIN = "qtjambi.QtQml.Models.modelsplugin";
     public static final String QML_QTQML_STATEMACHINE_QTQMLSTATEMACHINE = "qtjambi.QtQml.StateMachine.qtqmlstatemachine";
     public static final String QML_QTQUICK_CONTROLS_STYLES_FLAT_QTQUICKEXTRASFLATPLUGIN = "qtjambi.QtQuick.Controls.Styles.Flat.qtquickextrasflatplugin";
     public static final String QML_QTQUICK_CONTROLS_QTQUICKCONTROLSPLUGIN = "qtjambi.QtQuick.Controls.qtquickcontrolsplugin";
@@ -342,11 +349,14 @@ public abstract class Constants {
     public static final String QML_QTQUICK_LAYOUTS_QQUICKLAYOUTSPLUGIN = "qtjambi.QtQuick.Layouts.qquicklayoutsplugin";
     public static final String QML_QTQUICK_LOCALSTORAGE_QMLLOCALSTORAGEPLUGIN = "qtjambi.QtQuick.LocalStorage.qmllocalstorageplugin";
     public static final String QML_QTQUICK_PARTICLES_2_PARTICLESPLUGIN = "qtjambi.QtQuick.Particles.2.particlesplugin";
+    public static final String QML_QTQUICK_PARTICLES_PARTICLESPLUGIN = "qtjambi.QtQuick.Particles.particlesplugin";
     public static final String QML_QTQUICK_PRIVATEWIDGETS_WIDGETSPLUGIN = "qtjambi.QtQuick.PrivateWidgets.widgetsplugin";
     public static final String QML_QTQUICK_SCENE3D_QTQUICKSCENE3DPLUGIN = "qtjambi.QtQuick.Scene3D.qtquickscene3dplugin";
     public static final String QML_QTQUICK_WINDOW_2_WINDOWPLUGIN = "qtjambi.QtQuick.Window.2.windowplugin";
+    public static final String QML_QTQUICK_WINDOW_WINDOWPLUGIN = "qtjambi.QtQuick.Window.windowplugin";
     public static final String QML_QTQUICK_XMLLISTMODEL_QMLXMLLISTMODELPLUGIN = "qtjambi.QtQuick.XmlListModel.qmlxmllistmodelplugin";
     public static final String QML_QTQUICK_2_QTQUICK2PLUGIN = "qtjambi.QtQuick.2.qtquick2plugin";
+    public static final String QML_QTQUICK_QTQUICK2PLUGIN = "qtjambi.QtQuick.qtquick2plugin";
     public static final String QML_QTSENSORS_DECLARATIVE_SENSORS = "qtjambi.QtSensors.declarative_sensors";
     public static final String QML_QTWEBCHANNEL_DECLARATIVE_WEBCHANNEL = "qtjambi.QtWebChannel.declarative_webchannel";
     public static final String QML_QTWEBSOCKETS_DECLARATIVE_QMLWEBSOCKETS = "qtjambi.QtWebSockets.declarative_qmlwebsockets";

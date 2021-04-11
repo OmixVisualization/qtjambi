@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,7 +79,7 @@
                 <replace-type modified-type="java.nio.ByteBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(const_cast&lt;void*>(%in), __qt_this->byteCount());
-                    %out = Java::Runtime::ByteBuffer.asReadOnlyBuffer(%env, %out);
+                    %out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -187,17 +187,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;java.lang.Double>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;double> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -214,17 +214,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;QSize> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -247,17 +247,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Object>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;QVariant> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;QVariant>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -280,17 +280,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;QSize> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -313,17 +313,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;QSize> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -346,17 +346,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;int> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -379,13 +379,13 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;double> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
                         if(%1){
@@ -406,13 +406,13 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;int> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
                         if(%1){
@@ -433,13 +433,13 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%1));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;double> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
                         if(%1){
@@ -466,17 +466,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;int> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;int>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -493,17 +493,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;double> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;double>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -520,17 +520,17 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtMultimedia::QMediaService$ListResult.newInstance(
+                    jobject %out = Java::QtMultimedia::QMediaService$ListResult::newInstance(
                                          %env, qtjambi_cast&lt;jobject>(%env, %in), jboolean(%2));
                 </conversion-rule>
                 <conversion-rule class="shell">
                     QList&lt;QSize> %out;
                     if(%in){
-                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result.result(%env, %in);
+                        jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
                         if(__tmp_%in)
                             %out = qtjambi_cast&lt;QList&lt;QSize>>(%env, __tmp_%in);
                         if(%2){
-                            *%2 = Java::QtMultimedia::QMediaService$Result.continuous(%env, %in);
+                            *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
                         }
                     }
                 </conversion-rule>
@@ -609,14 +609,14 @@
                 <replace-type modified-type="io.qt.multimedia.QAbstractVideoBuffer$MapResult" />
                 <conversion-rule class="native">
                 jobject buffer = %env->NewDirectByteBuffer(%in, %2);
-                jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(%3), false);
+                jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(%3), false);
                 </conversion-rule>
                 <conversion-rule class="shell">
                 uchar* %out = nullptr;
                 if(%in){
-                    jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.data(%env, %in);
+                    jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, %in);
                     if(%3){
-                        *%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult.bytesPerLine(%env, %in));
+                        *%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, %in));
                     }
                     if(%2){
                         *%2 = int(%env->GetDirectBufferCapacity(data));
@@ -677,10 +677,10 @@
                 if(%in>0){
                     if(%in>4)
                         %in = 4;
-                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newArray(%env, jsize(%in));
+                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
                     for(int i=0; i&lt;%in; ++i){
                         jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
-                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(__qt_%3[i]), false);
+                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
                         %env->SetObjectArrayElement(%out, jsize(i), element);
                         qtjambi_throw_java_exception(%env)
                     }
@@ -738,10 +738,10 @@
                 if(%in>0){
                     if(%in>4)
                         %in = 4;
-                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newArray(%env, jsize(%in));
+                    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
                     for(int i=0; i&lt;%in; ++i){
                         jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
-                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.newInstance(%env, buffer, jint(__qt_%3[i]), false);
+                        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
                         %env->SetObjectArrayElement(%out, jsize(i), element);
                         qtjambi_throw_java_exception(%env)
                     }
@@ -765,12 +765,12 @@
                             %out = i;
                             break;
                         }
-                        jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult.data(%env, element);
+                        jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, element);
                         if(!data){
                             %out = i;
                             break;
                         }
-                        %3[i] = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult.bytesPerLine(%env, element));
+                        %3[i] = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, element));
                         if(%2){
                             int capacity = int(%env->GetDirectBufferCapacity(data));
                             if(capacity&lt;=0){

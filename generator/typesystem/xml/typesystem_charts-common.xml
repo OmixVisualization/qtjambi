@@ -1,0 +1,488 @@
+<?xml version="1.0"?>
+<!--****************************************************************************
+**
+** Copyright (C) 2019 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** ** $BEGIN_LICENSE$
+** Commercial Usage
+** Licensees holding valid Qt Commercial licenses may use this file in
+** accordance with the Qt Commercial License Agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and Nokia.
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $END_LICENSE$
+
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************-->
+<typesystem qt-library="QtCharts">
+    <namespace-prefix prefix="QtCharts" namespace="QtCharts" naming-policy="cut" until="5.*"/>
+    <namespace-prefix prefix="QtCharts" namespace="" since="6.0.0"/>
+    <namespace-type name="QtCharts" generate="no" until="5.*"/>
+    <enum-type name="QtCharts::QAbstractAxis::AxisType" flags="QtCharts::QAbstractAxis::AxisTypes"/>
+    <object-type name="QtCharts::QAbstractAxis">
+    </object-type>
+    <enum-type name="QtCharts::QAbstractBarSeries::LabelsPosition"/>
+    <object-type name="QtCharts::QAbstractBarSeries">
+        <modify-function signature="append(QtCharts::QBarSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QtCharts::QBarSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="remove" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="take(QtCharts::QBarSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="remove" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insert(int,QtCharts::QBarSet *)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="add" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="append(QList&lt;QtCharts::QBarSet*>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QtCharts::QAbstractSeries::SeriesType"/>
+    <object-type name="QtCharts::QAbstractSeries">
+        <modify-function signature="attachAxis(QtCharts::QAbstractAxis *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="detachAxis(QtCharts::QAbstractAxis *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QAreaLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QAreaSeries">
+        <modify-function signature="QAreaSeries(QtCharts::QLineSeries *, QtCharts::QLineSeries *)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcLowerSeries"/>
+            </modify-argument>
+            <modify-argument index="2">
+                <reference-count action="set" variable-name="__rcUpperSeries"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setLowerSeries(QtCharts::QLineSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcLowerSeries"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setUpperSeries(QtCharts::QLineSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcUpperSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QBarCategoryAxis">
+    </object-type>
+    <object-type name="QtCharts::QBarLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QBarSeries">
+    </object-type>
+    <object-type name="QtCharts::QBarSet">
+        <modify-function signature="operator&lt;&lt;(qreal)" remove="all"/>
+        <modify-function signature="operator[](const int)const" remove="all"/>
+    </object-type>
+    <object-type name="QtCharts::QBoxPlotLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QBoxPlotSeries">
+        <modify-function signature="append(QtCharts::QBoxSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QtCharts::QBoxSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="remove" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="take(QtCharts::QBoxSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="remove" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insert(int,QtCharts::QBoxSet *)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="add" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="append(QList&lt;QtCharts::QBoxSet*>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="add-all" variable-name="__rcInsertedSets"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QtCharts::QBoxSet::ValuePositions"/>
+    <object-type name="QtCharts::QBoxSet">
+        <modify-function signature="operator&lt;&lt;(qreal)" remove="all"/>
+        <modify-function signature="operator[](const int)const" remove="all"/>
+    </object-type>
+    <object-type name="QtCharts::QCandlestickLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QCandlestickModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QCandlestickSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QCandlestickSeries">
+        <modify-function signature="append(QtCharts::QCandlestickSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QtCharts::QCandlestickSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="take(QtCharts::QCandlestickSet *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+                <define-ownership class="native" owner="default"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insert(int,QtCharts::QCandlestickSet *)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="ignore"/>
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="append(QList&lt;QtCharts::QCandlestickSet*>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QList&lt;QtCharts::QCandlestickSet*>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QCandlestickSet">
+    </object-type>
+    <enum-type name="QtCharts::QCategoryAxis::AxisType"/>
+    <enum-type name="QtCharts::QCategoryAxis::AxisLabelsPosition"/>
+    <object-type name="QtCharts::QCategoryAxis">
+    </object-type>
+    <enum-type name="QtCharts::QChart::AnimationOption" flags="QtCharts::QChart::AnimationOptions"/>
+    <enum-type name="QtCharts::QChart::ChartTheme"/>
+    <enum-type name="QtCharts::QChart::ChartType"/>
+    <object-type name="QtCharts::QChart">
+        <modify-function signature="axes(QFlags&lt;Qt::Orientation>, QtCharts::QAbstractSeries *)const">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addAxis(QtCharts::QAbstractAxis *, QFlags&lt;Qt::AlignmentFlag>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAxis(QtCharts::QAbstractAxis *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addSeries(QtCharts::QAbstractSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeSeries(QtCharts::QAbstractSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QtCharts::QChartView::RubberBand" flags="QtCharts::QChartView::RubberBands"/>
+    <object-type name="QtCharts::QChartView">
+        <modify-function signature="setChart(QtCharts::QChart *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <inject-code position="beginning">
+                QChart oldChart = chart();
+            </inject-code>
+            <inject-code>
+                <argument-map index="1" meta-name="%1" />
+                if (oldChart!=null &amp;&amp; oldChart!=%1 &amp;&amp; oldChart.parent()==null)
+                    setJavaOwnership(%this);
+            </inject-code>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QDateTimeAxis">
+    </object-type>
+    <object-type name="QtCharts::QBarModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QAbstractBarSeries *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="model()const" access="non-final"/>
+        <modify-function signature="series()const" access="non-final"/>
+    </object-type>
+    <object-type name="QtCharts::QHBarModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QAbstractBarSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QBoxPlotModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QBoxPlotSeries *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="model()const" access="non-final"/>
+        <modify-function signature="series()const" access="non-final"/>
+    </object-type>
+    <object-type name="QtCharts::QHBoxPlotModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QBoxPlotSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QHCandlestickModelMapper">
+    </object-type>
+    <object-type name="QtCharts::QPieModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QPieSeries *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="model()const" access="non-final"/>
+        <modify-function signature="series()const" access="non-final"/>
+    </object-type>
+    <object-type name="QtCharts::QHPieModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QPieSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QXYModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QXYSeries *)" access="non-final" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes"/>
+        </modify-function>
+        <modify-function signature="model()const" access="non-final"/>
+        <modify-function signature="series()const" access="non-final"/>
+    </object-type>
+    <object-type name="QtCharts::QHXYModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QXYSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QHorizontalBarSeries">
+    </object-type>
+    <object-type name="QtCharts::QHorizontalPercentBarSeries">
+    </object-type>
+    <object-type name="QtCharts::QHorizontalStackedBarSeries">
+    </object-type>
+    <enum-type name="QtCharts::QLegend::MarkerShape"/>
+    <object-type name="QtCharts::QLegend">
+        <modify-function signature="setFont(QFont)" rename="setLegendFont"/>
+        <modify-function signature="font()const" rename="legendFont"/>
+    </object-type>
+    <enum-type name="QtCharts::QLegendMarker::LegendMarkerType"/>
+    <object-type name="QtCharts::QLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QLineSeries">
+    </object-type>
+    <object-type name="QtCharts::QLogValueAxis">
+    </object-type>
+    <object-type name="QtCharts::QPercentBarSeries">
+    </object-type>
+    <object-type name="QtCharts::QPieLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QPieSeries">
+        <modify-function signature="append(QtCharts::QPieSlice *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="remove(QtCharts::QPieSlice *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="take(QtCharts::QPieSlice *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insert(int,QtCharts::QPieSlice *)" thread-affine="yes">
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="append(QList&lt;QtCharts::QPieSlice*>)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="operator&lt;&lt;(QtCharts::QPieSlice*)" remove="all"/>
+    </object-type>
+    <enum-type name="QtCharts::QPieSlice::LabelPosition"/>
+    <object-type name="QtCharts::QPieSlice">
+    </object-type>
+    <enum-type name="QtCharts::QPolarChart::PolarOrientation" flags="QtCharts::QPolarChart::PolarOrientations"/>
+    <object-type name="QtCharts::QPolarChart">
+        <modify-function signature="axes(QFlags&lt;QtCharts::QPolarChart::PolarOrientation>, QtCharts::QAbstractSeries *)const">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addAxis(QtCharts::QAbstractAxis *, QtCharts::QPolarChart::PolarOrientation)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QtCharts::QScatterSeries::MarkerShape"/>
+    <object-type name="QtCharts::QScatterSeries">
+        <modify-function signature="brush()const" remove="all"/>
+    </object-type>
+    <object-type name="QtCharts::QSplineSeries">
+    </object-type>
+    <object-type name="QtCharts::QStackedBarSeries">
+    </object-type>
+    <object-type name="QtCharts::QVBarModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QAbstractBarSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QVBoxPlotModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QBoxPlotSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QVCandlestickModelMapper">
+    </object-type>
+    <object-type name="QtCharts::QVPieModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QPieSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QtCharts::QVXYModelMapper">
+        <modify-function signature="setModel(QAbstractItemModel *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSeries(QtCharts::QXYSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <enum-type name="QtCharts::QValueAxis::TickType"/>
+    <object-type name="QtCharts::QValueAxis">
+    </object-type>
+    <object-type name="QtCharts::QXYLegendMarker">
+    </object-type>
+    <object-type name="QtCharts::QXYSeries">
+        <modify-function signature="replace(QVector&lt;QPointF>)" remove="all" until="5.*"/>
+        <modify-function signature="operator&lt;&lt;(QList&lt;QPointF>)" remove="all"/>
+        <modify-function signature="operator&lt;&lt;(QPointF)" remove="all"/>
+    </object-type>
+</typesystem>

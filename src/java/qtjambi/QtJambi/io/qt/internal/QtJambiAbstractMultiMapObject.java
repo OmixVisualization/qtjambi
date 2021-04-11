@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,87 +34,51 @@ import java.util.List;
 import java.util.Map;
 
 import io.qt.QtObject;
+import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class QtJambiAbstractMultiMapObject<K,V> extends QtObject implements Map<K,List<V>>, Iterable<QPair<K,V>> {
 	
 	@Override
+    @QtUninvokable
 	public abstract int size();
 
 	@Override
+    @QtUninvokable
 	public abstract boolean isEmpty();
 	
+    @QtUninvokable
 	public abstract java.util.List<K> keys();
+
+    @QtUninvokable
 	protected abstract QtJambiMapIteratorObject<K,V> begin();
+
+    @QtUninvokable
 	protected abstract QtJambiMapIteratorObject<K,V> end();
 
 	@Override
-	public void putAll(Map<? extends K, ? extends List<V>> m) {
+    @QtUninvokable
+	public final void putAll(Map<? extends K, ? extends List<V>> m) {
 		for(Map.Entry<? extends K, ? extends List<V>> entry : m.entrySet()) {
 			put(entry.getKey(), entry.getValue());
 		}
 	}
 	
 	@Override
-	public Iterator<QPair<K,V>> iterator() {
-		return begin().toJavaMapIterator(this::end);
+    @QtUninvokable
+	public final Iterator<QPair<K,V>> iterator() {
+		return begin().toJavaMapIterator();
 	}
 	
-	@NativeAccess
-	private final Class<K> keyType;
-	@NativeAccess
-	private final Class<V> valueType;
-	
-	final Class<K> keyType() {
-		return keyType;
-	}
-
-	final Class<V> valueType() {
-		return valueType;
-	}
-	
-	protected final boolean checkKey(Object key) {
-    	if(keyType.isPrimitive()) {
-    		return QtJambiInternal.getComplexType(keyType).isInstance(key);
-    	}
-		return keyType.isInstance(key) || key==null;
-	}
-
-    protected final boolean checkValue(Object value) {
-    	if(valueType.isPrimitive()) {
-    		return QtJambiInternal.getComplexType(valueType).isInstance(value);
-    	}
-		return valueType.isInstance(value) || value==null;
-	}
-    
-    @SuppressWarnings("unchecked")
-	protected final K castKey(Object key) {
-    	if(keyType.isPrimitive()) {
-    		return (K)QtJambiInternal.getComplexType(keyType).cast(key);
-    	}
-		return keyType.cast(key);
-	}
-
-    @SuppressWarnings("unchecked")
-    protected final V castValue(Object value) {
-    	if(valueType.isPrimitive()) {
-    		return (V)QtJambiInternal.getComplexType(valueType).cast(value);
-    	}
-		return valueType.cast(value);
-	}
-
-    protected QtJambiAbstractMultiMapObject(Class<K> keyType, Class<V> valueType) {
+    protected QtJambiAbstractMultiMapObject() {
 		super();
-		this.keyType = keyType;
-		this.valueType = valueType;
 	}
 
-    protected QtJambiAbstractMultiMapObject(QPrivateConstructor p, Class<K> keyType, Class<V> valueType) {
+    protected QtJambiAbstractMultiMapObject(QPrivateConstructor p) {
 		super(p);
-		this.keyType = keyType;
-		this.valueType = valueType;
 	}
     
+    @QtUninvokable
 	public String toString() {
         Iterator<QPair<K,V>> it = iterator();
         if (! it.hasNext())

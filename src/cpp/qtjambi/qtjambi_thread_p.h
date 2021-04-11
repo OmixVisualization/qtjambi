@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,9 +30,12 @@
 #ifndef QTJAMBI_THREAD_P_H
 #define QTJAMBI_THREAD_P_H
 
-#include <QtCore>
 #include "qtjambi_core.h"
+#include "qtjambi_application.h"
 #include "qtjambi_thread.h"
+#include "qtjambi_jobjectwrapper.h"
+#include <QtCore/QPointer>
+#include <QtCore/QThreadStorage>
 #include <QtCore/QThread>
 #include <QtCore/private/qthread_p.h>
 #include <QtCore/private/qcoreapplication_p.h>
@@ -52,7 +55,7 @@ private:
 
 class EventDispatcherCheck{
 public:
-    EventDispatcherCheck(QThread* thread, std::function<QObjectUserData*(QThread*,const QList<std::function<void()>>&)> _cleaner = std::function<QObjectUserData*(QThread*,const QList<std::function<void()>>&)>());
+    EventDispatcherCheck(QThread* thread, std::function<void(QPointer<QThread>&,QList<std::function<void()>>&&)> _cleaner = std::function<void(QPointer<QThread>&,QList<std::function<void()>>&&)>());
     ~EventDispatcherCheck();
     
     static QThreadStorage<QSharedPointer<EventDispatcherCheck>> storage;
@@ -60,17 +63,17 @@ private:
     QPointer<QThread> m_thread;
     QList<std::function<void()>> m_finalActions;
     QMutex m_mutex;
-    std::function<QObjectUserData*(QThread*,const QList<std::function<void()>>&)> cleaner;
+    std::function<void(QPointer<QThread>&,QList<std::function<void()>>&&)> cleaner;
 };
 #endif
 
 #ifdef QT_QTJAMBI_PORT
-class QThreadInterrupterUserData : public QObjectUserData
+class QThreadInterrupterUserData : public QtJambiObjectData
 {
 public:
     QThreadInterrupterUserData(const QSharedPointer<QtJambiLink>& link);
     ~QThreadInterrupterUserData() override;
-    static uint id();
+    QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     QWeakPointer<QtJambiLink> m_link;
 };
@@ -78,7 +81,7 @@ private:
 void __qt_QThread_connect_signals(const QSharedPointer<QtJambiLink>& link, QMap<QString,QMetaObject::Connection>* connections);
 #endif
 
-class QThreadUserData : public QObjectUserData
+class QThreadUserData : public QtJambiObjectData
 {
 public:
     QThreadUserData();
@@ -86,7 +89,7 @@ public:
     QThreadUserData(JNIEnv *env, jobject threadGroup);
 #endif
     ~QThreadUserData() override;
-    static uint id();
+    QTJAMBI_OBJECTUSERDATA_ID_DECL
     void deleteAtThreadEnd(QObject* object);
     void doAtThreadEnd(const std::function<void()>& action);
 #ifndef QT_QTJAMBI_PORT
@@ -99,9 +102,9 @@ public:
     inline void setUncaughtExceptionHandler(JNIEnv *env, jobject uncaughtExceptionHandler) { m_uncaughtExceptionHandler = JObjectWrapper(env, uncaughtExceptionHandler); }
     inline jobject getContextClassLoader() const { return m_contextClassLoader.object(); }
     inline void setContextClassLoader(JNIEnv *env, jobject contextClassLoader) { m_contextClassLoader = JObjectWrapper(env, contextClassLoader); }
-    inline void clearContextClassLoader() { m_contextClassLoader = JObjectWrapper(); }
-    inline void clearThreadGroup(){ m_threadGroup = JObjectWrapper(); }
-    inline void clearUncaughtExceptionHandler(){ m_uncaughtExceptionHandler = JObjectWrapper(); }
+    inline void clearContextClassLoader(JNIEnv *env) { m_contextClassLoader.clear(env); }
+    inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
+    inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
 #endif
 private:
     QList<std::function<void()>>* m_finalActions;

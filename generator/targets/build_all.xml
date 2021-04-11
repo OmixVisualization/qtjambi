@@ -1,8 +1,10 @@
 <typesystem>
   <load-typesystem name="../build/generator/typesystem_core.xml" 				generate="yes" 				unless="QTJAMBI_NO_CORE"/>
   <load-typesystem name="../build/generator/typesystem_gui.xml" 				generate="yes" 				unless="QTJAMBI_NO_GUI"/>
+  <load-typesystem name="../build/generator/typesystem_opengl.xml" 				generate="yes" 				unless="QTJAMBI_NO_OPENGL" since="6.0.0"/>
   <load-typesystem name="../build/generator/typesystem_concurrent.xml" 			generate="yes" 				unless="QTJAMBI_NO_CONCURRENT"/>
   <load-typesystem name="../build/generator/typesystem_widgets.xml" 			generate="yes" 				unless="QTJAMBI_NO_WIDGETS"/>
+  <load-typesystem name="../build/generator/typesystem_openglwidgets.xml" 		generate="yes" 				unless="QTJAMBI_NO_OPENGLWIDGETS" since="6.0.0"/>
   <load-typesystem name="../build/generator/typesystem_sql.xml" 				generate="yes" 				unless="QTJAMBI_NO_SQL"/>
   <load-typesystem name="../build/generator/typesystem_network.xml" 			generate="yes" 				unless="QTJAMBI_NO_NETWORK"/>
   <load-typesystem name="../build/generator/typesystem_networkauth.xml" 		generate="yes" 				unless="QTJAMBI_NO_NETWORKAUTH"/>
@@ -23,9 +25,9 @@
   <load-typesystem name="../build/generator/typesystem_printsupport.xml" 		generate="yes" 				unless="QTJAMBI_NO_PRINTSUPPORT"/>
   <load-typesystem name="../build/generator/typesystem_multimediawidgets.xml" 	generate="yes" 				unless="QTJAMBI_NO_MULTIMEDIA"/>
   <load-typesystem name="../build/generator/typesystem_svg.xml" 				generate="yes" 				unless="QTJAMBI_NO_SVG"/>
+  <load-typesystem name="../build/generator/typesystem_svgwidgets.xml" 			generate="yes" 				unless="QTJAMBI_NO_SVGWIDGETS" since="6.0.0"/>
   <load-typesystem name="../build/generator/typesystem_dbus.xml" 				generate="yes" 				unless="QTJAMBI_NO_DBUS"/>
   <load-typesystem name="../build/generator/typesystem_test.xml" 				generate="yes" 				unless="QTJAMBI_NO_TEST"/>
-  <load-typesystem name="../build/generator/typesystem_declarative.xml" 		generate="yes"	until="5.5"	unless="QTJAMBI_NO_DECLARATIVE"/>
   <load-typesystem name="../build/generator/typesystem_help.xml" 				generate="yes" 				unless="QTJAMBI_NO_HELP"/>
   <load-typesystem name="../build/generator/typesystem_qt3dcore.xml" 			generate="yes" 				unless="QTJAMBI_NO_QT3DCORE"/>
   <load-typesystem name="../build/generator/typesystem_qt3dextras.xml" 			generate="yes" 				unless="QTJAMBI_NO_QT3DEXTRAS"/>
@@ -53,4 +55,11 @@
   <load-typesystem name="../build/generator/typesystem_purchasing.xml" 		    generate="yes" 	since="5.11"	unless="QTJAMBI_NO_PURCHASING"/>
   <load-typesystem name="../build/generator/typesystem_texttospeech.xml" 		generate="yes" 	since="5.11"	unless="QTJAMBI_NO_TEXTTOSPEECH"/>
   <load-typesystem name="../build/generator/typesystem_sensors.xml" 		    generate="yes" 	since="5.11"	unless="QTJAMBI_NO_SENSORS"/>
+  <load-typesystem name="../build/generator/typesystem_uitools.xml" 		    generate="yes"	            unless="QTJAMBI_NO_UITOOLS"/>
+  <load-typesystem name="../build/generator/typesystem_designer.xml" 		    generate="yes"	            unless="QTJAMBI_NO_DESIGNER"/>
+  <load-typesystem name="../build/generator/typesystem_datavisualization.xml"   generate="yes"	            unless="QTJAMBI_NO_DATA_VISUALIZATION"/>
+  <load-typesystem name="../build/generator/typesystem_charts.xml"              generate="yes"	            unless="QTJAMBI_NO_CHARTS"/>
+  <load-typesystem name="../build/generator/typesystem_lottie.xml"              generate="yes"	            unless="QTJAMBI_NO_LOTTIE"/>
+  <load-typesystem name="../build/generator/typesystem_virtkey.xml"             generate="yes"	            unless="QTJAMBI_NO_VIRTUAL_KEYBOARD"/>
+  <load-typesystem name="../build/generator/typesystem_quick3d.xml"             generate="yes"	            unless="QTJAMBI_NO_QUICK3D"/>
 </typesystem>

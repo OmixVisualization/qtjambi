@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,6 +36,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
+
+import org.junit.Assume;
+import org.junit.BeforeClass;
 
 import io.qt.QtUtilities;
 import io.qt.autotests.QApplicationTest;
@@ -44,27 +48,24 @@ import io.qt.core.QByteArray;
 import io.qt.core.QFile;
 import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QLibraryInfo;
 import io.qt.gui.QImageReader;
 
 public class TestPluginImageFormats extends QApplicationTest {
 	
 	private static List<String> imageFormats = new ArrayList<String>();
 
-	@org.junit.Before
-	public void setUp() {
+    @BeforeClass
+	public static void testInitialize() throws Exception {
 		QtUtilities.initializePackage("io.qt.svg");
 		List<QByteArray> list = QImageReader.supportedImageFormats();
+		TreeSet<String> _imageFormats = new TreeSet<>();
 		for(QByteArray ba : list) {
-			StringBuilder sb = new StringBuilder();
-			for(int i = 0; i < ba.size(); i++)
-				sb.append((char)ba.at(i));
-			imageFormats.add(sb.toString());
-			Utils.println(1, "format: " + ba.toString() + " " + sb.toString());
+			_imageFormats.add(ba.toString());
 		}
-	}
-
-	@org.junit.After
-	public void tearDown() {
+		imageFormats.addAll(_imageFormats);
+		System.out.println(imageFormats);
+		QApplicationTest.testInitialize();
 	}
 
 	private boolean searchFormat(String s) {
@@ -136,11 +137,13 @@ public class TestPluginImageFormats extends QApplicationTest {
 	
 	@org.junit.Test
 	public void testSupportsSVGImageFormats() {
+		Assume.assumeTrue("QtSvg unavailable", QtUtilities.initializePackage("io.qt.svg"));
 		assertTrue("support: svg", searchFormat("svg"));
 	}
 	
 	@org.junit.Test
 	public void testSupportsTIFImageFormats() {
+		Assume.assumeTrue("version < 6.0.0", QLibraryInfo.version().majorVersion()<6);
 		assertTrue("support: tif", searchFormat("tif"));	// aka "tiff"
 	}
 	

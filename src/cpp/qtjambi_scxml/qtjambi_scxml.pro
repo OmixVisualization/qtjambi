@@ -12,3 +12,6 @@ greaterThan(QT_MAJOR_VERSION, 5):{
     lessThan(QT_MINOR_VERSION, 12):
         SOURCES += QScxmlDataModel_ForeachLoopBody_shell.cpp
 }
+
+SOURCES += \
+    qtjambi_scxml_util.cpp

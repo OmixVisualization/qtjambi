@@ -272,6 +272,7 @@ class Lexer {
         void scan_minus();
         void scan_dot();
         void scan_divide();
+        void scan_backslash();
         void scan_colon();
         void scan_semicolon();
         void scan_less();

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -98,10 +98,11 @@
   <interface-type name="QGeoServiceProviderFactory">
   </interface-type>
   <interface-type name="QGeoServiceProviderFactoryV2">
-        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="typeid(*%1) == typeid(QGeoServiceProviderFactoryV2)" />
+        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV2*>(%1)!=nullptr" />
   </interface-type>
   <interface-type name="QGeoServiceProviderFactoryV3">
-        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="typeid(*%1) == typeid(QGeoServiceProviderFactoryV3)" />
+        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV3*>(%1)!=nullptr" />
+        <interface-polymorphy interface="QGeoServiceProviderFactoryV2" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV3*>(%1)!=nullptr" />
         <modify-function signature="setQmlEngine(QQmlEngine *)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcQmlEngine"/>

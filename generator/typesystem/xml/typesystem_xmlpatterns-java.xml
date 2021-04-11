@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,7 +79,7 @@
                 <no-null-pointer/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="evaluateTo(QStringList&lt;QString&gt;*)const">
+        <modify-function signature="evaluateTo(QStringList*)const">
             <modify-argument index="1">
                 <replace-type modified-type="java.util.Collection&lt;java.lang.String>"/>
                 <no-null-pointer/>

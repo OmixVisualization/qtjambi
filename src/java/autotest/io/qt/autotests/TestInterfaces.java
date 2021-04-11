@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,7 +34,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -66,13 +65,11 @@ import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QFactoryInterface;
 import io.qt.core.QObject;
-import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QRunnable;
 import io.qt.core.QSize;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
-import io.qt.core.Qt;
 import io.qt.gui.QAbstractUndoItem;
 import io.qt.gui.QColor;
 import io.qt.gui.QGuiApplication;
@@ -85,32 +82,14 @@ import io.qt.gui.QPixmap;
 import io.qt.gui.QSurface;
 import io.qt.gui.QSurfaceFormat;
 import io.qt.internal.QtJambiInternal;
-import io.qt.network.auth.QAbstractOAuth.ModifyParametersFunction;
-import io.qt.network.auth.QAbstractOAuth.Stage;
-import io.qt.qml.QQmlImageProviderBase;
-import io.qt.qml.QtQml;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsScene;
 import io.qt.widgets.QGraphicsView;
-import io.qt.widgets.QLayoutItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
 public class TestInterfaces extends QApplicationTest {
-	
-	public static class IllegalInterfaceImplementation extends QObject implements QQmlImageProviderBase {
-		@Override
-		public Flags flags() {
-			return new QQmlImageProviderBase.Flags();
-		}
-
-		@Override
-		public ImageType imageType() {
-			return QQmlImageProviderBase.ImageType.Image;
-		}
-		
-	}
 	
 	static class GraphicsItem implements QPaintDevice, QGraphicsItem{
 		@SuppressWarnings("unused")
@@ -185,6 +164,12 @@ public class TestInterfaces extends QApplicationTest {
 	}
 	
 	@Test
+    public void testSubClassTheSubClass() {
+		GraphicsItem item = new GraphicsItem(){};
+		item.metric(io.qt.gui.QPaintDevice.PaintDeviceMetric.PdmDepth);
+	}
+	
+	@Test
     public void testInterface() {
 		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
 		AtomicInteger disposed = new AtomicInteger();
@@ -208,11 +193,6 @@ public class TestInterfaces extends QApplicationTest {
 		view.hide();
 		Assert.assertTrue(item.painted.get());
 		Assert.assertEquals(1, disposed.get());
-	}
-	
-	@Test(expected=QInterfaceCannotBeSubclassedException.class)
-    public void run_test_InterfaceCannotBeSubclassed() {
-		new IllegalInterfaceImplementation();
 	}
 	
 	@Test(expected=QMissingVirtualOverridingException.class)
@@ -800,71 +780,6 @@ public class TestInterfaces extends QApplicationTest {
 	}
 	
 	interface CustomInterface extends QtObjectInterface { public void call(); }
-	
-	@Test
-	public void test_MultiInterfaceImpl() {
-		class MultiImpl extends QtObject implements QLayoutItem, QPaintDevice, ModifyParametersFunction, QEasingCurve.EasingFunction, QtQml.ObjectCallback{
-
-			@Override
-			public void call(Stage arg__1, Map<String, Object> arg__2) {
-			}
-			
-			@Override
-			public double call(double v) {
-				return v;
-			}
-			
-			@Override
-			public io.qt.core.QObject call(io.qt.qml.QQmlEngine arg__1, io.qt.qml.QJSEngine arg__2){
-				return null;
-			}
-
-			@Override
-			public Qt.Orientations expandingDirections() {
-				return new Qt.Orientations(0);
-			}
-
-			@Override
-			public QRect geometry() {
-				return new QRect();
-			}
-
-			@Override
-			public boolean isEmpty() {
-				return false;
-			}
-
-			@Override
-			public QSize maximumSize() {
-				return new QSize();
-			}
-
-			@Override
-			public QSize minimumSize() {
-				return new QSize();
-			}
-
-			@Override
-			public void setGeometry(QRect arg__1) {
-			}
-
-			@Override
-			public QSize sizeHint() {
-				return new QSize();
-			}
-
-			@Override
-			public QPaintEngine paintEngine() {
-				return null;
-			}
-		}
-		MultiImpl object = new MultiImpl();
-		Assert.assertFalse(object.isDisposed());
-		object.alignment();
-		object.paintingActive();
-		object.dispose();
-		Assert.assertTrue("object not destroyed.", QtJambiInternal.tryIsObjectDisposed(object));
-	}
 	
 	@Test
 	public void test_InterfaceLiveCircle2() {

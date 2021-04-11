@@ -8,10 +8,11 @@ DocIndexReader::DocIndexReader()
 
 }
 
-void DocIndexReader::analyzeEnum(const QDir& subdir, DocModel* model, QDomElement element){
+void DocIndexReader::analyzeEnum(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         DocEnum* cls = new DocEnum(model);
         cls->setSubdir(subdir);
+        cls->setUrl(url);
         cls->setName(element.attribute("name"));
         cls->setHref(element.attribute("href"));
         cls->setBrief(element.attribute("brief"));
@@ -20,10 +21,11 @@ void DocIndexReader::analyzeEnum(const QDir& subdir, DocModel* model, QDomElemen
     }
 }
 
-void DocIndexReader::analyzeClass(const QDir& subdir, DocModel* model, QDomElement element){
+void DocIndexReader::analyzeClass(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         DocClass* cls = new DocClass(model);
         cls->setSubdir(subdir);
+        cls->setUrl(url);
         cls->setName(element.attribute("name"));
         cls->setHref(element.attribute("href"));
         cls->setBrief(element.attribute("brief"));
@@ -33,15 +35,17 @@ void DocIndexReader::analyzeClass(const QDir& subdir, DocModel* model, QDomEleme
             QDomNode child = childNodes.item(i);
             if(child.isElement()){
                 if(child.nodeName()=="class" || child.nodeName()=="struct" || child.nodeName()=="union"){
-                    analyzeClass(subdir, model, child.toElement());
+                    analyzeClass(subdir, model, url, child.toElement());
                 }else if(child.nodeName()=="enum"){
-                    analyzeEnum(subdir, model, child.toElement());
+                    analyzeEnum(subdir, model, url, child.toElement());
                 }else if(child.nodeName()=="function"){
-                    analyzeFunction(subdir, cls, child.toElement());
+                    analyzeFunction(subdir, cls, url, child.toElement());
                 }else if(child.nodeName()=="variable"){
-                    analyzeVariable(subdir, cls, child.toElement());
+                    analyzeVariable(subdir, cls, url, child.toElement());
                 }else if(child.nodeName()=="property"){
-                    analyzeProperty(subdir, cls, child.toElement());
+                    analyzeProperty(subdir, cls, url, child.toElement());
+                }else if(child.nodeName()=="typedef"){
+                    analyzeTypeDef(subdir, cls, url, child.toElement());
                 }
             }
         }
@@ -49,7 +53,7 @@ void DocIndexReader::analyzeClass(const QDir& subdir, DocModel* model, QDomEleme
     }
 }
 
-void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, QDomElement element){
+void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         QString fullName = element.attribute("fullname");
         if(fullName.isEmpty()){
@@ -59,6 +63,7 @@ void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, QDomE
         if(!ns){
             ns = new DocNamespace(model);
             ns->setSubdir(subdir);
+            ns->setUrl(url);
             ns->setName(element.attribute("name"));
             ns->setHref(element.attribute("href"));
             ns->setBrief(element.attribute("brief"));
@@ -70,23 +75,37 @@ void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, QDomE
             QDomNode child = childNodes.item(i);
             if(child.isElement()){
                 if(child.nodeName()=="class" || child.nodeName()=="struct" || child.nodeName()=="union"){
-                    analyzeClass(subdir, model, child.toElement());
+                    analyzeClass(subdir, model, url, child.toElement());
                 }else if(child.nodeName()=="function"){
-                    analyzeFunction(subdir, ns, child.toElement());
+                    analyzeFunction(subdir, ns, url, child.toElement());
                 }else if(child.nodeName()=="enum"){
-                    analyzeEnum(subdir, model, child.toElement());
+                    analyzeEnum(subdir, model, url, child.toElement());
                 }else if(child.nodeName()=="namespace"){
-                    analyzeNamespace(subdir, model, child.toElement());
+                    analyzeNamespace(subdir, model, url, child.toElement());
                 }
             }
         }
     }
 }
 
-void DocIndexReader::analyzeVariable(const QDir& subdir, DocClass* cls, QDomElement element){
+void DocIndexReader::analyzeTypeDef(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element){
+    if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
+        DocTypeDef* var = new DocTypeDef(cls);
+        var->setSubdir(subdir);
+        var->setUrl(url);
+        var->setName(element.attribute("name"));
+        var->setHref(element.attribute("href"));
+        var->setBrief(element.attribute("brief"));
+        var->setFullName(element.attribute("fullname"));
+        cls->addTypeDef(var);
+    }
+}
+
+void DocIndexReader::analyzeVariable(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         DocVariable* var = new DocVariable(cls);
         var->setSubdir(subdir);
+        var->setUrl(url);
         var->setName(element.attribute("name"));
         var->setType(element.attribute("type"));
         var->setHref(element.attribute("href"));
@@ -97,10 +116,11 @@ void DocIndexReader::analyzeVariable(const QDir& subdir, DocClass* cls, QDomElem
     }
 }
 
-void DocIndexReader::analyzeProperty(const QDir& subdir, DocClass* cls, QDomElement element){
+void DocIndexReader::analyzeProperty(const QDir& subdir, DocClass* cls, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         DocProperty* prop = new DocProperty(cls);
         prop->setSubdir(subdir);
+        prop->setUrl(url);
         prop->setName(element.attribute("name"));
         prop->setType(element.attribute("type"));
         prop->setHref(element.attribute("href"));
@@ -126,10 +146,11 @@ void DocIndexReader::analyzeProperty(const QDir& subdir, DocClass* cls, QDomElem
 }
 
 template<class DocFunctionOwner>
-void DocIndexReader::analyzeFunction(const QDir& subdir, DocFunctionOwner* owner, QDomElement element){
+void DocIndexReader::analyzeFunction(const QDir& subdir, DocFunctionOwner* owner, const QString& url, const QDomElement& element){
     if(element.attribute("status")=="active" || element.attribute("status")=="obsolete"){
         DocFunction* fun = new DocFunction(owner);
         fun->setSubdir(subdir);
+        fun->setUrl(url);
         fun->setName(element.attribute("name"));
         fun->setType(element.attribute("type"));
         fun->setHref(element.attribute("href"));
@@ -152,10 +173,11 @@ void DocIndexReader::analyzeFunction(const QDir& subdir, DocFunctionOwner* owner
     }
 }
 
-const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory){
+const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory, QThread* targetThread){
     ReportHandler::setContext("DocIndexReader");
     QScopedPointer<DocModel> model(new DocModel());
     if(docDirectory.exists()){
+        //QList<QDomDocument*> domDocuments;
         for(const QString& subdirp : docDirectory.entryList(QDir::Dirs | QDir::NoDotAndDotDot)){
             QDir subdir(docDirectory.absoluteFilePath(subdirp));
             for(const QString& idxfilep : subdir.entryList({"*.index"}, QDir::Files)){
@@ -163,6 +185,7 @@ const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory){
                 if (!idxfile.open(QIODevice::ReadOnly))
                     continue;
                 QDomDocument doc;
+                //domDocuments << doc;
                 if (!doc.setContent(&idxfile)) {
                     idxfile.close();
                     continue;
@@ -171,21 +194,33 @@ const DocModel* DocIndexReader::readDocIndexes(const QDir& docDirectory){
 
                 QDomElement docElem = doc.documentElement();
                 if(docElem.tagName()=="INDEX"){
+                    QString url = docElem.attribute("url");
+                    if(docElem.attribute("project")=="QtCore"){
+                        model->setUrl(url);
+                    }
                     QDomNodeList childNodes = docElem.childNodes();
                     for(int i=0; i<childNodes.size(); ++i){
                         QDomNode child = childNodes.item(i);
                         if(child.isElement()){
                             if(child.nodeName()=="namespace"){
-                                analyzeNamespace(subdir, model.get(), child.toElement());
+                                analyzeNamespace(subdir, model.get(), url, child.toElement());
                             }
                         }
                     }
                 }
             }
         }
+//        QThread* thread = QThread::create([](QList<QDomDocument*> list){
+//            while(!list.isEmpty()){
+//                delete list.takeFirst();
+//            }
+//        }, domDocuments);
+//        thread->start();
     }
     if(model->isEmpty()){
         model.reset();
+    }else{
+        model->moveToThread(targetThread);
     }
     return model.take();
 }

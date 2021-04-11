@@ -35,110 +35,91 @@
 #ifndef HANDLER_H_
 #define HANDLER_H_
 
-#include <qxml.h>
+#include <QtXml/QtXml>
 #include "typeentry.h"
-#include "stackelement.h"
 
 class TypeDatabase;
 
-class Handler : public QXmlDefaultHandler {
+class TypesystemException : public QException{
+public:
+    char const* what() const noexcept override;
+    static void raise(const QString& message);
+private:
+    TypesystemException(const QString& message);
+    QByteArray m_message;
+};
+
+struct NamespacePrefix{
+    enum NamingPolicy{
+        Cut,
+        Preserve
+    };
+
+    QString prefix;
+    QString _namespace;
+    NamingPolicy namingPolicy;
+};
+
+class Handler {
     public:
-        Handler(TypeDatabase *database, bool generate)
+        Handler(TypeDatabase *database, bool generate, uint qtVersion)
                 : m_database(database),
-                  current(nullptr),
-                  m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass),
-                  tagNames{
-                      {"rejection",                  StackElement::Rejection},
-                      {"primitive-type",             StackElement::PrimitiveTypeEntry},
-                      {"object-type",                StackElement::ObjectTypeEntry},
-                      {"template-type",              StackElement::TemplateTypeEntry},
-                      {"functional-type",            StackElement::FunctionalTypeEntry},
-                      {"iterator-type",              StackElement::IteratorTypeEntry},
-                      {"value-type",                 StackElement::ValueTypeEntry},
-                      {"interface-type",             StackElement::InterfaceTypeEntry},
-                      {"namespace-type",             StackElement::NamespaceTypeEntry},
-                      {"enum-type",                  StackElement::EnumTypeEntry},
-                      {"extra-includes",             StackElement::ExtraIncludes},
-                      {"include",                    StackElement::Include},
-                      {"inject-code",                StackElement::InjectCode},
-                      {"interface-polymorphy",       StackElement::InterfacePolymorphicId},
-                      {"modify-function",            StackElement::ModifyFunction},
-                      {"modify-field",               StackElement::ModifyField},
-                      {"instantiate-template",       StackElement::InstantiateTemplate},
-                      {"access",                     StackElement::Access},
-                      {"remove",                     StackElement::Removal},
-                      {"rename",                     StackElement::Rename},
-                      {"typesystem",                 StackElement::Root},
-                      {"custom-constructor",         StackElement::CustomMetaConstructor},
-                      {"custom-destructor",          StackElement::CustomMetaDestructor},
-                      {"argument-map",               StackElement::ArgumentMap},
-                      {"suppress-warning",           StackElement::SuppressedWarning},
-                      {"load-typesystem",            StackElement::LoadTypesystem},
-                      {"define-ownership",           StackElement::DefineOwnership},
-                      {"replace-default-expression", StackElement::ReplaceDefaultExpression},
-                      {"reject-enum-value",          StackElement::RejectEnumValue},
-                      {"rename-enum-value",          StackElement::RenameEnumValue},
-                      {"replace-type",               StackElement::ReplaceType},
-                      {"array-type",                 StackElement::ArrayType},
-                      {"conversion-rule",            StackElement::ConversionRule},
-                      {"modify-argument",            StackElement::ModifyArgument},
-                      {"remove-argument",            StackElement::RemoveArgument},
-                      {"add-argument",               StackElement::AddArgument},
-                      {"remove-default-expression",  StackElement::RemoveDefaultExpression},
-                      {"template",                   StackElement::Template},
-                      {"insert-template",            StackElement::TemplateInstanceEnum},
-                      {"replace",                    StackElement::Replace},
-                      {"no-null-pointer",            StackElement::NoNullPointers},
-                      {"reference-count",            StackElement::ReferenceCount},
-                      {"import",                     StackElement::ImportTemplate}
-                  } {
-        }
+                  m_qtVersion(qtVersion),
+                  m_generate(generate ? TypeEntry::GenerateAll : TypeEntry::GenerateForSubclass) {}
 
-        bool startElement(const QString &namespaceURI, const QString &localName,
-                          const QString &qName, const QXmlAttributes &atts);
-        bool endElement(const QString &namespaceURI, const QString &localName, const QString &qName);
-
-        QString errorString() const {
-            return m_error;
-        }
-        bool error(const QXmlParseException &exception);
-        bool fatalError(const QXmlParseException &exception);
-        bool warning(const QXmlParseException &exception);
-
-        bool characters(const QString &ch);
+        void parse(const QString &filepath);
 
         void setImportInputDirectoryList(const QStringList &importInputDirectoryList) {
             m_importInputDirectoryList = importInputDirectoryList;
         }
 
     private:
-        void fetchAttributeValues(const QString &name, const QXmlAttributes &atts,
-                                  QHash<QString, QString> *acceptedAttributes);
-
-        bool importFileElement(const QXmlAttributes &atts);
         bool convertBoolean(const QString &, const QString &, bool);
 
+        QString attributeValue(const QDomNode& domNode, const QString & defaultValue = QString());
+
         uint parseQtVersion(QString strg, uint defaultValue);
+        bool checkQtVersion(QDomNamedNodeMap& attributes);
+        void parseTypeSystem(const QDomElement &typeSystemElement);
+        void parseLoadTypeSystem(const QDomElement &element);
+        void parseSuppressedWarning(const QDomElement &element);
+        void parseInjectCode(const QDomElement &element, ComplexTypeEntry* entry);
+        void parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
+                             const QHash<QString, CodeSnip::Position>& positionNames,
+                             const std::function<void(const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed = false);
+        void parseConversionRule(const QDomElement &element, const std::function<void(const CodeSnip&)>& appendCodeSnip);
+        void parseImportFile(const QDomElement &element, const std::function<void(const QString&)>& consumeCode);
+        void parseInsertTemplate(const QDomElement &element, const std::function<void(TemplateInstance*)>& consumeTemplateInstance);
+        void parseExtraIncludes(const QDomElement &element, TypeEntry* entry);
+        Include parseInclude(const QDomElement &element);
+        void parseRejection(const QDomElement &element);
+        void parseTemplate(const QDomElement &element);
+        void parsePrimitiveType(const QDomElement &element);
+        void parseObjectType(const QDomElement &element);
+        void parseAttributesOfComplexType(const QDomElement &element, QDomNamedNodeMap& attributes, ComplexTypeEntry* entry);
+        QList<QDomElement> parseChildrenOfComplexType(const QDomElement &element, ComplexTypeEntry* entry);
+        QString parseTypeName(QDomNamedNodeMap& attributes, const QDomElement &element);
+        void parseTemplateType(const QDomElement &element);
+        void parseFunctionalType(const QDomElement &element);
+        void parseIteratorType(const QDomElement &element);
+        void parseValueType(const QDomElement &element);
+        void parseTypeAliasType(const QDomElement &element);
+        void parseInterfaceType(const QDomElement &element);
+        void parseNamespaceType(const QDomElement &element);
+        void parseModifyArgument(const QDomElement &element, FunctionModification& mod);
+        void parseModifyFunction(const QDomElement &element, ComplexTypeEntry* entry);
+        void parseModifyField(const QDomElement &element, ComplexTypeEntry* entry);
+        void parseEnumType(const QDomElement &element);
+        CustomFunction parseCustomStructor(const QDomElement &element);
+        void ensureNoChildren(const QDomElement &element);
 
         TypeDatabase *m_database;
-        StackElement* current;
+        uint m_qtVersion;
         QString m_defaultPackage;
         QString m_defaultSuperclass;
-        QString m_error;
         QStringList m_importInputDirectoryList;
         TypeEntry::CodeGeneration m_generate;
-
-        /**
-         * Returns attributes corresponding element type
-         * StackElement::ElementType.
-         */
-        QHash<QString, QString> setStackElementAttributes(StackElement::ElementType type);
-
-        CodeSnipList m_code_snips;
-        FunctionModificationList m_function_mods;
-        FieldModificationList m_field_mods;
-
-        const QHash<QString, StackElement::ElementType> tagNames;
+        QList<NamespacePrefix> m_namespacePrefixes;
 };
 
 #endif

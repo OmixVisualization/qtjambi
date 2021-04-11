@@ -22,25 +22,27 @@
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createjar6">
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createjar7">
             <property name="module" value="${module-name}"/>
             <property name="sourcedir" value="${java.srcdir}/qtjambi/QtJambi"/>
             <property name="sourcedir2" value="${java.srcdir}/qtjambi/${qtjambi-thread}"/>
             <property name="sourcedir3" value="${java.srcdir}/qtjambi/${qtjambi-retro}"/>
-            <property name="sourcedir4" value="${generator.outputdir}/java/QtJambiCore"/>
-            <property name="sourcedir5" value="${generator.outputdir}/java/QtJambiGui"/>
-            <property name="sourcedir6" value="${generator.outputdir}/java/QtJambiWidgets"/>
+            <property name="sourcedir4" value="${java.srcdir}/qtjambi/QtJambiQt${qtjambi.soname.version.major}"/>
+            <property name="sourcedir5" value="${generator.outputdir}/java/QtJambiCore"/>
+            <property name="sourcedir6" value="${generator.outputdir}/java/QtJambiGui"/>
+            <property name="sourcedir7" value="${generator.outputdir}/java/QtJambiWidgets"/>
             <property name="jar.excludes" value=""/>
             <property name="module.excludes" value=""/>
         </ant>
-        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createsrcjar6">
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="createsrcjar7">
             <property name="module" value="${module-name}"/>
             <property name="sourcedir" value="${java.srcdir}/qtjambi/QtJambi"/>
             <property name="sourcedir2" value="${java.srcdir}/qtjambi/${qtjambi-thread}"/>
             <property name="sourcedir3" value="${java.srcdir}/qtjambi/${qtjambi-retro}"/>
-            <property name="sourcedir4" value="${generator.outputdir}/java/QtJambiCore"/>
-            <property name="sourcedir5" value="${generator.outputdir}/java/QtJambiGui"/>
-            <property name="sourcedir6" value="${generator.outputdir}/java/QtJambiWidgets"/>
+            <property name="sourcedir4" value="${java.srcdir}/qtjambi/QtJambiQt${qtjambi.soname.version.major}"/>
+            <property name="sourcedir5" value="${generator.outputdir}/java/QtJambiCore"/>
+            <property name="sourcedir6" value="${generator.outputdir}/java/QtJambiGui"/>
+            <property name="sourcedir7" value="${generator.outputdir}/java/QtJambiWidgets"/>
         </ant>
     </target>
 </project>

@@ -26,6 +26,10 @@
   <target name="library.native.compile" depends="library.native.qmake" description="Compiles the C++ Qt Jambi library">
       <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
   </target>
+  
+  <target name="library.native.makeonly" depends="init.build">
+      <make dir="${qtjambi.builddir}" target="${qtjambi.qmake.target.default}"/>
+  </target>
 
   <target name="library.native.bundle" depends="init.build" description="Creates a .jar file file containing native libraries.">
       <if>
@@ -80,164 +84,191 @@
     <condition property="target.lib.dir" value="bin" else="lib">
         <os family="windows"/>
     </condition>
-    <condition property="qsqljdbc.true" value="true" else="false">
-        <available file="${outputDir}/plugins/sqldrivers/qsqljdbc.jar"/>
+    <condition property="flagprefix" value="debug.true" else="true">
+        <istrue value="${platformjar.debug}"/>
+    </condition>
+    <condition property="qsqljdbc.${flagprefix}" value="true" else="false">
+        <available file="${qtjambi.builddir}/plugins/sqldrivers/qsqljdbc.jar"/>
+    </condition>
+    <condition property="helpwidgets.${flagprefix}" value="true" else="false">
+        <available file="${qtjambi.builddir}/plugins/designer/helpwidgets.jar"/>
+    </condition>
+    <condition property="multimediawidgets.${flagprefix}" value="true" else="false">
+        <available file="${qtjambi.builddir}/plugins/designer/multimediawidgets.jar"/>
     </condition>
     <qtjambi-platform-jar cacheKey="${qtjambi.version.cachekey}"
                           outdir="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}"
                           debug="${platformjar.debug}">
         <!-- Qt Libraries -->
-        <library name="QtCore"                    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.core"/>
-        <library name="QtGui"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.gui"/>
-        <library name="QtConcurrent"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.concurrent"/>
-        <library name="QtXml"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xml"/>
-        <library name="QtScxml"                   dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scxml"/>
-        <library name="QtRemoteObjects"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects"/>
-        <library name="QtSql"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.sql"/>
-        <library name="QtSvg"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.svg"/>
-        <library name="QtNetwork"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.network"/>
-        <library name="QtNetworkAuth"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.networkauth"/>
-        <library name="QtHelp"                    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.help"/>
-        <library name="QtScript"                  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.script"/>
-        <library name="QtScriptTools"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scripttools"/>
-        <library name="QtMultimedia"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimedia"/>
-        <library name="QtOpenGL"                  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.opengl"/>
-        <library name="QtXmlPatterns"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xmlpatterns"/>
-        <library name="QtDesigner"                dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.designer"/>
-        <library name="QtDesignerComponents"      dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.designercomponents"/>
-        <library name="QtCLucene"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.clucene"/>
-        <library name="QtDBus"                    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.dbus"/>
-        <library name="QtTest"                    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.test"/>
-        <library name="QtWidgets"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.widgets"/>
-        <library name="QtBluetooth"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.bluetooth"/>
-        <library name="QtLocation"                dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.location"/>
-        <library name="QtMultimediaQuick"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediaquick"/>
-        <library name="QtMultimediaGstTools"      dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediagsttools"/>
-        <library name="QtMultimediaWidgets"       dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets"/>
-        <library name="QtOpenGL"                  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets.opengl"/>
-        <library name="QtNfc"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.nfc"/>
-        <library name="QtPurchasing"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.purchasing"/>
-        <library name="QtPositioning"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.positioning"/>
-        <library name="QtPositioningQuick"        dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.positioningquick"/>
-        <library name="QtQml"                     dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qml"/>
-        <library name="QtQmlModels"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qmlmodels"/>
-        <library name="QtQmlWorkerScript"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qmlworkerscript"/>
-        <library name="QtQuick"                   dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick"/>
-        <library name="QtQuickControls2"          dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickcontrols2"/>
-        <library name="QtQuickTemplates2"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quicktemplates2"/>
-        <library name="QtPrintSupport"            dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.printsupport"/>
-        <library name="QtQuickParticles"          dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickparticles"/>
-        <library name="QtQuickTest"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quicktest"/>
-        <library name="QtQuickWidgets"            dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickwidgets"/>
-        <library name="QtQuickShapes"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickshapes"/>
-        <library name="QtSensors"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.sensors"/>
-        <library name="QtSerialPort"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.serialport"/>
-        <library name="QtSerialBus"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.serialbus"/>
-        <library name="QtWebChannel"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webchannel"/>
-        <library name="QtWebSockets"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.websockets"/>
-        <library name="QtWebView"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webview"/>
-        <library name="QtWebEngineWidgets"        dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets"/>
-        <library name="QtWebEngineCore"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginecore"/>
-        <library name="QtWebEngine"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webengine"/>
-        <library name="QtWinExtras"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.winextras"/>
-        <library name="QtMacExtras"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.macextras"/>
-        <library name="QtX11Extras"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.x11extras"/>
-        <library name="Qt3DCore"                  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dcore"/>
-        <library name="Qt3DInput"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dinput"/>
-        <library name="Qt3DQuick"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquick"/>
-        <library name="Qt3DQuickInput"            dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickinput"/>
-        <library name="Qt3DQuickRenderer"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickrenderer"/>
-        <library name="Qt3DExtras"                dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dextras"/>
-        <library name="Qt3DQuickExtras"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickextras"/>
-        <library name="Qt3DQuickRender"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickrender"/>
-        <library name="Qt3DQuickScene2D"          dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickscene2d"/>
-        <library name="Qt3DRenderer"              dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3drenderer"/>
-        <library name="Qt3DRender"                dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3drender"/>
-        <library name="Qt3DLogic"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dlogic"/>
-        <library name="Qt3DAnimation"             dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3danimation"/>
-        <library name="QtQuick3D"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3d"/>
-        <library name="QtQuick3DRuntimeRender"    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3druntimerender"/>
-        <library name="Qt5Quick3DUtils"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3dutils"/>
-        <library name="QtQuick3DRender"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3drender"/>
-        <library name="QtQuick3DAssetImport"      dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3dassetimport"/>
-        <library name="QtOpenGLExtensions"        dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.openglextensions"/>
-        <library name="QtPlatformSupport"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.platformsupport"/>
-        <library name="QtEglDeviceIntegration"    dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.egldeviceintegration"/>
-        <library name="QtEglFSDeviceIntegration"  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.eglfsdeviceintegration"/>
-        <library name="QtEglFsKmsSupport"         dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.eglfskmssupport"/>
-        <library name="QtWaylandClient"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.waylandclient"/>
-        <library name="QtWaylandCompositor"       dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.waylandcompositor"/>
-        <library name="QtGamepad"                 dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.gamepad"/>
-        <library name="QtXcbQpa"                  dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xcbqpa"/>
-        <library name="QtLabsTemplates"           dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labstemplates"/>
-        <library name="QtTextToSpeech"            dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.texttospeech"/>
-        <library name="Qt3DQuickAnimation"        dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.3dquickanimation"/>
-        <library name="QtANGLE"                   dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.angle"/>
-        <library name="QtBodymovin"               dsoVersion="${qt.version.major}"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.bodymovin"/>
-        <library name="libEGL"                    dsoVersion=""  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libegl"/>
-        <library name="libGLESv2"                 dsoVersion=""  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libglesv2"/>
-        <library name="d3dcompiler_47"            dsoVersion=""  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.d3dcompiler_47"/>
-        <library name="opengl32sw"                dsoVersion=""  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.opengl32sw"/>
-        <library name="libicudata"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicudata"/>
-        <library name="libicuuc"                  dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicuuc"/>
-        <library name="libicui18n"                dsoVersion="56"  type="dso"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicui18n"/>
-        <library name="jarimport"                 dsoVersion="" type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.qml.true"/>
-        <library name="qtjambiplugin"             dsoVersion="" type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.core.true"/>
+        <library name="QtCore"                    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.core"/>
+        <library name="QtGui"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.gui"/>
+        <library name="QtOpenGL"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.opengl"/>
+        <library name="QtOpenGL"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.opengl.util"/>
+        <library name="QtConcurrent"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.concurrent"/>
+        <library name="QtXml"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xml"/>
+        <library name="QtScxml"                   type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scxml"/>
+        <library name="QtRemoteObjects"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects"/>
+        <library name="QtSql"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.sql"/>
+        <library name="QtSvg"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.svg"/>
+        <library name="QtSvgWidgets"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.svgwidgets"/>
+        <library name="QtNetwork"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.network"/>
+        <library name="QtNetworkAuth"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.networkauth"/>
+        <library name="QtHelp"                    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.help"/>
+        <library name="QtScript"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.script"/>
+        <library name="QtScriptTools"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scripttools"/>
+        <library name="QtMultimedia"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimedia"/>
+        <library name="QtXmlPatterns"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xmlpatterns"/>
+        <library name="QtDesigner"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.designer"/>
+        <library name="QtDesignerComponents"      type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.designercomponents"/>
+        <library name="QtVirtualKeyboard"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.virtualkeyboard"/>
+        <library name="QtCharts"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.charts"/>
+        <library name="QtDataVisualization"       type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.datavisualization"/>
+        <library name="QtCLucene"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.clucene"/>
+        <library name="QtDBus"                    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.dbus"/>
+        <library name="QtTest"                    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.test"/>
+        <library name="QtWidgets"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.widgets"/>
+        <library name="QtUiTools"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.uitools"/>
+        <library name="QtUiPlugin"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.uiplugin"/>
+        <library name="QtOpenGLWidgets"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.openglwidgets"/>
+        <library name="QtBluetooth"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.bluetooth"/>
+        <library name="QtLocation"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.location"/>
+        <library name="QtMultimediaQuick"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediaquick"/>
+        <library name="QtMultimediaGstTools"      type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediagsttools"/>
+        <library name="QtMultimediaWidgets"       type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets"/>
+        <library name="QtOpenGL"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets.opengl"/>
+        <library name="QtNfc"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.nfc"/>
+        <library name="QtPurchasing"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.purchasing"/>
+        <library name="QtPositioning"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.positioning"/>
+        <library name="QtPositioningQuick"        type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.positioningquick"/>
+        <library name="QtQml"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qml"/>
+        <library name="QtQmlModels"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qmlmodels"/>
+        <library name="QtQmlWorkerScript"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qmlworkerscript"/>
+        <library name="QtQuick"                   type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick"/>
+        <library name="QtQuickControls2"          type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickcontrols2"/>
+        <library name="QtQuickTemplates2"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quicktemplates2"/>
+        <library name="QtPrintSupport"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.printsupport"/>
+        <library name="QtQuickParticles"          type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickparticles"/>
+        <library name="QtQuickTest"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quicktest"/>
+        <library name="QtQuickWidgets"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickwidgets"/>
+        <library name="QtQuickShapes"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quickshapes"/>
+        <library name="QtSensors"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.sensors"/>
+        <library name="QtSerialPort"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.serialport"/>
+        <library name="QtSerialBus"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.serialbus"/>
+        <library name="QtWebChannel"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webchannel"/>
+        <library name="QtWebSockets"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.websockets"/>
+        <library name="QtWebView"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webview"/>
+        <library name="QtWebEngineWidgets"        type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets"/>
+        <library name="QtWebEngineCore"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginecore"/>
+        <library name="QtWebEngine"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webengine"/>
+        <library name="QtWinExtras"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.winextras"/>
+        <library name="QtMacExtras"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.macextras"/>
+        <library name="QtX11Extras"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.x11extras"/>
+        <library name="Qt3DCore"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dcore"/>
+        <library name="Qt3DInput"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dinput"/>
+        <library name="Qt3DQuick"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquick"/>
+        <library name="Qt3DQuickInput"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickinput"/>
+        <library name="Qt3DQuickRenderer"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickrenderer"/>
+        <library name="Qt3DExtras"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dextras"/>
+        <library name="Qt3DQuickExtras"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickextras"/>
+        <library name="Qt3DQuickRender"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickrender"/>
+        <library name="Qt3DQuickScene2D"          type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickscene2d"/>
+        <library name="Qt3DRenderer"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3drenderer"/>
+        <library name="Qt3DRender"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3drender"/>
+        <library name="Qt3DLogic"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3dlogic"/>
+        <library name="Qt3DAnimation"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.qt3danimation"/>
+        <library name="QtQuick3D"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3d"/>
+        <library name="QtQuick3DRuntimeRender"    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3druntimerender"/>
+        <library name="QtQuick3DUtils"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3dutils"/>
+        <library name="QtQuick3DRender"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3drender"/>
+        <library name="QtQuick3DAssetImport"      type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.quick3dassetimport"/>
+        <library name="QtOpenGLExtensions"        type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.openglextensions"/>
+        <library name="QtPlatformSupport"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.platformsupport"/>
+        <library name="QtEglDeviceIntegration"    type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.egldeviceintegration"/>
+        <library name="QtEglFSDeviceIntegration"  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.eglfsdeviceintegration"/>
+        <library name="QtEglFsKmsSupport"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.eglfskmssupport"/>
+        <library name="QtWaylandClient"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.waylandclient"/>
+        <library name="QtWaylandCompositor"       type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.waylandcompositor"/>
+        <library name="QtGamepad"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.gamepad"/>
+        <library name="QtXcbQpa"                  type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xcbqpa"/>
+        <library name="QtLabsTemplates"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labstemplates"/>
+        <library name="QtTextToSpeech"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.texttospeech"/>
+        <library name="Qt3DQuickAnimation"        type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.3dquickanimation"/>
+        <library name="QtANGLE"                   type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.angle"/>
+        <library name="QtBodymovin"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.bodymovin"/>
+        <library name="QtShaderTools"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.shadertools"/>
+        <library name="libEGL"                    type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libegl"/>
+        <library name="libGLESv2"                 type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libglesv2"/>
+        <library name="d3dcompiler_47"            type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.d3dcompiler_47"/>
+        <library name="opengl32sw"                type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.opengl32sw"/>
+        <library name="libicudata"                type="dso" dsoVersion="56"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicudata"/>
+        <library name="libicuuc"                  type="dso" dsoVersion="56"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicuuc"/>
+        <library name="libicui18n"                type="dso" dsoVersion="56"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicui18n"/>
+        <library name="jarimport"                 type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.qml.true"/>
+        <library name="qtjambiplugin"             type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.core.true"/>
 
         <!-- QtJambi Libraries -->
-        <library name="QtJambi"                   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.core.true"/>
-        <library name="QtJambiCore"               dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.core.true"/>
-        <library name="QtJambiBluetooth"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.bluetooth.true"/>
-        <library name="QtJambiConcurrent"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.concurrent.true"/>
-        <library name="QtJambiLocation"           dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.location.true"/>
-        <library name="QtJambiPositioning"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.positioning.true"/>
-        <library name="QtJambiGui"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.gui.true"/>
-        <library name="QtJambiXml"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.xml.true"/>
-        <library name="QtJambiScxml"              dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.scxml.true"/>
-        <library name="QtJambiRemoteObjects"      dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects.true"/>
-        <library name="QtJambiSql"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.sql.true"/>
-        <library name="QtJambiHelp"               dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.help.true"/>
-        <library name="QtJambiNfc"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.nfc.true"/>
-        <library name="QtJambiPurchasing"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.purchasing.true"/>
-        <library name="QtJambiScript"             dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.script.true"/>
-        <library name="QtJambiScriptTools"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.scripttools.true"/>
-        <library name="QtJambiMultimedia"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.multimedia.true"/>
-        <library name="QtJambiMultimediaWidgets"  dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets.true"/>
-        <library name="QtJambiSvg"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.svg.true"/>
-        <library name="QtJambiPrintSupport"       dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.printsupport.true"/>
-        <library name="QtJambiNetwork"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.network.true"/>
-        <library name="QtJambiNetworkAuth"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.networkauth.true"/>
-        <library name="QtJambiXmlPatterns"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.xmlpatterns.true"/>
-        <library name="QtJambiDBus"               dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.dbus.true"/>
-        <library name="QtJambiTest"               dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.test.true"/>
-        <library name="QtJambiWidgets"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.widgets.true"/>
-        <library name="QtJambiWebSockets"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.websockets.true"/>
-        <library name="QtJambiGamepad"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.gamepad.true"/>
-        <library name="QtJambiWebChannel"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webchannel.true"/>
-        <library name="QtJambiWebEngine"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webengine.true"/>
-        <library name="QtJambiWebEngineCore"      dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginecore.true"/>
-        <library name="QtJambiWebEngineWidgets"   dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets.true"/>
-        <library name="QtJambiWebView"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webview.true"/>
-        <library name="QtJambiQml"                dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qml.true"/>
-        <library name="QtJambiQuick"              dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quick.true"/>
-        <library name="QtJambiQuickControls2"     dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quickcontrols2.true"/>
-        <library name="QtJambiQuickWidgets"       dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quickwidgets.true"/>
-        <library name="QtJambiWinExtras"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.winextras.true"/>
-        <library name="QtJambiMacExtras"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.macextras.true"/>
-        <library name="QtJambiX11Extras"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.x11extras.true"/>
-        <library name="QtJambiSerialPort"         dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.serialport.true"/>
-        <library name="QtJambiSerialBus"          dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.serialbus.true"/>
-        <library name="QtJambiSensors"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.sensors.true"/>
-        <library name="QtJambi3DCore"             dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dcore.true"/>
-        <library name="QtJambi3DQuick"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquick.true"/>
-        <library name="QtJambi3DExtras"           dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dextras.true"/>
-        <library name="QtJambi3DQuickExtras"      dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickextras.true"/>
-        <library name="QtJambi3DInput"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dinput.true"/>
-        <library name="QtJambi3DQuickScene2D"     dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickscene2d.true"/>
-        <library name="QtJambi3DRender"           dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3drender.true"/>
-        <library name="QtJambi3DAnimation"        dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3danimation.true"/>
-        <library name="QtJambi3DLogic"            dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dlogic.true"/>
-
+        <library name="QtJambi"                   type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.core.true"/>
+        <library name="QtJambiCore"               type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.core.true"/>
+        <library name="QtJambiBluetooth"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.bluetooth.true"/>
+        <library name="QtJambiConcurrent"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.concurrent.true"/>
+        <library name="QtJambiLocation"           type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.location.true"/>
+        <library name="QtJambiPositioning"        type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.positioning.true"/>
+        <library name="QtJambiCharts"             type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.charts.true"/>
+        <library name="QtJambiVirtualKeyboard"    type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.virtualkeyboard.true"/>
+        <library name="QtJambiGui"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.gui.true"/>
+        <library name="QtJambiOpenGL"             type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.opengl.true"/>
+        <library name="QtJambiXml"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.xml.true"/>
+        <library name="QtJambiScxml"              type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.scxml.true"/>
+        <library name="QtJambiRemoteObjects"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects.true"/>
+        <library name="QtJambiSql"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.sql.true"/>
+        <library name="QtJambiHelp"               type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.help.true"/>
+        <library name="QtJambiNfc"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.nfc.true"/>
+        <library name="QtJambiPurchasing"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.purchasing.true"/>
+        <library name="QtJambiScript"             type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.script.true"/>
+        <library name="QtJambiScriptTools"        type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.scripttools.true"/>
+        <library name="QtJambiMultimedia"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.multimedia.true"/>
+        <library name="QtJambiMultimediaWidgets"  type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.multimediawidgets.true"/>
+        <library name="QtJambiSvg"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.svg.true"/>
+        <library name="QtJambiSvgWidgets"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.svgwidgets.true"/>
+        <library name="QtJambiPrintSupport"       type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.printsupport.true"/>
+        <library name="QtJambiNetwork"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.network.true"/>
+        <library name="QtJambiNetworkAuth"        type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.networkauth.true"/>
+        <library name="QtJambiXmlPatterns"        type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.xmlpatterns.true"/>
+        <library name="QtJambiDBus"               type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.dbus.true"/>
+        <library name="QtJambiTest"               type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.test.true"/>
+        <library name="QtJambiWidgets"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.widgets.true"/>
+        <library name="QtJambiUiTools"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.uitools.true"/>
+        <library name="QtJambiDesigner"           type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.designer.true"/>
+        <library name="QtJambiOpenGLWidgets"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.openglwidgets.true"/>
+        <library name="QtJambiWebSockets"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.websockets.true"/>
+        <library name="QtJambiGamepad"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.gamepad.true"/>
+        <library name="QtJambiWebChannel"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webchannel.true"/>
+        <library name="QtJambiWebEngine"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webengine.true"/>
+        <library name="QtJambiWebEngineCore"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginecore.true"/>
+        <library name="QtJambiWebEngineWidgets"   type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets.true"/>
+        <library name="QtJambiWebView"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webview.true"/>
+        <library name="QtJambiQml"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qml.true"/>
+        <library name="QtJambiQuick"              type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quick.true"/>
+        <library name="QtJambiQuickControls2"     type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quickcontrols2.true"/>
+        <library name="QtJambiQuickWidgets"       type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quickwidgets.true"/>
+        <library name="QtJambiWinExtras"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.winextras.true"/>
+        <library name="QtJambiMacExtras"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.macextras.true"/>
+        <library name="QtJambiX11Extras"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.x11extras.true"/>
+        <library name="QtJambiSerialPort"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.serialport.true"/>
+        <library name="QtJambiSerialBus"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.serialbus.true"/>
+        <library name="QtJambiSensors"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.sensors.true"/>
+        <library name="QtJambi3DCore"             type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dcore.true"/>
+        <library name="QtJambi3DQuick"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquick.true"/>
+        <library name="QtJambi3DExtras"           type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dextras.true"/>
+        <library name="QtJambi3DQuickExtras"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickextras.true"/>
+        <library name="QtJambi3DInput"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dinput.true"/>
+        <library name="QtJambi3DQuickScene2D"     type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dquickscene2d.true"/>
+        <library name="QtJambi3DRender"           type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3drender.true"/>
+        <library name="QtJambi3DAnimation"        type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3danimation.true"/>
+        <library name="QtJambi3DLogic"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.qt3dlogic.true"/>
+        <library name="QtJambiDataVisualization"  type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.datavisualization.true"/>
+        <library name="QtJambiQuick3D"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.quick3d.true"/>
+        
         <!-- Qt Plugins -->
         <library name="qtaccessiblewidgets"       type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="accessible" destSubdir="plugins" if="qtjambi.plugins.accessible.qtaccessiblewidgets"/>
 
@@ -284,8 +315,9 @@
 
         <library name="qtscriptdbus"              type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="script"     destSubdir="plugins" if="qtjambi.plugins.script.qtscriptdbus"/>
 
-        <library name="qsqljdbc"                  type="plugin" pending="true"                      subdir="sqldrivers" destSubdir="plugins" if="qsqljdbc.true"/>
-        <library name="qsqljdbc.jar"              type="file"   rootPath="${outputDir}/plugins"     subdir="sqldrivers" destSubdir="plugins" if="qsqljdbc.true"/>
+        <library name="qsqljdbc"                  type="qtjambi-plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qsqljdbc.true"/>
+        <library name="qsqljdbc.jar"              type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qsqljdbc.true"/>
+        <library name="qsqljdbc.jar"              type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qsqljdbc.debug.true"/>
         <library name="qsqlite"                   type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qtjambi.plugins.sqldrivers.sqlite"/>
         <library name="qsqlite2"                  type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qtjambi.plugins.sqldrivers.sqlite2"/>
         <library name="qsqlmysql"                 type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="sqldrivers" destSubdir="plugins" if="qtjambi.plugins.sqldrivers.sqlmysql"/>
@@ -366,6 +398,12 @@
         <library name="qtvirtualcanbus"                type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="canbus"      destSubdir="plugins" if="qtjambi.plugins.canbus.qtvirtualcanbus"/>
         <library name="qquickwidget"                   type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="designer"    destSubdir="plugins" if="qtjambi.plugins.designer.qquickwidget"/>
         <library name="qwebengineview"                 type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="designer"    destSubdir="plugins" if="qtjambi.plugins.designer.qwebengineview"/>
+        <library name="multimediawidgets"              type="qtjambi-plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="multimediawidgets.true"/>
+        <library name="multimediawidgets.jar"          type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="multimediawidgets.true"/>
+        <library name="multimediawidgets.jar"          type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="multimediawidgets.debug.true"/>
+        <library name="helpwidgets"                    type="qtjambi-plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="helpwidgets.true"/>
+        <library name="helpwidgets.jar"                type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="helpwidgets.true"/>
+        <library name="helpwidgets.jar"                type="file"           rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="helpwidgets.debug.true"/>
         <library name="defaultgeometryloader"          type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="geometryloaders"    destSubdir="plugins" if="qtjambi.plugins.geometryloaders.defaultgeometryloader"/>
         <library name="gltfgeometryloader"             type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="geometryloaders"    destSubdir="plugins" if="qtjambi.plugins.geometryloaders.gltfgeometryloader"/>
         <library name="qtexttospeech_speechosx"        type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="texttospeech"    destSubdir="plugins" if="qtjambi.plugins.texttospeech.qtexttospeech_speechosx"/>
@@ -373,8 +411,8 @@
         <library name="qtwebview_webengine"            type="plugin" rootPath="${qtjambi.qt.pluginsdir}" subdir="webview"    destSubdir="plugins" if="qtjambi.plugins.webview.qtwebview_webengine"/>
 
         <!-- Designer plugins -->
-        <!--library name="JambiCustomWidget" dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins-designer" if="qtjambi.designer.debug.true}"/>
-        <library name="JambiLanguage"     dsoVersion="${qtjambi.soname.version.major}" type="qtjambi-plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins-designer" if="qtjambi.designer.debug.true}"/-->
+        <!--library name="QtJambiCustomWidget"            type="plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="qtjambi.designer.true"/-->
+        <!--library name="QtJambiLanguage"                type="plugin" rootPath="${qtjambi.jambi.pluginsdir}" subdir="designer" destSubdir="plugins" if="qtjambi.designer.true"/-->
 
         <!-- Additional designer plugin configuration, we absolute path in destSubdir to ignore the source path -->
         <!--directory name="" rootPath="${basedir}/plugins/qtjambi" destSubdir="/plugins-designer" recursive="true" if="qtjambi.designer"/-->
@@ -413,16 +451,15 @@
         <library name="qtxmlpatterns_[a-z][a-z]_[A-Z][A-Z].qm"    type="fileset" rootPath="${qtjambi.qt.translationsdir}" subdir="" destSubdir="translations" if="qtjambi.xmlpatterns.true"/>
 
         <!-- new since Qt5 -->
-        <library name="qmlfolderlistmodelplugin"		type="qmlplugin"	rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/folderlistmodel"	destSubdir="qml" 		if="qtjambi.Qt.labs.folderlistmodel.qmlfolderlistmodelplugin"/>
-        <library name="qmldir"							type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/folderlistmodel"	destSubdir="qml" 		if="qtjambi.Qt.labs.folderlistmodel.qmlfolderlistmodelplugin.true"/>
-        <library name="plugins.qmltypes"				type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/folderlistmodel"	destSubdir="qml" 		if="qtjambi.Qt.labs.folderlistmodel.qmlfolderlistmodelplugin.true"/>
-        <library name="qmlsettingsplugin"				type="qmlplugin"	rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/settings"	destSubdir="qml" 		if="qtjambi.Qt.labs.settings.qmlsettingsplugin"/>
-        <library name="qmldir"							type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/settings"	destSubdir="qml" 		if="qtjambi.Qt.labs.settings.qmlsettingsplugin.true"/>
-        <library name="plugins.qmltypes"				type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="Qt/labs/settings"	destSubdir="qml" 		if="qtjambi.Qt.labs.settings.qmlsettingsplugin.true"/>
-        <library name="qmldir"							type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="QtQml"	destSubdir="qml"/>
-        <library name="plugins.qmltypes"				type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir="QtQml"	destSubdir="qml"/>
-        <library name="builtins.qmltypes"				type="file"			rootPath="${qtjambi.qt.qmlmodulesdir}"		subdir=""	destSubdir="qml"/>
+        <directory name="Qt/labs/animation" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.animation.true"/>
+        <directory name="Qt/labs/folderlistmodel" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.folderlistmodel.true"/>
+        <directory name="Qt/labs/settings" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.settings.true"/>
+        <directory name="Qt/labs/platform" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.platform.true"/>
+        <directory name="Qt/labs/qmlmodels" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.qmlmodels.true"/>
+        <directory name="Qt/labs/sharedimage" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.sharedimage.true"/>
+        <directory name="Qt/labs/wavefrontmesh" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt.labs.wavefrontmesh.true"/>
 
+        <library name="[a-z]*.qmltypes" type="fileset" rootPath="${qtjambi.qt.qmlmodulesdir}" subdir="" destSubdir="qml" if="qtjambi.qml.true"/>
         <directory name="Qt3D/Animation" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt3D.Animation.quick3danimationplugin.true"/>
         <directory name="Qt3D/Core" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt3D.Core.quick3dcoreplugin.true"/>
         <directory name="Qt3D/Extras" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.Qt3D.Extras.quick3dextrasplugin.true"/>
@@ -437,7 +474,10 @@
         <directory name="QtMultimedia" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtMultimedia.declarative_multimedia.true"/>
         <directory name="QtNfc" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtNfc.declarative_nfc.true"/>
         <directory name="QtPositioning" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtPositioning.declarative_positioning.true"/>
+        <directory name="QtQml" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtQml.qmlplugin.true"/>
         <directory name="QtQml/Models.2" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQml.Models.2.modelsplugin.true"/>
+        <directory name="QtQml/Models" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQml.Models.modelsplugin.true"/>
+        <directory name="QtQml/WorkerScript" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQml.WorkerScript.workerscriptplugin.true"/>
         <directory name="QtQml/StateMachine" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQml.StateMachine.qtqmlstatemachine.true"/>
         <directory name="QtQml/RemoteObjects" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQml.RemoteObjects.qtqmlremoteobjects.true"/>
         <directory name="QtQuick/Controls" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Controls.qtquickcontrolsplugin.true"/>
@@ -447,6 +487,7 @@
         <directory name="QtQuick/Layouts" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Layouts.qquicklayoutsplugin.true"/>
         <directory name="QtQuick/LocalStorage" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.LocalStorage.qmllocalstorageplugin.true"/>
         <directory name="QtQuick/Particles.2" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Particles.2.particlesplugin.true"/>
+        <directory name="QtQuick/Particles" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Particles.particlesplugin.true"/>
         <directory name="QtQuick/PrivateWidgets" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.PrivateWidgets.widgetsplugin.true"/>
         <directory name="QtQuick/Scene3D" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Scene3D.qtquickscene3dplugin.true"/>
         <directory name="QtQuick/Scene2D" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Scene2D.qtquickscene2dplugin.true"/>
@@ -454,7 +495,9 @@
         <directory name="QtQuick/Templates.2" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Templates.2.qtquicktemplates2plugin.true"/>
         <directory name="QtQuick/VirtualKeyboard" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.VirtualKeyboard.qtquickvirtualkeyboardplugin.true"/>
         <directory name="QtQuick/Window.2" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Window.2.windowplugin.true"/>
+        <directory name="QtQuick/Window" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.Window.windowplugin.true"/>
         <directory name="QtQuick/XmlListModel" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true" if="qtjambi.QtQuick.XmlListModel.qmlxmllistmodelplugin.true"/>
+        <directory name="QtQuick" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtQuick.qtquick2plugin.true"/>
         <directory name="QtQuick.2" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtQuick.2.qtquick2plugin.true"/>
         <directory name="QtRemoteObjects" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtRemoteObjects.qtremoteobjects.true"/>
         <directory name="QtScxml" rootPath="${qtjambi.qt.qmlmodulesdir}" destSubdir="qml" recursive="true"  if="qtjambi.QtScxml.declarative_scxml.true"/>
@@ -499,11 +542,6 @@
         <plugin path="plugins"/>
         <!--plugin-designer path="plugins-designer"/-->
     </qtjambi-platform-jar>
-    
-    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="bundle-plugins"/>
-
-    <mkdir dir="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/META-INF/io.qt.qtjambi.native.deployment"/>
-    <move file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/qtjambi-deployment.xml" tofile="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/META-INF/io.qt.qtjambi.native.deployment/${qtjambi.osname}.${qtjambi.compiler}-${qtjambi.version.bundle}.xml"/>
 
     <property name="destination-file" value="${deploymentdir}/qtjambi-native-${qtjambi.osname}-${qtjambi.compiler}-${qtjambi.version.bundle}${platformjar.debug.suffix}.jar"/>
     <jar destfile="${destination-file}">
@@ -533,115 +571,116 @@
             <attribute name="X-QtJambi-Arch"         value="${qtjambi.osname}"/>
             <attribute name="X-QtJambi-Build"        value="${platformjar.conf}"/><!-- release debug test -->
             <attribute name="X-QtJambi-CacheKey"     value="${qtjambi.version.cachekey}" />
-            <attribute name="X-QtJambi-Deployment"   value="/qtjambi-deployment.xml,/META-INF/io.qt.qtjambi.native.deployment/${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}.${platformjar.conf}-${qtjambi.version.bundle}.xml"/>
+            <attribute name="X-QtJambi-Deployment"   value="/qtjambi-deployment.xml"/>
             <attribute name="X-QtJambi-Version"      value="${qtjambi.version.bundle}"/>
             <attribute name="X-QtJambi-SoName-Version" value="${qtjambi.soname.version.major}"/>
         </manifest>
     </jar>
     <delete dir="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/META-INF" failonerror="false"/>
+    <delete file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/qtjambi-deployment.xml" failonerror="false"/>
   </target>
   <target name="javadocs" depends="init.build" description="Generates the Java Doc pages for QtJambi">
-        <delete dir="${basedir}/javadocs" failonerror="no"/>
-		<tstamp>
-			<format property="year" pattern="yyyy"/>
-		</tstamp>
-        <path id="java.source.dirs">
-            <dirset dir="${basedir}/build/java-src" includes="qtjambi*"/>
-        </path>
-		<pathconvert pathsep=","             
-			property="java.source.dirs2"             
-			refid="java.source.dirs">
-		</pathconvert>
-        <if>
-            <istrue value="${java.module.based}"/>
-            <then>
-                <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
-                    <include name="**/*.java"/>
-                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
-                </multirootfileset>
-                <pathconvert pathsep="${line.separator}"             
-                    property="java.source.files.flat"             
-                    refid="java.source.files">
-                </pathconvert>
-                <javadoc 
-                additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords --module-source-path ${basedir}/build/java-src"
-                access="protected" 
-                author="true" 
-                destdir="${basedir}/javadocs" 
-                windowtitle="QtJambi API"
-                nodeprecated="false" 
-                nodeprecatedlist="false" 
-                noindex="false" 
-                nonavbar="false" 
-                notree="false" 
-                source="${minimum.java.version}" 
-                defaultexcludes="yes"
-                splitindex="true" 
-                useexternalfile="true" 
-                use="true" 
-                version="true"
-                stylesheetfile="${basedir}/docstyle.css"
-                sourcefiles="${java.source.files.flat}">
-                  <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
-                    <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
-                    <bottom><![CDATA[
-                                <font size="-2">QtJambi Reference Documentation<br>
-                                The documentation provided herein is licensed under the terms of the 
-                                <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
-                                as published by the Free Software Foundation. 
-                                Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
-                                All other trademarks are property of their respective owners.
-                                </font>
-                            ]]></bottom>
-                </javadoc>
-            </then>
-            <else>
-                <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
-                    <include name="**/*.java"/>
-                    <exclude name="module-info.java"/>
-                    <exclude name="**/QtJambi_LibraryInitializer.java"/>
-                </multirootfileset>
-                <pathconvert pathsep="${line.separator}"             
-                    property="java.source.files.flat"             
-                    refid="java.source.files">
-                </pathconvert>
-                <javadoc 
-                additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine -keywords"
-                access="protected" 
-                author="true" 
-                destdir="${basedir}/javadocs" 
-                windowtitle="QtJambi API"
-                nodeprecated="false" 
-                nodeprecatedlist="false" 
-                noindex="false" 
-                nonavbar="false" 
-                notree="false" 
-                source="${minimum.java.version}" 
-                defaultexcludes="yes"
-                splitindex="true" 
-                useexternalfile="true" 
-                use="true" 
-                version="true"
-                stylesheetfile="${basedir}/docstyle.css"
-                sourcefiles="${java.source.files.flat}">
-                  <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
-                    <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
-                    <bottom><![CDATA[
-                                <font size="-2">QtJambi Reference Documentation<br>
-                                The documentation provided herein is licensed under the terms of the 
-                                <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
-                                as published by the Free Software Foundation. 
-                                Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
-                                All other trademarks are property of their respective owners.
-                                </font>
-                            ]]></bottom>
-                </javadoc>
-            </else>
-        </if>
-        <echo>${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip</echo>
-        <delete file="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip"/>
-        <zip destfile="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip">
-            <fileset dir="${basedir}/javadocs"/>
-        </zip>
+    <delete dir="${outputDir}/javadocs" failonerror="no"/>
+    <tstamp>
+        <format property="year" pattern="yyyy"/>
+    </tstamp>
+    <path id="java.source.dirs">
+        <dirset dir="${outputDir}/java-src" includes="qtjambi*"/>
+    </path>
+    <pathconvert pathsep=","             
+        property="java.source.dirs2"             
+        refid="java.source.dirs">
+    </pathconvert>
+    <if>
+        <istrue value="${java.module.based}"/>
+        <then>
+            <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
+                <include name="**/*.java"/>
+                <exclude name="**/QtJambi_LibraryInitializer.java"/>
+            </multirootfileset>
+            <pathconvert pathsep="${line.separator}"             
+                property="java.source.files.flat"             
+                refid="java.source.files">
+            </pathconvert>
+            <javadoc 
+            additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords --module-source-path ${basedir}/build/java-src"
+            access="protected" 
+            author="true" 
+            destdir="${outputDir}/javadocs" 
+            windowtitle="QtJambi API"
+            nodeprecated="false" 
+            nodeprecatedlist="false" 
+            noindex="false" 
+            nonavbar="false" 
+            notree="false" 
+            source="${minimum.java.version}" 
+            defaultexcludes="yes"
+            splitindex="true" 
+            useexternalfile="true" 
+            use="true" 
+            version="true"
+            stylesheetfile="${basedir}/docstyle.css"
+            sourcefiles="${java.source.files.flat}">
+              <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
+                <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                <bottom><![CDATA[
+                            <font size="-2">QtJambi Reference Documentation<br>
+                            The documentation provided herein is licensed under the terms of the 
+                            <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
+                            as published by the Free Software Foundation. 
+                            Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
+                            All other trademarks are property of their respective owners.
+                            </font>
+                        ]]></bottom>
+            </javadoc>
+        </then>
+        <else>
+            <multirootfileset basedirs="${java.source.dirs2}" id="java.source.files">
+                <include name="**/*.java"/>
+                <exclude name="module-info.java"/>
+                <exclude name="**/QtJambi_LibraryInitializer.java"/>
+            </multirootfileset>
+            <pathconvert pathsep="${line.separator}"             
+                property="java.source.files.flat"             
+                refid="java.source.files">
+            </pathconvert>
+            <javadoc 
+            additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine -keywords"
+            access="protected" 
+            author="true" 
+            destdir="${outputDir}/javadocs" 
+            windowtitle="QtJambi API"
+            nodeprecated="false" 
+            nodeprecatedlist="false" 
+            noindex="false" 
+            nonavbar="false" 
+            notree="false" 
+            source="${minimum.java.version}" 
+            defaultexcludes="yes"
+            splitindex="true" 
+            useexternalfile="true" 
+            use="true" 
+            version="true"
+            stylesheetfile="${basedir}/docstyle.css"
+            sourcefiles="${java.source.files.flat}">
+              <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
+                <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
+                <bottom><![CDATA[
+                            <font size="-2">QtJambi Reference Documentation<br>
+                            The documentation provided herein is licensed under the terms of the 
+                            <a href="https://www.gnu.org/licenses/fdl.html">GNU Free Documentation License version 1.3</a>
+                            as published by the Free Software Foundation. 
+                            Qt and respective logos are trademarks of The Qt Company Ltd. in Finland and/or other countries worldwide. 
+                            All other trademarks are property of their respective owners.
+                            </font>
+                        ]]></bottom>
+            </javadoc>
+        </else>
+    </if>
+    <echo>${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip</echo>
+    <delete file="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip"/>
+    <zip destfile="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip">
+        <fileset dir="${outputDir}/javadocs"/>
+    </zip>
   </target>
 </project>

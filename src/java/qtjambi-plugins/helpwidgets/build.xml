@@ -1,0 +1,31 @@
+<project default="build">
+    <property name="plugin-subdir" value="designer"/>
+    <property name="module-name" value="helpwidgets"/>
+    <property name="qtjambi-module-name" value="QtJambiDesigner"/>
+    <property name="qtjambi-module-name2" value="QtJambiHelp"/>
+    <path id="qtjambi.modulepath">
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-designer-${qtjambi.jar.version}.jar,qtjambi-help-${qtjambi.jar.version}.jar"/>
+    </path>
+    <target name="build">
+        <if>
+            <and>
+                <available file="${generator.outputdir}/java/${qtjambi-module-name}" type="dir"/>
+                <available file="${generator.outputdir}/java/${qtjambi-module-name2}" type="dir"/>
+            </and>
+            <then>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="createjar1">
+                    <property name="module" value="${module-name}"/>
+                    <property name="sourcedir" value="${java.srcdir}/qtjambi-plugins/${module-name}"/>
+                    <property name="jar.excludes" value=""/>
+                    <property name="module.excludes" value=""/>
+                </ant>
+                <echo file="${outputDir}/tmp/plugin-metadata.json">{"Keys":["HelpWidgets"]}</echo>
+                <ant antfile="${basedir}/../plugins.xml" inheritrefs="true" target="bundle-plugin">
+                    <property name="class-name" value="io.qt.designer.help.QHelpWidgetsPlugin"/>
+                    <property name="meta-data" value="${outputDir}/tmp/plugin-metadata.json"/>
+                </ant>
+                <delete file="${outputDir}/tmp/plugin-metadata.json"/>
+            </then>
+        </if>
+    </target>
+</project>

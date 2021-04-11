@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -44,11 +44,15 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtNetwork">
+    <rejection class="QSslKey" function-name="backendImplementation"/>
+    <rejection class="QSslCertificate" function-name="backendImplementation"/>
     <namespace-type name="QSsl">
         <include file-name="qssl.h" location="global" />
     </namespace-type>
 
-  <enum-type name="QSsl::SslOption" />
+  <enum-type name="QSsl::SslOption" flags="QSsl::SslOptions"/>
+  <enum-type name="QSsl::SupportedFeature" since="6.1.0"/>
+  <enum-type name="QSsl::ImplementedClass" since="6.1.0"/>
     <enum-type name="QNetworkProxy::Capability" flags="QNetworkProxy::Capabilities" />
     <enum-type name="QAbstractSocket::NetworkLayerProtocol" />
     <enum-type name="QNetworkProxyQuery::QueryType" />
@@ -77,11 +81,14 @@
     <enum-type name="QSsl::KeyAlgorithm"/>
     <enum-type name="QSsl::SslProtocol" />
     <enum-type name="QSsl::AlternativeNameEntryType" />
+    <enum-type name="QSsl::AlertType" />
+    <enum-type name="QSsl::AlertLevel" />
     <enum-type name="QLocalSocket::LocalSocketError" />
     <enum-type name="QLocalSocket::LocalSocketState" />
     <enum-type name="QLocalServer::SocketOption" flags="QLocalServer::SocketOptions" />
     <enum-type name="QNetworkAccessManager::Operation" />
     <enum-type name="QNetworkCookie::RawForm" />
+    <enum-type name="QNetworkCookie::SameSite" since="6.1.0"/>
     <enum-type name="QNetworkReply::NetworkError" />
     <enum-type name="QNetworkRequest::Attribute" extensible="yes">
         <reject-enum-value name="HTTP2AllowedAttribute" since="5.15.0"/>
@@ -94,14 +101,14 @@
     <enum-type name="QNetworkRequest::Priority"/>
     <enum-type name="QNetworkRequest::RedirectPolicy" since="5.9.0"/>
     <enum-type name="QNetworkRequest::TransferTimeoutConstant" since="5.15.0"/>
-    <enum-type name="QNetworkConfiguration::BearerType"/>
-    <enum-type name="QNetworkConfiguration::Purpose"/>
-    <enum-type name="QNetworkConfiguration::StateFlag" flags="QNetworkConfiguration::StateFlags"/>
-    <enum-type name="QNetworkConfiguration::Type"/>
-    <enum-type name="QNetworkConfigurationManager::Capability" flags="QNetworkConfigurationManager::Capabilities"/>
-    <enum-type name="QNetworkSession::SessionError"/>
-    <enum-type name="QNetworkSession::State"/>
-    <enum-type name="QNetworkSession::UsagePolicy" flags="QNetworkSession::UsagePolicies" />
+    <enum-type name="QNetworkConfiguration::BearerType" until="5.*"/>
+    <enum-type name="QNetworkConfiguration::Purpose" until="5.*"/>
+    <enum-type name="QNetworkConfiguration::StateFlag" flags="QNetworkConfiguration::StateFlags" until="5.*"/>
+    <enum-type name="QNetworkConfiguration::Type" until="5.*"/>
+    <enum-type name="QNetworkConfigurationManager::Capability" flags="QNetworkConfigurationManager::Capabilities" until="5.*"/>
+    <enum-type name="QNetworkSession::SessionError" until="5.*"/>
+    <enum-type name="QNetworkSession::State" until="5.*"/>
+    <enum-type name="QNetworkSession::UsagePolicy" flags="QNetworkSession::UsagePolicies" until="5.*"/>
     <enum-type name="QDnsLookup::Error"/>
     <enum-type name="QDnsLookup::Type"/>
     <enum-type name="QNetworkAddressEntry::DnsEligibilityStatus"/>
@@ -110,7 +117,15 @@
     </enum-type>
     <enum-type name="QHostAddress::ConversionModeFlag" flags="QHostAddress::ConversionMode" since="5.8.0" />
     <enum-type name="QHstsPolicy::PolicyFlag" flags="QHstsPolicy::PolicyFlags" since="5.9.0" />
+    <enum-type name="QAlertLevel" since="6.0.0" />
+    <enum-type name="QAlertType" since="6.0.0" />
+    
+    <namespace-type name="QPasswordDigestor">
+    </namespace-type>
 
+    <enum-type name="QNetworkInformation::Reachability" since="6.1.0" />
+    <enum-type name="QNetworkInformation::Feature" flags="QNetworkInformation::Features" since="6.1.0" />
+    <object-type name="QNetworkInformation" since="6.1.0"/>
     <object-type name="QAbstractNetworkCache">
         <modify-function signature="insert(QIODevice*)">
             <modify-argument index="1">
@@ -133,7 +148,7 @@
     <object-type name="QNetworkProxyFactory">
         <modify-function signature="setApplicationProxyFactory(QNetworkProxyFactory*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus" />
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -153,7 +168,7 @@
     <object-type name="QTcpServer">
         <modify-function signature="addPendingConnection(QTcpSocket*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -187,7 +202,7 @@
         <modify-function signature="connectToHostEncrypted(const QString &amp;, unsigned short, const QSslConfiguration &amp;)" pp-condition="!defined(QT_NO_SSL)"/>
         <modify-function signature="setCookieJar(QNetworkCookieJar*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus" />
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="setCache(QAbstractNetworkCache*)">
@@ -197,7 +212,7 @@
         </modify-function>
         <modify-function signature="setProxyFactory(QNetworkProxyFactory*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus" />
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="createRequest(QNetworkAccessManager::Operation, const QNetworkRequest&amp;, QIODevice*)">
@@ -217,11 +232,11 @@
     </object-type>
     
     <value-type name="QHostAddress">
-        <modify-function signature="QHostAddress(unsigned char*)" remove="all"/>
+        <modify-function signature="QHostAddress(unsigned char*)" remove="all" until="5.*"/>
         <modify-function signature="QHostAddress(const unsigned char*)" remove="all"/>
-        <modify-function signature="setAddress(unsigned char*)" remove="all"/>
+        <modify-function signature="setAddress(unsigned char*)" remove="all" until="5.*"/>
         <modify-function signature="setAddress(const unsigned char*)" remove="all"/>
-        <modify-function signature="operator=(QString)" remove="all"/>
+        <modify-function signature="operator=(QString)" remove="all" until="5.*"/>
         <modify-function signature="operator=(QHostAddress)" remove="all"/>
         <modify-function signature="operator=(const QHostAddress &amp;)" remove="all"/>
         <modify-function signature="operator=(QHostAddress::SpecialAddress)" remove="all"/>
@@ -329,13 +344,13 @@
         <modify-function signature="operator=(QSslDiffieHellmanParameters)" remove="all" />
     </value-type>
     <object-type name="QSslSocket" pp-condition="!defined(QT_NO_SSL)" />
-    <value-type name="QNetworkConfiguration">
+    <value-type name="QNetworkConfiguration" until="5.*">
         <modify-function signature="operator=(QNetworkConfiguration)" remove="all" />
     </value-type>
 
-    <object-type name="QNetworkConfigurationManager" />
+    <object-type name="QNetworkConfigurationManager" until="5.*"/>
 
-    <object-type name="QNetworkSession">
+    <object-type name="QNetworkSession" until="5.*">
         <modify-function signature="interface()const" rename="getInterface"/>
     </object-type>
 
@@ -428,5 +443,13 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslConfiguration' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: type 'QSslSocket' is specified in typesystem, but not defined. This could potentially lead to compilation errors."/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: namespace 'io.qt.network.QSsl*' for enum '*' is not declared"/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QDns*Record."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QDtlsClientVerifier::GeneratorParameters."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QHostInfo."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QIPv6Address."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QNetworkDatagram."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QNetworkInterface."/>
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QSslCertificateExtension."/>
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QNetworkInformationBackend*'"/>
 
 </typesystem>

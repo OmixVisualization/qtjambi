@@ -26,7 +26,7 @@ INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
 # libQtGui.so.4.7.4 is only dependant on libQtCore.so.4
-QT = core gui widgets
+QT = core core-private gui widgets widgets-private
 
 win32:CONFIG += precompile_header
 PRECOMPILED_HEADER = qtjambi_widgets_pch.h

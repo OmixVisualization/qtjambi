@@ -10,6 +10,8 @@ contains(QT_CONFIG, qtjambi-3dquickextras):       SUBDIRS += qtjambi_3dquickextr
 contains(QT_CONFIG, qtjambi-3danimation):         SUBDIRS += qtjambi_3danimation
 contains(QT_CONFIG, qtjambi-3dquickscene2d):      SUBDIRS += qtjambi_3dquickscene2d
 contains(QT_CONFIG, qtjambi-3dlogic):             SUBDIRS += qtjambi_3dlogic
+contains(QT_CONFIG, qtjambi-datavisualization):   SUBDIRS += qtjambi_datavis
+contains(QT_CONFIG, qtjambi-quick3d):             SUBDIRS += qtjambi_quick3d
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     # Qt was configued with both debug and release libs

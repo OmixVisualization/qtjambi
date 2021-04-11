@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,15 +37,15 @@ namespace Qt3DRender{
 	typedef Qt3DCore::QNode QNode;
 };
 
-inline uint qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p){
-    uint hashCode = qHash(p.center());
+inline hash_type qHash(const Qt3DRender::QLevelOfDetailBoundingSphere& p){
+    hash_type hashCode = qHash(p.center());
     hashCode = hashCode * 31 + qHash(p.radius());
     return hashCode;
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
-inline uint qHash(const Qt3DRender::QTextureImageData& p){
-    uint hashCode = qHash(p.width());
+inline hash_type qHash(const Qt3DRender::QTextureImageData& p){
+    hash_type hashCode = qHash(p.width());
     hashCode = hashCode * 31 + qHash(p.height());
     hashCode = hashCode * 31 + qHash(p.depth());
     hashCode = hashCode * 31 + qHash(p.layers());
@@ -65,8 +65,8 @@ inline uint qHash(const Qt3DRender::QTextureImageData& p){
     return hashCode;
 }
 
-inline uint qHash(const Qt3DRender::QTextureDataUpdate& p){
-    uint hashCode = qHash(p.x());
+inline hash_type qHash(const Qt3DRender::QTextureDataUpdate& p){
+    hash_type hashCode = qHash(p.x());
     hashCode = hashCode * 31 + qHash(p.y());
     hashCode = hashCode * 31 + qHash(p.z());
     hashCode = hashCode * 31 + qHash(p.layer());

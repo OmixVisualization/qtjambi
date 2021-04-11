@@ -557,7 +557,6 @@ public class TestSlotSameMethodName extends QApplicationTest {
 			@Override
 			protected void closeEvent(QCloseEvent arg__1) {
 				Utils.println(2, "closeEvent(" + arg__1 + ") " + Thread.currentThread());
-				QApplication.quit();  // make event loop exit
 				myNotifiable.orNotify(B_CLOSE);
 				super.closeEvent(arg__1);
 			}

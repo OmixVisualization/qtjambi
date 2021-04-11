@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,11 +31,14 @@
 #define QTJAMBI_CAST_MAP_P_H
 
 #include "qtjambi_cast_util_p.h"
-#include "qtjambi_cast_type_p.h"
+#include "qtjambi_cast_container_util_p.h"
+
+template<typename T>
+int registerMetaType(const QByteArray& typeName);
 
 namespace QtJambiPrivate {
 
-typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const std::type_info&, const std::type_info&);
+typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, const std::type_info&, const QMetaType&);
 
 template<bool is_pointer, bool is_const, bool is_reference, bool buffer, template<typename K, typename T> class Container, typename K, typename T>
 struct create_bicontainer_pointer{
@@ -65,8 +68,8 @@ struct create_bicontainer_pointer<true, is_const, false, false, Container, K, T>
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T>
-struct create_bicontainer_pointer<true, false, false, true, Container, K, T>{
+template<bool is_const, template<typename K, typename T> class Container, typename K, typename T>
+struct create_bicontainer_pointer<true, is_const, false, true, Container, K, T>{
     static Container<K,T>* create(JNIEnv *, QtJambiScope*, Container<K,T>* t, const char*){
         return t;
     }
@@ -169,326 +172,601 @@ struct create_bicontainer_pointer<false, false, true, false, Container, K, T>{
     }
 };
 
-template<bool c_is_pointer, bool c_is_const, typename K, typename T>
-struct qtjambi_QMap_caster{
-    typedef QMap<K,T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
+template<bool is_pointer, bool is_const, bool is_reference, bool buffer, template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer{
+    static Container<K,T,A> create(JNIEnv *, QtJambiScope*, Container<K,T,A>*, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container<K,T,A> create(JNIEnv *, QtJambiScope*, const Container<K,T,A>*, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container<K,T,A> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A>>&, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
     }
 };
 
-template<bool c_is_pointer, bool c_is_const, typename K, typename T>
-struct qtjambi_QMultiMap_caster{
-    typedef QMultiMap<K,T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
+template<bool is_const, template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<true, is_const, false, false, Container, K, T, A >{
+    typedef typename std::conditional<is_const, typename std::add_const<Container<K,T,A>>::type, Container<K,T,A>>::type Container_const;
+    static Container<K,T,A>* create(JNIEnv *, QtJambiScope*, Container<K,T,A>* t, const char*){
+        return t;
+    }
+    static Container_const* create(JNIEnv *, QtJambiScope*, const Container<K,T,A>* t, const char*){
+        Q_STATIC_ASSERT_X(is_const, "Cannot cast const pointer to non-const pointer without scope.");
+        return t;
+    }
+    static Container<K,T,A>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A>>& t, const char*){
+        return t.take();
     }
 };
 
-template<bool c_is_pointer, bool c_is_const, typename K, typename T>
-struct qtjambi_QHash_caster{
-    typedef QHash<K,T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
+template<bool is_const, template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<true, is_const, false, true, Container, K, T, A>{
+    static Container<K,T,A>* create(JNIEnv *, QtJambiScope*, Container<K,T,A>* t, const char*){
+        return t;
+    }
+    static Container<K,T,A>* create(JNIEnv *env, QtJambiScope* scope, const Container<K,T,A>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to non-const %1* without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            Container<K,T,A>* result = new Container<K,T,A>(*t);
+            scope->addFinalAction([result](){ delete result; });
+            return result;
+        }else{
+            return nullptr;
+        }
+    }
+    static Container<K,T,A>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A>>& t, const char*){
+        return t.take();
     }
 };
 
-template<bool c_is_pointer, bool c_is_const, typename K, typename T>
-struct qtjambi_QMultiHash_caster{
-    typedef QMultiHash<K,T> Container;
-    typedef typename std::conditional<c_is_const, const Container, Container>::type Container_const;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container_const>::type, typename std::add_lvalue_reference<Container_const>::type>::type Container_in;
-    static jobject castfwd(JNIEnv *, Container_in, const char*, QtJambiScope* ){
-        Q_STATIC_ASSERT_X(false && !c_is_const, "Cannot cast types");
-        return nullptr;
+template<bool is_const, bool buffer, template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<false, is_const, false, buffer, Container, K, T,A>{
+    static Container<K,T,A> create(JNIEnv *, QtJambiScope*, const Container<K,T,A>* t, const char*){
+        return t ? *t : Container<K,T,A>();
+    }
+    static Container<K,T,A> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A>>& t, const char*){
+        return t ? *t : Container<K,T,A>();
+    }
+};
+
+template<bool buffer, template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<false, true, true, buffer, Container, K, T, A>{
+    static const Container<K,T,A>& create(JNIEnv *, QtJambiScope*, const Container<K,T,A>* t, const char*){
+        return t ? *t : qtjambi_get_default_value<Container<K,T,A>>();
+    }
+    static const Container<K,T,A>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<K,T,A>>& t, const char* type){
+        Q_STATIC_ASSERT_X(buffer, "Cannot cast to Container reference without scope.");
+        if(t && !scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        Container<K,T,A>* ptr = t.take();
+        scope->addFinalAction([ptr](){ delete ptr; });
+        return t ? *t : qtjambi_get_default_value<Container<K,T,A>>();
+    }
+};
+
+template<template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<false, false, true, true, Container, K, T, A>{
+    static Container<K,T,A>& create(JNIEnv *env, QtJambiScope* scope, Container<K,T,A>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A>* result = new Container<K,T,A>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static const Container<K,T,A>& create(JNIEnv *env, QtJambiScope* scope, const Container<K,T,A>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A>* result = new Container<K,T,A>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static Container<K,T,A>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<K,T,A>>& ptr, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        Container<K,T,A>* t = ptr.take();
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A>* result = new Container<K,T,A>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+};
+
+template<template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct create_container3_pointer<false, false, true, false, Container, K, T, A>{
+    typedef Container<K,T,A> Container_KT;
+    static Container<K,T,A>& create(JNIEnv *env, QtJambiScope*, Container<K,T,A>* t, const char* type){
+        if(!t){
+            JavaException::raiseNullPointerException(env, qPrintable( QString("%1 is null.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        }
+        return *t;
+    }
+    static Container<K,T,A>& create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A>>& t, const char*){
+        Q_STATIC_ASSERT_X(false && std::is_pointer<Container_KT>::value, "Cannot cast to Container reference without scope.");
+        return *t;
+    }
+};
+
+template<bool is_pointer, bool is_const, bool is_reference, bool buffer, template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer{
+    static Container<K,T,A,B> create(JNIEnv *, QtJambiScope*, Container<K,T,A,B>*, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container<K,T,A,B> create(JNIEnv *, QtJambiScope*, const Container<K,T,A,B>*, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container<K,T,A,B> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A,B>>&, const char*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+};
+
+template<bool is_const, template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<true, is_const, false, false, Container, K, T, A ,B>{
+    typedef typename std::conditional<is_const, typename std::add_const<Container<K,T,A,B>>::type, Container<K,T,A,B>>::type Container_const;
+    static Container<K,T,A,B>* create(JNIEnv *, QtJambiScope*, Container<K,T,A,B>* t, const char*){
+        return t;
+    }
+    static Container_const* create(JNIEnv *, QtJambiScope*, const Container<K,T,A,B>* t, const char*){
+        Q_STATIC_ASSERT_X(is_const, "Cannot cast const pointer to non-const pointer without scope.");
+        return t;
+    }
+    static Container<K,T,A,B>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A,B>>& t, const char*){
+        return t.take();
+    }
+};
+
+template<bool is_const, template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<true, is_const, false, true, Container, K, T, A, B>{
+    static Container<K,T,A,B>* create(JNIEnv *, QtJambiScope*, Container<K,T,A,B>* t, const char*){
+        return t;
+    }
+    static Container<K,T,A,B>* create(JNIEnv *env, QtJambiScope* scope, const Container<K,T,A,B>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to non-const %1* without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            Container<K,T,A,B>* result = new Container<K,T,A,B>(*t);
+            scope->addFinalAction([result](){ delete result; });
+            return result;
+        }else{
+            return nullptr;
+        }
+    }
+    static Container<K,T,A,B>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A,B>>& t, const char*){
+        return t.take();
+    }
+};
+
+template<bool is_const, bool buffer, template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<false, is_const, false, buffer, Container, K, T,A,B>{
+    static Container<K,T,A,B> create(JNIEnv *, QtJambiScope*, const Container<K,T,A,B>* t, const char*){
+        return t ? *t : Container<K,T,A,B>();
+    }
+    static Container<K,T,A,B> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A,B>>& t, const char*){
+        return t ? *t : Container<K,T,A,B>();
+    }
+};
+
+template<bool buffer, template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<false, true, true, buffer, Container, K, T, A, B>{
+    static const Container<K,T,A,B>& create(JNIEnv *, QtJambiScope*, const Container<K,T,A,B>* t, const char*){
+        return t ? *t : qtjambi_get_default_value<Container<K,T,A,B>>();
+    }
+    static const Container<K,T,A,B>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<K,T,A,B>>& t, const char* type){
+        Q_STATIC_ASSERT_X(buffer, "Cannot cast to Container reference without scope.");
+        if(t && !scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        Container<K,T,A,B>* ptr = t.take();
+        scope->addFinalAction([ptr](){ delete ptr; });
+        return t ? *t : qtjambi_get_default_value<Container<K,T,A,B>>();
+    }
+};
+
+template<template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<false, false, true, true, Container, K, T, A, B>{
+    static Container<K,T,A,B>& create(JNIEnv *env, QtJambiScope* scope, Container<K,T,A,B>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A,B>* result = new Container<K,T,A,B>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static const Container<K,T,A,B>& create(JNIEnv *env, QtJambiScope* scope, const Container<K,T,A,B>* t, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A,B>* result = new Container<K,T,A,B>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static Container<K,T,A,B>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<K,T,A,B>>& ptr, const char* type){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        Container<K,T,A,B>* t = ptr.take();
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container<K,T,A,B>* result = new Container<K,T,A,B>();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+};
+
+template<template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct create_container4_pointer<false, false, true, false, Container, K, T, A, B>{
+    typedef Container<K,T,A,B> Container_KT;
+    static Container<K,T,A,B>& create(JNIEnv *env, QtJambiScope*, Container<K,T,A,B>* t, const char* type){
+        if(!t){
+            JavaException::raiseNullPointerException(env, qPrintable( QString("%1 is null.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
+        }
+        return *t;
+    }
+    static Container<K,T,A,B>& create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<K,T,A,B>>& t, const char*){
+        Q_STATIC_ASSERT_X(false && std::is_pointer<Container_KT>::value, "Cannot cast to Container reference without scope.");
+        return *t;
     }
 };
 
 template<typename Iterator>
-struct BiIteratorValue{
-    static QIteratorValueFunction function() { return  [](JNIEnv *env, void* ptr) -> jobject {
-            Q_UNUSED(env)
-            Iterator* iterator = static_cast<Iterator*>(ptr);
-            return qtjambi_cast<jobject>(env, iterator->value() );
-        }; }
-};
+class QMapIteratorAccess : QAbstractIteratorAccess<Iterator,AbstractBiIteratorAccess>{
+private:
+    QMapIteratorAccess(){}
+public:
+    static AbstractBiIteratorAccess* newInstance(){
+        static QMapIteratorAccess<Iterator> instance;
+        return &instance;
+    }
 
-template<typename Iterator>
-struct BiIteratorKey{
-    static QIteratorValueFunction function() { return  [](JNIEnv *env, void* ptr) -> jobject {
-            Q_UNUSED(env)
-            Iterator* iterator = static_cast<Iterator*>(ptr);
-            return qtjambi_cast<jobject>(env, iterator->key() );
-        }; }
+    AbstractBiIteratorAccess* clone() override{
+        return this;
+    }
+
+    void dispose() override {}
+
+    jobject value(JNIEnv * env, void* ptr) override {
+        Iterator* iterator = static_cast<Iterator*>(ptr);
+        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(iterator->value())>::type>::cast(env, iterator->value(), nullptr, nullptr);
+    }
+    jobject key(JNIEnv * env, void* ptr) override {
+        Iterator* iterator = static_cast<Iterator*>(ptr);
+        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(iterator->key())>::type>::cast(env, iterator->key(), nullptr, nullptr);
+    }
 };
 
 template<typename Iterator>
 struct qtjambi_BiIterator_caster{
-    static jobject castfwd(JNIEnv * env, QtJambiNativeID nativeId, Iterator&& iter){
-        return qtjambi_to_QMapIterator(env, nativeId,
+    static jobject cast(JNIEnv * env, QtJambiNativeID nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
+        return qtjambi_from_QMapIterator(env, nativeId,
             new Iterator(iter),
-            BiIteratorKey<Iterator>::function(),
-            BiIteratorValue<Iterator>::function(),
-            IteratorIncrement<Iterator>::function(),
-            IteratorDecrement<Iterator>::function(),
-            IteratorLessThan<Iterator, supports_less_than<Iterator>::value>::function(),
-            IteratorEquals<Iterator>::function(),
             [](void* ptr) {
                Iterator* iterator = static_cast<Iterator*>(ptr);
                delete iterator;
-            }
+            },
+            QMapIteratorAccess<Iterator>::newInstance()
         );
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerBegin{
-    static QMapBeginFunction function() { return nullptr;}
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "begin()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerBegin<Container, K, T, true>{
-    static QMapBeginFunction function() { return  [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->begin());
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->begin());
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerCapacity{
-    static QHashCapacityFunction function() { return nullptr;}
+    static jint function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "capacity()" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerCapacity<Container, K, T, true>{
-    static QHashCapacityFunction function() { return  [](JNIEnv *env, const void* ptr) -> jint {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return jint(container->capacity());
-        }; }
+    static jint function(JNIEnv *, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return jint(container->capacity());
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerReserve{
-    static QHashReserveFunction function() { return nullptr;}
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "reserve(size)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerReserve<Container, K, T, true>{
-    static QHashReserveFunction function() {
-        return [](JNIEnv * env, void* ptr, jint size) {
-                Q_UNUSED(env)
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                container->reserve(size);
-            };
+    static void function(JNIEnv *, void* ptr, jint size) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->reserve(size);
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerContains{
-    static QMapContainsFunction function() { return nullptr;}
+    static jboolean function(JNIEnv * env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "contains(key)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerContains<Container, K, T, true>{
-    static QMapContainsFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jboolean {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return container->contains(qtjambi_cast<K>(env, object));
-        }; }
+    static jboolean function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->contains(qtjambi_scoped_cast<false,K,jobject>::cast(env, object, nullptr, nullptr));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerCountObject{
-    static QMapCountObjectFunction function() { return nullptr; }
+    static jint function(JNIEnv * env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "count(key)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerCountObject<Container, K, T, true>{
-    static QMapCountObjectFunction function() { return  [](JNIEnv * env, const void* ptr, jobject object) -> jint {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return container->count(qtjambi_cast<K>(env, object));
-        }; }
+    static jint function(JNIEnv * env, const void* ptr, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->count(qtjambi_scoped_cast<false,K,jobject>::cast(env, object, nullptr, nullptr));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerEnd{
-    static QMapBeginFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "end()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerEnd<Container, K, T, true>{
-    static QMapBeginFunction function() { return  [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->end());
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->end());
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerFindPair{
-    static QMapFindFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "find(key,value)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerFindPair<Container, K, T, true>{
-    static QMapFindFunction function() { return  [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->find(qtjambi_cast<K>(env, key)));
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->find(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerFirst{
-    static QMapFirstFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "first()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerFirst<Container, K, T, true>{
-    static QMapFirstFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->first());
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->first(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerLast{
-    static QMapLastFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "last()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerLast<Container, K, T, true>{
-    static QMapLastFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->last());
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->last(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerFirstKey{
-    static QMapFirstKeyFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "firstKey()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerFirstKey<Container, K, T, true>{
-    static QMapFirstKeyFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->firstKey());
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->firstKey(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerLastKey{
-    static QMapLastKeyFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "lastKey()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerLastKey<Container, K, T, true>{
-    static QMapLastKeyFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->lastKey());
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->lastKey(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerKey{
-    static QMapKeyFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "key(value, defaultKey)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerKey<Container, K, T, true>{
-    static QMapKeyFunction function() { return  [](JNIEnv *env, const void* ptr, jobject value, jobject defaultKey) -> jobject {
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->key(qtjambi_cast<T>(env, value), qtjambi_cast<K>(env, defaultKey)));
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr, jobject value, jobject defaultKey) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const K>::cast(env, container->key(qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr), qtjambi_scoped_cast<false,K,jobject>::cast(env, defaultKey, nullptr, nullptr)), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerKeys{
-    static QMapKeysFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "keys()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerKeys<Container, K, T, true>{
-    static QMapKeysFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->keys());
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const QList<K>>::cast(env, container->keys(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_keys_by_value<Container,K,T>::value && supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerKeysForValue{
-    static QMapKeysForValueFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "keys(value)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerKeysForValue<Container, K, T, true>{
-    static QMapKeysForValueFunction function() { return  [](JNIEnv *env, const void* ptr, jobject value) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->keys(qtjambi_cast<T>(env, value)));
-        }; }
+    static jobject function(JNIEnv *env, const void* ptr, jobject value) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const QList<K>>::cast(env, container->keys(qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr)), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+template<typename K, typename T>
+struct BiContainerKeysForValue<QMultiHash, K, T, true>{
+    static jobject function(JNIEnv *env, const void* ptr, jobject value) {
+        const QMultiHash<K,T> *container = static_cast<const QMultiHash<K,T> *>(ptr);
+        QList<K> _keys;
+        typename QMultiHash<K,T>::const_iterator i = reinterpret_cast<const QMultiHash<K,T> *>(container)->begin();
+        typename QMultiHash<K,T>::const_iterator end = reinterpret_cast<const QMultiHash<K,T> *>(container)->end();
+        T _qvalue = qtjambi_scoped_cast<false,T,jobject>::cast(env, value, nullptr, nullptr);
+        while (i != end) {
+            if(i.value() == _qvalue)
+                _keys.append(i.key());
+            ++i;
+        }
+        return qtjambi_scoped_cast<false,jobject,const QList<K>>::cast(env, _keys, nullptr, nullptr);
+    }
+};
+#endif
+
+
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerLowerBound{
-    static QMapLowerBoundFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "lowerBounds(value)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerLowerBound<Container, K, T, true>{
-    static QMapLowerBoundFunction function() { return  [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->lowerBound(qtjambi_cast<K>(env, key)));
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->lowerBound(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerUpperBound{
-    static QMapUpperBoundFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "upperBounds(value)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerUpperBound<Container, K, T, true>{
-    static QMapUpperBoundFunction function() { return  [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) -> jobject {
-            Q_UNUSED(env)
-            const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->upperBound(qtjambi_cast<K>(env, key)));
-        }; }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->upperBound(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canEquals, IsBiContainerFunction isContainer>
+template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerEquals{
-    static QMapEqualFunction function() { return nullptr; }
+    static jboolean function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "operator==(map)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer>
-struct BiContainerEquals<Container, K, T, true, isContainer>{
-    static QMapEqualFunction function() { return  [](JNIEnv * env, const void* ptr, jobject other) -> jboolean {
-        Q_UNUSED(env)
+struct BiContainerEquals<Container, K, T, isContainer, true>{
+    static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         QScopedPointer<Container<K,T> > __qt_scoped_pointer;
         Container<K,T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<K>::id(), qtjambi_type<T>::id())) {
+            if (isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
                 __qt_other_pointer = reinterpret_cast<Container<K,T> *>(qtjambi_to_object(env, other));
             } else {
                 __qt_scoped_pointer.reset(new Container<K,T>());
@@ -498,7 +776,7 @@ struct BiContainerEquals<Container, K, T, true, isContainer>{
                     jobject entry = qtjambi_iterator_next(env, iterator);
                     jobject key = qtjambi_map$entry_key(env, entry);
                     jobject val = qtjambi_map$entry_value(env, entry);
-                    __qt_other_pointer->insert( qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
+                    __qt_other_pointer->insert( qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, val, nullptr, nullptr));
                 }
             }
         }else{
@@ -507,638 +785,1011 @@ struct BiContainerEquals<Container, K, T, true, isContainer>{
         }
         const Container<K,T>& __qt_other = *__qt_other_pointer;
         return (*container)==__qt_other;
-    }; }
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canLess>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerSize{
-    static QMapSizeFunction function() { return nullptr; }
+    static jint function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "size()" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerSize<Container, K, T, true>{
-    static QMapSizeFunction function() { return  [](JNIEnv * env, const void* ptr) -> jint {
-        Q_UNUSED(env)
+    static jint function(JNIEnv *, const void* ptr) {
         const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
         return container->size();
-    }; }
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canLess>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerUniqueKeys{
-    static QMapUniqueKeysFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "uniqueKeys()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerUniqueKeys<Container, K, T, true>{
-    static QMapUniqueKeysFunction function() { return  [](JNIEnv *env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
+    static jobject function(JNIEnv *env, const void* ptr) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->uniqueKeys());
-        }; }
+            return qtjambi_scoped_cast<false,jobject,const QList<K>>::cast(env, container->uniqueKeys(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerValue{
-    static QMapValueFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "value(key)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerValue<Container, K, T, true>{
-    static QMapValueFunction function() { return  [](JNIEnv * env, const void* ptr, jobject key, jobject defaultValue) -> jobject {
-            Q_UNUSED(env)
+    static jobject function(JNIEnv * env, const void* ptr, jobject key, jobject defaultValue) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->value(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, defaultValue)));
-        }; }
+            return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->value(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, defaultValue, nullptr, nullptr)), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerValues{
-    static QMapValuesFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "values()" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerValues<Container, K, T, true>{
-    static QMapValuesFunction function() { return  [](JNIEnv * env, const void* ptr) -> jobject {
-            Q_UNUSED(env)
+    static jobject function(JNIEnv * env, const void* ptr) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->values());
-        }; }
+            return qtjambi_scoped_cast<false,jobject,const QList<T>>::cast(env, container->values(), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool hasHash>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerValuesKey{
-    static QMapValuesKeyFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "values(key)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerValuesKey<Container, K, T, true>{
-    static QMapValuesKeyFunction function() { return  [](JNIEnv * env, const void* ptr, jobject key) -> jobject {
-            Q_UNUSED(env)
+    static jobject function(JNIEnv * env, const void* ptr, jobject key) {
             const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-            return qtjambi_cast<jobject>(env, container->values(qtjambi_cast<K>(env, key)));
-        }; }
+            return qtjambi_scoped_cast<false,jobject,const QList<T>>::cast(env, container->values(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)), nullptr, nullptr);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerClear{
-    static QMapClearFunction function() {return nullptr;}
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "clear()" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerClear<Container, K, T, true>{
-    static QMapClearFunction function() {
-        return [](JNIEnv * __jni_env, void* ptr) {
-                Q_UNUSED(__jni_env)
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                container->clear();
-            };
+    static void function(JNIEnv * __jni_env, void* ptr) {
+        Q_UNUSED(__jni_env)
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->clear();
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<typename T, bool = supports_less_than<T>::value>
+struct BiContainerElementLessThan{
+    static bool function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "key1 < key2" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
+};
+
+template<typename T>
+struct BiContainerElementLessThan<T, true>{
+    static bool function(JNIEnv * __jni_env, jobject value1, jobject value2) {
+        return qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value1, nullptr, nullptr) < qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value2, nullptr, nullptr);
+    }
+};
+
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerInsert{
-    static QMapInsertFunction function() { return nullptr; }
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "insert(key,value)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerInsert<Container, K, T, true>{
-    static QMapInsertFunction function() {
-        return [](JNIEnv * __jni_env, void* ptr, jobject key, jobject value) {
-                Q_UNUSED(__jni_env)
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                container->insert(qtjambi_cast<K>(__jni_env, key), qtjambi_cast<T>(__jni_env, value));
-            };
+    static void function(JNIEnv * __jni_env, void* ptr, jobject key, jobject value) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->insert(qtjambi_scoped_cast<false,K,jobject>::cast(__jni_env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(__jni_env, value, nullptr, nullptr));
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerRemove{
-    static QMapRemoveAllFunction function() { return nullptr; }
+    static jint function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "remove(key)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerRemove<Container, K, T, true>{
-    static QMapRemoveAllFunction function() {
-        return [](JNIEnv * __jni_env, void* ptr, jobject key) -> jint {
-                Q_UNUSED(__jni_env)
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                return container->remove(qtjambi_cast<K>(__jni_env, key));
-            };
+    static jint function(JNIEnv * __jni_env, void* ptr, jobject key) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        return container->remove(qtjambi_scoped_cast<false,K,jobject>::cast(__jni_env, key, nullptr, nullptr));
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && std::is_default_constructible<T>::value>
 struct BiContainerTake{
-    static QMapTakeFunction function() {
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "take(key)" QTJAMBI_STACKTRACEINFO );
         return nullptr;
     }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerTake<Container, K, T, true>{
-    static QMapTakeFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject key) -> jobject {
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                return qtjambi_cast<jobject>(env, container->take(qtjambi_cast<K>(env, key)));
-            };
+    static jobject function(JNIEnv * env, void* ptr, jobject key) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        return qtjambi_scoped_cast<false,jobject,const T>::cast(env, container->take(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr)), nullptr, nullptr);
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool supported, bool isMulti, IsBiContainerFunction isContainer>
+template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value>
 struct BiContainerUnite{
-    static QMapUniteFunction function() { return nullptr; }
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "unite(map)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer>
-struct BiContainerUnite<Container, K, T, true, true, isContainer>{
-    static QMapUniteFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                QScopedPointer<Container<K,T> > __qt_scoped_pointer;
-                Container<K,T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<K>::id(), qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<K,T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<K,T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_map_entryset_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject entry = qtjambi_iterator_next(env, iterator);
-                            jobject key = qtjambi_map$entry_key(env, entry);
-                            jobject valCollection = qtjambi_map$entry_value(env, entry);
-                            jobject iterator2 = qtjambi_collection_iterator(env, valCollection);
-                            while(qtjambi_iterator_has_next(env, iterator2)) {
-                                jobject val = qtjambi_iterator_next(env, iterator2);
-                                __qt_other_pointer->insert(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
-                            }
-                        }
+struct BiContainerUnite<Container, K, T, isContainer, true>{
+    static void function(JNIEnv * env, void* ptr, jobject other) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        QScopedPointer<Container<K,T> > __qt_scoped_pointer;
+        Container<K,T> *__qt_other_pointer = nullptr;
+        if (other!= nullptr) {
+            if (isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
+                __qt_other_pointer = reinterpret_cast<Container<K,T> *>(qtjambi_to_object(env, other));
+            } else {
+                __qt_scoped_pointer.reset(new Container<K,T> ());
+                __qt_other_pointer = __qt_scoped_pointer.data();
+                jobject iterator = qtjambi_map_entryset_iterator(env, other);
+                while(qtjambi_iterator_has_next(env, iterator)) {
+                    jobject entry = qtjambi_iterator_next(env, iterator);
+                    jobject key = qtjambi_map$entry_key(env, entry);
+                    jobject valCollection = qtjambi_map$entry_value(env, entry);
+                    jobject iterator2 = qtjambi_collection_iterator(env, valCollection);
+                    while(qtjambi_iterator_has_next(env, iterator2)) {
+                        jobject val = qtjambi_iterator_next(env, iterator2);
+                        __qt_other_pointer->insert(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, val, nullptr, nullptr));
                     }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<K,T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
                 }
-                container->unite(*__qt_other_pointer);
-            }; }
+            }
+        }else{
+            __qt_scoped_pointer.reset(new Container<K,T> ());
+            __qt_other_pointer = __qt_scoped_pointer.data();
+        }
+        container->unite(*__qt_other_pointer);
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, IsBiContainerFunction isContainer>
-struct BiContainerUnite<Container, K, T, true, false, isContainer>{
-    static QMapUniteFunction function() { return  [](JNIEnv * env, void* ptr, jobject other) {
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                QScopedPointer<Container<K,T> > __qt_scoped_pointer;
-                Container<K,T> *__qt_other_pointer = nullptr;
-                if (other!= nullptr) {
-                    if (isContainer(env, other, qtjambi_type<K>::id(), qtjambi_type<T>::id())) {
-                        __qt_other_pointer = reinterpret_cast<Container<K,T> *>(qtjambi_to_object(env, other));
-                    } else {
-                        __qt_scoped_pointer.reset(new Container<K,T> ());
-                        __qt_other_pointer = __qt_scoped_pointer.data();
-                        jobject iterator = qtjambi_map_entryset_iterator(env, other);
-                        while(qtjambi_iterator_has_next(env, iterator)) {
-                            jobject entry = qtjambi_iterator_next(env, iterator);
-                            jobject key = qtjambi_map$entry_key(env, entry);
-                            jobject val = qtjambi_map$entry_value(env, entry);
-                            __qt_other_pointer->insert(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, val));
-                        }
-                    }
-                }else{
-                    __qt_scoped_pointer.reset(new Container<K,T> ());
-                    __qt_other_pointer = __qt_scoped_pointer.data();
-                }
-                container->unite(*__qt_other_pointer);
-            }; }
-};
-
-template<template<typename K, typename T> class Container, typename K, typename T, bool canEquals>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerContainsPair{
-    static QMultiMapContainsPairFunction function() { return nullptr; }
+    static jboolean function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "contains(key,value)" QTJAMBI_STACKTRACEINFO );
+        return false;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerContainsPair<Container, K, T, true>{
-    static QMultiMapContainsPairFunction function() {
-        return [](JNIEnv * env, const void* ptr, jobject key, jobject object) -> jboolean {
-                const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-                return container->contains(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
-            };
+    static jboolean function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->contains(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canEquals>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerCountPair{
-    static QMultiMapCountPairFunction function() { return nullptr; }
+    static jint function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "count(key,value)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerCountPair<Container, K, T, true>{
-    static QMultiMapCountPairFunction function() {
-        return [](JNIEnv * env, const void* ptr, jobject key, jobject object) -> jint {
-                const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-                return container->count(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
-            };
+    static jint function(JNIEnv * env, const void* ptr, jobject key, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return container->count(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
     }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canLess>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerFindPairs{
-    static QMultiMapFindPairFunction function() { return nullptr; }
+    static jobject function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "find(key,value)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerFindPairs<Container, K, T, true>{
-    static QMultiMapFindPairFunction function() {
-            return [](JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key, jobject object) -> jobject {
-                const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
-                return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::castfwd(env, nativeId, container->find(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object)));
-            };
-        }
+    static jobject function(JNIEnv *env, QtJambiNativeID nativeId, const void* ptr, jobject key, jobject object) {
+        const Container<K,T> *container = static_cast<const Container<K,T> *>(ptr);
+        return qtjambi_BiIterator_caster<typename Container<K,T>::const_iterator>::cast(env, nativeId, container->find(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr)));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canEquals>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerRemovePair{
-    static QMultiMapRemovePairFunction function() { return nullptr; }
+    static jint function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "remove(key,value)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerRemovePair<Container, K, T, true>{
-    static QMultiMapRemovePairFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject key, jobject object) -> jint {
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                return container->remove(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
-            };
-        }
+    static jint function(JNIEnv * env, void* ptr, jobject key, jobject object) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        return container->remove(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
+    }
 };
 
-template<template<typename K, typename T> class Container, typename K, typename T, bool canEquals>
+template<template<typename K, typename T> class Container, typename K, typename T, bool = supports_map_sort<Container,K,T>::value && supports_equal<K>::value && supports_equal<T>::value>
 struct BiContainerReplacePair{
-    static QMultiMapReplaceFunction function() { return nullptr; }
+    static void function(JNIEnv *env, ...) {
+        JavaException::raiseUnsupportedOperationException(env, "replace(key,value)" QTJAMBI_STACKTRACEINFO );
+    }
 };
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct BiContainerReplacePair<Container, K, T, true>{
-    static QMultiMapReplaceFunction function() {
-        return [](JNIEnv * env, void* ptr, jobject key, jobject object) {
-                Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
-                container->replace(qtjambi_cast<K>(env, key), qtjambi_cast<T>(env, object));
-            };
-        }
-};
-
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMap_caster<c_is_pointer, true, K, T>{
-    typedef const QMap<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static constexpr bool supported = supports_less_than<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
-
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQMap(env,
-                                              scope ? scope->relatedNativeID() : InvalidNativeID,
-                                              ref_ptr<c_is_pointer, Container>::ref(in),
-                                              qtjambi_type<K>::id(),
-                                              qtjambi_type<T>::id(),
-                                              QMapBeginFunction(BiContainerBegin<QMap, K, T, supported>::function()),
-                                              QMapContainsFunction(BiContainerContains<QMap, K, T, supported>::function()),
-                                              QMapCountObjectFunction(BiContainerCountObject<QMap, K, T, supported>::function()),
-                                              QMapEndFunction(BiContainerEnd<QMap, K, T, supported>::function()),
-                                              QMapFindFunction(BiContainerFindPair<QMap, K, T, supported>::function()),
-                                              QMapFirstFunction(BiContainerFirst<QMap, K, T, supported>::function()),
-                                              QMapFirstKeyFunction(BiContainerFirstKey<QMap, K, T, supported>::function()),
-                                              QMapKeyFunction(BiContainerKey<QMap, K, T, supported && supports_value_equals>::function()),
-                                              QMapKeysFunction(BiContainerKeys<QMap, K, T, supported>::function()),
-                                              QMapKeysForValueFunction(BiContainerKeysForValue<QMap, K, T, supported && supports_value_equals>::function()),
-                                              QMapLastFunction(BiContainerLast<QMap, K, T, supported>::function()),
-                                              QMapLastKeyFunction(BiContainerLastKey<QMap, K, T, supported>::function()),
-                                              QMapLowerBoundFunction(BiContainerLowerBound<QMap, K, T, supported>::function()),
-                                              QMapEqualFunction(BiContainerEquals<QMap, K, T, supported && supports_value_equals, qtjambi_is_QMap>::function()),
-                                              QMapSizeFunction(BiContainerSize<QMap, K, T, supported>::function()),
-                                              QMapUniqueKeysFunction(BiContainerUniqueKeys<QMap, K, T, supported>::function()),
-                                              QMapUpperBoundFunction(BiContainerUpperBound<QMap, K, T, supported>::function()),
-                                              QMapValueFunction(BiContainerValue<QMap, K, T, supported>::function()),
-                                              QMapValuesFunction(BiContainerValues<QMap, K, T, supported>::function()),
-                                              QMapValuesKeyFunction(BiContainerValuesKey<QMap, K, T, supported>::function())
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
+    static void function(JNIEnv * env, void* ptr, jobject key, jobject object) {
+        Container<K,T> *container = static_cast<Container<K,T> *>(ptr);
+        container->replace(qtjambi_scoped_cast<false,K,jobject>::cast(env, key, nullptr, nullptr), qtjambi_scoped_cast<false,T,jobject>::cast(env, object, nullptr, nullptr));
     }
 };
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMap_caster<c_is_pointer, false, K, T>{
-    typedef QMap<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    static constexpr bool supported = supports_less_than<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+ template<template<typename K, typename T> class Container, typename K, typename T, bool isPointer, bool = std::is_copy_constructible<K>::value && std::is_copy_constructible<T>::value && std::is_default_constructible<K>::value && std::is_default_constructible<T>::value && std::is_copy_constructible<Container<K,T>>::value>
+ struct CloneBiContainer{
+     static constexpr CopyFunction function = nullptr;
+ };
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QMap(env,
-                                         scope ? scope->relatedNativeID() : InvalidNativeID,
-                                         ref_ptr<c_is_pointer, Container>::ref(in),
-                                         qtjambi_type<K>::id(),
-                                         qtjambi_type<T>::id(),
-                                         QMapBeginFunction(BiContainerBegin<QMap, K, T, supported>::function()),
-                                         QMapClearFunction(BiContainerClear<QMap, K, T, supported>::function()),
-                                         QMapContainsFunction(BiContainerContains<QMap, K, T, supported>::function()),
-                                         QMapCountObjectFunction(BiContainerCountObject<QMap, K, T, supported>::function()),
-                                         QMapEndFunction(BiContainerEnd<QMap, K, T, supported>::function()),
-                                         QMapFindFunction(BiContainerFindPair<QMap, K, T, supported>::function()),
-                                         QMapFirstFunction(BiContainerFirst<QMap, K, T, supported>::function()),
-                                         QMapFirstKeyFunction(BiContainerFirstKey<QMap, K, T, supported>::function()),
-                                         QMapInsertFunction(BiContainerInsert<QMap, K, T, supported>::function()),
-                                         QMapKeyFunction(BiContainerKey<QMap, K, T, supported && supports_value_equals>::function()),
-                                         QMapKeysFunction(BiContainerKeys<QMap, K, T, supported>::function()),
-                                         QMapKeysForValueFunction(BiContainerKeysForValue<QMap, K, T, supports_equal<T>::value>::function()),
-                                         QMapLastFunction(BiContainerLast<QMap, K, T, supported>::function()),
-                                         QMapLastKeyFunction(BiContainerLastKey<QMap, K, T, supported>::function()),
-                                         QMapLowerBoundFunction(BiContainerLowerBound<QMap, K, T, supported>::function()),
-                                         QMapEqualFunction(BiContainerEquals<QMap, K, T, supported && supports_value_equals, qtjambi_is_QMap>::function()),
-                                         QMapRemoveAllFunction(BiContainerRemove<QMap, K, T, supported>::function()),
-                                         QMapSizeFunction(BiContainerSize<QMap, K, T, supported>::function()),
-                                         QMapTakeFunction(BiContainerTake<QMap, K, T, supported && supports_StandardConstructor<T>::value>::function()),
-                                         QMapUniqueKeysFunction(BiContainerUniqueKeys<QMap, K, T, supported>::function()),
-                                         QMapUniteFunction(BiContainerUnite<QMap, K, T, supported, false, qtjambi_is_QMap>::function()),
-                                         QMapUpperBoundFunction(BiContainerUpperBound<QMap, K, T, supported>::function()),
-                                         QMapValueFunction(BiContainerValue<QMap, K, T, supported>::function()),
-                                         QMapValuesFunction(BiContainerValues<QMap, K, T, supported>::function()),
-                                         QMapValuesKeyFunction(BiContainerValuesKey<QMap, K, T, supported>::function())
-                            );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
+ template<template<typename K, typename T> class Container, typename K, typename T>
+ struct CloneBiContainer<Container,K,T,false,true>{
+     static void* clone(const void* ptr) { return new Container<K,T>(*reinterpret_cast<const Container<K,T>*>(ptr)); }
+     static constexpr CopyFunction function = &clone;
+ };
+
+ template<template<typename K, typename T> class Container, typename K, typename T>
+ struct DeleteBiContainer{
+     static void del(void* ptr) { delete reinterpret_cast<Container<K,T>*>(ptr); }
+     static constexpr PtrDeleterFunction function = &del;
+ };
+
+template<typename K, typename T, bool isConst = false>
+class QMapAccess : public AbstractMapAccess{
+protected:
+    QMapAccess(){}
+public:
+    static AbstractMapAccess* newInstance(){
+        static QMapAccess<K, T, isConst> instance;
+        return &instance;
+    }
+
+     AbstractMapAccess* clone() override{
+         return this;
+     }
+
+    bool isConstant() override {return true;}
+    const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
+    const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QMap<K,T>();}
+     void* copyContainer(const void* container) override {return container ? new QMap<K,T>(*reinterpret_cast<const QMap<K,T>*>(container)) : createContainer();}
+         void assign(void* container, const void* other) override { (*reinterpret_cast<QMap<K,T>*>(container)) = (*reinterpret_cast<const QMap<K,T>*>(other)); }
+     void deleteContainer(void* container) override {delete reinterpret_cast<QMap<K,T>*>(container);}
+     int registerContainer(const QByteArray& containerTypeName) override {
+         return registerMetaType<QMap<K,T>>(containerTypeName);
+     }
+    PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMap,K,T>::function;}
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return BiContainerBegin<QMap, K, T>::function(env, ownerId, container);
+    }
+
+    void clear(JNIEnv * env,void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMap::clear()" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject key) override {
+        return BiContainerContains<QMap, K, T>::function(env, container, key);
+    }
+
+    jint count(JNIEnv * env, const void* container, jobject key) override {
+         return BiContainerCountObject<QMap, K, T>::function(env, container, key);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+         return BiContainerEnd<QMap, K, T>::function(env, ownerId, container);
+    }
+
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+         return BiContainerFindPair<QMap, K, T>::function(env, ownerId, container, key);
+    }
+    jobject first(JNIEnv * env, const void* container) override {
+         return BiContainerFirst<QMap, K, T>::function(env, container);
+    }
+
+    jobject firstKey(JNIEnv * env, const void* container) override {
+         return BiContainerFirstKey<QMap, K, T>::function(env, container);
+    }
+
+    void insert(JNIEnv *env,void*,jobject,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMap::insert(key,value)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
+         return BiContainerKey<QMap, K, T>::function(env, container, value, defaultKey);
+    }
+
+    jobject keys(JNIEnv * env, const void* container) override {
+         return BiContainerKeys<QMap, K, T>::function(env, container);
+    }
+
+    jobject keys(JNIEnv * env, const void* container, jobject value) override {
+         return BiContainerKeysForValue<QMap, K, T>::function(env, container, value);
+    }
+
+    jobject last(JNIEnv * env, const void* container) override {
+         return BiContainerLast<QMap, K, T>::function(env, container);
+    }
+
+    jobject lastKey(JNIEnv * env, const void* container) override {
+         return BiContainerLastKey<QMap, K, T>::function(env, container);
+    }
+
+    jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+         return BiContainerLowerBound<QMap, K, T>::function(env, ownerId, container, key);
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+         return BiContainerEquals<QMap, K, T, qtjambi_is_QMap>::function(env, container, other);
+    }
+
+    jint remove(JNIEnv * env,void*,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMap::removeAll(key)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+         return BiContainerSize<QMap, K, T>::function(env, container);
+    }
+
+    jobject take(JNIEnv *env,void*,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMap::take(key)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+         return BiContainerUpperBound<QMap, K, T>::function(env, ownerId, container, key);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
+         return BiContainerValue<QMap, K, T>::function(env, container, key, defaultValue);
+    }
+
+    jobject values(JNIEnv * env, const void* container) override {
+         return BiContainerValues<QMap, K, T>::function(env, container);
+    }
+
+    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
+        return BiContainerElementLessThan<K>::function(env, key1, key2);
+    }
+
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
+        for(auto iter = reinterpret_cast<const QMap<K,T>*>(container)->begin();
+            iter != reinterpret_cast<const QMap<K,T>*>(container)->end();
+            ++iter
+            ){
+            if(!analyzer(pointer_from<decltype(iter.key())>::from(iter.key()),
+                         pointer_from<decltype(iter.value())>::from(iter.value()), data)){
+                break;
+            }
         }
-        return result;
     }
 };
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMultiMap_caster<c_is_pointer, true, K, T>{
-    typedef const QMultiMap<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static constexpr bool supported = supports_less_than<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+template<typename K, typename T>
+class QMapAccess<K, T, false> : public QMapAccess<K, T, true>{
+protected:
+    QMapAccess(){}
+public:
+    static AbstractMapAccess* newInstance(){
+        static QMapAccess<K, T, false> instance;
+        return &instance;
+    }
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQMultiMap(env,
-                                                  scope ? scope->relatedNativeID() : InvalidNativeID,
-                                                  ref_ptr<c_is_pointer, Container>::ref(in),
-                                                  qtjambi_type<K>::id(),
-                                                  qtjambi_type<T>::id(),
-                                                  BiContainerBegin<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerContains<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerCountObject<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerEnd<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerFindPair<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerFirst<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerFirstKey<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerKey<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                                  BiContainerKeys<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerKeysForValue<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                                  BiContainerLast<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerLastKey<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerLowerBound<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerEquals<QMultiMap, K, T, supported && supports_value_equals, qtjambi_is_QMultiMap>::function(),
-                                                  BiContainerSize<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerUniqueKeys<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerUpperBound<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerValue<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerValues<QMultiMap, K, T, supported>::function(),
-                                                  BiContainerValuesKey<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                                  BiContainerContainsPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                                  BiContainerCountPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                                  BiContainerFindPairs<QMultiMap, K, T, supported && supports_value_equals>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
+     AbstractMapAccess* clone() override{
+         return this;
+     }
+
+    bool isConstant() override {return false;}
+
+    void clear(JNIEnv * env, void* container) override {
+        BiContainerClear<QMap, K, T>::function(env, container);
+    }
+
+    void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
+        BiContainerInsert<QMap, K, T>::function(env, container, key, value);
+    }
+
+    jint remove(JNIEnv * env, void* container,jobject key) override {
+        return BiContainerRemove<QMap, K, T>::function(env, container, key);
+    }
+
+    jobject take(JNIEnv *env, void* container,jobject key) override {
+        return BiContainerTake<QMap, K, T>::function(env, container, key);
     }
 };
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMultiMap_caster<c_is_pointer, false, K, T>{
-    typedef QMultiMap<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    static constexpr bool supported = supports_less_than<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+template<typename K, typename T, bool isConst = false>
+class QMultiMapAccess : public AbstractMultiMapAccess{
+protected:
+    QMultiMapAccess(){}
+public:
+    static AbstractMultiMapAccess* newInstance(){
+        static QMultiMapAccess<K, T, isConst> instance;
+        return &instance;
+    }
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QMultiMap(env,
-                                         scope ? scope->relatedNativeID() : InvalidNativeID,
-                                         ref_ptr<c_is_pointer, Container>::ref(in),
-                                         qtjambi_type<K>::id(),
-                                         qtjambi_type<T>::id(),
-                                         BiContainerBegin<QMultiMap, K, T, supported>::function(),
-                                         BiContainerClear<QMultiMap, K, T, supported>::function(),
-                                         BiContainerContains<QMultiMap, K, T, supported>::function(),
-                                         BiContainerCountObject<QMultiMap, K, T, supported>::function(),
-                                         BiContainerEnd<QMultiMap, K, T, supported>::function(),
-                                         BiContainerFindPair<QMultiMap, K, T, supported>::function(),
-                                         BiContainerFirst<QMultiMap, K, T, supported>::function(),
-                                         BiContainerFirstKey<QMultiMap, K, T, supported>::function(),
-                                         BiContainerInsert<QMultiMap, K, T, supported>::function(),
-                                         BiContainerKey<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerKeys<QMultiMap, K, T, supported>::function(),
-                                         BiContainerKeysForValue<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerLast<QMultiMap, K, T, supported>::function(),
-                                         BiContainerLastKey<QMultiMap, K, T, supported>::function(),
-                                         BiContainerLowerBound<QMultiMap, K, T, supported>::function(),
-                                         BiContainerEquals<QMultiMap, K, T, supported && supports_value_equals, qtjambi_is_QMultiMap>::function(),
-                                         BiContainerRemove<QMultiMap, K, T, supported>::function(),
-                                         BiContainerSize<QMultiMap, K, T, supported>::function(),
-                                         BiContainerTake<QMultiMap, K, T, supported && supports_StandardConstructor<T>::value>::function(),
-                                         BiContainerUniqueKeys<QMultiMap, K, T, supported>::function(),
-                                         BiContainerUnite<QMultiMap, K, T, supported, true, qtjambi_is_QMultiMap>::function(),
-                                         BiContainerUpperBound<QMultiMap, K, T, supported>::function(),
-                                         BiContainerValue<QMultiMap, K, T, supported>::function(),
-                                         BiContainerValues<QMultiMap, K, T, supported>::function(),
-                                         BiContainerValuesKey<QMultiMap, K, T, supported>::function(),
-                                         BiContainerContainsPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerCountPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerFindPairs<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerRemovePair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerReplacePair<QMultiMap, K, T, supported && supports_value_equals>::function()
-                );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
+     AbstractMultiMapAccess* clone() override{
+         return this;
+     }
+
+    bool isConstant() override {return true;}
+    const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
+    const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+    void* createContainer() override {return new QMultiMap<K,T>();}
+         void* copyContainer(const void* container) override {return container ? new QMultiMap<K,T>(*reinterpret_cast<const QMultiMap<K,T>*>(container)) : createContainer();}
+         void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiMap<K,T>*>(container)) = (*reinterpret_cast<const QMultiMap<K,T>*>(other)); }
+         void deleteContainer(void* container) override {delete reinterpret_cast<QMultiMap<K,T>*>(container);}
+         int registerContainer(const QByteArray& containerTypeName) override {
+             return registerMetaType<QMultiMap<K,T>>(containerTypeName);
+         }
+    PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMultiMap,K,T>::function;}
+
+    jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return BiContainerBegin<QMultiMap, K, T>::function(env, ownerId, container);
+    }
+
+    void clear(JNIEnv * env,void*) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMultiMap::clear()" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jboolean contains(JNIEnv * env, const void* container, jobject key) override {
+        return BiContainerContains<QMultiMap, K, T>::function(env, container, key);
+    }
+
+    jint count(JNIEnv * env, const void* container, jobject key) override {
+        return BiContainerCountObject<QMultiMap, K, T>::function(env, container, key);
+    }
+
+    jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+        return BiContainerEnd<QMultiMap, K, T>::function(env, ownerId, container);
+    }
+
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+        return BiContainerFindPair<QMultiMap, K, T>::function(env, ownerId, container, key);
+    }
+    jobject first(JNIEnv * env, const void* container) override {
+        return BiContainerFirst<QMultiMap, K, T>::function(env, container);
+    }
+
+    jobject firstKey(JNIEnv * env, const void* container) override {
+        return BiContainerFirstKey<QMultiMap, K, T>::function(env, container);
+    }
+
+    void insert(JNIEnv *env,void*,jobject,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMultiMap::insert(key,value)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
+        return BiContainerKey<QMultiMap, K, T>::function(env, container, value, defaultKey);
+    }
+
+    jobject keys(JNIEnv * env, const void* container) override {
+        return BiContainerKeys<QMultiMap, K, T>::function(env, container);
+    }
+
+    jobject keys(JNIEnv * env, const void* container, jobject value) override {
+        return BiContainerKeysForValue<QMultiMap, K, T>::function(env, container, value);
+    }
+
+    jobject last(JNIEnv * env, const void* container) override {
+        return BiContainerLast<QMultiMap, K, T>::function(env, container);
+    }
+
+    jobject lastKey(JNIEnv * env, const void* container) override {
+        return BiContainerLastKey<QMultiMap, K, T>::function(env, container);
+    }
+
+    jobject lowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+        return BiContainerLowerBound<QMultiMap, K, T>::function(env, ownerId, container, key);
+    }
+
+    jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+        return BiContainerEquals<QMultiMap, K, T, qtjambi_is_QMultiMap>::function(env, container, other);
+    }
+
+    jint remove(JNIEnv * env,void*,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMultiMap::removeAll(key)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+    }
+
+    jint size(JNIEnv * env, const void* container) override {
+        return BiContainerSize<QMultiMap, K, T>::function(env, container);
+    }
+
+    jobject take(JNIEnv *env,void*,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMultiMap::take(key)" QTJAMBI_STACKTRACEINFO );
+        return nullptr;
+    }
+
+    jobject uniqueKeys(JNIEnv * env, const void* container) override {
+        return BiContainerUniqueKeys<QMultiMap, K, T>::function(env, container);
+    }
+
+    void unite(JNIEnv *env,void*,jobject) override {
+        JavaException::raiseUnsupportedOperationException(env, "QMultiMap::unite(other)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    jobject values(JNIEnv * env, const void* container, jobject key) override {
+        return BiContainerValuesKey<QMultiMap, K, T>::function(env, container, key);
+    }
+
+    jobject upperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+        return BiContainerUpperBound<QMultiMap, K, T>::function(env, ownerId, container, key);
+    }
+
+    jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
+        return BiContainerValue<QMultiMap, K, T>::function(env, container, key, defaultValue);
+    }
+
+    jobject values(JNIEnv * env, const void* container) override {
+        return BiContainerValues<QMultiMap, K, T>::function(env, container);
+    }
+
+    jboolean contains(JNIEnv *env, const void* container, jobject key, jobject value) override {
+         return BiContainerContainsPair<QMultiMap, K, T>::function(env, container, key, value);
+    }
+
+    jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
+         return BiContainerCountPair<QMultiMap, K, T>::function(env, container, key, value);
+    }
+
+    jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override {
+        return BiContainerFindPairs<QMultiMap, K, T>::function(env, ownerId, container, key, value);
+    }
+
+    jint remove(JNIEnv * env, void*,jobject, jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiMap::remove(key, value)" QTJAMBI_STACKTRACEINFO );
+         return 0;
+    }
+
+    void replace(JNIEnv *env, void*,jobject, jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiMap::replace(key, value)" QTJAMBI_STACKTRACEINFO );
+    }
+
+    bool keyLessThan(JNIEnv *env, jobject key1, jobject key2) override {
+        return BiContainerElementLessThan<K>::function(env, key1, key2);
+    }
+
+    void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
+        for(auto iter = reinterpret_cast<const QMultiMap<K,T>*>(container)->begin();
+            iter != reinterpret_cast<const QMultiMap<K,T>*>(container)->end();
+            ++iter
+            ){
+            if(!analyzer(pointer_from<decltype(iter.key())>::from(iter.key()),
+                         pointer_from<decltype(iter.value())>::from(iter.value()), data)){
+                break;
+            }
         }
-        return result;
     }
 };
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QHash_caster<c_is_pointer, true, K, T>{
-    typedef const QHash<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static constexpr bool supported = supports_qHash<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+template<typename K, typename T>
+class QMultiMapAccess<K, T, false> : public QMultiMapAccess<K, T, true>{
+protected:
+    QMultiMapAccess(){}
+public:
+    static AbstractMultiMapAccess* newInstance(){
+        static QMultiMapAccess<K, T, false> instance;
+        return &instance;
+    }
 
-    static jobject castfwd(JNIEnv *env, const Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQHash(env,
-                                              scope ? scope->relatedNativeID() : InvalidNativeID,
-                                              ref_ptr<c_is_pointer, Container>::ref(in),
-                                              qtjambi_type<K>::id(),
-                                              qtjambi_type<T>::id(),
-                                              QHashBeginFunction(BiContainerBegin<QHash, K, T, supported>::function()),
-                                              QHashCapacityFunction(BiContainerCapacity<QHash, K, T, supported>::function()),
-                                              QHashContainsFunction(BiContainerContains<QHash, K, T, supported>::function()),
-                                              QHashCountObjectFunction(BiContainerCountObject<QHash, K, T, supported>::function()),
-                                              QHashEndFunction(BiContainerEnd<QHash, K, T, supported>::function()),
-                                              QHashFindFunction(BiContainerFindPair<QHash, K, T, supported>::function()),
-                                              QHashKeyFunction(BiContainerKey<QHash, K, T, supported && supports_value_equals>::function()),
-                                              QHashKeysFunction(BiContainerKeys<QHash, K, T, supported>::function()),
-                                              QHashKeysForValueFunction(BiContainerKeysForValue<QHash, K, T, supported && supports_value_equals>::function()),
-                                              QHashEqualFunction(BiContainerEquals<QHash, K, T, supported && supports_value_equals, qtjambi_is_QHash>::function()),
-                                              QHashSizeFunction(BiContainerSize<QHash, K, T, supported>::function()),
-                                              QHashUniqueKeysFunction(BiContainerUniqueKeys<QHash, K, T, supported>::function()),
-                                              QHashValueFunction(BiContainerValue<QHash, K, T, supported>::function()),
-                                              QHashValuesFunction(BiContainerValues<QHash, K, T, supported>::function()),
-                                              QHashValuesKeyFunction(BiContainerValuesKey<QHash, K, T, supported>::function())
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
+     AbstractMultiMapAccess* clone() override{
+         return this;
+     }
+
+    bool isConstant() override {return false;}
+
+    jint remove(JNIEnv * env, void* container,jobject key, jobject value) override {
+         return BiContainerRemovePair<QMultiMap, K, T>::function(env, container, key, value);
+    }
+
+    void replace(JNIEnv * env, void* container,jobject key, jobject value) override {
+         BiContainerReplacePair<QMultiMap, K, T>::function(env, container, key, value);
+    }
+
+    void clear(JNIEnv * env, void* container) override {
+         BiContainerClear<QMultiMap, K, T>::function(env, container);
+    }
+
+    void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
+         BiContainerInsert<QMultiMap, K, T>::function(env, container, key, value);
+    }
+
+    jint remove(JNIEnv * env, void* container,jobject key) override {
+         return BiContainerRemove<QMultiMap, K, T>::function(env, container, key);
+    }
+
+    jobject take(JNIEnv *env, void* container,jobject key) override {
+         return BiContainerTake<QMultiMap, K, T>::function(env, container, key);
+    }
+
+    void unite(JNIEnv *env, void* container, jobject other) override {
+         BiContainerUnite<QMultiMap, K, T, qtjambi_is_QMultiMap>::function(env, container, other);
     }
 };
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QHash_caster<c_is_pointer, false, K, T>{
-    typedef QHash<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    static constexpr bool supported = supports_qHash<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+ template<typename K, typename T, bool isConst = false>
+ class QHashAccess : public AbstractHashAccess{
+ protected:
+     QHashAccess(){}
+ public:
+     static AbstractHashAccess* newInstance(){
+         static QHashAccess<K, T, isConst> instance;
+         return &instance;
+     }
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QHash(env,
-                                         scope ? scope->relatedNativeID() : InvalidNativeID,
-                                         ref_ptr<c_is_pointer, Container>::ref(in),
-                                         qtjambi_type<K>::id(),
-                                         qtjambi_type<T>::id(),
-                                         QHashBeginFunction(BiContainerBegin<QHash, K, T, supported>::function()),
-                                         QHashCapacityFunction(BiContainerCapacity<QHash, K, T, supported>::function()),
-                                         QHashClearFunction(BiContainerClear<QHash, K, T, supported>::function()),
-                                         QHashContainsFunction(BiContainerContains<QHash, K, T, supported>::function()),
-                                         QHashCountObjectFunction(BiContainerCountObject<QHash, K, T, supported>::function()),
-                                         QHashEndFunction(BiContainerEnd<QHash, K, T, supported>::function()),
-                                         QHashFindFunction(BiContainerFindPair<QHash, K, T, supported>::function()),
-                                         QHashInsertFunction(BiContainerInsert<QHash, K, T, supported>::function()),
-                                         QHashKeyFunction(BiContainerKey<QHash, K, T, supported && supports_value_equals>::function()),
-                                         QHashKeysFunction(BiContainerKeys<QHash, K, T, supported>::function()),
-                                         QHashKeysForValueFunction(BiContainerKeysForValue<QHash, K, T, supported && supports_value_equals>::function()),
-                                         QHashEqualFunction(BiContainerEquals<QHash, K, T, supported && supports_value_equals, qtjambi_is_QHash>::function()),
-                                         QHashRemoveAllFunction(BiContainerRemove<QHash, K, T, supported>::function()),
-                                         QHashReserveFunction(BiContainerReserve<QHash, K, T, supported>::function()),
-                                         QHashSizeFunction(BiContainerSize<QHash, K, T, supported>::function()),
-                                         QHashTakeFunction(BiContainerTake<QHash, K, T, supported && supports_StandardConstructor<T>::value>::function()),
-                                         QHashUniqueKeysFunction(BiContainerUniqueKeys<QHash, K, T, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QHash, K, T, supported, false, qtjambi_is_QHash>::function()),
-                                         QHashValueFunction(BiContainerValue<QHash, K, T, supported>::function()),
-                                         QHashValuesFunction(BiContainerValues<QHash, K, T, supported>::function()),
-                                         QHashValuesKeyFunction(BiContainerValuesKey<QHash, K, T, supported>::function())
-                            );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
+     AbstractHashAccess* clone() override{
+         return this;
+     }
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMultiHash_caster<c_is_pointer, true, K, T>{
-    typedef const QMultiHash<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static constexpr bool supported = supports_qHash<K>::value && supports_equal<K>::value;
+     bool isConstant() override {return true;}
+     const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
+     const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+     void* createContainer() override {return new QHash<K,T>();}
+         void* copyContainer(const void* container) override {return container ? new QHash<K,T>(*reinterpret_cast<const QHash<K,T>*>(container)) : createContainer();}
+         void assign(void* container, const void* other) override { (*reinterpret_cast<QHash<K,T>*>(container)) = (*reinterpret_cast<const QHash<K,T>*>(other)); }
+         void deleteContainer(void* container) override {delete reinterpret_cast<QHash<K,T>*>(container);}
+         int registerContainer(const QByteArray& containerTypeName) override {
+             return registerMetaType<QHash<K,T>>(containerTypeName);
+         }
+     PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QHash,K,T>::function;}
 
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+         return BiContainerBegin<QHash, K, T>::function(env, ownerId, container);
+     }
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_constQMultiHash(env,
-                                              scope ? scope->relatedNativeID() : InvalidNativeID,
-                                              ref_ptr<c_is_pointer, Container>::ref(in),
-                                              qtjambi_type<K>::id(),
-                                              qtjambi_type<T>::id(),
-                                              QHashBeginFunction(BiContainerBegin<QMultiHash, K, T, supported>::function()),
-                                              QHashCapacityFunction(BiContainerCapacity<QMultiHash, K, T, supported>::function()),
-                                              QHashContainsFunction(BiContainerContains<QMultiHash, K, T, supported>::function()),
-                                              QHashCountObjectFunction(BiContainerCountObject<QMultiHash, K, T, supported>::function()),
-                                              QHashEndFunction(BiContainerEnd<QMultiHash, K, T, supported>::function()),
-                                              QHashFindFunction(BiContainerFindPair<QMultiHash, K, T, supported>::function()),
-                                              QHashKeyFunction(BiContainerKey<QMultiHash, K, T, supported && supports_value_equals>::function()),
-                                              QHashKeysFunction(BiContainerKeys<QMultiHash, K, T, supported>::function()),
-                                              QHashKeysForValueFunction(BiContainerKeysForValue<QMultiHash, K, T, supported && supports_value_equals>::function()),
-                                              QHashEqualFunction(BiContainerEquals<QMultiHash, K, T, supported && supports_value_equals, qtjambi_is_QMultiHash>::function()),
-                                              QHashSizeFunction(BiContainerSize<QMultiHash, K, T, supported>::function()),
-                                              QHashUniqueKeysFunction(BiContainerUniqueKeys<QMultiHash, K, T, supported>::function()),
-                                              QHashValueFunction(BiContainerValue<QMultiHash, K, T, supported>::function()),
-                                              QHashValuesFunction(BiContainerValues<QMultiHash, K, T, supported>::function()),
-                                              QHashValuesKeyFunction(BiContainerValuesKey<QMultiHash, K, T, supported>::function()),
-                                              BiContainerContainsPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                              BiContainerCountPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                              BiContainerFindPairs<QMultiMap, K, T, supported && supports_value_equals>::function()
-                                 );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
+     jint capacity(JNIEnv * env, const void* container) override {
+         return BiContainerCapacity<QHash, K, T>::function(env, container);
+     }
 
-template<bool c_is_pointer, typename K, typename T>
-struct qtjambi_QMultiHash_caster<c_is_pointer, false, K, T>{
-    typedef QMultiHash<K,T> Container;
-    typedef typename std::conditional<c_is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    typedef typename std::remove_reference<T>::type T_noref;
-    typedef typename std::remove_cv<T_noref>::type T_noconst;
-    static constexpr bool supported = supports_qHash<K>::value && supports_equal<K>::value;
-    static constexpr bool supports_value_equals = supports_equal<T>::value;
+     void clear(JNIEnv * env,void*) override {
+         JavaException::raiseUnsupportedOperationException(env, "QHash::clear()" QTJAMBI_STACKTRACEINFO );
+     }
 
-    static jobject castfwd(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-        jobject result = qtjambi_to_QMultiHash(env,
-                                         scope ? scope->relatedNativeID() : InvalidNativeID,
-                                         ref_ptr<c_is_pointer, Container>::ref(in),
-                                         qtjambi_type<K>::id(),
-                                         qtjambi_type<T>::id(),
-                                         QHashBeginFunction(BiContainerBegin<QMultiHash, K, T, supported>::function()),
-                                         QHashCapacityFunction(BiContainerCapacity<QMultiHash, K, T, supported>::function()),
-                                         QHashClearFunction(BiContainerClear<QMultiHash, K, T, supported>::function()),
-                                         QHashContainsFunction(BiContainerContains<QMultiHash, K, T, supported>::function()),
-                                         QHashCountObjectFunction(BiContainerCountObject<QMultiHash, K, T, supported>::function()),
-                                         QHashEndFunction(BiContainerEnd<QMultiHash, K, T, supported>::function()),
-                                         QHashFindFunction(BiContainerFindPair<QMultiHash, K, T, supported>::function()),
-                                         QHashInsertFunction(BiContainerInsert<QMultiHash, K, T, supported>::function()),
-                                         QHashKeyFunction(BiContainerKey<QMultiHash, K, T, supported && supports_value_equals>::function()),
-                                         QHashKeysFunction(BiContainerKeys<QMultiHash, K, T, supported>::function()),
-                                         QHashKeysForValueFunction(BiContainerKeysForValue<QMultiHash, K, T, supported && supports_value_equals>::function()),
-                                         QHashEqualFunction(BiContainerEquals<QMultiHash, K, T, supported && supports_value_equals, qtjambi_is_QMultiHash>::function()),
-                                         QHashRemoveAllFunction(BiContainerRemove<QMultiHash, K, T, supported>::function()),
-                                         QHashReserveFunction(BiContainerReserve<QMultiHash, K, T, supported>::function()),
-                                         QHashSizeFunction(BiContainerSize<QMultiHash, K, T, supported>::function()),
-                                         QHashTakeFunction(BiContainerTake<QMultiHash, K, T, supported && supports_StandardConstructor<T>::value>::function()),
-                                         QHashUniqueKeysFunction(BiContainerUniqueKeys<QMultiHash, K, T, supported>::function()),
-                                         QHashUniteFunction(BiContainerUnite<QMultiHash, K, T, supported, true, qtjambi_is_QMultiHash>::function()),
-                                         QHashValueFunction(BiContainerValue<QMultiHash, K, T, supported>::function()),
-                                         QHashValuesFunction(BiContainerValues<QMultiHash, K, T, supported>::function()),
-                                         QHashValuesKeyFunction(BiContainerValuesKey<QMultiHash, K, T, supported>::function()),
-                                         BiContainerContainsPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerCountPair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerFindPairs<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerRemovePair<QMultiMap, K, T, supported && supports_value_equals>::function(),
-                                         BiContainerReplacePair<QMultiMap, K, T, supported && supports_value_equals>::function()
-                            );
-        if(scope && !scope->relatedNativeID()){
-            scope->addFinalAction([env, result](){ qtjambi_invalidate_object(env, result); });
-        }
-        return result;
-    }
-};
+     jboolean contains(JNIEnv * env, const void* container, jobject key) override {
+         return BiContainerContains<QHash, K, T>::function(env, container, key);
+     }
+
+     jint count(JNIEnv * env, const void* container, jobject key) override {
+          return BiContainerCountObject<QHash, K, T>::function(env, container, key);
+     }
+
+     jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+          return BiContainerEnd<QHash, K, T>::function(env, ownerId, container);
+     }
+
+     jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+          return BiContainerFindPair<QHash, K, T>::function(env, ownerId, container, key);
+     }
+
+     void insert(JNIEnv *env,void*,jobject,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QHash::insert(key,value)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
+          return BiContainerKey<QHash, K, T>::function(env, container, value, defaultKey);
+     }
+
+     jobject keys(JNIEnv * env, const void* container) override {
+          return BiContainerKeys<QHash, K, T>::function(env, container);
+     }
+
+     jobject keys(JNIEnv * env, const void* container, jobject value) override {
+          return BiContainerKeysForValue<QHash, K, T>::function(env, container, value);
+     }
+
+     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+          return BiContainerEquals<QHash, K, T, qtjambi_is_QHash>::function(env, container, other);
+     }
+
+     jint remove(JNIEnv * env,void*,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QHash::remove(key)" QTJAMBI_STACKTRACEINFO );
+         return 0;
+     }
+
+     void reserve(JNIEnv * env,void*,jint) override {
+         JavaException::raiseUnsupportedOperationException(env, "QHash::reserve(size)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jint size(JNIEnv * env, const void* container) override {
+          return BiContainerSize<QHash, K, T>::function(env, container);
+     }
+
+     jobject take(JNIEnv *env,void*,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QHash::take(key)" QTJAMBI_STACKTRACEINFO );
+         return nullptr;
+     }
+
+     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
+          return BiContainerValue<QHash, K, T>::function(env, container, key, defaultValue);
+     }
+
+     jobject values(JNIEnv * env, const void* container) override {
+          return BiContainerValues<QHash, K, T>::function(env, container);
+     }
+
+     void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
+         for(auto iter = reinterpret_cast<const QHash<K,T>*>(container)->begin();
+             iter != reinterpret_cast<const QHash<K,T>*>(container)->end();
+             ++iter
+             ){
+             if(!analyzer(pointer_from<decltype(iter.key())>::from(iter.key()),
+                          pointer_from<decltype(iter.value())>::from(iter.value()), data)){
+                 break;
+             }
+         }
+     }
+ };
+
+ template<typename K, typename T>
+ class QHashAccess<K, T, false> : public QHashAccess<K, T, true>{
+ protected:
+     QHashAccess(){}
+ public:
+     static AbstractHashAccess* newInstance(){
+         static QHashAccess<K, T, false> instance;
+         return &instance;
+     }
+
+     AbstractHashAccess* clone() override{
+         return this;
+     }
+
+     bool isConstant() override {return false;}
+
+     void clear(JNIEnv * env, void* container) override {
+         BiContainerClear<QHash, K, T>::function(env, container);
+     }
+     void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
+         BiContainerInsert<QHash, K, T>::function(env, container, key, value);
+     }
+     jint remove(JNIEnv * env, void* container,jobject key) override {
+         return BiContainerRemove<QHash, K, T>::function(env, container, key);
+     }
+     jobject take(JNIEnv *env, void* container,jobject key) override {
+         return BiContainerTake<QHash, K, T>::function(env, container, key);
+     }
+     void reserve(JNIEnv * env,void* container, jint newSize) override {
+         BiContainerReserve<QHash, K, T>::function(env, container, newSize);
+     }
+ };
+
+ template<typename K, typename T, bool isConst = false>
+ class QMultiHashAccess : public AbstractMultiHashAccess{
+ protected:
+     QMultiHashAccess(){}
+ public:
+     static AbstractMultiHashAccess* newInstance(){
+         static QMultiHashAccess<K, T, isConst> instance;
+         return &instance;
+     }
+
+     AbstractMultiHashAccess* clone() override{
+         return this;
+     }
+
+     bool isConstant() override {return true;}
+     const QMetaType& keyMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(K)); return type;}
+     const QMetaType& valueMetaType() override {static QMetaType type(QTJAMBI_METATYPE_FROM_TYPE(T)); return type;}
+     void* createContainer() override {return new QMultiHash<K,T>();}
+         void* copyContainer(const void* container) override {return container ? new QMultiHash<K,T>(*reinterpret_cast<const QMultiHash<K,T>*>(container)) : createContainer();}
+         void assign(void* container, const void* other) override { (*reinterpret_cast<QMultiHash<K,T>*>(container)) = (*reinterpret_cast<const QMultiHash<K,T>*>(other)); }
+         void deleteContainer(void* container) override {delete reinterpret_cast<QMultiHash<K,T>*>(container);}
+         int registerContainer(const QByteArray& containerTypeName) override {
+             return registerMetaType<QMultiHash<K,T>>(containerTypeName);
+         }
+     PtrDeleterFunction containerDeleter() override {return DeleteBiContainer<QMultiHash,K,T>::function;}
+
+     jobject begin(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+         return BiContainerBegin<QMultiHash, K, T>::function(env, ownerId, container);
+     }
+
+     jint capacity(JNIEnv * env, const void* container) override {
+         return BiContainerCapacity<QMultiHash, K, T>::function(env, container);
+     }
+
+     void clear(JNIEnv * env,void*) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::clear()" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jboolean contains(JNIEnv * env, const void* container, jobject key) override {
+         return BiContainerContains<QMultiHash, K, T>::function(env, container, key);
+     }
+
+     jint count(JNIEnv * env, const void* container, jobject key) override {
+         return BiContainerCountObject<QMultiHash, K, T>::function(env, container, key);
+     }
+
+     jobject end(JNIEnv * env, QtJambiNativeID ownerId, const void* container) override {
+         return BiContainerEnd<QMultiHash, K, T>::function(env, ownerId, container);
+     }
+
+     jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key) override {
+         return BiContainerFindPair<QMultiHash, K, T>::function(env, ownerId, container, key);
+     }
+
+     void insert(JNIEnv *env,void*,jobject,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::insert(key,value)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jobject key(JNIEnv * env, const void* container, jobject value, jobject defaultKey) override {
+         return BiContainerKey<QMultiHash, K, T>::function(env, container, value, defaultKey);
+     }
+
+     jobject keys(JNIEnv * env, const void* container) override {
+         return BiContainerKeys<QMultiHash, K, T>::function(env, container);
+     }
+
+     jobject keys(JNIEnv * env, const void* container, jobject value) override {
+         return BiContainerKeysForValue<QMultiHash, K, T>::function(env, container, value);
+     }
+
+     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
+         return BiContainerEquals<QMultiHash, K, T, qtjambi_is_QMultiHash>::function(env, container, other);
+     }
+
+     jint remove(JNIEnv * env,void*,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::remove(key)" QTJAMBI_STACKTRACEINFO );
+        return 0;
+     }
+
+     void reserve(JNIEnv * env,void*,jint) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::reserve(size)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jint size(JNIEnv * env, const void* container) override {
+         return BiContainerSize<QMultiHash, K, T>::function(env, container);
+     }
+
+     jobject take(JNIEnv *env,void*,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::take(key)" QTJAMBI_STACKTRACEINFO );
+         return nullptr;
+     }
+
+     jobject uniqueKeys(JNIEnv * env, const void* container) override {
+         return BiContainerUniqueKeys<QMultiHash, K, T>::function(env, container);
+     }
+
+     void unite(JNIEnv *env,void*,jobject) override {
+         JavaException::raiseUnsupportedOperationException(env, "QMultiHash::unite(other)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     jobject values(JNIEnv * env, const void* container, jobject key) override {
+         return BiContainerValuesKey<QMultiHash, K, T>::function(env, container, key);
+     }
+
+     jobject value(JNIEnv * env, const void* container, jobject key, jobject defaultValue) override {
+         return BiContainerValue<QMultiHash, K, T>::function(env, container, key, defaultValue);
+     }
+
+     jobject values(JNIEnv * env, const void* container) override {
+         return BiContainerValues<QMultiHash, K, T>::function(env, container);
+     }
+
+     jboolean contains(JNIEnv *env, const void* container, jobject key, jobject value) override {
+          return BiContainerContainsPair<QMultiHash, K, T>::function(env, container, key, value);
+     }
+
+     jint count(JNIEnv *env, const void* container, jobject key, jobject value) override {
+          return BiContainerCountPair<QMultiHash, K, T>::function(env, container, key, value);
+     }
+
+     jobject find(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key, jobject value) override {
+         return BiContainerFindPairs<QMultiHash, K, T>::function(env, ownerId, container, key, value);
+     }
+
+     jint remove(JNIEnv * env, void*,jobject, jobject) override {
+          JavaException::raiseUnsupportedOperationException(env, "QMultiHash::remove(key, value)" QTJAMBI_STACKTRACEINFO );
+          return 0;
+     }
+
+     void replace(JNIEnv *env, void*,jobject, jobject) override {
+          JavaException::raiseUnsupportedOperationException(env, "QMultiHash::replace(key, value)" QTJAMBI_STACKTRACEINFO );
+     }
+
+     void analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data) override {
+         for(auto iter = reinterpret_cast<const QMultiHash<K,T>*>(container)->begin();
+             iter != reinterpret_cast<const QMultiHash<K,T>*>(container)->end();
+             ++iter
+             ){
+             if(!analyzer(pointer_from<decltype(iter.key())>::from(iter.key()),
+                          pointer_from<decltype(iter.value())>::from(iter.value()), data)){
+                 break;
+             }
+         }
+     }
+ };
+
+ template<typename K, typename T>
+ class QMultiHashAccess<K, T, false> : public QMultiHashAccess<K, T, true>{
+ protected:
+     QMultiHashAccess(){}
+ public:
+     static AbstractMultiHashAccess* newInstance(){
+         static QMultiHashAccess<K, T, false> instance;
+         return &instance;
+     }
+
+     AbstractMultiHashAccess* clone() override{
+         return this;
+     }
+
+     bool isConstant() override {return false;}
+
+     void clear(JNIEnv * env, void* container) override {
+         BiContainerClear<QMultiHash, K, T>::function(env, container);
+     }
+     void insert(JNIEnv *env, void* container,jobject key,jobject value) override {
+         BiContainerInsert<QMultiHash, K, T>::function(env, container, key, value);
+     }
+     jint remove(JNIEnv * env, void* container,jobject key) override {
+         return BiContainerRemove<QMultiHash, K, T>::function(env, container, key);
+     }
+     jobject take(JNIEnv *env, void* container,jobject key) override {
+         return BiContainerTake<QMultiHash, K, T>::function(env, container, key);
+     }
+
+     jint remove(JNIEnv * env, void* container,jobject key, jobject value) override {
+          return BiContainerRemovePair<QMultiHash, K, T>::function(env, container, key, value);
+     }
+
+     void replace(JNIEnv * env, void* container,jobject key, jobject value) override {
+          BiContainerReplacePair<QMultiHash, K, T>::function(env, container, key, value);
+     }
+
+     void unite(JNIEnv *env, void* container, jobject other) override {
+          BiContainerUnite<QMultiHash, K, T, qtjambi_is_QMultiHash>::function(env, container, other);
+     }
+ };
+
 
 template<bool has_scope, typename Container, bool is_const, typename K, typename T, void (*put)(JNIEnv *, jobject, jobject, jobject)>
 struct qtjambi_bicollection_fill{
@@ -1150,8 +1801,8 @@ struct qtjambi_bicollection_fill<has_scope, Container, true, K, T, put>{
     static void fill(JNIEnv *env, const Container& container, jobject collection, QtJambiScope* scope){
         for(typename Container::const_iterator i = container.begin(); i!=container.end(); ++i){
             put(env, collection,
-                qtjambi_scoped_cast<has_scope,jobject,decltype(i.key())>::cast(env, i.key(), nullptr, scope),
-                qtjambi_scoped_cast<has_scope,jobject,decltype(i.value())>::cast(env, i.value(), nullptr, scope));
+                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.key())>::type>::cast(env, i.key(), nullptr, scope),
+                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.value())>::type>::cast(env, i.value(), nullptr, scope));
         }
     }
 };
@@ -1161,10 +1812,31 @@ struct qtjambi_bicollection_fill<has_scope, Container, false, K, T, put>{
     static void fill(JNIEnv *env, Container& container, jobject collection, QtJambiScope* scope){
         for(typename Container::iterator i = container.begin(); i!=container.end(); ++i){
             put(env, collection,
-                qtjambi_scoped_cast<has_scope,jobject,decltype(i.key())>::cast(env, i.key(), nullptr, scope),
-                qtjambi_scoped_cast<has_scope,jobject,decltype(i.value())>::cast(env, i.value(), nullptr, scope));
+                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.key())>::type>::cast(env, i.key(), nullptr, scope),
+                qtjambi_scoped_cast<has_scope,jobject,typename std::add_const<decltype(i.value())>::type>::cast(env, i.value(), nullptr, scope));
         }
     }
+};
+
+template<template<typename K, typename T> class Container, typename K, typename T, bool isConst = false>
+struct BiContainerAccess{
+    static constexpr AbstractContainerAccess* newInstance(){return nullptr;}
+};
+
+template<typename K, typename T, bool isConst>
+struct BiContainerAccess<QMap,K,T,isConst> : QMapAccess<K,T,isConst>{
+};
+
+template<typename K, typename T, bool isConst>
+struct BiContainerAccess<QMultiMap,K,T,isConst> : QMultiMapAccess<K,T,isConst>{
+};
+
+template<typename K, typename T, bool isConst>
+struct BiContainerAccess<QHash,K,T,isConst> : QHashAccess<K,T,isConst>{
+};
+
+template<typename K, typename T, bool isConst>
+struct BiContainerAccess<QMultiHash,K,T,isConst> : QMultiHashAccess<K,T,isConst>{
 };
 
 } // namespace QtJambiPrivate

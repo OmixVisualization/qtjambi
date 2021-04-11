@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MultimediaWidget</class>
+ <widget class="QVideoWidget" name="MultimediaWidget">
+ </widget>
+</ui>

@@ -102,10 +102,14 @@
   <value-type name="QLowEnergyAdvertisingParameters::AddressInfo">
   </value-type>
   <value-type name="QBluetoothServiceInfo::Sequence">
-        <modify-function signature="toSet() const" remove="all"/>
+  <extra-includes>
+      <include file-name="qtjambi_bluetooth_hashes.h" location="local"/>
+  </extra-includes>
   </value-type>
   <value-type name="QBluetoothServiceInfo::Alternative">
-        <modify-function signature="toSet() const" remove="all"/>
+  <extra-includes>
+      <include file-name="qtjambi_bluetooth_hashes.h" location="local"/>
+  </extra-includes>
   </value-type>
   <value-type name="QBluetoothAddress">
         <modify-function signature="operator=(QBluetoothAddress)" remove="all"/>
@@ -208,8 +212,9 @@
   <object-type name="QLowEnergyService">
   </object-type>
   <suppress-warning text="WARNING(CppImplGenerator) :: Object type 'quint128' passed as value. Resulting code will not compile.  io.qt.bluetooth.QBluetoothUuid::QBluetoothUuid(quint128 uuid)" />
-  <suppress-warning text="WARNING(JavaGenerator) :: either add or remove specified for reference count variable '__rcIncludedService' in 'io.qt.bluetooth.QLowEnergyServiceData' but not both" />
+  <suppress-warning text="WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcIncludedService' in 'QLowEnergyServiceData' but not both." />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QSharedPointer&lt;*Private>'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping field '*' with unmatched type '*Private'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QBluetooth::operator|', unmatched return type '*'" />
+  <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QBluetoothServiceInfo::*." />
 </typesystem>

@@ -1,7 +1,7 @@
     /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -92,15 +92,15 @@ class QAbstractButton___ extends QAbstractButton {
 class QLayout___ extends QLayout {
     @io.qt.QtUninvokable
     public final void addWidget(io.qt.widgets.QWidget w){
-        if(this instanceof QStackedLayout) {
-            ((QStackedLayout)this).stackWidget(w);
-        }else {
-            __qt_addWidget(w);
-        }
+        add_widget(w);
     }
 }// class
 
 class QBoxLayout___ extends QBoxLayout {
+    @io.qt.QtUninvokable
+    void add_widget(QWidget widget){
+        addWidget(widget, 0);
+    }
 }// class
 
 class QGridLayout___ extends QGridLayout {
@@ -130,7 +130,7 @@ class QColorDialog__java_{
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedColorSlot) {
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedColorSlot);
-        if(lamdaInfo!=null) {
+        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
             if(lamdaInfo.isStatic) {
                 throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
             }
@@ -141,53 +141,19 @@ class QColorDialog__java_{
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
     private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
-}// class
-
-class QColorDialog__native_{
-
-// QColorDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QColorDialog_open)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QColorDialog::open(QObject * receiver, const char * member)")
-    try{
-#if QT_CONFIG(colordialog)
-        QColorDialog *__qt_this = qtjambi_object_from_nativeId<QColorDialog>(__this_nativeId);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
-        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
-        QByteArray signature;
-        if(method.methodType()==QMetaMethod::Signal){
-            signature += "2";
-        }else{
-            signature += "1";
-        }
-        signature += method.methodSignature();
-        __qt_this->open(object, signature);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(options0)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
 }// class
 
 class QFontDialog__java_ extends QFontDialog {
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QFont> selectedFontSlot) {
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedFontSlot);
-        if(lamdaInfo!=null) {
+        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
             if(lamdaInfo.isStatic) {
                 throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
             }
@@ -198,45 +164,12 @@ class QFontDialog__java_ extends QFontDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
     private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
-}// class
-
-class QFontDialog__native_ extends QFontDialog {
-// QFontDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFontDialog_open)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFontDialog::open(QObject * receiver, const char * member)")
-    try{
-#if QT_CONFIG(fontdialog)
-        QFontDialog *__qt_this = qtjambi_object_from_nativeId<QFontDialog>(__this_nativeId);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
-        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
-        QByteArray signature;
-        if(method.methodType()==QMetaMethod::Signal){
-            signature += "2";
-        }else{
-            signature += "1";
-        }
-        signature += method.methodSignature();
-        __qt_this->open(object, signature);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(options0)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
 }// class
 
 class QFileDialog__java_ extends QFileDialog {
@@ -269,7 +202,7 @@ class QFileDialog__java_ extends QFileDialog {
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null) {
+        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
             if(lamdaInfo.isStatic) {
                 throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
             }
@@ -298,7 +231,7 @@ class QFileDialog__java_ extends QFileDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
@@ -306,45 +239,11 @@ class QFileDialog__java_ extends QFileDialog {
     private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
 }// class
 
-class QFileDialog__native_{
-
-// QFileDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFileDialog_open)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFileDialog::open(QObject * receiver, const char * member)")
-    try{
-#if QT_CONFIG(filedialog)
-        QFileDialog *__qt_this = qtjambi_object_from_nativeId<QFileDialog>(__this_nativeId);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
-        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
-        QByteArray signature;
-        if(method.methodType()==QMetaMethod::Signal){
-            signature += "2";
-        }else{
-            signature += "1";
-        }
-        signature += method.methodSignature();
-        __qt_this->open(object, signature);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(options0)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
-}// class
-
 class QInputDialog__java_ extends QInputDialog {
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot0 selectedSlot) {
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null) {
+        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
             if(lamdaInfo.isStatic) {
                 throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
             }
@@ -358,7 +257,7 @@ class QInputDialog__java_ extends QInputDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
@@ -366,7 +265,7 @@ class QInputDialog__java_ extends QInputDialog {
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<?> selectedSlot) {
         io.qt.internal.QtJambiInternal.LambdaInfo lamdaInfo = io.qt.internal.QtJambiInternal.lamdaInfo(selectedSlot);
-        if(lamdaInfo!=null) {
+        if(lamdaInfo!=null && lamdaInfo.reflectiveMethod!=null) {
             if(lamdaInfo.isStatic) {
                 throw new IllegalArgumentException("Cannot use static slot: "+lamdaInfo.reflectiveMethod);
             }
@@ -383,46 +282,12 @@ class QInputDialog__java_ extends QInputDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(checkedNativeId(this), checkedNativeId(lamdaInfo.qobject), metaMethod);
+            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
     private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
-}// class
-
-class QInputDialog__native_{
-
-// QInputDialog::open(QObject * receiver, const char * member)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QInputDialog_open)
-(JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
-{
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QInputDialog::open(QObject * receiver, const char * member)")
-    try{
-#if QT_CONFIG(filedialog)
-        QInputDialog *__qt_this = qtjambi_object_from_nativeId<QInputDialog>(__this_nativeId);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
-        QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
-        QByteArray signature;
-        if(method.methodType()==QMetaMethod::Signal){
-            signature += "2";
-        }else{
-            signature += "1";
-        }
-        signature += method.methodSignature();
-        __qt_this->open(object, signature);
-#else
-        Q_UNUSED(__this_nativeId)
-        Q_UNUSED(options0)
-        JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
-#endif // QT_CONFIG(colordialog)
-    }catch(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }
-}
 }// class
 
 class QAbstractScrollArea___ extends QAbstractScrollArea {

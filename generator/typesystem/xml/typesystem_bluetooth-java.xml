@@ -43,22 +43,6 @@
 **
 ****************************************************************************-->
 <typesystem package="io.qt.bluetooth" default-superclass="io.qt.QtObject">
-    <value-type name="QBluetoothServiceInfo::Sequence">
-        <inject-code>
-            @Override
-            public boolean remove(Object o) {
-                return removeOne(o);
-            }
-        </inject-code>
-    </value-type>
-    <value-type name="QBluetoothServiceInfo::Alternative">
-        <inject-code>
-            @Override
-            public boolean remove(Object o) {
-                return removeOne(o);
-            }
-        </inject-code>
-    </value-type>
   <value-type name="QBluetoothUuid">
         <modify-function signature="toUInt128() const" rename="toBytes">
             <modify-argument index="0">
@@ -135,6 +119,14 @@
             }
         }
         </inject-code>
+        <modify-function signature="serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const" since="5.14">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    QBluetoothDeviceInfo::DataCompleteness* %out = nullptr;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const" until="5.13">
             <modify-argument index="1">
                 <remove-argument/>
@@ -146,7 +138,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.bluetooth.QBluetoothDeviceInfo$ServiceUuids"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtBluetooth::QBluetoothDeviceInfo$ServiceUuids.newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, completeness));
+                    jobject %out = Java::QtBluetooth::QBluetoothDeviceInfo$ServiceUuids::newInstance(%env, qtjambi_cast&lt;jobject>(%env, %in), qtjambi_cast&lt;jobject>(%env, completeness));
                 </conversion-rule>
             </modify-argument>
         </modify-function>

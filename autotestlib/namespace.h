@@ -46,8 +46,10 @@
 #define NAMESPACE_H
 
 #include <stdio.h>
-#include <QtCore>
-#include <QtWidgets>
+#include <QtCore/QtCore>
+#ifndef QTJAMBI_NO_WIDGETS
+#include <QtWidgets/QtWidgets>
+#endif
 
 QT_WARNING_DISABLE_CLANG("-Winfinite-recursion")
 

@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -66,7 +66,19 @@
     </object-type>
 
     <object-type name="QPrinter">
-        <modify-function signature="getPageMargins(qreal*,qreal*,qreal*,qreal*,QPrinter::Unit)const">
+        <modify-function signature="QPrinter(QPrinter::PrinterMode)">
+            <inject-code position="beginning">
+                if(io.qt.core.QCoreApplication.instance()==null)
+                    throw new IllegalStateException("Cannot create QPrinter before initializing QCoreApplication.");
+            </inject-code>
+        </modify-function>
+        <modify-function signature="QPrinter(QPrinterInfo,QPrinter::PrinterMode)">
+            <inject-code position="beginning">
+                if(io.qt.core.QCoreApplication.instance()==null)
+                    throw new IllegalStateException("Cannot create QPrinter before initializing QCoreApplication.");
+            </inject-code>
+        </modify-function>
+        <modify-function signature="getPageMargins(qreal*,qreal*,qreal*,qreal*,QPrinter::Unit)const" until="5.*">
             <modify-argument index="1">
                 <remove-argument/>
                 <conversion-rule class="native">

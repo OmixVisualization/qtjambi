@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,47 +29,141 @@
 
 package io.qt.internal;
 
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
-
-import io.qt.core.QPair;
+import java.util.stream.Stream;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 
 final class RetroHelper {
     private RetroHelper() {throw new RuntimeException();}
     
-    static boolean trySetAccessible(Field f) {
-        try {
-            f.setAccessible(true);
-        } catch (Throwable e) {
-        }
-        return f.isAccessible();
-    }
-    
     static AnnotatedType getAnnotatedOwnerType(AnnotatedType actualType) {
+    	if(getAnnotatedOwnerTypeHandle!=null) {
+    		try{
+    			return (AnnotatedType)getAnnotatedOwnerTypeHandle.invoke(actualType);
+			} catch (RuntimeException | Error e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+    		}
+    	}
         return null;
     }
     
-    @SuppressWarnings("deprecation")
-    private static Supplier<Class<?>> callerClassProvider = ()->sun.reflect.Reflection.getCallerClass(4);
+    private static IntFunction<QtJambiInternal.InvocationInfo> classAccessChecker;
+    private static Supplier<Class<?>> callerClassProvider;
+    private static MethodHandle getAnnotatedOwnerTypeHandle;
     
-    private static Supplier<QPair<Class<?>, String>> classAccessChecker = ()->{
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        if(stackTrace.length>4) {
-            try {
-                return new QPair<Class<?>, String>(Class.forName(stackTrace[4].getClassName()), stackTrace[4].getMethodName());
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    };
+    static {
+    	MethodHandle _getAnnotatedOwnerTypeHandle = null;
+    	try {
+			Method getAnnotatedOwnerType = AnnotatedType.class.getMethod("getAnnotatedOwnerType");
+			_getAnnotatedOwnerTypeHandle = QtJambiInternal.getMethodHandle(getAnnotatedOwnerType);
+		} catch (Throwable e2) {
+		}
+    	Supplier<Class<?>> _callerClassProvider = null;
+    	IntFunction<QtJambiInternal.InvocationInfo> _classAccessChecker = null;
+    	try {
+			Class<?> stackWalkerClass = Class.forName("java.lang.StackWalker");
+			Method getInstance = stackWalkerClass.getMethod("getInstance", java.util.Set.class);
+			@SuppressWarnings("rawtypes")
+			Class stackWalkerOptionClass = (Class)Class.forName("java.lang.StackWalker$Option");
+			@SuppressWarnings("unchecked")
+			Object RETAIN_CLASS_REFERENCE = java.util.Collections.singleton(Enum.valueOf(stackWalkerOptionClass, "RETAIN_CLASS_REFERENCE"));
+			Object stackWalker = getInstance.invoke(null, RETAIN_CLASS_REFERENCE);
+			Class<?> stackWalkerStackFrameClass = Class.forName("java.lang.StackWalker$StackFrame");
+			Method getDeclaringClass = stackWalkerStackFrameClass.getMethod("getDeclaringClass");
+			MethodHandle getDeclaringClassHandle = QtJambiInternal.getMethodHandle(getDeclaringClass);
+			Method getMethodName = stackWalkerStackFrameClass.getMethod("getMethodName");
+			MethodHandle getMethodNameHandle = QtJambiInternal.getMethodHandle(getMethodName);
+			Method getLineNumber = stackWalkerStackFrameClass.getMethod("getLineNumber");
+			MethodHandle getLineNumberHandle = QtJambiInternal.getMethodHandle(getLineNumber);
+			Method walk = stackWalkerClass.getMethod("walk", Function.class);
+			MethodHandle walkHandle = QtJambiInternal.getMethodHandle(walk);
+			_classAccessChecker = number->{
+				try {
+					if(number>0) {
+						Function<Stream<?>, Optional<?>> fun = stream->stream.limit(number).skip(number-1).findFirst();
+				        Optional<?> stackFrameOpt = (Optional<?>)walkHandle.invoke(stackWalker, fun);
+				        if(stackFrameOpt.isPresent()) {
+				        	Object stackFrame = stackFrameOpt.get();
+				            return new QtJambiInternal.InvocationInfo(
+								            		(Class<?>)getDeclaringClassHandle.invoke(stackFrame),
+								            		(String)getMethodNameHandle.invoke(stackFrame), 
+								            		(int)getLineNumberHandle.invoke(stackFrame));
+				        }
+			        }
+		            return null;
+				} catch (RuntimeException | Error e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new RuntimeException(e);
+				}
+		    };
+		} catch (Throwable e1) {
+		}
+    	
+    	if(_callerClassProvider==null) {
+	    	try {
+				Class<?> reflectionClass = Class.forName("sun.reflect.Reflection");
+				Method getCallerClass = reflectionClass.getMethod("getCallerClass", int.class);
+				MethodHandle getCallerClassHandle = QtJambiInternal.getMethodHandle(getCallerClass).bindTo(4);
+				_callerClassProvider = ()->{
+					try {
+						return (Class<?>)getCallerClassHandle.invoke();
+					} catch (RuntimeException | Error e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new RuntimeException(e);
+					}
+				};
+			} catch (Throwable e) {
+			}
+    	}
+    	if(_callerClassProvider==null) {
+    		_callerClassProvider = ()->{
+    			Class<?> result = Object.class;
+    			QtJambiInternal.InvocationInfo info = classAccessChecker().apply(4);
+    			if(info!=null && info.declaringClass!=null) {
+    				result = info.declaringClass;
+    			}
+    			return result;
+    		};
+    	}
+    	if(_classAccessChecker==null) 
+    	{
+    		_classAccessChecker = number->{
+    	        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    	        ++number; // for getStackTrace()
+    	        for (StackTraceElement element : stackTrace) {
+					if(!element.getClassName().startsWith("jdk.internal.reflect")
+							&& !element.getClassName().startsWith("java.lang.reflect"))
+						--number;
+					if(number==0){
+	    	            try {
+	    	                return new QtJambiInternal.InvocationInfo(Class.forName(element.getClassName()), element.getMethodName(), element.getLineNumber());
+	    	            } catch (ClassNotFoundException e) {
+	    	                e.printStackTrace();
+	    	            }
+	    	        }
+				}
+    	        return null;
+    	    };
+    	}
+    	callerClassProvider = _callerClassProvider;
+    	classAccessChecker = _classAccessChecker;
+    	getAnnotatedOwnerTypeHandle = _getAnnotatedOwnerTypeHandle;
+    }
+    
+    static IntFunction<QtJambiInternal.InvocationInfo> classAccessChecker(){
+        return classAccessChecker;
+    }
     
     static Supplier<Class<?>> callerClassProvider(){
         return callerClassProvider;
-    }
-    
-    static Supplier<QPair<Class<?>, String>> classAccessChecker(){
-        return classAccessChecker;
     }
 }

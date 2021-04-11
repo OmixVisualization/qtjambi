@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -27,8 +27,8 @@
 **
 ****************************************************************************/
 
-#include <qtjambi/qtjambi_functionpointer.h>
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_functionpointer.h>
 #include <QtRemoteObjects/private/qconnectionfactories_p.h>
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_qRegisterRemoteObjectsServer)
@@ -50,7 +50,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     jmethodID constructor = __jni_env->FromReflectedMethod(constructor2);
     type1 = jclass(__jni_env->NewGlobalRef(jobject(type1)));
     uint hash = uint(qtjambi_java_object_hashcode(__jni_env,type1));
-    serverFactory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16 /* = 1024 options */,QConnectionAbstractServer*(QObject *)>(
+    serverFactory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16,QConnectionAbstractServer*(QObject *)>(
         [type1,constructor](QObject * o) -> QConnectionAbstractServer*{
             if(JNIEnv* env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
@@ -85,7 +85,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     jmethodID constructor = __jni_env->FromReflectedMethod(constructor2);
     type1 = jclass(__jni_env->NewGlobalRef(jobject(type1)));
     uint hash = uint(qtjambi_java_object_hashcode(__jni_env, type1));
-    factory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16 /* = 1024 options */,ClientIoDevice*(QObject *)>(
+    factory->m_creatorFuncs[__qt_id0] = qtjambi_function_pointer<16,ClientIoDevice*(QObject *)>(
         [type1,constructor](QObject * o) -> ClientIoDevice*{
             if(JNIEnv* env = qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
@@ -99,4 +99,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
             return nullptr;
         },
         hash);
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectNode_acquire)
+(JNIEnv *__jni_env, jobject __this, jclass type, jobject constructor, jobject name)
+{
+    jmethodID constructorID = __jni_env->FromReflectedMethod(constructor);
+    Q_ASSERT(constructorID);
+    return __jni_env->NewObject(type, constructorID, __this, name);
 }

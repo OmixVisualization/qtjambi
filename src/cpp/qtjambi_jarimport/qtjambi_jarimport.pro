@@ -41,7 +41,7 @@ macx:{
     linux-g++*:{
         QMAKE_RPATHDIR = $ORIGIN/../lib:$ORIGIN/../../lib:$ORIGIN/../../../lib:$ORIGIN/../../../../lib:$ORIGIN/../../../../../lib:$ORIGIN/../../../../../../lib:$ORIGIN/../../../../../../../lib:$ORIGIN/../../../../../../../../lib
     }
-    QT -= core gui widgets
+    QT -= gui widgets
     LIBS += -L$$PWD/../../../build/qmake-qtjambi/lib
     android:{
         armeabi-v7a: LIBS += -l$$member(QTJAMBI_QML_LIB_NAME, 0)_armeabi-v7a

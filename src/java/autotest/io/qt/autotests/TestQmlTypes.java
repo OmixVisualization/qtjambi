@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,19 +29,20 @@
 package io.qt.autotests;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QByteArray;
-import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
-import io.qt.core.QObject;
-import io.qt.qml.QQmlComponent;
-import io.qt.qml.QQmlEngine;
-import io.qt.qml.QtQml;
+import io.qt.core.*;
+import io.qt.qml.*;
 import io.qt.qml.util.QmlTypes;
 
 public class TestQmlTypes extends QApplicationTest{
-	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		QApplicationTest.testInitialize();
+		io.qt.QtUtilities.initializePackage("io.qt.quick");
+	}
+
 	@Test
     public void run_testQmlTypes() {
 		QtQml.qmlClearTypeRegistrations();
@@ -54,17 +55,22 @@ public class TestQmlTypes extends QApplicationTest{
 		Assert.assertFalse(component.errorString(), component.isError());
 		Assert.assertTrue("car is null", car!=null);
 		QMetaObject carType = car.metaObject();
+		Assert.assertEquals("Car_QMLTYPE_1", carType.className());
 		QMetaProperty engineProp = carType.property("engine");
 		Assert.assertTrue("engine property not available", engineProp!=null);
 		QMetaProperty wheelsProp = carType.property("wheels");
 		Assert.assertTrue("wheels property not available", wheelsProp!=null);
+		Assert.assertEquals("io::qt::autotests::qmltypes::Engine*", engineProp.typeName());
+		Assert.assertEquals("QQmlListProperty<Wheel_QMLTYPE_0>", wheelsProp.typeName());
+		Assert.assertEquals(io.qt.autotests.qmltypes.Engine.class, engineProp.classType());
+		Assert.assertEquals(io.qt.qml.QQmlListProperty.class, wheelsProp.classType());
 		Object engine = car.property("engine");
 		Object wheels = car.property("wheels");
 		Assert.assertTrue("engine is null", engine!=null);
 		Assert.assertTrue("wheels is null", wheels!=null);
-		Assert.assertTrue("engine has wrong type", engine instanceof io.qt.autotests.qmltypes.Engine);
+		Assert.assertTrue("engine has wrong type: "+engine.getClass().getName(), engine instanceof io.qt.autotests.qmltypes.Engine);
 		Assert.assertEquals(150, ((io.qt.autotests.qmltypes.Engine)engine).getPerformance());
-		Assert.assertTrue("wheels has wrong type", wheels instanceof io.qt.qml.QQmlListProperty);
+		Assert.assertTrue("wheels has wrong type: "+wheels.getClass().getName(), wheels instanceof io.qt.qml.QQmlListProperty);
 		io.qt.qml.QQmlListProperty<?> wheelsList = (io.qt.qml.QQmlListProperty<?>)wheels;
 		Assert.assertEquals(4, wheelsList.count());
 		for (int i = 0; i < wheelsList.count(); i++) {

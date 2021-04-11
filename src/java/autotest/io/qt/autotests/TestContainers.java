@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,31 +48,39 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.autotests.generated.QHash_int;
 import io.qt.autotests.generated.QList_int;
 import io.qt.autotests.generated.QMap_int;
 import io.qt.autotests.generated.QQueue_int;
 import io.qt.autotests.generated.QSet_int;
 import io.qt.autotests.generated.QStack_int;
-import io.qt.autotests.generated.QVector_int;
 import io.qt.autotests.generated.Tulip;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QEasingCurve;
 import io.qt.core.QHash;
 import io.qt.core.QList;
 import io.qt.core.QMap;
+import io.qt.core.QMetaType;
 import io.qt.core.QMultiHash;
 import io.qt.core.QMultiMap;
 import io.qt.core.QObject;
 import io.qt.core.QPair;
 import io.qt.core.QPoint;
+import io.qt.core.QPointF;
 import io.qt.core.QQueue;
-import io.qt.core.QVector;
+import io.qt.core.QRunnable;
+import io.qt.core.QSet;
+import io.qt.core.QStringList;
 import io.qt.gui.QColor;
 import io.qt.gui.QLinearGradient;
+import io.qt.widgets.QCheckBox;
+import io.qt.widgets.QWidget;
 
 public class TestContainers extends QApplicationTest {
 	
@@ -159,34 +167,12 @@ public class TestContainers extends QApplicationTest {
     }
 
     @Test
-    public void run_testLinkedLists() {
-        LinkedList<Integer> l = new LinkedList<Integer>();
-        for (int i = 0; i < 10; ++i)
-            l.add(i);
-
-        LinkedList<Integer> l2 = tulip.do_QLinkedList_of_int(l);
-        assertTrue(l2 != null);
-        assertEquals(l, l2);
-    }
-
-    @Test
     public void run_testLists() {
         List<Integer> l = new ArrayList<Integer>();
         for (int i = 0; i < 10; ++i)
             l.add(i);
 
         List<Integer> l2 = tulip.do_QList_of_int(l);
-        assertTrue(l2 != null);
-        assertEquals(l, l2);
-    }
-
-    @Test
-    public void run_testVectors() {
-        List<Integer> l = new ArrayList<Integer>();
-        for (int i = 0; i < 10; ++i)
-            l.add(i);
-
-        List<Integer> l2 = tulip.do_QVector_of_int(l);
         assertTrue(l2 != null);
         assertEquals(l, l2);
     }
@@ -254,7 +240,7 @@ public class TestContainers extends QApplicationTest {
             s.push(i);
         Deque<Integer> s2 = tulip.do_QStack_of_int(s);
         assertTrue(s2 != null);
-        assertTrue("stack not equals", s.equals(s2));
+        assertEquals(new ArrayList<Integer>(s), new ArrayList<Integer>(s2));
     }
 
     @Test
@@ -294,28 +280,7 @@ public class TestContainers extends QApplicationTest {
             q.append(i);
         Queue<Integer> q2 = tulip.do_QQueue_of_int(q);
         assertTrue("queue object exists", q2 != null);
-        assertEquals("queues are not equals", q, q2);
-    }
-
-
-    @Test
-    public void run_testQVector_outofbounds() {
-        QVector_int vector = new QVector_int();
-
-        boolean got;
-
-        got = false; try { vector.get(10); } catch (Exception e) { got = true; } assertTrue("exception expected", got);
-        got = false; try { vector.set(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.removeLast(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.removeFirst(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.takeLast(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.takeFirst(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.remove((Object)23); } catch (Exception e) { got =true; } assertFalse("exception unexpected", got);
-        got = false; try { vector.removeAt(23); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.takeAt(23); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.remove(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.mid(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { vector.move(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
+        assertEquals("queues are not equals", new ArrayList<Integer>(q), new ArrayList<Integer>(q2));
     }
     
     @Test
@@ -333,24 +298,7 @@ public class TestContainers extends QApplicationTest {
     	assertEquals("list count", 3, k);
     	assertEquals("sum of list entries", 6, s);
     }
-    
-    @Test
-    public void run_testQVector_iterator() {
-    	QVector_int list = new QVector_int();
-    	list.add(1);
-    	list.add(2);
-    	list.append(3);
-    	int k=0;
-    	int s=0;
-    	for(Integer i : list) {
-    		k++;
-    		s += i;
-    	}
-    	assertEquals("list count", 3, k);
-    	assertEquals("sum of vector entries", 6, s);
-    }
 
-    @SuppressWarnings("deprecation")
 	@Test
     public void run_testQList_outofbounds() {
         QList_int list = new QList_int();
@@ -364,13 +312,14 @@ public class TestContainers extends QApplicationTest {
         got = false; try { list.takeLast(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.takeFirst(); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.move(14, 15); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
-        got = false; try { list.swap(15, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
+        got = false; try { list.swapItemsAt(15, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.remove((Object)14); } catch (Exception e) { got =true; } assertFalse("exception unexpected", got);
         got = false; try { list.takeAt(14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.removeAt(23); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.takeAt(23); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.mid(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
         got = false; try { list.move(23, 14); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
+        got = false; try { list.insert(list.size()+1, 0); } catch (Exception e) { got =true; } assertTrue("exception expected", got);
     }
     
     @Test
@@ -381,7 +330,7 @@ public class TestContainers extends QApplicationTest {
     	map.insert(2, 9);
     	map.insert(2, 10);
     	assertEquals("map size", 3, map.size());
-    	assertEquals("number of 1 values", 5, map.value(1));
+    	assertEquals("number of 1 values", Integer.valueOf(5), map.value(1));
     	int c=0;
     	int k=0;
     	int v=0;
@@ -419,7 +368,7 @@ public class TestContainers extends QApplicationTest {
     	map.insert(2, 9);
     	map.insert(2, 10);
     	assertEquals("hash size", 3, map.size());
-    	assertEquals("number of 1 values", 5, map.value(1));
+    	assertEquals("number of 1 values", Integer.valueOf(5), map.value(1));
     	int c=0;
     	int k=0;
     	int v=0;
@@ -446,490 +395,675 @@ public class TestContainers extends QApplicationTest {
     }
     
     @Test
-    public void run_testNativeQListMemberField() {
-    	List<String> listRef = tulip.listRef();
-    	List<String> constList = tulip.m_list();
-    	for (String string : listRef) {
-			string.length();
-		}
-    	assertEquals(0, listRef.size());
-    	assertEquals(0, constList.size());
-    	listRef.add("test");
-    	assertEquals(1, listRef.size());
-    	assertEquals(1, constList.size());
-    	try {
-    		constList.add("X");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove("test");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove(0);
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	assertEquals("test", constList.get(0));
-    	listRef.add("test2");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	String concat = "";
-    	for (String string : listRef) {
-    		concat += string;
-		}
-    	assertEquals("testtest2", concat);
-    	assertTrue(constList.contains("test2"));
-    	
-    	QList<String> qlistRef = (QList<String>)listRef;
-    	QList<String> constQList = (QList<String>)constList;
-    	listRef.add("test");
-    	assertEquals(2, qlistRef.count("test"));
-    	assertEquals(2, constQList.count("test"));
-    	assertEquals(1, qlistRef.indexOf("test2"));
-    	assertEquals(1, qlistRef.lastIndexOf("test2"));
-    	qlistRef.prepend("doggy");
-    	qlistRef.prepend("catty");
-    	assertEquals(3, constQList.indexOf("test2"));
-    	assertEquals(3, constQList.lastIndexOf("test2"));
-    	assertEquals(Arrays.asList("doggy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("doggy", "test"), constQList.mid(1, 2));
-    	qlistRef.move(0, 1);
-    	assertEquals(Arrays.asList("catty", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "test"), constQList.mid(1, 2));
-    	qlistRef.insert(2, "horsy");
-    	assertEquals(Arrays.asList("catty", "horsy"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "horsy"), constQList.mid(1, 2));
-    	qlistRef.removeAt(1);
-    	assertEquals(Arrays.asList("horsy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("horsy", "test"), constQList.mid(1, 2));
-    	qlistRef.removeOne("horsy");
-    	assertEquals(Arrays.asList("test", "test2"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("test", "test2"), constQList.mid(1, 2));
-    	qlistRef.removeAll("test");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	qlistRef.swapItemsAt(0, 1);
-    	assertEquals(Arrays.asList("test2", "doggy"), qlistRef);
-    	assertEquals(Arrays.asList("test2", "doggy"), constQList);
-    	assertEquals("test2", qlistRef.takeAt(0));
-    	assertEquals("", qlistRef.value(20));
-    	assertEquals("nothing", qlistRef.value(20, "nothing"));
-    }
-    
-    @Test
-    public void run_testNativeQList() {
-    	List<String> listRef = tulip.listRef();
-    	List<String> constList = tulip.constList();
-    	for (String string : listRef) {
-			string.length();
-		}
-    	assertEquals(0, listRef.size());
-    	assertEquals(0, constList.size());
-    	listRef.add("test");
-    	assertEquals(1, listRef.size());
-    	assertEquals(1, constList.size());
-    	try {
-    		constList.add("X");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove("test");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove(0);
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	assertEquals("test", constList.get(0));
-    	listRef.add("test2");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	String concat = "";
-    	for (String string : listRef) {
-    		concat += string;
-		}
-    	assertEquals("testtest2", concat);
-    	assertTrue(constList.contains("test2"));
-    	
-    	QList<String> qlistRef = (QList<String>)listRef;
-    	QList<String> constQList = (QList<String>)constList;
-    	listRef.add("test");
-    	assertEquals(2, qlistRef.count("test"));
-    	assertEquals(2, constQList.count("test"));
-    	assertEquals(1, qlistRef.indexOf("test2"));
-    	assertEquals(1, qlistRef.lastIndexOf("test2"));
-    	qlistRef.prepend("doggy");
-    	qlistRef.prepend("catty");
-    	assertEquals(3, constQList.indexOf("test2"));
-    	assertEquals(3, constQList.lastIndexOf("test2"));
-    	assertEquals(Arrays.asList("doggy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("doggy", "test"), constQList.mid(1, 2));
-    	qlistRef.move(0, 1);
-    	assertEquals(Arrays.asList("catty", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "test"), constQList.mid(1, 2));
-    	qlistRef.insert(2, "horsy");
-    	assertEquals(Arrays.asList("catty", "horsy"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "horsy"), constQList.mid(1, 2));
-    	qlistRef.removeAt(1);
-    	assertEquals(Arrays.asList("horsy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("horsy", "test"), constQList.mid(1, 2));
-    	qlistRef.removeOne("horsy");
-    	assertEquals(Arrays.asList("test", "test2"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("test", "test2"), constQList.mid(1, 2));
-    	qlistRef.removeAll("test");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	qlistRef.swapItemsAt(0, 1);
-    	assertEquals(Arrays.asList("test2", "doggy"), qlistRef);
-    	assertEquals(Arrays.asList("test2", "doggy"), constQList);
-    	assertEquals("test2", qlistRef.takeAt(0));
-    	assertEquals("", qlistRef.value(20));
-    	assertEquals("nothing", qlistRef.value(20, "nothing"));
-    }
-    
-    @Test
-    public void run_testNativeQStringList() {
-    	List<String> listRef = tulip.stringListRef();
-    	List<String> constList = tulip.constStringList();
-    	for (String string : listRef) {
-			string.length();
-		}
-    	assertEquals(0, listRef.size());
-    	assertEquals(0, constList.size());
-    	listRef.add("test");
-    	assertEquals(1, listRef.size());
-    	assertEquals(1, constList.size());
-    	try {
-    		constList.add("X");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove("test");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove(0);
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	assertEquals("test", constList.get(0));
-    	listRef.add("test2");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	String concat = "";
-    	for (String string : listRef) {
-    		concat += string;
-		}
-    	assertEquals("testtest2", concat);
-    	assertTrue(constList.contains("test2"));
-    	
-    	QList<String> qlistRef = (QList<String>)listRef;
-    	QList<String> constQList = (QList<String>)constList;
-    	listRef.add("test");
-    	assertEquals(2, qlistRef.count("test"));
-    	assertEquals(2, constQList.count("test"));
-    	assertEquals(1, qlistRef.indexOf("test2"));
-    	assertEquals(1, qlistRef.lastIndexOf("test2"));
-    	qlistRef.prepend("doggy");
-    	qlistRef.prepend("catty");
-    	assertEquals(3, constQList.indexOf("test2"));
-    	assertEquals(3, constQList.lastIndexOf("test2"));
-    	assertEquals(Arrays.asList("doggy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("doggy", "test"), constQList.mid(1, 2));
-    	qlistRef.move(0, 1);
-    	assertEquals(Arrays.asList("catty", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "test"), constQList.mid(1, 2));
-    	qlistRef.insert(2, "horsy");
-    	assertEquals(Arrays.asList("catty", "horsy"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "horsy"), constQList.mid(1, 2));
-    	qlistRef.removeAt(1);
-    	assertEquals(Arrays.asList("horsy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("horsy", "test"), constQList.mid(1, 2));
-    	qlistRef.removeOne("horsy");
-    	assertEquals(Arrays.asList("test", "test2"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("test", "test2"), constQList.mid(1, 2));
-    	qlistRef.removeAll("test");
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	qlistRef.swapItemsAt(0, 1);
-    	assertEquals(Arrays.asList("test2", "doggy"), qlistRef);
-    	assertEquals(Arrays.asList("test2", "doggy"), constQList);
-    	assertEquals("test2", qlistRef.takeAt(0));
-    	assertEquals("", qlistRef.value(20));
-    	assertEquals("nothing", qlistRef.value(20, "nothing"));
-    }
-    
-    @Test
     public void run_testNativeQueue() {
     	Queue<String> listRef = tulip.queueRef();
-    	Queue<String> constList = tulip.constQueue();
     	for (String string : listRef) {
 			string.length();
 		}
     	assertEquals(0, listRef.size());
-    	assertEquals(0, constList.size());
+    	assertEquals(0, tulip.constQueue().size());
     	listRef.add("test");
     	assertEquals(1, listRef.size());
-    	assertEquals(1, constList.size());
-    	try {
-    		constList.add("X");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove("test");
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	assertEquals("test", constList.peek());
+    	assertEquals(1, tulip.constQueue().size());
+    	assertEquals("test", tulip.constQueue().peek());
     	listRef.add("test2");
     	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
+    	assertEquals(2, tulip.constQueue().size());
     	String concat = "";
     	for (String string : listRef) {
     		concat += string;
 		}
     	assertEquals("testtest2", concat);
-    	assertTrue(constList.contains("test2"));
+    	assertTrue(tulip.constQueue().contains("test2"));
     	
-    	QQueue<String> qlistRef = (QQueue<String>)listRef;
-    	QQueue<String> constQList = (QQueue<String>)constList;
+		QQueue<String> qlistRef = (QQueue<String>)listRef;
     	listRef.add("test");
     	assertEquals(2, qlistRef.count("test"));
-    	assertEquals(2, constQList.count("test"));
     	assertEquals(1, qlistRef.indexOf("test2"));
     	assertEquals(1, qlistRef.lastIndexOf("test2"));
     	qlistRef.prepend("doggy");
     	qlistRef.prepend("catty");
-    	assertEquals(3, constQList.indexOf("test2"));
-    	assertEquals(3, constQList.lastIndexOf("test2"));
+    	assertEquals(3, tulip.constQueue().indexOf("test2"));
+    	assertEquals(3, tulip.constQueue().lastIndexOf("test2"));
     	assertEquals(Arrays.asList("doggy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("doggy", "test"), constQList.mid(1, 2));
+    	assertEquals(Arrays.asList("doggy", "test"), tulip.constQueue().mid(1, 2));
     	qlistRef.move(0, 1);
     	assertEquals(Arrays.asList("catty", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "test"), constQList.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "test"), tulip.constQueue().mid(1, 2));
     	qlistRef.insert(2, "horsy");
     	assertEquals(Arrays.asList("catty", "horsy"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("catty", "horsy"), constQList.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "horsy"), tulip.constQueue().mid(1, 2));
     	qlistRef.removeAt(1);
     	assertEquals(Arrays.asList("horsy", "test"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("horsy", "test"), constQList.mid(1, 2));
+    	assertEquals(Arrays.asList("horsy", "test"), tulip.constQueue().mid(1, 2));
     	qlistRef.removeOne("horsy");
     	assertEquals(Arrays.asList("test", "test2"), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList("test", "test2"), constQList.mid(1, 2));
+    	assertEquals(Arrays.asList("test", "test2"), tulip.constQueue().mid(1, 2));
     	qlistRef.removeAll("test");
     	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	qlistRef.swap(0, 1);
+    	assertEquals(2, tulip.constQueue().size());
+    	qlistRef.swapItemsAt(0, 1);
     	assertEquals(Arrays.asList("test2", "doggy"), qlistRef);
-    	assertEquals(Arrays.asList("test2", "doggy"), constQList);
+    	assertEquals(Arrays.asList("test2", "doggy"), tulip.constQueue());
     	assertEquals("test2", qlistRef.takeAt(0));
     	assertEquals("", qlistRef.value(20));
     	assertEquals("nothing", qlistRef.value(20, "nothing"));
-    }
-    
-    @Test
-    public void run_testNativeQByteArrayList() {
-    	List<QByteArray> listRef = tulip.byteArrayListRef();
-    	List<QByteArray> constList = tulip.constByteArrayList();
-    	for (QByteArray string : listRef) {
-			string.length();
-		}
-    	assertEquals(0, listRef.size());
-    	assertEquals(0, constList.size());
-    	listRef.add(new QByteArray("test"));
-    	assertEquals(1, listRef.size());
-    	assertEquals(1, constList.size());
-    	try {
-    		constList.add(new QByteArray("X"));
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove(new QByteArray("test"));
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	try {
-    		constList.remove(0);
-    		assertFalse(true);
-    	}catch(UnsupportedOperationException e) {
-    		assertTrue(true);
-    	}
-    	assertEquals(new QByteArray("test"), constList.get(0));
-    	listRef.add(new QByteArray("test2"));
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	String concat = "";
-    	for (QByteArray string : listRef) {
-    		concat += string;
-		}
-    	assertEquals("testtest2", concat);
-    	assertTrue(constList.contains(new QByteArray("test2")));
-    	
-    	QList<QByteArray> qlistRef = (QList<QByteArray>)listRef;
-    	QList<QByteArray> constQList = (QList<QByteArray>)constList;
-    	listRef.add(new QByteArray("test"));
-    	assertEquals(2, qlistRef.count(new QByteArray("test")));
-    	assertEquals(2, constQList.count(new QByteArray("test")));
-    	assertEquals(1, qlistRef.indexOf(new QByteArray("test2")));
-    	assertEquals(1, qlistRef.lastIndexOf(new QByteArray("test2")));
-    	qlistRef.prepend(new QByteArray("doggy"));
-    	qlistRef.prepend(new QByteArray("catty"));
-    	assertEquals(3, constQList.indexOf(new QByteArray("test2")));
-    	assertEquals(3, constQList.lastIndexOf(new QByteArray("test2")));
-    	assertEquals(Arrays.asList(new QByteArray("doggy"), new QByteArray("test")), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList(new QByteArray("doggy"), new QByteArray("test")), constQList.mid(1, 2));
-    	qlistRef.move(0, 1);
-    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("test")), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("test")), constQList.mid(1, 2));
-    	qlistRef.insert(2, new QByteArray("horsy"));
-    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("horsy")), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("horsy")), constQList.mid(1, 2));
-    	qlistRef.removeAt(1);
-    	assertEquals(Arrays.asList(new QByteArray("horsy"), new QByteArray("test")), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList(new QByteArray("horsy"), new QByteArray("test")), constQList.mid(1, 2));
-    	qlistRef.removeOne(new QByteArray("horsy"));
-    	assertEquals(Arrays.asList(new QByteArray("test"), new QByteArray("test2")), qlistRef.mid(1, 2));
-    	assertEquals(Arrays.asList(new QByteArray("test"), new QByteArray("test2")), constQList.mid(1, 2));
-    	qlistRef.removeAll(new QByteArray("test"));
-    	assertEquals(2, listRef.size());
-    	assertEquals(2, constList.size());
-    	qlistRef.swapItemsAt(0, 1);
-    	assertEquals(Arrays.asList(new QByteArray("test2"), new QByteArray("doggy")), qlistRef);
-    	assertEquals(Arrays.asList(new QByteArray("test2"), new QByteArray("doggy")), constQList);
-    	assertEquals(new QByteArray("test2"), qlistRef.takeAt(0));
-    	assertEquals(new QByteArray(), qlistRef.value(20));
-    	assertEquals(new QByteArray("nothing"), qlistRef.value(20, new QByteArray("nothing")));
     }
 
     @Test
     public void run_testNativeQListList() {
     	List<List<Float>> listRef = tulip.listListRef();
-    	List<List<Float>> constList = tulip.constListList();
+    	assertTrue(listRef!=null);
     	listRef.add(Arrays.asList(3f, 5.5f, 2.8f));
-    	assertEquals(Arrays.asList(3f, 5.5f, 2.8f), constList.get(0));
-    }
-    
-    @Test
-    public void run_testNativeQVector() {
-    	QVector<Double> listRef = tulip.vectorRef();
-    	QVector<Double> constList = tulip.constVector();
-    	listRef.append(Arrays.asList(3., 5.5, 2.8));
-    	assertEquals(Arrays.asList(3., 5.5, 2.8), constList.toList());
-    	assertEquals(Double.valueOf(3.), constList.at(0));
-    	listRef.clear();
-    	assertEquals(0, constList.count());
-    	listRef.append(Arrays.asList(3., 5.5, 2.8));
-    	listRef.append(3.);
-    	assertEquals(2, constList.count(3.));
-    	assertEquals(5, listRef.capacity());
-    	listRef.capacity();
-    	listRef.fill(6., 10);
-    	assertEquals(10, constList.count(6.));
-    	listRef.prepend(90.);
-    	listRef.move(4, 0);
-    	listRef.takeLast();
-    	listRef.startsWith(5.);
-    	listRef.resize(40);
-    	listRef.dispose();
+    	assertEquals(1, tulip.constListList().size());
+    	assertEquals(Arrays.asList(3f, 5.5f, 2.8f), tulip.constListList().get(0));
     }
     
     @Test
     public void run_testNativeQMap() {
     	QMap<String, QPoint> mapRef = tulip.mapRef();
-    	QMap<String, QPoint> constMap = tulip.constMap();
     	mapRef.insert("1", new QPoint(0,0));
     	mapRef.insert("2", new QPoint(5,6));
     	mapRef.insert("A", new QPoint(6,7));
     	mapRef.insert("1", new QPoint(1,1));
-    	assertEquals(3, constMap.count());
-    	assertEquals(new QPoint(1,1), constMap.first());
-    	assertEquals(new QPoint(6,7), constMap.last());
-    	assertEquals("1", constMap.firstKey());
-    	assertEquals("A", constMap.lastKey());
+    	assertEquals(3, tulip.constMap().size());
+    	assertEquals(new QPoint(1,1), tulip.constMap().first());
+    	assertEquals(new QPoint(6,7), tulip.constMap().last());
+    	assertEquals("1", tulip.constMap().firstKey());
+    	assertEquals("A", tulip.constMap().lastKey());
     	assertEquals(new QPoint(6,7), mapRef.take("A"));
     	mapRef.removeAll("1");
-    	assertEquals("2", constMap.firstKey());
-    	assertEquals("2", constMap.lastKey());
-    	assertFalse(constMap.find("X").keyValuePair().isPresent());
-    	assertEquals(new QPoint(5,6), constMap.find("2").keyValuePair().orElse(new QPair<>(null, null)).second);
+    	assertEquals("2", tulip.constMap().firstKey());
+    	assertEquals("2", tulip.constMap().lastKey());
+    	assertFalse(tulip.constMap().find("X").keyValuePair().isPresent());
+    	assertEquals(new QPoint(5,6), tulip.constMap().find("2").keyValuePair().orElse(new QPair<>(null, null)).second);
     	assertEquals(Arrays.asList("2"), mapRef.keys());
     }
     
     @Test
     public void run_testNativeQMultiMap() {
     	QMultiMap<String, QPoint> mapRef = tulip.multiMapRef();
-    	QMultiMap<String, QPoint> constMap = tulip.constMultiMap();
     	mapRef.insert("1", new QPoint(0,0));
     	mapRef.insert("2", new QPoint(5,6));
     	mapRef.insert("A", new QPoint(6,7));
     	mapRef.insert("1", new QPoint(1,1));
-    	assertEquals(4, constMap.count());
-    	assertEquals(new QPoint(1,1), constMap.first());
-    	assertEquals(new QPoint(6,7), constMap.last());
-    	assertEquals("1", constMap.firstKey());
-    	assertEquals("A", constMap.lastKey());
+    	assertEquals(4, tulip.constMultiMap().size());
+    	assertEquals(new QPoint(1,1), tulip.constMultiMap().first());
+    	assertEquals(new QPoint(6,7), tulip.constMultiMap().last());
+    	assertEquals("1", tulip.constMultiMap().firstKey());
+    	assertEquals("A", tulip.constMultiMap().lastKey());
     	assertEquals(new QPoint(6,7), mapRef.take("A"));
     	assertEquals(2, mapRef.removeAll("1"));
-    	assertEquals("2", constMap.firstKey());
-    	assertEquals("2", constMap.lastKey());
-    	assertFalse(constMap.find("X").keyValuePair().isPresent());
-    	assertEquals(new QPoint(5,6), constMap.find("2").keyValuePair().orElse(new QPair<>(null, null)).second);
+    	assertEquals("2", tulip.constMultiMap().firstKey());
+    	assertEquals("2", tulip.constMultiMap().lastKey());
+    	assertFalse(tulip.constMultiMap().find("X").keyValuePair().isPresent());
+    	assertEquals(new QPoint(5,6), tulip.constMultiMap().find("2").keyValuePair().orElse(new QPair<>(null, null)).second);
     	assertEquals(Arrays.asList("2"), mapRef.keys());
     }
     
     @Test
     public void run_testNativeQHash() {
     	QHash<Integer, QPoint> mapRef = tulip.hashRef();
-    	QHash<Integer, QPoint> constMap = tulip.constHash();
     	mapRef.insert(1, new QPoint(0,0));
     	mapRef.insert(2, new QPoint(5,6));
     	mapRef.insert(3, new QPoint(6,7));
     	mapRef.insert(1, new QPoint(1,1));
-    	assertEquals(3, constMap.count());
+    	assertEquals(3, tulip.constHash().size());
     	assertEquals(new QPoint(6,7), mapRef.take(3));
     	mapRef.removeAll(1);
-    	assertFalse(constMap.find(20).keyValuePair().isPresent());
-    	assertEquals(new QPoint(5,6), constMap.find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
+    	assertFalse(tulip.constHash().find(20).keyValuePair().isPresent());
+    	assertEquals(new QPoint(5,6), tulip.constHash().find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
     	assertEquals(Arrays.asList(2), mapRef.keys());
     }
     
     @Test
     public void run_testNativeQMultiHash() {
     	QMultiHash<Integer, QPoint> mapRef = tulip.multiHashRef();
-    	QMultiHash<Integer, QPoint> constMap = tulip.constMultiHash();
     	mapRef.insert(1, new QPoint(0,0));
     	mapRef.insert(2, new QPoint(5,6));
     	mapRef.insert(3, new QPoint(6,7));
     	mapRef.insert(1, new QPoint(1,1));
-    	assertEquals(4, constMap.count());
+    	assertEquals(4, tulip.constMultiHash().size());
     	assertEquals(new QPoint(6,7), mapRef.take(3));
     	mapRef.removeAll(1);
-    	assertFalse(constMap.find(20).keyValuePair().isPresent());
-    	assertEquals(new QPoint(5,6), constMap.find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
+    	assertFalse(tulip.constMultiHash().find(20).keyValuePair().isPresent());
+    	assertEquals(new QPoint(5,6), tulip.constMultiHash().find(2).keyValuePair().orElse(new QPair<>(null, null)).second);
     	assertEquals(Arrays.asList(2), mapRef.keys());
+    }
+    
+    @Test
+    public void test_create_QList_QPoint() {
+    	@SuppressWarnings("deprecation")
+		int typePrev = QMetaType.type("QList<QPoint>");
+    	assertEquals(0, typePrev);
+    	QList<QPoint> pointList = new QList<>(QPoint.class);
+    	pointList.reserve(20);
+    	@SuppressWarnings("deprecation")
+    	int typeAfter = QMetaType.type("QList<QPoint>");
+    	assertTrue(0!=typeAfter);
+    	pointList.append(new QPoint(1,2));
+    	pointList.append(new QPoint(3,4));
+    	pointList.append(Arrays.asList(new QPoint(5,6)));
+    	pointList.prepend(new QPoint(0,0));
+    	assertEquals(new QPoint(5,6), pointList.at(3));
+    	assertTrue(pointList.contains(new QPoint(3,4)));
+    	assertEquals(4, pointList.size());
+    	pointList.append(new QPoint(1,2));
+    	assertEquals(2, pointList.count(new QPoint(1,2)));
+    	assertEquals(1, pointList.indexOf(new QPoint(1,2)));
+    	assertEquals(4, pointList.lastIndexOf(new QPoint(1,2)));
+    	assertTrue(pointList.endsWith(new QPoint(1,2)));
+    	assertFalse(pointList.startsWith(new QPoint(1,2)));
+    	pointList.swapItemsAt(0, 1);
+    	assertTrue(pointList.startsWith(new QPoint(1,2)));
+    	assertFalse(pointList.equals(new QList<>(QPoint.class)));
+    	assertEquals(new QPoint(100,200), pointList.value(100, new QPoint(100,200)));
+    	pointList.removeAt(1);
+    	assertEquals(new QPoint(5,6), pointList.takeAt(2));
+    	pointList.append(new QPoint(3,4));
+    	assertFalse(pointList.removeOne(new QPoint(5,6)));
+    	assertEquals(2, pointList.removeAll(new QPoint(3,4)));
+    	pointList.replace(0, new QPoint(10,20));
+    	assertEquals(1, pointList.count(new QPoint(1,2)));
+    	assertEquals(1, pointList.count(new QPoint(10,20)));
+    	pointList.prepend(new QPoint(0,0));
+    	pointList.move(0, 2);
+    	assertTrue(pointList.endsWith(new QPoint(0,0)));
+    	pointList.insert(1, new QPoint(30,30));
+    	QList<QPoint> midList = pointList.mid(1);
+    	assertEquals(3, midList.size());
+    	assertTrue(midList.startsWith(new QPoint(30,30)));
+    	int counter = 0;
+    	for(@SuppressWarnings("unused") QPoint p : midList) {
+    		++counter;
+    	}
+    	assertEquals(3, counter);
+    	midList.clear();
+    	assertEquals(0, midList.size());
+    }
+    
+    @Test
+    public void test_create_QSet_QPoint() {
+    	@SuppressWarnings("deprecation")
+    	int typePrev = QMetaType.type("QSet<QPointF>");
+    	assertEquals(0, typePrev);
+    	QSet<QPointF> pointList = new QSet<>(QPointF.class);
+    	assertEquals(0, pointList.capacity());
+    	pointList.reserve(20);
+    	@SuppressWarnings("deprecation")
+    	int typeAfter = QMetaType.type("QSet<QPointF>");
+    	assertTrue(0!=typeAfter);
+    	pointList.insert(new QPointF(1,2));
+    	pointList.insert(new QPointF(1,2));
+    	pointList.insert(new QPointF(3,4));
+    	assertEquals(2, pointList.size());
+    	assertFalse(pointList.equals(new QSet<>(QPointF.class)));
+    	assertEquals(pointList, Arrays.asList(new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(1,2)));
+    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(1,2), new QPointF(1,2)));
+    	pointList.remove(new QPointF(3,4));
+    	assertEquals(1, pointList.size());
+    	pointList.insert(new QPointF(5,6));
+    	assertTrue(pointList.intersects(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4))));
+    	pointList.intersect(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(1, pointList.size());
+    	pointList.unite(Arrays.asList(new QPointF(0,0), new QPointF(1,2), new QPointF(3,4)));
+    	assertEquals(3, pointList.size());
+    	int counter = 0;
+    	for(@SuppressWarnings("unused") QPointF p : pointList) {
+    		++counter;
+    	}
+    	assertEquals(3, counter);
+    	pointList.subtract(Arrays.asList(new QPointF(1,2), new QPointF(7,8), new QPointF(9,0)));
+    	assertEquals(2, pointList.size());
+    	assertEquals(pointList, Arrays.asList(new QPointF(3,4), new QPointF(0,0)));
+    	pointList.remove(new QPointF(0,0));
+    	QList<QPointF> values = pointList.values();
+    	assertEquals(values, Arrays.asList(new QPointF(3,4)));
+    	pointList.clear();
+    	assertEquals(0, pointList.size());
+    }
+    
+    @Test
+    public void test_create_SetList() {
+    	int setId = QMetaType.registerMetaType(QSet.class, QMetaType.fromType(String.class));
+    	QList<QSet<String>> setList = new QList<>(new QMetaType(setId));
+    	QSet<String> set = new QSet<>(String.class);
+    	set.insert("A");
+    	set.insert("B");
+    	set.insert("C");
+    	setList.append(set);
+    }
+    
+    @Test
+    public void run_testNativeQStringList() {
+    	QList<String> listRef = tulip.stringListRef();
+    	for (String string : listRef) {
+			string.length();
+		}
+    	assertEquals(0, listRef.size());
+    	assertEquals(0, tulip.constStringList().size());
+    	listRef.add("test");
+    	assertEquals(1, listRef.size());
+    	assertEquals(1, tulip.constStringList().size());
+    	assertEquals("test", tulip.constStringList().get(0));
+    	listRef.add("test2");
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.constStringList().size());
+    	String concat = "";
+    	for (String string : listRef) {
+    		concat += string;
+		}
+    	assertEquals("testtest2", concat);
+    	assertTrue(tulip.constStringList().contains("test2"));
+    	
+    	assertEquals(1, listRef.indexOf("test2"));
+    	assertEquals(1, listRef.lastIndexOf("test2"));
+    	listRef.prepend("doggy");
+    	listRef.prepend("catty");
+    	assertEquals(3, tulip.constStringList().indexOf("test2"));
+    	assertEquals(3, tulip.constStringList().lastIndexOf("test2"));
+    	assertEquals(Arrays.asList("doggy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("doggy", "test"), tulip.constStringList().mid(1, 2));
+    	listRef.move(0, 1);
+    	assertEquals(Arrays.asList("catty", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "test"), tulip.constStringList().mid(1, 2));
+    	listRef.insert(2, "horsy");
+    	assertEquals(Arrays.asList("catty", "horsy"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "horsy"), tulip.constStringList().mid(1, 2));
+    	listRef.removeAt(1);
+    	assertEquals(Arrays.asList("horsy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("horsy", "test"), tulip.constStringList().mid(1, 2));
+    	listRef.removeOne("horsy");
+    	assertEquals(Arrays.asList("test", "test2"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("test", "test2"), tulip.constStringList().mid(1, 2));
+    	listRef.removeAll("test");
+    	assertEquals(2, listRef.size());
+    	listRef.swapItemsAt(0, 1);
+    	assertEquals(Arrays.asList("test2", "doggy"), listRef);
+    	assertEquals(Arrays.asList("test2", "doggy"), tulip.constStringList());
+    	assertEquals("test2", listRef.takeAt(0));
+    	assertEquals("", listRef.value(20));
+    	assertEquals("nothing", listRef.value(20, "nothing"));
+    }
+    
+    @Test
+    public void run_testNativeQByteArrayList() {
+    	QList<QByteArray> listRef = tulip.byteArrayListRef();
+    	for (QByteArray string : listRef) {
+			string.length();
+		}
+    	assertEquals(0, listRef.size());
+    	assertEquals(0, tulip.constByteArrayList().size());
+    	listRef.add(new QByteArray("test"));
+    	assertEquals(1, listRef.size());
+    	assertEquals(1, tulip.constByteArrayList().size());
+    	assertEquals(new QByteArray("test"), tulip.constByteArrayList().get(0));
+    	listRef.add(new QByteArray("test2"));
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.constByteArrayList().size());
+    	String concat = "";
+    	for (QByteArray string : listRef) {
+    		concat += string;
+		}
+    	assertEquals("testtest2", concat);
+    	assertTrue(tulip.constByteArrayList().contains(new QByteArray("test2")));
+
+    	listRef.add(new QByteArray("test"));
+    	assertEquals(2, listRef.count(new QByteArray("test")));
+    	assertEquals(2, tulip.constByteArrayList().count(new QByteArray("test")));
+    	assertEquals(1, listRef.indexOf(new QByteArray("test2")));
+    	assertEquals(1, listRef.lastIndexOf(new QByteArray("test2")));
+    	listRef.prepend(new QByteArray("doggy"));
+    	listRef.prepend(new QByteArray("catty"));
+    	assertEquals(3, tulip.constByteArrayList().indexOf(new QByteArray("test2")));
+    	assertEquals(3, tulip.constByteArrayList().lastIndexOf(new QByteArray("test2")));
+    	assertEquals(Arrays.asList(new QByteArray("doggy"), new QByteArray("test")), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList(new QByteArray("doggy"), new QByteArray("test")), tulip.constByteArrayList().mid(1, 2));
+    	listRef.move(0, 1);
+    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("test")), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("test")), tulip.constByteArrayList().mid(1, 2));
+    	listRef.insert(2, new QByteArray("horsy"));
+    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("horsy")), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList(new QByteArray("catty"), new QByteArray("horsy")), tulip.constByteArrayList().mid(1, 2));
+    	listRef.removeAt(1);
+    	assertEquals(Arrays.asList(new QByteArray("horsy"), new QByteArray("test")), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList(new QByteArray("horsy"), new QByteArray("test")), tulip.constByteArrayList().mid(1, 2));
+    	listRef.removeOne(new QByteArray("horsy"));
+    	assertEquals(Arrays.asList(new QByteArray("test"), new QByteArray("test2")), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList(new QByteArray("test"), new QByteArray("test2")), tulip.constByteArrayList().mid(1, 2));
+    	listRef.removeAll(new QByteArray("test"));
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.constByteArrayList().size());
+    	listRef.swapItemsAt(0, 1);
+    	assertEquals(Arrays.asList(new QByteArray("test2"), new QByteArray("doggy")), listRef);
+    	assertEquals(Arrays.asList(new QByteArray("test2"), new QByteArray("doggy")), tulip.constByteArrayList());
+    	assertEquals(new QByteArray("test2"), listRef.takeAt(0));
+    	assertEquals(new QByteArray(), listRef.value(20));
+    	assertEquals(new QByteArray("nothing"), listRef.value(20, new QByteArray("nothing")));
+    }
+    
+    @Test
+    public void run_testNativeQListMemberField() {
+    	QList<String> listRef = tulip.listRef();
+    	for (String string : listRef) {
+			string.length();
+		}
+    	assertEquals(0, listRef.size());
+    	assertEquals(0, tulip.list().size());
+    	listRef.add("test");
+    	assertEquals(1, listRef.size());
+    	assertEquals(1, tulip.list().size());
+    	assertEquals("test", tulip.list().get(0));
+    	listRef.add("test2");
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.list().size());
+    	String concat = "";
+    	for (String string : listRef) {
+    		concat += string;
+		}
+    	assertEquals("testtest2", concat);
+    	assertTrue(tulip.list().contains("test2"));
+    	
+    	listRef.add("test");
+    	assertEquals(2, listRef.count("test"));
+    	assertEquals(2, tulip.list().count("test"));
+    	assertEquals(1, listRef.indexOf("test2"));
+    	assertEquals(1, listRef.lastIndexOf("test2"));
+    	listRef.prepend("doggy");
+    	listRef.prepend("catty");
+    	assertEquals(3, tulip.list().indexOf("test2"));
+    	assertEquals(3, tulip.list().lastIndexOf("test2"));
+    	assertEquals(Arrays.asList("doggy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("doggy", "test"), tulip.list().mid(1, 2));
+    	listRef.move(0, 1);
+    	assertEquals(Arrays.asList("catty", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "test"), tulip.list().mid(1, 2));
+    	listRef.insert(2, "horsy");
+    	assertEquals(Arrays.asList("catty", "horsy"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "horsy"), tulip.list().mid(1, 2));
+    	listRef.removeAt(1);
+    	assertEquals(Arrays.asList("horsy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("horsy", "test"), tulip.list().mid(1, 2));
+    	listRef.removeOne("horsy");
+    	assertEquals(Arrays.asList("test", "test2"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("test", "test2"), tulip.list().mid(1, 2));
+    	listRef.removeAll("test");
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.list().size());
+    	listRef.swapItemsAt(0, 1);
+    	assertEquals(Arrays.asList("test2", "doggy"), listRef);
+    	assertEquals(Arrays.asList("test2", "doggy"), tulip.list());
+    	assertEquals("test2", listRef.takeAt(0));
+    	assertEquals("", listRef.value(20));
+    	assertEquals("nothing", listRef.value(20, "nothing"));
+    }
+    
+    @Test
+    public void run_testNativeQList() {
+    	QList<String> listRef = tulip.listRef();
+    	for (String string : listRef) {
+			string.length();
+		}
+    	assertEquals(0, listRef.size());
+    	assertEquals(0, tulip.constList().size());
+    	listRef.add("test");
+    	assertEquals(1, listRef.size());
+    	assertEquals(1, tulip.constList().size());
+    	assertEquals("test", tulip.constList().get(0));
+    	listRef.add("test2");
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.constList().size());
+    	String concat = "";
+    	for (String string : listRef) {
+    		concat += string;
+		}
+    	assertEquals("testtest2", concat);
+    	assertTrue(tulip.constList().contains("test2"));
+    	
+    	listRef.add("test");
+    	assertEquals(2, listRef.count("test"));
+    	assertEquals(2, tulip.constList().count("test"));
+    	assertEquals(1, listRef.indexOf("test2"));
+    	assertEquals(1, listRef.lastIndexOf("test2"));
+    	listRef.prepend("doggy");
+    	listRef.prepend("catty");
+    	assertEquals(3, tulip.constList().indexOf("test2"));
+    	assertEquals(3, tulip.constList().lastIndexOf("test2"));
+    	assertEquals(Arrays.asList("doggy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("doggy", "test"), tulip.constList().mid(1, 2));
+    	listRef.move(0, 1);
+    	assertEquals(Arrays.asList("catty", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "test"), tulip.constList().mid(1, 2));
+    	listRef.insert(2, "horsy");
+    	assertEquals(Arrays.asList("catty", "horsy"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("catty", "horsy"), tulip.constList().mid(1, 2));
+    	listRef.removeAt(1);
+    	assertEquals(Arrays.asList("horsy", "test"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("horsy", "test"), tulip.constList().mid(1, 2));
+    	listRef.removeOne("horsy");
+    	assertEquals(Arrays.asList("test", "test2"), listRef.mid(1, 2));
+    	assertEquals(Arrays.asList("test", "test2"), tulip.constList().mid(1, 2));
+    	listRef.removeAll("test");
+    	assertEquals(2, listRef.size());
+    	assertEquals(2, tulip.constList().size());
+    	listRef.swapItemsAt(0, 1);
+    	assertEquals(Arrays.asList("test2", "doggy"), listRef);
+    	assertEquals(Arrays.asList("test2", "doggy"), tulip.constList());
+    	assertEquals("test2", listRef.takeAt(0));
+    	assertEquals("", listRef.value(20));
+    	assertEquals("nothing", listRef.value(20, "nothing"));
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@Test
+    public void testContainerTypeMismatch() {
+		QList container = new QList<>(QRunnable.class);
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	container.append(QRunnable.of(()->{}));
+    	container.append((QRunnable)()->{});
+    	
+    	container = Tulip.createListOfRunnables();
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	container.append(QRunnable.of(()->{}));
+    	container.append((QRunnable)()->{});
+    	
+    	container = Tulip.createListOfEasingFunctions();
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+	    	container.append(QRunnable.of(()->{}));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	container.append((QEasingCurve.EasingFunction)d->d);
+    	
+    	container = Tulip.createListOfListOfRunnables();
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+	    	container.append((QRunnable)()->{});
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	container.add(new ArrayList<>());
+    	container.add(Arrays.asList(QRunnable.of(()->{})));
+    	container.addAll(new ArrayList<>());
+    	try {
+	    	container.addAll(Arrays.asList(1));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	
+    	container = new QList<>(QObject.class);
+		container.append(new QWidget());
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+    		container.append(QRunnable.of(()->{}));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+    		QObject object = new QObject();
+    		object.dispose();
+    		container.append(object);
+			Assert.assertTrue("QNoNativeResourcesException expected to be thrown", false);
+		} catch (QNoNativeResourcesException e) {
+		}
+    	
+    	container = new QList<>(QWidget.class);
+		container.append(new QWidget());
+		container.append(new QCheckBox());
+    	try {
+    		QCheckBox object = new QCheckBox();
+    		object.dispose();
+    		container.append(object);
+			Assert.assertTrue("QNoNativeResourcesException expected to be thrown", false);
+		} catch (QNoNativeResourcesException e) {
+		}
+		try {
+			container.append(new QObject());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+		try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+        	container.append(QRunnable.of(()->{}));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	
+    	container = new QList<>(int.class);
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("ABC");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append("2");
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+    		container.append(QRunnable.of(()->{}));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	container.append(5);
+    	
+    	container = new QStringList();
+    	try {
+			container.append(new QWidget());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+			container.append(new Object());
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+    	try {
+        	container.append(QRunnable.of(()->{}));
+			Assert.fail("IllegalArgumentException expected to be thrown");
+		} catch (IllegalArgumentException e) {
+		}
+		container.append("ABC");
+    }
+    
+    @Test
+    public void testConcurrentModification() {
+    	try {
+			QList<String> list = new QList<>(String.class);
+			list.add("A");
+			list.add("A");
+			for (@SuppressWarnings("unused") String string : list) {
+				list.clear();
+			}
+			Assert.fail("IllegalMonitorStateException expected to be thrown");
+		} catch (IllegalMonitorStateException e) {
+		}
     }
     
     public static void main(String args[]) {

@@ -79,9 +79,6 @@
         <inject-code>
             <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QRemoteObjectNode___" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="native">
-            <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QRemoteObjectNode_native__" quote-before-line="}// class"/>
-        </inject-code>
   </object-type>
   <namespace-type name="QtRemoteObjects">
         <inject-code>
@@ -182,7 +179,7 @@
                 <conversion-rule class="native">
                     jobject %out = nullptr;
                     if(%in){
-                        %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult.newInstance(%env, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
+                        %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
                     }
                 </conversion-rule>
             </modify-argument>
@@ -192,4 +189,5 @@
         </inject-code>
   </object-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QRemoteObjectHostBase' set to non-final, as it is extended by other classes" />
+  <suppress-warning text="WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcHostSideConnection' in '*' but not both." />
 </typesystem>

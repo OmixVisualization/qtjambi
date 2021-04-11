@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,7 +30,6 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Vector;
 
@@ -146,8 +145,7 @@ public class TestQTransform extends QApplicationTest {
     @Test
     public void mapRect() {
         for (Data d : makeData()) {
-            assertTrue(d.name, new QPolygon(d.matrix.mapRect(d.src))
-                    .equals(d.res.toList()));
+            assertEquals(d.name+" not equals", new QPolygon(d.matrix.mapRect(d.src)), d.res);
         }
     }
 
@@ -179,8 +177,7 @@ public class TestQTransform extends QApplicationTest {
     @Test
     public void mapToPolygon() {
         for (Data d : makeData()) {
-            assertTrue(d.name, d.matrix.mapToPolygon(d.src).equals(
-                    d.res.toList()));
+            assertEquals(d.name+" not equals", d.matrix.mapToPolygon(d.src), d.res);
         }
     }
 
@@ -284,14 +281,14 @@ public class TestQTransform extends QApplicationTest {
         polRes.add(new QPointF(1,1));
         polRes.add(new QPointF(0,1));
 
-        assertEquals(res.map(polRes), pol.toList());
+        assertEquals(res.map(polRes), pol);
 
         QTransform inverted = res.inverted();
         QPolygonF ident = inverted.map(pol);
 
-        assertEquals(ident, polRes.toList());
+        assertEquals(ident, polRes);
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQTransform.class.getName());
     }

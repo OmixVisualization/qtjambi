@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,11 +48,14 @@
     <object-type name="Qt3DExtras::QAbstractCameraController" java-name="QAbstractCameraController" since="5.10.0">
         <modify-function signature="setCamera(Qt3DRender::QCamera*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="Qt3DExtras::QAbstractSpriteSheet" java-name="QAbstractSpriteSheet" since="5.10.0">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
         <modify-function signature="setTexture(Qt3DRender::QAbstractTexture*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcTexture" />
@@ -143,8 +146,15 @@
     <object-type name="Qt3DExtras::QSkyboxEntity" java-name="QSkyboxEntity" since="5.10.0"/>
     <object-type name="Qt3DExtras::QSphereGeometry" java-name="QSphereGeometry" since="5.10.0"/>
     <object-type name="Qt3DExtras::QSphereMesh" java-name="QSphereMesh" since="5.10.0"/>
-    <object-type name="Qt3DExtras::QSpriteGrid" java-name="QSpriteGrid" since="5.10.0"/>
+    <object-type name="Qt3DExtras::QSpriteGrid" java-name="QSpriteGrid" since="5.10.0">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
+    </object-type>
     <object-type name="Qt3DExtras::QSpriteSheet" java-name="QSpriteSheet" since="5.10.0">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
         <modify-function signature="addSprite(Qt3DExtras::QSpriteSheetItem*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -159,6 +169,9 @@
     <object-type name="Qt3DExtras::QSpriteSheetItem" java-name="QSpriteSheetItem" since="5.10.0"/>
     <object-type name="Qt3DExtras::QText2DEntity" java-name="QText2DEntity" since="5.10.0"/>
     <object-type name="Qt3DExtras::QTextureMaterial" java-name="QTextureMaterial" since="5.10.0">
+        <extra-includes>
+            <include file-name="qtmatrixes.h" location="global" suppressed="yes"/>
+        </extra-includes>
         <modify-function signature="setTexture(Qt3DRender::QAbstractTexture*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcTexture" />
@@ -191,4 +204,5 @@
         </modify-function>
     </object-type>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractSpriteSheet' set to non-final, as it is extended by other classes" />
+    <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type Qt3DExtras::QAbstractCameraController::InputState." />
 </typesystem>

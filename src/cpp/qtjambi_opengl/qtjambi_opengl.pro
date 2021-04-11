@@ -1,9 +1,14 @@
-TARGET = io_qt_opengl
+QTJAMBILIB = QtJambiOpenGL
+TARGET = $$QTJAMBILIB
 
-greaterThan(QT_MAJOR_VERSION, 4): VERSION = $$QT_VERSION
+VERSION = $$QT_VERSION
 
 include(../qtjambi/qtjambi_include.pri)
-include($$QTJAMBI_CPP/io_qt_opengl/io_qt_opengl.pri)
+include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-# libQtOpenGL.so.4.7.4 is only dependant on libQtCore.so.4 libQtGui.so.4
-QT = core gui widgets opengl
+QT = core gui opengl
+
+HEARDERS = qtjambi_opengl_qhashes.h
+
+SOURCES += \
+    qtjambi_opengl_util.cpp

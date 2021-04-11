@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -78,6 +78,9 @@
             }else{
                 return new(placement) QWebEngineCertificateError(0, QUrl(), false, QString());
             }
+        </custom-constructor>
+        <custom-constructor type="default">
+            new(placement) QWebEngineCertificateError(0, QUrl(), false, QString());
         </custom-constructor>
     </value-type>
 
@@ -165,7 +168,7 @@
     <object-type name="QWebEngineView">
         <modify-function signature="setPage(QWebEnginePage*)">
             <modify-argument index="1">
-                <define-ownership class="java" owner="cplusplus"/>
+                <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="createWindow(QWebEnginePage::WebWindowType)">
@@ -179,6 +182,7 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineContextMenuData::operator=', unmatched parameter type 'QWebEngineContextMenuData::QWebEngineContextDataPrivate*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection', unmatched parameter type 'QSharedPointer*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineCertificateError::QWebEngineCertificateError', unmatched parameter type 'QSharedPointer&lt;CertificateErrorController> const&amp;'" />
-    <suppress-warning text="" />
+    <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineClientCertificateSelection' is missing a default constructor. The resulting C++ code will not compile.*" />
+    <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineHistoryItem' is missing a default constructor. The resulting C++ code will not compile.*" />
 </typesystem>
 

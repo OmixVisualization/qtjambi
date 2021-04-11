@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,7 +40,6 @@ import java.util.Iterator;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.QNativePointer;
 import io.qt.QtUninvokable;
 import io.qt.autotests.generated.AccessibleTextInterfaceSubclass;
 import io.qt.autotests.generated.GraphicsItemSubclass;
@@ -48,102 +47,12 @@ import io.qt.autotests.generated.GraphicsWidgetSubclass;
 import io.qt.autotests.generated.IODeviceSubclass;
 import io.qt.autotests.generated.ImageIOHandlerSubclass;
 import io.qt.autotests.generated.PictureSubclass;
-import io.qt.autotests.generated.SenderQObject;
 import io.qt.autotests.generated.SomeQObject;
 import io.qt.autotests.generated.StyledItemDelegateSubclass;
-import io.qt.autotests.generated.TextCodecSubclass;
 import io.qt.autotests.generated.ValidatorSubclass;
-import io.qt.core.QBuffer;
-import io.qt.core.QByteArray;
-import io.qt.core.QCborError;
-import io.qt.core.QCborStreamReader;
-import io.qt.core.QCborStreamReader.StringResult;
-import io.qt.core.QCborStreamWriter;
-import io.qt.core.QCborValue;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QDataStream;
-import io.qt.core.QDate;
-import io.qt.core.QFile;
-import io.qt.core.QFileInfo;
-import io.qt.core.QIODevice;
-import io.qt.core.QJsonDocument;
-import io.qt.core.QJsonObject;
-import io.qt.core.QJsonParseError;
-import io.qt.core.QJsonValue;
-import io.qt.core.QLineF;
-import io.qt.core.QLocale;
-import io.qt.core.QLockFile;
-import io.qt.core.QMargins;
-import io.qt.core.QMetaObject;
-import io.qt.core.QModelIndex;
-import io.qt.core.QPair;
-import io.qt.core.QPoint;
-import io.qt.core.QPointF;
-import io.qt.core.QRect;
-import io.qt.core.QRectF;
-import io.qt.core.QSignalMapper;
-import io.qt.core.QSize;
-import io.qt.core.QSizeF;
-import io.qt.core.QTemporaryFile;
-import io.qt.core.QTextCodec;
-import io.qt.core.QUrl;
-import io.qt.core.Qt;
-import io.qt.gui.QAbstractTextDocumentLayout;
-import io.qt.gui.QAccessible;
-import io.qt.gui.QAccessible.TextBoundaryType;
-import io.qt.gui.QBitmap;
-import io.qt.gui.QBrush;
-import io.qt.gui.QClipboard;
-import io.qt.gui.QColor;
-import io.qt.gui.QCursor;
-import io.qt.gui.QFontMetrics;
-import io.qt.gui.QGradient;
-import io.qt.gui.QImage;
-import io.qt.gui.QKeySequence;
-import io.qt.gui.QLinearGradient;
-import io.qt.gui.QMatrix2x2;
-import io.qt.gui.QMatrix4x3;
-import io.qt.gui.QPainter;
-import io.qt.gui.QPainterPath;
-import io.qt.gui.QPicture;
-import io.qt.gui.QPictureIO;
-import io.qt.gui.QPixmap;
-import io.qt.gui.QPixmapCache;
-import io.qt.gui.QQuaternion;
-import io.qt.gui.QRadialGradient;
-import io.qt.gui.QRegion;
-import io.qt.gui.QTextCursor;
-import io.qt.gui.QTextDocument;
-import io.qt.gui.QTextFormat;
-import io.qt.gui.QTextObjectInterface;
-import io.qt.gui.QValidator;
-import io.qt.gui.QVector3D;
-import io.qt.internal.QtJambiInternal;
-import io.qt.network.QHostAddress;
-import io.qt.network.QHostAddress.SpecialAddress;
-import io.qt.network.QTcpServer;
-import io.qt.network.QTimeoutException;
-import io.qt.widgets.QAction;
-import io.qt.widgets.QApplication;
-import io.qt.widgets.QGraphicsEllipseItem;
-import io.qt.widgets.QGraphicsItem;
-import io.qt.widgets.QGraphicsItemGroup;
-import io.qt.widgets.QGraphicsLineItem;
-import io.qt.widgets.QGraphicsPixmapItem;
-import io.qt.widgets.QGridLayout;
-import io.qt.widgets.QMenu;
-import io.qt.widgets.QPlainTextDocumentLayout;
-import io.qt.widgets.QPushButton;
-import io.qt.widgets.QShortcut;
-import io.qt.widgets.QSplitter;
-import io.qt.widgets.QStyleOption;
-import io.qt.widgets.QStyleOptionButton;
-import io.qt.widgets.QStyleOptionGraphicsItem;
-import io.qt.widgets.QStyleOptionGroupBox;
-import io.qt.widgets.QStyleOptionViewItem;
-import io.qt.widgets.QWidget;
-import io.qt.xml.QDomDocument;
-import io.qt.xml.QDomElement;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.widgets.*;
 
 public class TestInjectedCode extends QApplicationTest {
     static class IODeviceSubclassSubclass extends IODeviceSubclass {
@@ -187,36 +96,6 @@ public class TestInjectedCode extends QApplicationTest {
                 buffer[i] = data[i];
 
             return size;
-        }
-    }
-
-    static class TextCodecSubclassSubclass extends TextCodecSubclass {
-        char receivedChar[];
-        byte receivedByte[];
-        QTextCodec.ConverterState receivedState;
-
-        @Override
-        protected QByteArray convertFromUnicode(char[] data, QTextCodec.ConverterState state) {
-            receivedChar = data;
-            receivedState = state;
-            return super.convertFromUnicode(data, state);
-        }
-
-        @Override
-        protected String convertToUnicode(byte[] data, QTextCodec.ConverterState state) {
-            receivedByte = data;
-            receivedState = state;
-            return super.convertToUnicode(data, state);
-        }
-
-        @Override
-        public int mibEnum() {
-            return 0;
-        }
-
-        @Override
-        public QByteArray name() {
-            return null;
         }
     }
 
@@ -402,106 +281,15 @@ public class TestInjectedCode extends QApplicationTest {
         public QImage image;
 
         @Override
-        public boolean read(QImage image) {
-            this.image = new QImage();
-
-            super.read(null); // don't crash
-            boolean result = super.read(this.image);
-            return result && (image != null ? image.load("classpath:io/qt/unittests/blue_angle_swirl.jpg") : true);
+        public QImage read() {
+        	QImage image = new QImage();
+            this.image = super.read();
+            return this.image!=null && image.load("classpath:io/qt/unittests/blue_angle_swirl.jpg") ? image : null;
         }
 
         @Override
         public boolean canRead() {
             return false;
-        }
-
-    }
-
-    @Deprecated
-    static class XmlReaderSubclassSubclass extends io.qt.autotests.generated.XmlReaderSubclass {
-
-        @Override
-        public Boolean feature(String name) {
-    		if(name.equals("javaTrue")) {
-    			super.feature(name);
-    			return true;
-    		}
-        	return super.feature(name);
-        }
-
-        @Override
-        public io.qt.xml.QXmlContentHandler contentHandler() {
-            return null;
-        }
-
-        @Override
-        public io.qt.xml.QXmlDeclHandler declHandler() {
-            return null;
-        }
-
-        @Override
-        public io.qt.xml.QXmlDTDHandler DTDHandler() {
-            return null;
-        }
-
-        @Override
-        public io.qt.xml.QXmlEntityResolver entityResolver() {
-            return null;
-        }
-
-        @Override
-        public io.qt.xml.QXmlErrorHandler errorHandler() {
-            return null;
-        }
-
-        @Override
-        public boolean hasFeature(String name) {
-            return name.equals("javaTrue");
-        }
-
-        @Override
-        public io.qt.xml.QXmlLexicalHandler lexicalHandler() {
-            return null;
-        }
-
-        @Override
-        public boolean parse(io.qt.xml.QXmlInputSource input) {
-            return false;
-        }
-
-        @Override
-        public void setContentHandler(io.qt.xml.QXmlContentHandler handler) {
-
-        }
-
-        @Override
-        public void setDeclHandler(io.qt.xml.QXmlDeclHandler handler) {
-
-        }
-
-        @Override
-        public void setDTDHandler(io.qt.xml.QXmlDTDHandler handler) {
-
-        }
-
-        @Override
-        public void setEntityResolver(io.qt.xml.QXmlEntityResolver handler) {
-
-        }
-
-        @Override
-        public void setErrorHandler(io.qt.xml.QXmlErrorHandler handler) {
-
-        }
-
-        @Override
-        public void setFeature(String name, boolean value) {
-
-        }
-
-        @Override
-        public void setLexicalHandler(io.qt.xml.QXmlLexicalHandler handler) {
-
         }
 
     }
@@ -550,17 +338,17 @@ public class TestInjectedCode extends QApplicationTest {
 		}
 
 		@Override
-		public String textAfterOffset(int offset, TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
+		public String textAfterOffset(int offset, QAccessible.TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
 			return super.textAfterOffset(offset+1, boundaryType, startOffset, endOffset);
 		}
 
 		@Override
-		public String textAtOffset(int offset, TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
+		public String textAtOffset(int offset, QAccessible.TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
 			return super.textAtOffset(offset+1, boundaryType, startOffset, endOffset);
 		}
 
 		@Override
-		public String textBeforeOffset(int offset, TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
+		public String textBeforeOffset(int offset, QAccessible.TextBoundaryType boundaryType, int[] startOffset, int[] endOffset) {
 			return super.textBeforeOffset(offset+1, boundaryType, startOffset, endOffset);
 		}
 
@@ -708,42 +496,6 @@ public class TestInjectedCode extends QApplicationTest {
     }
 
     @Test
-    @Deprecated
-    public void testQXmlReaderFeature() {
-        XmlReaderSubclassSubclass xrss = new XmlReaderSubclassSubclass();
-
-        assertFalse(xrss.callFeature("javaFalse"));
-        assertEquals("javaFalse", xrss.myName());
-        assertFalse(xrss.myOk());
-
-        assertTrue(xrss.callFeature("javaTrue"));
-        assertEquals("javaTrue", xrss.myName());
-        assertTrue(xrss.myOk());
-
-        xrss.setMyOk(false);
-        assertFalse(xrss.callFeature("true"));
-        assertEquals("true", xrss.myName());
-        assertFalse(xrss.myOk());
-    }
-
-    @Test
-    public void testQDomElement_setAttributeNS() {
-        QDomDocument document = new QDomDocument();
-        QDomElement element = document.createElement("tag");
-        assertTrue(element!=null);
-        element.setAttributeNS("something", "foo", "bar");
-        assertEquals("bar", element.attributeNS("something", "foo"));
-    }
-
-    @Test
-    public void testQTcpServerWaitForConnection() throws QTimeoutException{
-        QTcpServer server = new QTcpServer();
-        QHostAddress address = new QHostAddress(SpecialAddress.Any);
-        assertTrue(server.listen(address, 0));
-        assertFalse(server.waitForNewConnection(100));
-    }
-
-    @Test
     public void testQTextDocumentUndoRedo() {
         QTextDocument textDocument = new QTextDocument();
         textDocument.setPlainText("i have plain text");
@@ -793,7 +545,7 @@ public class TestInjectedCode extends QApplicationTest {
     	assertTrue(reader.isArray());
     	assertTrue(reader.enterContainer());
     	assertTrue(reader.isString());
-    	StringResult<String> result = reader.readString();
+    	QCborStreamReader.StringResult<String> result = reader.readString();
     	assertTrue(result!=null);
     	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status);
     	assertEquals("TEST", result.data);
@@ -879,7 +631,7 @@ public class TestInjectedCode extends QApplicationTest {
     	assertTrue(reader.isArray());
     	assertTrue(reader.enterContainer());
     	assertTrue(reader.isByteArray());
-    	StringResult<QByteArray> result = reader.readByteArray();
+    	QCborStreamReader.StringResult<QByteArray> result = reader.readByteArray();
     	assertTrue(result!=null);
     	assertEquals(QCborStreamReader.StringResultCode.Ok, result.status);
     	assertEquals(test, result.data);
@@ -951,55 +703,6 @@ public class TestInjectedCode extends QApplicationTest {
     }
 
 
-    private QWidget receivedWidget = null;
-
-    private class SenderQObjectSubclass extends SenderQObject {
-        public Signal2<String, Integer> mappedJavaSignal = new Signal2<String, Integer>();
-
-        private void receiverSlot(QWidget widget) {
-            receivedWidget = widget;
-        }
-
-    }
-
-    @Test
-    public void testQGuiSignalMapperJava() {
-    	QSignalMapper mapper = new QSignalMapper();
-
-        SenderQObjectSubclass receiverObject = new SenderQObjectSubclass();
-        mapper.mapped.overload(QWidget.class).connect(receiverObject::receiverSlot);
-
-        SenderQObjectSubclass senderObject = new SenderQObjectSubclass();
-        QWidget mappedWidget = new QWidget();
-
-        mapper.setMapping(senderObject, mappedWidget);
-        assertTrue(mapper.mapping(mappedWidget) == senderObject);
-
-        senderObject.mappedJavaSignal.connect((QMetaObject.Slot0)mapper::map);
-        senderObject.mappedJavaSignal.emit("foo", 0xf00);
-
-        assertTrue(receivedWidget == mappedWidget);
-    }
-
-    @Test
-    public void testQGuiSignalMapperCpp() {
-        QSignalMapper mapper = new QSignalMapper();
-
-        SenderQObjectSubclass receiverObject = new SenderQObjectSubclass();
-        mapper.mapped.overload(QWidget.class).connect(receiverObject::receiverSlot);
-
-        SenderQObjectSubclass senderObject = new SenderQObjectSubclass();
-        QWidget mappedWidget = new QWidget();
-
-        mapper.setMapping(senderObject, mappedWidget);
-        assertTrue(mapper.mapping(mappedWidget) == senderObject);
-
-        senderObject.connect(mapper);
-        senderObject.emitSignal();
-
-        assertTrue(receivedWidget == mappedWidget);
-    }
-
     @Test
     public void QStylesItemDelegateInitStyleOption() {
         QStyleOptionViewItem item = new QStyleOptionViewItem();
@@ -1011,7 +714,7 @@ public class TestInjectedCode extends QApplicationTest {
             }
         };
 
-        delegate.initStyleOptionInStyledDelegate(QNativePointer.fromObject(item));
+        delegate.initStyleOptionInStyledDelegate(item);
 
         assertEquals(123, item.decorationSize().width());
         assertEquals(456, item.decorationSize().height());
@@ -1086,8 +789,8 @@ public class TestInjectedCode extends QApplicationTest {
     public void testQImageIOHandlerRead() {
         QImage image = new QImage();
         ImageIOHandlerSubclassSubclass iihss = new ImageIOHandlerSubclassSubclass();
-        
-        assertTrue(iihss.callRead(QNativePointer.fromObject(image)));
+        iihss.callRead(null);
+        assertTrue(iihss.callRead(image));
         
         QImage ref1 = new QImage("classpath:io/qt/autotests/svgcards-example.png");
         QImage ref2 = new QImage("classpath:io/qt/unittests/blue_angle_swirl.jpg");
@@ -1147,23 +850,21 @@ public class TestInjectedCode extends QApplicationTest {
     public void testValidatorFixup() {
         ValidatorSubclassSubclass vss = new ValidatorSubclassSubclass();
 
-        QNativePointer input = new QNativePointer(QNativePointer.Type.String);
-        input.setStringValue("acceptable");
-        QNativePointer pos = new QNativePointer(QNativePointer.Type.Int);
-        pos.setIntValue(13);
-        assertEquals(QValidator.State.Acceptable, vss.callValidate(input, pos));
-        assertEquals("javaPrefixacceptablesomePostfix", input.stringValue());
-        assertEquals("acceptable".length(), pos.intValue());
+        String[] str = {"acceptable"};
+        int[] i = {13};
+        assertEquals(QValidator.State.Acceptable, vss.callValidate(str, i));
+        assertEquals("javaPrefixacceptablesomePostfix", str[0]);
+        assertEquals("acceptable".length(), i[0]);
         assertEquals("acceptable", vss.inputString);
         assertEquals(13, vss.inputPos);
         assertEquals("acceptable", vss.inputString());
         assertEquals(13, vss.inputPos());
 
-        input.setStringValue("intermediate");
-        pos.setIntValue(14);
-        assertEquals(QValidator.State.Intermediate, vss.callValidate(input, pos));
-        assertEquals("javaPrefixintermediatesomePostfix", input.stringValue());
-        assertEquals("intermediate".length(), pos.intValue());
+        str[0] = "intermediate";
+        i[0] = 14;
+        assertEquals(QValidator.State.Intermediate, vss.callValidate(str, i));
+        assertEquals("javaPrefixintermediatesomePostfix", str[0]);
+        assertEquals("intermediate".length(), i[0]);
         assertEquals("intermediate", vss.inputString);
         assertEquals(14, vss.inputPos);
         assertEquals("intermediate", vss.inputString());
@@ -1200,25 +901,6 @@ public class TestInjectedCode extends QApplicationTest {
             pm = QPixmapCache.find("noSuchPixmap");
             assertFalse(pm!=null);
         }
-    }
-
-    @Test
-    public void testQPictureParameters() {
-        QPictureIO pictureIO = new QPictureIO("someFile", "PNG");
-
-        pictureIO.setParameters("my parameters");
-        assertEquals("my parameters", pictureIO.parameters());
-    }
-
-    @Test
-    public void testQPictureConstructor() {
-        QPictureIO pictureIO = new QPictureIO(new QTemporaryFile(), "JPEG");
-        assertEquals("JPEG", pictureIO.format());
-        assertEquals("", pictureIO.fileName());
-
-        pictureIO = new QPictureIO("someFile", "PNG");
-        assertEquals("PNG", pictureIO.format());
-        assertEquals("someFile", pictureIO.fileName());
     }
 
     static boolean called = false;
@@ -1608,26 +1290,6 @@ public class TestInjectedCode extends QApplicationTest {
     }
 
     @Test
-    public void testQLineFintersection() {
-        QLineF line1 = new QLineF(10, 0, 10, 20);
-        QLineF line2 = new QLineF(0, 10, 20, 10);
-
-        QPointF intersectionPoint = new QPointF();
-
-        assertEquals(QLineF.IntersectType.BoundedIntersection, line1.intersects(line2, intersectionPoint));
-        assertEquals(10.0, intersectionPoint.x(), 0.0);
-        assertEquals(10.0, intersectionPoint.y(), 0.0);
-
-        line2 = new QLineF(0, 30, 20, 30);
-        assertEquals(QLineF.IntersectType.UnboundedIntersection, line1.intersects(line2, intersectionPoint));
-        assertEquals(10.0, intersectionPoint.x(), 0.0);
-        assertEquals(30.0, intersectionPoint.y(), 0.0);
-
-        line2 = new QLineF(11, 0, 11, 20);
-        assertEquals(QLineF.IntersectType.NoIntersection, line1.intersects(line2, null));
-    }
-
-    @Test
     public void testQDataStreamReadWriteBytes() {
         QByteArray ba = new QByteArray();
 
@@ -1739,7 +1401,8 @@ public class TestInjectedCode extends QApplicationTest {
         assertEquals("KLM", buffer.buffer().toString());
     }
 
-    @Test
+    @SuppressWarnings("deprecation")
+	@Test
     public void testQBufferUseBuffer() {
         QByteArray ba = new QByteArray("CDE");
         QBuffer buffer = new QBuffer(ba);
@@ -1761,47 +1424,6 @@ public class TestInjectedCode extends QApplicationTest {
     }
 
     @Test
-    public void testQTextCodecForNameString() {
-        QTextCodec codec = QTextCodec.codecForName("UTF-8");
-
-        assertTrue(codec != null);
-        assertEquals("UTF-8", codec.name().toString());
-
-        codec = QTextCodec.codecForName("Magic Text Codec Which Successfully Improves What You've Written");
-        assertTrue(codec == null);
-    }
-
-    @Test
-    public void testTextCodecConvertToUnicode() {
-        TextCodecSubclassSubclass tcss = new TextCodecSubclassSubclass();
-        assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(tcss));
-
-        QTextCodec.ConverterState state = new QTextCodec.ConverterState();
-
-        assertEquals("abba", tcss.callToUnicode(new QByteArray("baab"), state));
-        assertTrue(state == tcss.receivedState);
-        assertTrue(state == tcss.receivedState());
-        assertEquals("baab", new QByteArray(tcss.receivedByte).toString());
-        tcss.receivedState = null;
-        tcss.dispose();
-    }
-
-    @Test
-    public void testTextCodecConvertFromUnicode() {
-        TextCodecSubclassSubclass tcss = new TextCodecSubclassSubclass();
-        assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(tcss));
-        QTextCodec.ConverterState state = new QTextCodec.ConverterState();
-
-        assertEquals("sas", tcss.callFromUnicode("asa", state).toString());
-        assertTrue(state == tcss.receivedState);
-        assertTrue(state == tcss.receivedState());
-        assertEquals("asa", new String(tcss.receivedChar));
-        tcss.receivedState = null;
-        tcss.dispose();
-    }
-
-
-    @Test
     public void testIODeviceWriteData() {
         IODeviceSubclassSubclass iodss = new IODeviceSubclassSubclass(128);
 
@@ -1809,10 +1431,10 @@ public class TestInjectedCode extends QApplicationTest {
         assertEquals(23, (int) iodss.callWriteData(ba));
         assertEquals(23, iodss.inputBufferSize);
         assertEquals("Evil draws men together", new QByteArray(iodss.buffer).toString());
-        QNativePointer np = iodss.buffer();
+        java.nio.ByteBuffer np = iodss.buffer();
         byte data[] = new byte[23];
         for (int i=0; i<data.length; ++i)
-            data[i] = np.byteAt(i);
+            data[i] = np.get(i);
         assertEquals("Evil draws men together", new QByteArray(data).toString());
     }
 
@@ -1825,10 +1447,10 @@ public class TestInjectedCode extends QApplicationTest {
         assertEquals(45, iodss.buffer.length);
         assertEquals("Confucius say: Don't go outside with wet hair", new QByteArray(iodss.buffer).toString());
 
-        QNativePointer np = iodss.buffer();
+        java.nio.ByteBuffer np = iodss.buffer();
         byte data[] = new byte[45];
         for (int i=0; i<data.length; ++i)
-            data[i] = np.byteAt(i);
+            data[i] = np.get(i);
         assertEquals("Confucius say: Don't go outside with wet hair", new QByteArray(data).toString());
     }
 
@@ -1841,10 +1463,10 @@ public class TestInjectedCode extends QApplicationTest {
         assertEquals(10, iodss.buffer.length);
         assertEquals("I am a boy", new QByteArray(iodss.buffer).toString());
 
-        QNativePointer np = iodss.buffer();
+        java.nio.ByteBuffer np = iodss.buffer();
         byte data[] = new byte[10];
         for (int i=0; i<data.length; ++i)
-            data[i] = np.byteAt(i);
+            data[i] = np.get(i);
         assertEquals("I am a boy", new QByteArray(data).toString());
     }
 
@@ -1964,7 +1586,8 @@ public class TestInjectedCode extends QApplicationTest {
         assertEquals("hallo", ba2.toString());
     }
 
-    @Test
+    @SuppressWarnings("deprecation")
+	@Test
     public void testByteArrayPushBackString() {
         QByteArray ba = new QByteArray("hello");
 
@@ -1993,7 +1616,7 @@ public class TestInjectedCode extends QApplicationTest {
     public void testByteArrayInsert() {
         QByteArray ba = new QByteArray("hello");
 
-        QByteArray ba2 = ba.insert(3, new QByteArray("gefyl"));
+        QByteArray ba2 = ba.insert(3, "gefyl".getBytes());
         assertEquals("helgefyllo", ba2.toString());
         assertEquals("helgefyllo", ba.toString());
     }
@@ -2084,7 +1707,7 @@ public class TestInjectedCode extends QApplicationTest {
         }
 
         {
-            QLocale locale = new QLocale(QLocale.Language.Norwegian);
+            QLocale locale = new QLocale(QLocale.Language.NorwegianBokmal);
 
             boolean caughtException = false;
             double d = 0.0;
@@ -2114,7 +1737,7 @@ public class TestInjectedCode extends QApplicationTest {
 
     @Test
     public void testQLocaleToInt() {
-        QLocale locale = new QLocale(QLocale.Language.Norwegian, QLocale.Country.Norway);
+        QLocale locale = new QLocale(QLocale.Language.NorwegianBokmal, QLocale.Country.Norway);
 
 //        assertEquals(16, locale.toInt("0x10"));
 //        assertEquals(16, locale.toInt("10", 16));
@@ -2286,104 +1909,6 @@ public class TestInjectedCode extends QApplicationTest {
     	QAccessible.State value3 = new QAccessible.State();
     	value3.setSelfVoicing(true);
     	assertFalse(value3.hashCode()==value.hashCode());
-    }
-    
-    @Test
-    public void testQDomDocument_setContent() {
-    	String content = "<root></root>";
-    	QDomDocument doc = new QDomDocument();
-    	QDomDocument.Result result = doc.setContent(content);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QByteArray(content));
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QBuffer(new QByteArray(content)));
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(content, false);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QByteArray(content), false);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent(new QBuffer(new QByteArray(content)), false);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	result = doc.setContent("<unclosed>");
-    	assertEquals(false, result.success);
-    	assertEquals(11, result.errorColumn);
-    	assertEquals(1, result.errorLine);
-    	assertEquals("unexpected end of file", result.errorMessage);
-    	result = doc.setContent("<unclosed></X>");
-    	assertEquals(false, result.success);
-    	assertEquals(14, result.errorColumn);
-    	assertEquals(1, result.errorLine);
-    	assertEquals("tag mismatch", result.errorMessage);
-    	result = doc.setContent("no XML");
-    	assertEquals(false, result.success);
-    	assertEquals(1, result.errorColumn);
-    	assertEquals(1, result.errorLine);
-    	assertEquals("error occurred while parsing element", result.errorMessage);
-    }
-    
-    @Test
-    @Deprecated
-    public void testQDomDocument_setXMLContent() {
-    	String content = "<root></root>";
-    	QDomDocument doc = new QDomDocument();
-    	io.qt.xml.QXmlInputSource source = new io.qt.xml.QXmlInputSource(new QBuffer(new QByteArray(content)));
-    	QDomDocument.Result result = doc.setContent(source, false);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    	io.qt.xml.QXmlReader reader = new io.qt.xml.QXmlSimpleReader();
-    	source = new io.qt.xml.QXmlInputSource(new QBuffer(new QByteArray(content)));
-    	result = doc.setContent(source, reader);
-    	assertEquals(true, result.success);
-    	assertEquals(0, result.errorColumn);
-    	assertEquals(0, result.errorLine);
-    	assertEquals("", result.errorMessage);
-    }
-    
-    @Test
-    @Deprecated
-    public void testQXmlEntityResolver_resolveEntity() {
-    	io.qt.xml.QXmlEntityResolver handler = new io.qt.xml.QXmlDefaultHandler();
-    	io.qt.xml.QXmlEntityResolver.ResolvedEntity entity = handler.resolveEntity("http://io.qt", "http://io.qt");
-    	assertFalse(entity.error);
-    	assertEquals(null, entity.inputSource);
-    }
-    
-    @Test
-    @Deprecated
-    public void testQXmlNamespaceSupport_processName() {
-    	io.qt.xml.QXmlNamespaceSupport handler = new io.qt.xml.QXmlNamespaceSupport();
-    	io.qt.xml.QXmlNamespaceSupport.ProcessedName result = handler.processName("NS:NAME", true);
-    	assertEquals("NAME", result.localName);
-    	assertEquals("", result.nsuri);
-    }
-    
-    @Test
-    @Deprecated
-    public void testQXmlNamespaceSupport_splitName() {
-    	io.qt.xml.QXmlNamespaceSupport handler = new io.qt.xml.QXmlNamespaceSupport();
-    	io.qt.xml.QXmlNamespaceSupport.SplitName result = handler.splitName("NS:NAME");
-    	assertEquals("NAME", result.localname);
-    	assertEquals("NS", result.prefix);
     }
     
     @Test

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,6 +34,10 @@ package io.qt.qml.util;
  * Is thrown when a class cannot be registered as qml type.
  */
 public class QmlTypeRegistrationException extends RuntimeException{
+	static {
+		QtJambi_LibraryInitializer.init();
+	}
+	
 	private static final long serialVersionUID = 4953567883344704791L;
 
 	public QmlTypeRegistrationException(String message) {

@@ -2,7 +2,7 @@
 <!--****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -79,7 +79,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -111,11 +111,11 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setContent(QXmlInputSource*,QXmlReader*,QString*,int*,int*)">
+        <modify-function signature="setContent(QXmlInputSource*,QXmlReader*,QString*,int*,int*)" until="5.*">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcContent" />
             </modify-argument>
@@ -143,11 +143,11 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)">
+        <modify-function signature="setContent(QXmlInputSource*,bool,QString*,int*,int*)" until="5.*">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcContent" />
             </modify-argument>
@@ -175,7 +175,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>        
@@ -204,7 +204,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -233,7 +233,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -262,7 +262,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -291,7 +291,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -323,7 +323,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QDomDocument$Result"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QDomDocument$Result.newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
+                    jobject %out = Java::QtXml::QDomDocument$Result::newInstance(%env, jboolean(%in), qtjambi_cast&lt;jstring>(%env, errorMsg), errorLine, errorColumn);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -351,7 +351,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QXmlNamespaceSupport$ProcessedName"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QXmlNamespaceSupport$ProcessedName.newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%3), qtjambi_cast&lt;jstring>(%env, __qt_%4));
+                    jobject %out = Java::QtXml::QXmlNamespaceSupport$ProcessedName::newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%3), qtjambi_cast&lt;jstring>(%env, __qt_%4));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -371,7 +371,7 @@
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.xml.QXmlNamespaceSupport$SplitName"/>
                 <conversion-rule class="native">
-                    jobject %out = Java::QtXml::QXmlNamespaceSupport$SplitName.newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%2), qtjambi_cast&lt;jstring>(%env, __qt_%3));
+                    jobject %out = Java::QtXml::QXmlNamespaceSupport$SplitName::newInstance(%env, qtjambi_cast&lt;jstring>(%env, __qt_%2), qtjambi_cast&lt;jstring>(%env, __qt_%3));
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -558,11 +558,11 @@
                 <replace-type modified-type="io.qt.xml.QXmlEntityResolver$ResolvedEntity" />
                 <conversion-rule class="native">
                     jobject java_inputSource = qtjambi_cast&lt;jobject>(%env, __qt_%3);
-                    jobject %out = Java::QtXml::QXmlEntityResolver$ResolvedEntity.newInstance(%env, !%in, java_inputSource);
+                    jobject %out = Java::QtXml::QXmlEntityResolver$ResolvedEntity::newInstance(%env, !%in, java_inputSource);
                 </conversion-rule>
                 <conversion-rule class="shell">
-                    bool %out = !Java::QtXml::QXmlEntityResolver$ResolvedEntity.error(%env, %in);
-                    jobject __inputSource = Java::QtXml::QXmlEntityResolver$ResolvedEntity.inputSource(%env, %in);
+                    bool %out = !Java::QtXml::QXmlEntityResolver$ResolvedEntity::error(%env, %in);
+                    jobject __inputSource = Java::QtXml::QXmlEntityResolver$ResolvedEntity::inputSource(%env, %in);
                     %3 = qtjambi_cast&lt;QXmlInputSource*>(%env, __inputSource);
                 </conversion-rule>
             </modify-argument>

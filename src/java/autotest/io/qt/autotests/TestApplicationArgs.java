@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -34,12 +34,20 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 
 public class TestApplicationArgs extends QApplicationTest {
     @Test
     public void testArguments() {
     	assertEquals(Arrays.asList("QtJambiUnitTest", "arg1", "arg2", "arg3"), QCoreApplication.arguments());
+    }
+    
+    @Test
+    public void testEnv() {
+    	assertEquals(null, QtUtilities.getenv("QTJAMBI_ENV_TEST"));
+    	QtUtilities.putenv("QTJAMBI_ENV_TEST", "1");
+    	assertEquals("1", QtUtilities.getenv("QTJAMBI_ENV_TEST"));
     }
 
     public static void main(String args[]) {

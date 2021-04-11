@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2020 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -29,110 +29,164 @@
 ****************************************************************************/
 package io.qt.core;
 
+import static io.qt.core.QMap.findMapMetaType;
+import static io.qt.internal.QtJambiInternal.nativeId;
+
+import java.util.Map;
+
+import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
+import io.qt.internal.NativeAccess;
 
-
-public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
+/**
+ * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qhash.html">QHash</a></p>
+ */
+public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V> implements Cloneable
 {
 	static {
     	io.qt.core.QtJambi_LibraryInitializer.init();
     }
 
-	private final long beginFunction;
-    private final long capacityFunction;
-	private final long clearFunction;
-	private final long containsFunction;
-	private final long countObjectFunction;
-	private final long endFunction;
-	private final long findFunction;
-	private final long insertFunction;
-	private final long keyFunction;
-	private final long keysFunction;
-	private final long keysForValueFunction;
-	private final long equalFunction;
-	private final long removeAllFunction;
-	private final long reserveFunction;
-	private final long sizeFunction;
-	private final long takeFunction;
-	private final long uniqueKeysFunction;
-	private final long uniteFunction;
-	private final long valueFunction;
-	private final long valuesFunction;
-	private final long valuesKeyFunction;
-	
-    private QHash(Class<K> keyType, Class<V> valueType, long beginFunction, long capacityFunction, long clearFunction, long containsFunction,
-			long countObjectFunction, long endFunction, long findFunction, long insertFunction, long keyFunction, long keysFunction, long keysForValueFunction,
-			long equalFunction, long removeAllFunction, long reserveFunction, long sizeFunction, long takeFunction, long uniqueKeysFunction, long uniteFunction,
-			long valueFunction, long valuesFunction, long valuesKeyFunction) {
-		super(null, keyType, valueType);
-		this.beginFunction = beginFunction;
-		this.capacityFunction = capacityFunction;
-		this.clearFunction = clearFunction;
-		this.containsFunction = containsFunction;
-		this.countObjectFunction = countObjectFunction;
-		this.endFunction = endFunction;
-		this.findFunction = findFunction;
-		this.insertFunction = insertFunction;
-		this.keyFunction = keyFunction;
-		this.keysFunction = keysFunction;
-		this.keysForValueFunction = keysForValueFunction;
-		this.equalFunction = equalFunction;
-		this.reserveFunction = reserveFunction;
-		this.removeAllFunction = removeAllFunction;
-		this.sizeFunction = sizeFunction;
-		this.takeFunction = takeFunction;
-		this.uniqueKeysFunction = uniqueKeysFunction;
-		this.uniteFunction = uniteFunction;
-		this.valueFunction = valueFunction;
-		this.valuesFunction = valuesFunction;
-		this.valuesKeyFunction = valuesKeyFunction;
+    @NativeAccess
+    protected QHash(QPrivateConstructor p) {
+		super(p);
+	}
+    
+    public QHash(Class<K> keyType, Class<V> valueType) {
+		super(null);
+		QMetaType keyMetaType = QMetaType.fromType(keyType);
+		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QHash.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QHash.");
+		initialize(keyType, nativeId(keyMetaType), valueType, nativeId(valueMetaType), null);
+	}
+    
+    public QHash(Map<K,V> other) {
+		super(null);
+		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(other);
+		if(metaTypes.first.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
+		if(metaTypes.first.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QHash.");
+		if(metaTypes.second.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
+		if(metaTypes.second.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QHash.");
+		initialize(metaTypes.first.javaType(), nativeId(metaTypes.first), metaTypes.second.javaType(), nativeId(metaTypes.second), other);
+	}
+    
+	public QHash(Class<K> keyType, QMetaType valueMetaType) {
+		super(null);
+		QMetaType keyMetaType = QMetaType.fromType(keyType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QHash.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QHash.");
+		initialize(keyType, nativeId(keyMetaType), valueMetaType.javaType(), nativeId(valueMetaType), null);
+	}
+    
+	public QHash(QMetaType keyMetaType, Class<V> valueType) {
+		super(null);
+		QMetaType valueMetaType = QMetaType.fromType(valueType);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QHash.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QHash.");
+		initialize(keyMetaType.javaType(), nativeId(keyMetaType), valueType, nativeId(valueMetaType), null);
 	}
 	
-    private QHash(Class<K> keyType, Class<V> valueType, long beginFunction, long capacityFunction, long containsFunction,
-			long countObjectFunction, long endFunction, long findFunction, long keyFunction, long keysFunction, long keysForValueFunction,
-			long equalFunction, long sizeFunction, long uniqueKeysFunction, 
-			long valueFunction, long valuesFunction, long valuesKeyFunction) {
-    	this(keyType, valueType, beginFunction, capacityFunction, 0, containsFunction, countObjectFunction, 
-    			endFunction, findFunction, 0, keyFunction, keysFunction, keysForValueFunction, 
-    			equalFunction, 0, 0, sizeFunction, 0, uniqueKeysFunction, sizeFunction, 
-    			valueFunction, valuesFunction, valuesKeyFunction);
+	public QHash(Class<K> keyType, QMetaType.Type valueMetaType) {
+		this(keyType, new QMetaType(valueMetaType));
+	}
+	
+	public QHash(QMetaType.Type keyMetaType, Class<V> valueType) {
+		this(new QMetaType(keyMetaType), valueType);
+	}
+	
+	public QHash(QMetaType.Type keyMetaType, QMetaType valueMetaType) {
+		this(new QMetaType(keyMetaType), valueMetaType);
+	}
+	
+	public QHash(QMetaType keyMetaType, QMetaType.Type valueMetaType) {
+		this(keyMetaType, new QMetaType(valueMetaType));
+	}
+	
+	public QHash(QMetaType.Type keyMetaType, QMetaType.Type valueMetaType) {
+		this(new QMetaType(keyMetaType), new QMetaType(valueMetaType));
+	}
+    
+	public QHash(QMetaType keyMetaType, QMetaType valueMetaType) {
+		super(null);
+		if(keyMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
+		if(keyMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be key type of QHash.");
+		if(valueMetaType.id()==0)
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
+		if(valueMetaType.id()==QMetaType.Type.Void.value())
+			throw new IllegalArgumentException("void cannot be value type of QHash.");
+		initialize(keyMetaType.javaType(), nativeId(keyMetaType), valueMetaType.javaType(), nativeId(valueMetaType), null);
+	}
+    
+    @QtUninvokable
+    private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<K, V> other);
+    
+    public static QHash<String,Object> createVariantHash() {
+    	return new QHash<>(new QMetaType(QMetaType.Type.QString), new QMetaType(QMetaType.Type.QVariant));
+    }
+    
+    @Override
+	public QHash<K,V> clone(){
+		return new QHash<>(this);
 	}
     
 	@QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> begin()    {
-        if(beginFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_begin(io.qt.internal.QtJambiInternal.checkedNativeId(this), beginFunction);
+        return __qt_QHash_begin(nativeId(this));
     }
     @QtUninvokable
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_begin(long __this__nativeId, long beginFunction);
+    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_begin(long __this__nativeId);
     
     @QtUninvokable
     public final int capacity()    {
-        if(capacityFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_capacity(io.qt.internal.QtJambiInternal.checkedNativeId(this), capacityFunction);
+        return __qt_QHash_capacity(nativeId(this));
     }
     @QtUninvokable
-    static native <T> int __qt_QHash_capacity(long __this__nativeId, long capacityFunction);
+    static native <T> int __qt_QHash_capacity(long __this__nativeId);
 
     @QtUninvokable
     public final void clear()    {
-        if(clearFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QHash_clear(io.qt.internal.QtJambiInternal.checkedNativeId(this), clearFunction);
+        __qt_QHash_clear(nativeId(this));
     }
     @QtUninvokable
-    static native void __qt_QHash_clear(long __this__nativeId, long clearFunction);
+    static native void __qt_QHash_clear(long __this__nativeId);
 
     @QtUninvokable
     public final boolean contains(K key)    {
-        if(containsFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_contains(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, containsFunction);
+        try{
+        	return __qt_QHash_contains(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
     @QtUninvokable
-    static native <K> boolean __qt_QHash_contains(long __this__nativeId, K key, long containsFunction);
+    static native <K> boolean __qt_QHash_contains(long __this__nativeId, K key);
 
     @QtUninvokable
     public final int count()    {
@@ -141,39 +195,49 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
 
     @QtUninvokable
     public final int count(K key)    {
-        if(countObjectFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_count(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, countObjectFunction);
+        try{
+        	return __qt_QHash_count(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
     @QtUninvokable
-    static native <K> int __qt_QHash_count(long __this__nativeId, K key, long countObjectFunction);
+    static native <K> int __qt_QHash_count(long __this__nativeId, K key);
 
     @QtUninvokable
     protected final io.qt.core.QMapIterator<K,V> end()    {
-        if(endFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_end(io.qt.internal.QtJambiInternal.checkedNativeId(this), endFunction);
+        return __qt_QHash_end(nativeId(this));
     }
     @QtUninvokable
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_end(long __this__nativeId, long endFunction);
+    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_end(long __this__nativeId);
 
     @QtUninvokable
     public final io.qt.core.QMapIterator<K,V> find(K key)    {
-        if(findFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_find(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, findFunction);
+        try{
+        	return __qt_QHash_find(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+        }
     }
     @QtUninvokable
-    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_find(long __this__nativeId, K key, long findFunction);
+    static native <K,V> io.qt.core.QMapIterator<K,V> __qt_QHash_find(long __this__nativeId, K key);
 
     @QtUninvokable
     public final void insert(K key, V value)    {
-        if(insertFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QHash_insert(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, value, insertFunction);
+    	try {
+    		__qt_QHash_insert(nativeId(this), key, value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, value);
+    	}
     }
     @QtUninvokable
-    static native <K,V> void __qt_QHash_insert(long __this__nativeId, K key, V value, long insertFunction);
+    static native <K,V> void __qt_QHash_insert(long __this__nativeId, K key, V value);
 
     @QtUninvokable
     public final boolean isEmpty()    {
@@ -186,97 +250,88 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     }
     @QtUninvokable
     public final K key(V value, K defaultKey)    {
-        if(keyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_key(io.qt.internal.QtJambiInternal.checkedNativeId(this), value, defaultKey, keyFunction);
+        try{
+        	return __qt_QHash_key(nativeId(this), value, defaultKey);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), defaultKey, value);
+        }
     }
     @QtUninvokable
-    static native <K,V> K __qt_QHash_key(long __this__nativeId, V value, K defaultKey, long keyFunction);
+    static native <K,V> K __qt_QHash_key(long __this__nativeId, V value, K defaultKey);
 
     @QtUninvokable
     public final java.util.List<K> keys()    {
-        if(keysFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_keys(io.qt.internal.QtJambiInternal.checkedNativeId(this), keysFunction);
+        return __qt_QHash_keys(nativeId(this));
     }
     @QtUninvokable
-    static native <K> java.util.List<K> __qt_QHash_keys(long __this__nativeId, long keysFunction);
+    static native <K> java.util.List<K> __qt_QHash_keys(long __this__nativeId);
 
     @QtUninvokable
     public final java.util.List<K> keys(V value)    {
-        if(keysForValueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_keysForValue(io.qt.internal.QtJambiInternal.checkedNativeId(this), value, keysForValueFunction);
+    	try {
+    		return __qt_QHash_keysForValue(nativeId(this), value);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, valueMetaType(), value);
+    	}
     }
     @QtUninvokable
-    static native <K,V> java.util.List<K> __qt_QHash_keysForValue(long __this__nativeId, V value, long keysForValueFunction);
+    static native <K,V> java.util.List<K> __qt_QHash_keysForValue(long __this__nativeId, V value);
 
     @QtUninvokable
     private final boolean operator_equal(java.util.Map<K,V> other)    {
-        if(equalFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_operator_equal(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, equalFunction);
+        return __qt_QHash_operator_equal(nativeId(this), other);
     }
     @QtUninvokable
-    static native <K,V> boolean __qt_QHash_operator_equal(long __this__nativeId, java.util.Map<K,V> other, long equalFunction);
+    static native <K,V> boolean __qt_QHash_operator_equal(long __this__nativeId, java.util.Map<K,V> other);
 
     @QtUninvokable
     public final int removeAll(Object key)    {
-        if(removeAllFunction==0)
-        	throw new UnsupportedOperationException();
-        if(checkKey(key))
-        	return __qt_QHash_remove(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, removeAllFunction);
-        else return 0;
+        try{
+        	return __qt_QHash_remove(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return 0;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return 0;
+    	}
     }
     @QtUninvokable
-    static native <K,V> int __qt_QHash_remove(long __this__nativeId, K key, long removeAllFunction);
+    static native <K,V> int __qt_QHash_remove(long __this__nativeId, K key);
     
     @QtUninvokable
     public final void reserve(int size)    {
-        if(reserveFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QHash_reserve(io.qt.internal.QtJambiInternal.checkedNativeId(this), size, reserveFunction);
+        __qt_QHash_reserve(nativeId(this), size);
     }
     @QtUninvokable
-    static native <T> void __qt_QHash_reserve(long __this__nativeId, int size, long reserveFunction);
+    static native <T> void __qt_QHash_reserve(long __this__nativeId, int size);
 
     @QtUninvokable
     public final int size()    {
-        if(sizeFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_size(io.qt.internal.QtJambiInternal.checkedNativeId(this), sizeFunction);
+        return __qt_QHash_size(nativeId(this));
     }
     @QtUninvokable
-    static native int __qt_QHash_size(long __this__nativeId, long sizeFunction);
+    static native int __qt_QHash_size(long __this__nativeId);
 
     @QtUninvokable
     public final V take(K key)    {
-        if(takeFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_take(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, takeFunction);
+    	try {
+    		return __qt_QHash_take(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QSet.handleException(e, keyMetaType(), key);
+    	}
     }
     @QtUninvokable
-    static native <K,V> V __qt_QHash_take(long __this__nativeId, K key, long takeFunction);
-
-    @QtUninvokable
-    @Deprecated
-    public final java.util.List<K> uniqueKeys()    {
-        if(uniqueKeysFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_uniqueKeys(io.qt.internal.QtJambiInternal.checkedNativeId(this), uniqueKeysFunction);
-    }
-    @QtUninvokable
-    static native <K> java.util.List<K> __qt_QHash_uniqueKeys(long __this__nativeId, long uniqueKeysFunction);
-
-    @QtUninvokable
-    @Deprecated
-    public final void unite(java.util.Map<? super K,? super V> other)    {
-        if(uniteFunction==0)
-        	throw new UnsupportedOperationException();
-        __qt_QHash_unite(io.qt.internal.QtJambiInternal.checkedNativeId(this), other, uniteFunction);
-    }
-    @QtUninvokable
-    static native void __qt_QHash_unite(long __this__nativeId, Object other, long uniteFunction);
+    static native <K,V> V __qt_QHash_take(long __this__nativeId, K key);
 
     @QtUninvokable
     public final V value(K key) {
@@ -284,37 +339,29 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
     }
     @QtUninvokable
     public final V value(K key, V defaultValue)    {
-        if(valueFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_value(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, defaultValue, valueFunction);
+    	try {
+    		return __qt_QHash_value(nativeId(this), key, defaultValue);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(RuntimeException e) {
+    		throw QMap.handleException(e, keyMetaType(), valueMetaType(), key, defaultValue);
+    	}
     }
     @QtUninvokable
-    static native <K,V> V __qt_QHash_value(long __this__nativeId, K key, V defaultValue, long valueFunction);
+    static native <K,V> V __qt_QHash_value(long __this__nativeId, K key, V defaultValue);
 
     @QtUninvokable
     public final java.util.List<V> values()    {
-        if(valuesFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_values(io.qt.internal.QtJambiInternal.checkedNativeId(this), valuesFunction);
+        return __qt_QHash_values(nativeId(this));
     }
     @QtUninvokable
-    static native <V> java.util.List<V> __qt_QHash_values(long __this__nativeId, long valuesFunction);
-
-    @QtUninvokable
-    @Deprecated
-    public final java.util.List<V> values(K key)    {
-        if(valuesKeyFunction==0)
-        	throw new UnsupportedOperationException();
-        return __qt_QHash_values(io.qt.internal.QtJambiInternal.checkedNativeId(this), key, valuesKeyFunction);
-    }
-    @QtUninvokable
-    static native <K,V> java.util.List<V> __qt_QHash_values(long __this__nativeId, K key, long valuesKeyFunction);
+    static native <V> java.util.List<V> __qt_QHash_values(long __this__nativeId);
 
     @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
-        if (other instanceof java.util.Map) {
+        if (other instanceof java.util.Map && QMap.checkContainerType(this.keyMetaType(), this.valueMetaType(), (java.util.Map<?,?>) other)) {
             return operator_equal((java.util.Map<K,V>) other);
         }
         return false;
@@ -334,36 +381,466 @@ public class QHash<K,V> extends io.qt.internal.QtJambiHashObject<K,V>
 
     @Override
     @QtUninvokable
-    public boolean containsKey(Object key){
-        return checkKey(key) ? contains(castKey(key)) : false;
+    public final boolean containsKey(Object key){
+        try{
+        	return __qt_QHash_contains(nativeId(this), key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return false;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return false;
+        }
     }
 
     @Override
     @QtUninvokable
-    public V get(Object key){
-        return checkKey(key) ? value(castKey(key)) : null;
+    public final V get(Object key){
+		try{
+			return __qt_QHash_value(nativeId(this), key, null);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return null;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return null;
+		}
     }
 
     @Override
     @QtUninvokable
-    public V put(K key, V value){
+    public final V put(K key, V value){
         V old = value(key);
         insert(key, value);
         return old;
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     @QtUninvokable
-    public V remove(Object key){
-        if(checkKey(key))
-            return take(castKey(key));
-        else return null;
+    public final V remove(Object key){
+        try{
+        	return __qt_QHash_take(nativeId(this), (K)key);
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return null;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, keyMetaType(), key);
+    		if(e1==e)
+    			throw e;
+    		return null;
+    	}
     }
 
-    @Override
+	@Override
     @QtUninvokable
-    public boolean containsValue(Object value){
-        return checkValue(value) ? keys(castValue(value)).isEmpty() : false;
+    public final boolean containsValue(Object value){
+    	try {
+    		return __qt_QHash_keysForValue(nativeId(this), value).isEmpty();
+    	}catch(QNoNativeResourcesException e) {
+    		throw e;
+    	}catch(IllegalArgumentException e) {
+    		return false;
+    	}catch(RuntimeException e) {
+    		RuntimeException e1 = QSet.handleException(e, valueMetaType(), value);
+    		if(e1==e)
+    			throw e;
+    		return false;
+    	}
     }
 
+
+    
+    @io.qt.QtUninvokable
+    public void writeTo(io.qt.core.QDataStream stream){
+        __qt_QHash_writeTo(nativeId(this), nativeId(stream));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void __qt_QHash_writeTo(long __this__nativeId, long stream);
+    
+    @io.qt.QtUninvokable
+    public void readFrom(io.qt.core.QDataStream stream){
+        __qt_QHash_readFrom(nativeId(this), nativeId(stream));
+    }
+    
+    @io.qt.QtUninvokable
+    private native void __qt_QHash_readFrom(long __this__nativeId, long stream);
+    
+    @io.qt.QtUninvokable
+    final QMetaType keyMetaType() {
+    	return keyMetaType(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    static native QMetaType keyMetaType(long __this_nativeId);
+    
+    @io.qt.QtUninvokable
+    final QMetaType valueMetaType() {
+    	return valueMetaType(nativeId(this));
+    }
+    @io.qt.QtUninvokable
+    static native QMetaType valueMetaType(long __this_nativeId);
+    
+    /**
+     * Returns a QHash containing a single mapping.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the mapping's key
+     * @param v1 the mapping's value
+     * @return a {@code QHash} containing the specified mapping
+     * @throws NullPointerException if the key or the value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1), 
+    			QList.findElementMetaType(v1));
+    	result.insert(k1, v1);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing two mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2), 
+    			QList.findElementMetaType(v1, v2));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing three mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3), 
+    			QList.findElementMetaType(v1, v2, v3));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing four mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4), 
+    			QList.findElementMetaType(v1, v2, v3, v4));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing five mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing six mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing seven mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing eight mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing nine mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param v9 the ninth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8, v9));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+    	result.insert(k9, v9);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing ten mappings.
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param k1 the first mapping's key
+     * @param v1 the first mapping's value
+     * @param k2 the second mapping's key
+     * @param v2 the second mapping's value
+     * @param k3 the third mapping's key
+     * @param v3 the third mapping's value
+     * @param k4 the fourth mapping's key
+     * @param v4 the fourth mapping's value
+     * @param k5 the fifth mapping's key
+     * @param v5 the fifth mapping's value
+     * @param k6 the sixth mapping's key
+     * @param v6 the sixth mapping's value
+     * @param k7 the seventh mapping's key
+     * @param v7 the seventh mapping's value
+     * @param k8 the eighth mapping's key
+     * @param v8 the eighth mapping's value
+     * @param k9 the ninth mapping's key
+     * @param v9 the ninth mapping's value
+     * @param k10 the tenth mapping's key
+     * @param v10 the tenth mapping's value
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any key or value is {@code null}
+     */
+    public static <K, V> QHash<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5,
+                               K k6, V v6, K k7, V v7, K k8, V v8, K k9, V v9, K k10, V v10) {
+    	QHash<K, V> result = new QHash<>(
+    			QList.findElementMetaType(k1, k2, k3, k4, k5, k6, k7, k8, k9, k10), 
+    			QList.findElementMetaType(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10));
+    	result.insert(k1, v1);
+    	result.insert(k2, v2);
+    	result.insert(k3, v3);
+    	result.insert(k4, v4);
+    	result.insert(k5, v5);
+    	result.insert(k6, v6);
+    	result.insert(k7, v7);
+    	result.insert(k8, v8);
+    	result.insert(k9, v9);
+    	result.insert(k10, v10);
+        return result;
+    }
+
+    /**
+     * Returns a QHash containing keys and values extracted from the given entries.
+     *
+     * @apiNote
+     * It is convenient to create the map entries using the {@link Map#entry Map.entry()} method.
+     * For example,
+     *
+     * <pre>{@code
+     *     import static java.util.Map.entry;
+     *
+     *     QHash<Integer,String> map = QHash.ofEntries(
+     *         entry(1, "a"),
+     *         entry(2, "b"),
+     *         entry(3, "c"),
+     *         ...
+     *         entry(26, "z"));
+     * }</pre>
+     *
+     * @param <K> the {@code QHash}'s key type
+     * @param <V> the {@code QHash}'s value type
+     * @param entries {@code java.util.Map.Entry}s containing the keys and values from which the map is populated
+     * @return a {@code QHash} containing the specified mappings
+     * @throws NullPointerException if any entry, key, or value is {@code null}, or if
+     *         the {@code entries} array is {@code null}
+     */
+    @SafeVarargs
+    public static <K, V> QHash<K, V> ofEntries(Map.Entry<? extends K, ? extends V> entry0, Map.Entry<? extends K, ? extends V>... entries) {
+    	QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(entry0, entries);
+    	QHash<K, V> result = new QHash<>(metaTypes.first, metaTypes.second);
+    	result.insert(entry0.getKey(), entry0.getValue());
+    	for (Map.Entry<? extends K, ? extends V> entry : entries) {
+        	result.insert(entry.getKey(), entry.getValue());
+		}
+        return result;
+    }
 }
