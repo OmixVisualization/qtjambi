@@ -2,7 +2,6 @@
 #define QTJAMBI_LOCATION_HASHES_H
 
 #include <qtjambi_core/qtjambi_core_qhashes.h>
-#include <QtCore/QtCore>
 #include <QtLocation/QtLocation>
 #include <qtjambi_positioning/qtjambi_positioning_hashes.h>
 

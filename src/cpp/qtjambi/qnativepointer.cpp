@@ -27,8 +27,8 @@
 **
 ****************************************************************************/
 
-#include <QtCore/QtCore>
 #include "qtjambi_core.h"
+#include <QtCore/QtCore>
 #include "qtjambi_repository_p.h"
 #include "qtjambitypemanager_p.h"
 #include "qtjambilink_p.h"

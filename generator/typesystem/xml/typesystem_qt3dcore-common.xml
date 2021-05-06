@@ -74,6 +74,21 @@
     <rejection class="Qt3DCore::FunctorType"/>
     <rejection class="Qt3DCore::QGeometry" function-name="boundingVolumeSpecifier"/>
     <object-type name="Qt3DCore::QGeometry" java-name="QGeometry" since="6.0.0">
+        <modify-function signature="addAttribute(Qt3DCore::QAttribute*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeAttribute(Qt3DCore::QAttribute*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setBoundingVolumePositionAttribute(Qt3DCore::QAttribute*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcBoundingVolumePositionAttribute"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="Qt3DCore::QAttribute" java-name="QAttribute" since="6.0.0">
         <modify-function signature="setBuffer(Qt3DCore::QBuffer*)">
@@ -105,6 +120,11 @@
         </modify-function>
     </interface-type>
     <object-type name="Qt3DCore::QBoundingVolume" java-name="QBoundingVolume" since="6.0.0">
+        <modify-function signature="setView(Qt3DCore::QGeometryView*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcView"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="Qt3DCore::QCoreAspect" java-name="QCoreAspect" since="6.0.0">
     </object-type>
@@ -112,6 +132,11 @@
     </object-type>
     <enum-type name="Qt3DCore::QGeometryView::PrimitiveType" since="6.0.0"/>
     <object-type name="Qt3DCore::QGeometryView" java-name="QGeometryView" since="6.0.0">
+        <modify-function signature="setGeometry(Qt3DCore::QGeometry*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <enum-type name="Qt3DCore::ChangeFlag" flags="Qt3DCore::ChangeFlags"/>
     <enum-type name="Qt3DCore::QNode::PropertyTrackingMode" since="5.9.0"/>

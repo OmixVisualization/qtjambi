@@ -19,6 +19,7 @@ inline hash_type qHash(const QQuick3DGeometry::Attribute &value){
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+#include <QtQuick3D/QQuick3DInstancing>
 inline hash_type qHash(const QQuick3DInstancing::InstanceTableEntry &value){
     hash_type hashCode = qHash(value.row0);
     hashCode = hashCode * 31 + qHash(value.row1);

@@ -80,23 +80,6 @@
 #  include <jni_md.h>
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(6,1,0)
-#if !defined(Q_OS_ANDROID)
-#define Q_OS_ANDROID
-#if defined(Q_OS_ANDROID_EMBEDDED)
-#define TMP_Q_OS_ANDROID_EMBEDDED Q_OS_ANDROID_EMBEDDED
-#include <QtCore/QJniEnvironment>
-#include <QtCore/QJniObject>
-#undef Q_OS_ANDROID_EMBEDDED
-#define Q_OS_ANDROID_EMBEDDED TMP_Q_OS_ANDROID_EMBEDDED
-#else //defined(Q_OS_ANDROID_EMBEDDED)
-#include <QtCore/QJniEnvironment>
-#include <QtCore/QJniObject>
-#endif //defined(Q_OS_ANDROID_EMBEDDED)
-#undef Q_OS_ANDROID
-#endif //!defined(Q_OS_ANDROID)
-#endif //QT_VERSION >= QT_VERSION_CHECK(6,1,0)
-
 /* Win64 ABI does not use underscore prefixes symbols we could also use !defined(__MINGW64__) */
 #if defined(Q_CC_MINGW) && !defined(_WIN64)
 #  define QTJAMBI_FUNCTION_PREFIX(name) _##name

@@ -154,6 +154,8 @@ class TypeDatabase {
 
         const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary() const { return m_typeSystemsByQtLibrary; }
 
+        inline uint qtVersion() const {return m_qtVersion;}
+
     private:
         uint m_qtVersion;
     uint m_suppressWarnings :

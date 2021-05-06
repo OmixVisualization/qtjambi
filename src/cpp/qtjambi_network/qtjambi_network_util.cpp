@@ -1,3 +1,4 @@
+#include <qtjambi/qtjambi_global.h>
 #include <QtNetwork>
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>

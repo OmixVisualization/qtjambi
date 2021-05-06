@@ -1935,21 +1935,21 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QSignalTransition">
+    <object-type name="QSignalTransition" until="5.*">
         <modify-function signature="setSenderObject(const QObject*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcSenderObject" />
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QEventTransition">
+    <object-type name="QEventTransition" until="5.*">
         <modify-function signature="setEventSource(QObject*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcEventSource" />
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QFinalState" />
+    <object-type name="QFinalState" until="5.*"/>
     <value-type name="QMargins">
     <!--     <modify-function signature="operator==(const QMargins &amp;)" remove="all" /> -->
         <modify-function signature="operator-=(int)" rename="subtract">
@@ -3177,6 +3177,7 @@
     <enum-type name="QSystemSemaphore::AccessMode" />
     <enum-type name="QSystemSemaphore::SystemSemaphoreError" />
     <object-type name="QSystemSemaphore">
+        <modify-function signature="tr(const char *, const char *, int)" remove="all" since="6.1.0"/>
     </object-type>
     <object-type name="QReadWriteLock">
     </object-type>

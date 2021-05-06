@@ -45,7 +45,7 @@
 #ifndef ENUMS_H
 #define ENUMS_H
 
-#include <QtCore/QtCore>
+#include <QtCore/QtGlobal>
 
 enum TheGlobalEnum {
     Zero,

@@ -45,11 +45,13 @@
 #ifndef GENERAL_H
 #define GENERAL_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtGui/QtGui>
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
 #endif
-#include <jni.h>
 
 template<typename T>
 bool initializer_list_equals(const std::initializer_list<T>& a,const std::initializer_list<T>& b){

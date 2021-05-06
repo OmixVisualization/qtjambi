@@ -600,7 +600,8 @@ namespace rpp {
                             "QVariant",
                             "QPointF",
                             "qanimationclipdata.h",
-                            "qchannel.h"
+                            "qchannel.h",
+                            "QStringList"
                         };
                     if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0 && !ignoredFiles.contains(QByteArray(filename.c_str()))) {
                         QString message = QString("No such file or directory: %1%2%3")

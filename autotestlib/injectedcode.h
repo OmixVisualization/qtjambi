@@ -45,6 +45,9 @@
 #ifndef INJECTEDCODE_H
 #define INJECTEDCODE_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
 //#include <QtGui/private/qaccessible2_p.h>
 #include <QtGui/QtGui>

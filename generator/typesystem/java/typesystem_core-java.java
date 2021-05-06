@@ -7892,10 +7892,10 @@ class QSignalTransition___{
     /**
      * Constructs a new signal transition associated with the given signal of the given sender object and with the given sourceState.
      */
-    public QSignalTransition(io.qt.core.QMetaObject.AbstractSignal signal, io.qt.core.QState sourceState) {
+    public QSignalTransition(io.qt.core.QMetaObject.AbstractSignal signal, QState sourceState) {
         super((QPrivateConstructor)null);
-        if(signal.containingObject() instanceof QObject) {
-            QObject sender = (QObject)signal.containingObject();
+        if(signal.containingObject() instanceof io.qt.core.QObject) {
+            io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
             __qt_QSignalTransition_new_const_QObject_ptr_const_char_ptr_QState_ptr(this, sender, signalSignature, sourceState);
         }else {
@@ -7908,11 +7908,11 @@ class QSignalTransition___{
      */
     @io.qt.QtUninvokable
     public final void setSignal(io.qt.core.QMetaObject.AbstractSignal signal){
-        if(signal.containingObject() instanceof QObject) {
-            QObject sender = (QObject)signal.containingObject();
+        if(signal.containingObject() instanceof io.qt.core.QObject) {
+            io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
             __qt_QSignalTransition_setSenderObject_const_QObject_ptr(nativeId(this), checkedNativeId(sender));
-            __qt_QSignalTransition_setSignal_cref_QByteArray(nativeId(this), nativeId(new QByteArray(signalSignature)));
+            __qt_QSignalTransition_setSignal_cref_QByteArray(nativeId(this), nativeId(new io.qt.core.QByteArray(signalSignature)));
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -7927,9 +7927,9 @@ class QState___{
      * The transition has this state as the source, and the given target as the target state.
      */
     @io.qt.QtUninvokable
-    public final io.qt.core.QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, io.qt.core.QAbstractState target) {
-        if(signal.containingObject() instanceof QObject) {
-            QObject sender = (QObject)signal.containingObject();
+    public final QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, QAbstractState target) {
+        if(signal.containingObject() instanceof io.qt.core.QObject) {
+            io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
             String signalSignature = cppSignalSignature(signal);
             return __qt_QState_addTransition_const_QObject_ptr_const_char_ptr_QAbstractState_ptr(nativeId(this), checkedNativeId(sender), signalSignature, checkedNativeId(target));
         }else {

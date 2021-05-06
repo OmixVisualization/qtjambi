@@ -45,6 +45,9 @@
 #ifndef METAOBJECTQTMETACAST_H
 #define METAOBJECTQTMETACAST_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 //#include <stdint.h>
 #include <QtCore/QObject>
 #include <QtCore/qmetaobject.h>

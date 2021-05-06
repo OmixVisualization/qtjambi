@@ -43,6 +43,7 @@
 #define QFUTURE_TEST
 #endif
 
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QFuture>
 #include <QtCore/QFutureWatcher>
 #include <QtCore/QFutureSynchronizer>

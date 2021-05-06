@@ -45,6 +45,9 @@
 #ifndef NAMESPACE_H
 #define NAMESPACE_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <stdio.h>
 #include <QtCore/QtCore>
 #ifndef QTJAMBI_NO_WIDGETS

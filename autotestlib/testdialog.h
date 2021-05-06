@@ -45,6 +45,9 @@
 #ifndef TESTDIALOG_H
 #define TESTDIALOG_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
 #endif

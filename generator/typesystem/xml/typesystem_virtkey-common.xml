@@ -75,7 +75,23 @@
     </enum-type>
     <enum-type name="QVirtualKeyboardSelectionListModel::Type"/>
     <object-type name="QVirtualKeyboardSelectionListModel">
+        <modify-function signature="setDataSource(QVirtualKeyboardAbstractInputMethod*,QVirtualKeyboardSelectionListModel::Type)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDataSource"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QVirtualKeyboardTrace">
+    </object-type>
+    <object-type name="QVirtualKeyboardDictionary" since="6.1.0">
+    </object-type>
+    <object-type name="QVirtualKeyboardDictionaryManager" since="6.1.0">
+        <modify-function signature="createDictionary(QString)">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QVirtualKeyboardObserver" since="6.1.0">
     </object-type>
 </typesystem>

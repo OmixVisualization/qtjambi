@@ -702,7 +702,8 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             iteratorEntry->setInclude(Include(Include::IncludePath, "QtCore/QVector"));
             iteratorEntry->addExtraInclude(Include(Include::IncludePath, "QtCore/QStack"));
         }
-        if(qtVersion < QT_VERSION_CHECK(6,0,0)){
+        //if(qtVersion < QT_VERSION_CHECK(6,0,0))
+        {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QVector", ContainerTypeEntry::VectorContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QVector"));
             addType(entry);

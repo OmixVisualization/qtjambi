@@ -475,7 +475,7 @@
             </modify-argument>
         </modify-function>
         <modify-function signature="updateGraphicsPipelineState(QSGMaterialShader::RenderState &amp;, QSGMaterialShader::GraphicsPipelineState *, QSGMaterial *, QSGMaterial *)" since="6.0.0">
-            <modify-argument index="1">
+            <modify-argument index="1" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.quick.QSGMaterialShader$RenderState"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
@@ -485,7 +485,7 @@
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
-            <modify-argument index="2">
+            <modify-argument index="2" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.quick.QSGMaterialShader$GraphicsPipelineState"/>
                 <conversion-rule class="native">
                     QSGMaterialShader::GraphicsPipelineState* %out = qtjambi_cast&lt;QSGMaterialShader::GraphicsPipelineState*>(%env, %in);
@@ -494,9 +494,11 @@
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
+            <modify-argument index="3" invalidate-after-use="yes" />
+            <modify-argument index="4" invalidate-after-use="yes" />
         </modify-function>
         <modify-function signature="updateUniformData(QSGMaterialShader::RenderState &amp;, QSGMaterial *, QSGMaterial *)" since="6.0.0">
-            <modify-argument index="1">
+            <modify-argument index="1" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.quick.QSGMaterialShader$RenderState"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
@@ -506,9 +508,11 @@
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
+            <modify-argument index="2" invalidate-after-use="yes" />
+            <modify-argument index="3" invalidate-after-use="yes" />
         </modify-function>
         <modify-function signature="updateSampledImage(QSGMaterialShader::RenderState &amp;, int, QSGTexture **, QSGMaterial *, QSGMaterial *)" since="6.0.0">
-            <modify-argument index="1">
+            <modify-argument index="1" invalidate-after-use="yes">
                 <replace-type modified-type="io.qt.quick.QSGMaterialShader$RenderState"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
@@ -518,9 +522,11 @@
                     jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
                 </conversion-rule>
             </modify-argument>
-            <modify-argument index="3">
+            <modify-argument index="3" invalidate-after-use="yes">
                 <array-type min-length="1"/>
             </modify-argument>
+            <modify-argument index="4" invalidate-after-use="yes" />
+            <modify-argument index="5" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
     <object-type name="QQuickTransform">

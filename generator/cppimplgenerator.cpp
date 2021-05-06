@@ -8402,7 +8402,13 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
                         || type->type() == ContainerTypeEntry::QueueContainer){
                     s << INDENT << "if (qtjambi_is_Q";
                     switch(type->type()){
-                    case ContainerTypeEntry::VectorContainer: s << "Vector"; break;
+                    case ContainerTypeEntry::VectorContainer:
+                        if(TypeDatabase::instance()->qtVersion() < QT_VERSION_CHECK(6,0,0)){
+                            s << "Vector";
+                        }else{
+                            s << "List";
+                        }
+                        break;
                     case ContainerTypeEntry::StackContainer: s << "Stack"; break;
                     case ContainerTypeEntry::LinkedListContainer: s << "LinkedList"; break;
                     case ContainerTypeEntry::ByteArrayListContainer:

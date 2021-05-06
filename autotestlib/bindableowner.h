@@ -1,6 +1,9 @@
 #ifndef BINDABLEOWNER_H
 #define BINDABLEOWNER_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QMetaProperty>
 #include <QtCore/QObject>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

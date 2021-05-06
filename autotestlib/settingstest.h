@@ -1,6 +1,9 @@
 #ifndef SETTINGSTEST_H
 #define SETTINGSTEST_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include<QtCore/QSettings>
 
 class SettingsTest

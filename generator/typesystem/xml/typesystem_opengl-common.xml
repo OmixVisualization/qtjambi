@@ -92,7 +92,10 @@
     <enum-type name="QOpenGLTexture::TextureUnitReset"/>
     <enum-type name="QOpenGLTexture::WrapMode"/>
     <enum-type name="QOpenGLTexture::TextureFormatClass"/>
-    <enum-type name="QOpenGLTexture::ComparisonFunction"/>
+    <enum-type name="QOpenGLTexture::ComparisonFunction">
+        <reject-enum-value name="CommpareNotEqual" since="6.1.0"/>
+    </enum-type>
+    
     <enum-type name="QOpenGLTexture::ComparisonMode"/>
     <enum-type name="QOpenGLVersionStatus::OpenGLStatus"/>
 

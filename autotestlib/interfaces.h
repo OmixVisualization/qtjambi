@@ -45,6 +45,9 @@
 #ifndef INTERFACES_H
 #define INTERFACES_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtGui/QtGui>
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>

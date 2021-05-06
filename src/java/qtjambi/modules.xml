@@ -3,6 +3,7 @@
         <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
         <subant target="build" inheritall="true" verbose="true">
             <filelist dir="${basedir}/src/java/qtjambi" files="QtJambi
+                                                                        QtJambiAppDeployer
                                                                         QtJambiOpenGL
                                                                         QtJambiOpenGLWidgets
                                                                         QtJambiNetwork
@@ -37,6 +38,7 @@
                                                                         QtJambiMacExtras
                                                                         QtJambiPurchasing
                                                                         QtJambiScxml
+                                                                        QtJambiStateMachine
                                                                         QtJambiWebSockets
                                                                         QtJambiWebChannel
                                                                         QtJambiWebEngineCore

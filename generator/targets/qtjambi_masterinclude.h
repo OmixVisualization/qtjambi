@@ -353,6 +353,10 @@
 #include <QtGamepad/QtGamepad>
 #endif
 
+#ifndef QTJAMBI_NO_STATEMACHINE
+#include <QtStateMachine/QtStateMachine>
+#endif
+
 #ifndef QTJAMBI_NO_SCXML
 #include <QtScxml/QtScxml>
 #endif

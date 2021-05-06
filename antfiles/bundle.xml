@@ -107,6 +107,9 @@
         <library name="QtConcurrent"              type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.concurrent"/>
         <library name="QtXml"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.xml"/>
         <library name="QtScxml"                   type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scxml"/>
+        <library name="QtScxmlQml"                type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.scxmlqml"/>
+        <library name="QtStateMachine"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.statemachine"/>
+        <library name="QtStateMachineQml"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.statemachineqml"/>
         <library name="QtRemoteObjects"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects"/>
         <library name="QtSql"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.sql"/>
         <library name="QtSvg"                     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.svg"/>
@@ -196,6 +199,12 @@
         <library name="QtANGLE"                   type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.angle"/>
         <library name="QtBodymovin"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.bodymovin"/>
         <library name="QtShaderTools"             type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.shadertools"/>
+        <library name="QtLabsAnimation"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.animation"/>
+        <library name="QtLabsFolderListModel"     type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.folderlistmodel"/>
+        <library name="QtLabsQmlModels"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.qmlmodels"/>
+        <library name="QtLabsSettings"            type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.settings"/>
+        <library name="QtLabsSharedImage"         type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.sharedimage"/>
+        <library name="QtLabsWavefrontMesh"       type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.labs.wavefrontmesh"/>
         <library name="libEGL"                    type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libegl"/>
         <library name="libGLESv2"                 type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libglesv2"/>
         <library name="d3dcompiler_47"            type="qt"  dsoVersion="no-version" rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.d3dcompiler_47"/>
@@ -205,6 +214,7 @@
         <library name="libicui18n"                type="dso" dsoVersion="56"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.libicui18n"/>
         <library name="jarimport"                 type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.qml.true"/>
         <library name="qtjambiplugin"             type="qtjambi-utility" rootPath="${qtjambi.jambi.libdir}" destSubdir="utilities" if="qtjambi.core.true"/>
+        <library name="QtJambiLauncher"           type="qtjambi-executable-utility" rootPath="${qtjambi.jambi.libdir}/../bin" destSubdir="utilities"/>
 
         <!-- QtJambi Libraries -->
         <library name="QtJambi"                   type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.core.true"/>
@@ -219,6 +229,7 @@
         <library name="QtJambiOpenGL"             type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.opengl.true"/>
         <library name="QtJambiXml"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.xml.true"/>
         <library name="QtJambiScxml"              type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.scxml.true"/>
+        <library name="QtJambiStateMachine"       type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.statemachine.true"/>
         <library name="QtJambiRemoteObjects"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.remoteobjects.true"/>
         <library name="QtJambiSql"                type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.sql.true"/>
         <library name="QtJambiHelp"               type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.help.true"/>

@@ -76,6 +76,9 @@ inline
 }
 #endif
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
 
 class Tulip

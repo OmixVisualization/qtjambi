@@ -209,6 +209,11 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="removeSeries(QtDataVisualization::QSurface3DSeries *)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setAxisX(QtDataVisualization::QValue3DAxis *)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
@@ -330,6 +335,36 @@
         <modify-function signature="operator=(QtDataVisualization::QBarDataItem)" remove="all"/>
     </value-type>
     <object-type name="QtDataVisualization::QBarDataProxy">
+        <modify-function signature="addRow(QBarDataRow*)">
+            <modify-argument index="1">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="addRow(QBarDataRow*,QString)">
+            <modify-argument index="1">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertRow(int,QBarDataRow*)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertRow(int,QBarDataRow*,QString)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRow(int,QBarDataRow*)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRow(int,QBarDataRow*,QString)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="array()const">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QBarDataArray"/>
@@ -374,6 +409,11 @@
     </object-type>
     <enum-type name="QtDataVisualization::QItemModelBarDataProxy::MultiMatchBehavior"/>
     <object-type name="QtDataVisualization::QItemModelBarDataProxy">
+        <modify-function signature="setItemModel(QAbstractItemModel*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcItemModel"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QtDataVisualization::QItemModelScatterDataProxy">
        <modify-function signature="setItemModel(QAbstractItemModel *)" thread-affine="yes">
@@ -391,6 +431,11 @@
        </modify-function>
     </object-type>
     <object-type name="QtDataVisualization::QLogValue3DAxisFormatter">
+        <modify-function signature="createNewInstance()const">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QtDataVisualization::QScatter3DSeries">
     </object-type>
@@ -424,6 +469,21 @@
         <modify-function signature="operator=(QtDataVisualization::QSurfaceDataItem)" remove="all"/>
     </value-type>
     <object-type name="QtDataVisualization::QSurfaceDataProxy">
+        <modify-function signature="addRow(QSurfaceDataRow*)">
+            <modify-argument index="1">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="insertRow(int,QSurfaceDataRow*)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRow(int,QSurfaceDataRow*)">
+            <modify-argument index="2">
+                <define-ownership class="native" owner="cplusplus"/>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="array()const">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.datavis.QSurfaceDataArray"/>
@@ -464,6 +524,11 @@
         </modify-function>
     </object-type>
     <object-type name="QtDataVisualization::QValue3DAxisFormatter">
+        <modify-function signature="createNewInstance()const">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type *Q*DataArray." />
 </typesystem>

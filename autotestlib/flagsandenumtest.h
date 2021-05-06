@@ -45,7 +45,10 @@
 #ifndef FLAGSANDENUMTEST_H
 #define FLAGSANDENUMTEST_H
 
-#include <QtCore/QtCore>
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
+#include <QtCore/QObject>
 #include "general.h"
 
 class HiddenObject : public QObject

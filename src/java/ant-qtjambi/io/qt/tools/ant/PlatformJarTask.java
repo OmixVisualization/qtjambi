@@ -848,6 +848,9 @@ public class PlatformJarTask extends Task {
 	            		&& !Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
 	                	copySubdirs(e, srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"));
 	                	symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"));
+                    }else if(e.getType().equals(LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY) && OSInfo.crossOS() == OSInfo.OS.MacOS){
+                        copySubdirs(e, srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"));
+                        symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"));
 	                }else {
 		                //getProject().log(this, "Copying " + srcFile + " to " + destFile + " (type: " + e.getType() + ", target file: "+e.getTargetName()+", absolute path: "+e.getAbsolutePath()+")", Project.MSG_INFO);
 	                	if(e.getType().equals(LibraryEntry.TYPE_EXE)) {
@@ -1323,6 +1326,9 @@ public class PlatformJarTask extends Task {
                 String targetDestSubdir = lib.getDestSubdir();
                 String targetSubdir = lib.getSubdir();
                 targetPath = Util.pathCanon(new String[] { targetDestSubdir, targetSubdir, lib.getResolvedName() }, "/"); //change.relativePath();
+                if(LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY.equals(lib.getType())){
+                    targetPath = Util.pathCanon(new String[] { targetDestSubdir, targetSubdir, lib.getName() + ".app/Contents/MacOS/" + lib.getName() }, "/");
+                }
             }
 
             OToolOut otoolOut = no_otool ? null : getOtoolOut(this, targetPath, outdir);
@@ -1369,6 +1375,20 @@ public class PlatformJarTask extends Task {
 	        			}
         			}
         		}
+        	}else if(LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY.equals(lib.getType())) {
+                path = "@executable_path/.";
+                if(otoolOut==null || otoolOut.rpaths.contains(path)) {
+                    deleteCommands.add(path);
+                }
+                deleteCommands.remove("@executable_path/../Frameworks");
+                path = "@executable_path/../../../lib";
+                if(otoolOut==null || !otoolOut.rpaths.contains(path)) {
+                    addCommands.add(path);
+                }
+                path = "@executable_path/lib";
+                if(otoolOut==null || !otoolOut.rpaths.contains(path)) {
+                    addCommands.add(path);
+                }
         	}else if(LibraryEntry.TYPE_EXE.equals(lib.getType())) {
         		if(useFrameworks) {
         			if(convertQtFrameworks) {
@@ -1398,6 +1418,7 @@ public class PlatformJarTask extends Task {
                         || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_QMLPLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(referencedLib.getType())
+                        || LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY.equals(referencedLib.getType())
                         || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(referencedLib.getType()) 
                         || LibraryEntry.TYPE_FILESET.equals(referencedLib.getType())){
@@ -1637,6 +1658,14 @@ public class PlatformJarTask extends Task {
 																		+ ":$ORIGIN/../../../../lib"
 																		+ ":$ORIGIN/../../../../../lib"
 																		+ ":$ORIGIN/../../../../../../lib", utilFile.getAbsolutePath()}, utilFile.getParentFile(), getProject(), true );
+				}catch(Exception e){
+				}
+			}
+            utilFile = Boolean.TRUE.equals(debug) ? new File(outdir, "utilities/QtJambiLauncher_debug") : new File(outdir, "utilities/QtJambiLauncher");
+			if(utilFile.exists()) {
+				try{
+					Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/lib"
+																		+ ":$ORIGIN/../lib", utilFile.getAbsolutePath()}, utilFile.getParentFile(), getProject(), true );
 				}catch(Exception e){
 				}
 			}

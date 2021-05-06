@@ -21,6 +21,7 @@ contains(QT_CONFIG, qtjambi-purchasing):          SUBDIRS += qtjambi_purchasing
 contains(QT_CONFIG, qtjambi-bluetooth):           SUBDIRS += qtjambi_bluetooth
 contains(QT_CONFIG, qtjambi-xml):                 SUBDIRS += qtjambi_xml
 contains(QT_CONFIG, qtjambi-scxml):               SUBDIRS += qtjambi_scxml
+contains(QT_CONFIG, qtjambi-statemachine):        SUBDIRS += qtjambi_statemachine
 contains(QT_CONFIG, qtjambi-quickcontrols2):      SUBDIRS += qtjambi_quick_controls2
 contains(QT_CONFIG, qtjambi-networkauth):         SUBDIRS += qtjambi_network_auth
 contains(QT_CONFIG, qtjambi-printsupport):        SUBDIRS += qtjambi_printsupport
@@ -59,6 +60,8 @@ contains(QT_CONFIG, qtjambi-x11extras):           SUBDIRS += qtjambi_x11extras
 contains(QT_CONFIG, qtjambi-gamepad):             SUBDIRS += qtjambi_gamepad
 
 SUBDIRS += qtjambi_qt3d
+
+SUBDIRS += qtjambi_launcher
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
     # Qt was configued with both debug and release libs

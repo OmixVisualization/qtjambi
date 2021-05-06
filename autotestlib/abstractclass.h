@@ -45,7 +45,10 @@
 #ifndef ABSTRACTCLASS_H
 #define ABSTRACTCLASS_H
 
-#include <QtCore/QtCore>
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
+#include <QtCore/QObject>
 
 class AbstractClass
 {

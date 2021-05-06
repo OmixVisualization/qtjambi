@@ -1,6 +1,9 @@
 #ifndef MULTISIGNALTEST_H
 #define MULTISIGNALTEST_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QObject>
 
 class MultiSignalTest : public QObject

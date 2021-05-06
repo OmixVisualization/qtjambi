@@ -35,6 +35,7 @@
 #ifndef QTJAMBI_CORE_QHASHES_H
 #define QTJAMBI_CORE_QHASHES_H
 
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 #include <qtjambi_core/qtjambiqfuture.h>
 

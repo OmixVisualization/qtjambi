@@ -215,6 +215,7 @@ public abstract class Constants {
     public static final String CHARTS             = "qtjambi.charts";
     public static final String UIPLUGIN           = "qtjambi.uiplugin";
     public static final String SCXML              = "qtjambi.scxml";
+    public static final String STATEMACHINE       = "qtjambi.statemachine";
     public static final String REMOTEOBJECTS      = "qtjambi.remoteobjects";
     public static final String XML                = "qtjambi.xml";          // mandatory with <= 4.7.x
     public static final String XMLPATTERNS        = "qtjambi.xmlpatterns";

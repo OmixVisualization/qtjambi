@@ -1669,10 +1669,9 @@ class ContainerTypeEntry : public ComplexTypeEntry {
         }
 
         Type type() const { return m_type; }
-        QString targetLangName() const;
-        QString javaPackage() const;
-        QString qualifiedCppName() const;
-        QString collectionWrapperClass() const;
+        QString targetLangName() const override;
+        QString javaPackage() const override;
+        QString qualifiedCppName() const override;
 
     private:
         Type m_type;

@@ -238,7 +238,7 @@ public class Main {
 				cborValue.setValue(0x0_CAFEBABE_0L, new QCborValue(pluginName));
 				QByteArray cborData = cborValue.toCborValue().toCbor();
 				if(cborData.size()>1024) {
-					System.err.println("Plugin metadata exceeds mximum size of 1024 byte.");
+					System.err.println("Plugin metadata exceeds maximum size of 1024 byte.");
 					System.exit(-1);
 				}
 				System.gc();
@@ -302,9 +302,6 @@ public class Main {
                             long idx = libData.indexOf(QTMETADATA);
                             if(idx>0) {
                                 if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
-                                    System.out.println("Using library "+file.fileName()+"...");
-                                    System.out.println("Writing metadata to library "+newFile.fileName()+"...");
-                                    System.out.flush();
                                     newFile.write(libData);
                                     newFile.seek((int)idx+16);
                                     newFile.write(cborData);

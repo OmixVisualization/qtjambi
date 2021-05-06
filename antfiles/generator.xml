@@ -135,6 +135,7 @@
 		<xmlmerge victim="lottie"/>
 		<xmlmerge victim="quick3d"/>
 		<xmlmerge victim="virtkey"/>
+		<xmlmerge victim="statemachine"/>
     </target>
 
 </project>

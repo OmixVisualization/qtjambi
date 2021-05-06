@@ -178,7 +178,12 @@ QString ContainerTypeEntry::targetLangName() const {
         case QPropertyBindingContainer: return "QPropertyBinding";
         case QBindableContainer: return "QBindable";
         case LinkedListContainer: return "QLinkedList";
-        case VectorContainer: return "QVector";
+        case VectorContainer:
+            if(TypeDatabase::instance()->qtVersion() < QT_VERSION_CHECK(6,0,0)){
+                return "QVector";
+            }else{
+                return "QList";
+            }
         case QArrayDataContainer: return "Collection";
         case QTypedArrayDataContainer: return "Collection";
         case StackContainer: return "QStack";
@@ -196,26 +201,6 @@ QString ContainerTypeEntry::targetLangName() const {
         case QQmlListPropertyContainer: return "QQmlListProperty"; // new for QtQml module
         default:
             qWarning("bad type... %d", m_type);
-            break;
-    }
-    return QString();
-}
-
-QString ContainerTypeEntry::collectionWrapperClass()const{
-    switch (m_type) {
-        case ListContainer: return "QtJambiListObject";
-        case QArrayDataContainer: return "QtJambiCollectionObject";
-        case QTypedArrayDataContainer: return "QtJambiCollectionObject";
-        case LinkedListContainer: return "QtJambiLinkedListObject";
-        case VectorContainer: return "QtJambiListObject";
-        case StackContainer: return "QtJambiStackObject";
-        case QueueContainer: return "QtJambiQueueObject";
-        case SetContainer: return "QtJambiSetObject";
-        case MapContainer: return "QtJambiMapObject";
-        case HashContainer: return "QtJambiHashObject";
-        case MultiHashContainer: return "QtJambiMultiHashObject";
-        case MultiMapContainer: return "QtJambiMultiMapObject";
-        default:
             break;
     }
     return QString();

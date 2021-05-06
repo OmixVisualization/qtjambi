@@ -1,5 +1,5 @@
-#include <QtScxml>
 #include <qtjambi/qtjambi_core.h>
+#include <QtScxml/QScxmlStateMachine>
 #include <qtjambi/qtjambi_repository.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <qtjambi/qtjambi_cast.h>

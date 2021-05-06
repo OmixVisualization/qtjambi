@@ -1,6 +1,7 @@
 #ifndef QTJAMBI_POSITIONING_HASHES_H
 #define QTJAMBI_POSITIONING_HASHES_H
 
+#include <qtjambi/qtjambi_global.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 #include <QtCore/QtCore>
 #include <QtPositioning/QtPositioning>

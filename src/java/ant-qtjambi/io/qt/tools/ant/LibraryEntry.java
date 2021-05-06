@@ -60,6 +60,7 @@ public class LibraryEntry extends Task {
     public static final String TYPE_QTJAMBI_JNI        = "qtjambi-jni";
     public static final String TYPE_QTJAMBI_PLUGIN     = "qtjambi-plugin";
     public static final String TYPE_QTJAMBI_UTILITY    = "qtjambi-utility";
+    public static final String TYPE_QTJAMBI_EXE_UTILITY = "qtjambi-executable-utility";
     public static final String TYPE_PLUGIN_JAR         = "plugin-jar";
     public static final String TYPE_UNVERSIONED_PLUGIN = "unversioned-plugin";
 
@@ -104,7 +105,7 @@ public class LibraryEntry extends Task {
 	}
 
 	public void setPacked() {
-		this.isPacked = !type.equals(TYPE_QTJAMBI_UTILITY);
+		this.isPacked = !type.equals(TYPE_QTJAMBI_UTILITY) && !type.equals(TYPE_QTJAMBI_EXE_UTILITY);
 	}
 
 	public String getResolvedName() {
@@ -244,6 +245,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -267,6 +269,7 @@ public class LibraryEntry extends Task {
                     || LibraryEntry.TYPE_QTJAMBI_JNI.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QTJAMBI_UTILITY.equals(getType())
+                    || LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY.equals(getType())
                     || LibraryEntry.TYPE_UNVERSIONED_PLUGIN.equals(getType())
                     || LibraryEntry.TYPE_QT_NONVERSIONED.equals(getType())
                     || LibraryEntry.TYPE_DECLARATIVEPLUGIN.equals(getType())
@@ -356,6 +359,19 @@ public class LibraryEntry extends Task {
         	case TYPE_PLUGIN_JAR: 
         		name += ".jar";
 //        		this.setAbsolutePath(libInfix);
+        		break;
+        	case TYPE_QTJAMBI_EXE_UTILITY:
+            	if(OSInfo.crossOS() == OSInfo.OS.Windows) {
+            		if(debug) {
+            			name = name+"d.exe";
+            		}else {
+            			name = name+".exe";
+            		}
+            	}else{
+            		if(debug) {
+            			name = name+"_debug";
+            		}
+                }
         		break;
         	case TYPE_QTJAMBI_UTILITY:
                 // MacOSX: uses *.dylib and _debug suffix

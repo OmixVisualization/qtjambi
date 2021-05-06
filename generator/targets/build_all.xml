@@ -62,4 +62,5 @@
   <load-typesystem name="../build/generator/typesystem_lottie.xml"              generate="yes"	            unless="QTJAMBI_NO_LOTTIE"/>
   <load-typesystem name="../build/generator/typesystem_virtkey.xml"             generate="yes"	            unless="QTJAMBI_NO_VIRTUAL_KEYBOARD"/>
   <load-typesystem name="../build/generator/typesystem_quick3d.xml"             generate="yes"	            unless="QTJAMBI_NO_QUICK3D"/>
+  <load-typesystem name="../build/generator/typesystem_statemachine.xml"        generate="yes"	            unless="QTJAMBI_NO_STATEMACHINE" since="6.1.0"/>
 </typesystem>

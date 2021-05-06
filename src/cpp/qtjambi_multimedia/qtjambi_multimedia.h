@@ -30,6 +30,7 @@
 #ifndef QTJAMBI_MULTIMEDIA_H
 #define QTJAMBI_MULTIMEDIA_H
 
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 #include <QtMultimedia/QtMultimedia>
 #include <qtjambi_core/qtjambi_core_qhashes.h>

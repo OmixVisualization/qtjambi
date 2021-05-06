@@ -1,6 +1,9 @@
 #ifndef SHAREDPOINTERTEST_H
 #define SHAREDPOINTERTEST_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>

@@ -42,13 +42,13 @@
 **
 ****************************************************************************/
 
+#include "testdialog.h"
+
 #include <QtGui/QtGui>
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
 #endif
 #include <QtCore/QDebug>
-
-#include "testdialog.h"
 
 int main(int argc, char *argv[])
 {

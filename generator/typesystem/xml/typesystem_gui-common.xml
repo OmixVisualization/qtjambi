@@ -2037,6 +2037,7 @@
     </object-type>
 
     <interface-type name="QAbstractUndoItem"/>
+    <functional-type name="QTextDocument::ResourceProvider" since="6.1.0"/>
     <object-type name="QTextDocument" is-value-owner="yes">
         <extra-includes>
             <include file-name="QTextBlock" location="global"/>
@@ -2207,6 +2208,12 @@
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>
             </modify-argument>
+        </modify-function>
+        <modify-function signature="closeEvent(QCloseEvent*)" since="6.1.0">
+            <modify-argument index="1" invalidate-after-use="yes" />
+        </modify-function>
+        <modify-function signature="paintEvent(QPaintEvent*)" since="6.1.0">
+            <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
         <modify-function signature="exposeEvent(QExposeEvent*)">
             <modify-argument index="1" invalidate-after-use="yes" />

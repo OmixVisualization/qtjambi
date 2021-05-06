@@ -241,6 +241,22 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="setAxisX(QtCharts::QAbstractAxis*,QtCharts::QAbstractSeries*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAxisY(QtCharts::QAbstractAxis*,QtCharts::QAbstractSeries*)" thread-affine="yes">
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+            <modify-argument index="2" thread-affine="yes">
+                <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <enum-type name="QtCharts::QChartView::RubberBand" flags="QtCharts::QChartView::RubberBands"/>
     <object-type name="QtCharts::QChartView">
@@ -262,10 +278,14 @@
     </object-type>
     <object-type name="QtCharts::QBarModelMapper">
         <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="setSeries(QtCharts::QAbstractBarSeries *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="model()const" access="non-final"/>
         <modify-function signature="series()const" access="non-final"/>
@@ -284,10 +304,14 @@
     </object-type>
     <object-type name="QtCharts::QBoxPlotModelMapper">
         <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="setSeries(QtCharts::QBoxPlotSeries *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="model()const" access="non-final"/>
         <modify-function signature="series()const" access="non-final"/>
@@ -308,10 +332,14 @@
     </object-type>
     <object-type name="QtCharts::QPieModelMapper">
         <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="setSeries(QtCharts::QPieSeries *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="model()const" access="non-final"/>
         <modify-function signature="series()const" access="non-final"/>
@@ -330,10 +358,14 @@
     </object-type>
     <object-type name="QtCharts::QXYModelMapper">
         <modify-function signature="setModel(QAbstractItemModel *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcModel"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="setSeries(QtCharts::QXYSeries *)" access="non-final" thread-affine="yes">
-            <modify-argument index="1" thread-affine="yes"/>
+            <modify-argument index="1" thread-affine="yes">
+                <reference-count action="set" variable-name="__rcSeries"/>
+            </modify-argument>
         </modify-function>
         <modify-function signature="model()const" access="non-final"/>
         <modify-function signature="series()const" access="non-final"/>

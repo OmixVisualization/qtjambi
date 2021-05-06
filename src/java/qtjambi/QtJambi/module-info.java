@@ -50,6 +50,7 @@ module qtjambi{
                               qtjambi.dbus,
                               qtjambi.sql,
                               qtjambi.scxml,
+                              qtjambi.statemachine,
                               qtjambi.quick,
                               qtjambi.opengl,
                               qtjambi.openglwidgets,

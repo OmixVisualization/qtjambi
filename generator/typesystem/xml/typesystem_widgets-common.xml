@@ -1802,6 +1802,9 @@
                 <define-ownership class="shell" owner="invalidate"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="indexOf(const QLayoutItem *) const" since="6.1.0">
+            <modify-argument index="1" invalidate-after-use="yes"/>
+        </modify-function>
         <modify-function signature="removeWidget(QWidget *)">
             <modify-argument index="1">
                 <no-null-pointer/>
@@ -3651,8 +3654,8 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QMouseEventTransition" />
-    <object-type name="QKeyEventTransition" />
+    <object-type name="QMouseEventTransition" until="5.*"/>
+    <object-type name="QKeyEventTransition" until="5.*"/>
 
     <object-type name="QCommandLinkButton" />
     <object-type name="QFileSystemModel" until="5.*">

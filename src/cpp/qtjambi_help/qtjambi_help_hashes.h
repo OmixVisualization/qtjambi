@@ -30,6 +30,7 @@
 #ifndef QTJAMBI_HELP_HASHES_H
 #define QTJAMBI_HELP_HASHES_H
 
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 #include <QtHelp/QtHelp>
 

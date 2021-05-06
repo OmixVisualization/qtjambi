@@ -82,6 +82,11 @@
                 <reference-count action="set" variable-name="__rcStateMachine"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="createScxmlDataModel(QString)" since="6.1.0">
+            <modify-argument index="return">
+                <define-ownership owner="java" class="native"/>
+            </modify-argument>
+        </modify-function>
   </object-type>
   <object-type name="QScxmlDynamicScxmlServiceFactory">
   </object-type>

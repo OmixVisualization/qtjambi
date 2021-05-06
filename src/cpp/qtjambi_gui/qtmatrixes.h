@@ -38,7 +38,6 @@
 #ifndef QTMATRIXES_H
 #define QTMATRIXES_H
 
-#include <QtGui/QtGui>
 #include <qtjambi_gui/qtjambi_gui_qhashes.h>
 
 #ifdef QT_JAMBI_RUN

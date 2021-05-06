@@ -31,8 +31,8 @@
 #ifndef QTJAMBI_WIDGETS_CORE_H
 #define QTJAMBI_WIDGETS_CORE_H
 
-#include <QtWidgets/QtWidgets>
 #include <qtjambi/qtjambi_global.h>
+#include <QtWidgets/QtWidgets>
 
 inline hash_type qHash(const QScrollerProperties & value)
 {

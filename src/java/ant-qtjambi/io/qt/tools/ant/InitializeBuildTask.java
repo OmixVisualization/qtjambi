@@ -939,8 +939,11 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        boolean remoteObjectsAvailable = networkAvailable 
 	        		&& detectQtDsoExistAndSetProperty(Constants.REMOTEOBJECTS, "QtRemoteObjects", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "remoteobjects");
 	        
-	        boolean scxmlAvailable = qmlAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.SCXML, "QtScxml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scxml");
+	        boolean scxmlAvailable = detectQtDsoExistAndSetProperty(Constants.SCXML, "QtScxml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scxml");
+	        boolean scxmlQmlAvailable = scxmlAvailable && detectQtDsoExistAndSetProperty(Constants.SCXML+"qml", "QtScxmlQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        
+	        boolean statemachineAvailable = detectQtDsoExistAndSetProperty(Constants.STATEMACHINE, "QtStateMachine", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "statemachine");
+	        boolean statemachineQmlAvailable = statemachineAvailable && detectQtDsoExistAndSetProperty(Constants.STATEMACHINE+"qml", "QtStateMachineQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean qmlWorkerScriptAvailable = qmlAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.QML_WORKERSCRIPT, "QtQmlWorkerScript", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qmlworkerscript");
@@ -972,6 +975,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        
 	        boolean quickShapesAvailable = quickAvailable
 	        		&& detectQtDsoExistAndSetProperty("qtjambi.quickshapes", "QtQuickShapes", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+                    
+            detectQtDsoExistAndSetProperty("qtjambi.labs.wavefrontmesh", "QtLabsWavefrontMesh", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+            detectQtDsoExistAndSetProperty("qtjambi.labs.sharedimage", "QtLabsSharedImage", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+            detectQtDsoExistAndSetProperty("qtjambi.labs.settings", "QtLabsSettings", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+            detectQtDsoExistAndSetProperty("qtjambi.labs.qmlmodels", "QtLabsQmlModels", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+            detectQtDsoExistAndSetProperty("qtjambi.labs.folderlistmodel", "QtLabsFolderListModel", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+            detectQtDsoExistAndSetProperty("qtjambi.labs.animation", "QtLabsAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
 	        if(webengineCoreAvailable){
 	        	String trdir = AntUtil.getPropertyAsString(propertyHelper, Constants.TRANSLATIONSDIR);
@@ -2371,6 +2381,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.SCXML+".any.true"))){
 			generatorPreProcDefinesList.add("QTJAMBI_NO_SCXML");
+		}
+        
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.STATEMACHINE+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_STATEMACHINE");
 		}
 		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.NFC+".any.true"))){

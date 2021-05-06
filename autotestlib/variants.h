@@ -45,6 +45,9 @@
 #ifndef VARIANTS_H
 #define VARIANTS_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
 #include <QtGui/QPixmap>
 #include <QtGui/QImage>

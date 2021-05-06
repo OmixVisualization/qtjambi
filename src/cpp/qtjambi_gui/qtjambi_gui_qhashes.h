@@ -36,6 +36,7 @@
 #ifndef QTJAMBI_GUI_QHASHES_H
 #define QTJAMBI_GUI_QHASHES_H
 
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 

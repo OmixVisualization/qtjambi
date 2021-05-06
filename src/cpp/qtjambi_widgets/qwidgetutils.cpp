@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-
+#include <qtjambi/qtjambi_global.h>
 #include <QtCore/QObject>
 #include <QtCore/private/qobject_p.h>
 #include <QtWidgets/QtWidgets>

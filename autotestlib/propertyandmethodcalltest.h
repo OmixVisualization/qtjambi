@@ -1,6 +1,9 @@
 #ifndef PROPERTYANDMETHODCALLTEST_H
 #define PROPERTYANDMETHODCALLTEST_H
 
+#ifndef QT_JAMBI_RUN
+#include <qtjambi/qtjambi_global.h>
+#endif
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 #ifndef QTJAMBI_NO_WIDGETS
