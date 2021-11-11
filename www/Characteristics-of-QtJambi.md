@@ -1,4 +1,6 @@
-# Initializing Qt
+# Characteristics of QtJambi
+
+## Initializing Qt
 
 Initializing Qt in C++ is done by creating an instance of
 `QCoreApplication` (or `QGuiApplication`/`QApplication`):
@@ -48,7 +50,7 @@ Make sure to remove all top-level widgets of your application prior to
 `QApplication.shutdown();` either by removing all references (`widget =
 null;`) or by disposing the object (`widget.dispose();`).
 
-# Qt Types and Java Types
+## Qt Types and Java Types
 
 Almost all Qt C++ object and value types have counterparts in Java. The
 Java classes provide all methods of the native Qt classes. In these
@@ -56,7 +58,7 @@ methods, C++ primitive types are mapped to the corresponding Java
 primitive types. Since Java does not support unsigned integers all
 unsigned types are used as signed Java types.
 
-## Strings
+### Strings
 
 The Qt classes `QString`, `QLatin1String`, `QStringView`,
 `QUtf8StringView`, `QAnyStringView` and `QStringRef` are mapped to
@@ -68,7 +70,7 @@ The class `io.qt.core.QString` provides static methods corresponding to
 `QString.split(String string, QRegularExpression sep)` splitting a
 string accotding to a regular expression.
 
-## Enums and Flags
+### Enums and Flags
 
 Enums declared by Qt are also available as Java enum. Java enums cannot
 convert from or to integer values. Instead, all Qt enum Java classes
@@ -76,7 +78,7 @@ provide a `value()` providing the enum value and a `resolve(int)` method
 for converting an `int` to the corrensponding enum entry. In case of 64
 Bit enums, the corresponding methods point to `long`.
 
-### Extensible Enums
+#### Extensible Enums
 
 Certain enum types in Qt are expected to be extensible, i.e. the
 predefined set of enum entries can be extended by custom entries. This
@@ -86,7 +88,7 @@ yet available. Alternatively, you can specify `resolve(int value, String
 name)` to request a new entry with a specific enum name. If you want to
 develop custom extensible enums use the annotation `@QtExtensibleEnum`.
 
-### Flags
+#### Flags
 
 There are enums in Qt used as flags. This is also availale in Java by
 providing a `QFlags` type for the enum. For instance, the class
@@ -111,7 +113,7 @@ instance:
 
 `QWindow.startSystemResize(io.qt.core.Qt.Edges edges)`
 
-## Pointers and References
+### Pointers and References
 
 Java does not support constant types (`const`), C-pointers (`*`) or
 C-references (`&`). All constant reference types are used as value
@@ -128,14 +130,14 @@ possible method output, is represented in Java by `public final
 QClipboard.Text text(String subtype, QClipboard.Mode mode)` whereas
 `QClipboard.Text` provides `text` and `subtype` as public member fields.
 
-## Array Pointers
+### Array Pointers
 
 In some cases, array pointer of primitive type are mapped to Java NIO
 buffers. For instance, `QSharedMemory.data()`, `QImage.bits()` and
 `QUdpSocket.readDatagram(ByteBuffer,HostInfo)`. If the native Qt API
 specifies constant pointers, the given Java buffer is read only.
 
-## Function Pointers
+### Function Pointers
 
 Function pointers are made available as functional interfaces and can be
 used with lambda expressions.
@@ -147,7 +149,7 @@ QEasingCurve ec = new QEasingCurve();
 ec.setCustomType(value -> value < 0.5 ? 0.2 : 0.8);
 ```
 
-## Containers
+### Containers
 
 Qt provides following container types:
 
@@ -201,13 +203,13 @@ All Qt functions with container parameters accept lightweight Java
 containers as well, for instance, `QWidget::addActions(QList<QAction*>)`
 maps to `QWidget.addActions(java.util.Collection`<QAction>`)`.
 
-## QVariant
+### QVariant
 
 The generic Qt type `QVariant` is directly mapped to `java.lang.Object`.
 However, the Java class `QVariant` provides static conversion methods
 from `Object` to primitives and typical Qt value types.
 
-# Operator Overloads
+## Operator Overloads
 
 Since Java does not allow overloading operators, operator overloads in
 Qt are made available as methods with corresponding names in Java. For
@@ -221,7 +223,7 @@ instance:
   - `QBitArray::operator~()` → `QBitArray.inverted()`
   - `QVector4D::operator/=(float)` → `QVector4D.divide(float)`
 
-# Object Lifecycle
+## Object Lifecycle
 
 A Java object of any Qt type is actually a wrapper for an underlying C++
 object. The native C++ object is created immediately when the Java
@@ -240,7 +242,7 @@ garbage collection cares for it.
 QObject parenthood avoids the garbage collection to delete the child
 objects of a parent even if no more references to a child exist in Java.
 
-## Intelligent Pointer Types
+### Intelligent Pointer Types
 
   - `QPointer` is a strong reference to any Qt object whereas
     `QPointer.get()` returns `null` as soon as the referenced object is
@@ -259,7 +261,7 @@ try(QScopedPointer<QDialog> dialogPtr = QScopedPointer.disposing(new QDialog()))
 }
 ```
 
-## Signal On Dispose
+### Signal On Dispose
 
 In the very rare case where it is necessary to perform an operation when
 a Qt object is about to be disposed you can request the on-dispose
@@ -270,13 +272,13 @@ QColor color = ...
 QtUtilities.getSignalOnDispose(color).connect( ()->{ System.out.println("Color is disposed."); } );
 ```
 
-# QObject and QMetaObject
+## QObject and QMetaObject
 
 By subclassing a QObject type QtJambi automatically creates the
 corresponding QMetaObject describing the object's properties, signals,
 slots and invokable methods.
 
-## Methods
+### Methods
 
 Basically, all non-static methods in the new class are considered to be
 invokable by Qt. You can avoid this by annotating the method with
@@ -289,12 +291,12 @@ private void analyze() {
 }
 ```
 
-## Signals
+### Signals
 
 The signal-slot mechanism in Java has a different appearance as in C++
 as faced below:
 
-### Declaring
+#### Declaring
 
 Signals in C++ are methods prefixed by the key word `signals`.
 
@@ -338,7 +340,7 @@ void onLengthChanged(int length){}
 If a signal is not declared `final` `QSignalDeclarationException` is
 thrown at runtime.
 
-### Connecting
+#### Connecting
 
 Creating signal-slot connections in C++ is done with
 `QObject::connect(...)`:
@@ -388,8 +390,7 @@ this.lengthChanged.connect(this::onLengthChanged);
     invokable.
   - `QMisfittingSignatureException` is thrown if signal and slot have
     incompatible arguments.
-      -   
-        In rare cases, it might be necessary to define value type
+      -   In rare cases, it might be necessary to define value type
         arguments as pointer or reference to make signal and slot
         signatures compatible. Therfore, use the annotations
         `@QtPointerType` and `@QtReferenceType`.
@@ -398,7 +399,7 @@ this.lengthChanged.connect(this::onLengthChanged);
 
 Disconnecting signals and slots works analogous with `disconnect()`.
 
-### Emmitting
+#### Emmitting
 
 Emitting a signal in Java is done by the signal's `emit()` method.
 Private methods can only be emitted within their declaring classes:
@@ -409,7 +410,7 @@ this.textChanged.emit("new text");
 emit(this.lengthChanged, 5);
 ```
 
-## Overloaded Signals
+### Overloaded Signals
 
 There are a couple of Qt classes providing overloaded signals, for
 instance, `QSpinBox` provides two "valueChanged" signals:
@@ -428,7 +429,7 @@ QSpinBox spinBox = new QSpinBox();
 spinBox.valueChanged.overload(int.class).connect(this::onValueChanged);
 ```
 
-## Signals in other Contexts
+### Signals in other Contexts
 
 In contrast to native Qt, QtJambi allows to use the signal-slot
 mechanism also in any other class not being subclass of QObject.
@@ -476,7 +477,7 @@ Non-QObject member signals as well as static and local signals do not
 use the underlying meta-object system but are based on lightweight Java
 implementation.
 
-## Properties
+### Properties
 
 QtJambi automatically detects properties by looking for typical getters
 and setters. For instance, if the class has two methods `int getFoo()`
@@ -517,7 +518,7 @@ Further annotations reflect the corresponding features of Qt properties:
 
 Qt6 provides `QProperty` as bindable property member.
 
-## Dynamic Member Access
+### Dynamic Member Access
 
 The classes defined in Java are fully compatible with Qt's [meta-object
 system](https://doc.qt.io/qt-5/metaobjects.html). All Java defined
@@ -549,7 +550,7 @@ if(internalObject.inherits(QPaintDevice.class)){
 }
 ```
 
-# Threads
+## Threads
 
 Like Java, [Qt provides extensive thread
 support](https://doc.qt.io/qt-5/threads.html). In QtJambi, both
@@ -575,16 +576,16 @@ QThread javaThreadAsQt = QThread.thread(javaThread);
 Thread qtThreadAsJava = qtThread.javaThread();
 ```
 
-  - Remarks:
+**__Remarks:__**
 
-:\* The native methods `QThread::wait(...)` have been renamed in Java to
-`QThread.join(...)`.
+    - The native methods `QThread::wait(...)` have been renamed in Java to
+        `QThread.join(...)`.
 
-:\* The Java thread features *uncaught exception handler*, *context
-class loader*, *thread group* and *thread name* are made available in
-`QThread`.
+    - The Java thread features *uncaught exception handler*, *context
+        class loader*, *thread group* and *thread name* are made available in
+        `QThread`.
 
-## Thread Synchronization
+### Thread Synchronization
 
 For [thread
 synchronization](https://doc.qt.io/qt-5/threads-synchronizing.html), Qt
@@ -610,13 +611,13 @@ try{
 }
 ```
 
-## Atomic Memory Operations
+### Atomic Memory Operations
 
 QtJambi does not provide the Qt classes for atomic operations like
 `QAtomicInteger` and `QAtomicPointer`. Please, use Java built-in atomic
 classes.
 
-## Thread Affinity
+### Thread Affinity
 
 [QObjects are
 thread-affine](https://doc.qt.io/qt-5/threads-qobject.html), i.e every
@@ -640,7 +641,7 @@ but leads to hard crashes in case of thread affinity breaches. It is
 recommended to test your application with enabled thread affinity checks
 and to disable these checks in release/productive mode.
 
-# Interfaces
+## Interfaces
 
 The Qt type system provides many interfaces, i.e. C++ classes with pure
 virtual functions that are intended to be implemented in a
@@ -689,7 +690,7 @@ public:
 };
 ```
 
-## Interface Constructor Call
+### Interface Constructor Call
 
 Some Qt interfaces provide non-trivial constructors. Since Java
 interfaces cannot provide constructors, there is a workaround for
@@ -724,7 +725,7 @@ public class MyLayoutItemObject extends QObject implements QLayoutItem {
 }
 ```
 
-## Protected Interface Methods
+### Protected Interface Methods
 
 In contrast to Qt, Java interfaces do not support protected methods in
 interfaces. There are some Qt interfaces providing protected methods to
@@ -761,7 +762,7 @@ In case, a protected interface method is pure virtual in C++,
 `QMissingVirtualOverridingException` is thrown at runtime when the
 method is missing in the custom implementation.
 
-## Non-Virtual Interface Methods
+### Non-Virtual Interface Methods
 
 In contrast to Qt, methods in Java interfaces are never final and, thus,
 can always be implemented by subclasses. Some Qt interfaces provide
@@ -770,13 +771,13 @@ interface by non-final default methods. If a custom implementation of
 the interface overrides such a non-virtual functions,
 `QNonVirtualOverridingException` is thrown at runtime.
 
-## Internal-Only Interfaces
+### Internal-Only Interfaces
 
 Some interfaces are not intended to be subclassed in Java at all, e.g.
 the interface `QSurface`. If you implement such an interface,
 `QInterfaceCannotBeSubclassedException` is thrown at runtime.
 
-## Pre-Implementations
+### Pre-Implementations
 
 All interface types provide a nested default implementor class called
 `Impl`. Instead of implementing the Java interface, you can extend the
@@ -791,7 +792,7 @@ class MyRunnable extends QRunnable.Impl{
 QRunnable runnable = new MyRunnable();
 ```
 
-# Resource System
+## Resource System
 
 Qt has a [resource system](https://doc.qt.io/qt-5/resources.html) for
 storing icons and other resources in the application's executable or in
@@ -809,7 +810,7 @@ QFile cpResourceFile = new QFile("classpath:com/myapplication/icons/data.dat");
 QUrl url = QUrl.fromClassPath("com/myapplication/icons/data.dat");
 ```
 
-# Internationalization
+## Internationalization
 
 [Qt's
 internationalization](https://doc.qt.io/qt-5/internationalization.html)
@@ -855,7 +856,7 @@ translator.load("classpath:com/myapplication/translations/app_de.qm");
 QCoreApplication.installTranslator(translator);
 ```
 
-# Platform Specific API
+## Platform Specific API
 
 Qt provides a number of classes and functions only available on specific
 platforms and/or for specific configurations. QtJambi provides these
@@ -868,13 +869,13 @@ is available at compile time or not. However, if ssl is not available at
 runtime, `QNetworkAccessManager.connectToHostEncrypted(...)` and likwise
 `new QSslConfiguration(...)` throw a `QNoImplementationException`.
 
-# Java and QML
+## Java and QML
 
 QtJambi makes Java and [QML](https://doc.qt.io/qt-5/qtqml-index.html)
 fully interoperable. You can use Java-defined classes in QML and vice
 verca.
 
-## Initialization
+### Initialization
 
 If your Java program uses QML for creating extended UI objects, it is
 recommended to first initialize all Qt modules you intend to use in Qt,
@@ -903,7 +904,7 @@ view.setSource(QUrl.fromClassPath("com/myapplication/qml/Main.qml"));
 view.show();
 ```
 
-## Integrating QML and Java
+### Integrating QML and Java
 
 [In analogy to
 C++](https://doc.qt.io/qt-5/qtqml-cppintegration-topic.html) you can
@@ -919,14 +920,6 @@ There are two requirements for Java classes to run with QML:
 1.  The Java class has to subclass `QObject` or a subclass of `QObject`.
 2.  The Java class has to provide a declarative constructor as
     exemplified below:
-
-<!-- end list -->
-
-  - 
-    
-    <div>
-
-<!-- end list -->
 
 ``` java
 public class Message extends QObject{
@@ -948,8 +941,6 @@ The `QDeclarativeConstructor` parameter is an internal constructor
 marker and needs to be passed through to the super constructor. It is
 not allowed to call the declarative constructor of any `QObject` class
 from inside Java.
-
-</div>
 
 This allows you to use the Java-defined type in QML:
 
@@ -1030,7 +1021,7 @@ public class Message extends QObject{
 }
 ```
 
-## Java QML Modules
+### Java QML Modules
 
 Finally, you can bundle your custom Java QML classes into a JAR file and
 provide it as QML module. Therfore, QtJambi provides the **jarimport**
@@ -1062,13 +1053,13 @@ qml
              |  qtdir
 ```
 
-# Qt Plugins
+## Qt Plugins
 
 You can implement custom Qt plugins in Java. These plugins can be either
 realized as application internal implementations or as jar library to be
 loaded automatically on demand.
 
-## Registering Custom Plugins
+### Registering Custom Plugins
 
 Use the method `QPluginLoader.registerStaticPluginFunction(...)` to
 register a plugin class or instance. The class inherits `QObject` and
@@ -1091,26 +1082,26 @@ application:
 QPluginLoader.registerStaticPluginFunction(CustomImageIOPlugin.class, Map.of("Keys", List.of("custom")));
 ```
 
-## Custom Plugin Libraries
+### Custom Plugin Libraries
 
 If you want to provide a custom plugin as jar library you need to
 provide a platform-dependent loader library along with the jar file.
 Therefore, use the <i>QtJambi plugin deployer tool</i> to prepare the
-loader library. Download **qtjambi-plugindeployer.jar** from the release
-of your choice along with the platform-dependent **tools binaries**.
+loader library. Download **qtjambi-deployer.jar** from the release
+of your choice along with the platform-dependent **qtjambi-deployer-native-X.jar**.
 Extract the binaries to a directory called `utilities`. Call the plugin
 deployer as shown below. Make sure the library path points to the *Qt*
 and *QtJambi* libraries:
 
 ``` shell
-java -cp qtjambi-plugindeployer-6.1.jar:qtjambi-6.1.jar 
-        -Djava.library.path=lib
-        io.qt.qtjambi.plugindeployer.Main
+java -cp qtjambi-deployer-6.2.jar;qtjambi-6.2.jar;qtjambi-native-windows-x64-6.2.jar;qtjambi-deployer-native-windows-x64-6.2.jar 
+        -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin
+        io.qt.qtjambi.deployer.Main
+        plugin
         --class-name=my.company.CustomImageIOPlugin
         --class-path=my-company-library.jar
         --dir=output directory
         --meta-data=metadata.json
-        --plugin-library-location=utilities
 ```
 
 The <b>metadata.json</b> file contains the keys of the plugin and
@@ -1125,7 +1116,7 @@ additional meta data. Example:
 QtJambi plugin deployer tool saves the prepared library and the jar file
 in the specified output directory.
 
-## JDBC Plugin
+### JDBC Plugin
 
 QtJambi provides a JDBC plugin for using Java SQL capabilities in Qt.
 

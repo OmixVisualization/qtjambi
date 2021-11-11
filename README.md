@@ -75,9 +75,22 @@ This saves compilation time.
 
 ### Example
 
-Add qtjambi-5.15.jar / qtjambi-6.x.jar to the classpath of your Java project containing the most essential Qt Core, Gui and Widgets modules.
+Add **qtjambi-5.15.jar**/**qtjambi-6.2.jar** to the classpath of your Java project containing the most 
+essential Qt Core, Gui and Widgets modules. If you use Maven to build your application simply add following dependency
+to your project:
 
-Create a file Test.java containing the following code:
+```xml
+<dependency>
+  <groupId>io.qtjambi</groupId>
+  <artifactId>qtjambi</artifactId>
+  <version>$VERSION</version>
+</dependency>
+```
+(exchange $VERSION either by 5.15 or by 6.2).
+
+Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
+
+Create a file **Test.java** containing the following code:
 
 ```java
 import io.qt.widgets.*;
@@ -92,13 +105,16 @@ public class Test {
 
 Compile the file:
 
-`javac -cp qtjambi-5.15.jar Test.java`
+``` powershell
+javac -cp qtjambi-6.2.jar Test.java
+```
 
 ### Execute Example
 
 For execution you need the platform dependent binaries of QtJambi either as self-extracting bundle or as library file (e.b. dll). 
-For instance, if you are working on Windows download `qtjambi-native-windows-x64-x.x.jar` and add it to java class path.  
-Additionally, you need Qt. Use the Qt installer to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
+For instance, if you are working on Windows download **qtjambi-native-windows-x64-5.15.jar**/**qtjambi-native-windows-x64-6.2.jar**
+from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
+Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
 Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on macOS) 
@@ -111,8 +127,8 @@ java -cp qtjambi-6.2.jar;qtjambi-native-windows-x64-6.2.jar;. -Djava.library.pat
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)
 
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
-There are a couple of specifics for QtJambi that are [introduced here](/OmixVisualization/qtjambi/wiki/Characteristics-of-QtJambi). 
-Instead of starting your program with a java command as shown above you can deploy your application as executable as [described here](/OmixVisualization/qtjambi/wiki/How-to-deploy-QtJambi-applications).
+There are a couple of specifics for QtJambi that are [introduced here](/www/Characteristics-of-QtJambi.md). 
+Instead of starting your program with a java command as shown above you can deploy your application as executable as [described here](/www/How-to-deploy-QtJambi-applications.md).
 
 ## Further Reading
 
