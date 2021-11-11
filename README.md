@@ -1,4 +1,4 @@
-![QtJambi - Java Bindings for Qt](https://github.com/OmixVisualization/qtjambi/raw/master/www/images/QtJambi_logo_2020.svg "QtJambi - Java Bindings for Qt")
+![QtJambi - Java Bindings for Qt](https://github.com/OmixVisualization/qtjambi/raw/master/www/images/QtJambi_eyecatcher.png "QtJambi - Java Bindings for Qt")
 
 # QtJambi - Java Bindings for Qt
 
