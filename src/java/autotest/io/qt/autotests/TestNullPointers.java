@@ -97,7 +97,7 @@ public class TestNullPointers extends QApplicationTest {
 
     @Test
     public void testBlah() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QWidget w = new QWidget();
 
         MyLayout l = new MyLayout();

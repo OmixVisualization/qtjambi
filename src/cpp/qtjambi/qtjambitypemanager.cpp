@@ -35,6 +35,11 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Wignored-qualifiers")
+QT_WARNING_DISABLE_CLANG("-Wignored-qualifiers")
+QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #include <QtCore/QThread>
 #include <QtCore/QThreadStorage>
 #include <QtCore/QIODevice>
@@ -48,7 +53,6 @@
 #include <QtCore/QMultiMap>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
 #endif
@@ -66,8 +70,6 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include <cstring>
 #include "qtjambi_cast.h"
-
-QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QtJambiMetaType QMetaType
@@ -1314,7 +1316,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             return true;
         };
     } else if (Java::QtJambi::QFlags::isAssignableFrom(_env,externalClass)) {
-        if (internalMetaType == QMetaType::fromType<JObjectWrapper>()) {
+        if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))) {
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                 p->l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
                 return true;
@@ -1338,7 +1340,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
               || Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)
               || Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)
               || Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)){
-        if (internalMetaType == QMetaType::fromType<JObjectWrapper>() || internalMetaType == QMetaType::fromType<JEnumWrapper>()) {
+        if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper)) || internalMetaType.id() == registeredMetaTypeID(typeid(JEnumWrapper))) {
             return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                 p->l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
                 return true;
@@ -3459,19 +3461,19 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
             }
         }
-    } else if (internalMetaType == QMetaType::fromType<JObjectWrapper>()
-               || internalMetaType == QMetaType::fromType<JCollectionWrapper>()
-               || internalMetaType == QMetaType::fromType<JMapWrapper>()
-               || internalMetaType == QMetaType::fromType<JIteratorWrapper>()
-               || internalMetaType == QMetaType::fromType<JObjectArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JIntArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JLongArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JShortArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JByteArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JBooleanArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JCharArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JFloatArrayWrapper>()
-               || internalMetaType == QMetaType::fromType<JDoubleArrayWrapper>()) {
+    } else if (internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JCollectionWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JMapWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JIteratorWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JObjectArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JIntArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JLongArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JShortArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JByteArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JBooleanArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JCharArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JFloatArrayWrapper))
+               || internalMetaType.id() == registeredMetaTypeID(typeid(JDoubleArrayWrapper))) {
         return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
             p->l = env->NewLocalRef(reinterpret_cast<const JObjectWrapper *>(in)->object());
             return true;
@@ -3621,51 +3623,51 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
         };
     }
 
-    if(internalMetaType == QMetaType::fromType<JObjectWrapper>()
-    || internalMetaType == QMetaType::fromType<JEnumWrapper>()
-    || internalMetaType == QMetaType::fromType<JCollectionWrapper>()
-    || internalMetaType == QMetaType::fromType<JMapWrapper>()
-    || internalMetaType == QMetaType::fromType<JIteratorWrapper>()
-    || internalMetaType == QMetaType::fromType<JObjectArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JIntArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JLongArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JShortArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JByteArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JBooleanArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JCharArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JFloatArrayWrapper>()
-    || internalMetaType == QMetaType::fromType<JDoubleArrayWrapper>()){
+    if(internalMetaType.id() == registeredMetaTypeID(typeid(JObjectWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JEnumWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JCollectionWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JMapWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JIteratorWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JObjectArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JIntArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JLongArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JShortArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JByteArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JBooleanArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JCharArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JFloatArrayWrapper))
+    || internalMetaType.id() == registeredMetaTypeID(typeid(JDoubleArrayWrapper))){
         int _internalMetaType = internalMetaType.id();
         return [_internalMetaType, externalClass](JNIEnv* env, QtJambiScope* scope, const jvalue& val, void* &out, jValueType) -> bool{
             if(val.l && !env->IsInstanceOf(val.l, externalClass))
                 Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 JObjectWrapper* ptr;
-                if(_internalMetaType == qMetaTypeId<JEnumWrapper>()){
+                if(_internalMetaType == registeredMetaTypeID(typeid(JEnumWrapper))){
                     out = ptr = new JEnumWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JCollectionWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JCollectionWrapper))){
                     out = ptr = new JCollectionWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JMapWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JMapWrapper))){
                     out = ptr = new JMapWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JIteratorWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JIteratorWrapper))){
                     out = ptr = new JIteratorWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JObjectArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JObjectArrayWrapper))){
                     out = ptr = new JObjectArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JIntArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JIntArrayWrapper))){
                     out = ptr = new JIntArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JLongArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JLongArrayWrapper))){
                     out = ptr = new JLongArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JShortArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JShortArrayWrapper))){
                     out = ptr = new JShortArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JByteArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JByteArrayWrapper))){
                     out = ptr = new JByteArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JBooleanArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JBooleanArrayWrapper))){
                     out = ptr = new JBooleanArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JCharArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JCharArrayWrapper))){
                     out = ptr = new JCharArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JFloatArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JFloatArrayWrapper))){
                     out = ptr = new JFloatArrayWrapper;
-                }else if(_internalMetaType == qMetaTypeId<JDoubleArrayWrapper>()){
+                }else if(_internalMetaType == registeredMetaTypeID(typeid(JDoubleArrayWrapper))){
                     out = ptr = new JDoubleArrayWrapper;
                 }else{
                     out = ptr = new JObjectWrapper;
@@ -6927,7 +6929,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(val.l){
                                 if(!env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     out = link->typedPointer(*typeId);
                                 }else{
                                     Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -6942,13 +6944,14 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(val.l){
                                 if(!env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     if(!out){
                                         if(scope){
                                             out = new void*;
                                         }
                                     }
-                                    if(qtjambi_object_class_name(env, val.l).endsWith("$Impl$ConcreteWrapper")){
+                                    if(qtjambi_object_class_name(env, val.l).endsWith("$ConcreteWrapper")
+                                            || env->IsSameObject(env->GetObjectClass(val.l), externalClass)){
                                         *reinterpret_cast<void**>(out) = *reinterpret_cast<void**>(link->pointer());
                                     }else{
                                         if(!link->isMultiInheritanceType()){
@@ -6995,7 +6998,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     if(_internalMetaType!=given){
                                         JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Wrong argument given: %1, expected: %2").arg(QMetaType::typeName(given)).arg(QMetaType::typeName(_internalMetaType))) QTJAMBI_STACKTRACEINFO );
                                     }
-                                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         ptr = link->typedPointer(*typeId);
                                     }else{
                                         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -7003,7 +7006,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 }else{
                                     if(!env->IsInstanceOf(val.l, externalClass))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                                    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                         ptr = link->typedPointer(*typeId);
                                     }else{
                                         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -7100,7 +7103,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             if(val.l){
                                 if(!env->IsInstanceOf(val.l, externalClass))
                                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")).arg(qtjambi_class_name(env, externalClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, val.l)){
+                                if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, val.l)){
                                     ptr = link->typedPointer(*typeId);
                                 }else{
                                     Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );

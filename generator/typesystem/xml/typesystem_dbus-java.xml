@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.dbus" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.dbus" module="qtjambi.dbus" default-superclass="io.qt.QtObject">
     <inject-code class="metainfo" position="1">
     void initialize_meta_info_QtDBus();
     </inject-code>
@@ -23,8 +23,27 @@
                 <replace-type modified-type="java.lang.String"/>
              </modify-argument>
             <inject-code class="java" position="beginning">
-                returnMethod = cppSlotSignature(returnMethod);
-                errorMethod = cppSlotSignature(errorMethod);
+                <argument-map index="2" meta-name="object"/>
+                <argument-map index="3" meta-name="member"/>
+                <argument-map index="4" meta-name="errorSlot"/>
+                if(member!=null &amp;&amp; !member.startsWith("1") &amp;&amp; !member.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(member);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            member = "2" + method.cppMethodSignature();
+                        else
+                            member = "1" + method.cppMethodSignature();
+                    }
+                }
+                if(errorSlot!=null &amp;&amp; !errorSlot.startsWith("1") &amp;&amp; !errorSlot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(errorSlot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            errorSlot = "2" + method.cppMethodSignature();
+                        else
+                            errorSlot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="callWithCallback(const QDBusMessage &amp;, QObject *, const char *, int) const">
@@ -32,7 +51,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="2" meta-name="object"/>
+                <argument-map index="3" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="connect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, QObject *, const char *)">
@@ -40,7 +69,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="5" meta-name="object"/>
+                <argument-map index="6" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="connect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, QObject *, const char *)">
@@ -48,7 +87,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="6" meta-name="object"/>
+                <argument-map index="7" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="connect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList &amp;, const QString &amp;, QObject *, const char *)">
@@ -56,7 +105,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="7" meta-name="object"/>
+                <argument-map index="8" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="disconnect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, QObject *, const char *)">
@@ -64,7 +123,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="5" meta-name="object"/>
+                <argument-map index="6" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="disconnect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, QObject *, const char *)">
@@ -72,7 +141,17 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="6" meta-name="object"/>
+                <argument-map index="7" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="disconnect(const QString &amp;, const QString &amp;, const QString &amp;, const QString &amp;, const QStringList &amp;, const QString &amp;, QObject *, const char *)">
@@ -80,7 +159,17 @@
                 <replace-type modified-type="java.lang.String"/>
            </modify-argument>
             <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(slot);
+                <argument-map index="7" meta-name="object"/>
+                <argument-map index="8" meta-name="slot"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = object.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
          </modify-function>
     </value-type>
@@ -392,7 +481,17 @@
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                    member = cppSlotSignature(member);
+                <argument-map index="3" meta-name="object"/>
+                <argument-map index="4" meta-name="member"/>
+                if(member!=null &amp;&amp; !member.startsWith("1") &amp;&amp; !member.startsWith("2")) {
+                    io.qt.core.QMetaMethod _method = object.metaObject().method(member);
+                    if(_method!=null &amp;&amp; _method.isValid()) {
+                        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            member = "2" + _method.cppMethodSignature();
+                        else
+                            member = "1" + _method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="callWithCallback(const QString &amp;,const QList&lt;QVariant> &amp;,QObject *, const char *, const char *)">
@@ -403,8 +502,27 @@
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = cppSlotSignature(member);
-                errorSlot = cppSlotSignature(errorSlot);
+                <argument-map index="3" meta-name="object"/>
+                <argument-map index="4" meta-name="member"/>
+                <argument-map index="5" meta-name="errorSlot"/>
+                if(member!=null &amp;&amp; !member.startsWith("1") &amp;&amp; !member.startsWith("2")) {
+                    io.qt.core.QMetaMethod _method = object.metaObject().method(member);
+                    if(_method!=null &amp;&amp; _method.isValid()) {
+                        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            member = "2" + _method.cppMethodSignature();
+                        else
+                            member = "1" + _method.cppMethodSignature();
+                    }
+                }
+                if(errorSlot!=null &amp;&amp; !errorSlot.startsWith("1") &amp;&amp; !errorSlot.startsWith("2")) {
+                    io.qt.core.QMetaMethod _method = object.metaObject().method(errorSlot);
+                    if(_method!=null &amp;&amp; _method.isValid()) {
+                        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            errorSlot = "2" + _method.cppMethodSignature();
+                        else
+                            errorSlot = "1" + _method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <inject-code>

@@ -31,6 +31,10 @@
 #include <qtjambi/qtjambi_functionpointer.h>
 #include <QtRemoteObjects/private/qconnectionfactories_p.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+using ClientIoDevice = QtROClientIoDevice;
+#endif
+
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QtRemoteObjects_qRegisterRemoteObjectsServer)
     (JNIEnv *__jni_env,
     jclass,
@@ -56,7 +60,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 jobject parent = qtjambi_from_QObject(env, o);
                 jobject newObject = env->NewObject(type1, constructor, parent);
-                qtjambi_throw_java_exception(env)
+                qtjambi_throw_java_exception(env);
                 qtjambi_rethrowing(env,
                     return reinterpret_cast<QConnectionAbstractServer*>(qtjambi_to_qobject(env, newObject));
                 )
@@ -91,7 +95,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
                 QTJAMBI_JNI_LOCAL_FRAME(env, 200)
                 jobject parent = qtjambi_from_QObject(env, o);
                 jobject newObject = env->NewObject(type1, constructor, parent);
-                qtjambi_throw_java_exception(env)
+                qtjambi_throw_java_exception(env);
                 qtjambi_rethrowing(env,
                     return reinterpret_cast<ClientIoDevice*>(qtjambi_to_qobject(env, newObject));
                 )

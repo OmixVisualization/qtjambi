@@ -32,7 +32,7 @@ package io.qt.autotests;
 import org.junit.*;
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.internal.*;
+import io.qt.*;
 import io.qt.qml.*;
 import io.qt.quick.*;
 import static io.qt.autotests.TestQuickQt5.*;
@@ -44,7 +44,7 @@ public class TestQuickFramebufferObjectQt5 extends QApplicationTest {
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QApplicationTest.testInitialize();
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");
 	}
 	

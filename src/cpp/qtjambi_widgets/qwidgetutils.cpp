@@ -57,16 +57,15 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_wid
 // QInputDialog::open(QObject * receiver, const char * member)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QInputDialog_open)
 (JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
+ jobject _this,
+ jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QInputDialog::open(QObject * receiver, const char * member)")
     try{
 #if QT_CONFIG(filedialog)
-        QInputDialog *__qt_this = qtjambi_object_from_nativeId<QInputDialog>(__this_nativeId);
+        QInputDialog *__qt_this = qtjambi_to_object<QInputDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
         qtjambi_check_resource(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
@@ -78,7 +77,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         signature += method.methodSignature();
         __qt_this->open(object, signature);
 #else
-        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(_this)
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
@@ -91,16 +90,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 // QFileDialog::open(QObject * receiver, const char * member)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFileDialog_open)
 (JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
+ jobject _this,
+ jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFileDialog::open(QObject * receiver, const char * member)")
     try{
 #if QT_CONFIG(filedialog)
-        QFileDialog *__qt_this = qtjambi_object_from_nativeId<QFileDialog>(__this_nativeId);
+        QFileDialog *__qt_this = qtjambi_to_object<QFileDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
         qtjambi_check_resource(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
@@ -112,7 +110,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         signature += method.methodSignature();
         __qt_this->open(object, signature);
 #else
-        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(_this)
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
@@ -124,16 +122,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 // QFontDialog::open(QObject * receiver, const char * member)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QFontDialog_open)
 (JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
+ jobject _this,
+ jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QFontDialog::open(QObject * receiver, const char * member)")
     try{
 #if QT_CONFIG(fontdialog)
-        QFontDialog *__qt_this = qtjambi_object_from_nativeId<QFontDialog>(__this_nativeId);
+        QFontDialog *__qt_this = qtjambi_to_object<QFontDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
         qtjambi_check_resource(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
@@ -145,7 +142,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         signature += method.methodSignature();
         __qt_this->open(object, signature);
 #else
-        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(_this)
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)
@@ -158,16 +155,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 // QColorDialog::open(QObject * receiver, const char * member)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QColorDialog_open)
 (JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID objectId, jobject metaMethod)
+ jobject _this,
+ jobject obj, jobject metaMethod)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QColorDialog::open(QObject * receiver, const char * member)")
     try{
 #if QT_CONFIG(colordialog)
-        QColorDialog *__qt_this = qtjambi_object_from_nativeId<QColorDialog>(__this_nativeId);
+        QColorDialog *__qt_this = qtjambi_to_object<QColorDialog>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QObject *object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
         qtjambi_check_resource(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
@@ -179,7 +175,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         signature += method.methodSignature();
         __qt_this->open(object, signature);
 #else
-        Q_UNUSED(__this_nativeId)
+        Q_UNUSED(_this)
         Q_UNUSED(options0)
         JavaException::raiseQNoImplementationException(__jni_env, "The method has no implementation on this platform." QTJAMBI_STACKTRACEINFO );
 #endif // QT_CONFIG(colordialog)

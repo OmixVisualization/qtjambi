@@ -100,17 +100,13 @@ private:
 #undef INSERT_FUNCTION
 #endif
 
-#ifndef QTJAMBI_THROW_EXCEPTION
-#define QTJAMBI_THROW_EXCEPTION(Exception,env,Message) Q_UNUSED(env)
-#endif
-
 #define INSERT_FUNCTION(N)\
     functions->replace(N, [](Args... args) -> Ret {\
         storage<Callable>* stor = callables->value(N);\
         if(!stor){\
             if(JNIEnv *env = qtjambi_current_environment()){\
                 QTJAMBI_JNI_LOCAL_FRAME(env, 100)\
-                QTJAMBI_THROW_EXCEPTION(NullPointerException, env, "Function pointer is null.")\
+                JavaException::raiseNullPointerException(env, "Function pointer is null." QTJAMBI_STACKTRACEINFO );\
             }\
         }\
         return stor ? Ret(stor->callable(std::forward<Args>(args)...)) : Ret();\

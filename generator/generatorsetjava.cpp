@@ -188,6 +188,7 @@ void GeneratorSetJava::generate() {
 
     if (!no_java) {
         java_generator = new JavaGenerator;
+        java_generator->setTypeSystemByPackage(builder.typeSystemByPackage());
         java_generator->setDocumentationDirectory(doc_dir);
         java_generator->setDocumentationEnabled(docs_enabled);
         java_generator->setNativeJumpTable(native_jump_table);
@@ -226,6 +227,11 @@ void GeneratorSetJava::generate() {
         contexts << "JumpTableGenerator";
     }
 
+    if (build_class_list) {
+        generators << new ClassListGenerator;
+        contexts << "ClassListGenerator";
+    }
+
     if (!no_metainfo) {
         metainfo = new MetaInfoGenerator(priGenerator);
         metainfo->setQtJambiDebugTools(qtjambi_debug_tools);
@@ -233,15 +239,8 @@ void GeneratorSetJava::generate() {
             metainfo->setCppOutputDirectory(cppOutDir);
         if (!javaOutDir.isNull())
             metainfo->setJavaOutputDirectory(javaOutDir);
-        if (!outDir.isNull())
-            metainfo->setOutputDirectory(outDir);
         generators << metainfo;
         contexts << "MetaInfoGenerator";
-    }
-
-    if (build_class_list) {
-        generators << new ClassListGenerator;
-        contexts << "ClassListGenerator";
     }
 
     if (!cppOutDir.isNull())
@@ -268,6 +267,11 @@ void GeneratorSetJava::generate() {
     while(!generated.isEmpty()){
         generated.takeFirst().waitForFinished();
     }
+
+    if (metainfo && java_generator) {
+        metainfo->writeLibraryInitializers();
+    }
+
     ReportHandler::setContext("PriGenerator");
     priGenerator->setQtVersion(qtVersion);
     if (priGenerator->outputDirectory().isNull())

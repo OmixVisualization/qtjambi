@@ -42,12 +42,12 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.scxml" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.scxml" module="qtjambi.scxml" default-superclass="io.qt.QtObject">
     <template name="scxml.AtomicBoolean_to_bool_ptr">
     bool* %out = nullptr;
     if(%in){
         bool b = Java::Runtime::AtomicBoolean.get(%env, %in);
-        qtjambi_throw_java_exception(%env);
+        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
         %out = new bool(b);
         %scope.addFinalAction([%env,%in,%out](){
                                 jboolean bval = *%out;

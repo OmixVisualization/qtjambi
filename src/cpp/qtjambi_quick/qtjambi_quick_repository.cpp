@@ -30,8 +30,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_quick_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtQuick{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QQuickItem,

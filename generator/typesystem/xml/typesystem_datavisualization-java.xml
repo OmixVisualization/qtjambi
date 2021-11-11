@@ -42,15 +42,15 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.datavis" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.datavis" module="qtjambi.datavisualization" default-superclass="io.qt.QtObject">
     <object-type name="QtDataVisualization::QSurfaceDataProxy">
         <modify-function signature="resetArray(QtDataVisualization::QSurfaceDataArray*)">
             <inject-code position="beginning">
-            invalidateObject(__rcArray);
+            QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);
             </inject-code>
             <inject-code position="end"><argument-map index="1" meta-name="%1"/>
             __rcArray = %1;
-            registerDependentObject(__rcArray, this);
+            QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);
             </inject-code>
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -70,11 +70,11 @@
     <object-type name="QtDataVisualization::QScatterDataProxy">
         <modify-function signature="resetArray(QtDataVisualization::QScatterDataArray*)">
             <inject-code position="beginning">
-            invalidateObject(__rcArray);
+            QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);
             </inject-code>
             <inject-code position="end"><argument-map index="1" meta-name="%1"/>
             __rcArray = %1;
-            registerDependentObject(__rcArray, this);
+            QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);
             </inject-code>
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -94,11 +94,11 @@
     <object-type name="QtDataVisualization::QBarDataProxy">
         <modify-function signature="resetArray(QtDataVisualization::QBarDataArray*)">
             <inject-code position="beginning">
-            invalidateObject(__rcArray);
+            QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);
             </inject-code>
             <inject-code position="end"><argument-map index="1" meta-name="%1"/>
             __rcArray = %1;
-            registerDependentObject(__rcArray, this);
+            QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);
             </inject-code>
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -113,11 +113,11 @@
         </modify-function>
         <modify-function signature="resetArray(QtDataVisualization::QBarDataArray*,QStringList,QStringList)">
             <inject-code position="beginning">
-            invalidateObject(__rcArray);
+            QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);
             </inject-code>
             <inject-code position="end"><argument-map index="1" meta-name="%1"/>
             __rcArray = %1;
-            registerDependentObject(__rcArray, this);
+            QtJambi_LibraryUtilities.internal.registerDependentObject(__rcArray, this);
             </inject-code>
             <modify-argument index="1">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -152,11 +152,11 @@
                 </conversion-rule>
             </modify-argument>
             <inject-code position="beginning">
-            invalidateObject(__rcTextureData);
+            QtJambi_LibraryUtilities.internal.invalidateObject(__rcTextureData);
             </inject-code>
             <inject-code position="end"><argument-map index="0" meta-name="%0"/>
             __rcTextureData = %0;
-            registerDependentObject(__rcTextureData, this);
+            QtJambi_LibraryUtilities.internal.registerDependentObject(__rcTextureData, this);
             </inject-code>
         </modify-function>
         <inject-code>

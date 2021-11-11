@@ -35,6 +35,9 @@
 **
 ****************************************************************************/
 
+#include <qglobal.h>
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_repository.h>
 
@@ -72,7 +75,7 @@ static inline void setOk(JNIEnv *env, jbooleanArray ok, bool isOk)
         jboolean* array = env->GetBooleanArrayElements(ok, nullptr);
         array[0] = isOk;
         env->ReleaseBooleanArrayElements(ok, array, 0);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 }
 
@@ -170,7 +173,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1toChar)
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1saveObject)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant_saveObject)
     (JNIEnv *env, jclass, QtJambiNativeID stream_nativeId, jobject variant, jbooleanArray ok)
 {
     QDataStream *__qt_stream = qtjambi_object_from_nativeId<QDataStream>(stream_nativeId);
@@ -217,7 +220,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1saveObject)
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant__1_1qt_1loadObject)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVariant_loadObject)
     (JNIEnv *env, jclass, QtJambiNativeID stream_nativeId, jbooleanArray ok)
 {
     QDataStream *__qt_stream = qtjambi_object_from_nativeId<QDataStream>(stream_nativeId);

@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.statemachine" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.statemachine" module="qtjambi.statemachine" default-superclass="io.qt.QtObject">
     <object-type name="QAbstractTransition">
         <modify-function signature="setTargetState(QAbstractState*)">
             <modify-argument index="1">
@@ -63,13 +63,24 @@
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(sender, signal);
+            <inject-code class="java" position="beginning"><argument-map index="2" meta-name="signal"/><argument-map index="1" meta-name="sender"/>
+                if(signal!=null &amp;&amp; !signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = "2" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="setSignal(const QByteArray &amp;)">
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(signal);
+            <inject-code class="java" position="beginning"><argument-map index="1" meta-name="signal"/>
+                if(signal!=null &amp;&amp; !signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = senderObject().metaObject().method(signal.toString());
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = new io.qt.core.QByteArray("2");
+                        signal.append(method.cppMethodSignature());
+                    }
+                }
             </inject-code>
         </modify-function>
     </object-type>
@@ -89,11 +100,18 @@
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(sender, signal);
+            <inject-code class="java" position="beginning"><argument-map index="2" meta-name="signal"/><argument-map index="1" meta-name="sender"/>
+                if(signal==null || signal.isEmpty())
+                    return null;
+                if(!signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = "2" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="3" meta-name="%3"/>
-                addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %3);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %3);
             </inject-code>
         </modify-function>
         <modify-function signature="addTransition(QAbstractState*)">
@@ -102,7 +120,7 @@
                 <reference-count action="ignore" />
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="1" meta-name="%1"/>
-                addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %1);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %1);
             </inject-code>
         </modify-function>
         <modify-function signature="assignProperty(QObject *, const char *, const QVariant &amp;)">
@@ -119,7 +137,7 @@
                 <reference-count action="ignore" />
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="1" meta-name="%1"/>
-                addReferenceCount(defaultTransition(), QAbstractTransition.class, "__rcTargetStates", false, false, %1);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(defaultTransition(), QAbstractTransition.class, "__rcTargetStates", false, false, %1);
             </inject-code>
         </modify-function>
     </object-type>

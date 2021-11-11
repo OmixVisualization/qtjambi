@@ -194,7 +194,7 @@ public class TestSignalSlotGC extends QApplicationTest {
 	}
 
 	static class Emitter extends QObject {
-		public Signal0 signal = new Signal0();
+		public final Signal0 signal = new Signal0();
 
 		public void emit() {
 			signal.emit();

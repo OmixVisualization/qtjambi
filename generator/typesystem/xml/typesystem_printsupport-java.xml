@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.printsupport" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.printsupport" module="qtjambi.printsupport" default-superclass="io.qt.QtObject">
     <object-type name="QPrintPreviewDialog">
       <modify-function signature="open(QObject*,const char*)"  remove="all" />
     </object-type>
@@ -55,7 +55,7 @@
     <object-type name="QPrintDialog">
         <modify-function signature="open(QObject*,const char*)" remove="all" />
 
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
 #if !defined(Q_NO_USING_KEYWORD)
         using QDialog::accepted;
 #else

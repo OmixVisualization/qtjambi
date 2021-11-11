@@ -44,6 +44,7 @@
 
 #include "global.h"
 
+#include <QtCore/QDebug>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
 #ifndef QTJAMBI_NO_QUICK
@@ -52,7 +53,9 @@
 #ifndef QTJAMBI_NO_WIDGETS
 #include <QtWidgets/QtWidgets>
 #endif
+#include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_registry.h>
+#include "general.h"
 #include <qtjambi/qtjambi_cast.h>
 
 class UnknownKey{
@@ -73,7 +76,41 @@ bool operator ==(const UnknownClass&,const UnknownClass&){return false;}
 uint qHash(const UnknownClass&){return 0;}
 uint qHash(const QMap<QString,int>&){return 0;}
 
-QList<bool> _start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jstring text){
+#ifndef QTJAMBI_NO_WIDGETS
+class CalendarWidgetAccessor: public QCalendarWidget {
+public:
+    void paintCellAccess(QPainter *p) {
+        paintCell(p, QRect(), QDate::currentDate());
+    }
+};
+void General::callPaintCell(QCalendarWidget *w, QPainter *painter) {
+    QPainter localPainter;
+    if (!painter)
+        painter = &localPainter;
+
+    static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(painter);
+}
+
+void General::callPaintCellNull(QCalendarWidget *w) {
+    static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(nullptr);
+}
+#endif
+
+void General::qtjambi_jni_test(jobject object){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        jclass cls = env->FindClass("Ljava/lang/String;");
+        jobject null = nullptr;
+        bool isInstance1 = env->IsInstanceOf(null, cls);
+        bool isInstance2 = env->IsInstanceOf(object, cls);
+        jfieldID mtd = env->GetFieldID(cls, "value", "[B");
+        jobject l = env->GetObjectField(object, mtd);
+        printf("isInstance1=%i\n", isInstance1);
+        printf("isInstance2=%i\n", isInstance2);
+        printf("result=%p\n", l);
+    }
+}
+
+QList<bool> General::start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text){
     QtJambiScope scope(nullptr);
     QList<bool> results;
     if(JNIEnv* env = qtjambi_current_environment()){
@@ -631,7 +668,7 @@ QList<bool> _start_qtjambi_cast_test(jobject list, jobject qObject, jobject grap
         }
 
         {
-            QStringView stringView = qtjambi_cast<QStringView>(env, scope, text);
+            QStringView stringView = qtjambi_cast<QStringView>(env, scope, jstring(text));
             qtjambi_collection_add(env, list, qtjambi_cast<jobject>(env, stringView));
         }
 
@@ -1406,4 +1443,332 @@ QList<bool> _start_qtjambi_cast_test(jobject list, jobject qObject, jobject grap
 #endif
     }
     return results;
+}
+
+void fun0(){
+    qInfo() << "Hello World!";
+}
+
+void fun1(int i){
+    qInfo() << "arg: " << i;
+}
+
+void fun2(bool b){
+    qInfo() << "arg: " << b;
+}
+
+void fun3(double d){
+    qInfo() << "arg: " << d;
+}
+
+void fun4(float f){
+    qInfo() << "arg: " << f;
+}
+
+void fun5(QChar c){
+    qInfo() << "arg: " << c;
+}
+
+void fun6(QString strg){
+    qInfo() << "arg: " << strg;
+}
+
+void fun7(const QString& strg){
+    qInfo() << "arg: " << strg;
+}
+
+void fun8(QObject* obj){
+    qInfo() << "arg: " << (obj ? obj->objectName() : "null");
+}
+
+void fun9(nullptr_t n){
+    qInfo() << "arg: " << (n==nullptr ? "null" : "not null");
+}
+
+void fun10(JNIEnv* env){
+    qInfo() << "arg: " << quint64(env);
+}
+
+void fun11(char, int i){
+    qInfo() << "arg: " << i;
+}
+
+void fun12(char, bool b){
+    qInfo() << "arg: " << b;
+}
+
+void fun13(int, double d){
+    qInfo() << "arg: " << d;
+}
+
+void fun14(long long, float f){
+    qInfo() << "arg: " << f;
+}
+
+void fun15(char, QChar c){
+    qInfo() << "arg: " << c;
+}
+
+void fun16(char, QString strg){
+    qInfo() << "arg: " << strg;
+}
+
+void fun17(char, const QString& strg){
+    qInfo() << "arg: " << strg;
+}
+
+void fun18(char, QObject* obj){
+    qInfo() << "arg: " << (obj ? obj->objectName() : "null");
+}
+
+void fun19(char, nullptr_t n){
+    qInfo() << "arg: " << (n==nullptr ? "null" : "not null");
+}
+
+void fun20(char, JNIEnv* env){
+    qInfo() << "arg: " << quint64(env);
+}
+
+int fun21(int i){
+    return i;
+}
+
+bool fun22(bool b){
+    return b;
+}
+
+double fun23(double d){
+    return d;
+}
+
+float fun24(float f){
+    return f;
+}
+
+QChar fun25(QChar c){
+    return c;
+}
+
+QString fun26(QString strg){
+    return strg;
+}
+
+QString fun27(const QString& strg){
+    return strg;
+}
+
+QObject* fun28(QObject* obj){
+    return obj;
+}
+
+QColor fun29(){
+    return QColor(Qt::darkBlue);
+}
+
+QList<QVariant> fun30(QString s, QObject* o, qint64 j, qint16 i16, double d, const QColor& color, const QStringList& list, QRectF rect, QFont font){
+    return {QVariant::fromValue(s),
+                QVariant::fromValue(o),
+                QVariant::fromValue(j),
+                QVariant::fromValue(i16),
+                QVariant::fromValue(d),
+                QVariant::fromValue(color),
+                QVariant::fromValue(list),
+                QVariant::fromValue(rect),
+                QVariant::fromValue(font)};
+}
+
+Qt::AlignmentFlag fun31(Qt::AlignmentFlag flag){
+    return flag;
+}
+
+Qt::Alignment fun32(Qt::Alignment flag){
+    return flag;
+}
+
+QDir fun33(const QDir& dir){
+    return dir;
+}
+
+QVariant fun34(const QVariant& value){
+    return value;
+}
+
+char16_t fun35(char16_t value){
+    return value;
+}
+
+wchar_t fun36(wchar_t value){
+    return value;
+}
+
+void fun37(char c, short s, int i, long long j, Qt::GlobalColor col, Qt::Alignment flag){
+    qInfo() << c << " " << s << " " << i << " " << j << " " << col << " " << flag;
+}
+
+void fun38(const QDir& arg){
+    qInfo() << arg;
+}
+
+void fun39(const QColor& arg){
+    qInfo() << arg;
+}
+
+void fun40(QColor& arg){
+    qInfo() << arg;
+    arg = QColor(Qt::darkMagenta);
+}
+
+void fun41(const QRect& arg){
+    qInfo() << arg;
+}
+
+void fun42(QRect arg){
+    qInfo() << arg;
+}
+
+void fun43(QDir arg){
+    qInfo() << arg;
+}
+
+QRect fun44(){
+    qInfo() << "here I am";
+    return QRect(8,2,4,9);
+}
+
+Qt::Alignment fun45(){
+    qInfo() << "here I am";
+    return Qt::Alignment(Qt::AlignVCenter | Qt::AlignJustify);
+}
+
+void fun46(QMap<QString,QRect> arg){
+    qInfo() << arg;
+}
+
+void fun47(const QMap<QString,QRect>& arg){
+    qInfo() << arg;
+}
+
+void fun48(QString& strg){
+    qInfo() << strg;
+    strg = QLatin1String("Test");
+}
+
+void fun49(int* array, int size){
+    for(int i=0; i<size; ++i){
+        qInfo() << "array[" << i << "] = " << array[i];
+        array[i] = i;
+    }
+}
+
+void fun50(QRectF* array, int size){
+    for(int i=0; i<size; ++i){
+        qInfo() << "array[" << i << "] = " << array[i];
+        array[i] = QRectF(0,0,i+1,i*2+1);
+    }
+}
+
+void fun51(const char* format,...){
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
+    fflush(stdout);
+}
+
+typedef void (*Runnable)();
+
+Runnable fun52(Runnable runnable){
+    if(runnable)
+        runnable();
+    return runnable;
+}
+
+typedef void (*UnknownFunction1)(int);
+
+void fun53(UnknownFunction1 function){
+    if(function)
+        function(987654321);
+}
+
+typedef qlonglong(*UnknownFunction2)(double, int, const QColor&, Qt::Alignment);
+
+qlonglong fun54(UnknownFunction2 function){
+    if(function)
+        return function(9.12345, 10, Qt::blue, Qt::AlignLeft | Qt::AlignTop);
+    return 0;
+}
+
+typedef UnknownFunction1(*UnknownFunction3)(UnknownFunction2 f2);
+
+UnknownFunction1 fun55(UnknownFunction3 function){
+    if(function)
+        return function([](double d, int i, const QColor& c, Qt::Alignment a) -> qlonglong{
+            return qlonglong((i + int(c.rgba()) + int(a)) * d);
+        });
+    return nullptr;
+}
+
+QFunctionPointer FunctionalTest::getFunction(int id){
+    static QFunctionPointer functionPointers[] = {
+        reinterpret_cast<QFunctionPointer>(&fun0),
+        reinterpret_cast<QFunctionPointer>(&fun1),
+        reinterpret_cast<QFunctionPointer>(&fun2),
+        reinterpret_cast<QFunctionPointer>(&fun3),
+        reinterpret_cast<QFunctionPointer>(&fun4),
+        reinterpret_cast<QFunctionPointer>(&fun5),
+        reinterpret_cast<QFunctionPointer>(&fun6),
+        reinterpret_cast<QFunctionPointer>(&fun7),
+        reinterpret_cast<QFunctionPointer>(&fun8),
+        reinterpret_cast<QFunctionPointer>(&fun9),
+        reinterpret_cast<QFunctionPointer>(&fun10),
+        reinterpret_cast<QFunctionPointer>(&fun11),
+        reinterpret_cast<QFunctionPointer>(&fun12),
+        reinterpret_cast<QFunctionPointer>(&fun13),
+        reinterpret_cast<QFunctionPointer>(&fun14),
+        reinterpret_cast<QFunctionPointer>(&fun15),
+        reinterpret_cast<QFunctionPointer>(&fun16),
+        reinterpret_cast<QFunctionPointer>(&fun17),
+        reinterpret_cast<QFunctionPointer>(&fun18),
+        reinterpret_cast<QFunctionPointer>(&fun19),
+        reinterpret_cast<QFunctionPointer>(&fun20),
+        reinterpret_cast<QFunctionPointer>(&fun21),
+        reinterpret_cast<QFunctionPointer>(&fun22),
+        reinterpret_cast<QFunctionPointer>(&fun23),
+        reinterpret_cast<QFunctionPointer>(&fun24),
+        reinterpret_cast<QFunctionPointer>(&fun25),
+        reinterpret_cast<QFunctionPointer>(&fun26),
+        reinterpret_cast<QFunctionPointer>(&fun27),
+        reinterpret_cast<QFunctionPointer>(&fun28),
+        reinterpret_cast<QFunctionPointer>(&fun29),
+        reinterpret_cast<QFunctionPointer>(&fun30),
+        reinterpret_cast<QFunctionPointer>(&fun31),
+        reinterpret_cast<QFunctionPointer>(&fun32),
+        reinterpret_cast<QFunctionPointer>(&fun33),
+        reinterpret_cast<QFunctionPointer>(&fun34),
+        reinterpret_cast<QFunctionPointer>(&fun35),
+        reinterpret_cast<QFunctionPointer>(&fun36),
+        reinterpret_cast<QFunctionPointer>(&fun37),
+        reinterpret_cast<QFunctionPointer>(&fun38),
+        reinterpret_cast<QFunctionPointer>(&fun39),
+        reinterpret_cast<QFunctionPointer>(&fun40),
+        reinterpret_cast<QFunctionPointer>(&fun41),
+        reinterpret_cast<QFunctionPointer>(&fun42),
+        reinterpret_cast<QFunctionPointer>(&fun43),
+        reinterpret_cast<QFunctionPointer>(&fun44),
+        reinterpret_cast<QFunctionPointer>(&fun45),
+        reinterpret_cast<QFunctionPointer>(&fun46),
+        reinterpret_cast<QFunctionPointer>(&fun47),
+        reinterpret_cast<QFunctionPointer>(&fun48),
+        reinterpret_cast<QFunctionPointer>(&fun49),
+        reinterpret_cast<QFunctionPointer>(&fun50),
+        reinterpret_cast<QFunctionPointer>(&fun51),
+        reinterpret_cast<QFunctionPointer>(&fun52),
+        reinterpret_cast<QFunctionPointer>(&fun53),
+        reinterpret_cast<QFunctionPointer>(&fun54),
+        reinterpret_cast<QFunctionPointer>(&fun55)
+    };
+    if(id>=0 && id<int(sizeof(functionPointers))){
+        return functionPointers[id];
+    }
+    return nullptr;
 }

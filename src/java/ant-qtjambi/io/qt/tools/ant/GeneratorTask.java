@@ -75,6 +75,7 @@ public class GeneratorTask extends Task {
     private String includePaths;
 	private String targetJavaVersion;
     private boolean debugTools;
+    private boolean useNativeIds = true;
     private List<String> commandList = new ArrayList<String>();
 
     private List<String> searchPath() {
@@ -217,6 +218,7 @@ public class GeneratorTask extends Task {
 				commandList.add("--target-java-version="+targetJavaVersion.substring(2));
 			else
 				commandList.add("--target-java-version="+targetJavaVersion);
+        commandList.add("--use-native-ids="+useNativeIds);
 
 
         PropertyHelper props = PropertyHelper.getPropertyHelper(getProject());
@@ -379,5 +381,13 @@ public class GeneratorTask extends Task {
 	
 	public void setTargetJavaVersion(String targetJavaVersion){
 		this.targetJavaVersion = targetJavaVersion;
+	}
+
+	public boolean isUseNativeIds() {
+		return useNativeIds;
+	}
+
+	public void setUseNativeIds(boolean useNativeIds) {
+		this.useNativeIds = useNativeIds;
 	}
 }

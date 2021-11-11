@@ -223,7 +223,7 @@ void TypeDatabase::addType(TypeEntry *e) {
     }
 }
 
-void TypeDatabase::initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion, bool isQtjambiPort) {
+void TypeDatabase::initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion) {
     m_qtVersion = qtVersion;
     m_entries.clear();
     m_class_name_counter.clear();
@@ -392,10 +392,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
 
         // Predefined containers...
         addType(new ContainerTypeEntry("std::vector", ContainerTypeEntry::std_vector));
-        addType(new ContainerTypeEntry("QArray", ContainerTypeEntry::QArrayContainer));
-        addType(new ContainerTypeEntry("QVector2DArray", ContainerTypeEntry::QVector2DArrayContainer));
-        addType(new ContainerTypeEntry("QVector3DArray", ContainerTypeEntry::QVector3DArrayContainer));
-        addType(new ContainerTypeEntry("QVector4DArray", ContainerTypeEntry::QVector4DArrayContainer));
         {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QList", ContainerTypeEntry::ListContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QList"));
@@ -575,10 +571,10 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
 
    public QStringList(java.util.Collection<String> other) {
        super((QPrivateConstructor)null);
-       __qt_QStringList_new_copy(this, other);
+       initialize_native(this, other);
    }
 
-   private native static <T> void __qt_QStringList_new_copy(Object instance, java.util.Collection<String> other);
+   private native static <T> void initialize_native(QStringList instance, java.util.Collection<String> other);
 
    public QStringList(String... content) {
        this(java.util.Arrays.asList(content));
@@ -1092,7 +1088,6 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
             }
             addType(entry);
         }
-        addType(new ContainerTypeEntry("QDeclarativeListProperty", ContainerTypeEntry::QDeclarativeListPropertyContainer));
         addType(new ContainerTypeEntry("QQmlListProperty", ContainerTypeEntry::QQmlListPropertyContainer));
         addType(new ContainerTypeEntry("QPair", ContainerTypeEntry::PairContainer));
         addType(new ContainerTypeEntry("std::atomic", ContainerTypeEntry::std_atomic));
@@ -1126,25 +1121,12 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
 
         ObjectTypeEntry* glsync = new ObjectTypeEntry("__GLsync");
         glsync->setTargetLangName("GLsync");
+        glsync->setTargetTypeSystem("io.qt.gui");
         glsync->setTargetLangPackage("io.qt.gui.gl");
         glsync->setCodeGeneration(TypeEntry::GenerateNothing);
         addType(glsync);
     }
     parseFile(filename, importInputDirectoryList);
-    if(isQtjambiPort){
-        if(ObjectTypeEntry * threadType = findObjectType("QThread")){
-            m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-        }
-        if(ObjectTypeEntry * threadType = findObjectType("QtJambiThreadStorage")){
-            //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-            threadType->setCodeGeneration(TypeEntry::GenerateNothing);
-        }
-        if(ObjectTypeEntry * threadType = findObjectType("QThreadStorage")){
-            //m_entries[threadType->qualifiedCppName()].removeAll(threadType);
-            threadType->setCodeGeneration(TypeEntry::GenerateNothing);
-        }
-        addType(new ThreadTypeEntry());
-    }
     if(stringListEntry){
         if(TypeSystemTypeEntry * typeSystemTypeEntry = findTypeSystem(stringListEntry->javaPackage()))
             stringListEntry->setCodeGeneration(typeSystemTypeEntry->codeGeneration());
@@ -1284,19 +1266,24 @@ bool TypeDatabase::isClassRejected(const QString &class_name) {
     if (!m_rebuild_classes.isEmpty())
         return !m_rebuild_classes.contains(class_name);
 
-    for(const TypeRejection &r : m_rejections){
-        if(r.function_name == "*" && r.field_name == "*" && r.enum_name == "*"){
-            if(r.class_name.contains("*")){
-                QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.class_name));
-                if(exp.match(class_name).hasMatch()){
-                    return true;
+    if(!m_rejectedClasses.contains(class_name)){
+        m_rejectedClasses[class_name] = false;
+        for(const TypeRejection &r : m_rejections){
+            if(r.function_name == "*" && r.field_name == "*" && r.enum_name == "*"){
+                if(r.class_name.contains("*")){
+                    QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.class_name));
+                    if(exp.match(class_name).hasMatch()){
+                        m_rejectedClasses[class_name] = true;
+                        break;
+                    }
+                }else if (r.class_name == class_name) {
+                    m_rejectedClasses[class_name] = true;
+                    break;
                 }
-            }else if (r.class_name == class_name) {
-                return true;
             }
         }
     }
-    return false;
+    return m_rejectedClasses[class_name];
 }
 
 bool TypeDatabase::isEnumRejected(const QString &class_name, const QString &enum_name) {
@@ -1304,11 +1291,12 @@ bool TypeDatabase::isEnumRejected(const QString &class_name, const QString &enum
         if(r.function_name == "*" && r.field_name == "*") {
             if (r.enum_name == enum_name
                     && (r.class_name == class_name || r.class_name == "*")) {
+                m_rejectedClasses[class_name + "::" + enum_name] = true;
                 return true;
             }
         }
     }
-
+    m_rejectedClasses[class_name + "::" + enum_name] = false;
     return false;
 }
 

@@ -34,13 +34,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.MissingFormatArgumentException;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.autotests.generated.FutureHandler;
 import io.qt.concurrent.QtConcurrent;
 import io.qt.core.QFuture;
+import io.qt.core.QFutureInterface;
 import io.qt.core.QFutureSynchronizer;
-import io.qt.core.QVoidFuture;
+import io.qt.core.QThread;
 
 public class TestConcurrent extends QApplicationTest {
 
@@ -69,7 +73,7 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT; ++i)
             strings.add(new MutableString("" + i));
 
-        QVoidFuture future = QtConcurrent.map(strings, object -> { object.value += " foobar"; } );
+        QFuture<Void> future = QtConcurrent.map(strings, object -> { object.value += " foobar"; } );
 
         future.waitForFinished();
         assertEquals(COUNT, strings.size());
@@ -229,7 +233,7 @@ public class TestConcurrent extends QApplicationTest {
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
 
-        QVoidFuture future = QtConcurrent.filter(ints, i->i >= COUNT);
+        QFuture<Void> future = QtConcurrent.filter(ints, i->i >= COUNT);
         future.waitForFinished();
 
         assertEquals(COUNT, ints.size());
@@ -316,7 +320,7 @@ public class TestConcurrent extends QApplicationTest {
     @Test
     public void testRunVoid() {
         MutableInteger i = new MutableInteger(321);
-        QVoidFuture v = QtConcurrent.run(()->this.method(i));
+        QFuture<Void> v = QtConcurrent.run(()->this.method(i));
 
         v.waitForFinished();
         assertEquals(444, i.value);
@@ -358,7 +362,7 @@ public class TestConcurrent extends QApplicationTest {
     @Test
     public void testRunVoidWithPrimitiveTypes() {
         MutableInteger i = new MutableInteger(0);
-        QVoidFuture future = QtConcurrent.run(()->this.method4(i, 123, 321));
+        QFuture<Void> future = QtConcurrent.run(()->this.method4(i, 123, 321));
 
         future.waitForFinished();
         assertEquals(444, i.value);
@@ -403,7 +407,7 @@ public class TestConcurrent extends QApplicationTest {
     	List<Integer> ints = new ArrayList<Integer>();
         for (int i=0; i<COUNT*2; ++i)
             ints.add(i);
-    	QFutureSynchronizer<QFuture<Integer>> synchronizer = new QFutureSynchronizer<>();
+    	QFutureSynchronizer<Integer> synchronizer = new QFutureSynchronizer<>();
         synchronizer.addFuture(QtConcurrent.mapped(ints, i->i+1));
         synchronizer.addFuture(QtConcurrent.filtered(ints, i->i >= COUNT));
     	List<QFuture<Integer>> futures = synchronizer.futures();
@@ -421,6 +425,130 @@ public class TestConcurrent extends QApplicationTest {
             for (int i=0; i<future.resultCount(); ++i)
                 assertEquals(i+COUNT, (int) future.resultAt(i));
     	}
+    }
+    
+    @Test
+    public void testJavaQFuture() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+    	QtConcurrent.run(()->{
+    		try{
+	    		QThread.msleep(200);
+	    		promise.reportResult("testJavaQFuture1");
+	    		promise.reportResult("testJavaQFuture_nested");
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	List<String> result = FutureHandler.returnInTheFuture(promise.future());
+    	Assert.assertEquals(2, result.size());
+    	Assert.assertEquals("testJavaQFuture1", result.get(0));
+    	Assert.assertEquals("testJavaQFuture_nested", result.get(1));
+    }
+    
+    @Test
+    public void testJavaQFuture_nested() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+    	QtConcurrent.run(()->{
+    		try{
+	    		QThread.msleep(200);
+	    		promise.reportResult("testJavaQFuture1");
+	    		promise.reportResult("testJavaQFuture_nested");
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	List<String> result = FutureHandler.returnInTheFuture(FutureHandler.forward(promise.future()));
+    	Assert.assertEquals(2, result.size());
+    	Assert.assertEquals("testJavaQFuture1", result.get(0));
+    	Assert.assertEquals("testJavaQFuture_nested", result.get(1));
+    }
+    
+    @Test
+    public void testExceptionJavaQFuture() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+    	QtConcurrent.run(()->{
+    		try {
+	    		QThread.msleep(200);
+	    		throw new UnsupportedOperationException();
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	try {
+	    	FutureHandler.throwInTheFuture(promise.future());
+	    	Assert.assertFalse("exception expected to be thrown", true);
+		} catch (UnsupportedOperationException e) {
+		}
+    }
+    
+    @Test
+    public void testExceptionJavaQFuture_nested() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+    	QtConcurrent.run(()->{
+    		try {
+	    		QThread.msleep(200);
+	    		throw new MissingFormatArgumentException("");
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	try {
+	    	FutureHandler.throwInTheFuture(FutureHandler.forward(promise.future()));
+	    	Assert.assertFalse("exception expected to be thrown", true);
+		} catch (MissingFormatArgumentException e) {
+		}
+    }
+    
+    @Test
+    public void testCanceledJavaQFuture() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+		boolean[] isCanceled = {false};
+    	QtConcurrent.run(()->{
+    		try {
+        		while(!promise.isCanceled())
+        			QThread.msleep(200);
+        		isCanceled[0] = promise.isCanceled();
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	FutureHandler.cancelInTheFuture(promise.future());
+    	Assert.assertTrue(isCanceled[0]);
+    }
+    
+    @Test
+    public void testCanceledJavaQFuture_nested() {
+    	QFutureInterface<String> promise = new QFutureInterface<>();
+		promise.reportStarted();
+		boolean[] isCanceled = {false};
+    	QtConcurrent.run(()->{
+    		try {
+        		while(!promise.isCanceled())
+        			QThread.msleep(200);
+        		isCanceled[0] = promise.isCanceled();
+    		}catch(Throwable e) {
+    			promise.reportException(e);
+    		}finally {
+    			promise.reportFinished();
+    		}
+    	});
+    	FutureHandler.cancelInTheFuture(FutureHandler.forward(promise.future()));
+    	Assert.assertTrue(isCanceled[0]);
     }
 
     public static void main(String args[]) {

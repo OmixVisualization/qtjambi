@@ -1137,6 +1137,9 @@ inline const char *qt_getEnumName(ENUM,bool)
 
 // first include the qglobal.h header that defines qreal.
 #include <QtCore/qglobal.h>
+#undef Q_ASSERT
+#define Q_ASSERT(a) static_cast<void>(0)
+
 #undef QT_DEPRECATED_VERSION
 #undef QT_DEPRECATED_VERSION_X
 #define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED

@@ -84,6 +84,7 @@ class Handler {
         void parseLoadTypeSystem(const QDomElement &element);
         void parseSuppressedWarning(const QDomElement &element);
         void parseInjectCode(const QDomElement &element, ComplexTypeEntry* entry);
+        void parseInjectCode(const QDomElement &element, FunctionalTypeEntry* entry);
         void parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
                              const QHash<QString, CodeSnip::Position>& positionNames,
                              const std::function<void(const CodeSnip&)>& appendCodeSnip, bool argumentMapAllowed = false);
@@ -94,6 +95,7 @@ class Handler {
         Include parseInclude(const QDomElement &element);
         void parseRejection(const QDomElement &element);
         void parseTemplate(const QDomElement &element);
+        void parseInstantiation(const QDomElement &element, ComplexTypeEntry* entry);
         void parsePrimitiveType(const QDomElement &element);
         void parseObjectType(const QDomElement &element);
         void parseAttributesOfComplexType(const QDomElement &element, QDomNamedNodeMap& attributes, ComplexTypeEntry* entry);
@@ -120,6 +122,7 @@ class Handler {
         QStringList m_importInputDirectoryList;
         TypeEntry::CodeGeneration m_generate;
         QList<NamespacePrefix> m_namespacePrefixes;
+        QMultiMap<TypeSystemTypeEntry*,QString> m_requiredModules;
 };
 
 #endif

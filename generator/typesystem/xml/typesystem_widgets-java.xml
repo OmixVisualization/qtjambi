@@ -43,65 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.widgets" default-superclass="io.qt.QtObject">
-    <inject-code class="metainfo" position="1">
-#ifdef QT_QTJAMBI_PORT
-    void initialize_meta_info_QSignalMapper_connection();
-#endif // QT_QTJAMBI_PORT
-    </inject-code>
-    <inject-code class="metainfo">
-#ifdef QT_QTJAMBI_PORT
-    initialize_meta_info_QSignalMapper_connection();
-#endif // QT_QTJAMBI_PORT
-    </inject-code>
-    <template name="gui.convert_styleoptiongraphicsitem_array_to_java">
-        jobjectArray %out = qtjambi_to_jobjectArray&lt;const QStyleOptionGraphicsItem>(%env, 
-            %in, %LENGTH,
-            [](JNIEnv * %env, QStyleOptionGraphicsItem const &amp; item) -> jobject {
-                    return qtjambi_cast&lt;jobject>(%env, item);
-                }
-            );
-    </template>
-
-    <template name="gui.convert_interface_array_from_java">
-        %CLASSNAME *%out = 0;
-        QVarLengthArray&lt;%CLASSNAME, 256&gt; __interfaceArray(__length);
-        if (%in != 0) {
-            for (int i=0; i&lt;__length; ++i) {
-                __interfaceArray[i] = (%CLASSNAME) %CONVERSION_FUNCTION(%env, %env-&gt;GetObjectArrayElement(jobjectArray(%in), i) %EXTRA);
-            }
-        }
-        %out = %in == 0 ? 0 : __interfaceArray.data();
-    </template>
-
-    <template name="gui.convert_object_array_from_java">
-        %CLASSNAME *%out = 0;
-        QVarLengthArray&lt;%CLASSNAME, 256&gt; __array(__length);
-        if (%in != 0) {
-            for (int i=0; i&lt;__length; ++i) {
-                __array[i] = *(%CLASSNAME *) %CONVERSION_FUNCTION(%env, %env-&gt;GetObjectArrayElement(jobjectArray(%in), i) %EXTRA);
-            }
-        }
-        %out = %in == 0 ? 0 : __array.data();
-    </template>
-
-    <template name="gui.convert_graphicsitem_array_from_java">
-        <insert-template name="gui.convert_interface_array_from_java">
-            <replace from="%CLASSNAME" to="QGraphicsItem *"/>
-            <replace from="%EXTRA" to=", &quot;QGraphicsItem&quot;, &quot;io/qt/widgets/&quot;"/>
-            <replace from="%CONVERSION_FUNCTION" to="qtjambi_to_interface"/>
-        </insert-template>
-    </template>
-
-
-    <template name="gui.convert_styleoptiongraphicsitem_array_from_java">
-        <insert-template name="gui.convert_object_array_from_java">
-            <replace from="%CLASSNAME" to="QStyleOptionGraphicsItem"/>
-            <replace from="%EXTRA" to=""/>
-            <replace from="%CONVERSION_FUNCTION" to="qtjambi_to_object"/>
-        </insert-template>
-    </template>
-
+<typesystem package="io.qt.widgets" default-superclass="io.qt.QtObject" module="qtjambi">
     <value-type name="QPainterPath">
        <modify-function signature="operator&amp;=(QPainterPath)" remove="all" />
         <modify-function signature="operator+=(QPainterPath)" remove="all" />
@@ -145,7 +87,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                registerDependentObject(this, %1);
+                QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItemIterator(QTreeWidgetItem *,QFlags&lt;QTreeWidgetItemIterator::IteratorFlag>)">
@@ -154,11 +96,11 @@
                 if (%1 == null)
                     throw new NullPointerException("Argument '%1': null not expected.");
                 else if(%1.treeWidget()==null)
-                    throw new NullPointerException("Item does not belong to a tree widget.");
+                    throw new IllegalArgumentException("Item does not belong to a tree widget.");
             </inject-code>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                registerDependentObject(this, %1.treeWidget());
+                QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1.treeWidget());
             </inject-code>
         </modify-function>
         <modify-function signature="operator++()" rename="next">
@@ -182,24 +124,11 @@
             </modify-argument>
         </modify-function>
     </object-type>
-
-
-    <object-type name="QPixmapConvolutionFilter" polymorphic-id-expression="%1-&gt;type() == QPixmapFilter::ConvolutionFilter">
-        <modify-function signature="setConvolutionKernel(const qreal*,int,int)">
-            <access modifier="private" />
-            <rename to="setConvolutionKernel_private" />
-        </modify-function>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QPixmapFilter___" quote-before-line="}// class"/>
-        </inject-code>
-    </object-type>
-
     <value-type name="QPainterPath::Element">
         <inject-code>
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QPainterPath_Element___" quote-before-line="}// class"/>
         </inject-code>
     </value-type>
-
     <interface-type name="QGraphicsItem">
         <extra-includes>
             <include file-name="qtjambi_widgets_repository.h" location="local"/>
@@ -212,7 +141,7 @@
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
             if (%1 != null)
-                setCppOwnership(%this);
+                QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
 
@@ -261,9 +190,9 @@
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 == null &amp;&amp; oldGroup != null &amp;&amp; oldGroup.parentItem() == null)
-                    setDefaultOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);
                 else
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
 
@@ -274,9 +203,9 @@
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1 == null)
-                    setDefaultOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);
                 else
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
         
@@ -302,14 +231,14 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsTextItem(const QString &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -319,7 +248,7 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null &amp;&amp; %1.toGraphicsObject() == null) setCppOwnership(this);
+                if (%1 != null &amp;&amp; %1.toGraphicsObject() == null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="setGroup(QGraphicsItemGroup*)">
@@ -347,7 +276,7 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-            if (%1 != null) setCppOwnership(this);
+            if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -382,7 +311,7 @@
             </modify-argument>
             <inject-code class="java" position="end">
                 // setModel() creates a new selection model for the object
-                setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, "__rcItemSelectionModel", false, false, null);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(this, io.qt.widgets.QAbstractItemView.class, "__rcItemSelectionModel", false, false, null);
             </inject-code>
         </modify-function>
         <modify-function signature="setSelectionModel(QItemSelectionModel *)" thread-affine="yes">
@@ -411,7 +340,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
             </inject-code>
         </modify-function>
         <modify-function signature="removeAction(QAction*)" thread-affine="yes">
@@ -420,7 +349,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);
             </inject-code>
         </modify-function>
     </object-type>
@@ -539,21 +468,21 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsEllipseItem(const QRectF &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsEllipseItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
             <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
-                if (%5 != null) setCppOwnership(this);
+                if (%5 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -563,7 +492,7 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="addToGroup(QGraphicsItem*)" thread-affine="yes">
@@ -577,7 +506,7 @@
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (!_hasParent &amp;&amp; (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
-                    setCppOwnership(%1);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
             </inject-code>
         </modify-function>
         <modify-function signature="removeFromGroup(QGraphicsItem*)" thread-affine="yes">
@@ -587,7 +516,7 @@
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
                 if (%1.parentItem() == null &amp;&amp; (%1.toGraphicsObject()==null || %1.toGraphicsObject().parent() == null) )
-                    setDefaultOwnership(%1);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);
             </inject-code>
         </modify-function>
     </object-type>
@@ -597,21 +526,21 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsLineItem(const QLineF &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsLineItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
             <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
-                if (%5 != null) setCppOwnership(this);
+                if (%5 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -621,14 +550,14 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPathItem(const QPainterPath &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -638,14 +567,14 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPixmapItem(const QPixmap &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -655,14 +584,14 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsPolygonItem(const QPolygonF &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -673,21 +602,21 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsRectItem(qreal,qreal,qreal,qreal,QGraphicsItem*)">
             <modify-argument index="5" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="5" meta-name="%5"/>
-                if (%5 != null) setCppOwnership(this);
+                if (%5 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsRectItem(const QRectF &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -697,14 +626,14 @@
             <modify-argument index="1" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsSimpleTextItem(const QString &amp;,QGraphicsItem*)">
             <modify-argument index="2" thread-affine="yes"/>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -814,7 +743,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="clear()">
             <inject-code position="end">
         if(__rcMenus!=null)__rcMenus.clear();
-        clearReferenceCount(this, QWidget.class, "__rcActions", false);
+        QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, "__rcActions", false);
             </inject-code>
         </modify-function>
         <modify-function signature="initStyleOption(QStyleOptionMenuItem*,const QAction*)const">
@@ -847,7 +776,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <modify-function signature="clear()">
             <inject-code position="end">
         if(__rcMenus!=null)__rcMenus.clear();
-        clearReferenceCount(this, QWidget.class, "__rcActions", false);
+        QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, "__rcActions", false);
             </inject-code>
         </modify-function>
         <modify-function signature="initStyleOption(QStyleOptionMenuItem*,const QAction*)const">
@@ -893,12 +822,25 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
 
 
     <object-type name="QShortcut" until="5.*">
-        <modify-function signature="QShortcut(QKeySequence,QWidget*,const char*,const char*,Qt::ShortcutContext)">
+        <modify-function signature="QShortcut(QKeySequence,QWidget*,const char*,const char*,Qt::ShortcutContext)" access="private">
+            <modify-argument index="2">
+                <no-null-pointer/>
+            </modify-argument>
             <modify-argument index="3">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <inject-code>
@@ -1181,7 +1123,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="0" meta-name="%item" />
                 if(%item != null){
-                    setDefaultOwnership(%item);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
                 }
             </inject-code>
         </modify-function>
@@ -1207,7 +1149,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </inject-code>
             <inject-code class="java" position="end">
                 if(widget!=null &amp;&amp; widget.parent()==null){
-                    addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
                 }
             </inject-code>
         </modify-function>
@@ -1280,7 +1222,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="0" meta-name="%item" />
                 if(%item != null){
-                    setDefaultOwnership(%item);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
                 }
             </inject-code>
         </modify-function>
@@ -1295,7 +1237,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </inject-code>
             <inject-code class="java" position="end">
                 if(widget!=null &amp;&amp; widget.parent()==null){
-                    addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
                 }
             </inject-code>
         </modify-function>
@@ -1333,7 +1275,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="0" meta-name="%item" />
                 if(%item != null){
-                    setDefaultOwnership(%item);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
                 }
             </inject-code>
         </modify-function>
@@ -1388,7 +1330,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="0" meta-name="%item" />
                 if(%item != null){
-                    setDefaultOwnership(%item);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
                 }
             </inject-code>
         </modify-function>
@@ -1478,7 +1420,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </inject-code>
             <inject-code class="java" position="end">
                 if(widget!=null &amp;&amp; widget.parent()==null){
-                    addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
                 }
             </inject-code>
         </modify-function>
@@ -1662,7 +1604,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="0" meta-name="%item" />
                 if(%item != null){
-                    setDefaultOwnership(%item);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%item);
                 }
             </inject-code>
         </modify-function>
@@ -1708,7 +1650,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             </inject-code>
             <inject-code class="java" position="end">
                 if(widget!=null &amp;&amp; widget.parent()==null){
-                    addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
+                    QtJambi_LibraryUtilities.internal.addReferenceCount(this, io.qt.widgets.QLayout.class, "__rcLayoutedObjects", false, false, widget);
                 }
             </inject-code>
         </modify-function>
@@ -1761,7 +1703,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                changedSignal = cppSlotSignature(changedSignal);
+                if(changedSignal!=null &amp;&amp; !changedSignal.isEmpty()) {
+                    io.qt.core.QMetaMethod sig = widget.metaObject().method(changedSignal);
+                    if(sig.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        changedSignal = "2"+sig.cppMethodSignature().toString();
+                    }
+                }
             </inject-code>
         </modify-function>
     </object-type>
@@ -1825,31 +1772,26 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
     </object-type>
 
     <object-type name="QWidget">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QWidget___" quote-before-line="}// class"/>
-        </inject-code>
         <modify-function signature="paintEvent(QPaintEvent*)" thread-affine="ui">
             <inject-code class="shell" position="beginning">
             QTJAMBI_ABOUT_TO_PAINT(%env, __java_this)
             </inject-code>
         </modify-function>
         <modify-function signature="setWindowTitle(const QString &amp;)" thread-affine="ui">
-            <inject-code class="java">
-                <argument-map index="1" meta-name="%1"/>
-            if (this instanceof QMessageBox) {
-                __qt_QMessageBox_setWindowTitle(nativeId(this), %1);
-                return ;
+            <inject-code class="native" position="beginning"><argument-map index="1" meta-name="%1"/>
+            if (QMessageBox* box = dynamic_cast&lt;QMessageBox*>(__qt_this)) {
+                box->setWindowTitle(__qt_%1);
+                return;
             }
             </inject-code>
         </modify-function>
 
 
         <modify-function signature="setWindowModality(Qt::WindowModality)" thread-affine="ui">
-            <inject-code class="java">
-                <argument-map index="1" meta-name="%1"/>
-            if (this instanceof QMessageBox) {
-                __qt_QMessageBox_setWindowModality(nativeId(this), %1.value());
-                return ;
+            <inject-code class="native" position="beginning"><argument-map index="1" meta-name="%1"/>
+            if (QMessageBox* box = dynamic_cast&lt;QMessageBox*>(__qt_this)) {
+                box->setWindowModality(__qt_%1);
+                return;
             }
             </inject-code>
         </modify-function>
@@ -1979,20 +1921,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                     </insert-template>
                 </conversion-rule>
             </modify-argument>
-
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                    <insert-template name="gui.cleanup_validationdata_from_java"/>
-                    jint %out = %in;
-                </conversion-rule>
-                <conversion-rule class="shell">
-                    <insert-template name="gui.cleanup_validationdata_to_java">
-                        <replace from="%STRING" to="%1"/>
-                        <replace from="%POS" to="%2"/>
-                    </insert-template>
-                    QValidator::State %out = qtjambi_cast&lt;QValidator::State>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
+            <inject-code class="native" position="end"><argument-map index="1" meta-name="%1"/>
+                <insert-template name="gui.cleanup_validationdata_from_java"/>
+            </inject-code>
+            <inject-code class="shell" position="end"><argument-map index="1" meta-name="%STRING"/><argument-map index="2" meta-name="%POS"/>
+                <insert-template name="gui.cleanup_validationdata_to_java"/>
+            </inject-code>
         </modify-function>
     </object-type>
 
@@ -2061,7 +1995,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = cppSlotSignature(member);
+                if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;
             </inject-code>
         </modify-function>
         <modify-function signature="getRgba(uint,bool*,QWidget*)" thread-affine="ui" until="5.*">
@@ -2090,7 +2024,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = cppSlotSignature(member);
+                if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;
             </inject-code>
         </modify-function>
         <modify-function signature="getInt(QWidget*,const QString &amp;,const QString &amp;,int,int,int,int,bool*,QFlags&lt;Qt::WindowType&gt;)" thread-affine="ui">
@@ -2203,7 +2137,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = cppSlotSignature(member);
+                if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;
             </inject-code>
         </modify-function>
         <modify-function signature="getExistingDirectory(QWidget*,QString,QString,QFlags&lt;QFileDialog::Option&gt;)" thread-affine="ui">
@@ -2330,7 +2264,26 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="getOpenFileContent(QString, std::function&lt;void(const QString&amp;,const QByteArray&amp;)>)" thread-affine="ui"/>
+        <modify-function signature="getOpenFileContent(QString, std::function&lt;void(const QString&amp;,const QByteArray&amp;)>)" thread-affine="ui">
+            <modify-argument index="2">
+                <replace-default-expression with="null"/>
+                <replace-type modified-type="java.util.function.BiConsumer&lt;String,io.qt.core.QByteArray>"/>
+                <conversion-rule class="native">
+                    std::function&lt;void(const QString&amp;,const QByteArray&amp;)> %out;
+                    if(%in){
+                        JObjectWrapper wrapper(%env, %in);
+                        %out = [wrapper](const QString&amp; value1,const QByteArray&amp; value2){
+                                    if(JNIEnv *env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        jobject _value1 = qtjambi_cast&lt;jobject>(env, value1);
+                                        jobject _value2 = qtjambi_cast&lt;jobject>(env, value2);
+                                        Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);
+                                    }
+                                };
+                    }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="setIconProvider(QAbstractFileIconProvider *)" since="6.0.0">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcIconProvider"/>
@@ -2356,7 +2309,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <replace-type modified-type="java.lang.String" />
             </modify-argument>
             <inject-code class="java" position="beginning">
-                member = cppSlotSignature(member);
+                if(!member.startsWith("1") || !member.startsWith("2")) member = '1'+member;
             </inject-code>
         </modify-function>
         <modify-function signature="getFont(bool*,QFont,QWidget*,QString,QFlags&lt;QFontDialog::FontDialogOption&gt;)" thread-affine="ui">
@@ -2570,11 +2523,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
             if (__rcActionGroup != null) {
-                removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
+                QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
             }
             __rcActionGroup = %1;
             if (__rcActionGroup != null) {
-                addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
             }
             </inject-code>
         </modify-function>
@@ -2586,6 +2539,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QApplication___" quote-before-line="}// class"/>
         </inject-code>
         <extra-includes>
+            <include file-name="QtCore/private/qthread_p.h" location="global"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
         </extra-includes>
@@ -2606,7 +2560,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String[]"/>
                 <conversion-rule class="native">
-                    QScopedPointer&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
+                    std::unique_ptr&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
                     char** %out = applicationData->chars();
                     int&amp; __qt_%1 = applicationData->size();
                 </conversion-rule>
@@ -2615,13 +2569,20 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
                 <remove-argument/>
             </modify-argument>
             <inject-code class="native" position="end">
-                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.take());
+                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());
             </inject-code>
         </modify-function>
         <!-- We implement a custom Java wrapper to this -->
         <modify-function signature="exec()">
-            <access modifier="private"/>
-            <rename to="exec_internal"/>
+            <inject-code class="native" position="beginning">
+            QCoreApplication* instance = QCoreApplication::instance();
+            if (!instance)
+                JavaException::raiseRuntimeException(%env, "QApplication has not been initialized with QApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+            else if(instance->thread()!=QThread::currentThread())
+                JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+            else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+                JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
+            </inject-code>
         </modify-function>
         <template name="gui.application_char_pointer_function">
         public static %RETURN_TYPE %FUNCTION_NAME(%PRE_ARGUMENTS %COMMA QByteArray className) {
@@ -2665,14 +2626,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsLayoutItem(QGraphicsLayoutItem*,bool)" since="5.15.0">
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
         <modify-function signature="setParentLayoutItem(QGraphicsLayoutItem*)" thread-affine="yes">
@@ -2682,9 +2643,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
                 else
-                    setDefaultOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setDefaultOwnership(%this);
             </inject-code>
         </modify-function>
         <modify-function signature="getContentsMargins(qreal*,qreal*,qreal*,qreal*)const">
@@ -2747,16 +2708,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         </modify-function>
         <modify-function signature="setOwnedByLayout(bool)">
             <inject-code position="beginning">
-                boolean oldValue = ownedByLayout();
+                boolean oldValue = this.ownedByLayout();
             </inject-code>
             <inject-code position="end"><argument-map index="1" meta-name="%1" />
                 if(oldValue!=%1) {
                     if(%1) {
-                        if(parentLayoutItem()!=null &amp;&amp; ownership(this)==Ownership.Java) {
-                            setCppOwnership(this);
+                        if(this.parentLayoutItem()!=null &amp;&amp; QtJambi_LibraryUtilities.internal.isJavaOwnership(this)) {
+                            QtJambi_LibraryUtilities.internal.setCppOwnership(this);
                         }
                     }else {
-                        setDefaultOwnership(this);
+                        QtJambi_LibraryUtilities.internal.setDefaultOwnership(this);
                     }
                 }
             </inject-code>
@@ -2784,7 +2745,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
         <modify-function signature="removeAt ( int )">
@@ -2795,7 +2756,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code position="end">
             <argument-map index="1" meta-name="%1" />
             if(__item != null){
-                setDefaultOwnership(__item);
+                QtJambi_LibraryUtilities.internal.setDefaultOwnership(__item);
             }
         </inject-code>
         </modify-function>
@@ -2867,7 +2828,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -2882,7 +2843,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -2897,7 +2858,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (%1 instanceof QGraphicsWidget)
-                    setCppOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(%this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -2910,9 +2871,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
         <inject-code>
             <argument-map index="1" meta-name="%1" />
             if (%1 != null)
-                setCppOwnership(%1);
+                QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
             else if (widget() != null)
-                setDefaultOwnership(widget());
+                QtJambi_LibraryUtilities.internal.setDefaultOwnership(widget());
         </inject-code>
     </modify-function>
     </object-type>

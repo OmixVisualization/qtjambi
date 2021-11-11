@@ -53,10 +53,10 @@
 class DestroyCounter: public QObject
 {
 public:
-    DestroyCounter() : m_destroyed(0) { }
-    virtual ~DestroyCounter() { }
-    void increaseDestroyedCount() { m_destroyed++; }
-    int destroyedCount() { return m_destroyed; }
+    DestroyCounter();
+    ~DestroyCounter() override;
+    void increaseDestroyedCount();
+    int destroyedCount() const;
 private:
     int m_destroyed;
 };
@@ -64,67 +64,42 @@ private:
 class OrdinarySuperclass
 {
 public:
-    OrdinarySuperclass() { }
-    virtual ~OrdinarySuperclass() { }
+    OrdinarySuperclass();
+    virtual ~OrdinarySuperclass();
 };
 
 class OrdinaryDestroyed: public OrdinarySuperclass
 {
 public:
-    OrdinaryDestroyed(DestroyCounter* destroyCounter): m_destroyCounter(destroyCounter)
-    {
-        // nanana
-    }
+    OrdinaryDestroyed(DestroyCounter* destroyCounter);
 
-    virtual ~OrdinaryDestroyed()
-    {
-        if(m_destroyCounter)
-            m_destroyCounter->increaseDestroyedCount();
-    }
+    ~OrdinaryDestroyed() override;
 
-    virtual OrdinaryDestroyed *virtualGetObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
-    virtual OrdinaryDestroyed *virtualGetObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
-    virtual void virtualSetDefaultOwnership(OrdinaryDestroyed *) { }
+    virtual OrdinaryDestroyed *virtualGetObjectJavaOwnership(DestroyCounter* destroyCounter);
+    virtual OrdinaryDestroyed *virtualGetObjectCppOwnership(DestroyCounter* destroyCounter);
+    virtual void virtualSetDefaultOwnership(OrdinaryDestroyed *);
 
-    static void deleteFromCpp(OrdinaryDestroyed *destroyed)
-    {
-        delete destroyed;
-    }
+    static void deleteFromCpp(OrdinaryDestroyed *destroyed);
 
-    static void deleteFromCppOther(OrdinarySuperclass *destroyed)
-    {
-        delete destroyed;
-    }
+    static void deleteFromCppOther(OrdinarySuperclass *destroyed);
 
-    static OrdinaryDestroyed *callGetObjectJavaOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
-    {
-        return _this->virtualGetObjectJavaOwnership(destroyCounter);
-    }
+    static OrdinaryDestroyed *callGetObjectJavaOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this);
 
-    static OrdinaryDestroyed *callGetObjectCppOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
-    {
-        return _this->virtualGetObjectCppOwnership(destroyCounter);
-    }
+    static OrdinaryDestroyed *callGetObjectCppOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this);
 
-    static void callSetDefaultOwnership(OrdinaryDestroyed *_this, OrdinaryDestroyed *obj)
-    {
-        return _this->virtualSetDefaultOwnership(obj);
-    }
+    static void callSetDefaultOwnership(OrdinaryDestroyed *_this, OrdinaryDestroyed *obj);
 
     // Set in type system
-    static OrdinaryDestroyed *getObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+    static OrdinaryDestroyed *getObjectJavaOwnership(DestroyCounter* destroyCounter);
 
     // Default ownership
-    static OrdinaryDestroyed *getObjectSplitOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+    static OrdinaryDestroyed *getObjectSplitOwnership(DestroyCounter* destroyCounter);
 
     // Set in type system
-    static OrdinaryDestroyed *getObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
-    static void setDefaultOwnership(OrdinaryDestroyed *) { }
+    static OrdinaryDestroyed *getObjectCppOwnership(DestroyCounter* destroyCounter);
+    static void setDefaultOwnership(OrdinaryDestroyed *);
 
-    static QObject *getGlobalQObjectSplitOwnership() {
-        static QObject * object = new QObject();
-        return object;
-    }
+    static QObject *getGlobalQObjectSplitOwnership();
 private:
     QPointer<DestroyCounter> m_destroyCounter;
 };
@@ -132,23 +107,10 @@ private:
 class QObjectDestroyed: public QObject
 {
 public:
-    QObjectDestroyed(DestroyCounter* destroyCounter, QObject *parent = 0)  : QObject(parent), m_destroyCounter(destroyCounter) { }
-
-    ~QObjectDestroyed(){
-        if(m_destroyCounter)
-            m_destroyCounter->increaseDestroyedCount();
-    }
-
-    static void deleteFromCpp(QObjectDestroyed *destroyed)
-    {
-        delete destroyed;
-    }
-
-    static void deleteFromCppOther(QObject *destroyed)
-    {
-        delete destroyed;
-    }
-
+    QObjectDestroyed(DestroyCounter* destroyCounter, QObject *parent = nullptr);
+    ~QObjectDestroyed() override;
+    static void deleteFromCpp(QObjectDestroyed *destroyed);
+    static void deleteFromCppOther(QObject *destroyed);
 private:
     QPointer<DestroyCounter> m_destroyCounter;
 };

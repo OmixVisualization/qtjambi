@@ -34,6 +34,7 @@
 #include "qtjambi_core.h"
 #include "qtjambitypemanager_p.h"
 #include "qtjambi_registry.h"
+#include <QtCore/private/qobject_p.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QSharedPointer>
 
@@ -68,7 +69,7 @@ private:
     friend class QtJambiMetaObject;
 };
 
-class QtJambiMetaObject: public QMetaObject
+class QtJambiMetaObject final : public QMetaObject
 {
 public:
     QtJambiMetaObject(JNIEnv *jni_env, jclass java_class, const QMetaObject *original_meta_object, JavaException& exceptionHandler);
@@ -112,7 +113,10 @@ public:
     static const QList<ParameterTypeInfo>& methodParameterInfo(JNIEnv * env, const QMetaMethod& method);
     static jobject toReflected(JNIEnv * env, const QMetaMethod& method);
 private:
-    ~QtJambiMetaObject();
+    void objectDestroyed(QObject *) /*override*/ {}
+    ~QtJambiMetaObject() /*override*/;
+    int metaCall(QObject *, QMetaObject::Call c, int _id, void **a) /*override*/;
+    int metaCall(QMetaObject::Call, int _id, void **) /*override*/;
     const QSharedPointer<const QtJambiMetaObject>& thisPointer() const;
     QSharedPointer<const QtJambiMetaObject> dispose(JNIEnv * env) const;
     QtJambiMetaObjectPrivate *d_ptr;

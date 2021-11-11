@@ -42,7 +42,11 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtQuick">
+<typesystem qt-library="QtQuick" description="A declarative framework for building highly dynamic applications with custom user interfaces.">
+    <rejection class="QSGTexture" function-name="resolveInterface" since="6.2.0"/>
+    <rejection class="QNativeInterface::QSGD3D11Texture::TypeInfo"/>
+    <rejection class="QNativeInterface::QSGOpenGLTexture::TypeInfo"/>
+    <rejection class="QNativeInterface::TypeInfo"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_texture"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_mipmap_filtering"/>
     <rejection class="QSGOpaqueTextureMaterial" field-name="m_filtering"/>
@@ -143,7 +147,6 @@
         <extra-includes>
             <include file-name="qtjambi_qml/qqmllistproperty.h" location="global"/>
         </extra-includes>
-        <interface-polymorphy interface="QQmlParserStatus" condition="dynamic_cast&lt;const QQuickItem*>(%1)" />
         <modify-function signature="childMouseEventFilter(QQuickItem*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
@@ -239,20 +242,9 @@
         </modify-function>
     </object-type>
     <object-type name="QQuickView">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="QQuickView(const QUrl &amp;, QWindow *)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QQuickView(const QUrl &amp;, QWindow *)" block-exceptions="yes">
         </modify-function>
-        <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes" block-exceptions="yes">
         </modify-function>
         <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)" thread-affine="yes">
             <modify-argument index="2" thread-affine="yes">
@@ -306,11 +298,11 @@
     </object-type>
     <value-type name="QQuickWindow::GraphicsStateInfo" since="5.14.0">
     </value-type>
-    <object-type name="QSGNode" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QSGNode::BasicNodeType">
+    <object-type name="QSGNode">
         <modify-function signature="QSGNode(QSGNode::NodeType)" remove="all"/>
         <modify-function signature="type()const" remove="all"/>
     </object-type>
-    <object-type name="QSGBasicGeometryNode" force-abstract="yes" polymorphic-id-expression="typeid(*%1)==typeid(QSGBasicGeometryNode)">
+    <object-type name="QSGBasicGeometryNode" force-abstract="yes">
         <modify-function signature="QSGBasicGeometryNode(QSGNode::NodeType)" remove="all"/>
         <modify-function signature="geometry() const" remove="all"/>
         <modify-function signature="matrix() const">
@@ -336,20 +328,20 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QSGClipNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::ClipNodeType">
+    <object-type name="QSGClipNode">
     </object-type>
-    <object-type name="QSGGeometryNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::GeometryNodeType">
+    <object-type name="QSGGeometryNode">
     </object-type>
-    <object-type name="QSGOpacityNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::OpacityNodeType">
+    <object-type name="QSGOpacityNode">
     </object-type>
-    <object-type name="QSGNinePatchNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGNinePatchNode)" since="5.8.0">
+    <object-type name="QSGNinePatchNode" since="5.8.0">
         <modify-function signature="setTexture(QSGTexture*)">
             <modify-argument index="1">
             <reference-count action="ignore" />
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QSGImageNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGImageNode)" since="5.8.0">
+    <object-type name="QSGImageNode" since="5.8.0">
         <modify-function signature="setTexture(QSGTexture*)">
             <modify-argument index="1">
             <reference-count action="ignore" />
@@ -358,18 +350,18 @@
     </object-type>
     <enum-type name="QSGImageNode::TextureCoordinatesTransformFlag" flags="QSGImageNode::TextureCoordinatesTransformMode" since="5.8.0">
     </enum-type>
-    <object-type name="QSGRectangleNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGRectangleNode)" since="5.8.0">
+    <object-type name="QSGRectangleNode" since="5.8.0">
     </object-type>
-    <object-type name="QSGSimpleRectNode" polymorphic-id-expression="typeid(*%1)==typeid(QSGSimpleRectNode)">
+    <object-type name="QSGSimpleRectNode">
     </object-type>
-    <object-type name="QSGSimpleTextureNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::GeometryNodeType">
+    <object-type name="QSGSimpleTextureNode">
         <modify-function signature="setTexture(QSGTexture*)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
             </modify-argument>
             <inject-code class="java" position="end">
                 if (texture != null &amp;&amp; ownsTexture()) {
-                    io.qt.internal.QtJambiInternal.setCppOwnership(texture);
+                    QtJambi_LibraryUtilities.internal.setCppOwnership(texture);
                 }
             </inject-code>
         </modify-function>
@@ -377,17 +369,17 @@
             <inject-code class="java" position="end">
                 if (texture() != null) {
                     if(owns){
-                        io.qt.internal.QtJambiInternal.setCppOwnership(texture());
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(texture());
                     }else{
-                        io.qt.internal.QtJambiInternal.setJavaOwnership(texture());
+                        QtJambi_LibraryUtilities.internal.setJavaOwnership(texture());
                     }
                 }
             </inject-code>
         </modify-function>
     </object-type>
-    <object-type name="QSGTransformNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::TransformNodeType">
+    <object-type name="QSGTransformNode">
     </object-type>
-    <object-type name="QSGRenderNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::RenderNodeType">
+    <object-type name="QSGRenderNode">
         <modify-function signature="flags() const" rename="renderingFlags"/>
         <modify-function signature="matrix() const">
             <modify-argument index="return">
@@ -444,7 +436,7 @@
     </enum-type>
     <enum-type name="QSGRenderNode::RenderingFlag" flags="QSGRenderNode::RenderingFlags" since="5.8.0">
     </enum-type>
-    <object-type name="QSGRootNode" polymorphic-id-expression="%1-&gt;type() == QSGNode::RootNodeType">
+    <object-type name="QSGRootNode">
     </object-type>
     <object-type name="QSGRootNode::RenderState">
     </object-type>
@@ -567,8 +559,6 @@
     <object-type name="QQuickTransform">
     </object-type>
 
-    <!--object-type name="QQuickCloseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::QuickClose"/-->
-
     <value-type name="QSGGeometry::Attribute">
     </value-type>
     <object-type name="QSGGeometry::AttributeSet">
@@ -590,7 +580,6 @@
     <value-type name="QSGGeometry::Point2D">
     </value-type>
     <object-type name="QQuickImageProvider">
-        <interface-polymorphy interface="QQmlImageProviderBase" condition="dynamic_cast&lt;const QQuickImageProvider*>(%1)" />
     </object-type>
     <object-type name="QQuickAsyncImageProvider">
     </object-type>
@@ -730,9 +719,11 @@
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::BlendFactor" since="6.0.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::ColorMaskComponent" flags="QSGMaterialShader::GraphicsPipelineState::ColorMask" since="6.0.0"/>
     <enum-type name="QSGMaterialShader::GraphicsPipelineState::CullMode" since="6.0.0"/>
-    <namespace-type name="QNativeInterface" since="6.0.0"/>
-    <interface-type name="QNativeInterface::QSGOpenGLTexture" pp-condition="QT_CONFIG(opengl)" since="6.0.0"/>
-    <interface-type name="QNativeInterface::QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" since="6.0.0"/>
+    <namespace-type name="QNativeInterface" since="6.0.0" generate="no">
+        <modify-function signature="lcNativeInterface()" remove="all" since="6.2.0"/>
+    </namespace-type>
+    <interface-type name="QNativeInterface::QSGOpenGLTexture" java-name="QSGOpenGLTexture" pp-condition="QT_CONFIG(opengl)" since="6.0.0"/>
+    <interface-type name="QNativeInterface::QSGD3D11Texture" java-name="QSGD3D11Texture" pp-condition="defined(Q_OS_WIN)" since="6.0.0"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QQuickCloseEvent*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGTextureProvider*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping *unmatched *type '*QSGRootNode*'" />

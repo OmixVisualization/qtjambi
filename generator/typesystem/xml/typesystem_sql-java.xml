@@ -43,7 +43,9 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.sql" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.sql" module="qtjambi.sql" default-superclass="io.qt.QtObject">
+    <required-package name="io.qt.gui"/>
+    <required-package name="io.qt.widgets"/>
     <value-type name="QSqlDatabase">
         <modify-function signature="registerSqlDriver(QString, QSqlDriverCreatorBase *)">
             <modify-argument index="2">

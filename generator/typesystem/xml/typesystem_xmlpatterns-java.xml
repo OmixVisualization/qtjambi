@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.xmlpatterns" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.xmlpatterns" module="qtjambi.xmlpatterns" default-superclass="io.qt.QtObject">
     <value-type name="QXmlName">
         <modify-function signature="QXmlName(QXmlNamePool&amp;,QString,QString,QString)">
             <modify-argument index="1">

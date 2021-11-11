@@ -7,15 +7,14 @@
 // QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlStateMachine_connectToState)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
+ jobject _this,
  jobject scxmlStateName0,
  jobject slot1,
  jint type2)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     try{
-        QScxmlStateMachine *__qt_this = qtjambi_object_from_nativeId<QScxmlStateMachine>(__this_nativeId);
+        QScxmlStateMachine *__qt_this = qtjambi_to_QObject<QScxmlStateMachine>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         const QString&  __qt_scxmlStateName0 = qtjambi_to_qstring(__jni_env, jstring(scxmlStateName0));
         JObjectWrapper pointer(__jni_env, slot1);
@@ -36,15 +35,14 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
 // QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlStateMachine_connectToEvent)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
+ jobject _this,
  jobject scxmlStateName0,
  jobject slot1,
  jint type2)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     try{
-        QScxmlStateMachine *__qt_this = qtjambi_object_from_nativeId<QScxmlStateMachine>(__this_nativeId);
+        QScxmlStateMachine *__qt_this = qtjambi_to_QObject<QScxmlStateMachine>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         const QString&  __qt_scxmlStateName0 = qtjambi_to_qstring(__jni_env, jstring(scxmlStateName0));
         JObjectWrapper pointer(__jni_env, slot1);

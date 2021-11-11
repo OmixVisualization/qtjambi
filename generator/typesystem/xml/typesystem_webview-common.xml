@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWebView">
+<typesystem qt-library="QtWebView" description="Displays web content in a QML application by using APIs native to the platform, without the need to include a full web browser stack.">
     <namespace-type name="QtWebView">
     </namespace-type>
 </typesystem>

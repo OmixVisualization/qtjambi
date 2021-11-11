@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtPurchasing">
+<typesystem qt-library="QtPurchasing" description="Enables in-app purchase of products in Qt applications.">
     <enum-type name="QInAppProduct::ProductType"/>
     <object-type name="QInAppProduct">
     </object-type>

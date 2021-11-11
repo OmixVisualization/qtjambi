@@ -29,6 +29,5 @@
 
 module qtjambi.test.garage{
     requires java.base;
-    requires transitive qtjambi;
-    requires transitive qtjambi.qml;
+    requires qtjambi.qml;
 }

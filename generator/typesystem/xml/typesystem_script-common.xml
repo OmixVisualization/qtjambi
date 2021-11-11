@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtScript">
+<typesystem qt-library="QtScript" description="Classes for making Qt applications scriptable. Deprecated in favor of the QJS* classes in the Qt QML module.">
   <rejection class="QScriptValueIterator"/>
     <rejection class="QScriptEngine::FunctionWithArgSignature"/>
     <rejection class="QScriptEngine" function-name="fromScriptValue"/>
@@ -134,7 +134,6 @@
     </object-type>
     <functional-type name="QScriptEngine::FunctionSignature"/>
     <object-type name="QScriptExtensionPlugin">
-        <interface-polymorphy interface="QScriptExtension" condition="dynamic_cast&lt;const QScriptExtensionPlugin*>(%1)" />
         <modify-function signature="setupPackage(QString,QScriptEngine*)const">
             <modify-argument index="2">
             <reference-count action="ignore" />

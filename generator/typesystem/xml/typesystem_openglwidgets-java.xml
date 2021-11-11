@@ -43,5 +43,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.opengl.widgets" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.opengl.widgets" module="qtjambi.openglwidgets" default-superclass="io.qt.QtObject">
 </typesystem>

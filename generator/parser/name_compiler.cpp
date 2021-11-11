@@ -43,6 +43,7 @@
 #include "lexer.h"
 #include "symbol.h"
 #include "binder.h"
+#include "tokens.h"
 
 #include <QtCore/qdebug.h>
 
@@ -81,6 +82,10 @@ void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
             Token const &end_tk = _M_token_stream->token(op_id->end_token);
             tmp_name += QString::fromLatin1(&tk.text[tk.position],
                                             int(end_tk.position - tk.position)).trimmed();
+        } else if (_M_token_stream->token(op_id->type_name).kind==Token_string_literal) {
+            Token const &tk = _M_token_stream->token(op_id->type_name+1);
+            tmp_name += QLatin1String("operator\"\"");
+            tmp_name += QString::fromLatin1(&tk.text[tk.position], tk.size).trimmed();
         }
     }
 

@@ -41,6 +41,7 @@ import io.qt.*;
 import io.qt.network.*;
 
 class QSsl___{
+    @io.qt.QtUninvokable
     public native static boolean isAvailable();
 }// class
 
@@ -55,17 +56,14 @@ class QHostInfo___ extends QHostInfo {
      * @param name The host name.
      * @param slot The clot taking the result.
      */
+    @io.qt.QtUninvokable
     public static int lookupHost(String name, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
-        io.qt.core.QObject context = io.qt.internal.QtJambiInternal.lambdaContext(slot);
+        io.qt.core.QObject context = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
         return lookupHost(name, context, slot);
     }
     
-    public static int lookupHost(String name, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
-        java.util.Objects.requireNonNull(slot);
-        return __qt_QHostInfo_lookupHost(name, io.qt.internal.QtJambiInternal.nativeId(context), slot);
-    }
-
-    private static native int __qt_QHostInfo_lookupHost(String name, long context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot);
+    @io.qt.QtUninvokable
+    public static native int lookupHost(String name, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot);
 }// class
 
 class QAbstractSocket___ extends QAbstractSocket {

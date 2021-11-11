@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.texttospeech" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.texttospeech" module="qtjambi.texttospeech" default-superclass="io.qt.QtObject">
     <object-type name="QTextToSpeechPlugin">
         <extra-includes>
             <include file-name="qtjambi_texttospeech.h" location="local"/>

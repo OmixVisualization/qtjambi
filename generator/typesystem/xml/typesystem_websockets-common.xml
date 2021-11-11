@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWebSockets">
+<typesystem qt-library="QtWebSockets" description="Provides WebSocket communication compliant with RFC 6455.">
   <namespace-type name="QWebSocketProtocol"/>
   <enum-type name="QWebSocketServer::SslMode"/>
   <enum-type name="QWebSocketProtocol::Version">

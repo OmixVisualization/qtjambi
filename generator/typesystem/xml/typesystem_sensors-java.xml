@@ -1,9 +1,49 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.sensors" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.sensors" module="qtjambi.sensors" default-superclass="io.qt.QtObject">
     <object-type name="QSensorGesture">
+        <extra-includes>
+            <include file-name="qtjambi_sensors_repository.h" location="local"/>
+        </extra-includes>
         <inject-code>
         public final Signal1&lt;String> detected = new Signal1&lt;>();
         </inject-code>
+        <modify-function signature="gestureSignals() const">
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    for(int i=0; i&lt;%in.size(); ++i){
+                        if(%in[i].endsWith("(QString)")){
+                            %in[i].replace("QString", "java.lang.String");
+                        }else if(!%in[i].endsWith("()")){
+                            const QObject* obj = __qt_this;
+                            int idx = obj->metaObject()->indexOfMethod(qPrintable(%in[i]));
+                            if(idx>=0){
+                                QMetaMethod method = obj->metaObject()->method(idx);
+                                jobject methodObject = qtjambi_cast&lt;jobject>(%env, method);
+                                jstring sig = Java::QtCore::QMetaMethod::methodSignature(%env, methodObject);
+                                qtjambi_to_qstring(%in[i], %env, sig);
+                            }else{
+                                %in[i].replace("QString", "java.lang.String");
+                            }
+                        }
+                    }
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QSensorGestureManager">
+        <modify-function signature="recognizerSignals(QString) const">
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    for(int i=0; i&lt;%in.size(); ++i){
+                        if(!%in[i].endsWith("()")){
+                            %in[i].replace("QString", "java.lang.String");
+                        }
+                    }
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
     <object-type name="QSensorManager">
         <modify-function signature="registerBackend(const QByteArray &amp;, const QByteArray &amp;, QSensorBackendFactory *)">

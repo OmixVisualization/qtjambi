@@ -49,9 +49,8 @@ typedef QHash<QString, SignatureTable> PackageJumpTable;
 
 
 class JumpTablePreprocessor : public Generator {
-        Q_OBJECT
     public:
-        void generate();
+        void generate() override;
 
         static QString signature(const AbstractMetaFunction *func);
 
@@ -67,11 +66,10 @@ class JumpTablePreprocessor : public Generator {
 
 
 class JumpTableGenerator : public Generator {
-        Q_OBJECT
     public:
         JumpTableGenerator(JumpTablePreprocessor *pp, PriGenerator *pri);
 
-        void generate();
+        void generate() override;
         void generatePackage(const QString &packageName, const SignatureTable &table);
         void generateNativeTable(const QString &packageName, const SignatureTable &table);
         void generateJavaTable(const QString &packageName, const SignatureTable &table);

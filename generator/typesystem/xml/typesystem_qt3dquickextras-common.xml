@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DQuickExtras">
+<typesystem qt-library="Qt3DQuickExtras" description="">
     <namespace-type name="Qt3DExtras::Quick" generate="no" since="5.7.0"/>
     <enum-type name="Qt3DExtras::Quick::Qt3DQuickWindow::CameraAspectRatioMode" since="5.7.0"/>
     <object-type name="Qt3DExtras::Quick::Qt3DQuickWindow" java-name="Qt3DQuickWindow" since="5.7.0">

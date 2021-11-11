@@ -42,5 +42,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.animation" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.qt3d.animation" module="qtjambi.qt3danimation" default-superclass="io.qt.QtObject">
 </typesystem>

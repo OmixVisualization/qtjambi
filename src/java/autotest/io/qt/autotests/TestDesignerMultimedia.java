@@ -3,21 +3,23 @@ package io.qt.autotests;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.QFile;
-import io.qt.core.QIODevice;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPluginLoader;
-import io.qt.designer.QDesignerCustomWidgetCollectionInterface;
-import io.qt.designer.QDesignerCustomWidgetInterface;
-import io.qt.designer.QFormBuilder;
-import io.qt.multimedia.widgets.QVideoWidget;
-import io.qt.widgets.QWidget;
+import io.qt.core.*;
+import io.qt.designer.*;
+import io.qt.multimedia.widgets.*;
+import io.qt.quick.*;
+import io.qt.widgets.*;
 
 public class TestDesignerMultimedia extends QApplicationTest {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+//		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		QApplicationTest.testInitialize();
+	}
 	
     @Test
     public void testMultimediaWidget() {

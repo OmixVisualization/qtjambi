@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.multimedia.widgets" default-superclass="io.qt.QtObject">
-    <inject-code position="3">
-        if(io.qt.QtUtilities.isAvailableQtLibrary("OpenGL"))
-            io.qt.QtUtilities.loadQtLibrary("OpenGL");
+<typesystem package="io.qt.multimedia.widgets" module="qtjambi.multimediawidgets" default-superclass="io.qt.QtObject">
+    <inject-code position="position4" until="5.*">
+            if(io.qt.QtUtilities.isAvailableQtLibrary("OpenGL"))
+                io.qt.QtUtilities.loadQtLibrary("OpenGL");
     </inject-code>
 </typesystem>

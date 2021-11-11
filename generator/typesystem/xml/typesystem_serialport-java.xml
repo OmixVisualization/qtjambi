@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.serialport" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.serialport" module="qtjambi.serialport" default-superclass="io.qt.QtObject">
     <value-type name="QSerialPortInfo">
     </value-type>
 </typesystem>

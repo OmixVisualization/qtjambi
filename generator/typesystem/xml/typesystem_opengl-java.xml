@@ -43,19 +43,12 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.opengl" default-superclass="io.qt.QtObject">
-    <inject-code position="2">
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("libEGL", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("QtANGLE", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("QtANGLE", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("opengl32sw", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("opengl32sw", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("d3dcompiler_47", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("d3dcompiler_47", "");         // load if exists
-    </inject-code>
+<typesystem package="io.qt.opengl" module="qtjambi.opengl" default-superclass="io.qt.QtObject">
+    <required-library name="libGLESv2" optional="yes"/>
+    <required-library name="libEGL" optional="yes"/>
+    <required-library name="QtANGLE" optional="yes"/>
+    <required-library name="opengl32sw" optional="yes"/>
+    <required-library name="d3dcompiler_47" optional="yes"/>
   <primitive-type name="GLuint" java-name="int" preferred-conversion="no" jni-name="jint"/>
   <primitive-type name="GLshort" java-name="short" preferred-conversion="no" jni-name="jshort"/>
   <primitive-type name="GLushort" java-name="short" preferred-conversion="no" jni-name="jshort"/>

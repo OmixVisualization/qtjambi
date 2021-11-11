@@ -36,7 +36,6 @@
 #include <qtjambi/qtjambi_core.h>
 #include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_repository.h>
-#include <qtjambi/qtjambi_exceptions.h>
 #include <qtjambi/qtjambi_functionpointer.h>
 #include <qtjambi/qtjambi_jobjectwrapper.h>
 #include <qtjambi/qtjambi_qml.h>
@@ -70,7 +69,7 @@ public:
         }
     }
 
-    inline ~ErrorDummyObject(){
+    inline ~ErrorDummyObject() override {
         if(psCast>0){
             QmlParserStatus* psCastPtr = reinterpret_cast<QmlParserStatus*>(qintptr(this)+psCast);
             psCastPtr->~QmlParserStatus();
@@ -104,17 +103,18 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
         memset(placement, 0, objectSize);
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            QtJambiExceptionInhibitor __exnHandler;
             try{
                 jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, clazzWrapper.object(), jlong(placement));
                 try{
                     env->NewObject(jclass(clazzWrapper.object()), constructor, declarativeConstructor);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                 }catch(const JavaException& exn){
                     jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                     if(pl==0){
                         QObject* obj = reinterpret_cast<QObject*>(placement);
                         obj->deleteLater();
-                        qtjambi_push_blocked_exception(env, exn);
+                        __exnHandler.handle(env, exn, nullptr);
                         return;
                     }else{
                         throw exn;
@@ -134,7 +134,7 @@ CreatorFunction creatorFunction(JNIEnv * env, const QMetaObject *meta_object, jc
                 if(!obj)
                     obj = new (placement) ErrorDummyObject(psCast, vsCast, viCast);
                 obj->deleteLater();
-                qtjambi_push_blocked_exception(env, exn);
+                __exnHandler.handle(env, exn, nullptr);
             }
         }else{
             QObject* obj = createQmlErrorDummyObject(meta_object, placement, vsCast, viCast);
@@ -169,17 +169,18 @@ void createQmlObject(void* placement,void* _metaData){
         memset(placement, 0, metaData->objectSize);
         if(JNIEnv * env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+            QtJambiExceptionInhibitor __exnHandler;
             try{
                 jobject declarativeConstructor = Java::QtCore::QObject$QDeclarativeConstructor::newInstance(env, metaData->clazzWrapper.object(), jlong(placement));
                 try{
                     env->NewObject(jclass(metaData->clazzWrapper.object()), metaData->constructor, declarativeConstructor);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                 }catch(const JavaException& exn){
                     jlong pl = Java::QtCore::QObject$QDeclarativeConstructor::placement(env, declarativeConstructor);
                     if(pl==0){
                         QObject* obj = reinterpret_cast<QObject*>(placement);
                         obj->deleteLater();
-                        qtjambi_push_blocked_exception(env, exn);
+                        __exnHandler.handle(env, exn, nullptr);
                         return;
                     }else{
                         throw exn;
@@ -199,7 +200,7 @@ void createQmlObject(void* placement,void* _metaData){
                 if(!obj)
                     obj = new (placement) ErrorDummyObject(metaData->psCast, metaData->vsCast, metaData->viCast);
                 obj->deleteLater();
-                qtjambi_push_blocked_exception(env, exn);
+                __exnHandler.handle(env, exn, nullptr);
             }
         }else{
             QObject* obj = createQmlErrorDummyObject(metaData->meta_object, placement, metaData->vsCast, metaData->viCast);

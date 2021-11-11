@@ -55,76 +55,40 @@ class QModelIndexTypeEntry : public ComplexTypeEntry {
     public:
         QModelIndexTypeEntry() : ComplexTypeEntry("QModelIndex", QModelIndexType) {
             setCodeGeneration(GenerateNothing);
+            disableNativeIdUsage();
         }
 
-        virtual QString javaPackage() const { return "io.qt.core"; }
+        QString javaPackage() const override { return "io.qt.core"; }
 
-        virtual bool isValue() const { return true; }
+        bool isValue() const override { return true; }
 };
 
 class QMetaObjectTypeEntry : public ComplexTypeEntry {
     public:
         QMetaObjectTypeEntry() : ComplexTypeEntry("QMetaObject", QMetaObjectType) {
             setCodeGeneration(GenerateNothing);
+            disableNativeIdUsage();
         }
 
-        virtual QString javaPackage() const { return "io.qt.core"; }
+        QString javaPackage() const override { return "io.qt.core"; }
 
-        virtual bool isValue() const { return false; }
+        bool isValue() const override { return false; }
 };
 
 class QMetaObjectConnectionTypeEntry : public ComplexTypeEntry {
     public:
         QMetaObjectConnectionTypeEntry() : ComplexTypeEntry("QMetaObject::Connection", QMetaObjectConnectionType) {
             setCodeGeneration(GenerateNothing);
+            disableNativeIdUsage();
         }
 
-        QString targetLangName() const {
+        QString targetLangName() const override {
             return "QMetaObject$Connection";
         }
 
-        virtual QString javaPackage() const { return "io.qt.core"; }
+        virtual QString javaPackage() const override { return "io.qt.core"; }
 
-        virtual bool isValue() const { return true; }
-};
-
-class QMetaMethodTypeEntry : public ComplexTypeEntry {
-    public:
-        QMetaMethodTypeEntry() : ComplexTypeEntry("QMetaMethod", QMetaMethodType) {
-            setCodeGeneration(GenerateAll);
-            setTargetTypeSystem("QtCore");
-            setTargetLangPackage("io.qt.core");
-        }
-
-        virtual QString javaPackage() const { return "io.qt.core"; }
-
-        virtual bool isValue() const { return true; }
-};
-
-class QMetaPropertyTypeEntry : public ComplexTypeEntry {
-    public:
-        QMetaPropertyTypeEntry() : ComplexTypeEntry("QMetaProperty", QMetaPropertyType) {
-            setCodeGeneration(GenerateAll);
-            setTargetTypeSystem("QtCore");
-            setTargetLangPackage("io.qt.core");
-        }
-
-        virtual QString javaPackage() const { return "io.qt.core"; }
-
-        virtual bool isValue() const { return true; }
-};
-
-class QMetaEnumTypeEntry : public ComplexTypeEntry {
-    public:
-        QMetaEnumTypeEntry() : ComplexTypeEntry("QMetaEnum", QMetaEnumType) {
-            setCodeGeneration(GenerateAll);
-            setTargetTypeSystem("QtCore");
-            setTargetLangPackage("io.qt.core");
-        }
-
-        virtual QString javaPackage() const { return "io.qt.core"; }
-
-        virtual bool isValue() const { return true; }
+        virtual bool isValue() const override { return true; }
 };
 
 #endif

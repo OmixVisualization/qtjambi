@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtConcurrent">
+<typesystem qt-library="QtConcurrent" description="Classes for writing multi-threaded programs without using low-level threading primitives.">
     <rejection class="QtConcurrent" enum-name="enum_1" />
     <rejection class="QtConcurrent" function-name="operator|" />
     <rejection class="QtConcurrent" function-name="run" />
@@ -271,4 +271,5 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::blockingFilter', unmatched parameter type 'Sequence&amp;'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::createFunctor', unmatched return type 'QtConcurrent::SelectMemberFunctor0&lt;T,Class&gt;::type'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::start', unmatched return type ''" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtConcurrent::*', unmatched return type 'QFuture*'" />
 </typesystem>

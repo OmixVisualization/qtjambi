@@ -34,9 +34,9 @@
 **
 ****************************************************************************/
 
-#include <qtjambi/qtjambi_containeraccess_set.h>
-
+#include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include <qtjambi/qtjambi_containeraccess_set.h>
 
 void qtjambi_register_set_access(){
         #define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\

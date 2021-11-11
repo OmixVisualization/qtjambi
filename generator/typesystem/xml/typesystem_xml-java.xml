@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.xml" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.xml" module="qtjambi.xml" default-superclass="io.qt.QtObject">
     <value-type name="QDomDocument">
         <inject-code>
             <import-file name="typesystem/java/typesystem_xml-java.java" quote-after-line="class QDomDocument___" quote-before-line="}// class"/>

@@ -7,10 +7,14 @@
 namespace Java{
 namespace QtCore
 {
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QException,
+                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
+                                     )
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
+                                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
+                                     )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QDebug,
                                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(QLogging$Supplier,
-                                 QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(get))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborStreamReader$StringResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborValue$FromCborResult,
@@ -188,14 +192,28 @@ namespace QtCore
                                      QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(setValueBypassingBindings))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QPropertyChangeHandler,
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QPropertyNotifier,
+                                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
 #endif
+}
+
+namespace QtGui
+{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QGuiApplication,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(exec))
+}
+
+namespace QtWidgets
+{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QWidget,
+                                 QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setParent))
 }
 
 namespace QtJambi
 {
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiInternal,
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(invocationInfoProvider))
-QTJAMBI_REPOSITORY_DECLARE_CLASS(QtJambiInternal$InvocationInfo,
+QTJAMBI_REPOSITORY_DECLARE_CLASS(InternalAccess$CallerContext,
                                   QTJAMBI_REPOSITORY_DECLARE_CLASS_FIELD(declaringClass)
                                   QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(methodName)
                                   QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(lineNumber))
@@ -207,8 +225,10 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(QtUtilities$FloatSupplier,
                                  QTJAMBI_REPOSITORY_DECLARE_FLOAT_METHOD(getAsFloat))
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtUtilities$CharSupplier,
                                  QTJAMBI_REPOSITORY_DECLARE_CHAR_METHOD(getAsChar))
-QTJAMBI_REPOSITORY_DECLARE_CLASS(QtUtilities$Supplier,
-                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(get))
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnsuccessfulInvocationException,
+              QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR())
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObjectInterface,)
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QFlags,)
 }
 
 namespace Runtime{
@@ -222,16 +242,6 @@ namespace Runtime{
                   QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(bitLength)
                   QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(longValue)
                   QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(toByteArray))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(IntFunction,
-                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(IntSupplier,
-                                     QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getAsInt))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(LongSupplier,
-                                     QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getAsLong))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(DoubleSupplier,
-                                     QTJAMBI_REPOSITORY_DECLARE_DOUBLE_METHOD(getAsDouble))
-    QTJAMBI_REPOSITORY_DECLARE_CLASS(BooleanSupplier,
-                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(getAsBoolean))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Class,
                   QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName))
 }

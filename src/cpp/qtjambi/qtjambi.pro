@@ -16,6 +16,7 @@ SOURCES += \
     qtjambi_containeraccess_pair.cpp \
     qtjambi_containeraccess_set.cpp \
     qtjambi_containeraccess_vector.cpp \
+    qtjambi_future.cpp \
     qtjambi_util.cpp \
     qtjambi_core.cpp \
     qtjambi_functions.cpp \
@@ -42,6 +43,7 @@ HEADERS += \
     qtjambi_cast_container2_util_p.h \
     qtjambi_cast_container3_p.h \
     qtjambi_cast_container4_p.h \
+    qtjambi_cast_container5_p.h \
     qtjambi_cast_container_util_p.h \
     qtjambi_containeraccess.h \
     qtjambi_containeraccess_hash.h \
@@ -57,6 +59,7 @@ HEADERS += \
     qtjambi_core.h \
     qtjambi_global.h \
     qtjambi_interfaces_p.h \
+    qtjambi_internal.h \
     qtjambi_plugin.h \
     qtjambi_qml.h \
     qtjambi_registry_p.h \
@@ -77,7 +80,6 @@ HEADERS += \
     qtjambi_jobjectwrapper.h \
     qtjambi_templates.h \
     qtjambi_functionpointer.h \
-    qtjambi_exceptions.h \
     qtjambi_application.h \
     qtjambi_registry.h \
     qtjambi_cast.h \

@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.macextras" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.macextras" module="qtjambi.macextras" default-superclass="io.qt.QtObject">
     <inject-code>
         io.qt.QtUtilities.initializePackage("io.qt.widgets");
     </inject-code>

@@ -86,7 +86,13 @@ namespace rpp {
 
         public:
             pp_macro_expander(pp_environment &__env, pp_frame *__frame = nullptr) :
-                    env(__env), frame(__frame), hasUnexpandedFunctionMacro(false), lines(0), generated_lines(0) {}
+                    env(__env), frame(__frame), hasUnexpandedFunctionMacro(false), lines(0), generated_lines(0) {
+                if(frame && frame->expanding_macro && frame->expanding_macro->definition){
+                    if(QByteArray(frame->expanding_macro->definition->begin()).contains("__VA_ARGS__")){
+                        hasUnexpandedFunctionMacro = true;
+                    }
+                }
+            }
 
             template <typename _InputIterator>
             _InputIterator skip_argument_variadics(std::vector<std::string> const &actuals, pp_macro *macro,
@@ -209,7 +215,19 @@ namespace rpp {
                         name_buffer[size] = '\0';
 
                         pp_fast_string fast_name(name_buffer, std::size_t(name_size));
-
+                        if(frame && frame->actuals && frame->expanding_macro
+                                && frame->actuals->size()>0
+                                && frame->expanding_macro->variadics && fast_name=="__VA_ARGS__"){
+                            bool comma = false;
+                            for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
+                                if(comma){
+                                    *result++ = ',';
+                                    *result++ = ' ';
+                                }else comma = true;
+                                std::copy(frame->actuals->at(i).begin(), frame->actuals->at(i).end(), result);
+                            }
+                            continue;
+                        }
                         if (std::string const *actual = resolve_formal(&fast_name)) {
                             std::copy(actual->begin(), actual->end(), result);
                             continue;
@@ -302,23 +320,47 @@ namespace rpp {
 
                         pp_macro_expander expand_actual(env, frame);
 
-                        _InputIterator arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
+                        //_InputIterator arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
+                        _InputIterator arg_end = skip_argument(arg_it, last);
                         if (arg_it != arg_end) {
                             std::string actual(arg_it, arg_end);
-                            actuals.resize(actuals.size() + 1);
-                            actuals.back().reserve(255);
-                            expand_actual(actual.begin(), actual.end(), std::back_inserter(actuals.back()));
+                            QByteArray _actual(actual.c_str(), actual.size());
+                            if(frame && frame->actuals && frame->expanding_macro
+                                    && frame->actuals->size()>0
+                                    && frame->expanding_macro->variadics && _actual.trimmed()=="__VA_ARGS__"){
+                                for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
+                                    actuals.resize(actuals.size() + 1);
+                                    actuals.back().reserve(255);
+                                    std::copy(frame->actuals->at(i).begin(), frame->actuals->at(i).end(), std::back_inserter(actuals.back()));
+                                }
+                            }else{
+                                actuals.resize(actuals.size() + 1);
+                                actuals.back().reserve(255);
+                                expand_actual(actual.begin(), actual.end(), std::back_inserter(actuals.back()));
+                            }
                             arg_it = arg_end;
                         }
 
                         while (arg_it != last && *arg_end == ',') {
                             ++arg_it; // skip ','
 
-                            arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
+                            //arg_end = skip_argument_variadics(actuals, macro, arg_it, last);
+                            arg_end = skip_argument(arg_it, last);
                             std::string actual(arg_it, arg_end);
-                            actuals.resize(actuals.size() + 1);
-                            actuals.back().reserve(255);
-                            expand_actual(actual.begin(), actual.end(), std::back_inserter(actuals.back()));
+                            QByteArray _actual(actual.c_str(), actual.size());
+                            if(frame && frame->actuals && frame->expanding_macro
+                                    && frame->actuals->size()>0
+                                    && frame->expanding_macro->variadics && _actual.trimmed()=="__VA_ARGS__"){
+                                for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
+                                    actuals.resize(actuals.size() + 1);
+                                    actuals.back().reserve(255);
+                                    std::copy(frame->actuals->at(i).begin(), frame->actuals->at(i).end(), std::back_inserter(actuals.back()));
+                                }
+                            }else{
+                                actuals.resize(actuals.size() + 1);
+                                actuals.back().reserve(255);
+                                expand_actual(actual.begin(), actual.end(), std::back_inserter(actuals.back()));
+                            }
                             arg_it = arg_end;
                         }
 

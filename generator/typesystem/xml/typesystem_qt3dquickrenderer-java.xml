@@ -42,5 +42,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.render.quick" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.qt3d.render.quick" module="qtjambi.qt3dquickrender" default-superclass="io.qt.QtObject">
 </typesystem>

@@ -137,37 +137,27 @@ typedef int(*SignalMethodIndexProvider)();
 struct SignalMetaInfo
 {
     inline SignalMetaInfo():
-        signal_declaring_class_name(nullptr),
         signal_name(nullptr),
         signal_signature(nullptr),
-        signal_method_signature(nullptr),
         signal_argumentcount(0),
         signal_method_index_provider(nullptr){}
     inline SignalMetaInfo(const SignalMetaInfo& copy):
-        signal_declaring_class_name(copy.signal_declaring_class_name),
         signal_name(copy.signal_name),
         signal_signature(copy.signal_signature),
-        signal_method_signature(copy.signal_method_signature),
         signal_argumentcount(copy.signal_argumentcount),
         signal_method_index_provider(copy.signal_method_index_provider)
     {}
-    inline SignalMetaInfo(const char * _signal_declaring_class_name,
-    const char * _signal_name,
-    const char * _signal_signature,
-    const char * _signal_method_signature,
-    const int _signal_argumentcount,
-    SignalMethodIndexProvider _signal_method_index_provider):
-        signal_declaring_class_name(_signal_declaring_class_name),
+    inline SignalMetaInfo(const char * _signal_name,
+                            const char * _signal_signature,
+                            const int _signal_argumentcount,
+                            SignalMethodIndexProvider _signal_method_index_provider):
         signal_name(_signal_name),
         signal_signature(_signal_signature),
-        signal_method_signature(_signal_method_signature),
         signal_argumentcount(_signal_argumentcount),
         signal_method_index_provider(_signal_method_index_provider)
     {}
-    const char * signal_declaring_class_name;
     const char * signal_name;
     const char * signal_signature;
-    const char * signal_method_signature;
     int signal_argumentcount;
     SignalMethodIndexProvider signal_method_index_provider;
 };
@@ -185,22 +175,6 @@ struct FunctionInfo{
     const char * signature;
     Flags flags;
 };
-
-#ifdef QT_QTJAMBI_PORT
-class WeakNativeIDPrivate;
-
-class QTJAMBI_EXPORT WeakNativeID{
-    WeakNativeID(const WeakNativeID&);
-private:
-    WeakNativeID(WeakNativeIDPrivate&);
-    QSharedDataPointer<WeakNativeIDPrivate> d;
-    friend WeakNativeIDPrivate;
-};
-
-QTJAMBI_EXPORT void qtjambi_emit_signal(JNIEnv * env, const WeakNativeID& weakNativeID, SignalMethodIndexProvider signalMethodIndexProvider, jvalue *arguments);
-
-typedef void (*SignalConnector)(WeakNativeID, QObject*, QHash<int,QMetaObject::Connection>*);
-#endif // QT_QTJAMBI_PORT
 
 struct ConstructorInfo{
     inline ConstructorInfo(): constructorFunction(nullptr),signature(nullptr){}
@@ -365,9 +339,6 @@ void registerOperators(){
 
 QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner, QMetaMethodRenamer methodRenamer = nullptr);
 QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMetaObject& originalMetaObject, bool isValueOwner,
-#ifdef QT_QTJAMBI_PORT
-                                       SignalConnector signalConnector,
-#endif
                                        std::initializer_list<SignalMetaInfo> signalMetaInfos,
                                        ParameterInfoProvider parameterTypeInfoProvider,
                                        QMetaMethodRenamer methodRenamer = nullptr
@@ -992,15 +963,27 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
                          /*.copyCtr=*/ QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
                          /*.moveCtr=*/ QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
                          /*.dtor=*/ QtPrivate::QMetaTypeForType<T>::getDtor(),
-                         /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
+                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
+                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                         /*.debugStream=*/ nullptr,
                          /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
                          /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
-                         /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<T>::getLegacyRegister(),
+                         /*.legacyRegisterOp=*/ nullptr,
                          /*.size=*/ sizeof(T),
                          /*.alignment=*/ alignof(T),
                          /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
                          /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                         nullptr);
+                         nullptr,
+                          [](int id){
+                                Q_UNUSED(id)
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+                            }
+                         );
 #endif
         registerMetaTypeID(id, metaid);
     }
@@ -1036,15 +1019,27 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
                                       /*.copyCtr=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getCopyCtr(),
                                       /*.moveCtr=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getMoveCtr(),
                                       /*.dtor=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getDtor(),
-                                      /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<QFlags<T>>::debugStream,
+                                      /*.equals=*/ QtPrivate::QEqualityOperatorForType<QFlags<T>>::equals,
+                                      /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<QFlags<T>>::lessThan,
+                                      /*.debugStream=*/ nullptr,
                                       /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<QFlags<T>>::dataStreamOut,
                                       /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<QFlags<T>>::dataStreamIn,
-                                      /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<QFlags<T>>::getLegacyRegister(),
+                                      /*.legacyRegisterOp=*/ nullptr,
                                       /*.size=*/ sizeof(QFlags<T>),
                                       /*.alignment=*/ alignof(QFlags<T>),
                                       /*.typeId=*/ QtPrivate::BuiltinMetaType<QFlags<T>>::value,
                                       /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                         nullptr);
+                                        nullptr,
+                                      [](int id){
+                                            Q_UNUSED(id)
+                                            QtPrivate::SequentialContainerTransformationHelper<QFlags<T>>::registerConverter();
+                                            QtPrivate::AssociativeContainerTransformationHelper<QFlags<T>>::registerConverter();
+                                            QtPrivate::SequentialContainerTransformationHelper<QFlags<T>>::registerMutableView();
+                                            QtPrivate::AssociativeContainerTransformationHelper<QFlags<T>>::registerMutableView();
+                                            QtPrivate::MetaTypePairHelper<QFlags<T>>::registerConverter();
+                                            QtPrivate::MetaTypeSmartPointerHelper<QFlags<T>>::registerConverter();
+                                        }
+                                    );
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
         registerMetaTypeID(fid, metaid);
@@ -1076,15 +1071,27 @@ const std::type_info& registerEnumTypeInfoNoMetaObject(const char *qt_name, cons
                          /*.copyCtr=*/ QtPrivate::QMetaTypeForType<T>::getCopyCtr(),
                          /*.moveCtr=*/ QtPrivate::QMetaTypeForType<T>::getMoveCtr(),
                          /*.dtor=*/ QtPrivate::QMetaTypeForType<T>::getDtor(),
-                         /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<T>::debugStream,
+                         /*.equals=*/ QtPrivate::QEqualityOperatorForType<T>::equals,
+                         /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<T>::lessThan,
+                         /*.debugStream=*/ nullptr,
                          /*.dataStreamOutFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamOut,
                          /*.dataStreamInFn=*/ QtPrivate::QDataStreamOperatorForType<T>::dataStreamIn,
-                         /*.legacyRegisterOp=*/ QtPrivate::QMetaTypeForType<T>::getLegacyRegister(),
+                         /*.legacyRegisterOp=*/ nullptr,
                          /*.size=*/ sizeof(T),
                          /*.alignment=*/ alignof(T),
                          /*.typeId=*/ QtPrivate::BuiltinMetaType<T>::value,
                          /*.flags=*/ QMetaType::RelocatableType | QMetaType::IsEnumeration,
-                         nullptr);
+                         nullptr,
+                          [](int id){
+                                Q_UNUSED(id)
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerConverter();
+                                QtPrivate::SequentialContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::AssociativeContainerTransformationHelper<T>::registerMutableView();
+                                QtPrivate::MetaTypePairHelper<T>::registerConverter();
+                                QtPrivate::MetaTypeSmartPointerHelper<T>::registerConverter();
+                            }
+                         );
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         registerMetaTypeID(id, metaid);
     }
@@ -1102,15 +1109,6 @@ const std::type_info& registerTypeInfo(const char *qt_name, const char *java_nam
     registerAlignmentOfType(id, Q_ALIGNOF(T));
     return id;
 }
-
-#ifdef QT_QTJAMBI_PORT
-class QSignalMapper;
-typedef void (*QSignalMapperMapped)(QWidget*  widget, const WeakNativeID& link);
-typedef QMetaObject::Connection (*QSignalMapperConnector)(QSignalMapper* object, WeakNativeID link, QSignalMapperMapped signalMapperMapped);
-
-QTJAMBI_EXPORT void registerSignalMapperConnector(QSignalMapperConnector signalMapperConnector);
-QTJAMBI_EXPORT QMetaObject::Connection connectSignalMapper(QSignalMapper* object, const WeakNativeID& link, QSignalMapperMapped signalMapperMapped);
-#endif // QT_QTJAMBI_PORT
 
 QTJAMBI_EXPORT jclass resolveClosestQtSuperclass(JNIEnv *env, jclass clazz, jobject classLoader = nullptr);
 

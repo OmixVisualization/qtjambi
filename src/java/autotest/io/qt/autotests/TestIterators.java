@@ -38,11 +38,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
+import io.qt.autotests.generated.General;
 import io.qt.core.QDir;
 import io.qt.core.QDirIterator;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QRegularExpressionMatch;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QTreeWidget;
 import io.qt.widgets.QTreeWidgetItem;
 import io.qt.widgets.QTreeWidgetItemIterator;
@@ -58,7 +58,7 @@ public class TestIterators extends QApplicationTest {
 		new QTreeWidgetItemIterator((QTreeWidgetItem)null);
 	}
 	
-	@Test(expected=NullPointerException.class)
+	@Test(expected=IllegalArgumentException.class)
     public void test_QTreeWidgetItemIterator_construction_item_no_widget() {
 		QTreeWidgetItem item = new QTreeWidgetItem();
 		new QTreeWidgetItemIterator(item);
@@ -68,8 +68,8 @@ public class TestIterators extends QApplicationTest {
     public void test_QTreeWidgetItemIterator_owner() {
     	QTreeWidget widget = new QTreeWidget();
     	QTreeWidgetItemIterator iterator = new QTreeWidgetItem(widget).iterator();
-    	Assert.assertTrue(QtJambiInternal.hasOwnerFunction(iterator));
-    	Assert.assertEquals(widget.model(), QtJambiInternal.owner(iterator));
+    	Assert.assertTrue(General.internalAccess.hasOwnerFunction(iterator));
+    	Assert.assertEquals(widget.model(), General.internalAccess.owner(iterator));
 	}
 	
 	@Test

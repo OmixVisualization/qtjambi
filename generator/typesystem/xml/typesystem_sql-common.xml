@@ -43,11 +43,11 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSql">
-  <inject-code class="metainfo" position="2" until="5.*">
+<typesystem qt-library="QtSql" description="Classes for database integration using SQL.">
+  <inject-code class="metainfo" position="2">
         void initialize_meta_info_QSqlRelationalDelegate();
   </inject-code>
-  <inject-code class="metainfo" position="beginning" until="5.*">
+  <inject-code class="metainfo" position="beginning">
         initialize_meta_info_QSqlRelationalDelegate();
   </inject-code>
   <rejection class="QSqlRelationalDelegate" />
@@ -132,8 +132,6 @@
   </object-type>
 
   <object-type name="QSqlQueryModel">
-    <modify-function signature="indexInQuery(QModelIndex)const" access="non-final"/>
-    <modify-function signature="setQuery(QSqlQuery)" access="non-final"/>
     <modify-function signature="record()const" access="non-final"/>
     <modify-function signature="record(int)const" access="non-final"/>
     <extra-includes>
@@ -169,6 +167,7 @@
         <include file-name="QStringList" location="global" />
         <include file-name="QSize" location="global" />
     </extra-includes>
+    <modify-function signature="setQuery(QSqlQuery)" remove="all"/>
   </object-type>
   <object-type name="QSqlDriverCreatorBase">
     <extra-includes>

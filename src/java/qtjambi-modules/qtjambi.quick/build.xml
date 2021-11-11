@@ -1,0 +1,21 @@
+<project default="build">
+    <target name="build">
+        <dirname property="antfile.dir" file="${ant.file}"/>
+        <basename property="module" file="${antfile.dir}"/>
+        <condition property="build.module" value="true">
+            <available file="${generator.outputdir}/java/${module}" type="dir"/>
+        </condition>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl" if="build.module">
+        <condition property="module.excludes" value="" else="io/qt/quick/QSGSimpleMaterial*.java,io/qt/quick/QSGSimpleMaterial*.class">
+            <equals arg1="${qtjambi.soname.version.major}" arg2="5"/>
+        </condition>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
+            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
+            <property name="sourcedir2" value="${antfile.dir}"/>
+            <property name="jar.excludes" value="${module.excludes}"/>
+            <property name="module.excludes" value="${module.excludes}"/>
+        </ant>
+    </target>
+</project>

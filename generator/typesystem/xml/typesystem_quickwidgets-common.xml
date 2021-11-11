@@ -42,24 +42,13 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtQuickWidgets">
+<typesystem qt-library="QtQuickWidgets" description="Provides a C++ widget class for displaying a Qt Quick user interface.">
   <enum-type name="QQuickWidget::ResizeMode"/>
   <enum-type name="QQuickWidget::Status"/>
   <object-type name="QQuickWidget">
-    <extra-includes>
-        <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-    </extra-includes>
-    <modify-function signature="QQuickWidget(const QUrl &amp;, QWidget *)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+    <modify-function signature="QQuickWidget(const QUrl &amp;, QWidget *)" block-exceptions="yes">
     </modify-function>
-    <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+    <modify-function signature="setSource(const QUrl &amp;)" thread-affine="yes" block-exceptions="yes">
     </modify-function>
     <modify-function signature="setContent(QUrl,QQmlComponent*,QObject*)" thread-affine="yes">
         <modify-argument index="2" thread-affine="yes">

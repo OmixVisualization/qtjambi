@@ -44,7 +44,6 @@
 #include <Windows.h>
 #endif
 
-#ifndef QT_QTJAMBI_PORT
 class ObjectDeleter{
 public:
     ObjectDeleter(QObject* object);
@@ -65,34 +64,16 @@ private:
     QMutex m_mutex;
     std::function<void(QPointer<QThread>&,QList<std::function<void()>>&&)> cleaner;
 };
-#endif
-
-#ifdef QT_QTJAMBI_PORT
-class QThreadInterrupterUserData : public QtJambiObjectData
-{
-public:
-    QThreadInterrupterUserData(const QSharedPointer<QtJambiLink>& link);
-    ~QThreadInterrupterUserData() override;
-    QTJAMBI_OBJECTUSERDATA_ID_DECL
-private:
-    QWeakPointer<QtJambiLink> m_link;
-};
-
-void __qt_QThread_connect_signals(const QSharedPointer<QtJambiLink>& link, QMap<QString,QMetaObject::Connection>* connections);
-#endif
 
 class QThreadUserData : public QtJambiObjectData
 {
 public:
     QThreadUserData();
-#ifndef QT_QTJAMBI_PORT
     QThreadUserData(JNIEnv *env, jobject threadGroup);
-#endif
     ~QThreadUserData() override;
     QTJAMBI_OBJECTUSERDATA_ID_DECL
     void deleteAtThreadEnd(QObject* object);
     void doAtThreadEnd(const std::function<void()>& action);
-#ifndef QT_QTJAMBI_PORT
     inline bool isDaemon() const { return m_isDaemon; }
     inline void setDaemon(bool isDaemon) { m_isDaemon = isDaemon; }
     inline QByteArray getName() const { return m_name; }
@@ -105,26 +86,18 @@ public:
     inline void clearContextClassLoader(JNIEnv *env) { m_contextClassLoader.clear(env); }
     inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
     inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
-#endif
 private:
     QList<std::function<void()>>* m_finalActions;
     QMutex* m_mutex;
-#ifndef QT_QTJAMBI_PORT
     JObjectWrapper m_threadGroup;
     bool m_isDaemon;
     QByteArray m_name;
     JObjectWrapper m_uncaughtExceptionHandler;
     JObjectWrapper m_contextClassLoader;
-#endif
     friend EventDispatcherCheck;
 };
 
-#ifdef QT_QTJAMBI_PORT
-const QSharedPointer<QtJambiLink>&
-#else
-void
-#endif
-qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread, QThread *qt_thread, bool created_by_java);
+void qtjambi_adopt_thread(JNIEnv *env, jobject java_thread, jobject java_qthread, QThread *qt_thread, bool created_by_java);
 
 class SelfDeletingThread : public QThread
 {
@@ -132,25 +105,5 @@ class SelfDeletingThread : public QThread
 public:
     bool deleteLaterIfIsInFinish();
 };
-
-#ifdef QT_QTJAMBI_PORT
-class AdoptedThread : public QThread
-{
-    Q_DECLARE_PRIVATE(QThread)
-public:
-    AdoptedThread(JNIEnv *env, jobject thread, bool running);
-
-    ~AdoptedThread() override;
-
-    void onStart();
-
-    bool event(QEvent *event) override;
-    bool isAdopted() const;
-private:
-    void run() override {}
-
-    const QWeakPointer<QtJambiLink> m_link;
-};
-#endif
 
 #endif // QTJAMBI_THREAD_P_H

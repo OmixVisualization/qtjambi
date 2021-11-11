@@ -204,6 +204,7 @@ public abstract class Constants {
 	public static final String MACEXTRAS          = "qtjambi.macextras";
 	public static final String X11EXTRAS          = "qtjambi.x11extras";
     public static final String WEBENGINE          = "qtjambi.webengine";
+    public static final String WEBENGINEQUICK     = "qtjambi.webenginequick";
     public static final String GAMEPAD            = "qtjambi.gamepad";
     public static final String WEBENGINECORE      = "qtjambi.webenginecore";
     public static final String WEBENGINEWIDGETS   = "qtjambi.webenginewidgets";

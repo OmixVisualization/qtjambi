@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWinExtras">
+<typesystem qt-library="QtWinExtras" description="Provides platform-specific APIs for Windows.">
   <rejection class="QWinMime"/>
   <rejection class="QWindowsWindowFunctions::IsTabletModeType"/>
   <rejection class="QWindowsWindowFunctions::SetHasBorderInFullScreen"/>
@@ -143,11 +143,11 @@
   </object-type>
   <object-type name="QWinThumbnailToolButton">
   </object-type>
-  <object-type name="QWinEvent" polymorphic-id-expression="%1-&gt;type() == QWinEvent::ColorizationChange || %1-&gt;type() == QWinEvent::CompositionChange">
+  <object-type name="QWinEvent">
   </object-type>
-  <object-type name="QWinColorizationChangeEvent" polymorphic-id-expression="%1-&gt;type() == QWinEvent::ColorizationChange">
+  <object-type name="QWinColorizationChangeEvent">
   </object-type>
-  <object-type name="QWinCompositionChangeEvent" polymorphic-id-expression="%1-&gt;type() == QWinEvent::CompositionChange">
+  <object-type name="QWinCompositionChangeEvent">
   </object-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HBITMAP'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping * unmatched * type 'HRESULT'"/>

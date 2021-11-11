@@ -38,10 +38,11 @@
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <qtjambi/qtjambi_containeraccess_linkedlist.h>
 
 void qtjambi_register_linkedlist_access(){
-        QT_WARNING_DISABLE_DEPRECATED
         #define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\
             ContainerAccessFactoryHelper<QLinkedList,AL,SZ,false>::registerContainerAccessFactory();
         ELEMENT_ALIGNSIZE_ACTIONS

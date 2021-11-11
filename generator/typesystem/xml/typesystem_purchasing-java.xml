@@ -1,3 +1,3 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.purchasing" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.purchasing" module="qtjambi.purchasing" default-superclass="io.qt.QtObject">
 </typesystem>

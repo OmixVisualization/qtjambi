@@ -5,7 +5,6 @@
 
 class DocProperty : public DocElement
 {
-    Q_OBJECT
 public:
     DocProperty(QObject* parent);
 

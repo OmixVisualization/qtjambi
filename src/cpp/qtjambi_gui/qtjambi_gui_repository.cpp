@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_gui_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtGui{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QClipboard$Text,
@@ -24,5 +22,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QQuaternion$EulerAngles,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QTextCursor$SelectedTableCells,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IIII)
 )
+}
+namespace QtWidgets{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QMenu,
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QApplication,
+                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(exec,()I))
 }
 }

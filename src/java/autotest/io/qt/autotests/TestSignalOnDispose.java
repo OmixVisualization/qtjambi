@@ -51,24 +51,8 @@ import io.qt.core.QTemporaryFile;
 import io.qt.gui.QColor;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
-import io.qt.internal.QtJambiInternal;
 
 public class TestSignalOnDispose extends QApplicationTest {
-	private final static int NativeConnectionPolicy;
-    static{
-    	if(QtJambiInternal.isQtPatched()) {
-	    	int c = 0;
-	    	try {
-				c = Integer.valueOf(System.getProperty("io.qt.native.connection.policy", "0"));
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			}
-	    	NativeConnectionPolicy = c;
-    	}else {
-    		NativeConnectionPolicy = 4;
-    	}
-    }
-	
 	private final static List<String> tempFiles = new ArrayList<>();
 	
 	@Before
@@ -187,8 +171,8 @@ public class TestSignalOnDispose extends QApplicationTest {
 				break;
 		}
 		assertEquals("disposed signal received", 1, disposed.get());
-		assertEquals("QObject received aboutToClose", NativeConnectionPolicy==2 || NativeConnectionPolicy==4 ? 1 : 0, qAboutToClose.get());
-		assertEquals("java object received aboutToClose", NativeConnectionPolicy==4 ? 1 : 0, jAoutToClose.get());
+		assertEquals("QObject received aboutToClose", 1, qAboutToClose.get());
+		assertEquals("java object received aboutToClose", 1, jAoutToClose.get());
 	}
 	
 	@Test(expected=IllegalArgumentException.class)

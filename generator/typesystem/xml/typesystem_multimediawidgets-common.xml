@@ -43,25 +43,23 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtMultimediaWidgets">
+<typesystem qt-library="QtMultimediaWidgets" description="Widget classes for audio, video, radio and camera functionality.">
     <object-type name="QGraphicsVideoItem">
-        <interface-polymorphy interface="QMediaBindableInterface" condition="typeid(*reinterpret_cast&lt;QMediaBindableInterface*>(%1))==typeid(QGraphicsVideoItem)" />
-        <modify-function signature="setMediaObject(QMediaObject *)">
+        <modify-function signature="setMediaObject(QMediaObject *)" until="5.*">
         <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcMediaObject"/>
             </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QVideoWidget">
-        <interface-polymorphy interface="QMediaBindableInterface" condition="typeid(*reinterpret_cast&lt;QMediaBindableInterface*>(%1))==typeid(QVideoWidget)" />
-        <modify-function signature="setMediaObject(QMediaObject *)">
+        <modify-function signature="setMediaObject(QMediaObject *)" until="5.*">
         <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcMediaObject"/>
             </modify-argument>
         </modify-function>
     </object-type>
     <object-type name="QCameraViewfinder">
-        <modify-function signature="setMediaObject(QMediaObject *)">
+        <modify-function signature="setMediaObject(QMediaObject *)" until="5.*">
         <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcMediaObject"/>
             </modify-argument>

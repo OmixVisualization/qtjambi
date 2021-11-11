@@ -42,10 +42,8 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtRemoteObjects">
+<typesystem qt-library="QtRemoteObjects" description="Provides an easy to use mechanism for sharing a QObject's API (Properties/Signals/Slots) between processes or devices.">
   <rejection class="*" function-name="getTypeNameAndMetaobjectFromClassInfo"/>
-  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacast"/>
-  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacall"/>
   <rejection class="ExternalIoDevice"/>
   <rejection class="QtROServerFactory"/>
   <rejection class="QtROClientFactory"/>
@@ -75,8 +73,10 @@
   <enum-type name="QRemoteObjectPendingCall::Error"/>
   <object-type name="QRemoteObjectAbstractPersistedStore">
   </object-type>
-  <object-type name="QRemoteObjectDynamicReplica">
-    <modify-function signature="metaObject() const" remove="all"/>
+  <rejection class="QRemoteObjectDynamicReplica" function-name="metaObject"/>
+  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacall"/>
+  <rejection class="QRemoteObjectDynamicReplica" function-name="qt_metacast"/>
+  <object-type name="QRemoteObjectDynamicReplica" generate="no-shell">
   </object-type>
   <object-type name="QRemoteObjectHost">
   </object-type>
@@ -149,25 +149,35 @@
   </object-type>
   <object-type name="QConnectionAbstractServer">
   </object-type>
-  <object-type name="IoDeviceBase" since="5.12.0">
+  <object-type name="IoDeviceBase" since="5.12.0" until="5.*">
         <modify-field name="m_isClosing" read="false" write="true" rename="Closing"/>
         <inject-code class="destructor-function">
             if (!%this->m_isClosing)
                 %this->close();
         </inject-code>
   </object-type>
-  <object-type name="ServerIoDevice">
+  <object-type name="QtROIoDeviceBase" since="6.2.0">
+        <inject-code class="destructor-function">
+            if (!%this->isClosing())
+                %this->close();
+        </inject-code>
+  </object-type>
+  <object-type name="ServerIoDevice" until="5.*">
         <inject-code class="destructor-function" until="5.11">
             if (!%this->m_isClosing)
                 %this->close();
         </inject-code>
   </object-type>
-  <object-type name="ClientIoDevice">
+  <object-type name="QtROServerIoDevice" since="6.2.0">
+  </object-type>
+  <object-type name="ClientIoDevice" until="5.*">
       <modify-field name="m_dataStream" read="false" write="false"/>
         <inject-code class="destructor-function" until="5.11">
             if (!%this->m_isClosing)
                 %this->close();
         </inject-code>
+  </object-type>
+  <object-type name="QtROClientIoDevice" since="6.2.0">
   </object-type>
   <value-type name="QRemoteObjectSourceLocationInfo">
         <modify-function signature="operator=(const QRemoteObjectSourceLocationInfo &amp;)" remove="all">
@@ -181,8 +191,6 @@
   </value-type>
   <object-type name="QRemoteObjectPendingCallWatcher">
         <interface-polymorphy interface="QRemoteObjectPendingCall" condition="false" />
-        <modify-function signature="waitForFinished()" rename="waitForFinishedAndSend">
-        </modify-function>
   </object-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QAbstractItemModelReplica::QAbstractItemModelReplica', unmatched parameter type 'QAbstractItemModelReplicaImplementation*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRemoteObjectHostBase::enableRemoting', unmatched parameter type 'SourceApiMap const*'" />

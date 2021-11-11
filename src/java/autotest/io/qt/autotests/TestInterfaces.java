@@ -53,6 +53,7 @@ import io.qt.QtObjectInterface;
 import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.FunctionalTest;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.NameSpace;
 import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA;
 import io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.ObjectC;
@@ -166,12 +167,12 @@ public class TestInterfaces extends QApplicationTest {
 	@Test
     public void testSubClassTheSubClass() {
 		GraphicsItem item = new GraphicsItem(){};
-		item.metric(io.qt.gui.QPaintDevice.PaintDeviceMetric.PdmDepth);
+		item.metric(io.qt.gui.QPaintDevice.PaintDeviceMetric.PdmDepth);"".length();
 	}
 	
 	@Test
     public void testInterface() {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		AtomicInteger disposed = new AtomicInteger();
 		GraphicsItem item = new GraphicsItem();
 		QtUtilities.getSignalOnDispose(item).connect(disposed::incrementAndGet);
@@ -227,6 +228,11 @@ public class TestInterfaces extends QApplicationTest {
 				QPainterPath path = new QPainterPath();
 				return path;
 			}
+			
+			{
+				// should be allowed
+				QGraphicsItem.MemberAccess.of(this);
+			}
 		};
 		Assert.assertFalse(item.isDisposed());
 	}
@@ -248,6 +254,7 @@ public class TestInterfaces extends QApplicationTest {
 				return path;
 			}
 		};
+		// expected to throw exception
 		QGraphicsItem.MemberAccess.of(item);
 	}
 	
@@ -269,6 +276,7 @@ public class TestInterfaces extends QApplicationTest {
 			}
 			
 			{
+				// expected to throw exception
 				QGraphicsItem.MemberAccess.of(this);
 			}
 		};
@@ -578,6 +586,7 @@ public class TestInterfaces extends QApplicationTest {
 		Assert.assertFalse(item.isDisposed());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA() {
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
 			@Override
@@ -589,16 +598,24 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertEquals((Object)null, i.constructorParameter1());
 		Assert.assertEquals((Object)null, i.constructorParameter2());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA_constructor_int() {
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
-//			@SuppressWarnings("unused")
-//			private final QtConstructor.Argument[] param = {new QtConstructor.Argument(28)};
+			{
+				QtUtilities.initializeNativeObject(this, 
+						QtArgument.begin(NameSpace.NameSpace2.NameSpace3.InterfaceA.class).add(28));
+			}
 			
 			@Override
 			public ObjectD fooBar2(ObjectC arg__1) {
@@ -609,16 +626,24 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertEquals(Integer.valueOf(28), i.constructorParameter1());
 		Assert.assertEquals((Object)null, i.constructorParameter2());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA_constructor_Collection() {
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
-//			@SuppressWarnings("unused")
-//			private final QtConstructor.Argument[] param = {new QtConstructor.Argument(Collections.emptyList())};
+			{
+				QtUtilities.initializeNativeObject(this, 
+						QtArgument.begin(NameSpace.NameSpace2.NameSpace3.InterfaceA.class).add(java.util.Collections.emptyList()));
+			}
 			
 			@Override
 			public ObjectD fooBar2(ObjectC arg__1) {
@@ -629,16 +654,24 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertTrue(i.constructorParameter1() instanceof java.util.Collection);
-		Assert.assertEquals((Object)null, i.constructorParameter2());
+		Assert.assertEquals(0, i.constructorParameter2());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA_constructor_Collection_int() {
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
-//			@SuppressWarnings("unused")
-//			private final QtConstructor.Argument[] param = {new QtConstructor.Argument(Collections.emptyList()), new QtConstructor.Argument(28)};
+			{
+				QtUtilities.initializeNativeObject(this, 
+						QtArgument.begin(NameSpace.NameSpace2.NameSpace3.InterfaceA.class).add(java.util.Collections.emptyList()).add(28));
+			}
 			
 			@Override
 			public ObjectD fooBar2(ObjectC arg__1) {
@@ -649,24 +682,35 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertTrue(i.constructorParameter1() instanceof java.util.Collection);
 		Assert.assertEquals(Integer.valueOf(28), i.constructorParameter2());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA_constructor_QGraphicsItem() {
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
-//			@SuppressWarnings("unused")
-//			private final QtConstructor.Argument[] param = {new QtConstructor.Argument(new QGraphicsItem() {
-//				@Override
-//				public QRectF boundingRect() {
-//					return null;
-//				}
-//
-//				@Override
-//				public void paint(QPainter painter, QStyleOptionGraphicsItem option, QWidget widget) {
-//				}})};
+			{
+				QtUtilities.initializeNativeObject(this, 
+						QtArgument.begin(NameSpace.NameSpace2.NameSpace3.InterfaceA.class).add(
+								new QGraphicsItem() {
+									@Override
+									public QRectF boundingRect() {
+										return null;
+									}
+					
+									@Override
+									public void paint(QPainter painter, QStyleOptionGraphicsItem option, QWidget widget) {
+									}
+								}
+							));
+			}
 			
 			@Override
 			public ObjectD fooBar2(ObjectC arg__1) {
@@ -677,17 +721,25 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertTrue(i.constructorParameter1() instanceof QGraphicsItem);
 		Assert.assertEquals((Object)null, i.constructorParameter2());
 	}
 	
+	@Test
 	public void run_test_createInterfaceA_constructor_QObject() {
 		QWidget wdg = new QWidget();
 		NameSpace.NameSpace2.NameSpace3.InterfaceA i = new NameSpace.NameSpace2.NameSpace3.InterfaceA() {
-//			@SuppressWarnings("unused")
-//			private final QtConstructor.Argument[] param = {new QtConstructor.Argument(wdg)};
+			{
+				QtUtilities.initializeNativeObject(this, 
+						QtArgument.begin(NameSpace.NameSpace2.NameSpace3.InterfaceA.class).add(wdg));
+			}
 			
 			@Override
 			public ObjectD fooBar2(ObjectC arg__1) {
@@ -698,6 +750,11 @@ public class TestInterfaces extends QApplicationTest {
 			public InterfaceA fooBar(InterfaceA arg__1) {
 				return null;
 			}
+			
+            @io.qt.QtUninvokable
+            protected io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA protectedFooBar(io.qt.autotests.generated.NameSpace.NameSpace2.NameSpace3.InterfaceA arg__1){
+            	return arg__1;
+            }
 		};
 		Assert.assertFalse(i.isDisposed());
 		Assert.assertEquals(wdg, i.constructorParameter1());
@@ -706,7 +763,7 @@ public class TestInterfaces extends QApplicationTest {
 	
 	private static class FunctionalObject extends QObject implements FunctionalTest.TestFunction1{
 		@Override
-		public int call(int i, boolean b) {
+		public int applyAsInt(int i, boolean b) {
 			return b ? i*9 : -1;
 		}
 		
@@ -719,7 +776,7 @@ public class TestInterfaces extends QApplicationTest {
 		AtomicInteger ai = new AtomicInteger();
 		{
 			FunctionalObject ft = new FunctionalObject();
-			QtJambiInternal.registerCleaner(ft, ai::incrementAndGet);
+			General.internalAccess.registerCleaner(ft, ai::incrementAndGet);
 			ft.thread();
 	    	FunctionalTest functionalTest = new FunctionalTest();
 	    	assertEquals(4*9, functionalTest.convert(ft, 4, true));
@@ -777,6 +834,28 @@ public class TestInterfaces extends QApplicationTest {
 		} catch (Exception e) {
 			Assert.assertTrue(e instanceof NullPointerException);
 		}
+	}
+	
+	static class Implementor{
+		public double applyAsDouble(double d) {
+			return d * 1.2345;
+		}
+	}
+	
+	static class EasingFunctionImpl extends Implementor implements QEasingCurve.EasingFunction {
+	}
+	
+	static interface ImplInterface{
+		public default double applyAsDouble(double d) {
+			return d * 1.2345;
+		}
+	}
+	
+	@Test
+	public void test_customEasingCurve_multiinheritance() {
+		QEasingCurve ec = new QEasingCurve();
+		ec.setCustomType(new EasingFunctionImpl());
+		assertEquals(0.8*1.2345, ec.valueForProgress(0.8), 0.01);
 	}
 	
 	interface CustomInterface extends QtObjectInterface { public void call(); }

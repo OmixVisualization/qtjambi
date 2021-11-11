@@ -8,6 +8,8 @@ namespace Java{
 namespace QtRemoteObjects {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(IoDeviceBase$ReadResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QtROIoDeviceBase$ReadResult,
+                                     QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }
 }
 

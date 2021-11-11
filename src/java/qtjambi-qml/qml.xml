@@ -183,11 +183,41 @@
         </if>
     </target>
 
-    <target name="createjar1" depends="compile,createjar">
+    <target name="createjar1">
+        <if>
+            <istrue value="${qtjambi.qml.bundle}"/>
+            <then>
+                <antcall inheritrefs="true" target="bundle-qml"/>
+            </then>
+            <else>
+                <antcall inheritrefs="true" target="compile"/>
+                <antcall inheritrefs="true" target="createjar"/>
+            </else>
+        </if>
     </target>
-    <target name="createjar2" depends="compile2,createjar">
+    <target name="createjar2">
+        <if>
+            <istrue value="${qtjambi.qml.bundle}"/>
+            <then>
+                <antcall inheritrefs="true" target="bundle-qml"/>
+            </then>
+            <else>
+                <antcall inheritrefs="true" target="compile2"/>
+                <antcall inheritrefs="true" target="createjar"/>
+            </else>
+        </if>
     </target>
-    <target name="createjar3" depends="compile3,createjar">
+    <target name="createjar3">
+        <if>
+            <istrue value="${qtjambi.qml.bundle}"/>
+            <then>
+                <antcall inheritrefs="true" target="bundle-qml"/>
+            </then>
+            <else>
+                <antcall inheritrefs="true" target="compile3"/>
+                <antcall inheritrefs="true" target="createjar"/>
+            </else>
+        </if>
     </target>
     
     <target name="createjar" depends="jar_init">
@@ -236,13 +266,14 @@
         </if>
     </target>
 
+    <target name="bundle-qml">
+    </target>
+
     <target name="createjarimpl">
         <condition property="destdir" value="${outputDir}/tests/${subdir}" else="${qtjambi.builddir}">
             <istrue value="${qtjambi.testbuild}"/>
         </condition>
-        <delete file="${destdir}/qml/${module-dir}/${module}.jar" verbose="true"/>
-        <mkdir dir="${destdir}/qml/${module-dir}"/>
-        <jar destfile="${destdir}/qml/${module-dir}/${module}.jar" excludes="${jar.excludes}">
+        <jar destfile="${outputDir}/tests/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
 <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
@@ -265,57 +296,47 @@
             </manifest>
             <fileset dir="${java.outdir}/qml/${module}"/>
         </jar>
-        <echo file="${destdir}/qml/${module-dir}/qmldir">module ${module}
-plugin jarimport</echo>
+        <pathconvert property="librarypath">
+            <path id="librarypath">
+                <pathelement location="${qtjambi.builddir}/lib/"/>
+                <pathelement location="${tools.qt.bindir}"/>
+                <pathelement location="${tools.qt.libdir}"/>
+            </path>
+        </pathconvert>
         <if>
-            <or>
-                <equals arg1="${qtjambi.osname}" arg2="win32" />
-                <equals arg1="${qtjambi.osname}" arg2="win64" />
-            </or>
+            <os family="mac"/>
             <then>
-                <if>
-                    <istrue value="${libisdebug}"/>
-                    <then>
-                        <copy file="${qtjambi.builddir}/lib/jarimportd.dll" todir="${destdir}/qml/${module-dir}/"/>
-                    </then>
-                    <else>
-                        <copy file="${qtjambi.builddir}/lib/jarimport.dll" todir="${destdir}/qml/${module-dir}/"/>
-                    </else>
-                </if>
+                <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
             </then>
+            <else>
+                <property name="XstartOnFirstThread" value="-Dx" />
+            </else>
         </if>
         <if>
-            <or>
-                <equals arg1="${qtjambi.osname}" arg2="linux32" />
-                <equals arg1="${qtjambi.osname}" arg2="linux64" />
-            </or>
+            <istrue value="${libisdebug}"/>
             <then>
-                <if>
-                    <istrue value="${libisdebug}"/>
-                    <then>
-                        <copy file="${qtjambi.builddir}/lib/libjarimport_debug.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
-                    </then>
-                    <else>
-                        <copy file="${qtjambi.builddir}/lib/libjarimport.so" tofile="${destdir}/qml/${module-dir}/libjarimport.so"/>
-                    </else>
-                </if>
+                <property name="debug.conf" value="debug" />
             </then>
+            <else>
+                <property name="debug.conf" value="release" />
+            </else>
         </if>
-        <if>
-            <or>
-                <equals arg1="${qtjambi.osname}" arg2="macosx" />
-            </or>
-            <then>
-                <if>
-                    <istrue value="${libisdebug}"/>
-                    <then>
-                        <copy file="${qtjambi.builddir}/lib/libjarimport_debug.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
-                    </then>
-                    <else>
-                        <copy file="${qtjambi.builddir}/lib/libjarimport.dylib" tofile="${destdir}/qml/${module-dir}/libjarimport.dylib"/>
-                    </else>
-                </if>
-            </then>
-        </if>
+        <java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+            <jvmarg value="-Djava.library.path=${librarypath}"/>
+            <!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->
+            <jvmarg value="${XstartOnFirstThread}"/>
+            <!--jvmarg value="-Xint"/>
+            <jvmarg value="-Xrs"/>
+            <jvmarg value="-Xcheck:jni"/-->
+            <arg value="qml" />
+            <arg value="--library=${outputDir}/tests/${module}.jar" />
+            <arg value="--configuration=${debug.conf}" />
+            <arg value="--dir=${destdir}/qml" />
+            <arg value="--jarimport-location=${deploymentdir}/native/${qtjambi.osname}/${debug.conf}/utilities/" />
+            <env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+            <classpath>
+                <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
+            </classpath>
+        </java>
     </target>
 </project>

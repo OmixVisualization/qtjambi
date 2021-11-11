@@ -42,5 +42,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.extras" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.qt3d.extras" module="qtjambi.qt3dextras" default-superclass="io.qt.QtObject">
 </typesystem>

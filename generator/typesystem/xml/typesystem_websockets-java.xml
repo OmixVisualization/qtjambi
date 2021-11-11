@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.websockets" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.websockets" module="qtjambi.websockets" default-superclass="io.qt.QtObject">
   <object-type name="QWebSocketServer">
         <modify-function signature="listen(const QHostAddress &amp;, unsigned short)">
             <modify-argument index="1">

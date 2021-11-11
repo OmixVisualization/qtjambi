@@ -42,8 +42,9 @@
   <load-typesystem name="../build/generator/typesystem_websockets.xml" 			generate="yes" 				unless="QTJAMBI_NO_WEBSOCKETS"/>
   <load-typesystem name="../build/generator/typesystem_webchannel.xml" 			generate="yes" 				unless="QTJAMBI_NO_WEBCHANNEL"/>
   <load-typesystem name="../build/generator/typesystem_webengine.xml" 			generate="yes" 				unless="QTJAMBI_NO_WEBENGINE"/>
-  <load-typesystem name="../build/generator/typesystem_webenginewidgets.xml" 	generate="yes" 				unless="QTJAMBI_NO_WEBENGINE"/>
-  <load-typesystem name="../build/generator/typesystem_webenginecore.xml" 		generate="yes" 				unless="QTJAMBI_NO_WEBENGINE"/>
+  <load-typesystem name="../build/generator/typesystem_webenginequick.xml" 		generate="yes" 	since="6.2"	unless="QTJAMBI_NO_WEBENGINEQUICK"/>
+  <load-typesystem name="../build/generator/typesystem_webenginewidgets.xml" 	generate="yes" 				unless="QTJAMBI_NO_WEBENGINEWIDGETS"/>
+  <load-typesystem name="../build/generator/typesystem_webenginecore.xml" 		generate="yes" 				unless="QTJAMBI_NO_WEBENGINECORE"/>
   <load-typesystem name="../build/generator/typesystem_webview.xml" 		    generate="yes" 				unless="QTJAMBI_NO_WEBVIEW"/>
   <load-typesystem name="../build/generator/typesystem_gamepad.xml" 			generate="yes" 				unless="QTJAMBI_NO_GAMEPAD"/>
   <load-typesystem name="../build/generator/typesystem_remoteobjects.xml" 		generate="yes" 				unless="QTJAMBI_NO_REMOTEOBJECTS"/>

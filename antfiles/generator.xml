@@ -103,6 +103,7 @@
 		<xmlmerge victim="webenginewidgets"/>
 		<xmlmerge victim="webview"/>
 		<xmlmerge victim="webengine"/>
+		<xmlmerge victim="webenginequick"/>
         <xmlmerge victim="designer"/>
 		<xmlmerge victim="winextras"/>
 		<xmlmerge victim="macextras"/>

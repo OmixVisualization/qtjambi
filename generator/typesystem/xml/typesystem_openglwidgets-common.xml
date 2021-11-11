@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtOpenGLWidgets">
+<typesystem qt-library="QtOpenGLWidgets" description="This library provides a widget for rendering OpenGL graphics.">
     <enum-type name="QOpenGLWidget::UpdateBehavior"/>
     <object-type name="QOpenGLWidget">
     </object-type>

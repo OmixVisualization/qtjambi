@@ -34,7 +34,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
+import io.qt.core.QLibrary;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
@@ -47,6 +50,7 @@ import io.qt.gui.QIconEngine;
 import io.qt.gui.QIconEnginePlugin;
 import io.qt.gui.QImageIOHandler;
 import io.qt.gui.QImageIOPlugin;
+import io.qt.widgets.QDialog;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsObject;
 import io.qt.widgets.QGraphicsWidget;
@@ -76,14 +80,16 @@ public class TestPlugin extends QApplicationTest {
     public void testGenericPlugin() {
 		Assume.assumeTrue("QtNetwork unavailable", QtUtilities.initializePackage("io.qt.network"));
 		QFactoryLoader loader = new QFactoryLoader(QGenericPlugin.class, "/generic");
-		QObject plugin = loader.loadPlugin(QGenericPlugin::create, "TuioTouch", "TuioTouch", "");
+		QObject plugin = loader.loadPlugin(QGenericPlugin::create, "TuioTouch", "");
 		Assert.assertTrue(plugin!=null);
 		Assert.assertEquals("QTuioHandler", plugin.metaObject().className());
+        plugin.dispose();
+        loader.dispose();
 	}
     
     @Test
     public void testStylePlugin() {
-    	Assume.assumeTrue(QOperatingSystemVersion.currentType()==OSType.Windows || QOperatingSystemVersion.currentType()==OSType.MacOS);
+    	Assume.assumeTrue("windows or macos", QOperatingSystemVersion.currentType()==OSType.Windows || QOperatingSystemVersion.currentType()==OSType.MacOS);
 		QFactoryLoader loader = new QFactoryLoader(QStylePlugin.class, "/styles");
 		Assert.assertFalse(loader.keyMap().isEmpty());
         Assert.assertFalse(loader.keyMap().get(0).isEmpty());
@@ -120,6 +126,24 @@ public class TestPlugin extends QApplicationTest {
 		plugin = loader.loadPlugin(QGraphicsObject.class, "InterfacePlugin", parent);
 		Assert.assertTrue(plugin instanceof QGraphicsWidget);
     }
+    
+//    @Test
+    public void testLoadPluginLibrary() {
+		Assume.assumeTrue("macos only", QOperatingSystemVersion.currentType()==OSType.MacOS);
+		new QDialog().exec();
+		for(String path : QCoreApplication.libraryPaths()) {
+			QFileInfo file = new QFileInfo(path+"/designer/libcustomwidgets.dylib");
+			if(file.exists()) {
+				QLibrary library = new QLibrary(file.absoluteFilePath());
+				try {
+					boolean loaded = library.load();
+					Assert.assertTrue(library.errorString(), loaded);
+				}finally {
+					library.dispose();
+				}
+			}
+		}
+	}
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestPlugin.class.getName());

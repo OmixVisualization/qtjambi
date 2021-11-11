@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtDataVisualization">
+<typesystem qt-library="QtDataVisualization" description="UI Components for creating stunning 3D data visualizations.">
     <rejection class="*" function-name="dptr"/>
     <rejection class="*" function-name="dptrc"/>
     <rejection class="*" field-name="d_ptr"/>
@@ -335,32 +335,32 @@
         <modify-function signature="operator=(QtDataVisualization::QBarDataItem)" remove="all"/>
     </value-type>
     <object-type name="QtDataVisualization::QBarDataProxy">
-        <modify-function signature="addRow(QBarDataRow*)">
+        <modify-function signature="addRow(QtDataVisualization::QBarDataRow*)">
             <modify-argument index="1">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="addRow(QBarDataRow*,QString)">
+        <modify-function signature="addRow(QtDataVisualization::QBarDataRow*,QString)">
             <modify-argument index="1">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QBarDataRow*)">
+        <modify-function signature="insertRow(int,QtDataVisualization::QBarDataRow*)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QBarDataRow*,QString)">
+        <modify-function signature="insertRow(int,QtDataVisualization::QBarDataRow*,QString)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setRow(int,QBarDataRow*)">
+        <modify-function signature="setRow(int,QtDataVisualization::QBarDataRow*)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setRow(int,QBarDataRow*,QString)">
+        <modify-function signature="setRow(int,QtDataVisualization::QBarDataRow*,QString)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
@@ -390,8 +390,16 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QtDataVisualization::QBarDataRow"/>
-    <value-type name="QtDataVisualization::QBarDataArray"/>
+    <object-type name="QtDataVisualization::QBarDataRow">
+        <extra-includes>
+            <include file-name="qtjambi_datavis3d_hashes.h" location="local"/>
+        </extra-includes>
+    </object-type>
+    <value-type name="QtDataVisualization::QBarDataArray">
+        <extra-includes>
+            <include file-name="qtjambi_datavis3d_hashes.h" location="local"/>
+        </extra-includes>
+    </value-type>
     <object-type name="QtDataVisualization::QCategory3DAxis">
     </object-type>
     <object-type name="QtDataVisualization::QCustom3DItem">
@@ -460,8 +468,16 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QtDataVisualization::QScatterDataRow"/>
-    <value-type name="QtDataVisualization::QScatterDataArray"/>
+    <object-type name="QtDataVisualization::QScatterDataRow">
+        <extra-includes>
+            <include file-name="qtjambi_datavis3d_hashes.h" location="local"/>
+        </extra-includes>
+    </object-type>
+    <value-type name="QtDataVisualization::QScatterDataArray">
+        <extra-includes>
+            <include file-name="qtjambi_datavis3d_hashes.h" location="local"/>
+        </extra-includes>
+    </value-type>
     <enum-type name="QtDataVisualization::QSurface3DSeries::DrawFlag" flags="QtDataVisualization::QSurface3DSeries::DrawFlags"/>
     <object-type name="QtDataVisualization::QSurface3DSeries">
     </object-type>
@@ -469,17 +485,17 @@
         <modify-function signature="operator=(QtDataVisualization::QSurfaceDataItem)" remove="all"/>
     </value-type>
     <object-type name="QtDataVisualization::QSurfaceDataProxy">
-        <modify-function signature="addRow(QSurfaceDataRow*)">
+        <modify-function signature="addRow(QtDataVisualization::QSurfaceDataRow*)">
             <modify-argument index="1">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="insertRow(int,QSurfaceDataRow*)">
+        <modify-function signature="insertRow(int,QtDataVisualization::QSurfaceDataRow*)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="setRow(int,QSurfaceDataRow*)">
+        <modify-function signature="setRow(int,QtDataVisualization::QSurfaceDataRow*)">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
@@ -509,7 +525,11 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QtDataVisualization::QSurfaceDataRow"/>
+    <object-type name="QtDataVisualization::QSurfaceDataRow">
+        <extra-includes>
+            <include file-name="qtjambi_datavis3d_hashes.h" location="local"/>
+        </extra-includes>
+    </object-type>
     <value-type name="QtDataVisualization::QSurfaceDataArray"/>
     <object-type name="QtDataVisualization::QTouch3DInputHandler">
        <modify-function signature="touchEvent(QTouchEvent *)">

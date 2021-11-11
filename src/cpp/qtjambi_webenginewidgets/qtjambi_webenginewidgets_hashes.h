@@ -5,6 +5,7 @@
 #include <QtCore/QtCore>
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline hash_type qHash(const QWebEngineScript &value)
 {
     hash_type hashCode = qHash(value.name());
@@ -15,5 +16,6 @@ inline hash_type qHash(const QWebEngineScript &value)
     hashCode = hashCode * 31 + qHash(value.runsOnSubFrames());
     return hashCode;
 }
+#endif
 
 #endif // QTJAMBI_WEBENGINEWIDGETS_HASHES_H

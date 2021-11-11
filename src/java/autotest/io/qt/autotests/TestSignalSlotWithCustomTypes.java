@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.qt.QtObject;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QMetaMethod;
@@ -42,27 +43,11 @@ import io.qt.core.QObject;
 import io.qt.core.QRectF;
 import io.qt.gui.QIcon;
 import io.qt.gui.QPainter;
-import io.qt.internal.QtJambiInternal;
-import io.qt.internal.QtJambiObject;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
 
 public class TestSignalSlotWithCustomTypes extends QApplicationTest {
-	private final static int NativeConnectionPolicy;
-    static{
-    	if(QtJambiInternal.isQtPatched()) {
-	    	int c = 0;
-	    	try {
-				c = Integer.valueOf(System.getProperty("io.qt.native.connection.policy", "0"));
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			}
-	    	NativeConnectionPolicy = c;
-    	}else {
-    		NativeConnectionPolicy = 4;
-    	}
-    }
 	
 	public static class UnregisteredType1{}
 	
@@ -206,7 +191,7 @@ public class TestSignalSlotWithCustomTypes extends QApplicationTest {
 		SenderObject1 o1 = new SenderObject1();
 		ReceiverObject1 r1 = new ReceiverObject1();
 		Connection connection = o1.change1.connect(r1::receive);
-		Assert.assertEquals(NativeConnectionPolicy==2 || NativeConnectionPolicy==4, connection instanceof QtJambiObject);
+		Assert.assertTrue(connection instanceof QtObject);
 		UnregisteredType1 t1 = new UnregisteredType1();
 		o1.change1.emit(t1);
 		Assert.assertEquals(t1, r1.received1);
@@ -223,11 +208,11 @@ public class TestSignalSlotWithCustomTypes extends QApplicationTest {
 		SenderObject1 o1 = new SenderObject1();
 		ReceiverObject1 r1 = new ReceiverObject1();
 		Connection connection1 = o1.change1.connect(r1::receive);
-		Assert.assertEquals(NativeConnectionPolicy!=0, connection1 instanceof QtJambiObject);
+		Assert.assertTrue(connection1 instanceof QtObject);
 		SenderObject2 o2 = new SenderObject2();
 		ReceiverObject2 r2 = new ReceiverObject2();
 		Connection connection2 = o2.change1.connect(r2::receive);
-		Assert.assertFalse(connection2 instanceof QtJambiObject);
+		Assert.assertFalse(connection2 instanceof QtObject);
 		UnregisteredType1 t = new UnregisteredType1();
 		int count = 1000;
 		long time11 = System.currentTimeMillis();

@@ -38,9 +38,9 @@
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
-#include <qtjambi/qtjambi_containeraccess_vector.h>
-
+#include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include <qtjambi/qtjambi_containeraccess_vector.h>
 
 void qtjambi_register_vector_access(){
         #define ELEMENT_ALIGNSIZE_ACTION(AL,SZ)\

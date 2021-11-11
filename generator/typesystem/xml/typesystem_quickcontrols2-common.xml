@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtQuickControls2">
+<typesystem qt-library="QtQuickControls2" description="Provides lightweight QML types for creating performant user interfaces for desktop, embedded, and mobile devices. These types employ a simple styling architecture and are very efficient.">
     <namespace-type name="QQuickStyle">
     </namespace-type>
 </typesystem>

@@ -48,6 +48,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.MoccedObject;
+import io.qt.autotests.generated.MoccedSub1Object;
+import io.qt.autotests.generated.MoccedSub2Object;
+import io.qt.autotests.generated.UnMoccedObject;
+import io.qt.autotests.generated.UnMoccedSub1Object;
+import io.qt.autotests.generated.UnMoccedSub2Object;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QFile;
@@ -609,6 +615,41 @@ public class TestQObject extends QApplicationTest {
         counter.waitForEmpty(TIMEOUT);
 
         assertEquals("alive and under test", 0, counter.getSize());
+    }
+    
+    @Test
+    public void testUnMocced() {
+    	QObject object = UnMoccedObject.create(1);
+    	assertTrue(object!=null);
+    	assertEquals(MoccedObject.class, object.getClass());
+    	object = UnMoccedObject.create(2);
+    	assertTrue(object!=null);
+    	assertEquals(MoccedSub1Object.class, object.getClass());
+    	object = UnMoccedObject.create(3);
+    	assertTrue(object!=null);
+    	assertEquals(MoccedSub2Object.class, object.getClass());
+    	object = UnMoccedObject.create(4);
+    	assertTrue(object!=null);
+    	assertEquals(MoccedSub1Object.class, object.getClass());
+    	object = UnMoccedObject.create(5);
+    	assertTrue(object!=null);
+    	assertEquals(MoccedSub2Object.class, object.getClass());
+    	
+    	object = UnMoccedObject.create(-1);
+    	assertTrue(object!=null);
+    	assertEquals(UnMoccedObject.class, object.getClass());
+    	object = UnMoccedObject.create(-2);
+    	assertTrue(object!=null);
+    	assertEquals(UnMoccedSub1Object.class, object.getClass());
+    	object = UnMoccedObject.create(-3);
+    	assertTrue(object!=null);
+    	assertEquals(UnMoccedSub2Object.class, object.getClass());
+    	object = UnMoccedObject.create(-4);
+    	assertTrue(object!=null);
+    	assertEquals(UnMoccedSub1Object.class, object.getClass());
+    	object = UnMoccedObject.create(-5);
+    	assertTrue(object!=null);
+    	assertEquals(UnMoccedSub2Object.class, object.getClass());
     }
 
     public static void main(String args[]) {

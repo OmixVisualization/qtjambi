@@ -36,7 +36,7 @@
 #include <qtjambi/qtjambi_cast.h>
 
 class QmlPropertyValueSource : public QQmlPropertyValueSource{
-    void setTarget(const QQmlProperty &);
+    void setTarget(const QQmlProperty &) override;
 };
 
 void QmlPropertyValueSource::setTarget(const QQmlProperty &){}
@@ -44,7 +44,7 @@ void QmlPropertyValueSource::setTarget(const QQmlProperty &){}
 class ErrorDummyQuickItem : public QQuickItem{
 public:
     ErrorDummyQuickItem(int _vsCast, int _viCast);
-    ~ErrorDummyQuickItem();
+    ~ErrorDummyQuickItem() override;
 private:
     int vsCast;
     int viCast;
@@ -94,14 +94,13 @@ void initialize_meta_info_registerParserStatusCaster(){
 }
 
 // QSGGeometry::vertexData() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry__1_1qt_1QSGGeometry_1vertexData__J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quick_QSGGeometry_vertexData__)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QSGGeometry::vertexData() const")
     try{
-        QSGGeometry *__qt_this = qtjambi_object_from_nativeId<QSGGeometry>(__this_nativeId);
+        QSGGeometry *__qt_this = qtjambi_to_object<QSGGeometry>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         if(__qt_this->attributeCount() == 1
                 && __qt_this->sizeOfVertex() == 2 * sizeof(float)

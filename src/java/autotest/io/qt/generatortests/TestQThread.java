@@ -43,13 +43,12 @@ import org.junit.Assert;
 
 import io.qt.QThreadAffinityException;
 import io.qt.autotests.QApplicationTest;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
-import io.qt.internal.QtJambiInternal;
-import io.qt.internal.QtJambiThreadUtility;
 
 public class TestQThread extends QApplicationTest {
 
@@ -131,7 +130,7 @@ public class TestQThread extends QApplicationTest {
 		final QTimeLine[] timeLine = {null};
 		final AtomicBoolean threadFinished = new AtomicBoolean(false);
 		final AtomicInteger finished = new AtomicInteger(0);
-		final Object currentThread = QThread.currentThread();
+		final QThread currentThread = QThread.currentThread();
 		QThread signalTestThread = QThread.create(()->{
 			parent[0] = new QObject();
 			parent[0].setObjectName("testSignalMoveToThread-parent");
@@ -139,7 +138,7 @@ public class TestQThread extends QApplicationTest {
 			timeLine[0].setObjectName("testSignalMoveToThread-child");
 			timeLine[0].setParent(parent[0]);
 			timeLine[0].finished.connect(finished::incrementAndGet);
-			parent[0].moveToThread(QtJambiThreadUtility.castToThread(currentThread));
+			parent[0].moveToThread(currentThread);
 			threadFinished.set(true);
 		});
 		signalTestThread.setDaemon(true);
@@ -195,31 +194,6 @@ public class TestQThread extends QApplicationTest {
 		thread.dispose();
 	}
 	
-	@org.junit.Test
-	public void testThreadSignals() throws InterruptedException{
-		if(QtJambiInternal.isQtPatched()) {
-			AtomicInteger finished = new AtomicInteger(0);
-			AtomicInteger started = new AtomicInteger(0);
-			AtomicInteger running = new AtomicInteger(0);
-			Thread jthread = new Thread(()->{
-				QtJambiThreadUtility.currentThreadStartedSignal().connect(started::incrementAndGet);
-				QtJambiThreadUtility.currentThreadFinishedSignal().connect(finished::incrementAndGet);
-				running.incrementAndGet();
-			});
-			jthread.start();
-			jthread.join();
-			assertEquals("started counter", 0, started.get());
-			assertEquals("running counter", 1, running.get());
-			int i=0;
-			while(finished.get()==0 && i<10000) {
-				Thread.sleep(50);
-				++i;
-			}
-			assertEquals("finished counter", 1, finished.get());
-			instances.add(new WeakReference<>(QThread.thread(jthread)));
-		}
-	}
-	
 	private static class TestObject extends QObject{
 		AtomicInteger ai = new AtomicInteger(0);
 
@@ -237,14 +211,11 @@ public class TestQThread extends QApplicationTest {
 		TestObject finished = new TestObject();
 		TestObject started = new TestObject();
 		TestObject running = new TestObject();
-		AtomicInteger finished1 = new AtomicInteger(0);
 		Throwable[] throwable = {null};
 		Thread jthread = new Thread(()->{
 			try {
-				QtJambiThreadUtility.currentThreadStartedSignal().connect(started::incrementAndGet);
-				if(QtJambiInternal.isQtPatched())
-					QtJambiThreadUtility.currentThreadFinishedSignal().connect(finished1::incrementAndGet);
-				QtJambiThreadUtility.currentThreadFinishedSignal().connect(finished::incrementAndGet);
+				QThread.currentThread().started.connect(started::incrementAndGet);
+				QThread.currentThread().finished.connect(finished::incrementAndGet);
 				running.incrementAndGet();
 			}catch(Throwable t) {
 				throwable[0] = t;
@@ -259,13 +230,6 @@ public class TestQThread extends QApplicationTest {
 		assertEquals("started counter", 0, started.get());
 		assertEquals("running counter", 1, running.get());
 		assertEquals("finished counter", 0, finished.get());
-		if(QtJambiInternal.isQtPatched()) {
-			int i=0;
-			while(finished1.get()==0 && i<10000) {
-				Thread.sleep(50);
-				++i;
-			}
-		}
 		long t = System.currentTimeMillis();
 		while(finished.get()==0) {
 			QCoreApplication.processEvents();
@@ -553,12 +517,12 @@ public class TestQThread extends QApplicationTest {
 	public void testDeleteTopLevelRunnerThread() {
 		WeakReference<QThread> reference;
 		{
-			QtJambiInternal.Ownership[] ownership = {null};
+			boolean[] javaOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			QThread thread = QThread.create(()->{
 				qtarray[0] = QThread.currentThread();
-				ownership[0] = QtJambiInternal.ownership(qtarray[0]);
+				javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
 				javaThreads[0] = Thread.currentThread();
 				javaThreads[1] = qtarray[0].javaThread();
 			});
@@ -567,8 +531,8 @@ public class TestQThread extends QApplicationTest {
 			thread.join();
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Java, ownership[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(thread));
+			Assert.assertTrue(javaOwnership[0]);
+			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
 			qtarray[0] = null;
 			thread = null;
 		}
@@ -584,12 +548,12 @@ public class TestQThread extends QApplicationTest {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
 		{
-			QtJambiInternal.Ownership[] ownership = {null};
+			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			QThread thread = QThread.create(()->{
 				qtarray[0] = QThread.currentThread();
-				ownership[0] = QtJambiInternal.ownership(qtarray[0]);
+				cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
 				javaThreads[0] = Thread.currentThread();
 				javaThreads[1] = qtarray[0].javaThread();
 			}, parent);
@@ -598,8 +562,8 @@ public class TestQThread extends QApplicationTest {
 			thread.join();
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, ownership[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(thread));
+			Assert.assertTrue(cppOwnership[0]);
+			Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
 			qtarray[0] = null;
 			thread = null;
 		}
@@ -630,7 +594,7 @@ public class TestQThread extends QApplicationTest {
 	public void testDeleteTopLevelEventThread() {
 		WeakReference<QThread> reference;
 		{
-			QtJambiInternal.Ownership[] ownership = {null};
+			boolean[] javaOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			QThread thread = new QThread();
@@ -639,7 +603,7 @@ public class TestQThread extends QApplicationTest {
 				public boolean event(QEvent event) {
 					if(event.type()==QEvent.Type.DeferredDispose) {
 						qtarray[0] = QThread.currentThread();
-						ownership[0] = QtJambiInternal.ownership(qtarray[0]);
+						javaOwnership[0] = General.internalAccess.isJavaOwnership(qtarray[0]);
 						javaThreads[0] = Thread.currentThread();
 						javaThreads[1] = qtarray[0].javaThread();
 						qtarray[0].exit();
@@ -654,8 +618,8 @@ public class TestQThread extends QApplicationTest {
 			thread.join();
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Java, ownership[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(thread));
+			Assert.assertTrue(javaOwnership[0]);
+			Assert.assertTrue(General.internalAccess.isJavaOwnership(thread));
 			qtarray[0] = null;
 			thread = null;
 		}
@@ -671,7 +635,7 @@ public class TestQThread extends QApplicationTest {
 		QObject parent = new QObject();
 		WeakReference<QThread> reference;
 		{
-			QtJambiInternal.Ownership[] ownership = {null};
+			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			QThread thread = new QThread(parent);
@@ -680,7 +644,7 @@ public class TestQThread extends QApplicationTest {
 				public boolean event(QEvent event) {
 					if(event.type()==QEvent.Type.DeferredDispose) {
 						qtarray[0] = QThread.currentThread();
-						ownership[0] = QtJambiInternal.ownership(qtarray[0]);
+						cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
 						javaThreads[0] = Thread.currentThread();
 						javaThreads[1] = qtarray[0].javaThread();
 						qtarray[0].exit();
@@ -695,8 +659,8 @@ public class TestQThread extends QApplicationTest {
 			thread.join();
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, ownership[0]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(thread));
+			Assert.assertTrue(cppOwnership[0]);
+			Assert.assertTrue(General.internalAccess.isCppOwnership(thread));
 			qtarray[0] = null;
 			thread = null;
 		}
@@ -728,25 +692,25 @@ public class TestQThread extends QApplicationTest {
 		AtomicBoolean threadCleaned = new AtomicBoolean();
 		AtomicBoolean qthreadCleaned = new AtomicBoolean();
 		{
-			QtJambiInternal.Ownership[] ownership = {null};
+			boolean[] cppOwnership = {false};
 			Thread[] javaThreads = {null,null};
 			QThread[] qtarray = {null};
 			Thread thread = new Thread(()->{
 				qtarray[0] = QThread.currentThread();
-				ownership[0] = QtJambiInternal.ownership(qtarray[0]);
+				cppOwnership[0] = General.internalAccess.isCppOwnership(qtarray[0]);
 				javaThreads[0] = Thread.currentThread();
 				javaThreads[1] = qtarray[0].javaThread();
-				QtJambiInternal.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
+				General.internalAccess.registerCleaner(qtarray[0], ()->qthreadCleaned.set(true));
 			});
-			QtJambiInternal.registerCleaner(thread, ()->threadCleaned.set(true));
+			General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 			thread.start();
 			thread.join();
 			Assert.assertEquals(thread, javaThreads[0]);
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, ownership[0]);
+			Assert.assertTrue(cppOwnership[0]);
 			Assert.assertFalse("QThread is null", qtarray[0]==null);
 			Assert.assertFalse("QThread is disposed", qtarray[0].isDisposed());
-			Assert.assertEquals(QtJambiInternal.Ownership.Cpp, QtJambiInternal.ownership(qtarray[0]));
+			Assert.assertTrue(General.internalAccess.isCppOwnership(qtarray[0]));
 			qtarray[0] = null;
 			thread = null;
 		}

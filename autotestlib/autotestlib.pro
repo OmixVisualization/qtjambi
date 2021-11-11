@@ -21,6 +21,8 @@ include(../build/tests/autotest-generator/cpp/io_qt_autotests_generated/generate
 
 INCLUDEPATH += ./cpp/io_qt_autotests_generated
 
+QT += concurrent
+
 HEADERS += \
     bindableowner.h \
     containers.h \

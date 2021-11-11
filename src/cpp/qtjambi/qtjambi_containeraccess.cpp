@@ -1,3 +1,5 @@
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QtGlobal>
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
@@ -3491,7 +3493,7 @@ struct ContainerConverter : QtPrivate::AbstractConverterFunction{
             QTJAMBI_JNI_LOCAL_FRAME(env, 500)
             const ContainerConverter* converter = static_cast<const ContainerConverter *>(_this);
             const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && javaObject->object()){
+            if(converter && javaObject && Java::QtJambi::QtJambiObject::isInstanceOf(env, javaObject->object())){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
                     if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                         switch(converter->m_containerType){
@@ -3565,7 +3567,7 @@ struct BiContainerConverter : QtPrivate::AbstractConverterFunction{
             QTJAMBI_JNI_LOCAL_FRAME(env, 500)
             const BiContainerConverter* converter = static_cast<const BiContainerConverter *>(_this);
             const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(in);
-            if(converter && javaObject && javaObject->object()){
+            if(converter && javaObject && Java::QtJambi::QtJambiObject::isInstanceOf(env, javaObject->object())){
                 if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
                     if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                         switch(converter->m_containerType){
@@ -3640,7 +3642,7 @@ void qtjambi_register_container_converter(ContainerType collectionType, const QM
                 if(JNIEnv* env = qtjambi_current_environment()){
                     QTJAMBI_JNI_LOCAL_FRAME(env, 500)
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
-                    if(javaObject && javaObject->object()){
+                    if(javaObject && Java::QtJambi::QtJambiObject::isInstanceOf(env, javaObject->object())){
                         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 switch(collectionType){
@@ -3689,7 +3691,7 @@ void qtjambi_register_container_converter(MapType mapType, const QMetaType& cont
                 if(JNIEnv* env = qtjambi_current_environment()){
                     QTJAMBI_JNI_LOCAL_FRAME(env, 500)
                     const JObjectWrapper* javaObject = reinterpret_cast<const JObjectWrapper*>(src);
-                    if(javaObject && javaObject->object()){
+                    if(javaObject && Java::QtJambi::QtJambiObject::isInstanceOf(env, javaObject->object())){
                         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, javaObject->object())){
                             if(AbstractContainerAccess* _containerAccess = link->containerAccess()){
                                 switch(mapType){

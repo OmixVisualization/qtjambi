@@ -23,6 +23,7 @@
     <property name="sourceDir" location="build"/>
     <property name="outputDir" location="build"/>
     <property name="generatorDir" location="generator"/>
+    <property name="docstyle.css" location="docstyle.css"/>
 
     <!--
         Import files containing tasks for the compilation.
@@ -42,6 +43,7 @@
     <property name="java.srcdir"                   location="src/java"/>
     <property name="java.outdir"                   location="build/java"/>
     <property name="java.outsrcdir"                location="build/java-src"/>
+    <property name="java8.outsrcdir"                location="build/java8-src"/>
     <property name="deploymentdir"                 location="deployment"/>
 
     <property name="qtjambi.builddir"              location="build/qmake-qtjambi"/>
@@ -199,13 +201,15 @@ Further options:
             tofile="qtjambi-util-${qtjambi.version}.jar"/>-->
     </target>
 
-    <target name="qdoc3" depends="qdoc3.make"
-        description="Compiles qdoc3 for doc generation scripts." />
-
-    <target name="examples" depends="log"
-        description="Compiles and bundles the Qt Jambi examples."/>
-
     <target name="all" depends="log, generator, library"
         description="Generates, builds and bundles the Qt Jambi libraries."/>
 
+    <target name="deploy.snapshot" depends="log, init.build, source.ivy, deploy-snapshot"
+        description="Publishes QtJambi as Maven artifact snapshot."/>
+        
+    <target name="deploy.release" depends="log, init.build, source.ivy, deploy-release"
+        description="Publishes QtJambi as Maven artifact."/>
+        
+    <target name="deploy.bundle" depends="log, init.build, source.ivy, deploy-bundle"
+        description="Publishes QtJambi as Maven artifact."/>
 </project>

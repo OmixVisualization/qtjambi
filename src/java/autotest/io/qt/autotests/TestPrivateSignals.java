@@ -110,7 +110,7 @@ public class TestPrivateSignals extends QApplicationTest {
     }
     
     private static class PrivateSignalOwnerQObject extends QObject {
-    	public PrivateSignal1<String> privateSignal = new PrivateSignal1<>();
+    	public final PrivateSignal1<String> privateSignal = new PrivateSignal1<>();
 		
 		public void emitString(String s) {
 			emit(privateSignal, s);
@@ -118,7 +118,7 @@ public class TestPrivateSignals extends QApplicationTest {
 	}
     
     private static class PrivateSignalOwnerObject implements QInstanceMemberSignals, QtSignalEmitterInterface{
-    	public PrivateSignal1<String> privateSignal = new PrivateSignal1<>(this);
+    	public final PrivateSignal1<String> privateSignal = new PrivateSignal1<>(this);
 		
 		public void emitString(String s) {
 			QInstanceMemberSignals.emit(privateSignal, s);
@@ -126,14 +126,14 @@ public class TestPrivateSignals extends QApplicationTest {
 	}
     
     private static class PrivateStaticSignalOwner{
-    	public static QStaticMemberSignals.PrivateSignal1<String> privateStaticSignal = new QStaticMemberSignals.PrivateSignal1<>();
+    	public static final QStaticMemberSignals.PrivateSignal1<String> privateStaticSignal = new QStaticMemberSignals.PrivateSignal1<>();
 		public static void emitStaticString(String s) {
 			QStaticMemberSignals.emit(privateStaticSignal, s);
 		}
     }
     
     private static class PrivateStaticSignalOwnerQObject extends QObject{
-    	public static QStaticMemberSignals.PrivateSignal1<String> privateStaticSignal = new QStaticMemberSignals.PrivateSignal1<>();
+    	public static final QStaticMemberSignals.PrivateSignal1<String> privateStaticSignal = new QStaticMemberSignals.PrivateSignal1<>();
 		public static void emitStaticString(String s) {
 			QStaticMemberSignals.emit(privateStaticSignal, s);
 		}

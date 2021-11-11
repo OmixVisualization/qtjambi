@@ -48,8 +48,6 @@
 class DocParser;
 
 class JavaGenerator : public Generator {
-        Q_OBJECT
-
     public:
         JavaGenerator();
 
@@ -65,10 +63,10 @@ class JavaGenerator : public Generator {
         void writeArgument(QTextStream &s,
                                   const AbstractMetaFunction *java_function,
                                   const AbstractMetaArgument *java_argument,
-                                  uint options = 0);
+                                  Option options = Option::NoOption);
         QString argumentString(const AbstractMetaFunction *java_function,
                                       const AbstractMetaArgument *java_argument,
-                                      uint options = 0);
+                                      Option options = Option::NoOption);
         void writeFunctional(QTextStream &s, const AbstractMetaFunctional *java_functional);
         void writeEnum(QTextStream &s, const AbstractMetaEnum *java_enum);
         void writeIntegerEnum(QTextStream &s, const uint size, const AbstractMetaEnum *java_enum);
@@ -85,18 +83,18 @@ class JavaGenerator : public Generator {
         void writeEnumOverload(QTextStream &s, const AbstractMetaFunction *java_function,
                                uint include_attributes, uint exclude_attributes, Option option);
         void writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class);
+        void writeExtraFunctions(QTextStream &s, const AbstractMetaFunctional *java_class, bool inInterface);
         void writeToStringFunction(QTextStream &s, const AbstractMetaClass *java_class);
         void writeCloneFunction(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeFunctionAttributes(QTextStream &s, const AbstractMetaFunction *java_function,
+        void writeFunctionAttributes(QTextStream &s, const AbstractMetaFunction *java_function, int arg_count = -1,
                                      uint included_attributes = 0, uint excluded_attributes = 0,
-                                     uint options = 0);
+                                     Option options = NoOption);
         void writeConstructorContents(QTextStream &s, const AbstractMetaFunction *java_function);
         void writeFunctionArguments(QTextStream &s, const AbstractMetaFunction *java_function,
-                                    int count = -1, uint options = 0);
+                                    int count = -1, Option options = NoOption);
         void writeJavaCallThroughContents(QTextStream &s, const AbstractMetaFunction *java_function, uint attributes = 0);
-        void writeOwnershipForContainer(QTextStream &s, TypeSystem::Ownership ownership, AbstractMetaArgument *arg, const AbstractMetaFunction *java_function);
-        void writeOwnershipForContainer(QTextStream &s, TypeSystem::Ownership ownership, AbstractMetaType *type,
-                                        const QString &arg_name, const AbstractMetaFunction *java_function);
+        void writeOwnershipForContainer(QTextStream &s, const AbstractMetaFunction *java_function, TypeSystem::Ownership ownership, AbstractMetaType *type, const QString &arg_name);
+        void writeFunctionCallForOwnership(QTextStream &s, const AbstractMetaFunction *java_function, TypeSystem::Ownership owner, const QString& variable);
         void writePrivateNativeFunction(QTextStream &s, const AbstractMetaFunction *java_function);
         void writeJavaLangObjectOverrideFunctions(QTextStream &s, const AbstractMetaClass *cls);
         void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, int argumentIndex, const AbstractMetaFunction *java_function, const QString &thisName = QLatin1String("this"));
@@ -183,6 +181,10 @@ class JavaGenerator : public Generator {
             docsUrl = _docsUrl;
         }
 
+        void setTypeSystemByPackage(const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage){
+            m_typeSystemByPackage = typeSystemByPackage;
+        }
+
     private:
         void printExtraCode(QStringList& lines, QTextStream &s, bool addFreeLine = false);
         void write_equals_parts(QTextStream &s, const AbstractMetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw);
@@ -190,6 +192,7 @@ class JavaGenerator : public Generator {
         void writeInstantiatedType(QTextStream &s, const AbstractMetaType *abstractMetaType, bool forceBoxed) const;
         void write(QTextStream &s, const AbstractMetaEnum *global_enum);
         void writeDeprecatedComment(QTextStream& commentStream, const AbstractMetaFunction *java_function);
+        void registerPackage(QString className, bool inclExported = true);
     protected:
         QString m_package_name;
         QString m_doc_directory;
@@ -205,9 +208,13 @@ class JavaGenerator : public Generator {
         QList<const AbstractMetaFunction *> m_reference_count_candidate_functions;
         QList<const AbstractMetaFunction *> m_factory_functions;
         QList<const AbstractMetaFunction *> m_inconsistent_functions;
+
 private:
+        QList<QString> m_currentPackages;
+        QList<QString> m_exportedPackages;
+        QHash<TypeSystemTypeEntry *,QList<QString>> m_packagesByTypeSystem;
+        QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
         QNetworkAccessManager m_networkManager;
-        bool m_current_class_needs_internal_import;
 };
 
 #endif // JAVAGENERATOR_H

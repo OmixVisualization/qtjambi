@@ -3,9 +3,11 @@
     <property name="module-name" value="io.qt.test.car"/>
     <property name="module-dir" value="${module-name}"/>
     <stringreplace property="module-dir" target="." replacement="/"/>
-    <property name="qtjambi-module-name" value="QtJambiQml"/>
+    <property name="qtjambi-module-name" value="qtjambi.qml"/>
     <path id="qtjambi.modulepath">
-        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar,qtjambi-network-${qtjambi.jar.version}.jar,qtjambi-qml-${qtjambi.jar.version}.jar"/>
+        <filelist dir="${deploymentdir}" files="qtjambi-${qtjambi.jar.version}.jar,
+                                                qtjambi-network-${qtjambi.jar.version}.jar,
+                                                qtjambi-qml-${qtjambi.jar.version}.jar"/>
     </path>
     <target name="build">
         <condition property="build.module" value="true">

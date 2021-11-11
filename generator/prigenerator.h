@@ -56,10 +56,8 @@ struct Pri {
 };
 
 class PriGenerator : public Generator {
-        Q_OBJECT
-
     public:
-        /*virtual*/ QString resolveOutputDirectory() const { return cppOutputDirectory(); }
+        QString resolveOutputDirectory() const override { return cppOutputDirectory(); }
 
         QString cppOutputDirectory() const {
             if (!m_cpp_out_dir.isNull())
@@ -68,7 +66,7 @@ class PriGenerator : public Generator {
         }
         void setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
 
-        virtual void generate();
+        void generate() override;
 
         void addHeader(const QString &folder, const QString &header);
         void addSource(const QString &folder, const QString &source);

@@ -6,7 +6,6 @@
 #define QOBJECTDEFS_H
 #define QTMETAMACROS_H
 #define QFLAGS_H
-#define __VA_ARGS__
 #define decltype(A) DECL_TYPE
 
 // not yet supported
@@ -56,6 +55,7 @@
 #define ULONG_MAX Integer.MAX_VALUE
 #define Q_NO_USING_KEYWORD
 #define emit
+#define Q_EMIT
 #define SIGNAL(A) #A
 #define SLOT(A) #A
 #define Q_NAMESPACE_EXPORT()

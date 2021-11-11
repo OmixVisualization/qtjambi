@@ -49,16 +49,10 @@
 #include <QFile>
 #include <QTextStream>
 
-class FileOut : public QObject {
-        Q_OBJECT
-
-    private:
-        QByteArray tmp;
-        QString m_name;
-
+class FileOut final : public QObject {
     public:
         FileOut(QString name);
-        ~FileOut() {
+        ~FileOut() override {
             if (!isDone)
                 done();
         }
@@ -67,13 +61,15 @@ class FileOut : public QObject {
 
         QString name() const { return m_name; }
 
-        QTextStream stream;
-
         static bool dummy;
         static bool diff;
 
     private:
+        QString m_name;
+        QByteArray tmp;
         bool isDone;
+public:
+        QTextStream stream;
 };
 
 #endif // FILEOUT_H

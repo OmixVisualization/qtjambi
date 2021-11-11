@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_concurrent_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtConcurrent{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$MapFunctor,
@@ -100,43 +98,43 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithPromis
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise1,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise2,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise3,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise4,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise5,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise6,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise7,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise8,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/concurrent,QtConcurrent$RunnableWithVoidPromise9,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromiseVoid;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(run,(Lio/qt/core/QPromise;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V)
 )
 #endif
 

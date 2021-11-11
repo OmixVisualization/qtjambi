@@ -36,11 +36,11 @@ import java.util.List;
 import org.junit.Test;
 
 import io.qt.QtObject;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.InvalidatorPolymorphicOwnedObjectType;
 import io.qt.autotests.generated.PolymorphicOwnedObjectType;
 import io.qt.core.QFactoryInterface;
 import io.qt.core.QRunnable;
-import io.qt.internal.QtJambiInternal;
 
 public class TestMemoryManagementPolymorphicObjectInterfaces extends MemoryManagement {
     @Override
@@ -77,7 +77,7 @@ public class TestMemoryManagementPolymorphicObjectInterfaces extends MemoryManag
             public void overrideMe(PolymorphicOwnedObjectType t) {
                 if (returnReference) {
                     temporaryObject = t;
-                    QtJambiInternal.setJavaOwnership(temporaryObject);
+                    General.internalAccess.setJavaOwnership(temporaryObject);
                 }
             }
         }.invalidateObject((PolymorphicOwnedObjectType) obj);

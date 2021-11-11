@@ -36,7 +36,7 @@ QObject* createParent(const JObjectWrapper& clazzWrapper, jmethodID constructor,
     if(JNIEnv * env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         jobject result = env->NewObject(jclass(clazzWrapper.object()), constructor, qtjambi_from_QObject(env, parent));
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         qtjambi_rethrowing(env,
             return qtjambi_to_qobject(env, result);
         )

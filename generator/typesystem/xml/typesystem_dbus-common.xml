@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem qt-library="QtDBus">
+<typesystem qt-library="QtDBus" description="Classes for inter-process communication over the D-Bus protocol.">
     <rejection class="QDBusMetaType" />
     <rejection class="QDBusPendingReply" />
     <rejection class="QDBusPendingReply::Select"/>
@@ -102,8 +102,8 @@
         <modify-function signature="operator=(const QDBusMessage &amp;)" remove="all"/>
     </value-type>
     
-    <object-type name="QDBusInterface" target-type="final class"><!-- since 4.2, looks like interface -->
-    <modify-function signature="metaObject() const" rename="remoteMetaObject"/>
+    <object-type name="QDBusInterface" target-type="final class" generate="no-shell"><!-- since 4.2, looks like interface -->
+    <modify-function signature="metaObject() const" remove="all"/>
     <modify-function signature="qt_metacast(const char *)" remove="all"/>
     <modify-function signature="qt_metacall(QMetaObject::Call, int, void **)" remove="all"/>
     </object-type>

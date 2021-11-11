@@ -49,6 +49,8 @@
 #define QQMLPRIVATE_H
 #define QML_GETTYPENAMES
 #define QGENERICMATRIX_H
+#define QTJAMBI_UTILS_H
+#define QTJAMBI_REGISTRY_H
 
 #include <QtCore/private/qabstractfileengine_p.h>
 #include <QtCore/private/qfsfileengine_p.h>
@@ -61,7 +63,7 @@
 #define Q_OS_WIN
 #include <QtCore/QSettings>
 #undef Q_OS_WIN
-#include <qtjambi_core/qtjambiqfuture.h>
+#include <qtjambi_core/qtjambi_stringutil.h>
 #include <qtjambi_core/qtjambi_core_qhashes.h>
 
 #ifndef QTJAMBI_NO_GUI
@@ -285,12 +287,22 @@
 
 # if QT_VERSION >= 0x050000
 
-#ifndef QTJAMBI_NO_WEBENGINE
+#ifndef QTJAMBI_NO_WEBENGINECORE
 #include <qtjambi_webenginecore/qtjambi_qwebenginecore_hashes.h>
 #include <QtWebEngineCore/QtWebEngineCore>
+
+#ifndef QTJAMBI_NO_WEBENGINE
 #include <QtWebEngine/QtWebEngine>
+#endif
+
+#ifndef QTJAMBI_NO_WEBENGINEQUICK
+#include <QtWebEngineQuick/QtWebEngineQuick>
+#endif
+
+#ifndef QTJAMBI_NO_WEBENGINEWIDGETS
 #include <QtWebEngineWidgets/QtWebEngineWidgets>
 #include <qtjambi_webenginewidgets/qtjambi_webenginewidgets_hashes.h>
+#endif
 #endif
 
 #ifndef QTJAMBI_NO_WEBSOCKETS

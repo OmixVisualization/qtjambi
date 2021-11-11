@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSvgWidgets">
+<typesystem qt-library="QtSvgWidgets" description="Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard.">
   <rejection class="QGraphicsSvgItem" enum-name="enum_1"/>
   <enum-type name="QGraphicsSvgItem::enum_1"/>
 
@@ -60,7 +60,6 @@
 <!--     <modify-function signature="sceneMatrix()const" remove="all"/> -->
 <!--     <modify-function signature="setMatrix(QMatrix, bool)" remove="all"/> -->
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSvgItem::Type)" />
  </object-type>
 
 </typesystem>

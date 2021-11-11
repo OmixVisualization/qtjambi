@@ -35,27 +35,29 @@
 class QThread;
 
 QTJAMBI_EXPORT jobject qtjambi_get_qthread_for_jthread(JNIEnv *env, jobject thread);
-#ifndef QT_QTJAMBI_PORT
+
 QTJAMBI_EXPORT void qtjambi_initialize_current_thread(JNIEnv *env);
 
-QTJAMBI_EXPORT void qtjambi_initialize_thread(JNIEnv *__jni_env, QtJambiNativeID __this_nativeId, jobject threadGroup);
+QTJAMBI_EXPORT void qtjambi_initialize_main_thread(JNIEnv *env);
 
-QTJAMBI_EXPORT void qtjambi_thread_set_daemon(JNIEnv *__jni_env, QtJambiNativeID nativeId, bool daemon);
+QTJAMBI_EXPORT void qtjambi_initialize_thread(JNIEnv *__jni_env, jobject thread, jobject threadGroup);
+
+QTJAMBI_EXPORT void qtjambi_thread_set_daemon(JNIEnv *__jni_env, jobject thread, bool daemon);
 
 QTJAMBI_EXPORT bool qtjambi_thread_is_daemon(QThread* thread);
 
-QTJAMBI_EXPORT void qtjambi_thread_set_name(JNIEnv *__jni_env, QtJambiNativeID nativeId, jstring name);
+QTJAMBI_EXPORT void qtjambi_thread_set_name(JNIEnv *__jni_env, jobject thread, jstring name);
 
 QTJAMBI_EXPORT jstring qtjambi_thread_get_name(JNIEnv *__jni_env, QThread* thread);
 
 QTJAMBI_EXPORT jobject qtjambi_thread_get_group(JNIEnv *__jni_env, QThread* thread);
 
-QTJAMBI_EXPORT void qtjambi_thread_set_UncaughtExceptionHandler(JNIEnv *__jni_env, QtJambiNativeID nativeId, jobject handler);
+QTJAMBI_EXPORT void qtjambi_thread_set_UncaughtExceptionHandler(JNIEnv *__jni_env, jobject thread, jobject handler);
 
 QTJAMBI_EXPORT jobject qtjambi_thread_get_UncaughtExceptionHandler(JNIEnv *__jni_env, QThread* thread);
 
-QTJAMBI_EXPORT void qtjambi_thread_set_ContextClassLoader(JNIEnv *__jni_env, QtJambiNativeID nativeId, jobject cl);
+QTJAMBI_EXPORT void qtjambi_thread_set_ContextClassLoader(JNIEnv *__jni_env, jobject thread, jobject cl);
 
 QTJAMBI_EXPORT jobject qtjambi_thread_get_ContextClassLoader(JNIEnv *__jni_env, QThread* thread);
-#endif
+
 #endif // QTJAMBI_THREAD_H

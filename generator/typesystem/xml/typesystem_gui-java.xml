@@ -43,7 +43,10 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.gui" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.gui" default-superclass="io.qt.QtObject" module="qtjambi">
+    <required-library name="libGLESv2" optional="yes" until="5.*"/>
+    <required-library name="libEGL" optional="yes" until="5.*"/>
+    <required-library name="QtANGLE" optional="yes" until="5.*"/>
     <extra-includes>
         <include file-name="QGradient" location="global"/>
         <include file-name="QPixmapCache" location="global"/>
@@ -51,14 +54,6 @@
         <include file-name="private/qguiapplication_p.h" location="global"/>
         <include file-name="qpa/qplatformintegration.h" location="global"/>
     </extra-includes>
-    <inject-code position="2" until="5.*">
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("libGLESv2", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("libGLESv2", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("libEGL", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("libEGL", "");         // load if exists
-        if(io.qt.QtUtilities.isAvailableUtilityLibrary("QtANGLE", ""))
-            io.qt.QtUtilities.loadUtilityLibrary("QtANGLE", "");         // load if exists
-    </inject-code>
     <inject-code class="metainfo">
     QPixmapCache::cacheLimit();
     registerPolymorphyHandler(typeid(QGradient), [](void *ptr) -> bool {
@@ -2497,8 +2492,9 @@ public final void copyDataTo(float[] values)    {
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QGuiApplication___" quote-before-line="}// class"/>
         </inject-code>
         <extra-includes>
-            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="QtCore/private/qthread_p.h" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+            <include file-name="qtjambi_gui_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="QGuiApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
@@ -2517,7 +2513,7 @@ public final void copyDataTo(float[] values)    {
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String[]"/>
                 <conversion-rule class="native">
-                    QScopedPointer&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
+                    std::unique_ptr&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
                     char** %out = applicationData->chars();
                     int&amp; __qt_%1 = applicationData->size();
                 </conversion-rule>
@@ -2526,13 +2522,29 @@ public final void copyDataTo(float[] values)    {
                 <remove-argument/>
             </modify-argument>
             <inject-code class="native" position="end">
-                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.take());
+                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());
             </inject-code>
         </modify-function>
         <!-- We implement a custom Java wrapper to this -->
         <modify-function signature="exec()">
-            <access modifier="private"/>
-            <rename to="exec_internal"/>
+            <inject-code class="native" position="beginning">
+            QCoreApplication* instance = QCoreApplication::instance();
+            if (!instance)
+                JavaException::raiseRuntimeException(%env, "QGuiApplication has not been initialized with QGuiApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+            else if(instance->inherits("QApplication")){
+                bool classNotFound = false;
+                try{
+                    Java::QtWidgets::QApplication::getClass(%env);
+                }catch(...){
+                    classNotFound = true;
+                }
+                if(!classNotFound)
+                    return Java::QtWidgets::QApplication::exec(%env);
+            }else if(instance->thread()!=QThread::currentThread())
+                JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+            else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+                JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
+            </inject-code>
         </modify-function>
         <modify-function signature="overrideCursor()">
             <modify-argument index="0">
@@ -2662,6 +2674,14 @@ public final void copyDataTo(float[] values)    {
                 </conversion-rule>
             </modify-argument>
         </modify-function>
+        <modify-function signature="fromData(QByteArrayView,const char*)" since="6.2.0">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
         <modify-function signature="fromData(const unsigned char*,int,const char*)">
             <modify-argument index="1">
                 <replace-type modified-type="byte[]"/>
@@ -2700,6 +2720,14 @@ public final void copyDataTo(float[] values)    {
         </modify-function>
 
         <modify-function signature="loadFromData(QByteArray,const char*)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    J2CStringBuffer %out(%env, jstring(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="loadFromData(QByteArrayView,const char*)" since="6.2.0">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
                 <conversion-rule class="native">
@@ -3510,7 +3538,7 @@ public final void copyDataTo(float[] values)    {
             </inject-code>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                registerDependentObject(this, %1);
+                QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1);
             </inject-code>
         </modify-function>
         <modify-function signature="begin(QPaintDevice *)">
@@ -3522,7 +3550,7 @@ public final void copyDataTo(float[] values)    {
                 <argument-map index="0" meta-name="%0"/>
                 <argument-map index="1" meta-name="%1"/>
                 if(%0)
-                    registerDependentObject(this, %1);
+                    QtJambi_LibraryUtilities.internal.registerDependentObject(this, %1);
             </inject-code>
         </modify-function>
         <modify-function signature="end()">
@@ -3532,7 +3560,7 @@ public final void copyDataTo(float[] values)    {
             <inject-code position="end">
                 <argument-map index="0" meta-name="%0"/>
                 if(%0 &amp;&amp; device!=null){
-                    unregisterDependentObject(this, device);
+                    QtJambi_LibraryUtilities.internal.unregisterDependentObject(this, device);
                 }
             </inject-code>
         </modify-function>
@@ -4440,20 +4468,12 @@ __rcRedirections.remove(%1);
                     </insert-template>
                 </conversion-rule>
             </modify-argument>
-
-            <modify-argument index="return">
-                <conversion-rule class="native">
-                    <insert-template name="gui.cleanup_validationdata_from_java"/>
-                    jint %out = %in;
-                </conversion-rule>
-                <conversion-rule class="shell">
-                    <insert-template name="gui.cleanup_validationdata_to_java">
-                        <replace from="%STRING" to="%1"/>
-                        <replace from="%POS" to="%2"/>
-                    </insert-template>
-                    QValidator::State %out = qtjambi_cast&lt;QValidator::State>(%env, %in);
-                </conversion-rule>
-            </modify-argument>
+            <inject-code class="native" position="end"><argument-map index="1" meta-name="%1"/>
+                <insert-template name="gui.cleanup_validationdata_from_java"/>
+            </inject-code>
+            <inject-code class="shell" position="end"><argument-map index="1" meta-name="%STRING"/><argument-map index="2" meta-name="%POS"/>
+                <insert-template name="gui.cleanup_validationdata_to_java"/>
+            </inject-code>
         </modify-function>
     </object-type>
     <object-type name="QIntValidator">
@@ -5507,6 +5527,7 @@ __rcRedirections.remove(%1);
         </inject-code>
         <modify-function signature="QActionEvent(int, QAction *, QAction *)" until="5.*">
             <modify-argument index="2">
+                <replace-type modified-type="io.qt.widgets.QAction"/>
                 <conversion-rule class="native">
                     QAction* %out = static_cast&lt;QAction*>(qtjambi_to_qobject(%env, %in));
                 </conversion-rule>
@@ -5549,7 +5570,7 @@ __rcRedirections.remove(%1);
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, this);
             </inject-code>
         </modify-function>
         <modify-function signature="removeAction(QAction*)" thread-affine="yes">
@@ -5558,14 +5579,14 @@ __rcRedirections.remove(%1);
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, "__rcActionGroup", false, false, null);
             </inject-code>
         </modify-function>
     </object-type>
     
     <object-type name="QAction" since="6.0.0">
         <extra-includes>
-        <include file-name="io.qt.widgets.*" location="java"/>
+            <include file-name="qtjambi_gui_repository.h" location="local"/>
         </extra-includes>
         <inject-code>
             <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QAction___" quote-before-line="}// class"/>
@@ -5577,11 +5598,11 @@ __rcRedirections.remove(%1);
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
             if (__rcActionGroup != null) {
-                removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
+                QtJambi_LibraryUtilities.internal.removeFromCollectionReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, this);
             }
             __rcActionGroup = %1;
             if (__rcActionGroup != null) {
-                addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(__rcActionGroup, QActionGroup.class, "__rcActions", false, false, this);
             }
             </inject-code>
         </modify-function>
@@ -5596,24 +5617,50 @@ __rcRedirections.remove(%1);
     </object-type>
     
     <object-type name="QShortcut" since="6.0.0">
-        <modify-function signature="QShortcut(QKeySequence::StandardKey,QObject*,const char*,const char*,Qt::ShortcutContext)">
+        <modify-function signature="QShortcut(QKeySequence::StandardKey,QObject*,const char*,const char*,Qt::ShortcutContext)" access="private">
+            <modify-argument index="2">
+                <no-null-pointer/>
+            </modify-argument>
             <modify-argument index="3">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="QShortcut(QKeySequence,QObject*,const char*,const char*,Qt::ShortcutContext)">
+        <modify-function signature="QShortcut(QKeySequence,QObject*,const char*,const char*,Qt::ShortcutContext)" access="private">
+            <modify-argument index="2">
+                <no-null-pointer/>
+            </modify-argument>
             <modify-argument index="3">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
             <modify-argument index="4">
-                <replace-type modified-type="java.lang.String"/>
+                <remove-default-expression/>
+                <replace-type modified-type="java.lang.Object"/>
+                <conversion-rule class="native">
+                const char* %out = nullptr;
+                Q_UNUSED(%in)
+                </conversion-rule>
             </modify-argument>
         </modify-function>
         <inject-code>
-            <import-file name="typesystem/java/typesystem_widgets-java.java" quote-after-line="class QShortcut__" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_gui-java.java" quote-after-line="class QShortcut__" quote-before-line="}// class"/>
         </inject-code>
     </object-type>
     <object-type name="QFileSystemModel" since="6.0.0">
@@ -7317,6 +7364,14 @@ __rcRedirections.remove(%1);
         <import template="QOpenGLFunctions_1_0_template_full2"/>
         <import template="QOpenGLFunctions_1_1_template_full2"/>
         <import template="QOpenGLFunctions_4_5"/>
+    </object-type>
+    <object-type name="QNativeGestureEvent">
+        <modify-function signature="QNativeGestureEvent(Qt::NativeGestureType, const QPointingDevice *, int,
+                        QPointF, QPointF, QPointF, qreal, QPointF, unsigned long long)" since="6.2.0">
+            <modify-argument index="9">
+                <replace-default-expression with="Long.MAX_VALUE"/>
+            </modify-argument>
+        </modify-function>
     </object-type>
 </typesystem>
 

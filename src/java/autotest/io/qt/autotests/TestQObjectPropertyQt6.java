@@ -66,7 +66,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QByteProperty freeProperty = new QByteProperty((byte)28);
     	pBindable.setBinding(()->(byte)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (byte)object.p.value());
     }
     
@@ -91,7 +91,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Byte> freeProperty = new QProperty<>((byte)28);
     	pBindable.setBinding(()->(byte)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (byte)object.p.value());
     }
     
@@ -115,7 +115,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QShortProperty freeProperty = new QShortProperty((short)28);
     	pBindable.setBinding(()->(short)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (int)object.p.value());
     }
     
@@ -140,7 +140,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Short> freeProperty = new QProperty<>((short)28);
     	pBindable.setBinding(()->(short)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (short)object.p.value());
     }
     
@@ -164,7 +164,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QIntProperty freeProperty = new QIntProperty(28);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (int)object.p.value());
     }
     
@@ -189,7 +189,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Integer> freeProperty = new QProperty<>(28);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (int)object.p.value());
     }
     
@@ -213,7 +213,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QLongProperty freeProperty = new QLongProperty(28);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (long)object.p.value());
     }
     
@@ -238,7 +238,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Long> freeProperty = new QProperty<>(28l);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (long)object.p.value());
     }
     
@@ -262,7 +262,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QFloatProperty freeProperty = new QFloatProperty(28);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (float)object.p.value(), 0.01);
     }
     
@@ -287,7 +287,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Float> freeProperty = new QProperty<>(28f);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (float)object.p.value(), 0.01);
     }
     
@@ -311,7 +311,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QDoubleProperty freeProperty = new QDoubleProperty(28);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (double)object.p.value(), 0.01);
     }
     
@@ -336,7 +336,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Double> freeProperty = new QProperty<>(28.);
     	pBindable.setBinding(()->freeProperty.value()*2);
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (double)object.p.value(), 0.01);
     }
     
@@ -360,7 +360,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QCharProperty freeProperty = new QCharProperty((char)28);
     	pBindable.setBinding(()->(char)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (int)object.p.value());
     }
     
@@ -385,7 +385,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Character> freeProperty = new QProperty<>((char)28);
     	pBindable.setBinding(()->(char)(freeProperty.value()*2));
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(28*2, (char)object.p.value());
     }
     
@@ -409,7 +409,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QBooleanProperty freeProperty = new QBooleanProperty(true);
     	pBindable.setBinding(()->freeProperty.value());
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(true, (boolean)object.p.value());
     }
     
@@ -433,7 +433,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     	QProperty<Boolean> freeProperty = new QProperty<>(true);
     	pBindable.setBinding(()->freeProperty.value());
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(true, (boolean)object.p.value());
     }
     
@@ -547,7 +547,7 @@ public class TestQObjectPropertyQt6 extends QApplicationTest {
     		return object.decider.value() ? object.freeProperty.value() : null;
     	});
     	assertTrue(!pBindable.binding().isNull());
-    	assertEquals(3, signalCounter.get());
+    	assertTrue(signalCounter.get()==3 || signalCounter.get()==4);
     	assertEquals(null, object.p.value());
     	object.setProperty("decider", true);
     	assertTrue(object.p.value() instanceof QGraphicsProxyWidget);

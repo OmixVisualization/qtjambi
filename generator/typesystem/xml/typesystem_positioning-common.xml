@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtPositioning">
+<typesystem qt-library="QtPositioning" description="Provides access to position, satellite and area monitoring classes.">
   <value-type name="QGeoAreaMonitorInfo">
     <modify-function signature="operator=(const QGeoAreaMonitorInfo &amp;)" remove="all"/>
   </value-type>
@@ -50,25 +50,22 @@
     <modify-function signature="operator=(const QGeoAddress &amp;)" remove="all"/>
   </value-type>
   <enum-type name="QGeoShape::ShapeType"/>
-  <value-type name="QGeoShape">
+  <value-type name="QGeoShape" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QGeoShape::UnknownType">
+    <modify-function signature="toString()const" access="non-final"/>
     <modify-function signature="operator=(const QGeoShape &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QGeoCircle">
+  <value-type name="QGeoCircle" polymorphic-id-expression="%1-&gt;type() == QGeoShape::CircleType">
     <modify-function signature="center()const" remove="all"/>
-    <modify-function signature="toString()const" remove="all"/>
     <modify-function signature="operator=(const QGeoCircle &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QGeoPath">
-    <modify-function signature="toString()const" remove="all"/>
+  <value-type name="QGeoPath" polymorphic-id-expression="%1-&gt;type() == QGeoShape::PathType">
     <modify-function signature="operator=(const QGeoPath &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QGeoPolygon">
-    <modify-function signature="toString()const" remove="all"/>
+  <value-type name="QGeoPolygon" polymorphic-id-expression="%1-&gt;type() == QGeoShape::PolygonType">
     <modify-function signature="operator=(const QGeoPolygon &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QGeoRectangle">
+  <value-type name="QGeoRectangle" polymorphic-id-expression="%1-&gt;type() == QGeoShape::RectangleType">
     <modify-function signature="center()const" remove="all"/>
-    <modify-function signature="toString()const" remove="all"/>
     <modify-function signature="operator=(const QGeoRectangle &amp;)" remove="all"/>
     <modify-function signature="operator|=(const QGeoRectangle &amp;)" remove="all"/>
     <modify-function signature="operator|(const QGeoRectangle &amp;)const" remove="all"/>
@@ -159,9 +156,17 @@
   <enum-type name="QNmeaPositionInfoSource::UpdateMode"/>
   <object-type name="QNmeaPositionInfoSource">
   </object-type>
+  <object-type name="QNmeaSatelliteInfoSource" since="6.2.0">
+        <modify-function signature="setDevice(QIODevice*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDevice"/>
+            </modify-argument>
+        </modify-function>
+  </object-type>
+  <enum-type name="QNmeaSatelliteInfoSource::SatelliteInfoParseStatus" since="6.2.0"/>
+  <enum-type name="QNmeaSatelliteInfoSource::UpdateMode" since="6.2.0"/>
   <interface-type name="QGeoPositionInfoSourceFactory">
   </interface-type>
-  <interface-type name="QGeoPositionInfoSourceFactoryV2" since="5.14.0">
-        <interface-polymorphy interface="QGeoPositionInfoSourceFactory" condition="typeid(*%1) == typeid(QGeoPositionInfoSourceFactoryV2)"/>
+  <interface-type name="QGeoPositionInfoSourceFactoryV2" since="5.14.0" until="5.*">
   </interface-type>
 </typesystem>

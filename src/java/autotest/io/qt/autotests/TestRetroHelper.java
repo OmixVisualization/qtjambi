@@ -28,17 +28,16 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import java.util.function.IntFunction;
-
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.internal.QtJambiInternal;
+import io.qt.InternalAccess;
+import io.qt.autotests.generated.General;
 
 public class TestRetroHelper extends QApplicationTest {
 	
 	private void testCallerClassImpl() {
-		Assert.assertEquals(TestRetroHelper.class, QtJambiInternal.callerClassProvider().get());
+		Assert.assertEquals(TestRetroHelper.class, General.internalAccess.callerClassProvider().get());
 	}
 	
     @Test
@@ -48,8 +47,9 @@ public class TestRetroHelper extends QApplicationTest {
     
     @Test
     public void testInvocationInfo() {
-    	IntFunction<QtJambiInternal.InvocationInfo> invocationInfoProvider = QtJambiInternal.invocationInfoProvider();
-    	QtJambiInternal.InvocationInfo info = invocationInfoProvider.apply(2);
+    	InternalAccess.CallerContext info = General.internalAccess.callerContextProvider().get();
+//    	IntFunction<QtJambiInternal.InvocationInfo> invocationInfoProvider = QtJambiInternal.invocationInfoProvider();
+//    	QtJambiInternal.InvocationInfo info = invocationInfoProvider.apply(2);
     	Assert.assertTrue(info!=null);
     	Assert.assertEquals(TestRetroHelper.class, info.declaringClass);
     	Assert.assertEquals("testInvocationInfo", info.methodName);

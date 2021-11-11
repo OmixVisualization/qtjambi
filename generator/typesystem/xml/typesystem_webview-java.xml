@@ -42,5 +42,6 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.webview" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.webview" module="qtjambi.webview" default-superclass="io.qt.QtObject">
+    <required-library name="QtQuick"/>
 </typesystem>

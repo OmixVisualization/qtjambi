@@ -90,8 +90,7 @@ void astToXML(const QString& name) {
         writeOutNamespace(s, item);
     }
 
-    QHash<QString, ClassModelItem> typeMap = dom->classMap();
-    for(const ClassModelItem& item : typeMap.values()) {
+    for(const ClassModelItem& item : dom->classes()) {
         writeOutClass(s, item);
     }
     s.writeEndElement();
@@ -106,8 +105,7 @@ void writeOutNamespace(QXmlStreamWriter &s, const NamespaceModelItem &item) {
         writeOutNamespace(s, item);
     }
 
-    QHash<QString, ClassModelItem> typeMap = item->classMap();
-    for(const ClassModelItem& item : typeMap.values()) {
+    for(const ClassModelItem& item : item->classes()) {
         writeOutClass(s, item);
     }
 
@@ -341,8 +339,7 @@ void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
         writeOutVariable(s, item);
     }
 
-    QHash<QString, ClassModelItem> typeMap = item->classMap();
-    for(const ClassModelItem& item : typeMap.values()) {
+    for(const ClassModelItem& item : item->classes()) {
         writeOutClass(s, item);
     }
 

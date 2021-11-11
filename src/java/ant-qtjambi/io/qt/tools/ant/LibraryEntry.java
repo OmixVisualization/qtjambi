@@ -490,9 +490,7 @@ public class LibraryEntry extends Task {
                     return "lib" + name + ".dylib";
                 }
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + "_debug.a";
@@ -506,9 +504,7 @@ public class LibraryEntry extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
@@ -528,7 +524,6 @@ public class LibraryEntry extends Task {
                     return "lib" + name + "_debug.dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux: return "lib" + name + ".so";
             case IOS: return "lib" + name + "_debug.a";
 			default:
@@ -539,7 +534,6 @@ public class LibraryEntry extends Task {
             case Windows: return name + ".dll";
             case MacOS: return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux: return "lib" + name + ".so";
             case IOS: return "lib" + name + ".a";
 			default:
@@ -601,9 +595,7 @@ public class LibraryEntry extends Task {
                 }else{
                     return libPrefix + name + infix + tmpDotVersionString + ".dylib";
                 }
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return libPrefix + name + infix + ".so" + tmpDotVersionString;
             case Android:
                 return libPrefix + name + infix + ".so";
@@ -631,9 +623,7 @@ public class LibraryEntry extends Task {
                 return name + infix + tmpVersionString + ".dll";
             case MacOS:
                 return libPrefix + name + infix + tmpDotVersionString + ".dylib";
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return libPrefix + name + infix + ".so" + tmpDotVersionString;
             case Android:
                 return libPrefix + name + infix + ".so";
@@ -671,9 +661,7 @@ public class LibraryEntry extends Task {
                     return "lib" + name + infix + ".prl";
                 else return "lib" + name + infix + tmpDebugSuffix + ".prl";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + infix + ".prl";
 			default:
 				break;
@@ -686,9 +674,7 @@ public class LibraryEntry extends Task {
             case IOS:
                 return "lib" + name + infix + ".prl";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + infix + ".prl";
 			default:
 				break;
@@ -708,9 +694,7 @@ public class LibraryEntry extends Task {
                     return "lib" + name + tmpDebugSuffix + ".dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
@@ -724,9 +708,7 @@ public class LibraryEntry extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
@@ -762,9 +744,7 @@ public class LibraryEntry extends Task {
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".jnilib";
             case Android:
                 return "lib" + name + tmpDebugSuffix + ".so";
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
@@ -778,9 +758,7 @@ public class LibraryEntry extends Task {
                 return "lib" + name + tmpDotVersionString + ".jnilib";
             case Android:
                 return "lib" + name + ".so";
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + ".a";
 			default:
@@ -814,9 +792,7 @@ public class LibraryEntry extends Task {
                 return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".dylib";
             case Android:
                 return "lib" + name + tmpDebugSuffix + ".so";
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
@@ -832,10 +808,8 @@ public class LibraryEntry extends Task {
             	}
             case MacOS:
                 return "lib" + name + tmpDotVersionString + ".dylib";
-            case Solaris:
             case Android:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + ".a";
 			default:
@@ -853,9 +827,7 @@ public class LibraryEntry extends Task {
             case MacOS:
                 return "lib" + name + "_debug.dylib";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + "_debug.so";
             case IOS:
                 return "lib" + name + "_debug.a";
@@ -869,9 +841,7 @@ public class LibraryEntry extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            case Solaris:
             case Linux:
-            case FreeBSD:
                 return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
@@ -892,9 +862,7 @@ public class LibraryEntry extends Task {
              case MacOS:
                 return "lib" + name + tmpDebugSuffix + ".dylib";
              case Android:
-             case Solaris:
              case Linux:
-             case FreeBSD:
                 return "lib" + name + tmpDebugSuffix + ".so";
              case IOS: return "lib" + name + tmpDebugSuffix + ".a";
  			default:
@@ -907,9 +875,7 @@ public class LibraryEntry extends Task {
              case MacOS:
                 return "lib" + name + ".dylib";
              case Android:
-             case Solaris:
              case Linux:
-             case FreeBSD:
                 return "lib" + name + ".so";
              case IOS: return "lib" + name + ".a";
  			default:

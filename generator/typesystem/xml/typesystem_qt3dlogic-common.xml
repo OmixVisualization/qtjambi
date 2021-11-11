@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DLogic">
+<typesystem qt-library="Qt3DLogic" description="The Qt 3D Logic module enables synchronizing frames with the Qt 3D backend.">
     <namespace-type name="Qt3DLogic" generate="no"/>
     <object-type name="Qt3DLogic::QLogicAspect" java-name="QLogicAspect">
     </object-type>

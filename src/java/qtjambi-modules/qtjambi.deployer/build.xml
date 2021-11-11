@@ -1,0 +1,119 @@
+<project default="build">
+    <property name="plugin-subdir" value="."/>
+    <target name="build">
+        <mkdir dir="${generator.outputdir}/java/${module}"/>
+        <dirname property="antfile.dir" file="${ant.file}"/>
+        <basename property="module" file="${antfile.dir}"/>
+        <property name="moduledash" value="${module}"/>
+        <stringreplace property="moduledash" target="." replacement="-"/>
+        <if>
+            <istrue value="${qtjambi-build}"/>
+            <then>
+                <mkdir dir="${generator.outputdir}/java/${module}"/>
+                <mkdir dir="${deploymentdir}"/>
+                <delete dir="${java.outdir}/${module}" failonerror="no"/>
+                <mkdir dir="${java.outdir}/${module}"/>
+                <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="copy-resources">
+                    <property name="modulesrc" value="${antfile.dir}"/>
+                </ant>
+                <if>
+                    <istrue value="${java.module.based}"/>
+                    <then>
+                        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                                fork="true" memorymaximumsize="1024m" verbose="false"
+                                includeantruntime="true"
+                                excludes=""
+                                destdir="${java.outdir}/${module}">
+                            <compilerarg value="-Xlint:deprecation" />
+                            <compilerarg value="-Xlint:unchecked" />
+                            <src path="${antfile.dir}"/>
+                            <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                            <modulepath>
+                                <filelist dir="${deploymentdir}" files="qtjambi${module.suffix}-${qtjambi.jar.version}.jar,
+                                             qtjambi-core${module.suffix}-${qtjambi.jar.version}.jar"/>
+                            </modulepath>
+                        </javac>
+                    </then>
+                    <else>
+                        <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
+                                fork="true" memorymaximumsize="1024m" verbose="false"
+                                includeantruntime="true"
+                                excludes="module-info.java"
+                                destdir="${java.outdir}/${module}">
+                            <compilerarg value="-Xlint:deprecation" />
+                            <compilerarg value="-Xlint:unchecked" />
+                            <src path="${antfile.dir}"/>
+                            <!-- These are excluded due to the MacOSX port of Qt not needing this backward compatibility -->
+                            <classpath>
+                                <filelist dir="${deploymentdir}" files="qtjambi${module.suffix}-${qtjambi.jar.version}.jar,
+                                             qtjambi-core${module.suffix}-${qtjambi.jar.version}.jar"/>
+                            </classpath>
+                        </javac>
+                    </else>
+                </if>
+                <echo message="Creating JAR file for ${module}"/>
+                <property name="destdir" value="${outputDir}"/>
+                <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar" verbose="true"/>
+                <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}.jar">
+                    <manifest>
+                        <attribute name="Main-Class" value="io.qt.qtjambi.deployer.Main"/>
+                        <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
+        <!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
+                        <attribute name="Bundle-Description"      value="QtJambi Deployer"/>
+                        <!-- TODO: qtjambi.png -->
+                        <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
+                        <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
+        <!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
+                        <attribute name="Bundle-ManifestVersion"  value="2"/>
+                        <attribute name="Bundle-Name"             value="QtJambi Deployer"/>
+                        <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
+                        <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
+                        <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
+                        <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
+                        <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
+                    </manifest>
+                    <fileset dir="${java.outdir}/${module}" excludes="build.xml,build.properties"/>
+                </jar>
+                <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="copy-src-resources">
+                    <property name="modulesrc" value="${antfile.dir}"/>
+                </ant>
+                <delete file="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar"/>
+                <jar destfile="${deploymentdir}/${moduledash}${module.suffix}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
+                    <manifest>
+                        <attribute name="Built-By"                value="${user.name} - ${TODAY}"/>
+                        <attribute name="Bundle-Name"             value="${module} sources"/>
+                        <attribute name="Bundle-Description"      value="${module} sources"/>
+                    </manifest>
+                    <fileset dir="${java.outsrcdir}/${module}" excludes="**/*.class,build.properties,${jar.excludes},${qtjambi.jar.excludes}"/>
+                </jar>
+            </then>
+            <else>
+                <if>
+                    <istrue value="${qtjambi-native-bundle}"/>
+                    <then>
+                        <create-native-deployment outputDirectory="${qtjambi-native-bundle-path}" debug="${platformjar.debug}" module="${module}"/>
+                        <jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+                            <manifest>
+                                <attribute name="Built-By" value="${user.name} - ${TODAY}"/>
+                                <attribute name="Bundle-Name"      value="${module} native bundle"/>
+                                <attribute name="Bundle-Description"      value="${module} native bundle"/>
+                                <attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+                                <attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+                                <attribute name="Bundle-ManifestVersion" value="2"/>
+                            </manifest>
+                            <filelist dir="${qtjambi-native-bundle-path}" files="${library.includes}"/>
+                        </jar>
+                    </then>
+                    <else>
+                        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl2">
+                            <property name="sourcedir" value="${antfile.dir}"/>
+                            <property name="sourcedir2" value="${antfile.dir}"/>
+                            <property name="jar.excludes" value=""/>
+                            <property name="module.excludes" value=""/>
+                        </ant>
+                    </else>
+                </if>
+            </else>
+        </if>
+    </target>
+</project>

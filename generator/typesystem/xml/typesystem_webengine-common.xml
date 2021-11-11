@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWebEngine">
+<typesystem qt-library="QtWebEngine" description="Classes and functions for embedding web content in applications using the Chromium browser project.">
     <rejection class="QQuickWebEngineProfile" function-name="settings"/>
     <enum-type name="QQuickWebEngineProfile::HttpCacheType"/>
     <enum-type name="QQuickWebEngineProfile::PersistentCookiesPolicy"/>
@@ -71,9 +71,6 @@
         </modify-function>
     </object-type>
     <object-type name="QQuickWebEngineScript">
-    </object-type>
-    <object-type name="QWebEngineFindTextResult" since="5.14.0">
-    <modify-function signature="operator=(const QWebEngineFindTextResult &amp;)" remove="all"/>
     </object-type>
     <namespace-type name="QtWebEngine">
     </namespace-type>

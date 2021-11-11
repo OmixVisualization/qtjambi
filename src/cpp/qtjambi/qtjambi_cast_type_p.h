@@ -34,8 +34,6 @@
 #include <type_traits>
 #include <typeinfo>
 
-QT_WARNING_DISABLE_DEPRECATED
-
 namespace QtJambiPrivate {
 
 } // namespace QtJambiPrivate

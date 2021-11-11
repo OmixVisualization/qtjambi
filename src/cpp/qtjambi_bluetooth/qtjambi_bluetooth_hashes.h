@@ -64,7 +64,12 @@ inline hash_type qHash(const QBluetoothDeviceInfo &value)
     hashCode = hashCode * 31 + qHash(value.majorDeviceClass());
     hashCode = hashCode * 31 + qHash(value.minorDeviceClass());
     hashCode = hashCode * 31 + qHash(value.coreConfigurations());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     hashCode = hashCode * 31 + qHash(value.serviceUuidsCompleteness());
+#else
+    hashCode = hashCode * 31 + qHash(value.manufacturerData());
+    hashCode = hashCode * 31 + qHash(value.coreConfigurations());
+#endif
     return hashCode;
 }
 
@@ -81,7 +86,9 @@ inline hash_type qHash(const QLowEnergyDescriptor &value)
     hashCode = hashCode * 31 + qHash(value.type());
     hashCode = hashCode * 31 + qHash(value.uuid());
     hashCode = hashCode * 31 + qHash(value.value());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     hashCode = hashCode * 31 + qHash(value.handle());
+#endif
     hashCode = hashCode * 31 + qHash(value.isValid());
     return hashCode;
 }
@@ -109,11 +116,13 @@ inline hash_type qHash(const QLowEnergyServiceData &value)
     return hashCode;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline hash_type qHash(const QBluetoothTransferRequest &value)
 {
     hash_type hashCode = qHash(value.address());
     return hashCode;
 }
+#endif
 
 inline hash_type qHash(const QLowEnergyAdvertisingParameters::AddressInfo &value)
 {
@@ -165,7 +174,11 @@ inline hash_type qHash(const QLowEnergyCharacteristic &value)
     hashCode = hashCode * 31 + qHash(int(value.properties()));
     hashCode = hashCode * 31 + qHash(value.isValid());
     hashCode = hashCode * 31 + qHash(value.descriptors());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     hashCode = hashCode * 31 + qHash(value.handle());
+#else
+    hashCode = hashCode * 31 + qHash(value.clientCharacteristicConfiguration());
+#endif
     return hashCode;
 }
 

@@ -183,7 +183,7 @@ public class TestMetaProgrammingQt6 extends QApplicationTest {
                 new ExpectedValues("booleanProperty", true, false, true, false, false, false, false),
                 new ExpectedValues("otherBooleanProperty", true, false, true, false, false, false, false),
                 new ExpectedValues("resettableProperty", true, true, true, false, false, false, false),
-                new ExpectedValues("objectName", true, false, true, false, false, false, true),
+                new ExpectedValues("objectName", true, false, true, false, false, QLibraryInfo.version().majorVersion()>=6 && QLibraryInfo.version().minorVersion()>=2, true),
                 new ExpectedValues("myUserProperty", true, false, true, true, false, false, false),
                 new ExpectedValues("annotatedUserProperty", true, false, true, true, false, false, false)
         };

@@ -7,8 +7,6 @@
 #include <QtCore/QLinkedList>
 #include <qtjambi/qtjambi_containeraccess.h>
 
-QT_WARNING_DISABLE_DEPRECATED
-
 namespace QtJambiPrivate {
 
 template<size_t _align, size_t _size>
@@ -103,7 +101,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QLinkedList<T>::const_iterator(reinterpret_cast<const QLinkedList<T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QLinkedList<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QLinkedList<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -113,7 +111,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QLinkedList<T>::const_iterator(reinterpret_cast<const QLinkedList<T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QLinkedList<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QLinkedList<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -258,9 +256,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QLinkedList(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QLinkedList<T>* ptr = qtjambi_to_object<QLinkedList<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                bool equals = *reinterpret_cast<const QLinkedList<T> *>(container)==*reinterpret_cast<QLinkedList<T> *>(ptr);
+                bool equals = *reinterpret_cast<const QLinkedList<T> *>(container)==*ptr;
                 return equals;
             }
         }else{

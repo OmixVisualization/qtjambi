@@ -102,7 +102,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QSet<T>::const_iterator(reinterpret_cast<const QSet<T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QSet<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QSet<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -112,7 +112,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QSet<T>::const_iterator(reinterpret_cast<const QSet<T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QSet<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QSet<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -131,9 +131,9 @@ public:
 
     void intersect(JNIEnv * env, void* container, jobject other) override {
         if (qtjambi_is_QSet(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QSet<T>* ptr = qtjambi_to_object<QSet<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->intersect(*reinterpret_cast<QSet<T> *>(ptr));
+                reinterpret_cast<QSet<T> *>(container)->intersect(*ptr);
             }
         }else{
             QTJAMBI_ELEMENT_LOCKER
@@ -153,9 +153,9 @@ public:
 
     void unite(JNIEnv * env, void* container, jobject other) override {
         if (qtjambi_is_QSet(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QSet<T>* ptr = qtjambi_to_object<QSet<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->unite(*reinterpret_cast<QSet<T> *>(ptr));
+                reinterpret_cast<QSet<T> *>(container)->unite(*ptr);
             }
         }else{
             QTJAMBI_ELEMENT_LOCKER
@@ -175,9 +175,9 @@ public:
 
     void subtract(JNIEnv * env, void* container, jobject other) override {
         if (qtjambi_is_QSet(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QSet<T>* ptr = qtjambi_to_object<QSet<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->subtract(*reinterpret_cast<QSet<T> *>(ptr));
+                reinterpret_cast<QSet<T> *>(container)->subtract(*ptr);
             }
         }else{
             QTJAMBI_ELEMENT_LOCKER
@@ -197,9 +197,9 @@ public:
 
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QSet(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QSet<T>* ptr = qtjambi_to_object<QSet<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                bool intersects = reinterpret_cast<const QSet<T> *>(container)->intersects(*reinterpret_cast<QSet<T> *>(ptr));
+                bool intersects = reinterpret_cast<const QSet<T> *>(container)->intersects(*ptr);
                 return intersects;
             }
         }else{
@@ -265,9 +265,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QSet(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QSet<T>* ptr = qtjambi_to_object<QSet<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                bool equals = *reinterpret_cast<const QSet<T> *>(container)==*reinterpret_cast<QSet<T> *>(ptr);
+                bool equals = *reinterpret_cast<const QSet<T> *>(container)==*ptr;
                 return equals;
             }
         }else{

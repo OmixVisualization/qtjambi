@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_multimedia_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtMultimedia{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QMediaService$Result,

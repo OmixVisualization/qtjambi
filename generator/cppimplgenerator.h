@@ -41,22 +41,7 @@
 #include "cppgenerator.h"
 #include "metajava.h"
 
-enum JNISignatureFormat {
-    Underscores = 0x0001,        //!< Used in the jni exported function names
-    SlashesAndStuff = 0x0010,     //!< Used for looking up functions through jni
-    ReturnType = 0x0100,
-    NoQContainers = 0x0200,
-    NoModification = 0x1000
-};
-
-QString jni_signature(const AbstractMetaFunctional *function, JNISignatureFormat format);
-QString jni_signature(const AbstractMetaFunction *function, JNISignatureFormat format);
-QString jni_signature(const QString &full_name, JNISignatureFormat format);
-QString jni_signature(const AbstractMetaType *java_type, JNISignatureFormat format = Underscores);
-
 class CppImplGenerator : public CppGenerator {
-        Q_OBJECT
-
     public:
         enum JNISignatureMode {
             JNIExport       = 0x0001,
@@ -72,15 +57,15 @@ class CppImplGenerator : public CppGenerator {
             priGenerator = pri;
         }
 
-        void generateFake(const AbstractMetaClass *);
+        void generateFake(const AbstractMetaClass *) override;
 
-        virtual QString fileNameForClass(const AbstractMetaClass *cls) const;
+        virtual QString fileNameForClass(const AbstractMetaClass *cls) const override;
 
-        virtual QString fileNameForFunctional(const AbstractMetaFunctional *cls) const;
+        virtual QString fileNameForFunctional(const AbstractMetaFunctional *cls) const override;
 
-        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0);
+        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0) override;
 
-        void write(QTextStream &s, const AbstractMetaFunctional *java_class, int nesting_level = 0);
+        void write(QTextStream &s, const AbstractMetaFunctional *java_class, int nesting_level = 0) override;
 
         void writeExtraIncludes(QTextStream &s, const AbstractMetaClass *java_class, QSet<QString>& dedupe);
 
@@ -90,7 +75,7 @@ class CppImplGenerator : public CppGenerator {
                              const AbstractMetaType *java_type);
         static void writeCustomStructors(QTextStream &s, const TypeEntry *entry);
         void writeCodeInjections(QTextStream &s,
-                                 const ComplexTypeEntry *typeEntry,
+                                 const TypeEntry *typeEntry,
                                  CodeSnip::Position position,
                                  TypeSystem::Language language);
         void writeCodeInjections(QTextStream &s,
@@ -111,7 +96,7 @@ class CppImplGenerator : public CppGenerator {
         void writeExtraFunctions(QTextStream &s, const AbstractMetaClass *java_class);
         void writeToStringFunction(QTextStream &s, const AbstractMetaClass *java_class);
         void writeCloneFunction(QTextStream &s, const AbstractMetaClass *java_class);
-        void writeShellConstructor(QTextStream &s, bool isInterface, const AbstractMetaFunction *java_function, int options = 0);
+        void writeShellConstructor(QTextStream &s, bool isInterface, const AbstractMetaFunction *java_function, Option options = NoOption);
         void writeShellDestructor(QTextStream &s, bool isInterface, const AbstractMetaClass *java_class);
         void writeShellConstructor(QTextStream &s, const AbstractMetaFunctional *java_class);
         void writeShellDestructor(QTextStream &s, const AbstractMetaFunctional *java_class);
@@ -125,8 +110,6 @@ class CppImplGenerator : public CppGenerator {
                            bool isInterface);
         void writeMetaInfo(QTextStream &s, const AbstractMetaClass *owner, const AbstractMetaEnum *java_class, bool ownerIsPublic);
         void writeMetaInfo(QTextStream &s, const AbstractMetaFunctional *java_class);
-        void writeSignalFunction(QTextStream &s, const AbstractMetaFunction *java_function,
-                                 const AbstractMetaClass *implementor, int pos);
         void writeShellFunction(QTextStream &s, const AbstractMetaFunction *java_function,
                                 const AbstractMetaClass *implementor, int pos);
         void writePublicFunctionOverride(QTextStream &s,
@@ -186,7 +169,7 @@ class CppImplGenerator : public CppGenerator {
         void writeFinalFunctionSetup(QTextStream &s,
                                      const AbstractMetaFunction *java_function,
                                      const QString &qt_object_name,
-                                     const AbstractMetaClass *java_class);
+                                     const AbstractMetaClass *java_class, Option option = NoOption);
         void writeOwnership(QTextStream &s,
                             const AbstractMetaFunction *java_function,
                             const QString &java_var_name,
@@ -269,8 +252,6 @@ class CppImplGenerator : public CppGenerator {
 
         bool hasCustomDestructor(const AbstractMetaClass *java_class) const;
 
-        static QString translateType(const AbstractMetaType *java_type, Option option = NoOption);
-
         inline bool nativeJumpTable() const { return m_native_jump_table; }
         inline void setNativeJumpTable(bool n) { m_native_jump_table = n; }
 
@@ -278,7 +259,7 @@ class CppImplGenerator : public CppGenerator {
 
         bool qtJambiDebugTools() const { return m_qtjambi_debug_tools; }
         void setQtJambiDebugTools(bool bf) { m_qtjambi_debug_tools = bf; }
-        bool shouldGenerate(const AbstractMetaClass *java_class) const {
+        bool shouldGenerate(const AbstractMetaClass *java_class) const override {
             return /*(!java_class->isNamespace() || java_class->functionsInTargetLang().size() > 0)
                    &&*/ !java_class->isInterface()
                    && !java_class->typeEntry()->isVariant()
@@ -286,6 +267,8 @@ class CppImplGenerator : public CppGenerator {
                    && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
                    && !java_class->isFake();
         }
+        QString default_return_statement_qt(const AbstractMetaType *java_type,
+                                            Generator::Option options = Generator::NoOption);
     private:
         QString fromObject(const AbstractMetaType *java_type, const QString &var_name, bool invalidateAfterUse = false,
                            const QString& __jni_env = "__jni_env");

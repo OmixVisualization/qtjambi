@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QDataStream>
 #include <QtCore/QDebug>
 #include <qtjambi/qtjambi_core.h>
@@ -809,7 +811,7 @@ void __qt_construct_QItemSelection_1(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QItemSelection::QItemSelection(QItemSelection)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QItemSelection__1_1qt_1QItemSelection_1new)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QItemSelection_initialize_1native__Lio_qt_core_QItemSelection_2Ljava_util_Collection_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -847,7 +849,7 @@ void __qt_construct_QStringList_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobjec
 
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QStringList::QStringList(QStringList)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QStringList__1_1qt_1QStringList_1new_1copy__Ljava_lang_Object_2Ljava_util_Collection_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QStringList_initialize_1native__Lio_qt_core_QStringList_2Ljava_util_Collection_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,

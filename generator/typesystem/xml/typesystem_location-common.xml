@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtLocation">
+<typesystem qt-library="QtLocation" description="Displays map, navigation, and place content in a QML application.">
     <namespace-type name="QLocation" target-type="class">
         <extra-includes>
             <include file-name="QtLocation/QLocation" location="global"/>
@@ -98,11 +98,8 @@
   <interface-type name="QGeoServiceProviderFactory">
   </interface-type>
   <interface-type name="QGeoServiceProviderFactoryV2">
-        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV2*>(%1)!=nullptr" />
   </interface-type>
   <interface-type name="QGeoServiceProviderFactoryV3">
-        <interface-polymorphy interface="QGeoServiceProviderFactory" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV3*>(%1)!=nullptr" />
-        <interface-polymorphy interface="QGeoServiceProviderFactoryV2" condition="dynamic_cast&lt;QGeoServiceProviderFactoryV3*>(%1)!=nullptr" />
         <modify-function signature="setQmlEngine(QQmlEngine *)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcQmlEngine"/>
@@ -142,25 +139,25 @@
     <modify-function signature="operator=(const QPlaceMatchRequest &amp;)" remove="all"/>
   </value-type>
   <enum-type name="QPlaceSearchResult::SearchResultType"/>
-  <value-type name="QPlaceSearchResult" polymorphic-base="yes" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceSearchResult)">
+  <value-type name="QPlaceSearchResult">
     <modify-function signature="operator=(const QPlaceSearchResult &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QPlaceResult" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceResult)">
+  <value-type name="QPlaceResult">
   </value-type>
   <enum-type name="QPlaceContent::Type"/>
-  <value-type name="QPlaceContent" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::NoType || %1-&gt;type() == QPlaceContent::CustomType">
+  <value-type name="QPlaceContent">
     <modify-function signature="operator=(const QPlaceContent &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QPlaceEditorial" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::EditorialType">
+  <value-type name="QPlaceEditorial">
   </value-type>
-  <value-type name="QPlaceImage" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::ImageType">
+  <value-type name="QPlaceImage">
   </value-type>
-  <value-type name="QPlaceReview" polymorphic-id-expression="%1-&gt;type() == QPlaceContent::ReviewType">
+  <value-type name="QPlaceReview">
   </value-type>
   <value-type name="QPlaceContentRequest">
     <modify-function signature="operator=(const QPlaceContentRequest &amp;)" remove="all"/>
   </value-type>
-  <value-type name="QPlaceProposedSearchResult" polymorphic-id-expression="typeid(*%1) == typeid(QPlaceProposedSearchResult)">
+  <value-type name="QPlaceProposedSearchResult">
   </value-type>
   <value-type name="QPlaceRatings">
     <modify-function signature="operator=(const QPlaceRatings &amp;)" remove="all"/>

@@ -162,7 +162,12 @@ TypeInfo TypeInfo::combine(const TypeInfo &__lhs, const TypeInfo &__rhs) {
     __result.setConstant(__result.isConstant() || __rhs.isConstant());
     __result.setVolatile(__result.isVolatile() || __rhs.isVolatile());
     if(__result.getReferenceType()!=TypeInfo::NoReference || __rhs.getReferenceType()!=TypeInfo::NoReference){
-        __result.setReferenceType(TypeInfo::Reference);
+        if(__result.getReferenceType()==TypeInfo::RReference || __rhs.getReferenceType()==TypeInfo::RReference){
+            __result.setReferenceType(TypeInfo::RReference);
+            __result.setConstant(false);
+        }else{
+            __result.setReferenceType(TypeInfo::Reference);
+        }
     }
     __result.setIndirections(__result.indirections() + __rhs.indirections());
     __result.setArrayElements(__result.arrayElements() + __rhs.arrayElements());
@@ -186,8 +191,9 @@ TypeInfo TypeInfo::resolveType(TypeInfo const &__type, CodeModelItem __scope) {
         otherType.setQualifiedName(__item->qualifiedName());
     }
 
-    if (TypeAliasModelItem __alias = model_dynamic_cast<TypeAliasModelItem> (__item))
-        return resolveType(TypeInfo::combine(__alias->type(), otherType), __scope);
+    if (TypeAliasModelItem __alias = model_dynamic_cast<TypeAliasModelItem> (__item)){
+        otherType = resolveType(TypeInfo::combine(__alias->type(), otherType), __scope);
+    }
 
     return otherType;
 }
@@ -437,10 +443,6 @@ ScopeModelItem _ScopeModelItem::toScope() const {
     return ScopeModelItem(const_cast<_ScopeModelItem*>(this));
 }
 
-ClassList _ScopeModelItem::classes() const {
-    return _M_classes.values();
-}
-
 TypeAliasList _ScopeModelItem::typeAliases() const {
     return _M_typeAliases.values();
 }
@@ -476,6 +478,7 @@ void _ScopeModelItem::addClass(ClassModelItem item) {
     if (idx > 0)
         _M_classes.insert(name.left(idx), item);
     _M_classes.insert(name, item);
+    _M_classList << item;
 }
 
 void _ScopeModelItem::addFunction(FunctionModelItem item) {
@@ -503,6 +506,7 @@ void _ScopeModelItem::removeClass(ClassModelItem item) {
 
     if (it != _M_classes.end() && it.value() == item)
         _M_classes.erase(it);
+    _M_classList.removeAll(item);
 }
 
 void _ScopeModelItem::removeFunction(FunctionModelItem item) {
@@ -673,6 +677,14 @@ bool _FunctionModelItem::hasBody() const {
 
 void _FunctionModelItem::setHasBody(bool hasBody) {
     _M_flags.setFlag(HasBody, hasBody);
+}
+
+bool _FunctionModelItem::isDeleted() const {
+    return _M_flags.testFlag(IsDeleted);
+}
+
+void _FunctionModelItem::setDeleted(bool d) {
+    _M_flags.setFlag(IsDeleted, d);
 }
 
 bool _FunctionModelItem::isVariadics() const {
@@ -929,6 +941,14 @@ bool _MemberModelItem::isConstant() const {
 
 void _MemberModelItem::setConstant(bool isConstant) {
     _M_flags.setFlag(IsConstant, isConstant);
+}
+
+bool _MemberModelItem::isConstExpr() const {
+    return _M_flags.testFlag(IsConstExpr);
+}
+
+void _MemberModelItem::setConstExpr(bool isConstExpr) {
+    _M_flags.setFlag(IsConstExpr, isConstExpr);
 }
 
 bool _MemberModelItem::isVolatile() const {

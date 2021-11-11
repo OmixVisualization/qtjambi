@@ -52,7 +52,6 @@ import io.qt.*;
 import io.qt.autotests.generated.TestInterface;
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.internal.*;
 import io.qt.qml.*;
 import io.qt.quick.*;
 import io.qt.quick.widgets.*;
@@ -226,10 +225,14 @@ public class TestQml extends QApplicationTest{
 		QtUtilities.initializePackage("io.qt.widgets");
 		QtUtilities.initializePackage("io.qt.quick");
 		QtUtilities.initializePackage("io.qt.quick.widgets");
-		QtUtilities.loadQtLibrary("QuickShapes");
-		QtUtilities.loadQtLibrary("QuickTemplates2");
-		QtUtilities.loadQtLibrary("QuickControls2");
-		QtUtilities.loadQtLibrary("QuickParticles");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickShapes"))
+			QtUtilities.loadQtLibrary("QuickShapes");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickTemplates2"))
+			QtUtilities.loadQtLibrary("QuickTemplates2");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickControls2"))
+			QtUtilities.loadQtLibrary("QuickControls2");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickParticles"))
+			QtUtilities.loadQtLibrary("QuickParticles");
 		QApplicationTest.testInitialize();
 	}
 
@@ -455,7 +458,7 @@ public class TestQml extends QApplicationTest{
 	
 	@Test
     public void testExceptionInInterface_QuickWidget() {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickWidget component = new QQuickWidget();
@@ -471,7 +474,7 @@ public class TestQml extends QApplicationTest{
 	
 	@Test
     public void testExceptionInInterface_QuickView() {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		QtQml.qmlClearTypeRegistrations();
 		QtQml.qmlRegisterType(TestObjectExn2.class, "io.qt.test", 1, 0, "TestObject");
 		QQuickView component = new QQuickView();
@@ -1066,7 +1069,7 @@ public class TestQml extends QApplicationTest{
 		AtomicBoolean propertySignalFired = new AtomicBoolean();
 		AtomicBoolean slotInvoked = new AtomicBoolean();
 		class MyObject extends QObject{
-			Signal0 propertySignal = new Signal0();
+			final Signal0 propertySignal = new Signal0();
 			{
 				propertySignal.connect(()->propertySignalFired.set(true));
 			}

@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.webchannel" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.webchannel" module="qtjambi.webchannel" default-superclass="io.qt.QtObject">
     <object-type name="QQmlWebChannel">
        <modify-function signature="registerObjects(const QMap&lt;QString, QVariant> &amp;)">
             <modify-argument index="1">

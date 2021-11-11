@@ -43,7 +43,8 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtOpenGL"> 
+<typesystem qt-library="QtOpenGL" description="Classes that make it easy to use OpenGL in Qt applications."> 
+    <rejection class="QOpenGLContext" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QOpenGLFunctions_*Backend"/>
     <rejection class="PFNGL*"/>
     <rejection class="GLDEBUGPROCAMD"/>
@@ -128,7 +129,7 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QAbstractOpenGLFunctions" polymorphic-base="yes" polymorphic-id-expression="false">
+    <object-type name="QAbstractOpenGLFunctions">
         <modify-function signature="setOwningContext(const QOpenGLContext*)">
             <modify-argument index="1">
                 <reference-count action="ignore" />
@@ -138,89 +139,88 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_0*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_1*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_2" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_2*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_2" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_3" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_3*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_3" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_4" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_4*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_4" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_1_5" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_1_5*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_1_5" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_2_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_0*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_2_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_2_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_2_1*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_2_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_0*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_0" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_1*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_1" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_2_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_3_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_3_3_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_3_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_0_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_0_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_0_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_0_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_0_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_1_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_1_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_1_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_1_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_1_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_2_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_2_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_2_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_3_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_3_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_3_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_4_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_4_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_4_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_4_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_4_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_5_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Compatibility*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_5_Compatibility" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
-    <object-type name="QOpenGLFunctions_4_5_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_4_5_Core*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_4_5_Core" pp-condition="!defined(QT_NO_OPENGL) &amp;&amp; !QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
     
-    <object-type name="QOpenGLFunctions_ES2" pp-condition="QT_CONFIG(opengles2)" polymorphic-id-expression="dynamic_cast&lt;QOpenGLFunctions_ES2*>(%1)" target-type="final class">
+    <object-type name="QOpenGLFunctions_ES2" pp-condition="QT_CONFIG(opengles2)" target-type="final class">
     </object-type>
 
     <object-type name="QOpenGLPaintDevice">
-        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::OpenGL" />
         <modify-function signature="devType() const" remove="all" />
         <!--modify-function signature="operator=(QOpenGLPaintDevice)" remove="all" />
         <modify-function signature="QOpenGLPaintDevice(const QOpenGLPaintDevice&amp;)" remove="all" /-->

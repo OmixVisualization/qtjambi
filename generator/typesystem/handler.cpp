@@ -59,6 +59,15 @@ void Handler::parse(const QString &filepath){
             QDomElement documentElement = document.documentElement();
             if(documentElement.localName()=="typesystem"){
                 parseTypeSystem(documentElement);
+                for(TypeSystemTypeEntry* entry : m_requiredModules.keys()){
+                    for(const QString& libraryName : m_requiredModules.values(entry)){
+                        if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(libraryName)){
+                            entry->addRequiredTypeSystem(ts);
+                        }else{
+                            TypesystemException::raise(QString("Unable to find required package %1").arg(libraryName));
+                        }
+                    }
+                }
             }else{
                 TypesystemException::raise(QString("Unexpected tag: <%1>. Expected: <typesystem>").arg(documentElement.localName()));
             }
@@ -78,7 +87,64 @@ void Handler::parseTypeSystem(const QDomElement &element){
         m_namespacePrefixes.clear();
         m_defaultPackage = attributeValue(attributes.removeNamedItem("package"));
         m_defaultSuperclass = attributeValue(attributes.removeNamedItem("default-superclass"));
-        TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(m_defaultPackage, attributeValue(attributes.removeNamedItem("qt-library")));
+        QString moduleName = attributeValue(attributes.removeNamedItem("module"));
+        QString description = attributeValue(attributes.removeNamedItem("description"));
+        if(element.hasChildNodes()){
+            QDomNodeList childNodes = element.childNodes();
+            for(int i=0; i<childNodes.length(); ++i){
+                QDomNode item = childNodes.item(i);
+                switch(item.nodeType()){
+                case QDomNode::ElementNode:
+                {
+                    QDomElement childElement = item.toElement();
+                    if(childElement.localName()=="module"){
+                        QDomNamedNodeMap attributes = childElement.attributes();
+                        if (checkQtVersion(attributes)){
+                            if(!moduleName.isEmpty())
+                                TypesystemException::raise(QString("Duplicate module name specification in line %1").arg(childElement.lineNumber()));
+                            moduleName = attributeValue(attributes.removeNamedItem("name"));
+                            if(attributes.count()){
+                                TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+                            }
+                        }
+                    }else if(childElement.localName()=="description"){
+                        QDomNamedNodeMap attributes = childElement.attributes();
+                        if (checkQtVersion(attributes)){
+                            if(!description.isEmpty())
+                                TypesystemException::raise(QString("Duplicate description specification in line %1").arg(childElement.lineNumber()));
+                            if(attributes.count()){
+                                TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+                            }
+                            QDomNodeList childNodes = childElement.childNodes();
+                            for(int i=0; i<childNodes.length(); ++i){
+                                QDomNode item = childNodes.item(i);
+                                switch(item.nodeType()){
+                                case QDomNode::TextNode:
+                                    description = item.toText().data();
+                                    break;
+                                case QDomNode::CDATASectionNode:
+                                    description = item.toCDATASection().data();
+                                    break;
+                                case QDomNode::CharacterDataNode:
+                                    description = item.toCharacterData().data();
+                                    break;
+                                default:
+                                    TypesystemException::raise(QString("Unexpected content in tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                    break;
+                default: break;
+                }
+            }
+        }
+        TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(m_defaultPackage,
+                                                             attributeValue(attributes.removeNamedItem("qt-library")),
+                                                             moduleName);
+        entry->setDescription(description);
         entry->setCodeGeneration(m_generate);
         //qDebug()<<"Adding element->entry (root)"<<element->entry->name();
         ReportHandler::debugTypes("Adding to TypeDatabase(3): " + entry->name());
@@ -94,7 +160,47 @@ void Handler::parseTypeSystem(const QDomElement &element){
                 case QDomNode::ElementNode:
                 {
                     QDomElement childElement = item.toElement();
-                    if(childElement.localName()=="namespace-prefix"){
+                    if(childElement.localName()=="module" || childElement.localName()=="description"){
+                        // already handled above
+                    }else if(childElement.localName()=="required-library"){
+                        QDomNamedNodeMap attributes = childElement.attributes();
+                        if (checkQtVersion(attributes)){
+                            QString libraryName = attributeValue(attributes.removeNamedItem("name"));
+                            bool optional = convertBoolean(attributeValue(attributes.removeNamedItem("optional"), "false"), "optional", false);
+                            if(attributes.count()){
+                                TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+                            }
+                            if(libraryName.isEmpty())
+                                ReportHandler::warning("required-library with no name specified");
+                            entry->addRequiredQtLibrary(libraryName, optional);
+                        }
+                    }else if(childElement.localName()=="required-package"){
+                        QDomNamedNodeMap attributes = childElement.attributes();
+                        if (checkQtVersion(attributes)){
+                            QString libraryName = attributeValue(attributes.removeNamedItem("name"));
+                            if(attributes.count()){
+                                TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+                            }
+                            if(libraryName.isEmpty())
+                                ReportHandler::warning("required-module with no name specified");
+                            if(TypeSystemTypeEntry* ts = TypeDatabase::instance()->findTypeSystem(libraryName)){
+                                entry->addRequiredTypeSystem(ts);
+                            }else{
+                                m_requiredModules.insert(entry, libraryName);
+                            }
+                        }
+                    }else if(childElement.localName()=="forward-declaration"){
+                        QDomNamedNodeMap attributes = childElement.attributes();
+                        if (checkQtVersion(attributes)){
+                            QString className = attributeValue(attributes.removeNamedItem("class"));
+                            if(attributes.count()){
+                                TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+                            }
+                            if(className.isEmpty())
+                                ReportHandler::warning("forward-declaration with no class specified");
+                            entry->addForwardDeclaration(className);
+                        }
+                    }else if(childElement.localName()=="namespace-prefix"){
                         QDomNamedNodeMap attributes = childElement.attributes();
                         if (checkQtVersion(attributes)){
                             QString prefix = attributeValue(attributes.removeNamedItem("prefix"));
@@ -125,6 +231,7 @@ void Handler::parseTypeSystem(const QDomElement &element){
                                 case QDomNode::TextNode:
                                     TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(childElement.localName()).arg(item.lineNumber()));
                                     break;
+                                case QDomNode::CharacterDataNode:
                                 case QDomNode::CDATASectionNode:
                                     TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(childElement.localName()).arg(item.lineNumber()));
                                     break;
@@ -168,6 +275,7 @@ void Handler::parseTypeSystem(const QDomElement &element){
                         static const QHash<QString, TypeSystem::Language> languageNames{
                             {"java", TypeSystem::TargetLangCode},
                             {"native", TypeSystem::NativeCode},
+                            {"module-info", TypeSystem::ModuleInfo},
                 //            {"shell", TypeSystem::ShellCode},
                 //            {"shell-declaration", TypeSystem::ShellDeclaration},
                             {"library-initializer", TypeSystem::PackageInitializer},
@@ -204,6 +312,7 @@ void Handler::parseTypeSystem(const QDomElement &element){
                 case QDomNode::TextNode:
                     TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                     break;
+                case QDomNode::CharacterDataNode:
                 case QDomNode::CDATASectionNode:
                     TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                     break;
@@ -379,6 +488,7 @@ void Handler::parseExtraIncludes(const QDomElement &element, TypeEntry* entry){
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -394,11 +504,81 @@ void Handler::parseExtraIncludes(const QDomElement &element, TypeEntry* entry){
     }
 }
 
+void Handler::parseInstantiation(const QDomElement &element, ComplexTypeEntry* entry){
+    QDomNamedNodeMap attributes = element.attributes();
+    if (checkQtVersion(attributes)){
+        QString arguments = attributeValue(attributes.removeNamedItem("arguments"));
+        if(!arguments.isEmpty()){
+            QStringList inst = arguments.split(",");
+            for(QString& s : inst){
+                s = s.trimmed();
+            }
+            entry->addInstantiation(inst);
+        }else{
+            QDomNodeList childNodes = element.childNodes();
+            QStringList inst;
+            for(int i=0; i<childNodes.length(); ++i){
+                QDomNode item = childNodes.item(i);
+                switch(item.nodeType()){
+                case QDomNode::ElementNode:
+                {
+                    QDomElement childElement = item.toElement();
+                    if(childElement.localName()=="argument"){
+                        QDomNodeList childNodes = childElement.childNodes();
+                        for(int i=0; i<childNodes.length(); ++i){
+                            QDomNode item = childNodes.item(i);
+                            switch(item.nodeType()){
+                            case QDomNode::TextNode:
+                                inst << item.toText().data().trimmed();
+                                break;
+                            case QDomNode::ElementNode:
+                                TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(childElement.localName()).arg(item.toElement().localName()).arg(item.lineNumber()));
+                                break;
+                            case QDomNode::CharacterDataNode:
+                            case QDomNode::CDATASectionNode:
+                                TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(childElement.localName()).arg(item.lineNumber()));
+                                break;
+                            case QDomNode::EntityNode:
+                                TypesystemException::raise(QString("Unexpected entity as child of tag <%1> in line %2").arg(childElement.localName()).arg(item.lineNumber()));
+                                break;
+                            case QDomNode::NotationNode:
+                                TypesystemException::raise(QString("Unexpected notation as child of tag <%1> in line %2").arg(childElement.localName()).arg(item.lineNumber()));
+                                break;
+                            default: break;
+                            }
+                        }
+                    }
+                }
+                    break;
+                case QDomNode::TextNode:
+                    TypesystemException::raise(QString("Unexpected text as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
+                    break;
+                case QDomNode::CharacterDataNode:
+                case QDomNode::CDATASectionNode:
+                    TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
+                    break;
+                case QDomNode::EntityNode:
+                    TypesystemException::raise(QString("Unexpected entity as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
+                    break;
+                case QDomNode::NotationNode:
+                    TypesystemException::raise(QString("Unexpected notation as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
+                    break;
+                default: break;
+                }
+            }
+            entry->addInstantiation(inst);
+        }
+        if(attributes.count()){
+            TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
+        }
+    }
+}
+
 void Handler::parseTemplate(const QDomElement &element){
     QDomNamedNodeMap attributes = element.attributes();
     if (checkQtVersion(attributes)){
         QString name = attributeValue(attributes.removeNamedItem("name"));
-        QScopedPointer<TemplateEntry> entry(new TemplateEntry(name));
+        std::unique_ptr<TemplateEntry> entry(new TemplateEntry(name));
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
 
@@ -422,6 +602,9 @@ void Handler::parseTemplate(const QDomElement &element){
             case QDomNode::TextNode:
                 entry->addCode(item.toText().data());
                 break;
+            case QDomNode::CharacterDataNode:
+                entry->addCode(item.toCharacterData().data());
+                break;
             case QDomNode::CDATASectionNode:
                 entry->addCode(item.toCDATASection().data());
                 break;
@@ -434,7 +617,7 @@ void Handler::parseTemplate(const QDomElement &element){
             default: break;
             }
         }
-        m_database->addTemplate(entry.take());
+        m_database->addTemplate(entry.release());
     }
 }
 
@@ -482,6 +665,40 @@ void Handler::parseInjectCode(const QDomElement &element, ComplexTypeEntry* entr
     }else{
         return parseInjectCode(element, languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
     }
+}
+
+void Handler::parseInjectCode(const QDomElement &element, FunctionalTypeEntry* entry){
+    static const QHash<QString, TypeSystem::Language> languageNames{
+        {"java", TypeSystem::TargetLangCode},
+        {"interface", TypeSystem::Interface},
+        {"native", TypeSystem::NativeCode},
+        {"shell", TypeSystem::ShellCode},
+        {"shell-declaration", TypeSystem::ShellDeclaration},
+        {"library-initializer", TypeSystem::PackageInitializer},
+        {"destructor-function", TypeSystem::DestructorFunction},
+        {"metainfo", TypeSystem::MetaInfo},
+        {"constructors", TypeSystem::Constructors},
+        {"signal", TypeSystem::Signal}
+    };
+
+    static const QHash<QString, CodeSnip::Position> positionNames{
+        {"begin", CodeSnip::Beginning},
+        {"beginning", CodeSnip::Beginning},
+        {"position1", CodeSnip::Position1},
+        {"position2", CodeSnip::Position2},
+        {"position3", CodeSnip::Position3},
+        {"position4", CodeSnip::Position4},
+        {"1", CodeSnip::Position1},
+        {"2", CodeSnip::Position2},
+        {"3", CodeSnip::Position3},
+        {"4", CodeSnip::Position4},
+        {"equals", CodeSnip::Equals},
+        {"compare", CodeSnip::Compare},
+        {"hashcode", CodeSnip::HashCode},
+        {"tostring", CodeSnip::ToString},
+        {"end", CodeSnip::End}
+    };
+    return parseInjectCode(element, languageNames, positionNames, [&entry](const CodeSnip &snip){entry->addCodeSnip(snip);});
 }
 
 void Handler::parseInjectCode(const QDomElement &element,const QHash<QString, TypeSystem::Language>& languageNames,
@@ -552,6 +769,9 @@ void Handler::parseInjectCode(const QDomElement &element,const QHash<QString, Ty
             case QDomNode::TextNode:
                 snip.addCode(item.toText().data());
                 break;
+            case QDomNode::CharacterDataNode:
+                snip.addCode(item.toCharacterData().data());
+                break;
             case QDomNode::CDATASectionNode:
                 snip.addCode(item.toCDATASection().data());
                 break;
@@ -575,7 +795,7 @@ void Handler::parseInsertTemplate(const QDomElement &element, const std::functio
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
         }
-        QScopedPointer<TemplateInstance> templateInstance(new TemplateInstance(name));
+        std::unique_ptr<TemplateInstance> templateInstance(new TemplateInstance(name));
         QDomNodeList childNodes = element.childNodes();
         for(int i=0; i<childNodes.length(); ++i){
             QDomNode item = childNodes.item(i);
@@ -601,6 +821,7 @@ void Handler::parseInsertTemplate(const QDomElement &element, const std::functio
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -613,7 +834,7 @@ void Handler::parseInsertTemplate(const QDomElement &element, const std::functio
             default: break;
             }
         }
-        consumeTemplateInstance(templateInstance.take());
+        consumeTemplateInstance(templateInstance.release());
     }
 }
 
@@ -720,7 +941,7 @@ void Handler::parseImportFile(const QDomElement &element, const std::function<vo
         }
         if (!foundFromOk || !foundToOk) {
             QString fromError = QString("Could not find quote-after-line='%1' in file '%2'.").arg(quoteFrom).arg(fileName);
-            QString toError = QString("Could not find quote-before-line='%1' in file '%2'.").arg(quoteTo).arg(fileName);
+            QString toError = QString("Could not find quote-before-line='%1' closing quote-after-line='%2' in file '%3'.").arg(quoteTo).arg(quoteFrom).arg(fileName);
 
             if (!foundToOk)
                 TypesystemException::raise(QString("%1 See <%2> in line %3").arg(toError).arg(element.localName()).arg(element.lineNumber()));
@@ -812,7 +1033,6 @@ void Handler::parsePrimitiveType(const QDomElement &element){
 }
 
 void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamedNodeMap& attributes, ComplexTypeEntry* ctype){
-    QString generate = attributeValue(attributes.removeNamedItem("generate"), "yes");
     QString package = attributeValue(attributes.removeNamedItem("package"), m_defaultPackage);
     QString implements = attributeValue(attributes.removeNamedItem("implements"));
     QString _using = attributeValue(attributes.removeNamedItem("using"));
@@ -836,6 +1056,8 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
     if (!targetType.isEmpty()){
         ctype->setTargetType(targetType);
     }
+    if (convertBoolean(attributeValue(attributes.removeNamedItem("disable-native-id-usage"), "no"), "disable-native-id-usage", false))
+        ctype->disableNativeIdUsage();
     if (convertBoolean(attributeValue(attributes.removeNamedItem("force-abstract"), "no"), "force-abstract", false))
         ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ForceAbstract);
     if (convertBoolean(attributeValue(attributes.removeNamedItem("force-friendly"), "no"), "force-friendly", false))
@@ -850,7 +1072,20 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         }
     }
 
-    ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
+    if(convertBoolean(attributeValue(attributes.removeNamedItem("template"), "no"), "template", false)){
+        ctype->setTemplate(true);
+        ctype->setGenericClass(true);
+        ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
+    }else{
+        ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
+        QString generate = attributeValue(attributes.removeNamedItem("generate"), "yes");
+        if(generate=="no-shell"){
+            ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
+        }else if (!convertBoolean(generate, "generate", true))
+            ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
+        else
+            ctype->setCodeGeneration(m_generate);
+    }
     if(attributes.count()){
         TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
     }
@@ -871,12 +1106,6 @@ void Handler::parseAttributesOfComplexType(const QDomElement &element, QDomNamed
         ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
     }
 
-    if(generate=="no-shell"){
-        ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
-    }else if (!convertBoolean(generate, "generate", true))
-        ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
-    else
-        ctype->setCodeGeneration(m_generate);
     if(ctype->designatedInterface()){
         ctype->designatedInterface()->setCodeGeneration(ctype->codeGeneration());
     }
@@ -905,19 +1134,42 @@ void Handler::parseObjectType(const QDomElement &element){
                 break;
             }
         }
-        QScopedPointer<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
+        std::unique_ptr<ObjectTypeEntry> entry(new ObjectTypeEntry(name));
         if(!targetName.isEmpty())
             entry->setTargetLangName(targetName);
         entry->setIsValueOwner(convertBoolean(attributeValue(attributes.removeNamedItem("is-value-owner"), "no"), "is-value-owner", false));
         entry->setIsPolymorphicBase(convertBoolean(attributeValue(attributes.removeNamedItem("polymorphic-base"), "no"), "polymorphic-base", false));
         entry->setPolymorphicIdValue(attributeValue(attributes.removeNamedItem("polymorphic-id-expression")));
-        parseAttributesOfComplexType(element, attributes, entry.data());
+        parseAttributesOfComplexType(element, attributes, entry.get());
         QList<QDomElement> unhandledElements = parseChildrenOfComplexType(element, entry.get());
         for(const QDomElement& childElement : unhandledElements){
             TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.toElement().localName()).arg(childElement.lineNumber()));
         }
-        ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
-        m_database->addType(entry.take());
+        if(entry->name().endsWith(">")){
+            auto idx = entry->name().indexOf('<');
+            QString templateName = entry->name().mid(0, idx);
+            QStringList templateArguments = entry->name().mid(idx+1).chopped(1).split(",");
+            ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
+            if(templateType){
+                if(templateType->isTemplate()){
+                    if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
+                        if(entry->targetLangName()==entry->name()){
+                            entry->setTargetLangName(templateName);
+                        }
+                        templateType->addInstantiation(templateArguments, entry.release());
+                    }else{
+                        TypesystemException::raise(QString("Template %1<%2> already defined").arg(templateName).arg(templateArguments.join(",")));
+                    }
+                }else{
+                    TypesystemException::raise(QString("Type %1 not a template").arg(templateName));
+                }
+            }else{
+                TypesystemException::raise(QString("Template %1 not found").arg(templateName));
+            }
+        }else{
+            ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+            m_database->addType(entry.release());
+        }
     }
 }
 
@@ -932,6 +1184,10 @@ QList<QDomElement> Handler::parseChildrenOfComplexType(const QDomElement &elemen
             QDomElement childElement = item.toElement();
             if(childElement.localName()=="template"){
                 parseTemplate(childElement);
+            }else if(childElement.localName()=="instantiation"){
+                if(!entry->isTemplate())
+                    TypesystemException::raise(QString("Unexpected tag <%2> as child of non-template <%1> in line %3").arg(element.localName()).arg(childElement.localName()).arg(childElement.lineNumber()));
+                parseInstantiation(childElement, entry);
             }else if(childElement.localName()=="modify-function"){
                 parseModifyFunction(childElement, entry);
             }else if(childElement.localName()=="modify-field"){
@@ -1049,6 +1305,7 @@ QList<QDomElement> Handler::parseChildrenOfComplexType(const QDomElement &elemen
         case QDomNode::TextNode:
             TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
             break;
+        case QDomNode::CharacterDataNode:
         case QDomNode::CDATASectionNode:
             TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
             break;
@@ -1085,6 +1342,9 @@ CustomFunction Handler::parseCustomStructor(const QDomElement &element){
         case QDomNode::TextNode:
             func.addCode(item.toText().data());
             break;
+        case QDomNode::CharacterDataNode:
+            func.addCode(item.toCharacterData().data());
+            break;
         case QDomNode::CDATASectionNode:
             func.addCode(item.toCDATASection().data());
             break;
@@ -1104,7 +1364,7 @@ void Handler::parseTemplateType(const QDomElement &element){
     QDomNamedNodeMap attributes = element.attributes();
     if (checkQtVersion(attributes)){
         QString name = parseTypeName(attributes, element);
-        QScopedPointer<TemplateTypeEntry> entry(new TemplateTypeEntry(name));
+        std::unique_ptr<TemplateTypeEntry> entry(new TemplateTypeEntry(name));
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
         }
@@ -1112,7 +1372,7 @@ void Handler::parseTemplateType(const QDomElement &element){
         for(const QDomElement& childElement : unhandledElements){
             TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.toElement().localName()).arg(childElement.lineNumber()));
         }
-        m_database->addTemplateType(entry.take());
+        m_database->addTemplateType(entry.release());
     }
 }
 
@@ -1369,6 +1629,7 @@ void Handler::parseModifyArgument(const QDomElement &element, FunctionModificati
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -1421,6 +1682,9 @@ void Handler::parseConversionRule(const QDomElement &element, const std::functio
             case QDomNode::TextNode:
                 snip.addCode(item.toText().data());
                 break;
+            case QDomNode::CharacterDataNode:
+                snip.addCode(item.toCharacterData().data());
+                break;
             case QDomNode::CDATASectionNode:
                 snip.addCode(item.toCDATASection().data());
                 break;
@@ -1456,6 +1720,8 @@ void Handler::parseModifyFunction(const QDomElement &element, ComplexTypeEntry* 
         QStringList accesses = attributeValue(attributes.removeNamedItem("access")).trimmed().toLower().split(QLatin1String(","));
         accesses.removeAll(QLatin1String(""));
         QString noExcept = attributeValue(attributes.removeNamedItem("no-except"), "no");
+        QString blockExcept = attributeValue(attributes.removeNamedItem("block-exceptions"), "no");
+        QString rethrowExcept = attributeValue(attributes.removeNamedItem("rethrow-exceptions"), "no");
         QString rename = attributeValue(attributes.removeNamedItem("rename")).trimmed();
         QString deprecated = attributeValue(attributes.removeNamedItem("deprecated"), "no");
         QString association = attributeValue(attributes.removeNamedItem("associated-to"));
@@ -1492,6 +1758,12 @@ void Handler::parseModifyFunction(const QDomElement &element, ComplexTypeEntry* 
         if (convertBoolean(noExcept, "no-except", false)) {
             mod.modifiers |= Modification::NoExcept;
         }
+        if (convertBoolean(blockExcept, "block-exceptions", false)) {
+            mod.modifiers |= Modification::BlockExcept;
+        }
+        if (convertBoolean(rethrowExcept, "rethrow-exceptions", false)) {
+            mod.modifiers |= Modification::RethrowExcept;
+        }
         if (convertBoolean(virtualSlot, "virtual-slot", false)) {
             mod.modifiers |= Modification::VirtualSlot;
         }
@@ -1508,6 +1780,8 @@ void Handler::parseModifyFunction(const QDomElement &element, ComplexTypeEntry* 
                 mod.removal = TypeSystem::All;
             else if (remove == QLatin1String("java"))
                 mod.removal = TypeSystem::TargetLangAndNativeCode;
+            else if (remove == QLatin1String("non-native"))
+                mod.removal = TypeSystem::TargetLangCode;
             else if (remove == QLatin1String("none"))
                 mod.removal = TypeSystem::NoLanguage;
             else {
@@ -1639,6 +1913,7 @@ void Handler::parseModifyFunction(const QDomElement &element, ComplexTypeEntry* 
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -1891,6 +2166,7 @@ void Handler::ensureNoChildren(const QDomElement &element){
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
             }
             break;
+        case QDomNode::CharacterDataNode:
         case QDomNode::CDATASectionNode:
             TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
             break;
@@ -1928,11 +2204,15 @@ void Handler::parseFunctionalType(const QDomElement &element){
         QString javaName = attributeValue(attributes.removeNamedItem("java-name"));
         QString _count = attributeValue(attributes.removeNamedItem("count"), "0");
         QString noExcept = attributeValue(attributes.removeNamedItem("no-except"), "false");
+        QString blockExcept = attributeValue(attributes.removeNamedItem("block-exceptions"), "no");
+        QString rethrowExcept = attributeValue(attributes.removeNamedItem("rethrow-exceptions"), "no");
+        QString functionName = attributeValue(attributes.removeNamedItem("function-name"), "");
+        QString disableNativeIdUsage = attributeValue(attributes.removeNamedItem("disable-native-id-usage"), "no");
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
         }
 
-        QScopedPointer<FunctionalTypeEntry> fentry;
+        std::unique_ptr<FunctionalTypeEntry> fentry;
         if (names.size() == 1) {
             fentry.reset(new FunctionalTypeEntry(QString(), name));
             if(!targetName.isEmpty())
@@ -1940,16 +2220,28 @@ void Handler::parseFunctionalType(const QDomElement &element){
         } else {
             fentry.reset(new FunctionalTypeEntry(QStringList(names.mid(0, names.size() - 1)).join("::"), names.last()));
         }
+        fentry->setFunctionName(functionName);
         if(generate=="no-shell"){
             fentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
         }else if (!convertBoolean(generate, "generate", true))
             fentry->setCodeGeneration(TypeEntry::GenerateNothing);
         else
             fentry->setCodeGeneration(m_generate);
-        if (convertBoolean(noExcept, "no-except", false)) {
+        if (convertBoolean(disableNativeIdUsage, "disable-native-id-usage", false))
+            fentry->disableNativeIdUsage();
+        {
             Modification mod;
-            mod.modifiers |= Modification::NoExcept;
-            fentry->addModification(mod);
+            if (convertBoolean(noExcept, "no-except", false)) {
+                mod.modifiers |= Modification::NoExcept;
+            }
+            if (convertBoolean(blockExcept, "block-exceptions", false)) {
+                mod.modifiers |= Modification::BlockExcept;
+            }
+            if (convertBoolean(rethrowExcept, "rethrow-exceptions", false)) {
+                mod.modifiers |= Modification::RethrowExcept;
+            }
+            if(mod.modifiers)
+                fentry->addModification(mod);
         }
         fentry->setTargetLangPackage(package);
         fentry->setTargetTypeSystem(m_defaultPackage);
@@ -1978,6 +2270,8 @@ void Handler::parseFunctionalType(const QDomElement &element){
                     for(const ArgumentModification& am : mod.argument_mods){
                         fentry->addArgumentModification(am);
                     }
+                }else if(childElement.localName()=="inject-code"){
+                    parseInjectCode(childElement, fentry.get());
                 }else if(childElement.localName()=="include"){
                     Include incl = parseInclude(childElement);
                     if(incl.isValid())
@@ -1992,6 +2286,7 @@ void Handler::parseFunctionalType(const QDomElement &element){
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -2005,7 +2300,7 @@ void Handler::parseFunctionalType(const QDomElement &element){
             }
         }
 
-        m_database->addType(fentry.take());
+        m_database->addType(fentry.release());
     }
 }
 
@@ -2027,7 +2322,7 @@ void Handler::parseIteratorType(const QDomElement &element){
         if(tmp && tmp->isComplex()){
             containerType = static_cast<ComplexTypeEntry*>(tmp);
         }
-        QScopedPointer<IteratorTypeEntry> entry(new IteratorTypeEntry(name, containerType));
+        std::unique_ptr<IteratorTypeEntry> entry(new IteratorTypeEntry(name, containerType));
         QString genericClass = attributeValue(attributes.removeNamedItem("generic-class"), "no");
         entry->setGenericClass(convertBoolean(genericClass, "generic-class", false));
         if(attributes.count()){
@@ -2035,7 +2330,7 @@ void Handler::parseIteratorType(const QDomElement &element){
         }
         ensureNoChildren(element);
         ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
-        m_database->addType(entry.take());
+        m_database->addType(entry.release());
     }
 }
 
@@ -2053,18 +2348,41 @@ void Handler::parseValueType(const QDomElement &element){
                 break;
             }
         }
-        QScopedPointer<ValueTypeEntry> entry(new ValueTypeEntry(name));
+        std::unique_ptr<ValueTypeEntry> entry(new ValueTypeEntry(name));
         if(!targetName.isEmpty())
             entry->setTargetLangName(targetName);
         entry->setIsPolymorphicBase(convertBoolean(attributeValue(attributes.removeNamedItem("polymorphic-base"), "no"), "polymorphic-base", false));
         entry->setPolymorphicIdValue(attributeValue(attributes.removeNamedItem("polymorphic-id-expression")));
-        parseAttributesOfComplexType(element, attributes, entry.data());
+        parseAttributesOfComplexType(element, attributes, entry.get());
         QList<QDomElement> unhandledElements = parseChildrenOfComplexType(element, entry.get());
         for(const QDomElement& childElement : unhandledElements){
             TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.toElement().localName()).arg(childElement.lineNumber()));
         }
-        ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
-        m_database->addType(entry.take());
+        if(entry->name().endsWith(">")){
+            auto idx = entry->name().indexOf('<');
+            QString templateName = entry->name().mid(0, idx);
+            QStringList templateArguments = entry->name().mid(idx+1).chopped(1).split(",");
+            ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
+            if(templateType){
+                if(templateType->isTemplate()){
+                    if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
+                        if(entry->targetLangName()==entry->name()){
+                            entry->setTargetLangName(templateName);
+                        }
+                        templateType->addInstantiation(templateArguments, entry.release());
+                    }else{
+                        TypesystemException::raise(QString("Template %1<%2> already defined").arg(templateName).arg(templateArguments.join(",")));
+                    }
+                }else{
+                    TypesystemException::raise(QString("Type %1 not a template").arg(templateName));
+                }
+            }else{
+                TypesystemException::raise(QString("Template %1 not found").arg(templateName));
+            }
+        }else{
+            ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+            m_database->addType(entry.release());
+        }
     }
 }
 
@@ -2094,7 +2412,7 @@ void Handler::parseTypeAliasType(const QDomElement &element){
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
         }
-        QScopedPointer<AliasTypeEntry> entry(new AliasTypeEntry(name, m_defaultPackage));
+        std::unique_ptr<AliasTypeEntry> entry(new AliasTypeEntry(name, m_defaultPackage));
         QDomNodeList childNodes = element.childNodes();
         for(int i=0; i<childNodes.length(); ++i){
             QDomNode item = childNodes.item(i);
@@ -2105,6 +2423,7 @@ void Handler::parseTypeAliasType(const QDomElement &element){
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -2117,8 +2436,31 @@ void Handler::parseTypeAliasType(const QDomElement &element){
             default: break;
             }
         }
-        ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
-        m_database->addType(entry.take());
+        if(entry->name().endsWith(">")){
+            auto idx = entry->name().indexOf('<');
+            QString templateName = entry->name().mid(0, idx);
+            QStringList templateArguments = entry->name().mid(idx+1).chopped(1).split(",");
+            ComplexTypeEntry* templateType = m_database->findComplexType(templateName);
+            if(templateType){
+                if(templateType->isTemplate()){
+                    if(templateType->instantiations().contains(templateArguments) && templateType->instantiations()[templateArguments]==nullptr){
+                        if(entry->targetLangName()==entry->name()){
+                            entry->setTargetLangName(templateName);
+                        }
+                        templateType->addInstantiation(templateArguments, entry.release());
+                    }else{
+                        TypesystemException::raise(QString("Template %1<%2> already defined").arg(templateName).arg(templateArguments.join(",")));
+                    }
+                }else{
+                    TypesystemException::raise(QString("Type %1 not a template").arg(templateName));
+                }
+            }else{
+                TypesystemException::raise(QString("Template %1 not found").arg(templateName));
+            }
+        }else{
+            ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
+            m_database->addType(entry.release());
+        }
     }
 }
 
@@ -2136,24 +2478,24 @@ void Handler::parseInterfaceType(const QDomElement &element){
                 break;
             }
         }
-        QScopedPointer<ImplementorTypeEntry> otype;
+        std::unique_ptr<ImplementorTypeEntry> otype;
         if(convertBoolean(attributeValue(attributes.removeNamedItem("is-value"), "no"), "is-value", false))
             otype.reset(new ValueTypeEntry(InterfaceTypeEntry::implName(name)));
         else
             otype.reset(new ObjectTypeEntry(InterfaceTypeEntry::implName(name)));
         if(!targetName.isEmpty())
             otype->setTargetLangName(targetName);
-        QScopedPointer<InterfaceTypeEntry> itype(new InterfaceTypeEntry(name));
-        otype->setDesignatedInterface(itype.data());
-        itype->setOrigin(otype.data());
+        std::unique_ptr<InterfaceTypeEntry> itype(new InterfaceTypeEntry(name));
+        otype->setDesignatedInterface(itype.get());
+        itype->setOrigin(otype.get());
         itype->setNoImpl(convertBoolean(attributeValue(attributes.removeNamedItem("no-impl"), "no"), "no-impl", false));
-        parseAttributesOfComplexType(element, attributes, otype.data());
+        parseAttributesOfComplexType(element, attributes, otype.get());
         QList<QDomElement> unhandledElements = parseChildrenOfComplexType(element, otype.get());
         for(const QDomElement& childElement : unhandledElements){
             TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.toElement().localName()).arg(childElement.lineNumber()));
         }
-        m_database->addType(otype.take());
-        itype.take();
+        m_database->addType(otype.release());
+        itype.release();
     }
 }
 
@@ -2171,16 +2513,16 @@ void Handler::parseNamespaceType(const QDomElement &element){
                 break;
             }
         }
-        QScopedPointer<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name));
+        std::unique_ptr<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name));
         if(!targetName.isEmpty())
             entry->setTargetLangName(targetName);
-        parseAttributesOfComplexType(element, attributes, entry.data());
-        QList<QDomElement> unhandledElements = parseChildrenOfComplexType(element, entry.data());
+        parseAttributesOfComplexType(element, attributes, entry.get());
+        QList<QDomElement> unhandledElements = parseChildrenOfComplexType(element, entry.get());
         for(const QDomElement& childElement : unhandledElements){
             TypesystemException::raise(QString("Unexpected tag <%2> as child of tag <%1> in line %3").arg(element.localName()).arg(childElement.toElement().localName()).arg(childElement.lineNumber()));
         }
         ReportHandler::debugTypes("Adding to TypeDatabase(2): " + entry->name());
-        m_database->addType(entry.take());
+        m_database->addType(entry.release());
     }
 }
 
@@ -2215,7 +2557,7 @@ void Handler::parseEnumType(const QDomElement &element){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
         }
 
-        QScopedPointer<EnumTypeEntry> eentry;
+        std::unique_ptr<EnumTypeEntry> eentry;
         if (names.size() == 1) {
             eentry.reset(new EnumTypeEntry(QString(), name));
         } else {
@@ -2301,6 +2643,7 @@ void Handler::parseEnumType(const QDomElement &element){
             case QDomNode::TextNode:
                 TypesystemException::raise(QString("Unexpected text content as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
+            case QDomNode::CharacterDataNode:
             case QDomNode::CDATASectionNode:
                 TypesystemException::raise(QString("Unexpected CDATA as child of tag <%1> in line %2").arg(element.localName()).arg(item.lineNumber()));
                 break;
@@ -2316,8 +2659,8 @@ void Handler::parseEnumType(const QDomElement &element){
 
         // put in the flags parallel...
         if (!flags.isEmpty() && flags.toLower() != "no") {
-            QScopedPointer<FlagsTypeEntry> ftype(new FlagsTypeEntry("QFlags<" + eentry->qualifiedCppName() + ">"));
-            ftype->setOriginator(eentry.data());
+            std::unique_ptr<FlagsTypeEntry> ftype(new FlagsTypeEntry("QFlags<" + eentry->qualifiedCppName() + ">"));
+            ftype->setOriginator(eentry.get());
             QStringList flagsNames = flags.split(QLatin1String("::"));
             if(!cppName.isEmpty()){
                 QStringList scope = cppName.split(QLatin1String("::"));
@@ -2339,14 +2682,14 @@ void Handler::parseEnumType(const QDomElement &element){
             }
 
             ftype->setFlagsName(lst.last());
-            eentry->setFlags(ftype.data());
+            eentry->setFlags(ftype.get());
 
-            m_database->addFlagsType(ftype.data());
+            m_database->addFlagsType(ftype.get());
             //qDebug()<<"Adding ftype"<<ftype->name();
             ReportHandler::debugTypes("Adding to TypeDatabase(1): " + ftype->name());
-            m_database->addType(ftype.take());
+            m_database->addType(ftype.release());
         }
-        m_database->addType(eentry.take());
+        m_database->addType(eentry.release());
     }
 }
 

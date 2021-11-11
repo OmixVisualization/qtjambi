@@ -167,7 +167,7 @@ class QAbstractVideoBuffer__{
             this.bytesPerLine = bytesPerLine;
         }
         
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private MapResult(java.nio.ByteBuffer data, int bytesPerLine, boolean unused){
             this.data = data;
             this.bytesPerLine = bytesPerLine;
@@ -257,4 +257,37 @@ class QMediaService___{
     }
 }// class
 
+class QAudioFormat__{
+    public static ChannelConfig channelConfig(AudioChannelPosition... channels) {
+        int value = 0;
+        for (AudioChannelPosition channel : channels) {
+            value |= (0x01 << channel.value());
+        }
+        return ChannelConfig.resolve(value);
+    }
+}// class
 
+
+class QCamera__{
+    
+    /**
+     * <p>See <a href="http://doc.qt.io/qt-5/qcamera.html#setViewfinder">QCamera::setViewfinder(QVideoWidget*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setViewfinder(T viewfinder){
+        setViewfinderImpl((io.qt.core.QObject)viewfinder);
+    }
+    
+}// class
+
+class QMediaPlayer__{
+    
+    /**
+     * <p>See <a href="http://doc.qt.io/qt-5/qmediaplayer.html#setVideoOutput">QMediaPlayer::setVideoOutput(QVideoWidget*)</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setVideoOutput(T arg__1){
+        setVideoOutputImpl(arg__1);
+    }
+    
+}// class

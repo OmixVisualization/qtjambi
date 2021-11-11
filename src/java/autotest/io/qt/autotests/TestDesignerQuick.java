@@ -5,26 +5,22 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.QFile;
-import io.qt.core.QIODevice;
-import io.qt.core.QLibraryInfo;
-import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
-import io.qt.core.QPluginLoader;
-import io.qt.designer.QDesignerCustomWidgetInterface;
-import io.qt.designer.QFormBuilder;
-import io.qt.quick.widgets.QQuickWidget;
-import io.qt.widgets.QWidget;
+import io.qt.core.*;
+import io.qt.designer.*;
+import io.qt.quick.*;
+import io.qt.quick.widgets.*;
+import io.qt.widgets.*;
 
 public class TestDesignerQuick extends QApplicationTest {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		QApplicationTest.testInitialize();
-		Assume.assumeTrue(!QLibraryInfo.isDebugBuild() 
+		Assume.assumeTrue("is debug or is Qt5 or is Windows", !QLibraryInfo.isDebugBuild() 
 				|| QLibraryInfo.version().majorVersion()>5 
 				|| !QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+//		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		QApplicationTest.testInitialize();
 		QQuickWidget.staticMetaObject.hashCode();
 	}
     

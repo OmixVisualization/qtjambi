@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DAnimation">
+<typesystem qt-library="Qt3DAnimation" description="The Qt 3D Animation modules provides a set of prebuilt elements to help you get started with Qt 3D.">
     <rejection class="Qt3DAnimation::QClipBlendNodeCreatedChange"/>
     <rejection class="Qt3DAnimation::QChannelComponent" function-name="rbegin"/>
     <rejection class="Qt3DAnimation::QChannelComponent" function-name="rend"/>
@@ -220,7 +220,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="Qt3DAnimation::QClipBlendNodeCreatedChangeBase" java-name="QClipBlendNodeCreatedChange" since="5.11.0" polymorphic-id-expression="typeid(*%1) == typeid(Qt3DAnimation::QClipBlendNodeCreatedChangeBase)">
+    <object-type name="Qt3DAnimation::QClipBlendNodeCreatedChangeBase" java-name="QClipBlendNodeCreatedChange" since="5.11.0">
     </object-type>
     <object-type name="Qt3DAnimation::QClipBlendValue" java-name="QClipBlendValue" since="5.11.0">
         <modify-function signature="setClip(Qt3DAnimation::QAbstractAnimationClip*)">

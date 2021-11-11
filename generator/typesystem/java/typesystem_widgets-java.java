@@ -50,11 +50,97 @@ class QMenu___ extends QMenu {
 }// class
 
 class QShortcut__{
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent){
+        this(key, parent, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, (java.lang.Object)null, (java.lang.Object)null, context);
+    }
+    
     public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, java.lang.String member, io.qt.core.Qt.ShortcutContext context){
         this(key, parent, member, (java.lang.String)null, context);
     }
-    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, io.qt.core.Qt.ShortcutContext context){
-        this(key, parent, (java.lang.String)null, (java.lang.String)null, context);
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, java.lang.String member, java.lang.String ambiguousMember){
+        this(key, parent, member, ambiguousMember, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, java.lang.String member){
+        this(key, parent, member, (java.lang.String)null, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent, java.lang.String member, java.lang.String ambiguousMember, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, context);
+        if(member!=null && !member.isEmpty())
+            activated.connect(parent, member);
+        if(ambiguousMember!=null && !ambiguousMember.isEmpty())
+            activatedAmbiguously.connect(parent, ambiguousMember);
+    }
+    
+    private static io.qt.widgets.QWidget parent(io.qt.core.QMetaObject.Slot0 slot){
+        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(java.util.Objects.requireNonNull(slot));
+        if(parent instanceof io.qt.widgets.QWidget)
+            return (io.qt.widgets.QWidget)parent;
+        throw new IllegalArgumentException("Slot needs to be member of a QWidget instance.");
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.widgets.QWidget parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
     }
 }// class
 
@@ -118,14 +204,6 @@ class QGridLayout___ extends QGridLayout {
     }
 }// class
 
-class QWidget___ extends QWidget {
-
-        private native static void __qt_QMessageBox_setWindowTitle(long native_id, String windowTitle);
-
-        private native static void __qt_QMessageBox_setWindowModality(long native_id, int modality);
-
-}// class
-
 class QColorDialog__java_{
     @io.qt.QtUninvokable
     public final void open(io.qt.core.QMetaObject.Slot1<io.qt.gui.QColor> selectedColorSlot) {
@@ -141,12 +219,12 @@ class QColorDialog__java_{
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
+            open(lamdaInfo.qobject, metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
-    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+    private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QFontDialog__java_ extends QFontDialog {
@@ -164,12 +242,12 @@ class QFontDialog__java_ extends QFontDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
+            open(lamdaInfo.qobject, metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
-    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+    private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QFileDialog__java_ extends QFileDialog {
@@ -231,12 +309,12 @@ class QFileDialog__java_ extends QFileDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
+            open(lamdaInfo.qobject, metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
-    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+    private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QInputDialog__java_ extends QInputDialog {
@@ -257,7 +335,7 @@ class QInputDialog__java_ extends QInputDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
+            open(lamdaInfo.qobject, metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
@@ -282,12 +360,12 @@ class QInputDialog__java_ extends QInputDialog {
             if(metaMethod==null) {
                 throw new IllegalArgumentException("Method is not a QObject slot: "+lamdaInfo.reflectiveMethod);
             }
-            open(nativeId(this), nativeId(lamdaInfo.qobject), metaMethod);
+            open(lamdaInfo.qobject, metaMethod);
         }
         throw new IllegalArgumentException("Slot cannot be detected.");
     }
     
-    private native void open(long native_id, long object_id, io.qt.core.QMetaMethod metaMethod);
+    private native void open(io.qt.core.QObject obj, io.qt.core.QMetaMethod metaMethod);
 }// class
 
 class QAbstractScrollArea___ extends QAbstractScrollArea {
@@ -359,22 +437,6 @@ class QApplication___ extends QApplication {
 
         public static void shutdown() {
             io.qt.core.QCoreApplication.shutdown();
-        }
-        
-        public static int exec() {
-            io.qt.core.QCoreApplication instance = io.qt.core.QCoreApplication.instance();
-            if (instance == null)
-                throw new RuntimeException("QApplication has not been initialized with QApplication.initialize()");
-            else if(instance.thread()!=io.qt.core.QThread.currentThread())
-                throw new RuntimeException("exec() must be called from the main thread.");
-            else if(io.qt.internal.QtJambiInternal.countEventLoops(instance.thread())>0)
-                throw new RuntimeException("The event loop is already running.");
-            else if(instance instanceof QApplication)
-                return exec_internal();
-            else if(instance instanceof io.qt.gui.QGuiApplication)
-                return io.qt.gui.QGuiApplication.exec();
-            else
-                return io.qt.core.QCoreApplication.exec();
         }
         
         public static QApplication instance() {

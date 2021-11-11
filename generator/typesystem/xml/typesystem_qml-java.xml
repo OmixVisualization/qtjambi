@@ -42,15 +42,15 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qml" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.network");
-    </inject-code>
+<typesystem package="io.qt.qml" module="qtjambi.qml" default-superclass="io.qt.QtObject">
     <inject-code class="metainfo" position="1">
     void initialize_meta_info_QQmlListProperty();
     </inject-code>
     <inject-code class="metainfo">
     initialize_meta_info_QQmlListProperty();
+    </inject-code>
+    <inject-code class="module-info">
+    exports io.qt.qml.util;
     </inject-code>
     <object-type name="QQmlExtensionPlugin">
         <extra-includes>
@@ -207,47 +207,25 @@
         </modify-function>
     </object-type>
     <object-type name="QQmlComponent">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
         <inject-code>
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class __QQmlComponent" quote-before-line="}// class"/>
         </inject-code>
-        <modify-function signature="create(QQmlContext *)">
+        <modify-function signature="create(QQmlContext *)" block-exceptions="yes">
             <modify-argument index="0">
                 <define-ownership class="shell" owner="cplusplus"/>
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
         </modify-function>
-        <modify-function signature="createWithInitialProperties(QMap&lt;QString,QVariant>,QQmlContext*)" since="5.14.0">
+        <modify-function signature="createWithInitialProperties(QMap&lt;QString,QVariant>,QQmlContext*)" block-exceptions="yes" since="5.14.0">
             <modify-argument index="0">
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
         </modify-function>
-        <modify-function signature="create(QQmlIncubator &amp;, QQmlContext *, QQmlContext *)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="create(QQmlIncubator &amp;, QQmlContext *, QQmlContext *)" block-exceptions="yes">
         </modify-function>
     </object-type>
     <object-type name="QQmlIncubator">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="forceCompletion()">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="forceCompletion()" block-exceptions="yes">
         </modify-function>
         <modify-function signature="object() const">
             <modify-argument index="0">
@@ -267,17 +245,12 @@
     </interface-type>
     <interface-type name="QQmlIncubationController">
         <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
             <include file-name="qtjambi_qml_repository.h" location="local"/>
         </extra-includes>
         <inject-code class="interface">
             <import-file name="typesystem/java/typesystem_qml-java.java" quote-after-line="class QQmlIncubationController__" quote-before-line="}// class"/>
         </inject-code>
-        <modify-function signature="incubateWhile(bool *, int)" until="5.14">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="incubateWhile(bool *, int)" block-exceptions="yes" until="5.14">
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
                 <no-null-pointer/>
@@ -289,11 +262,7 @@
             </modify-argument>
         </modify-function>
         <modify-function signature="incubateWhile(bool *, int)" remove="all" since="5.15" until="5.*"/>
-        <modify-function signature="incubateWhile(std::atomic&lt;bool> *, int)" since="5.15">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="incubateWhile(std::atomic&lt;bool> *, int)" block-exceptions="yes" since="5.15">
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.qml.QQmlIncubationController$WhileFlag"/>
                 <no-null-pointer/>
@@ -304,31 +273,20 @@
                 <reference-count action="set" variable-name="__rcWhileFlag"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="incubateFor(int)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="incubateFor(int)" block-exceptions="yes">
         </modify-function>
     </interface-type>
     <object-type name="QQmlApplicationEngine">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
         <modify-function signature="objectCreated(QObject*, const QUrl&amp;)">
             <inject-code class="signal" position="beginning">
                 try{
-                    qtjambi_throw_java_exception(%env);
+                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                 }catch(const JavaException&amp; exn){
                     qtjambi_push_blocked_exception(%env, exn);
                 }
             </inject-code>
         </modify-function>
-        <modify-function signature="loadData(const QByteArray &amp;, const QUrl &amp;)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="loadData(const QByteArray &amp;, const QUrl &amp;)" block-exceptions="yes">
         </modify-function>
     </object-type>
     <value-type name="QQmlListReference">
@@ -349,8 +307,16 @@
         </extra-includes>
         <modify-function signature="connectNotifySignal(QObject *, int) const" access="private"/>
         <modify-function signature="connectNotifySignal(QObject *, const char *) const">
-            <inject-code class="java" position="beginning">
-                slot = cppSlotSignature(dest, slot);
+            <inject-code class="java" position="beginning"><argument-map index="2" meta-name="slot"/><argument-map index="1" meta-name="dest"/>
+                if(slot!=null &amp;&amp; !slot.startsWith("1") &amp;&amp; !slot.startsWith("2")) {
+                    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);
+                    if(method!=null &amp;&amp; method.isValid()) {
+                        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
+                            slot = "2" + method.cppMethodSignature();
+                        else
+                            slot = "1" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>    
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>

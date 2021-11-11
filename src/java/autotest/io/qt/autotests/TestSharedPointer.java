@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 
 import io.qt.QtObject;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.SharedPointerTest;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
@@ -83,7 +84,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
 		assertEquals("SharedObject1", sharedObject.objectName());
 		assertEquals("", object.deletedSharedObjectName());
-		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(sharedObject));
+		assertTrue(General.internalAccess.isJavaOwnership(sharedObject));
 		WeakReference<QObject> weak = new WeakReference<QObject>(sharedObject);
 		sharedObject = null;
 		int count = 0;
@@ -129,7 +130,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
 		assertEquals(QGraphicsTextItem.class, sharedObject.getClass());
 		assertEquals("", object.deletedSharedObjectName());
-		QtJambiInternal.setJavaOwnership(sharedObject);
+		General.internalAccess.setJavaOwnership(sharedObject);
 		WeakReference<QGraphicsItem> weak = new WeakReference<QGraphicsItem>(sharedObject);
 		sharedObject = null;
 		int count = 0;
@@ -171,7 +172,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertNotNull(sharedObject);
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
 		assertEquals("", object.deletedSharedObjectName());
-		QtJambiInternal.setJavaOwnership(sharedObject);
+		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
 		while(object.deletedSharedObjectName().isEmpty()){
@@ -207,7 +208,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
 		assertEquals(QGridLayout.class, sharedObject.getClass());
 		assertEquals("", object.deletedSharedObjectName());
-		QtJambiInternal.setJavaOwnership(sharedObject);
+		General.internalAccess.setJavaOwnership(sharedObject);
 		WeakReference<QLayoutItem> weak = new WeakReference<QLayoutItem>(sharedObject);
 		sharedObject = null;
 		int count = 0;
@@ -250,7 +251,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertTrue(QtJambiInternal.isSharedPointer(sharedObject));
 		assertEquals(QSpacerItem.class, sharedObject.getClass());
 		assertEquals("", object.deletedSharedObjectName());
-		QtJambiInternal.setJavaOwnership(sharedObject);
+		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
 		while(object.deletedSharedObjectName().isEmpty()){
@@ -279,12 +280,12 @@ public class TestSharedPointer extends QApplicationTest {
 		boolean[] disposed = {false};
 		widget.destroyed.connect(()->disposed[0]=true);
 		((QWidgetItem)sharedObject).dispose();
-		assertEquals(0, QtJambiInternal.nativeId(sharedObject));
+		assertTrue(sharedObject.isDisposed());
 		assertNotNull(widget);
 		assertEquals("WidgetItem", object.deletedSharedObjectName());
 		object.resetSharedObjectName();
 		widget.dispose();
-		assertEquals(0, QtJambiInternal.nativeId(widget));
+		assertTrue(widget.isDisposed());
 		assertTrue(disposed[0]);
 		assertEquals("Widget", object.deletedSharedObjectName());
 	}
@@ -297,7 +298,7 @@ public class TestSharedPointer extends QApplicationTest {
 		assertEquals(QWidgetItem.class, sharedObject.getClass());
 		assertEquals("", object.deletedSharedObjectName());
 		QWidget widget = ((QWidgetItem)sharedObject).widget();
-		QtJambiInternal.setJavaOwnership(sharedObject);
+		General.internalAccess.setJavaOwnership(sharedObject);
 		sharedObject = null;
 		int count = 0;
 		while(object.deletedSharedObjectName().isEmpty()){
@@ -314,7 +315,7 @@ public class TestSharedPointer extends QApplicationTest {
 		}
 		assertEquals("WidgetItem", object.deletedSharedObjectName());
 		object.resetSharedObjectName();
-		QtJambiInternal.setJavaOwnership(widget);
+		General.internalAccess.setJavaOwnership(widget);
 		AtomicBoolean disposed = new AtomicBoolean(false);
 		widget.destroyed.connect(()->disposed.set(true));
 		widget = null;

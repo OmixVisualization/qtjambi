@@ -119,8 +119,10 @@ inline hash_type qHash(const QLinearGradient &gradient)
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
-    hashCode = hashCode * 31 + qHash(gradient.start());
-    hashCode = hashCode * 31 + qHash(gradient.finalStop());
+    hashCode = hashCode * 31 + qHash(gradient.start().x());
+    hashCode = hashCode * 31 + qHash(gradient.start().y());
+    hashCode = hashCode * 31 + qHash(gradient.finalStop().x());
+    hashCode = hashCode * 31 + qHash(gradient.finalStop().y());
     for(const QGradientStop& stop : gradient.stops()){
         hashCode = hashCode * 31 + qHash(stop.first);
         hashCode = hashCode * 31 + qHash(stop.second);
@@ -134,9 +136,11 @@ inline hash_type qHash(const QRadialGradient &gradient)
     hashCode = hashCode * 31 + qHash(int(gradient.type()));
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
-    hashCode = hashCode * 31 + qHash(gradient.center());
+    hashCode = hashCode * 31 + qHash(gradient.center().x());
+    hashCode = hashCode * 31 + qHash(gradient.center().y());
     hashCode = hashCode * 31 + qHash(gradient.centerRadius());
-    hashCode = hashCode * 31 + qHash(gradient.focalPoint());
+    hashCode = hashCode * 31 + qHash(gradient.focalPoint().x());
+    hashCode = hashCode * 31 + qHash(gradient.focalPoint().y());
     hashCode = hashCode * 31 + qHash(gradient.focalRadius());
     hashCode = hashCode * 31 + qHash(gradient.radius());
     for(const QGradientStop& stop : gradient.stops()){
@@ -153,7 +157,8 @@ inline hash_type qHash(const QConicalGradient &gradient)
     hashCode = hashCode * 31 + qHash(int(gradient.spread()));
     hashCode = hashCode * 31 + qHash(int(gradient.coordinateMode()));
     hashCode = hashCode * 31 + qHash(gradient.angle());
-    hashCode = hashCode * 31 + qHash(gradient.center());
+    hashCode = hashCode * 31 + qHash(gradient.center().x());
+    hashCode = hashCode * 31 + qHash(gradient.center().y());
     for(const QGradientStop& stop : gradient.stops()){
         hashCode = hashCode * 31 + qHash(stop.first);
         hashCode = hashCode * 31 + qHash(stop.second);
@@ -266,8 +271,10 @@ inline hash_type qHash(const QPolygonF &polygon)
 {
     hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(polygon.size());
-    for (int i=0; i<polygon.size(); ++i)
-        hashCode = hashCode * 31 + qHash(polygon.at(i));
+    for (int i=0; i<polygon.size(); ++i){
+        hashCode = hashCode * 31 + qHash(polygon.at(i).x());
+        hashCode = hashCode * 31 + qHash(polygon.at(i).y());
+    }
     return hashCode;
 }
 
@@ -339,7 +346,12 @@ inline hash_type qHash(const QGlyphRun &value)
     hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(value.rawFont());
     hashCode = hashCode * 31 + qHash(value.glyphIndexes());
-    hashCode = hashCode * 31 + qHash(value.positions());
+    auto positions = value.positions();
+    hashCode = hashCode * 31 + qHash(positions.size());
+    for (int i=0; i<positions.size(); ++i){
+        hashCode = hashCode * 31 + qHash(positions.at(i).x());
+        hashCode = hashCode * 31 + qHash(positions.at(i).y());
+    }
     hashCode = hashCode * 31 + qHash(value.overline());
     hashCode = hashCode * 31 + qHash(value.underline());
     hashCode = hashCode * 31 + qHash(value.strikeOut());
@@ -428,25 +440,38 @@ inline hash_type qHash(const QEventPoint &value)
     hash_type hashCode = 1;
     hashCode = hashCode * 31 + qHash(quintptr(value.device()));
     hashCode = hashCode * 31 + qHash(value.ellipseDiameters());
-    hashCode = hashCode * 31 + qHash(value.globalGrabPosition());
-    hashCode = hashCode * 31 + qHash(value.globalLastPosition());
-    hashCode = hashCode * 31 + qHash(value.globalPosition());
-    hashCode = hashCode * 31 + qHash(value.globalPressPosition());
-    hashCode = hashCode * 31 + qHash(value.grabPosition());
+    hashCode = hashCode * 31 + qHash(value.globalGrabPosition().x());
+    hashCode = hashCode * 31 + qHash(value.globalGrabPosition().y());
+    hashCode = hashCode * 31 + qHash(value.globalLastPosition().x());
+    hashCode = hashCode * 31 + qHash(value.globalLastPosition().y());
+    hashCode = hashCode * 31 + qHash(value.globalPosition().x());
+    hashCode = hashCode * 31 + qHash(value.globalPosition().y());
+    hashCode = hashCode * 31 + qHash(value.globalPressPosition().x());
+    hashCode = hashCode * 31 + qHash(value.globalPressPosition().y());
+    hashCode = hashCode * 31 + qHash(value.grabPosition().x());
+    hashCode = hashCode * 31 + qHash(value.grabPosition().y());
     hashCode = hashCode * 31 + qHash(value.id());
     hashCode = hashCode * 31 + qHash(value.isAccepted());
-    hashCode = hashCode * 31 + qHash(value.lastPosition());
+    hashCode = hashCode * 31 + qHash(value.lastPosition().x());
+    hashCode = hashCode * 31 + qHash(value.lastPosition().y());
     hashCode = hashCode * 31 + qHash(value.lastTimestamp());
-    hashCode = hashCode * 31 + qHash(value.normalizedPosition());
-    hashCode = hashCode * 31 + qHash(value.position());
-    hashCode = hashCode * 31 + qHash(value.pressPosition());
+    hashCode = hashCode * 31 + qHash(value.normalizedPosition().x());
+    hashCode = hashCode * 31 + qHash(value.normalizedPosition().y());
+    hashCode = hashCode * 31 + qHash(value.position().x());
+    hashCode = hashCode * 31 + qHash(value.position().y());
+    hashCode = hashCode * 31 + qHash(value.pressPosition().x());
+    hashCode = hashCode * 31 + qHash(value.pressPosition().y());
     hashCode = hashCode * 31 + qHash(value.pressTimestamp());
     hashCode = hashCode * 31 + qHash(value.pressure());
     hashCode = hashCode * 31 + qHash(value.rotation());
-    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition());
-    hashCode = hashCode * 31 + qHash(value.sceneLastPosition());
-    hashCode = hashCode * 31 + qHash(value.scenePosition());
-    hashCode = hashCode * 31 + qHash(value.scenePressPosition());
+    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition().x());
+    hashCode = hashCode * 31 + qHash(value.sceneGrabPosition().y());
+    hashCode = hashCode * 31 + qHash(value.sceneLastPosition().x());
+    hashCode = hashCode * 31 + qHash(value.sceneLastPosition().y());
+    hashCode = hashCode * 31 + qHash(value.scenePosition().x());
+    hashCode = hashCode * 31 + qHash(value.scenePosition().y());
+    hashCode = hashCode * 31 + qHash(value.scenePressPosition().x());
+    hashCode = hashCode * 31 + qHash(value.scenePressPosition().y());
     hashCode = hashCode * 31 + qHash(value.state());
     hashCode = hashCode * 31 + qHash(value.timeHeld());
     hashCode = hashCode * 31 + qHash(value.timestamp());

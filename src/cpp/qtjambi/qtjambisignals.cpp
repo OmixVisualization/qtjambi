@@ -35,6 +35,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambi_thread_p.h"
@@ -124,10 +126,9 @@ jobject qtjambi_from_QMetaObject(JNIEnv *env, const QMetaObject *metaObject){
 
 const char * registeredInterfaceID(const std::type_info& typeId);
 
-jobject qtjambi_metaobject_cast(JNIEnv *env, QtJambiNativeID object__id, jclass targetType){
+jobject qtjambi_metaobject_cast(JNIEnv *env, jobject object, jclass targetType){
     jobject result = nullptr;
-    QSharedPointer<QtJambiLink> objectLink = QtJambiLink::fromNativeId(object__id);
-    if(objectLink){
+    if(QSharedPointer<QtJambiLink> objectLink = QtJambiLink::findLinkForJavaInterface(env, object)){
         QString javaName = qtjambi_class_name(env, targetType).replace(QLatin1Char('.'), QLatin1Char('/'));
         if(const std::type_info* typeId = getTypeByJavaName(javaName)){
             void* basicPointer = objectLink->pointer();
@@ -171,7 +172,7 @@ jobject qtjambi_metaobject_cast(JNIEnv *env, QtJambiNativeID object__id, jclass 
                 }
                 if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, *typeId)){
                     result = env->NewObject(typeEntry->creatableClass(), typeEntry->creatorMethod(), 0);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     QtJambiLink::createLinkForInterface(env, result, interfacePointer,
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
                                                         getQtName(*typeId),
@@ -473,15 +474,15 @@ extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambiSignals_emitNativeSignal)
 (JNIEnv *env,
  jclass,
- QtJambiNativeID senderNativeId,
+ jobject sender,
  jint methodIndex,
  jobjectArray args)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("java", "QtJambiSignals::emitNativeSignal(...)")
     QTJAMBI_JNI_LOCAL_FRAME(env, 1000)
-    QtJambiScope scope(senderNativeId);
+    QtJambiScope scope(env, sender);
     try{
-        QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(senderNativeId);
+        QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, sender);
         if (link && link->isQObject()) {
             if(QObject *o = link->qobject()){
                 QMetaMethod method = o->metaObject()->method(methodIndex);
@@ -698,7 +699,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                                     jobjectArray args = Java::Runtime::Object::newArray(env, jsize(converted_arguments.size()));
                                     for (int i=0; i<converted_arguments.size();++i) {
                                         env->SetObjectArrayElement(args, i, converted_arguments[i].l);
-                                        qtjambi_throw_java_exception(env)
+                                        qtjambi_throw_java_exception(env);
                                     }
                                     Java::QtJambi::QtJambiSignals$AbstractConnection::invoke(env,_this->m_connection.object(), args);
                                 } else {

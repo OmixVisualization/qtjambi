@@ -130,6 +130,8 @@ class AbstractMetaAttributes {
 
             Deprecated                  = 0x01000000,
 
+            ConstExpr                   = 0x02000000,
+
             Comment                     = 0x00800000,
 
             Final                       = FinalInTargetLang | FinalInCpp
@@ -577,7 +579,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
                 m_class(nullptr),
                 m_implementing_class(nullptr),
                 m_declaring_class(nullptr),
-                m_declaring_template(),
                 m_interface_class(nullptr),
                 m_property_spec(nullptr),
                 m_constant(false),
@@ -628,9 +629,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         // The first class in a hierarchy that declares the function
         const AbstractMetaClass *declaringClass() const { return m_declaring_class; }
         void setDeclaringClass(const AbstractMetaClass *cls) { m_declaring_class = cls; }
-
-        const QString &declaringTemplate() const { return m_declaring_template; }
-        void setDeclaringTemplate(const QString &declaring_template) { m_declaring_template = declaring_template; }
 
         // The class that actually implements this function
         const AbstractMetaClass *implementingClass() const { return m_implementing_class; }
@@ -718,6 +716,8 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         bool argumentTypeBuffer(int key) const;
         bool argumentTypeArrayVarArgs(int key) const;
         bool isNoExcept() const;
+        bool isBlockExceptions() const;
+        bool isRethrowExceptions() const;
         QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
         bool isRemovedFromAllLanguages(const AbstractMetaClass *) const;
         bool isRemovedFrom(const AbstractMetaClass *, TypeSystem::Language language) const;
@@ -790,7 +790,6 @@ class AbstractMetaFunction : public AbstractMetaAttributes {
         const AbstractMetaClass *m_class;
         const AbstractMetaClass *m_implementing_class;
         const AbstractMetaClass *m_declaring_class;
-        QString m_declaring_template;
         const AbstractMetaClass *m_interface_class;
         QPropertySpec *m_property_spec;
         AbstractMetaArgumentList m_arguments;
@@ -899,6 +898,10 @@ class AbstractMetaFunctional : public AbstractMetaAttributes {
         void setEnclosingClass(AbstractMetaClass *c) { m_class = c; }
         const QString& baseTypeName() const { return m_base_type_name; }
         void setBaseTypeName(const QString &names) { m_base_type_name = names; }
+        const QString& javaFunctionalInterface() const { return m_javaFunctionalInterface; }
+        void setJavaFunctionalInterface(const QString &names) { m_javaFunctionalInterface = names; }
+        const QList<uint>& javaFunctionalInterfaceParameterTypes() const { return m_javaFunctionalInterfaceParameterTypes; }
+        void setJavaFunctionalInterfaceParameterTypes(const QList<uint> &javaFunctionalInterfaceParameterTypes) { m_javaFunctionalInterfaceParameterTypes = javaFunctionalInterfaceParameterTypes; }
         const QString& typeSignature() const { return m_typeSignature; }
         void setTypeSignature(const QString& type) { m_typeSignature = type; }
         AbstractMetaType * type() const { return m_type; }
@@ -920,7 +923,10 @@ class AbstractMetaFunctional : public AbstractMetaAttributes {
         bool isFunctionPointer() const { return m_isFunctionPointer; }
         void setFunctionPointer(bool isFunctionPointer) { m_isFunctionPointer = isFunctionPointer; }
         bool isNoExcept() const;
+        bool isBlockExceptions() const;
+        bool isRethrowExceptions() const;
         bool nullPointersDisabled(int argument_idx = 0) const;
+        bool needsCallThrough() const;
 
     private:
         QString m_base_type_name;
@@ -929,6 +935,8 @@ class AbstractMetaFunctional : public AbstractMetaAttributes {
         AbstractMetaType *m_type;
         QList<AbstractMetaArgument *> m_arguments;
         QString m_typeSignature;
+        QString m_javaFunctionalInterface;
+        QList<uint> m_javaFunctionalInterfaceParameterTypes;
         uint m_isFunctionPointer : 1;
 };
 
@@ -984,6 +992,7 @@ class AbstractMetaClass : public AbstractMetaAttributes {
                 m_has_private_metacall(false),
                 m_has_virtual_destructor(false),
                 m_has_hash_function(false),
+                m_needs_hash_workaround(false),
                 m_has_equals_operator(false),
                 m_has_clone_operator(false),
                 m_is_type_alias(false),
@@ -1122,9 +1131,11 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         bool isQObject() const { return m_type_entry->isQObject(); }
         bool isQWidget() const { return m_type_entry->isQWidget(); }
         bool isQWindow() const { return m_type_entry->isQWindow(); }
+        bool isQAction() const { return m_type_entry->isQAction(); }
         bool isQCoreApplication() const { return m_type_entry->isQCoreApplication(); }
         bool isQtNamespace() const { return isNamespace() && name() == "Qt"; }
         QString qualifiedCppName() const { return m_type_entry->qualifiedCppName(); }
+        QString fullQualifiedCppName() const;
 
         bool hasSignals() const;
         bool inheritsFrom(const AbstractMetaClass *other) const;
@@ -1160,7 +1171,10 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         void setTypeEntry(ComplexTypeEntry *type) { m_type_entry = type; }
 
         void setHasHashFunction(bool on) { m_has_hash_function = on; }
-        bool hasHashFunction() const { return m_has_hash_function; }
+        bool hasHashFunction() const;
+
+        void setNeedsHashWorkaround(bool on) { m_needs_hash_workaround = on; }
+        bool needsHashWorkaround() const { return m_needs_hash_workaround; }
 
         void setToStringCapability(FunctionModelItem fun) { m_qDebug_stream_function = fun; }
         const FunctionModelItem& toStringCapability() const { return m_qDebug_stream_function; }
@@ -1168,10 +1182,10 @@ class AbstractMetaClass : public AbstractMetaAttributes {
         virtual bool hasDefaultToStringFunction() const;
 
         void setHasEqualsOperator(bool on) { m_has_equals_operator = on; }
-        bool hasEqualsOperator() const { return m_has_equals_operator; }
+        bool hasEqualsOperator() const;
 
         void setHasCloneOperator(bool on) { m_has_clone_operator = on; }
-        bool hasCloneOperator() const { return m_has_clone_operator; }
+        bool hasCloneOperator() const;
 
         void addPropertySpec(QPropertySpec *spec) { m_property_specs << spec; }
         const QList<QPropertySpec *>& propertySpecs() const { return m_property_specs; }
@@ -1258,6 +1272,7 @@ private:
     uint m_has_virtual_slots : 1;
     uint m_has_justprivateconstructors : 1;
     mutable int m_has_standardconstructor : 2;
+    mutable int m_has_publicstandardconstructor : 2;
     uint m_has_unimplmentablePureVirtualFunctions : 1;
     QSet<QString> m_unimplmentablePureVirtualFunctions;
     uint m_functions_fixed : 1;
@@ -1267,6 +1282,7 @@ private:
     uint m_has_private_metacall : 1;
     uint m_has_virtual_destructor : 1;
     uint m_has_hash_function : 1;
+    uint m_needs_hash_workaround : 1;
     uint m_has_equals_operator : 1;
     uint m_has_clone_operator : 1;
     uint m_is_type_alias : 1;

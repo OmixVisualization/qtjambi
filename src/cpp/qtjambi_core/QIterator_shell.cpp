@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QByteArrayList>
 #include <QtCore/QQueue>
 #include <QtCore/QQueue>

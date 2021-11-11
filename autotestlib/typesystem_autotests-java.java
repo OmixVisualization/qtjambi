@@ -73,3 +73,7 @@ class SharedPointerTest___ extends SharedPointerTest {
 		return item;
 	}
 }// class
+
+class General___{
+    public final static io.qt.InternalAccess internalAccess = QtJambi_LibraryUtilities.internal;
+}// class

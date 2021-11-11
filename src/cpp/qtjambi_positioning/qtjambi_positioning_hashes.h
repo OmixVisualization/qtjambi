@@ -6,47 +6,15 @@
 #include <QtCore/QtCore>
 #include <QtPositioning/QtPositioning>
 
-inline hash_type qHash(const QGeoAddress &value)
-{
-    hash_type hashCode = qHash(value.city());
-    hashCode = hashCode * 31 + qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.state());
-    hashCode = hashCode * 31 + qHash(value.county());
-    hashCode = hashCode * 31 + qHash(value.street());
-    hashCode = hashCode * 31 + qHash(value.country());
-    hashCode = hashCode * 31 + qHash(value.district());
-    hashCode = hashCode * 31 + qHash(value.postalCode());
-    hashCode = hashCode * 31 + qHash(value.countryCode());
-    hashCode = hashCode * 31 + qHash(value.isTextGenerated());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
-}
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+hash_type qHash(const QGeoAddress &value);
+hash_type qHash(const QGeoShape &value);
+#endif
 
 hash_type qHash(const QGeoRectangle &value);
 hash_type qHash(const QGeoPath &value);
 hash_type qHash(const QGeoCircle &value);
 hash_type qHash(const QGeoPolygon &value);
-
-inline hash_type qHash(const QGeoShape &value)
-{
-    if(!value.isValid())
-        return 0;
-    switch(value.type()){
-    case QGeoShape::RectangleType:
-        return qHash(static_cast<const QGeoRectangle &>(value));
-    case QGeoShape::CircleType:
-        return qHash(static_cast<const QGeoCircle &>(value));
-    case QGeoShape::PathType:
-        return qHash(static_cast<const QGeoPath &>(value));
-    case QGeoShape::PolygonType:
-        return qHash(static_cast<const QGeoPolygon &>(value));
-    default:
-        hash_type hashCode = qHash(value.type());
-        hashCode = hashCode * 31 + qHash(value.isEmpty());
-        hashCode = hashCode * 31 + qHash(value.center());
-        return hashCode;
-    }
-}
 
 inline hash_type qHash(const QGeoCircle &value)
 {
@@ -72,7 +40,12 @@ inline hash_type qHash(const QGeoPolygon &value)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.path());
+hash_type hashCode =
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        qHash(value.path());
+#else
+        qHash(value.perimeter());
+#endif
     hashCode = hashCode * 31 + qHash(value.isEmpty());
     hashCode = hashCode * 31 + qHash(value.center());
     return hashCode;
@@ -89,6 +62,7 @@ inline hash_type qHash(const QGeoRectangle &value)
     return hashCode;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline hash_type qHash(const QGeoLocation &value)
 {
     hash_type hashCode = qHash(value.address());
@@ -140,5 +114,43 @@ inline hash_type qHash(const QGeoPositionInfo &value)
     }
     return hashCode;
 }
+
+inline hash_type qHash(const QGeoShape &value)
+{
+    if(!value.isValid())
+        return 0;
+    switch(value.type()){
+    case QGeoShape::RectangleType:
+        return qHash(static_cast<const QGeoRectangle &>(value));
+    case QGeoShape::CircleType:
+        return qHash(static_cast<const QGeoCircle &>(value));
+    case QGeoShape::PathType:
+        return qHash(static_cast<const QGeoPath &>(value));
+    case QGeoShape::PolygonType:
+        return qHash(static_cast<const QGeoPolygon &>(value));
+    default:
+        hash_type hashCode = qHash(value.type());
+        hashCode = hashCode * 31 + qHash(value.isEmpty());
+        hashCode = hashCode * 31 + qHash(value.center());
+        return hashCode;
+    }
+}
+
+inline hash_type qHash(const QGeoAddress &value)
+{
+    hash_type hashCode = qHash(value.city());
+    hashCode = hashCode * 31 + qHash(value.text());
+    hashCode = hashCode * 31 + qHash(value.state());
+    hashCode = hashCode * 31 + qHash(value.county());
+    hashCode = hashCode * 31 + qHash(value.street());
+    hashCode = hashCode * 31 + qHash(value.country());
+    hashCode = hashCode * 31 + qHash(value.district());
+    hashCode = hashCode * 31 + qHash(value.postalCode());
+    hashCode = hashCode * 31 + qHash(value.countryCode());
+    hashCode = hashCode * 31 + qHash(value.isTextGenerated());
+    hashCode = hashCode * 31 + qHash(value.isEmpty());
+    return hashCode;
+}
+#endif
 
 #endif // QTJAMBI_POSITIONING_HASHES_H

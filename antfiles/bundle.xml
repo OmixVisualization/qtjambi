@@ -63,21 +63,72 @@
   </target>
 
   <target name="library.native.bundle.release" description="Creates a .jar file file containing native libraries.">
-    <antcall target="library.native.bundle.platformjar">
+    <!--antcall target="library.native.bundle.platformjar">
         <param name="platformjar.debug" value="false"/>
         <param name="platformjar.debug.suffix" value=""/>
         <param name="platformjar.debug.suffix2" value=""/>
         <param name="platformjar.conf" value="release"/>
-    </antcall>
+    </antcall-->
+    <delete dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
+    <mkdir dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-native-bundle-path" value="${deploymentdir}/native/${qtjambi.osname}/release"/>
+        <property name="qtjambi-native-bundle" value="true"/>
+        <property name="platformjar.debug" value="false"/>
+        <property name="platformjar.debug.suffix" value=""/>
+    </ant>
+    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        <property name="qtjambi.testbuild" value="false"/>
+        <property name="platformjar.debug" value="false"/>
+        <property name="qtjambi.plugin.bundle" value="true"/>
+        <property name="module.suffix" value=""/>
+    </ant>
+    <if>
+        <istrue value="${qtjambi.qml.any.true}"/>
+        <then>
+            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                <property name="qtjambi.testbuild" value="false"/>
+                <property name="platformjar.debug" value="false"/>
+                <property name="qtjambi.qml.bundle" value="true"/>
+                <property name="module.suffix" value=""/>
+            </ant>
+        </then>
+    </if>
   </target>
 
   <target name="library.native.bundle.debug" description="Creates a .jar file file containing native libraries.">
-    <antcall target="library.native.bundle.platformjar">
+    <!--antcall target="library.native.bundle.platformjar">
         <param name="platformjar.debug" value="true"/>
         <param name="platformjar.debug.suffix" value="-debug"/>
         <param name="platformjar.debug.suffix2" value="_debug"/>
         <param name="platformjar.conf" value="debug"/>
-    </antcall>
+    </antcall-->
+    <delete dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+    <mkdir dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-native-bundle-path" value="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+        <property name="qtjambi-native-bundle" value="true"/>
+        <property name="platformjar.debug" value="true"/>
+        <property name="platformjar.debug.suffix" value="-debug"/>
+        <property name="platformjar.debug.suffix2" value="_debug"/>
+    </ant>
+    <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+        <property name="qtjambi.testbuild" value="false"/>
+        <property name="platformjar.debug" value="true"/>
+        <property name="qtjambi.plugin.bundle" value="true"/>
+        <property name="module.suffix" value=""/>
+    </ant>
+    <if>
+        <istrue value="${qtjambi.qml.any.true}"/>
+        <then>
+            <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                <property name="qtjambi.testbuild" value="false"/>
+                <property name="platformjar.debug" value="true"/>
+                <property name="qtjambi.qml.bundle" value="true"/>
+                <property name="module.suffix" value=""/>
+            </ant>
+        </then>
+    </if>
   </target>
   
   <target name="library.native.bundle.platformjar">
@@ -162,6 +213,7 @@
         <library name="QtWebView"                 type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webview"/>
         <library name="QtWebEngineWidgets"        type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets"/>
         <library name="QtWebEngineCore"           type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginecore"/>
+        <library name="QtWebEngineQuick"          type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webenginequick"/>
         <library name="QtWebEngine"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.webengine"/>
         <library name="QtWinExtras"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.winextras"/>
         <library name="QtMacExtras"               type="qt"  rootPath="${qtjambi.qt.libdir}"     destSubdir="${target.lib.dir}" if="qtjambi.macextras"/>
@@ -255,6 +307,7 @@
         <library name="QtJambiGamepad"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.gamepad.true"/>
         <library name="QtJambiWebChannel"         type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webchannel.true"/>
         <library name="QtJambiWebEngine"          type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webengine.true"/>
+        <library name="QtJambiWebEngineQuick"     type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginequick.true"/>
         <library name="QtJambiWebEngineCore"      type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginecore.true"/>
         <library name="QtJambiWebEngineWidgets"   type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webenginewidgets.true"/>
         <library name="QtJambiWebView"            type="qtjambi-jni" rootPath="${qtjambi.jambi.libdir}" destSubdir="${target.lib.dir}" if="qtjambi.webview.true"/>
@@ -591,7 +644,9 @@
     <delete file="${deploymentdir}/${qtjambi.osname}/${qtjambi.compiler}/${platformjar.conf}/qtjambi-deployment.xml" failonerror="false"/>
   </target>
   <target name="javadocs" depends="init.build" description="Generates the Java Doc pages for QtJambi">
+    <property name="qtjambi.jar.version" value="${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}"/>
     <delete dir="${outputDir}/javadocs" failonerror="no"/>
+    <mkdir dir="${outputDir}/javadocs"/>
     <tstamp>
         <format property="year" pattern="yyyy"/>
     </tstamp>
@@ -617,7 +672,7 @@
             additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine --show-packages exported -html5 -keywords --module-source-path ${basedir}/build/java-src"
             access="protected" 
             author="true" 
-            destdir="${outputDir}/javadocs" 
+            destdir="${outputDir}/javadocs/all" 
             windowtitle="QtJambi API"
             nodeprecated="false" 
             nodeprecatedlist="false" 
@@ -630,7 +685,7 @@
             useexternalfile="true" 
             use="true" 
             version="true"
-            stylesheetfile="${basedir}/docstyle.css"
+            stylesheetfile="${docstyle.css}"
             sourcefiles="${java.source.files.flat}">
               <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
                 <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
@@ -659,7 +714,7 @@
             additionalparam="-Xdoclint:html -exclude io.qt.internal:io.qt.internal.fileengine -keywords"
             access="protected" 
             author="true" 
-            destdir="${outputDir}/javadocs" 
+            destdir="${outputDir}/javadocs/all" 
             windowtitle="QtJambi API"
             nodeprecated="false" 
             nodeprecatedlist="false" 
@@ -688,10 +743,18 @@
             </javadoc>
         </else>
     </if>
-    <echo>${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip</echo>
-    <delete file="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip"/>
-    <zip destfile="${deploymentdir}/qtjambi-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}-javadocs.zip">
-        <fileset dir="${outputDir}/javadocs"/>
+    <echo>${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
+    <delete file="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
+    <zip destfile="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip">
+        <fileset dir="${outputDir}/javadocs/all"/>
     </zip>
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-javadoc" value="true"/>
+    </ant>
+  </target>
+  <target name="single.javadocs" depends="init.build" description="Generates the Java Doc pages for QtJambi">
+    <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+        <property name="qtjambi-javadoc" value="true"/>
+    </ant>
   </target>
 </project>

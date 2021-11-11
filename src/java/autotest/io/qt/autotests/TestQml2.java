@@ -41,7 +41,7 @@ import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
-import io.qt.internal.NativeAccess;
+import io.qt.NativeAccess;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlListProperty;
@@ -56,10 +56,14 @@ public class TestQml2 extends QApplicationTest{
 		QtUtilities.initializePackage("io.qt.widgets");
 		QtUtilities.initializePackage("io.qt.quick");
 		QtUtilities.initializePackage("io.qt.quick.widgets");
-		QtUtilities.loadQtLibrary("QuickShapes");
-		QtUtilities.loadQtLibrary("QuickTemplates2");
-		QtUtilities.loadQtLibrary("QuickControls2");
-		QtUtilities.loadQtLibrary("QuickParticles");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickShapes"))
+			QtUtilities.loadQtLibrary("QuickShapes");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickTemplates2"))
+			QtUtilities.loadQtLibrary("QuickTemplates2");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickControls2"))
+			QtUtilities.loadQtLibrary("QuickControls2");
+		if(io.qt.QtUtilities.isAvailableQtLibrary("QuickParticles"))
+			QtUtilities.loadQtLibrary("QuickParticles");
 		QApplicationTest.testInitialize();
 	}
 	

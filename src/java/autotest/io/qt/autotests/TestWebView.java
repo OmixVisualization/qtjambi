@@ -28,7 +28,6 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 import org.junit.Assert;
@@ -58,7 +57,7 @@ public class TestWebView extends QApplicationTest {
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
     	boolean found = false;
         QApplicationTest.testInitialize();
-        assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+        assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         try {
     		QtUtilities.initializePackage("io.qt.quick");
     		QtUtilities.initializePackage("io.qt.webengine");

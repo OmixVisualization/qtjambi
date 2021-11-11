@@ -28,7 +28,7 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class TestWebEngine extends QApplicationTest {
     	if(QOperatingSystemVersion.currentType()==QOperatingSystemVersion.OSType.MacOS)
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
         QApplicationTest.testInitialize();
-    	assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	boolean found = false;
     	try {
 			Class<?> cls = Class.forName("io.qt.webengine.widgets.QWebEngineView");
@@ -58,7 +58,7 @@ public class TestWebEngine extends QApplicationTest {
 				found = true;
 		} catch (ClassNotFoundException e) {
 		}
-    	assumeThat(found, QApplicationTest.trueMatcher("QWebEngineView not available."));
+    	assumeTrue("QWebEngineView not available.", found);
     }
 
     @Test

@@ -50,6 +50,8 @@
     <rejection class="*" field-name="d_ptr"/>
     <rejection class="*" field-name="d"/>
 
+    <rejection class="QApplication" function-name="nativeInterface" since="6.2.0"/>
+    <rejection class="QApplication" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QMacCocoaViewContainer" />
     <rejection class="QMacNativeWidget" />
     <rejection class="QGtkStyle" />
@@ -628,10 +630,8 @@
         <modify-field name="align" read="false" write="false"/>
     </interface-type>
     <object-type name="QSpacerItem">
-        <interface-polymorphy interface="QLayoutItem" condition="%1->spacerItem()" />
     </object-type>
     <object-type name="QWidgetItem">
-        <interface-polymorphy interface="QLayoutItem" condition="%1->widget()" />
     </object-type>
 
     <interface-type name="QGraphicsItem" thread-affine="qtjambi_get_owner(%1)">
@@ -910,7 +910,6 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsEllipseItem::Type)" />
     </object-type>
     <object-type name="QGraphicsItemAnimation">
         <extra-includes>
@@ -932,7 +931,6 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsItemGroup::Type)" />
         <modify-function signature="resetMatrix()" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setFocusProxy(QGraphicsItem*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
@@ -945,7 +943,6 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsLineItem::Type)" />
         <modify-function signature="resetMatrix()" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setFocusProxy(QGraphicsItem*)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
@@ -958,19 +955,12 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPathItem::Type)" />
-        <!--<modify-function signature="setFocusProxy(QGraphicsItem*)">
-            <modify-argument index="1">
-                <reference-count action="ignore"/>
-            </modify-argument>
-        </modify-function>-->
     </object-type>
 
     <object-type name="QGraphicsPixmapItem" thread-affine="qtjambi_get_owner(%1)">
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPixmapItem::Type)" />
         <modify-function signature="type() const" remove="all" />
         <modify-function signature="resetMatrix()" remove="all" until="5.*"/> <!--### Obsolete in 4.3-->
         <modify-function signature="setFocusProxy(QGraphicsItem*)" thread-affine="yes">
@@ -984,24 +974,20 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsPolygonItem::Type)" />
     </object-type>
     <object-type name="QGraphicsRectItem" thread-affine="qtjambi_get_owner(%1)">
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsRectItem::Type)" />
     </object-type>
     <object-type name="QGraphicsSimpleTextItem" thread-affine="qtjambi_get_owner(%1)">
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSimpleTextItem::Type)" />
     </object-type>
     <object-type name="QHBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QHBoxLayout*>(%1)" />
     </object-type>
     <object-type name="QHeaderView">
         <modify-function signature="setVisible(bool)" thread-affine="yes"/>
@@ -1625,7 +1611,6 @@
         </modify-function>
     </object-type>
     <object-type name="QVBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QVBoxLayout*>(%1)" />
     </object-type>
     <object-type name="QWhatsThis">
         <modify-function signature="showText(QPoint, QString, QWidget *)" thread-affine="ui"/>
@@ -1648,31 +1633,8 @@
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
- <!--### Obsolete in Qt5-->
-    <!--object-type name="QWindowsStyle">
-        <modify-function signature="standardPixmap(QStyle::StandardPixmap, const QStyleOption*, const QWidget*)const" remove="all"/>
-        <modify-function signature="standardIconImplementation(QStyle::StandardPixmap, const QStyleOption *, const QWidget *)const" virtual-slot="yes">
-            <modify-argument index="2" invalidate-after-use="yes" />
-        </modify-function>
-    </object-type-->
 
-    <!--enum-type name="QWorkspace::WindowOrder"/>
-    <object-type name="QWorkspace">
-        <modify-function signature="addWindow(QWidget*,QFlags&lt;Qt::WindowType&gt;)">
-            <modify-argument index="1">
-                <reference-count action="ignore"/>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="setActiveWindow(QWidget*)">
-            <modify-argument index="1">
-                <reference-count action="ignore"/>
-            </modify-argument>
-        </modify-function>
-    </object-type-->
-
-    <!--object-type name="QClipboardEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Clipboard"/-->
-
-    <object-type name="QGestureEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Gesture || %1-&gt;type() == QEvent::GestureOverride">
+    <object-type name="QGestureEvent">
         <modify-function signature="accept()" remove="all" />
         <modify-function signature="ignore()" remove="all" />
         <modify-function signature="isAccepted()const" remove="all" />
@@ -1688,12 +1650,12 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneContextMenuEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneContextMenu">
+    <object-type name="QGraphicsSceneContextMenuEvent">
         <modify-function signature="operator=(const QGraphicsSceneContextMenuEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneDragDropEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneDragEnter || %1-&gt;type() == QEvent::GraphicsSceneDragLeave || %1-&gt;type() == QEvent::GraphicsSceneDragMove || %1-&gt;type() == QEvent::GraphicsSceneDrop">
+    <object-type name="QGraphicsSceneDragDropEvent">
         <modify-function signature="setMimeData(const QMimeData *)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcMimeData" />
@@ -1708,7 +1670,7 @@
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneEvent" polymorphic-id-expression="typeid(*%1) == typeid(QGraphicsSceneEvent)">
+    <object-type name="QGraphicsSceneEvent">
         <modify-function signature="setWidget(QWidget*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcWidget" />
@@ -1718,37 +1680,37 @@
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneMoveEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneMove">
+    <object-type name="QGraphicsSceneMoveEvent">
         <modify-function signature="operator=(const QGraphicsSceneMoveEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneResizeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneResize">
+    <object-type name="QGraphicsSceneResizeEvent">
         <modify-function signature="operator=(const QGraphicsSceneResizeEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneHelpEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneHelp">
+    <object-type name="QGraphicsSceneHelpEvent">
         <modify-function signature="operator=(const QGraphicsSceneHelpEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneHoverEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneHoverEnter || %1-&gt;type() == QEvent::GraphicsSceneHoverLeave || %1-&gt;type() == QEvent::GraphicsSceneHoverMove">
+    <object-type name="QGraphicsSceneHoverEvent">
         <modify-function signature="operator=(const QGraphicsSceneHoverEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneMouseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneMouseDoubleClick || %1-&gt;type() == QEvent::GraphicsSceneMouseMove || %1-&gt;type() == QEvent::GraphicsSceneMousePress || %1-&gt;type() == QEvent::GraphicsSceneMouseRelease">
+    <object-type name="QGraphicsSceneMouseEvent">
         <modify-function signature="operator=(const QGraphicsSceneMouseEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QGraphicsSceneWheelEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::GraphicsSceneWheel">
+    <object-type name="QGraphicsSceneWheelEvent">
         <modify-function signature="operator=(const QGraphicsSceneWheelEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
     </object-type>
-    <object-type name="QToolBarChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ToolBarChange">
+    <object-type name="QToolBarChangeEvent">
         <modify-function signature="operator=(const QToolBarChangeEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
@@ -1759,19 +1721,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <!--object-type name="QDragResponseEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DragResponse"/-->
-
-    <object-type name="QAbstractButton" />
-
-    <!--object-type name="QWindowsStyle">
-    </object-type>
-
-    <object-type name="QWindowsXPStyle">
-    </object-type>
-
-    <object-type name="QFusionStyle">
-    </object-type-->
-
+    <object-type name="QAbstractButton"/>
     <object-type name="QStyle">
         <modify-function signature="drawItemPixmap(QPainter*,QRect,int,QPixmap)const">
             <modify-argument index="1" invalidate-after-use="yes" />
@@ -1779,15 +1729,12 @@
         <modify-function signature="drawItemText(QPainter*,QRect,int,QPalette,bool,QString,QPalette::ColorRole)const">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
-
     </object-type>
-
     <object-type name="QColorDialog">
         <modify-function signature="setVisible(bool)" thread-affine="yes"/>
     </object-type>
 
     <object-type name="QLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="%1->layout()" />
         <modify-function signature="setSpacing(int)" rename="setWidgetSpacing"/>
         <modify-function signature="spacing()const" rename="widgetSpacing"/>
         <modify-function signature="addChildWidget(QWidget *)">
@@ -1833,7 +1780,6 @@
     </object-type>
 
     <object-type name="QStackedLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QStackedLayout*>(%1)" />
         <modify-function signature="itemAt(int) const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="invalidate"/>
@@ -1848,7 +1794,6 @@
     </object-type>
 
     <object-type name="QBoxLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QBoxLayout*>(%1)" />
         <modify-function signature="addItem(QLayoutItem *)">
             <modify-argument index="1" invalidate-after-use="yes">
                 <no-null-pointer/>
@@ -1896,7 +1841,6 @@
     </object-type>
 
     <object-type name="QGridLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QGridLayout*>(%1)" />
         <modify-function signature="addLayout(QLayout *, int, int, QFlags&lt;Qt::AlignmentFlag&gt;)">
             <modify-argument index="1">
                 <reference-count action="ignore"/>
@@ -1915,7 +1859,6 @@
     </object-type>
 
     <object-type name="QFormLayout">
-        <interface-polymorphy interface="QLayoutItem" condition="dynamic_cast&lt;const QFormLayout*>(%1)" />
         <modify-function signature="itemAt(int) const">
             <modify-argument index="return">
                 <define-ownership class="shell" owner="invalidate"/>
@@ -2139,7 +2082,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1.treeWidget() == null) setDefaultOwnership(this);
+                if (%1.treeWidget() == null) QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1);
             </inject-code>
         </modify-function>
         <modify-function signature="mimeData(const QList&lt;QTreeWidgetItem*&gt;)const">
@@ -2345,7 +2288,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QListWidgetItem(const QString &amp;, QListWidget *, int)">
@@ -2354,7 +2297,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2"/>
-                if (%2 != null) setCppOwnership(this);
+                if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QListWidgetItem(const QIcon &amp;, const QString &amp;, QListWidget *, int)">
@@ -2363,7 +2306,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="3" meta-name="%3"/>
-                if (%3 != null) setCppOwnership(this);
+                if (%3 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="clone() const">
@@ -2403,7 +2346,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidget *,const QStringList &amp;,int)">
@@ -2412,7 +2355,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidget *,QTreeWidgetItem *,int)">
@@ -2421,7 +2364,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidgetItem *,int)">
@@ -2430,7 +2373,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(QTreeWidgetItem *,const QStringList &amp;,int)">
@@ -2439,7 +2382,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(const QStringList &amp;,int)">
@@ -2453,7 +2396,7 @@
             </modify-argument>
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QTreeWidgetItem(int)">
@@ -2519,7 +2462,6 @@
                 <reference-count action="set" variable-name="__rcDocument"/>
             </modify-argument>
         </modify-function>
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsTextItem::Type)" />
     </object-type>
 
     <object-type name="QCompleter">
@@ -2744,7 +2686,6 @@
             </modify-argument>
         </modify-function>
         <modify-function signature="devType() const" remove="all" />
-        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::Widget" />
         <modify-function signature="nativeEvent(const QByteArray &amp;, void *, long *)" remove="all" until="5.*"/>
         <modify-function signature="nativeEvent(const QByteArray &amp;, void *, qintptr *)" remove="all" since="6.0.0"/>
         <modify-function signature="actionEvent(QActionEvent*)" thread-affine="ui">
@@ -2834,43 +2775,6 @@
                 <reference-count action="set" variable-name="__rcGraphicsEffect"/>
             </modify-argument>
         </modify-function>
-
-        <inject-code class="native">
-            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowTitle)
-            (JNIEnv *__jni_env,
-                jclass,
-                QtJambiNativeID __this_nativeId,
-                jobject title0)
-            {
-                QTJAMBI_DEBUG_METHOD_PRINT("native", "QMessageBox::setWindowTitle(const QString &amp; title)")
-                try{
-                    QMessageBox *__qt_this = qtjambi_object_from_nativeId&lt;QMessageBox>(__this_nativeId);
-                    qtjambi_check_resource(__jni_env, __qt_this);
-                    __qt_this-&gt;setWindowTitle(qtjambi_to_qstring(__jni_env, jstring(title0)));
-                }catch(const JavaException&amp; exn){
-                    exn.raiseInJava(__jni_env);
-                }
-            }
-        </inject-code>
-
-        <inject-code class="native">
-            extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidget__1_1qt_1QMessageBox_1setWindowModality)
-            (JNIEnv * __jni_env,
-                jclass,
-                QtJambiNativeID __this_nativeId,
-                jint windowModality0)
-            {
-                QTJAMBI_DEBUG_METHOD_PRINT("native", "QMessageBox::setWindowModality(Qt::WindowModality modality)")
-                try{
-                    QMessageBox *__qt_this = qtjambi_object_from_nativeId&lt;QMessageBox>(__this_nativeId);
-                    qtjambi_check_resource(__jni_env, __qt_this);
-                    __qt_this-&gt;setWindowModality(Qt::WindowModality(windowModality0));
-                }catch(const JavaException&amp; exn){
-                    exn.raiseInJava(__jni_env);
-                }
-            }
-        </inject-code>
-
         <modify-function signature="render(QPaintDevice *, const QPoint &amp;, const QRegion &amp;, QFlags&lt;QWidget::RenderFlag&gt;)" thread-affine="ui">
             <modify-argument index="4">
                 <replace-default-expression with="RenderFlag.DrawWindowBackground, RenderFlag.DrawChildren"/>
@@ -3138,10 +3042,12 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <functional-type name="QFileDialog::FileContentHandler" using="std::function&lt;void(const QString &amp;, const QByteArray &amp;)>"/>
+    <functional-type name="QFileDialog::FileContentHandler" using="std::function&lt;void(const QString &amp;, const QByteArray &amp;)>" generate="no"/>
     <object-type name="QFileDialog">
         <extra-includes>
             <include file-name="QUrl" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>
         <modify-function signature="setProxyModel(QAbstractProxyModel*)" thread-affine="ui">
             <modify-argument index="1">
@@ -3149,7 +3055,6 @@
                 <reference-count action="ignore"/>
             </modify-argument>
         </modify-function>
-
     </object-type>
 
     <object-type name="QErrorMessage">
@@ -3670,7 +3575,6 @@
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsGridLayout)" />
         <modify-function signature="addItem(QGraphicsLayoutItem*,int,int,QFlags&lt;Qt::AlignmentFlag&gt;)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -3696,7 +3600,6 @@
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QGraphicsLayoutItem" condition="%1->isLayout()" />
         <modify-function signature="widgetEvent(QEvent*)">
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
@@ -3721,7 +3624,6 @@
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsLayoutItem)" />
         <modify-function signature="addItem(QGraphicsLayoutItem *)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <!-- This does mot match the actual c++ behavior. 
@@ -3756,7 +3658,6 @@
         <extra-includes>
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QGraphicsLayoutItem" condition="typeid(*%1)==typeid(QGraphicsAnchorLayout)" />
         <modify-function signature="addAnchor(QGraphicsLayoutItem *, Qt::AnchorPoint, QGraphicsLayoutItem *, Qt::AnchorPoint)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <define-ownership class="java" owner="cplusplus"/>
@@ -3787,7 +3688,6 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <modify-function signature="type() const" remove="all" />
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsProxyWidget::Type)" />
         <modify-function signature="eventFilter(QObject*,QEvent*)">
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
@@ -3804,8 +3704,6 @@
             <include file-name="qwidgetutils.h" location="local"/>
         </extra-includes>
         <!-- Duplicate function to QObject::children() to override accidental shadowing which is not present in Jambi -->
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsWidget::Type)" />
-        <interface-polymorphy interface="QGraphicsLayoutItem" condition="%1->graphicsItem() &amp;&amp; %1->graphicsItem()->type()==int(QGraphicsWidget::Type)" />
         <modify-function signature="children()const" remove="all" />
         <modify-function signature="setPalette(QPalette)" thread-affine="yes"/>
         <modify-function signature="setLayoutDirection(Qt::LayoutDirection)" thread-affine="yes"/>
@@ -4012,7 +3910,6 @@
             <include file-name="qtjambi_widgets_repository.h" location="local"/>
         </extra-includes>
         <!-- Duplicate function to QObject::children() to override accidental shadowing which is not present in Jambi -->
-        <interface-polymorphy interface="QGraphicsItem" condition="%1->toGraphicsObject()!=nullptr" />
         <modify-function signature="children()const" remove="all" />
         <modify-function signature="show()" thread-affine="yes"/>
         <modify-function signature="hide()" thread-affine="yes"/>
@@ -4097,8 +3994,7 @@
         <modify-function signature="scroller(const QObject *)" remove="all"/>
     </object-type>
     
-    <object-type name="QAccessibleWidget" polymorphic-id-expression="typeid(*%1) == typeid(QAccessibleWidget)">
-        <interface-polymorphy interface="QAccessibleActionInterface" condition="typeid(*reinterpret_cast&lt;QAccessibleActionInterface*>(%1))==typeid(QAccessibleWidget)" />
+    <object-type name="QAccessibleWidget">
     </object-type>
 
     <enum-type name="QScroller::Input"/>

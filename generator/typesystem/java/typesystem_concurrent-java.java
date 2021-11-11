@@ -221,30 +221,32 @@ class QtConcurrent___ extends QtConcurrent {
         /**
          * This function is called for each item in the Collection. The function is then free to alter <code>object</code> as it see fit.
          */
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         public void map(T object);
     }
     /**
      *  Calls function once for each item in sequence. The function is passed a reference to the item, so that any modifications done to the item will appear in sequence.
      */
     @io.qt.QtUninvokable
-    public static <T> QVoidFuture map(java.util.Collection<T> sequence, MapFunctor<T> functor){
-        return _map(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+    public static <T> QFuture<Void> map(java.util.Collection<T> sequence, MapFunctor<T> functor){
+        java.util.Objects.requireNonNull(sequence);
+        return _map(null, sequence, java.util.Objects.requireNonNull(functor));
     }
     
     @io.qt.QtUninvokable
-    private static native <T> QVoidFuture _map(long threadPoolId, java.util.Collection<T> sequence, MapFunctor<T> functor);
+    private static native <T> QFuture<Void> _map(QThreadPool threadPool, java.util.Collection<T> sequence, MapFunctor<T> functor);
     
     /**
      *  Calls function once for each item in sequence. The function is passed a reference to the item, so that any modifications done to the item will appear in sequence.
      */
     @io.qt.QtUninvokable
     public static <T> void blockingMap(java.util.Collection<T> sequence, MapFunctor<T> functor){
-        _blockingMap(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        java.util.Objects.requireNonNull(sequence);
+        _blockingMap(null, sequence, java.util.Objects.requireNonNull(functor));
     }
     
     @io.qt.QtUninvokable
-    private static native <T> void _blockingMap(long threadPoolId, java.util.Collection<T> sequence, MapFunctor<T> functor);
+    private static native <T> void _blockingMap(QThreadPool threadPool, java.util.Collection<T> sequence, MapFunctor<T> functor);
     
     /**
      * Implement this interface to perform a mapped operation. An implementation of the interface is sendt
@@ -258,7 +260,7 @@ class QtConcurrent___ extends QtConcurrent {
          * This method is called for each object in a collection. It should returned a new altered
          * object.
          */
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         public U map(T object);
     }
     
@@ -268,22 +270,24 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> QFuture<U> mapped(java.util.Collection<T> sequence, MappedFunctor<U, T> functor){
-        return _mapped(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        java.util.Objects.requireNonNull(sequence);
+        return _mapped(null, sequence, java.util.Objects.requireNonNull(functor));
     }
     
     @io.qt.QtUninvokable
-    private static native <U, T> QFuture<U> _mapped(long threadPoolId, java.util.Collection<T> sequence, MappedFunctor<U, T> functor);
+    private static native <U, T> QFuture<U> _mapped(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<U, T> functor);
     
     /**
      * Calls function once for each item in sequence and returns a future with each mapped item as a result. You can QFutureIterator to iterate through the results.
      */
     @io.qt.QtUninvokable
     public static <U, T> java.util.List<U> blockingMapped(java.util.Collection<T> sequence, MappedFunctor<U, T> functor){
-        return _blockingMapped(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        java.util.Objects.requireNonNull(sequence);
+        return _blockingMapped(null, sequence, java.util.Objects.requireNonNull(functor));
     }
     
     @io.qt.QtUninvokable
-    private static native <U, T> java.util.List<U> _blockingMapped(long threadPoolId, java.util.Collection<T> sequence, MappedFunctor<U, T> functor);
+    private static native <U, T> java.util.List<U> _blockingMapped(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<U, T> functor);
     
     /**
      * Implement this interface in order to perform a reduce operation.
@@ -294,13 +298,13 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @FunctionalInterface
     public interface ReducedFunctor<U, T> {
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         public default U defaultResult() { return null; }
     
         /**
          *  Performs a reduce operation on <code>intermediate</code>. <code>result</code> is the result of the reduction.
          */
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         public void reduce(U result, T intermediate);
     }
     
@@ -334,11 +338,12 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, V, T> QFuture<U> mappedReduced(java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, ReduceOptions options) {
-        return _mappedReduced(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        java.util.Objects.requireNonNull(sequence);
+        return _mappedReduced(null, sequence, java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     
     @io.qt.QtUninvokable
-    private native static <U, V, T> QFuture<U> _mappedReduced(long threadPoolId, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, int options);
+    private native static <U, V, T> QFuture<U> _mappedReduced(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, int options);
     
     
     /**
@@ -373,11 +378,11 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, V, T> U blockingMappedReduced(java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, ReduceOptions options) {
-        return _blockingMappedReduced(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _blockingMappedReduced(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     
     @io.qt.QtUninvokable
-    private native static <U, V, T> U _blockingMappedReduced(long threadPoolId, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, int options);
+    private native static <U, V, T> U _blockingMappedReduced(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, int options);
     
     /**
      * An implementation of this interface is given to one of QtConcurrent's filtered() methods.
@@ -397,34 +402,34 @@ class QtConcurrent___ extends QtConcurrent {
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @io.qt.QtUninvokable
-    public static <T> QVoidFuture filter(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _filter(0, java.util.Objects.requireNonNull(sequence), filteredFunctor);
+    public static <T> QFuture<Void> filter(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
+        return _filter(null, java.util.Objects.requireNonNull(sequence), filteredFunctor);
     }
     
     @io.qt.QtUninvokable
-    private native static <T> QVoidFuture _filter(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
+    private native static <T> QFuture<Void> _filter(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
     
     /**
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @io.qt.QtUninvokable
     public static <T> QFuture<T> filtered(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _filtered(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        return _filtered(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
     
     @io.qt.QtUninvokable
-    private native static <T> QFuture<T> _filtered(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
+    private native static <T> QFuture<T> _filtered(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
     
     /**
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @io.qt.QtUninvokable
     public static <T> java.util.List<T> blockingFiltered(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _blockingFiltered(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        return _blockingFiltered(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
 
     @io.qt.QtUninvokable
-    private native static <T> java.util.List<T> _blockingFiltered(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
+    private native static <T> java.util.List<T> _blockingFiltered(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
     
     /**
      * Calls filterFunction once for each item in sequence. If filterFunction returns true, the item is kept in sequence; otherwise, the item is removed from sequence.
@@ -432,11 +437,11 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> void blockingFilter(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        _blockingFilter(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        _blockingFilter(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
     
     @io.qt.QtUninvokable
-    private native static <T> void _blockingFilter(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
+    private native static <T> void _blockingFilter(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor);
     
     /**
      * This is an overloaded method provided for convenience. It is equivalent of calling filteredReduced(sequence, filteredFunctor, ReduceOption.UnorderedReduce, ReduceOption.Seq This is an overloaded method provided for convenience. It is equivalent of calling filteredReduced)
@@ -463,10 +468,10 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> QFuture<U> filteredReduced(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, ReduceOptions options) {
-        return _filteredReduced(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _filteredReduced(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     @io.qt.QtUninvokable
-    private native static <U, T> QFuture<U> _filteredReduced(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, int options);
+    private native static <U, T> QFuture<U> _filteredReduced(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, int options);
     
     /**
      * This is an overloaded method provided for convenience. It is the equivalent of calling blockingFilteredReduced(sequence, filteredFunctor, reducedFunctor, ReduceOption.UnorderedReduce, ReduceOption.SequentialReduce)
@@ -493,11 +498,11 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> U blockingFilteredReduced(java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, ReduceOptions options) {
-        return _blockingFilteredReduced(0, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _blockingFilteredReduced(null, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     
     @io.qt.QtUninvokable
-    private native static <U, T> U _blockingFilteredReduced(long threadPoolId, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, int options);
+    private native static <U, T> U _blockingFilteredReduced(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, int options);
     
     /**
      * Executes the Callable <code>callable</code> through the QtConcurrent framework. The returned QFuture object's result will be the
@@ -505,7 +510,7 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> QFuture<T> run(java.util.concurrent.Callable<T> callable){
-        return run0(0, java.util.Objects.requireNonNull(callable));
+        return run0(null, java.util.Objects.requireNonNull(callable));
     }
     
     /**
@@ -514,28 +519,28 @@ class QtConcurrent___ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> QFuture<T> run(QThreadPool threadPool, java.util.concurrent.Callable<T> callable){
-        return run0(checkedNativeId(threadPool), java.util.Objects.requireNonNull(callable));
+        return run0(threadPool, java.util.Objects.requireNonNull(callable));
     }
     @io.qt.QtUninvokable
-    private native static <T> QFuture<T> run0(long threadPoolId, java.util.concurrent.Callable<T> callable);
+    private native static <T> QFuture<T> run0(QThreadPool threadPool, java.util.concurrent.Callable<T> callable);
     
     /**
      * Executes the Runnable <code>Void</code> using the QtConcurrent framework.
      */
     @io.qt.QtUninvokable
-    public static QVoidFuture run(Runnable runnable) {
-        return runVoid0(0, java.util.Objects.requireNonNull(runnable));
+    public static QFuture<Void> run(Runnable runnable) {
+        return runVoid0(null, java.util.Objects.requireNonNull(runnable));
     }
     
     /**
      * Executes the Runnable <code>Void</code> using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     @io.qt.QtUninvokable
-    public static QVoidFuture run(QThreadPool threadPool, Runnable runnable) {
-        return runVoid0(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable));
+    public static QFuture<Void> run(QThreadPool threadPool, Runnable runnable) {
+        return runVoid0(threadPool, java.util.Objects.requireNonNull(runnable));
     }
     @io.qt.QtUninvokable
-    private native static QVoidFuture runVoid0(long threadPoolId, Runnable runnable);
+    private native static QFuture<Void> runVoid0(QThreadPool threadPool, Runnable runnable);
     
     @FunctionalInterface
     public interface Runnable1<A>{
@@ -565,72 +570,72 @@ class QtConcurrent___ extends QtConcurrent {
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A> QVoidFuture run(Runnable1<A> runnable, A a) {
-        return runVoid1(0, runnable, a);
+    public static <A> QFuture<Void> run(Runnable1<A> runnable, A a) {
+        return runVoid1(null, runnable, a);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A> QVoidFuture run(QThreadPool threadPool, Runnable1<A> runnable, A a) {
-        return runVoid1(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a);
+    public static <A> QFuture<Void> run(QThreadPool threadPool, Runnable1<A> runnable, A a) {
+        return runVoid1(threadPool, java.util.Objects.requireNonNull(runnable), a);
     }
-    private native static <A> QVoidFuture runVoid1(long threadPoolId, Runnable1<A> runnable, A a);
+    private native static <A> QFuture<Void> runVoid1(QThreadPool threadPool, Runnable1<A> runnable, A a);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B> QVoidFuture run(Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(0, java.util.Objects.requireNonNull(runnable), a, b);
+    public static <A,B> QFuture<Void> run(Runnable2<A,B> runnable, A a, B b) {
+        return runVoid2(null, java.util.Objects.requireNonNull(runnable), a, b);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B> QVoidFuture run(QThreadPool threadPool, Runnable2<A,B> runnable, A a, B b) {
-        return runVoid2(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b);
+    public static <A,B> QFuture<Void> run(QThreadPool threadPool, Runnable2<A,B> runnable, A a, B b) {
+        return runVoid2(threadPool, java.util.Objects.requireNonNull(runnable), a, b);
     }
-    private native static <A,B> QVoidFuture runVoid2(long threadPoolId, Runnable2<A,B> runnable, A a, B b);
+    private native static <A,B> QFuture<Void> runVoid2(QThreadPool threadPool, Runnable2<A,B> runnable, A a, B b);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C> QVoidFuture run(Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(0, java.util.Objects.requireNonNull(runnable), a, b, c);
+    public static <A,B,C> QFuture<Void> run(Runnable3<A,B,C> runnable, A a, B b, C c) {
+        return runVoid3(null, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C> QVoidFuture run(QThreadPool threadPool, Runnable3<A,B,C> runnable, A a, B b, C c) {
-        return runVoid3(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c);
+    public static <A,B,C> QFuture<Void> run(QThreadPool threadPool, Runnable3<A,B,C> runnable, A a, B b, C c) {
+        return runVoid3(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
-    private native static <A,B,C> QVoidFuture runVoid3(long threadPoolId, Runnable3<A,B,C> runnable, A a, B b, C c);
+    private native static <A,B,C> QFuture<Void> runVoid3(QThreadPool threadPool, Runnable3<A,B,C> runnable, A a, B b, C c);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D> QVoidFuture run(Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(0, java.util.Objects.requireNonNull(runnable), a, b, c, d);
+    public static <A,B,C,D> QFuture<Void> run(Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
+        return runVoid4(null, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D> QVoidFuture run(QThreadPool threadPool, Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
-        return runVoid4(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d);
+    public static <A,B,C,D> QFuture<Void> run(QThreadPool threadPool, Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
+        return runVoid4(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
-    private native static <A,B,C,D> QVoidFuture runVoid4(long threadPoolId, Runnable4<A,B,C,D> runnable, A a, B b, C c, D d);
+    private native static <A,B,C,D> QFuture<Void> runVoid4(QThreadPool threadPool, Runnable4<A,B,C,D> runnable, A a, B b, C c, D d);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D,E> QVoidFuture run(Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+    public static <A,B,C,D,E> QFuture<Void> run(Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
+        return runVoid5(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D,E> QVoidFuture run(QThreadPool threadPool, Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return runVoid5(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+    public static <A,B,C,D,E> QFuture<Void> run(QThreadPool threadPool, Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
+        return runVoid5(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
-    private native static <A,B,C,D,E> QVoidFuture runVoid5(long threadPoolId, Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
+    private native static <A,B,C,D,E> QFuture<Void> runVoid5(QThreadPool threadPool, Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
     
     
     
@@ -663,71 +668,71 @@ class QtConcurrent___ extends QtConcurrent {
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A> QFuture<T> run(Callable1<T,A> runnable, A a) {
-        return run1(0, java.util.Objects.requireNonNull(runnable), a);
+        return run1(null, java.util.Objects.requireNonNull(runnable), a);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A> QFuture<T> run(QThreadPool threadPool, Callable1<T,A> runnable, A a) {
-        return run1(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a);
+        return run1(threadPool, java.util.Objects.requireNonNull(runnable), a);
     }
-    private native static <T,A> QFuture<T> run1(long threadPoolId, Callable1<T,A> runnable, A a);
+    private native static <T,A> QFuture<T> run1(QThreadPool threadPool, Callable1<T,A> runnable, A a);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B> QFuture<T> run(Callable2<T,A,B> runnable, A a, B b) {
-        return run2(0, java.util.Objects.requireNonNull(runnable), a, b);
+        return run2(null, java.util.Objects.requireNonNull(runnable), a, b);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B> QFuture<T> run(QThreadPool threadPool, Callable2<T,A,B> runnable, A a, B b) {
-        return run2(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b);
+        return run2(threadPool, java.util.Objects.requireNonNull(runnable), a, b);
     }
-    private native static <T,A,B> QFuture<T> run2(long threadPoolId, Callable2<T,A,B> runnable, A a, B b);
+    private native static <T,A,B> QFuture<T> run2(QThreadPool threadPool, Callable2<T,A,B> runnable, A a, B b);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C> QFuture<T> run(Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(0, java.util.Objects.requireNonNull(runnable), a, b, c);
+        return run3(null, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C> QFuture<T> run(QThreadPool threadPool, Callable3<T,A,B,C> runnable, A a, B b, C c) {
-        return run3(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c);
+        return run3(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
-    private native static <T,A,B,C> QFuture<T> run3(long threadPoolId, Callable3<T,A,B,C> runnable, A a, B b, C c);
+    private native static <T,A,B,C> QFuture<T> run3(QThreadPool threadPool, Callable3<T,A,B,C> runnable, A a, B b, C c);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D> QFuture<T> run(Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(0, java.util.Objects.requireNonNull(runnable), a, b, c, d);
+        return run4(null, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D> QFuture<T> run(QThreadPool threadPool, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
-        return run4(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d);
+        return run4(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
-    private native static <T,A,B,C,D> QFuture<T> run4(long threadPoolId, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d);
+    private native static <T,A,B,C,D> QFuture<T> run4(QThreadPool threadPool, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D,E> QFuture<T> run(Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+        return run5(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D,E> QFuture<T> run(QThreadPool threadPool, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
-        return run5(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+        return run5(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
-    private native static <T,A,B,C,D,E> QFuture<T> run5(long threadPoolId, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
+    private native static <T,A,B,C,D,E> QFuture<T> run5(QThreadPool threadPool, Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e);
     
 }// class
 
@@ -776,121 +781,121 @@ class QtConcurrent_6__ extends QtConcurrent {
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D,E,F> QVoidFuture run(Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+    public static <A,B,C,D,E,F> QFuture<Void> run(Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
+        return runVoid6(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D,E,F> QVoidFuture run(QThreadPool threadPool, Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return runVoid6(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+    public static <A,B,C,D,E,F> QFuture<Void> run(QThreadPool threadPool, Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
+        return runVoid6(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
-    private native static <A,B,C,D,E,F> QVoidFuture runVoid6(long threadPoolId, Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
+    private native static <A,B,C,D,E,F> QFuture<Void> runVoid6(QThreadPool threadPool, Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D,E,F,G> QVoidFuture run(Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+    public static <A,B,C,D,E,F,G> QFuture<Void> run(Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        return runVoid7(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D,E,F,G> QVoidFuture run(QThreadPool threadPool, Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runVoid7(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+    public static <A,B,C,D,E,F,G> QFuture<Void> run(QThreadPool threadPool, Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
+        return runVoid7(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
-    private native static <A,B,C,D,E,F,G> QVoidFuture runVoid7(long threadPoolId, Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
+    private native static <A,B,C,D,E,F,G> QFuture<Void> runVoid7(QThreadPool threadPool, Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D,E,F,G,H> QVoidFuture run(Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+    public static <A,B,C,D,E,F,G,H> QFuture<Void> run(Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        return runVoid8(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D,E,F,G,H> QVoidFuture run(QThreadPool threadPool, Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runVoid8(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+    public static <A,B,C,D,E,F,G,H> QFuture<Void> run(QThreadPool threadPool, Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
+        return runVoid8(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
-    private native static <A,B,C,D,E,F,G,H> QVoidFuture runVoid8(long threadPoolId, Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+    private native static <A,B,C,D,E,F,G,H> QFuture<Void> runVoid8(QThreadPool threadPool, Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A,B,C,D,E,F,G,H,I> QVoidFuture run(Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+    public static <A,B,C,D,E,F,G,H,I> QFuture<Void> run(Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        return runVoid9(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
-    public static <A,B,C,D,E,F,G,H,I> QVoidFuture run(QThreadPool threadPool, Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runVoid9(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+    public static <A,B,C,D,E,F,G,H,I> QFuture<Void> run(QThreadPool threadPool, Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
+        return runVoid9(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
-    private native static <A,B,C,D,E,F,G,H,I> QVoidFuture runVoid9(long threadPoolId, Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+    private native static <A,B,C,D,E,F,G,H,I> QFuture<Void> runVoid9(QThreadPool threadPool, Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D,E,F> QFuture<T> run(Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return run6(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D,E,F> QFuture<T> run(QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
-        return run6(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return run6(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
-    private native static <T,A,B,C,D,E,F> QFuture<T> run6(long threadPoolId, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
+    private native static <T,A,B,C,D,E,F> QFuture<T> run6(QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D,E,F,G> QFuture<T> run(Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return run7(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D,E,F,G> QFuture<T> run(QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return run7(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return run7(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
-    private native static <T,A,B,C,D,E,F,G> QFuture<T> run7(long threadPoolId, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
+    private native static <T,A,B,C,D,E,F,G> QFuture<T> run7(QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D,E,F,G,H> QFuture<T> run(Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return run8(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D,E,F,G,H> QFuture<T> run(QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return run8(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return run8(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
-    private native static <T,A,B,C,D,E,F,G,H> QFuture<T> run8(long threadPoolId, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
+    private native static <T,A,B,C,D,E,F,G,H> QFuture<T> run8(QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T,A,B,C,D,E,F,G,H,I> QFuture<T> run(Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return run9(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
     /**
      * Executes the Callable using the QtConcurrent framework. The thread is taken from the QThreadPool pool.
      */
     public static <T,A,B,C,D,E,F,G,H,I> QFuture<T> run(QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return run9(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return run9(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
-    private native static <T,A,B,C,D,E,F,G,H,I> QFuture<T> run9(long threadPoolId, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+    private native static <T,A,B,C,D,E,F,G,H,I> QFuture<T> run9(QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
 
     /**
      *  Calls function once for each item in sequence. The function is passed a reference to the item, so that any modifications done to the item will appear in sequence.
      */
     @io.qt.QtUninvokable
-    public static <T> QVoidFuture map(QThreadPool threadPool, java.util.Collection<T> sequence, MapFunctor<T> functor){
-        return _map(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+    public static <T> QFuture<Void> map(QThreadPool threadPool, java.util.Collection<T> sequence, MapFunctor<T> functor){
+        return _map(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
     }
     
     /**
@@ -898,7 +903,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> void blockingMap(QThreadPool threadPool, java.util.Collection<T> sequence, MapFunctor<T> functor){
-        _blockingMap(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        _blockingMap(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
     }
     
     /**
@@ -907,7 +912,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> QFuture<U> mapped(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<U, T> functor){
-        return _mapped(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        return _mapped(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
     }
     
     /**
@@ -915,7 +920,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> java.util.List<U> blockingMapped(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<U, T> functor){
-        return _blockingMapped(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
+        return _blockingMapped(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor));
     }
 
     /**
@@ -948,7 +953,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, V, T> QFuture<U> mappedReduced(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, ReduceOptions options) {
-        return _mappedReduced(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _mappedReduced(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
 
     /**
@@ -983,15 +988,15 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, V, T> U blockingMappedReduced(QThreadPool threadPool, java.util.Collection<T> sequence, MappedFunctor<V, T> functor, ReducedFunctor<U, V> reducedFunctor, ReduceOptions options) {
-        return _blockingMappedReduced(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _blockingMappedReduced(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(functor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     
     /**
      * Calls filterFunctor's filter() method once for each item in sequence and returns a new Sequence of kept items. If filterFunction returns true, a copy of the item is put in the new Sequence. Otherwise, the item will not appear in the new Sequence.
      */
     @io.qt.QtUninvokable
-    public static <T> QVoidFuture filter(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _filter(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), filteredFunctor);
+    public static <T> QFuture<Void> filter(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
+        return _filter(threadPool, java.util.Objects.requireNonNull(sequence), filteredFunctor);
     }
     
     /**
@@ -999,7 +1004,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> QFuture<T> filtered(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _filtered(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        return _filtered(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
     
     /**
@@ -1007,7 +1012,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> java.util.List<T> blockingFiltered(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        return _blockingFiltered(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        return _blockingFiltered(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
     
     /**
@@ -1016,7 +1021,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <T> void blockingFilter(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor){
-        _blockingFilter(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
+        _blockingFilter(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor));
     }
     
     /**
@@ -1044,7 +1049,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> QFuture<U> filteredReduced(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, ReduceOptions options) {
-        return _filteredReduced(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _filteredReduced(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
 
     /**
@@ -1072,7 +1077,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     @io.qt.QtUninvokable
     public static <U, T> U blockingFilteredReduced(QThreadPool threadPool, java.util.Collection<T> sequence, FilteredFunctor<T> filteredFunctor, ReducedFunctor<U, T> reducedFunctor, ReduceOptions options) {
-        return _blockingFilteredReduced(checkedNativeId(threadPool), java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
+        return _blockingFilteredReduced(threadPool, java.util.Objects.requireNonNull(sequence), java.util.Objects.requireNonNull(filteredFunctor), java.util.Objects.requireNonNull(reducedFunctor), options.value());
     }
     
     @FunctionalInterface
@@ -1127,59 +1132,59 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     @FunctionalInterface
     public interface RunnableWithVoidPromise {
-        public void run(QVoidPromise promise);
+        public void run(QPromise<Void> promise);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise1<A> {
-        public void run(QVoidPromise promise, A a);
+        public void run(QPromise<Void> promise, A a);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise2<A, B> {
-        public void run(QVoidPromise promise, A a, B b);
+        public void run(QPromise<Void> promise, A a, B b);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise3<A, B, C> {
-        public void run(QVoidPromise promise, A a, B b, C c);
+        public void run(QPromise<Void> promise, A a, B b, C c);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise4<A, B, C, D> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise5<A, B, C, D, E> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d, E e);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d, E e);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise6<A, B, C, D, E, F> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d, E e, F f);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d, E e, F f);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise7<A, B, C, D, E, F, G> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d, E e, F f, G g);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d, E e, F f, G g);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d, E e, F f, G g, H h);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d, E e, F f, G g, H h);
     }
 
     @FunctionalInterface
     public interface RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> {
-        public void run(QVoidPromise promise, A a, B b, C c, D d, E e, F f, G g, H h, I i);
+        public void run(QPromise<Void> promise, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T> QFuture<T> run(RunnableWithPromise<T> runnable) {
-        return runWithPromise0(0, runnable);
+        return runWithPromise0(null, runnable);
     }
 
     /**
@@ -1187,16 +1192,16 @@ class QtConcurrent_6__ extends QtConcurrent {
      * from the QThreadPool pool.
      */
     public static <T> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise<T> runnable) {
-        return runWithPromise0(checkedNativeId(threadPool), runnable);
+        return runWithPromise0(threadPool, runnable);
     }
 
-    private native static <T> QFuture<T> runWithPromise0(long threadPoolId, RunnableWithPromise<T> runnable);
+    private native static <T> QFuture<T> runWithPromise0(QThreadPool threadPool, RunnableWithPromise<T> runnable);
     
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T, A> QFuture<T> run(RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(0, java.util.Objects.requireNonNull(runnable), a);
+        return runWithPromise1(null, java.util.Objects.requireNonNull(runnable), a);
     }
 
     /**
@@ -1204,16 +1209,16 @@ class QtConcurrent_6__ extends QtConcurrent {
      * from the QThreadPool pool.
      */
     public static <T, A> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise1<T, A> runnable, A a) {
-        return runWithPromise1(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a);
+        return runWithPromise1(threadPool, java.util.Objects.requireNonNull(runnable), a);
     }
 
-    private native static <T, A> QFuture<T> runWithPromise1(long threadPoolId, RunnableWithPromise1<T, A> runnable, A a);
+    private native static <T, A> QFuture<T> runWithPromise1(QThreadPool threadPool, RunnableWithPromise1<T, A> runnable, A a);
 
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T, A, B> QFuture<T> run(RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(0, java.util.Objects.requireNonNull(runnable), a, b);
+        return runWithPromise2(null, java.util.Objects.requireNonNull(runnable), a, b);
     }
 
     /**
@@ -1221,16 +1226,16 @@ class QtConcurrent_6__ extends QtConcurrent {
      * from the QThreadPool pool.
      */
     public static <T, A, B> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise2<T, A, B> runnable, A a, B b) {
-        return runWithPromise2(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b);
+        return runWithPromise2(threadPool, java.util.Objects.requireNonNull(runnable), a, b);
     }
 
-    private native static <T, A, B> QFuture<T> runWithPromise2(long threadPoolId, RunnableWithPromise2<T, A, B> runnable, A a, B b);
+    private native static <T, A, B> QFuture<T> runWithPromise2(QThreadPool threadPool, RunnableWithPromise2<T, A, B> runnable, A a, B b);
 
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T, A, B, C> QFuture<T> run(RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(0, java.util.Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromise3(null, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
 
     /**
@@ -1238,17 +1243,17 @@ class QtConcurrent_6__ extends QtConcurrent {
      * from the QThreadPool pool.
      */
     public static <T, A, B, C> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
-        return runWithPromise3(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c);
+        return runWithPromise3(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
 
-    private native static <T, A, B, C> QFuture<T> runWithPromise3(long threadPoolId, RunnableWithPromise3<T, A, B, C> runnable, A a, B b,
+    private native static <T, A, B, C> QFuture<T> runWithPromise3(QThreadPool threadPool, RunnableWithPromise3<T, A, B, C> runnable, A a, B b,
             C c);
 
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T, A, B, C, D> QFuture<T> run(RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromise4(0, java.util.Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromise4(null, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
 
     /**
@@ -1257,17 +1262,17 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b,
             C c, D d) {
-        return runWithPromise4(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromise4(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
 
-    private native static <T, A, B, C, D> QFuture<T> runWithPromise4(long threadPoolId, RunnableWithPromise4<T, A, B, C, D> runnable,
+    private native static <T, A, B, C, D> QFuture<T> runWithPromise4(QThreadPool threadPool, RunnableWithPromise4<T, A, B, C, D> runnable,
             A a, B b, C c, D d);
 
     /**
      * Executes the Callable using the QtConcurrent framework.
      */
     public static <T, A, B, C, D, E> QFuture<T> run(RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromise5(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromise5(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
 
     /**
@@ -1276,10 +1281,10 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise5<T, A, B, C, D, E> runnable, A a,
             B b, C c, D d, E e) {
-        return runWithPromise5(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromise5(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
 
-    private native static <T, A, B, C, D, E> QFuture<T> runWithPromise5(long threadPoolId,
+    private native static <T, A, B, C, D, E> QFuture<T> runWithPromise5(QThreadPool threadPool,
             RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
 
     /**
@@ -1287,7 +1292,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F> QFuture<T> run(RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
             F f) {
-        return runWithPromise6(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromise6(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
 
     /**
@@ -1296,10 +1301,10 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F> QFuture<T> run(QThreadPool threadPool, RunnableWithPromise6<T, A, B, C, D, E, F> runnable,
             A a, B b, C c, D d, E e, F f) {
-        return runWithPromise6(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromise6(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
 
-    private native static <T, A, B, C, D, E, F> QFuture<T> runWithPromise6(long threadPoolId,
+    private native static <T, A, B, C, D, E, F> QFuture<T> runWithPromise6(QThreadPool threadPool,
             RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
 
     /**
@@ -1307,7 +1312,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G> QFuture<T> run(RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c,
             D d, E e, F f, G g) {
-        return runWithPromise7(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromise7(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
 
     /**
@@ -1316,10 +1321,10 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G> QFuture<T> run(QThreadPool threadPool,
             RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromise7(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromise7(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
 
-    private native static <T, A, B, C, D, E, F, G> QFuture<T> runWithPromise7(long threadPoolId,
+    private native static <T, A, B, C, D, E, F, G> QFuture<T> runWithPromise7(QThreadPool threadPool,
             RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
 
     /**
@@ -1327,7 +1332,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G, H> QFuture<T> run(RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b,
             C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromise8(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
 
     /**
@@ -1336,10 +1341,10 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G, H> QFuture<T> run(QThreadPool threadPool,
             RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromise8(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromise8(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
 
-    private native static <T, A, B, C, D, E, F, G, H> QFuture<T> runWithPromise8(long threadPoolId,
+    private native static <T, A, B, C, D, E, F, G, H> QFuture<T> runWithPromise8(QThreadPool threadPool,
             RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
 
     /**
@@ -1347,7 +1352,7 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G, H, I> QFuture<T> run(RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a,
             B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromise9(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
 
     /**
@@ -1356,198 +1361,198 @@ class QtConcurrent_6__ extends QtConcurrent {
      */
     public static <T, A, B, C, D, E, F, G, H, I> QFuture<T> run(QThreadPool threadPool,
             RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromise9(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromise9(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
 
-    private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> runWithPromise9(long threadPoolId,
+    private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> runWithPromise9(QThreadPool threadPool,
             RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
 
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static QVoidFuture run(RunnableWithVoidPromise runnable) {
-        return runWithPromiseVoid0(0, runnable);
+    public static QFuture<Void> run(RunnableWithVoidPromise runnable) {
+        return runWithPromiseVoid0(null, runnable);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise runnable) {
-        return runWithPromiseVoid0(checkedNativeId(threadPool), runnable);
+    public static QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise runnable) {
+        return runWithPromiseVoid0(threadPool, runnable);
     }
 
-    private native static QVoidFuture runWithPromiseVoid0(long threadPoolId, RunnableWithVoidPromise runnable);
+    private native static QFuture<Void> runWithPromiseVoid0(QThreadPool threadPool, RunnableWithVoidPromise runnable);
     
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A> QVoidFuture run(RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(0, java.util.Objects.requireNonNull(runnable), a);
+    public static <A> QFuture<Void> run(RunnableWithVoidPromise1<A> runnable, A a) {
+        return runWithPromiseVoid1(null, java.util.Objects.requireNonNull(runnable), a);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise1<A> runnable, A a) {
-        return runWithPromiseVoid1(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a);
+    public static <A> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise1<A> runnable, A a) {
+        return runWithPromiseVoid1(threadPool, java.util.Objects.requireNonNull(runnable), a);
     }
 
-    private native static <A> QVoidFuture runWithPromiseVoid1(long threadPoolId, RunnableWithVoidPromise1<A> runnable, A a);
+    private native static <A> QFuture<Void> runWithPromiseVoid1(QThreadPool threadPool, RunnableWithVoidPromise1<A> runnable, A a);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B> QVoidFuture run(RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(0, java.util.Objects.requireNonNull(runnable), a, b);
+    public static <A, B> QFuture<Void> run(RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
+        return runWithPromiseVoid2(null, java.util.Objects.requireNonNull(runnable), a, b);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
-        return runWithPromiseVoid2(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b);
+    public static <A, B> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
+        return runWithPromiseVoid2(threadPool, java.util.Objects.requireNonNull(runnable), a, b);
     }
 
-    private native static <A, B> QVoidFuture runWithPromiseVoid2(long threadPoolId, RunnableWithVoidPromise2<A, B> runnable, A a, B b);
+    private native static <A, B> QFuture<Void> runWithPromiseVoid2(QThreadPool threadPool, RunnableWithVoidPromise2<A, B> runnable, A a, B b);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C> QVoidFuture run(RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(0, java.util.Objects.requireNonNull(runnable), a, b, c);
+    public static <A, B, C> QFuture<Void> run(RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
+        return runWithPromiseVoid3(null, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
-        return runWithPromiseVoid3(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c);
+    public static <A, B, C> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
+        return runWithPromiseVoid3(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c);
     }
 
-    private native static <A, B, C> QVoidFuture runWithPromiseVoid3(long threadPoolId, RunnableWithVoidPromise3<A, B, C> runnable, A a, B b,
+    private native static <A, B, C> QFuture<Void> runWithPromiseVoid3(QThreadPool threadPool, RunnableWithVoidPromise3<A, B, C> runnable, A a, B b,
             C c);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D> QVoidFuture run(RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
-        return runWithPromiseVoid4(0, java.util.Objects.requireNonNull(runnable), a, b, c, d);
+    public static <A, B, C, D> QFuture<Void> run(RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
+        return runWithPromiseVoid4(null, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c,
+    public static <A, B, C, D> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c,
             D d) {
-        return runWithPromiseVoid4(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d);
+        return runWithPromiseVoid4(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d);
     }
 
-    private native static <A, B, C, D> QVoidFuture runWithPromiseVoid4(long threadPoolId, RunnableWithVoidPromise4<A, B, C, D> runnable, A a,
+    private native static <A, B, C, D> QFuture<Void> runWithPromiseVoid4(QThreadPool threadPool, RunnableWithVoidPromise4<A, B, C, D> runnable, A a,
             B b, C c, D d);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D, E> QVoidFuture run(RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
-        return runWithPromiseVoid5(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+    public static <A, B, C, D, E> QFuture<Void> run(RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
+        return runWithPromiseVoid5(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D, E> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b,
+    public static <A, B, C, D, E> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b,
             C c, D d, E e) {
-        return runWithPromiseVoid5(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
+        return runWithPromiseVoid5(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e);
     }
 
-    private native static <A, B, C, D, E> QVoidFuture runWithPromiseVoid5(long threadPoolId,
+    private native static <A, B, C, D, E> QFuture<Void> runWithPromiseVoid5(QThreadPool threadPool,
             RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D, E, F> QVoidFuture run(RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
+    public static <A, B, C, D, E, F> QFuture<Void> run(RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
             F f) {
-        return runWithPromiseVoid6(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromiseVoid6(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D, E, F> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a,
+    public static <A, B, C, D, E, F> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a,
             B b, C c, D d, E e, F f) {
-        return runWithPromiseVoid6(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
+        return runWithPromiseVoid6(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f);
     }
 
-    private native static <A, B, C, D, E, F> QVoidFuture runWithPromiseVoid6(long threadPoolId,
+    private native static <A, B, C, D, E, F> QFuture<Void> runWithPromiseVoid6(QThreadPool threadPool,
             RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D, E, F, G> QVoidFuture run(RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d,
+    public static <A, B, C, D, E, F, G> QFuture<Void> run(RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d,
             E e, F f, G g) {
-        return runWithPromiseVoid7(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromiseVoid7(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D, E, F, G> QVoidFuture run(QThreadPool threadPool, RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable,
+    public static <A, B, C, D, E, F, G> QFuture<Void> run(QThreadPool threadPool, RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable,
             A a, B b, C c, D d, E e, F f, G g) {
-        return runWithPromiseVoid7(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
+        return runWithPromiseVoid7(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g);
     }
 
-    private native static <A, B, C, D, E, F, G> QVoidFuture runWithPromiseVoid7(long threadPoolId,
+    private native static <A, B, C, D, E, F, G> QFuture<Void> runWithPromiseVoid7(QThreadPool threadPool,
             RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D, E, F, G, H> QVoidFuture run(RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c,
+    public static <A, B, C, D, E, F, G, H> QFuture<Void> run(RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c,
             D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromiseVoid8(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
 
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D, E, F, G, H> QVoidFuture run(QThreadPool threadPool,
+    public static <A, B, C, D, E, F, G, H> QFuture<Void> run(QThreadPool threadPool,
             RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
-        return runWithPromiseVoid8(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
+        return runWithPromiseVoid8(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h);
     }
 
-    private native static <A, B, C, D, E, F, G, H> QVoidFuture runWithPromiseVoid8(long threadPoolId,
+    private native static <A, B, C, D, E, F, G, H> QFuture<Void> runWithPromiseVoid8(QThreadPool threadPool,
             RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
 
     /**
      * Executes the Runnable using the QtConcurrent framework.
      */
-    public static <A, B, C, D, E, F, G, H, I> QVoidFuture run(RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b,
+    public static <A, B, C, D, E, F, G, H, I> QFuture<Void> run(RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b,
             C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(0, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromiseVoid9(null, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
     
     /**
      * Executes the Runnable using the QtConcurrent framework. The thread is taken
      * from the QThreadPool pool.
      */
-    public static <A, B, C, D, E, F, G, H, I> QVoidFuture run(QThreadPool threadPool,
+    public static <A, B, C, D, E, F, G, H, I> QFuture<Void> run(QThreadPool threadPool,
             RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
-        return runWithPromiseVoid9(checkedNativeId(threadPool), java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
+        return runWithPromiseVoid9(threadPool, java.util.Objects.requireNonNull(runnable), a, b, c, d, e, f, g, h, i);
     }
 
-    private native static <A, B, C, D, E, F, G, H, I> QVoidFuture runWithPromiseVoid9(long threadPoolId,
+    private native static <A, B, C, D, E, F, G, H, I> QFuture<Void> runWithPromiseVoid9(QThreadPool threadPool,
             RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
 
     public static abstract class QTaskBuilder{
@@ -1561,7 +1566,6 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         final int priority() {return priority;}
         final QThreadPool threadPool() { return threadPool; }
-        final long threadPoolId() { return threadPool==null ? 0 : checkedNativeId(threadPool); }
         
         public abstract void spawn(QtConcurrent.FutureResult result);
         public QTaskBuilder withPriority(int newPriority) {
@@ -1578,7 +1582,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         QTaskBuilderVoid(int priority, QThreadPool threadPool) {
             super(priority, threadPool);
         }
-        public QVoidFuture spawn() {
+        public QFuture<Void> spawn() {
             throw new RuntimeException("Unable to spawn due to missing arguments.");
         }
         public final void spawn(QtConcurrent.FutureResult result) {
@@ -1622,11 +1626,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static QVoidFuture spawn(long threadPoolId, int priority, Runnable runnable);
+        private native static QFuture<Void> spawn(QThreadPool threadPool, int priority, Runnable runnable);
     }
     
     public static <A> QTaskBuilderVoid1Arg0<A> task(Runnable1<A> runnable) {
@@ -1680,11 +1684,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <A> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable1<A> runnable, A a);
     }
     
@@ -1771,11 +1775,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <A, B> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable2<A, B> runnable, A a, B b);
     }
     
@@ -1900,11 +1904,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <A, B, C> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable3<A, B, C> runnable, A a, B b, C c);
     }
     
@@ -2073,11 +2077,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <A, B, C, D> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable4<A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
@@ -2296,11 +2300,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <A, B, C, D, E> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
@@ -2575,11 +2579,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <A, B, C, D, E, F> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
@@ -2916,11 +2920,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <A, B, C, D, E, F, G> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
 
@@ -3324,11 +3328,11 @@ class QtConcurrent_6__ extends QtConcurrent {
             return this;
         }
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <A, B, C, D, E, F, G, H> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G, H> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
@@ -3795,8 +3799,8 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final I i;
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h, i);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h, i);
         }
 
         @Override
@@ -3810,7 +3814,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <A, B, C, D, E, F, G, H, I> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G, H, I> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
     
@@ -3839,10 +3843,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable);
+            return spawn(threadPool(), priority(), callable);
         }
         
-        private native static <T> QFuture<T> spawn(long threadPoolId, int priority, java.util.concurrent.Callable<T> callable);
+        private native static <T> QFuture<T> spawn(QThreadPool threadPool, int priority, java.util.concurrent.Callable<T> callable);
     }
     
     public static <T, A> QTypedTaskBuilder1Arg0<T, A> task(Callable1<T, A> callable) {
@@ -3897,10 +3901,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a);
+            return spawn(threadPool(), priority(), callable, a);
         }
         
-        private native static <T, A> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable1<T, A> callable, A a);
     }
     
@@ -3988,10 +3992,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b);
+            return spawn(threadPool(), priority(), callable, a, b);
         }
         
-        private native static <T, A, B> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable2<T, A, B> callable, A a, B b);
     }
     
@@ -4117,10 +4121,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c);
+            return spawn(threadPool(), priority(), callable, a, b, c);
         }
         
-        private native static <T, A, B, C> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable3<T, A, B, C> callable, A a, B b, C c);
     }
     
@@ -4290,10 +4294,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d);
+            return spawn(threadPool(), priority(), callable, a, b, c, d);
         }
         
-        private native static <T, A, B, C, D> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable4<T, A, B, C, D> callable, A a, B b, C c, D d);
     }
     
@@ -4513,10 +4517,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d, e);
+            return spawn(threadPool(), priority(), callable, a, b, c, d, e);
         }
         
-        private native static <T, A, B, C, D, E> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e);
     }
     
@@ -4792,10 +4796,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d, e, f);
+            return spawn(threadPool(), priority(), callable, a, b, c, d, e, f);
         }
         
-        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f);
     }
     
@@ -5133,10 +5137,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d, e, f, g);
+            return spawn(threadPool(), priority(), callable, a, b, c, d, e, f, g);
         }
         
-        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g);
     }
     
@@ -5541,10 +5545,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d, e, f, g, h);
+            return spawn(threadPool(), priority(), callable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
@@ -6012,7 +6016,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), callable, a, b, c, d, e, f, g, h, i);
+            return spawn(threadPool(), priority(), callable, a, b, c, d, e, f, g, h, i);
         }
 
         @Override
@@ -6026,7 +6030,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
         
@@ -6054,11 +6058,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static QVoidFuture spawn(long threadPoolId, int priority, RunnableWithVoidPromise runnable);
+        private native static QFuture<Void> spawn(QThreadPool threadPool, int priority, RunnableWithVoidPromise runnable);
     }
     
     public static <A> QPromiseTaskBuilderVoid1Arg0<A> task(RunnableWithVoidPromise1<A> runnable) {
@@ -6112,11 +6116,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <A> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise1<A> runnable, A a);
     }
     
@@ -6203,11 +6207,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <A, B> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise2<A, B> runnable, A a, B b);
     }
     
@@ -6332,11 +6336,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <A, B, C> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c);
     }
     
@@ -6505,11 +6509,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <A, B, C, D> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
@@ -6728,11 +6732,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <A, B, C, D, E> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
@@ -7007,11 +7011,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <A, B, C, D, E, F> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
@@ -7348,11 +7352,11 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <A, B, C, D, E, F, G> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
     
@@ -7756,11 +7760,11 @@ class QtConcurrent_6__ extends QtConcurrent {
             return this;
         }
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <A, B, C, D, E, F, G, H> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G, H> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
@@ -8227,8 +8231,8 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final I i;
         
         @Override
-        public QVoidFuture spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h, i);
+        public QFuture<Void> spawn() {
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h, i);
         }
 
         @Override
@@ -8242,7 +8246,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <A, B, C, D, E, F, G, H, I> QVoidFuture spawn(long threadPoolId, int priority,
+        private native static <A, B, C, D, E, F, G, H, I> QFuture<Void> spawn(QThreadPool threadPool, int priority,
                 RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
     
@@ -8271,10 +8275,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable);
+            return spawn(threadPool(), priority(), runnable);
         }
         
-        private native static <T> QFuture<T> spawn(long threadPoolId, int priority, RunnableWithPromise<T> runnable);
+        private native static <T> QFuture<T> spawn(QThreadPool threadPool, int priority, RunnableWithPromise<T> runnable);
     }
     
     public static <T, A> QTypedPromiseTaskBuilder1Arg0<T, A> task(RunnableWithPromise1<T, A> runnable) {
@@ -8329,10 +8333,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a);
+            return spawn(threadPool(), priority(), runnable, a);
         }
         
-        private native static <T, A> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise1<T, A> runnable, A a);
     }
     
@@ -8420,10 +8424,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b);
+            return spawn(threadPool(), priority(), runnable, a, b);
         }
         
-        private native static <T, A, B> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise2<T, A, B> runnable, A a, B b);
     }
     
@@ -8549,10 +8553,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c);
+            return spawn(threadPool(), priority(), runnable, a, b, c);
         }
         
-        private native static <T, A, B, C> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c);
     }
     
@@ -8722,10 +8726,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d);
         }
         
-        private native static <T, A, B, C, D> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d);
     }
     
@@ -8945,10 +8949,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e);
         }
         
-        private native static <T, A, B, C, D, E> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
     }
     
@@ -9224,10 +9228,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f);
         }
         
-        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
     }
     
@@ -9565,10 +9569,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g);
         }
         
-        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
     }
     
@@ -9973,10 +9977,10 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h);
         }
         
-        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G, H> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     }
     
@@ -10444,7 +10448,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         
         @Override
         public QFuture<T> spawn() {
-            return spawn(threadPoolId(), priority(), runnable, a, b, c, d, e, f, g, h, i);
+            return spawn(threadPool(), priority(), runnable, a, b, c, d, e, f, g, h, i);
         }
 
         @Override
@@ -10458,7 +10462,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             super.onThreadPool(newThreadPool);
             return this;
         }
-        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(long threadPoolId, int priority,
+        private native static <T, A, B, C, D, E, F, G, H, I> QFuture<T> spawn(QThreadPool threadPool, int priority,
                 RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     }
 

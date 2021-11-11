@@ -238,7 +238,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 	}
 
 	private void doSlotSameMethodNameSame(int switchTab, int mode, Qt.ConnectionType connectionType) {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		MyNotifiable myNotifiable = new MyNotifiable();
 		MySubclassedSameQTabWidget tabWidget = new MySubclassedSameQTabWidget(myNotifiable, switchTab, mode, connectionType);
 		assertEquals("before", 0, myNotifiable.getNotified());
@@ -264,7 +264,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 	}
 
 	private void doSlotSameMethodNameDiff(int switchTab, int mode, Qt.ConnectionType connectionType) {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		MyNotifiable myNotifiable = new MyNotifiable();
 		MySubclassedDiffQTabWidget tabWidget = new MySubclassedDiffQTabWidget(myNotifiable, switchTab, mode, connectionType);
 		assertEquals("before", 0, myNotifiable.getNotified());
@@ -387,44 +387,6 @@ public class TestSlotSameMethodName extends QApplicationTest {
 		}
 	}
 
-	@Test // native BlockingQueued connections lead to deadlock when emitted from within same thread.
-	public void testSlotSameMethodNameSameBlockingQueued0() {
-		Assume.assumeThat(QtJambiInternal.isQtPatched(), QApplicationTest.trueMatcher("Requires patched Qt."));
-		doSlotSameMethodNameSame(B_TAB3, 0, Qt.ConnectionType.BlockingQueuedConnection);
-	}
-
-	@Test // native BlockingQueued connections lead to deadlock when emitted from within same thread.
-	public void testSlotSameMethodNameSameBlockingQueued1() {
-		Assume.assumeThat(QtJambiInternal.isQtPatched(), QApplicationTest.trueMatcher("Requires patched Qt."));
-		doSlotSameMethodNameSame(B_TAB3, 1, Qt.ConnectionType.BlockingQueuedConnection);
-	}
-
-	@Test // native BlockingQueued connections lead to deadlock when emitted from within same thread.
-	public void testSlotSameMethodNameSameBlockingQueued2() {
-		Assume.assumeThat(QtJambiInternal.isQtPatched(), QApplicationTest.trueMatcher("Requires patched Qt."));
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 2, Qt.ConnectionType.BlockingQueuedConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
-	}
-
-	@Test // native BlockingQueued connections lead to deadlock when emitted from within same thread.
-	public void testSlotSameMethodNameSameBlockingQueued3() {
-		Assume.assumeThat(QtJambiInternal.isQtPatched(), QApplicationTest.trueMatcher("Requires patched Qt."));
-		try {
-			doSlotSameMethodNameSame(B_TAB3, 3, Qt.ConnectionType.BlockingQueuedConnection);
-			Assert.assertTrue("QNoSuchSlotException expected to be thrown", false);
-		}catch(QNoSuchSlotException e) {
-		}catch(Throwable e) {
-			throw e;
-		}
-	}
-
-
-
 	@Test
 	public void testSlotSameMethodNameDiffAuto0() {
 		doSlotSameMethodNameDiff(B_TAB3, 0, Qt.ConnectionType.AutoConnection);
@@ -511,7 +473,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 
 	private int foo(final MyBaseclassQTabWidget tabWidget, final MyNotifiable myNotifiable) {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		QWidget tab1 = new QWidget();
 		tab1.setAutoFillBackground(true);
 		tab1.setPalette(new QPalette(GlobalColor.darkCyan));
@@ -573,7 +535,7 @@ public class TestSlotSameMethodName extends QApplicationTest {
 
 	@SuppressWarnings("unused")
 	private void foo2(MyBaseclassQTabWidget tabWidget) {
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		QWidget tab1 = new QWidget();
 		tab1.setAutoFillBackground(true);
 		tab1.setPalette(new QPalette(GlobalColor.darkCyan));

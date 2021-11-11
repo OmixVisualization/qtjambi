@@ -47,25 +47,25 @@ class MyQObject extends QObject
     public Object slotResult2 = null;
     public static int finalizedCount = 0;
 
-    public Signal1<String> signalString = new Signal1<String>();
-    public Signal1<Long> signalLong = new Signal1<Long>();
-    public Signal1<Integer> signalInteger = new Signal1<Integer>();
-    public Signal1<Integer> signalInteger2 = new Signal1<Integer>();
-    public Signal1<Boolean> signalBoolean = new Signal1<Boolean>();
-    public Signal1<Short> signalShort = new Signal1<Short>();
-    public Signal1<Character> signalCharacter = new Signal1<Character>();
-    public Signal1<Float> signalFloat = new Signal1<Float>();
-    public Signal1<Double> signalDouble = new Signal1<Double>();
-    public Signal1<MyQObject> signalMyQObject = new Signal1<MyQObject>();
-    public Signal2<Double, Integer> signalDoubleInteger = new Signal2<Double, Integer>();
-    public Signal0 signalNoParams = new Signal0();
-    public Signal4<String, Double, Integer, Integer> signalMixed1 = new Signal4<String, Double, Integer, Integer>();
-    public Signal4<String, MyQObject, Integer, Double> signalMixed2 = new Signal4<String, MyQObject, Integer, Double>();
-    public Signal1<QSize> signalQSize = new Signal1<QSize>();
-    public Signal1<QObject[]> signalQObjectArray = new Signal1<QObject[]>();
-    public Signal3<Integer[], Integer[][], Integer[][][]> signalManyArrays = new Signal3<Integer[], Integer[][], Integer[][][]>();
-    public Signal1<List<String>> signalStringList = new Signal1<List<String>>();
-    public Signal1<List<List<String>>> signalStringListList = new Signal1<List<List<String>>>();
+    public final Signal1<String> signalString = new Signal1<String>();
+    public final Signal1<Long> signalLong = new Signal1<Long>();
+    public final Signal1<Integer> signalInteger = new Signal1<Integer>();
+    public final Signal1<Integer> signalInteger2 = new Signal1<Integer>();
+    public final Signal1<Boolean> signalBoolean = new Signal1<Boolean>();
+    public final Signal1<Short> signalShort = new Signal1<Short>();
+    public final Signal1<Character> signalCharacter = new Signal1<Character>();
+    public final Signal1<Float> signalFloat = new Signal1<Float>();
+    public final Signal1<Double> signalDouble = new Signal1<Double>();
+    public final Signal1<MyQObject> signalMyQObject = new Signal1<MyQObject>();
+    public final Signal2<Double, Integer> signalDoubleInteger = new Signal2<Double, Integer>();
+    public final Signal0 signalNoParams = new Signal0();
+    public final Signal4<String, Double, Integer, Integer> signalMixed1 = new Signal4<String, Double, Integer, Integer>();
+    public final Signal4<String, MyQObject, Integer, Double> signalMixed2 = new Signal4<String, MyQObject, Integer, Double>();
+    public final Signal1<QSize> signalQSize = new Signal1<QSize>();
+    public final Signal1<QObject[]> signalQObjectArray = new Signal1<QObject[]>();
+    public final Signal3<Integer[], Integer[][], Integer[][][]> signalManyArrays = new Signal3<Integer[], Integer[][], Integer[][][]>();
+    public final Signal1<List<String>> signalStringList = new Signal1<List<String>>();
+    public final Signal1<List<List<String>>> signalStringListList = new Signal1<List<List<String>>>();
     public final AtomicReference<QMetaObject.AbstractPublicSignal0> destroyed;
 
 

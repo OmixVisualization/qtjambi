@@ -42,6 +42,7 @@
 #include <QString>
 #include <QStringList>
 #include <QStack>
+#include "parser/codemodel.h"
 
 class Scanner;
 class TypeParser {

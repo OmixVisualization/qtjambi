@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.core" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.core" default-superclass="io.qt.QtObject" module="qtjambi">
     <inject-code class="metainfo" position="1">
     void initialize_meta_info_QtCore();
     </inject-code>
@@ -54,12 +54,34 @@
     QLogging.initialize();
     QThread.initialize();
     </inject-code>
-
+    <inject-code class="module-info" position="end">
+    requires transitive java.logging;
+    requires java.xml;
+    requires java.prefs;
+    opens io.qt.internal to qtjambi.autotest;
+    exports io.qt.internal to qtjambi.deployer,
+                              qtjambi.qml,
+                              qtjambi.autotest;
+    exports io.qt;
+    </inject-code>
+    <template name="core.comsumer.function">
+        std::function&lt;void(%TYPE)> %out;
+        if(%in){
+            JObjectWrapper wrapper(%env, %in);
+            %out = [wrapper](%TYPE value){
+                        if(JNIEnv *env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                            jobject _value = qtjambi_cast&lt;jobject>(env, value);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                        }
+                    };
+        }
+    </template>
     <template name="core.AtomicReference_to_ptr">
     %TYPE* %out = nullptr;
     if(%in){
         jobject obj = %env-&gt;CallObjectMethod(%in, _AtomicReference->get);
-        qtjambi_throw_java_exception(%env)
+        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
         %out = new %TYPE( qtjambi_cast&lt;%TYPE>(%env, obj) );
         %scope.addFinalAction([%env,_AtomicReference,%in,%out](){
                                 QScopedPointer&lt;%TYPE> ptr(%out);
@@ -298,20 +320,26 @@
     </value-type>
     <namespace-type name="QSysInfo">
         <inject-code class="java">
+            private native static int byteOrder();
             private native static int wordSize();
             
-            public static final Endian ByteOrder = Endian.resolve(ByteOrder());
+            public static final Endian ByteOrder = Endian.resolve(byteOrder());
             
             public static final int WordSize = wordSize();
         </inject-code>
         <inject-code class="native">
+                extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSysInfo_byteOrder__)
+                (JNIEnv *, jclass)
+                {
+                    return jint(QSysInfo::ByteOrder);
+                }
                 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QSysInfo_wordSize__)
                 (JNIEnv *, jclass)
                 {
                     return jint(QSysInfo::WordSize);
                 }
         </inject-code>
-        <modify-field name="ByteOrder" access="private" />
+        <modify-field name="ByteOrder" read="no" write="no" />
     </namespace-type>
     <value-type name="QDir">
         <modify-function signature="operator[](int)const" rename="at"/>
@@ -328,41 +356,18 @@
     </template>
 
     <object-type name="QSettings">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
         <inject-code class="java">
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QSettings__" quote-before-line="}// class"/>
         </inject-code>
-        <modify-function signature="QSettings(QObject*)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QSettings(QObject*)" block-exceptions="yes">
         </modify-function>
-        <modify-function signature="QSettings(QSettings::Format, QSettings::Scope, const QString&amp;, const QString&amp;, QObject*)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QSettings(QSettings::Format, QSettings::Scope, const QString&amp;, const QString&amp;, QObject*)" block-exceptions="yes">
         </modify-function>
-        <modify-function signature="QSettings(QSettings::Scope, const QString&amp;, const QString&amp;, QObject*)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QSettings(QSettings::Scope, const QString&amp;, const QString&amp;, QObject*)" block-exceptions="yes">
         </modify-function>
-        <modify-function signature="QSettings(const QString&amp;, QSettings::Format, QObject*)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QSettings(const QString&amp;, QSettings::Format, QObject*)" block-exceptions="yes">
         </modify-function>
-        <modify-function signature="QSettings(const QString&amp;, const QString&amp;, QObject*)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="QSettings(const QString&amp;, const QString&amp;, QObject*)" block-exceptions="yes">
         </modify-function>
         <modify-function signature="setIniCodec(const char*)" until="5.*">
             <modify-argument index="1">
@@ -514,6 +519,9 @@
         </modify-function>
     </value-type>
 
+    <object-type name="QAbstractProxyModel">
+        <modify-function signature="createSourceIndex(int,int,void*)const" remove="all" since="6.2.0"/>
+    </object-type>
     <object-type name="QAbstractItemModel">
         <modify-function signature="parent()const" remove="all"/>
         <modify-function signature="createIndex(int, int, void *) const" remove="all" until="5.*"/>
@@ -2096,7 +2104,7 @@
         <extra-includes>
             <include file-name="QTextCodec" location="global" until="5.*"/>
             <include file-name="QtCore/QSharedPointer" location="global"/>
-            <include file-name="QtCore/QScopedPointer" location="global"/>
+            <include file-name="memory" location="global"/>
          </extra-includes>
         <modify-function signature="load(const unsigned char*,int,QString)">
             <modify-argument index="1">
@@ -2108,7 +2116,7 @@
                         QSharedPointer&lt;JByteArrayPointer> array;
                         QTJAMBI_OBJECTUSERDATA_ID_IMPL(static,)
                     };
-                    QScopedPointer&lt;ObjectUserData> userData(new ObjectUserData(%env, %in));
+                    std::unique_ptr&lt;ObjectUserData> userData(new ObjectUserData(%env, %in));
                     const unsigned char* %out = reinterpret_cast&lt;const unsigned char*>(userData->array->pointer());
                     int %2 = userData->array->size();
                 </conversion-rule>
@@ -2120,7 +2128,10 @@
                 <conversion-rule class="native">
                     jboolean %out = %in;
                     if(%in){
-                        QTJAMBI_SET_OBJECTUSERDATA(ObjectUserData, __qt_this, userData.take());
+                        ObjectUserData *oldUserData = QTJAMBI_GET_OBJECTUSERDATA(ObjectUserData, __qt_this);
+                        QTJAMBI_SET_OBJECTUSERDATA(ObjectUserData, __qt_this, userData.release());
+                        if(oldUserData)
+                            delete oldUserData;
                     }
                 </conversion-rule>
             </modify-argument>
@@ -2362,6 +2373,15 @@
           <modify-argument index="1">
               <reference-count action="add" variable-name="__rcMappings"/>
           </modify-argument>
+          <modify-argument index="2">
+                <replace-type modified-type="io.qt.widgets.QWidget"/>
+                <conversion-rule class="shell">
+                jobject %out = qtjambi_cast&lt;jobject>(%env, reinterpret_cast&lt;QObject*>(%in));
+                </conversion-rule>
+                <conversion-rule class="native">
+                QWidget* %out = reinterpret_cast&lt;QWidget*>(qtjambi_cast&lt;QObject*>(%env, %in));
+                </conversion-rule>
+          </modify-argument>
           <inject-code class="java" position="end">
               <argument-map index="1" meta-name="%1"/>
               <argument-map index="2" meta-name="%2"/>
@@ -2387,6 +2407,17 @@
               <reference-count action="add" variable-name="__rcMappings"/>
           </modify-argument>
       </modify-function>
+      <modify-function signature="mapping(QWidget*)const" until="5.*">
+          <modify-argument index="1">
+            <replace-type modified-type="io.qt.widgets.QWidget"/>
+            <conversion-rule class="shell">
+            jobject %out = qtjambi_cast&lt;jobject>(%env, reinterpret_cast&lt;QObject*>(%in));
+            </conversion-rule>
+            <conversion-rule class="native">
+            QWidget* %out = reinterpret_cast&lt;QWidget*>(qtjambi_cast&lt;QObject*>(%env, %in));
+            </conversion-rule>
+          </modify-argument>
+      </modify-function>
   </object-type>
 
     <object-type name="QThread"><!-- In case of patched Qt library, QThread type entry is replaced in generator internally -->
@@ -2403,10 +2434,8 @@
         <modify-function signature="start(QThread::Priority)" thread-affine="no">
           <inject-code class="native" position="beginning">
               if(!__qt_this->parent() &amp;&amp; !__qt_this->isRunning()){
-                  if (jobject object = qtjambi_java_object_reference(__this_nativeId, %env)) {
-                      if(!Java::QtCore::QThread::javaThread(%env, object))
-                        qtjambi_set_cpp_ownership(%env, __this_nativeId);
-                  }
+                  if(!Java::QtCore::QThread::javaThread(%env, __this))
+                    qtjambi_set_cpp_ownership(%env, __this);
               }
           </inject-code>
         </modify-function>
@@ -2451,14 +2480,13 @@
       <modify-function signature="killTimer(int)" thread-affine="yes">
       </modify-function>
       <modify-function signature="setParent(QObject*)">
-          <inject-code class="java">
-                    if(this.isWidgetType()) {
-                        if(parent==null || parent instanceof io.qt.widgets.QWidget) {
-                            io.qt.widgets.QWidget _this = (io.qt.widgets.QWidget)this;
-                            _this.setParent((io.qt.widgets.QWidget)parent);
+          <inject-code class="native"><argument-map index="1" meta-name="%1"/>
+                    if(__qt_this->isWidgetType()) {
+                        if(!__qt_%1 || __qt_%1->isWidgetType()) {
+                            Java::QtWidgets::QWidget::setParent(%env, qtjambi_cast&lt;jobject>(%env, __qt_this), qtjambi_cast&lt;jobject>(%env, __qt_%1));
                             return;
                         }else {
-                            throw new IllegalArgumentException("Cannot set non-widget object as widget's parent.");
+                            JavaException::raiseIllegalArgumentException(%env, "Cannot set non-widget object as widget's parent." QTJAMBI_STACKTRACEINFO );
                         }
                     }
           </inject-code>
@@ -2470,8 +2498,8 @@
                         return;
                     }
                     if (objectThread &amp;&amp; objectThread != QThread::currentThread()) {
-                        JavaException::raiseQThreadAffinityException(__jni_env, "QObject::moveToThread: Current thread is not the object's thread" QTJAMBI_STACKTRACEINFO,
-                                            qtjambi_java_object_reference(__this_nativeId, __jni_env),
+                        JavaException::raiseQThreadAffinityException(%env, "QObject::moveToThread: Current thread is not the object's thread" QTJAMBI_STACKTRACEINFO,
+                                            __this,
                                             objectThread, QThread::currentThread()
                                         );
                         return;
@@ -2486,9 +2514,14 @@
         <modify-function signature="receivers(const char*)const">
               <inject-code class="java">
                 <argument-map index="1" meta-name="%1"/>
-                      %1 = cppSignalSignature(this, %1);
-                      if(%1.isEmpty())
+                    if(%1==null || %1.isEmpty())
                         return 0;
+                    if(!%1.startsWith("2")){
+                        io.qt.core.QMetaMethod method = metaObject().method(%1);
+                        if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                            %1 = "2" + method.cppMethodSignature();
+                        }
+                    }
               </inject-code>
             <modify-argument index="1">
                 <replace-type modified-type="java.lang.String"/>
@@ -2537,8 +2570,9 @@
   <object-type name="QCoreApplication">
       <extra-includes>
           <include file-name="qtjambi/qtjambi_application.h" location="global"/>
+          <include file-name="QtCore/private/qthread_p.h" location="global"/>
           <include file-name="QtCore/private/qcoreapplication_p.h" location="global"/>
-          <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+          <include file-name="qtjambi_core_repository.h" location="local"/>
       </extra-includes>
         <modify-function signature="QCoreApplication(int &amp;, char **, int)"><!-- since 4.8, was 2 arg -->
             <access modifier="protected"/>
@@ -2551,7 +2585,7 @@
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String[]"/>
                 <conversion-rule class="native">
-                        QScopedPointer&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
+                        std::unique_ptr&lt;ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));
                         char** %out = applicationData->chars();
                         int&amp; __qt_%1 = applicationData->size();
                 </conversion-rule>
@@ -2565,17 +2599,30 @@
                     }
             </inject-code>
             <inject-code class="native" position="end">
-                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.take());
+                QTJAMBI_SET_OBJECTUSERDATA(ApplicationData, __qt_this, applicationData.release());
             </inject-code>
         </modify-function>
       <modify-function signature="exec()">
-        <access modifier="private"/>
-        <rename to="exec_internal"/>
+            <inject-code class="native" position="beginning">
+            QCoreApplication* instance = QCoreApplication::instance();
+            if (!instance)
+                JavaException::raiseRuntimeException(%env, "QCoreApplication has not been initialized with QCoreApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+            else if(instance->inherits("QGuiApplication")){
+                bool classNotFound = false;
+                try{
+                    Java::QtGui::QGuiApplication::getClass(%env);
+                }catch(...){
+                    classNotFound = true;
+                }
+                if(!classNotFound)
+                    return Java::QtGui::QGuiApplication::exec(%env);
+            }else if(instance->thread()!=QThread::currentThread())
+                JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+            else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+                JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
+            </inject-code>
       </modify-function>
       <modify-function signature="sendPostedEvents(QObject *, int)">
-            <modify-argument index="1" thread-affine="yes"/>
-      </modify-function>
-      <modify-function signature="notify(QObject *, QEvent *)">
             <modify-argument index="1" thread-affine="yes"/>
       </modify-function>
       <inject-code>
@@ -3002,12 +3049,6 @@
                 </conversion-rule>
             </modify-argument>
       </modify-function>
-        <modify-function signature="device() const">
-            <inject-code position="end">
-                if(__qt_return_value instanceof StringDevice)
-                    return null;
-            </inject-code>
-        </modify-function>
 
       <modify-function signature="setCodec(const char*)" until="5.*">
             <modify-argument index="1">
@@ -3231,10 +3272,6 @@
     </inject-code>
   </object-type>
 
-  <template name="convert_qtjambifuture_to_native">
-    const QFuture&lt;JObjectWrapper>&amp; %out = qtjambi_cast&lt;const QFuture&lt;JObjectWrapper>&amp;>(%env, %in);
-  </template>
-  
   <namespace-type name="QtFuture">
     <inject-code class="java">
         <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QtFuture___" quote-before-line="}// class"/>
@@ -3243,520 +3280,82 @@
         <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QtFuture_6_1__" quote-before-line="}// class"/>
     </inject-code>
   </namespace-type>
-  <value-type name="QFuture">
-    <modify-function signature="operator==(const QFuture &amp;)const" until="5.*">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QFuture&lt;?>" />
-            <conversion-rule class="native">
-                <insert-template name="convert_qtjambifuture_to_native" />
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-  </value-type>
-    <object-type name="QtJambiThreadStorage" java-name="QThreadStorage" generic-class="yes">
-        <modify-function signature="localData()">
+      <value-type name="QFutureInterfaceBase">
+        <modify-function signature="waitForFinished()">
+            <inject-code class="native" position="beginning">
+                qtjambi_exception_handler(%env, __qt_this, [](void* ptr){
+                QFutureInterfaceBase *__qt_this = reinterpret_cast&lt;QFutureInterfaceBase *>(ptr);
+            </inject-code>
+            <inject-code class="native" position="end">
+                });
+            </inject-code>
+        </modify-function>
+        <modify-function signature="setContinuation(std::function&lt;void(const QFutureInterfaceBase &amp;)>)" since="6.0.0">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;QFutureInterfaceBase>"/>
+                <conversion-rule class="native">
+                    <insert-template name="core.comsumer.function">
+                        <replace from="%TYPE" to="const QFutureInterfaceBase &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setThreadPool(QThreadPool*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcThreadPool" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRunnable(QRunnable*)">
+            <modify-argument index="1">
+                <replace-type modified-type="io.qt.core.QRunnable" />
+                <conversion-rule class="native">
+                    QRunnable* %out = qtjambi_cast&lt;QRunnable*>(%env, %in);
+                    if(%out &amp;&amp; %out->autoDelete())
+                        qtjambi_set_cpp_ownership(%env, %in);
+                </conversion-rule>
+                <reference-count action="set" variable-name="__rcRunnable" />
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="reportFinished()" access="non-final"/>
+        <inject-code class="java">
+            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFutureInterfaceBase___" quote-before-line="}// class"/>
+        </inject-code>
+        <inject-code class="native">
+            const std::type_info&amp; typeid_QFutureInterfaceBase_shell(){
+                return typeid(QFutureInterfaceBase_shell);
+            }
+        </inject-code>
+    </value-type>
+
+    <object-type name="QFutureWatcherBase">
+        <modify-function signature="waitForFinished()">
+            <inject-code class="native" position="beginning">
+                qtjambi_exception_handler(%env, __qt_this, [](void* ptr){
+                QFutureWatcherBase *__qt_this = reinterpret_cast&lt;QFutureWatcherBase *>(ptr);
+            </inject-code>
+            <inject-code class="native" position="end">
+                });
+            </inject-code>
+        </modify-function>
+        <modify-function signature="futureInterface()">
             <modify-argument index="0">
-                <replace-type modified-type="T" modified-jni-type="java.lang.Object" />
-                <conversion-rule class="native">
-                    jobject %out = %env->NewLocalRef(%in.object());
+                <replace-type modified-type="io.qt.core.QFutureInterfaceBase" />
+                <no-null-pointer/>
+                <conversion-rule class="shell">
+                    QFutureInterfaceBase* %out = qtjambi_cast&lt;QFutureInterfaceBase*>(%env, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="futureInterface() const">
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.core.QFutureInterfaceBase" />
+                <no-null-pointer/>
+                <conversion-rule class="shell">
+                    const QFutureInterfaceBase* %out = qtjambi_cast&lt;const QFutureInterfaceBase*>(%env, %in);
                 </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QVoidPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurevoid__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QVoidFutureInterface" />
-                <conversion-rule class="native">
-                    QFutureInterface&lt;void>&amp; %out = qtjambi_cast&lt;QFutureInterface&lt;void>&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QVoidPromise" />
-                <conversion-rule class="native">
-                    QPromise&lt;void>&amp; %out = qtjambi_cast&lt;QPromise&lt;void>&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <!--object-type name="QBooleanPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QBooleanPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futureboolean__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QBooleanFutureInterface" />
-                <conversion-rule class="native">
-                    QBooleanFutureInterface&amp; %out = qtjambi_cast&lt;QBooleanFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QBooleanPromise" />
-                <conversion-rule class="native">
-                    QBooleanPromise&amp; %out = qtjambi_cast&lt;QBooleanPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QBytePromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QBytePromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurebyte__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QByteFutureInterface" />
-                <conversion-rule class="native">
-                    QByteFutureInterface&amp; %out = qtjambi_cast&lt;QByteFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QBytePromise" />
-                <conversion-rule class="native">
-                    QBytePromise&amp; %out = qtjambi_cast&lt;QBytePromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QShortPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QShortPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futureshort__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QShortFutureInterface" />
-                <conversion-rule class="native">
-                    QShortFutureInterface&amp; %out = qtjambi_cast&lt;QShortFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QShortPromise" />
-                <conversion-rule class="native">
-                    QShortPromise&amp; %out = qtjambi_cast&lt;QShortPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QIntPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QIntPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futureint__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QIntFutureInterface" />
-                <conversion-rule class="native">
-                    QIntFutureInterface&amp; %out = qtjambi_cast&lt;QIntFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QIntPromise" />
-                <conversion-rule class="native">
-                    QIntPromise&amp; %out = qtjambi_cast&lt;QIntPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QLongPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QLongPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurelong__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QLongFutureInterface" />
-                <conversion-rule class="native">
-                    QLongFutureInterface&amp; %out = qtjambi_cast&lt;QLongFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QLongPromise" />
-                <conversion-rule class="native">
-                    QLongPromise&amp; %out = qtjambi_cast&lt;QLongPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QFloatPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFloatPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurefloat__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QFloatFutureInterface" />
-                <conversion-rule class="native">
-                    QFloatFutureInterface&amp; %out = qtjambi_cast&lt;QFloatFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QFloatPromise" />
-                <conversion-rule class="native">
-                    QFloatPromise&amp; %out = qtjambi_cast&lt;QFloatPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QDoublePromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QDoublePromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futuredouble__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QDoubleFutureInterface" />
-                <conversion-rule class="native">
-                    QDoubleFutureInterface&amp; %out = qtjambi_cast&lt;QDoubleFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QDoublePromise" />
-                <conversion-rule class="native">
-                    QDoublePromise&amp; %out = qtjambi_cast&lt;QDoublePromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-    <object-type name="QCharPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QCharPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurechar__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QCharFutureInterface" />
-                <conversion-rule class="native">
-                    QCharFutureInterface&amp; %out = qtjambi_cast&lt;QCharFutureInterface&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QCharPromise" />
-                <conversion-rule class="native">
-                    QCharPromise&amp; %out = qtjambi_cast&lt;QCharPromise&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type-->
-    <object-type name="QtJambiPromise">
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code class="java">
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QPromise___" quote-before-line="}// class"/>
-        </inject-code>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function future__" quote-before-line="}// class"/>
-        </inject-code>
-        <modify-function signature="QPromise(QFutureInterface &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QFutureInterface&lt;T>" />
-                <conversion-rule class="native">
-                    QFutureInterface&lt;JObjectWrapper>&amp; %out = qtjambi_cast&lt;QFutureInterface&lt;JObjectWrapper>&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-        <modify-function signature="swap(QPromise &amp;)">
-            <modify-argument index="1">
-                <no-null-pointer/>
-                <replace-type modified-type="io.qt.core.QPromise&lt;T>" />
-                <conversion-rule class="native">
-                    QPromise&lt;JObjectWrapper>&amp; %out = qtjambi_cast&lt;QPromise&lt;JObjectWrapper>&amp;>(%env, %scope, %in);
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </object-type>
-
-  <value-type name="QtJambiFuture" default-superclass="io.qt.core.QAbstractFuture">
-    <inject-code class="java">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFuture___" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.0.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFuture_6__" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.1.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFuture_6_1__" quote-before-line="}// class"/>
-    </inject-code>
-    <modify-function signature="QFuture(QFutureInterface *)">
-        <modify-argument index="1">
-            <no-null-pointer/>
-            <replace-type modified-type="io.qt.core.QFutureInterface&lt;T>" />
-            <conversion-rule class="native">
-                QFutureInterface&lt;JObjectWrapper>* %out = qtjambi_cast&lt;QFutureInterface&lt;JObjectWrapper>*>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-    <modify-function signature="result() const">
-        <inject-code class="native">
-        __qt_this->d.waitForResult(0);
-        if(__qt_this->resultCount()==0)
-            JavaException::raiseIndexOutOfBoundsException(__jni_env, "There are no results available." QTJAMBI_STACKTRACEINFO );
-        </inject-code>
-    </modify-function>
-    <modify-function signature="resultAt(int) const">
-        <inject-code class="native"><argument-map index="1" meta-name="%index"/>
-        __qt_this->d.waitForResult(%index);
-        if(%index>=__qt_this->resultCount())
-            JavaException::raiseIndexOutOfBoundsException(__jni_env, qPrintable(QString("There is no result at index %1 available.").arg(%index)) QTJAMBI_STACKTRACEINFO );
-        </inject-code>
-    </modify-function>
-    <modify-function signature="takeResult()" since="6.0.0">
-        <inject-code class="native">
-        __qt_this->d.waitForResult(-1);
-        if(__qt_this->resultCount()==0)
-            JavaException::raiseIndexOutOfBoundsException(__jni_env, "There are no results available." QTJAMBI_STACKTRACEINFO );
-        </inject-code>
-    </modify-function>
-  </value-type>
-
-  <value-type name="QVoidFuture" default-superclass="io.qt.core.QAbstractFuture">
-    <modify-function signature="QFuture(QFutureInterface *)">
-        <modify-argument index="1">
-            <no-null-pointer/>
-            <replace-type modified-type="io.qt.core.QVoidFutureInterface" />
-            <conversion-rule class="native">
-                QVoidFutureInterface* %out = qtjambi_cast&lt;QVoidFutureInterface*>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-    <inject-code class="java">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidFuture___" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.0.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidFuture_6__" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.1.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QVoidFuture_6_1__" quote-before-line="}// class"/>
-    </inject-code>
-    <modify-function signature="operator==(const QFuture &amp;) const" until="5.*">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QVoidFuture" />
-            <conversion-rule class="native">
-                const QFuture&lt;void>&amp; %out = qtjambi_cast&lt;const QFuture&lt;void>&amp;>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-  </value-type>
-
-  <!--value-type name="QBooleanFuture" default-superclass="io.qt.core.QAbstractFuture">
-    <modify-function signature="QFuture(QFutureInterface *)">
-        <modify-argument index="1">
-            <no-null-pointer/>
-            <replace-type modified-type="io.qt.core.QBooleanFutureInterface" />
-            <conversion-rule class="native">
-                QBooleanFutureInterface* %out = qtjambi_cast&lt;QBooleanFutureInterface*>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-    <inject-code class="java">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QBooleanFuture___" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.0.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QBooleanFuture_6__" quote-before-line="}// class"/>
-    </inject-code>
-    <inject-code class="java" since="6.1.0">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QBooleanFuture_6_1__" quote-before-line="}// class"/>
-    </inject-code>
-    <modify-function signature="operator==(const QFuture &amp;) const" until="5.*">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QBooleanFuture" />
-            <conversion-rule class="native">
-                const QBooleanFuture&amp; %out = qtjambi_cast&lt;const QBooleanFuture&amp;>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-  </value-type-->
-
-  <value-type name="QFutureInterfaceBase">
-    <modify-function signature="setThreadPool(QThreadPool*)">
-        <modify-argument index="1">
-            <reference-count action="set" variable-name="__rcThreadPool" />
-        </modify-argument>
-    </modify-function>
-    <modify-function signature="setRunnable(QRunnable*)">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QRunnable" />
-            <conversion-rule class="native">
-                QRunnable* %out = qtjambi_cast&lt;QRunnable*>(%env, %in);
-                if(%out &amp;&amp; %out->autoDelete())
-                    qtjambi_set_cpp_ownership(%env, %in);
-            </conversion-rule>
-            <reference-count action="set" variable-name="__rcRunnable" />
-        </modify-argument>
-    </modify-function>
-    <modify-function signature="reportFinished()" access="non-final"/>
-    <inject-code class="java">
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFutureInterfaceBase___" quote-before-line="}// class"/>
-    </inject-code>
-  </value-type>
-  <object-type name="QFutureWatcherBase">
-      <modify-function signature="futureInterface()">
-        <modify-argument index="0">
-            <replace-type modified-type="io.qt.core.QFutureInterfaceBase" />
-            <no-null-pointer/>
-            <conversion-rule class="shell">
-                QFutureInterfaceBase* %out = qtjambi_cast&lt;QFutureInterfaceBase*>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-      </modify-function>
-      <modify-function signature="futureInterface() const">
-        <modify-argument index="0">
-            <replace-type modified-type="io.qt.core.QFutureInterfaceBase" />
-            <no-null-pointer/>
-            <conversion-rule class="shell">
-                const QFutureInterfaceBase* %out = qtjambi_cast&lt;const QFutureInterfaceBase*>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-      </modify-function>
-  </object-type>
-
-  <object-type name="QFutureWatcher">
-    <modify-function signature="setFuture(const QFuture &amp;)">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QFuture&lt;T&gt;" />
-            <conversion-rule class="native">
-                <insert-template name="convert_qtjambifuture_to_native" />
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-    <modify-function signature="result() const" remove="all"/>
-    <modify-function signature="resultAt(int) const" remove="all"/>
-  </object-type>
-    <value-type name="QFutureInterface" generate="no">
-        <modify-function signature="reportFinished(const T*)" until="5.*">
-            <modify-argument index="1">
-                <replace-type modified-type="T" modified-jni-type="java.lang.Object" />
-                <conversion-rule class="native">
-                    JObjectWrapper __tmp_%in(%env, %in);
-                    JObjectWrapper* %out = %in ? &amp;__tmp_%in : nullptr;
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </value-type>
-    <value-type name="QtJambiFutureInterface">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function future__" quote-before-line="}// class"/>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QtJambiFutureInterface__" quote-before-line="}// class" since="6.0.0"/>
-        </inject-code>
-        <modify-function signature="reportFinished(const JObjectWrapper*)" until="5.*">
-            <modify-argument index="1">
-                <replace-type modified-type="T" modified-jni-type="java.lang.Object" />
-                <conversion-rule class="native">
-                    JObjectWrapper __tmp_%in(%env, %in);
-                    JObjectWrapper* %out = %in ? &amp;__tmp_%in : nullptr;
-                </conversion-rule>
-            </modify-argument>
-        </modify-function>
-    </value-type>
-    <value-type name="QVoidFutureInterface">
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurevoid__" quote-before-line="}// class"/>
-        </inject-code>
-    </value-type>
-
-  <object-type name="QtJambiFutureWatcher">
-    <inject-code>
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QtJambiFutureWatcher__" quote-before-line="}// class"/>
-    </inject-code>
-  </object-type>
-
-  <object-type name="QVoidFutureWatcher">
-    <modify-function signature="setFuture(const QFuture &amp;)">
-        <modify-argument index="1">
-            <replace-type modified-type="io.qt.core.QVoidFuture" />
-            <conversion-rule class="native">
-                const QFuture&lt;void>&amp; %out = qtjambi_cast&lt;const QFuture&lt;void>&amp;>(%env, %in);
-            </conversion-rule>
-        </modify-argument>
-    </modify-function>
-    <inject-code>
-        <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="function futurevoid__" quote-before-line="}// class"/>
-    </inject-code>
-  </object-type>
     <object-type name="QXmlStreamReader">
         <modify-function signature="setDevice(QIODevice*)">
             <modify-argument index="1">
@@ -3871,13 +3470,24 @@
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(sender, signal);
+            <inject-code class="java" position="beginning"><argument-map index="2" meta-name="signal"/><argument-map index="1" meta-name="sender"/>
+                if(signal!=null &amp;&amp; !signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = "2" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
         </modify-function>
         <modify-function signature="setSignal(const QByteArray &amp;)">
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(signal);
+            <inject-code class="java" position="beginning"><argument-map index="1" meta-name="signal"/>
+                if(signal!=null &amp;&amp; !signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = senderObject().metaObject().method(signal.toString());
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = new io.qt.core.QByteArray("2");
+                        signal.append(method.cppMethodSignature());
+                    }
+                }
             </inject-code>
         </modify-function>
     </object-type>
@@ -3897,11 +3507,18 @@
                 <no-null-pointer/>
                 <reference-count action="ignore" />
             </modify-argument>
-            <inject-code class="java" position="beginning">
-                signal = cppSignalSignature(sender, signal);
+            <inject-code class="java" position="beginning"><argument-map index="2" meta-name="signal"/><argument-map index="1" meta-name="sender"/>
+                if(signal==null || signal.isEmpty())
+                    return null;
+                if(!signal.startsWith("2")){
+                    io.qt.core.QMetaMethod method = sender.metaObject().method(signal);
+                    if(method!=null &amp;&amp; method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal) {
+                        signal = "2" + method.cppMethodSignature();
+                    }
+                }
             </inject-code>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="3" meta-name="%3"/>
-                addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %3);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %3);
             </inject-code>
         </modify-function>
         <modify-function signature="addTransition(QAbstractState*)">
@@ -3910,7 +3527,7 @@
                 <reference-count action="ignore" />
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="1" meta-name="%1"/>
-                addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %1);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, "__rcTargetStates", false, false, %1);
             </inject-code>
         </modify-function>
         <modify-function signature="assignProperty(QObject *, const char *, const QVariant &amp;)">
@@ -3927,7 +3544,7 @@
                 <reference-count action="ignore" />
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="0" meta-name="%0"/><argument-map index="1" meta-name="%1"/>
-                addReferenceCount(defaultTransition(), QAbstractTransition.class, "__rcTargetStates", false, false, %1);
+                QtJambi_LibraryUtilities.internal.addReferenceCount(defaultTransition(), QAbstractTransition.class, "__rcTargetStates", false, false, %1);
             </inject-code>
         </modify-function>
     </object-type>
@@ -4017,6 +3634,33 @@
         </modify-function>
     </value-type>
 
+    <functional-type name="QFunctionPointer">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QFunctionPointer__" quote-before-line="}// class"/>
+        </inject-code>
+    </functional-type>
+    <object-type name="QLibrary">
+        <modify-function signature="resolve(const char *)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolve(const QString &amp;, const char *)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolve(const QString &amp;, int, const char *)">
+            <modify-argument index="3">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="resolve(const QString &amp;, const QString &amp;, const char *)">
+            <modify-argument index="3">
+                <replace-type modified-type="java.lang.String"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QLibraryInfo">
         <modify-function signature="build()">
             <modify-argument index="0">
@@ -4129,11 +3773,12 @@
                                                         try{
                                                             if(JNIEnv * env = qtjambi_current_environment()){
                                                                 QTJAMBI_JNI_LOCAL_FRAME(env, 300)
+                                                                QtJambiExceptionInhibitor __exnHandler;
                                                                 jobject object = env->NewLocalRef(__wrapper_runnable0.object());
                                                                 try{
                                                                     Java::Runtime::Runnable::run(env, object);
                                                                 }catch(const JavaException&amp; exn){
-                                                                    exn.report(env);
+                                                                    __exnHandler.handle(env, exn, "QRunnable::run()");
                                                                 }
                                                                 if(Java::QtCore::QRunnable::isInstanceOf(env, object)){
                                                                     if(QRunnable* runnable = qtjambi_cast&lt;QRunnable*>(env, object)){
@@ -4157,11 +3802,12 @@
                                                         try{
                                                             if(JNIEnv * env = qtjambi_current_environment()){
                                                                 QTJAMBI_JNI_LOCAL_FRAME(env, 300)
+                                                                QtJambiExceptionInhibitor __exnHandler;
                                                                 jobject object = env->NewLocalRef(__wrapper_runnable0.object());
                                                                 try{
                                                                     Java::Runtime::Runnable::run(env, object);
                                                                 }catch(const JavaException&amp; exn){
-                                                                    exn.report(env);
+                                                                    __exnHandler.handle(env, exn, "QRunnable::run()");
                                                                 }
                                                                 if(Java::QtCore::QRunnable::isInstanceOf(env, object)){
                                                                     if(QRunnable* runnable = qtjambi_cast&lt;QRunnable*>(env, object)){
@@ -4530,7 +4176,7 @@
             </modify-argument>
             <inject-code class="java">
             <argument-map index="1" meta-name="%1"/>
-            initializePackage(%1);
+            io.qt.QtUtilities.initializePackage(%1);
             </inject-code>
         </modify-function>
         <modify-function signature="metaData() const">
@@ -4584,42 +4230,30 @@
                 <replace-type modified-type="java.nio.ByteBuffer"/>
                 <conversion-rule class="native">
                     jobject %out = %env->NewDirectByteBuffer(%in, jlong(__qt_this->size()));
-                    qtjambi_throw_java_exception(%env)
+                    JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                 </conversion-rule>
             </modify-argument>
         </modify-function>
         <modify-function signature="create(int, QSharedMemory::AccessMode)" until="5.*">
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                  jboolean %out = %in;
-                  if(%in){
-                      jobject __this_object = qtjambi_java_object_reference(__this_nativeId, %env);
-                      Java::QtCore::QSharedMemory::set___qt_accessMode(%env, __this_object, %2);
-                  }
-                </conversion-rule>
-            </modify-argument>
+            <inject-code class="java" position="end">
+              if(__qt_return_value){
+                  __qt_accessMode = mode;
+              }
+            </inject-code>
         </modify-function>
         <modify-function signature="create(qsizetype, QSharedMemory::AccessMode)" since="6.0.0">
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                  jboolean %out = %in;
-                  if(%in){
-                      jobject __this_object = qtjambi_java_object_reference(__this_nativeId, %env);
-                      Java::QtCore::QSharedMemory::set___qt_accessMode(%env, __this_object, %2);
-                  }
-                </conversion-rule>
-            </modify-argument>
+            <inject-code class="java" position="end">
+              if(__qt_return_value){
+                  __qt_accessMode = mode;
+              }
+            </inject-code>
         </modify-function>
         <modify-function signature="attach(QSharedMemory::AccessMode)">
-            <modify-argument index="0">
-                <conversion-rule class="native">
-                  jboolean %out = %in;
-                  if(%in){
-                      jobject __this_object = qtjambi_java_object_reference(__this_nativeId, %env);
-                      Java::QtCore::QSharedMemory::set___qt_accessMode(%env, __this_object, %1);
-                  }
-                </conversion-rule>
-            </modify-argument>
+            <inject-code class="java" position="end">
+              if(__qt_return_value){
+                  __qt_accessMode = mode;
+              }
+            </inject-code>
         </modify-function>
         <inject-code class="java" position="beginning">
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QSharedMemory_java__" quote-before-line="}// class"/>
@@ -4893,13 +4527,10 @@
             <include file-name="qtjambi_core_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="setSource(QtPrivate::QPropertyBindingData)" access="friendly"/>
-        <inject-code>
-            <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QPropertyObserver_java__" quote-before-line="}// class"/>
-        </inject-code>
         <inject-code class="native">
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QPropertyObserver_native__" quote-before-line="}// class"/>
         </inject-code>
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
             <import-file name="typesystem/java/typesystem_core-java.java" quote-after-line="class QPropertyObserver_shell__" quote-before-line="}// class"/>
         </inject-code>
     </object-type>
@@ -4943,7 +4574,15 @@
                     return false;
             </inject-code>
         </modify-function>
-        <modify-function signature="makeBinding(QPropertyBindingSourceLocation)" access="non-final">
+        <modify-function signature="makeBinding(QPropertyBindingSourceLocation)" access="non-final" until="6.1">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                QPropertyBindingSourceLocation %out = QT_PROPERTY_DEFAULT_BINDING_LOCATION;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="makeBinding(QPropertyBindingSourceLocation)const" access="non-final" since="6.2.0">
             <modify-argument index="1">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -4973,7 +4612,7 @@
                 </conversion-rule>
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="1" meta-name="%1"/>
-                registerDependentObject(%1, this);
+                QtJambi_LibraryUtilities.internal.registerDependentObject(%1, this);
             </inject-code>
         </modify-function>
         <modify-function signature="QLoggingCategory(const char *)" access="private" until="5.*">
@@ -4985,7 +4624,7 @@
                 </conversion-rule>
             </modify-argument>
             <inject-code class="java" position="end"><argument-map index="1" meta-name="%1"/>
-                registerDependentObject(%1, this);
+                QtJambi_LibraryUtilities.internal.registerDependentObject(%1, this);
             </inject-code>
         </modify-function>
         <modify-function signature="categoryName() const">

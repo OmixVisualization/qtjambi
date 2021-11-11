@@ -268,6 +268,12 @@ public class TestQMessageHandler{
 				fail("Exception expected to be thrown.");
 			} catch (RuntimeException e) {
 			}
+            
+            try {
+				MessageHandler.sendWarning("EXN");
+				fail("Exception expected to be thrown.");
+			} catch (RuntimeException e) {
+			}
         } finally {
         	qInstallMessageHandler(null);
         }

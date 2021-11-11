@@ -44,7 +44,6 @@ import io.qt.core.QSignalMapper;
 import io.qt.core.QThread;
 import io.qt.core.QObject.Signal2;
 import io.qt.internal.QtJambiDebugTools;
-import io.qt.internal.QtJambiThreadUtility;
 import io.qt.widgets.QWidget;
 
 public class TestSignalMapperQt5 extends QApplicationTest {
@@ -128,7 +127,7 @@ public class TestSignalMapperQt5 extends QApplicationTest {
      * Emitter class for triggering the various mapped signals...
      */
     private static class Emitter extends QObject {
-        Signal0 signal = new Signal0();
+        final Signal0 signal = new Signal0();
 
         public void emitSignal() {
             signal.emit();
@@ -136,7 +135,7 @@ public class TestSignalMapperQt5 extends QApplicationTest {
     }
 
     private static class SignalQuit extends QObject {
-        Signal0 signal = new Signal0();
+    	final Signal0 signal = new Signal0();
 
         public Signal0 getSignal0() {
             return signal;
@@ -146,7 +145,7 @@ public class TestSignalMapperQt5 extends QApplicationTest {
     // Method requires: getObjectCacheMode == DEFAULT
     @Test
     public void run_mappedInt() throws InterruptedException {
-    	Object currentThread = QThread.currentThread();
+    	QThread currentThread = QThread.currentThread();
         QSignalMapper mapper = new QSignalMapper();
         Receiver receiver = new Receiver();
         final Emitter emitters[] = new Emitter[10];
@@ -174,7 +173,7 @@ public class TestSignalMapperQt5 extends QApplicationTest {
             } catch(Throwable t) {
                 t.printStackTrace();
             }finally {
-            	receiver.moveToThread(QtJambiThreadUtility.castToThread(currentThread));
+            	receiver.moveToThread(currentThread);
             }
         }, "Receiver Thread");
 
@@ -270,7 +269,7 @@ public class TestSignalMapperQt5 extends QApplicationTest {
     private QWidget receivedWidget = null;
 
     private class SenderQObjectSubclass extends SenderQObject {
-        public Signal2<String, Integer> mappedJavaSignal = new Signal2<String, Integer>();
+        public final Signal2<String, Integer> mappedJavaSignal = new Signal2<>();
 
         private void receiverSlot(QWidget widget) {
             receivedWidget = widget;

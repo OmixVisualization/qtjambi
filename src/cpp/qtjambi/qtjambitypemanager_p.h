@@ -61,8 +61,6 @@
 #include "qtjambi_containers.h"
 #include "qtjambi_containeraccess.h"
 
-QT_WARNING_DISABLE_DEPRECATED
-
 class QtJambiTypeManager {
     public:
         enum TypePattern : quint64 {

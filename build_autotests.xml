@@ -7,6 +7,121 @@
     <property environment="env"/>
 
     <tstamp/>
+    
+    <fileset id="qtjambi.autotest.classes" dir="src/java/autotest">
+        <include name="io/qt/**/Test*.java"/>
+        <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
+        <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
+        <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+        <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
+        <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
+        <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
+        <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
+        <exclude name="io/qt/**/Test*ScriptTools.java" unless="${qtjambi.scripttools.any.true}"/>
+        <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
+        <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
+        <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
+        <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
+        <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
+        <exclude name="io/qt/**/Test*Gamepad.java" unless="${qtjambi.gamepad.any.true}"/>
+        <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
+        <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
+        <exclude name="io/qt/**/Test*Help.java" unless="${qtjambi.help.any.true}"/>
+        <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
+        <exclude name="io/qt/**/Test*MultimediaWidgets.java" unless="${qtjambi.multimediawidgets.any.true}"/>
+        <exclude name="io/qt/**/Test*MacExtras.java" unless="${qtjambi.macextras.any.true}"/>
+        <exclude name="io/qt/**/Test*X11Extras.java" unless="${qtjambi.x11extras.any.true}"/>
+        <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
+        <exclude name="io/qt/**/Test*Nfc.java" unless="${qtjambi.nfc.any.true}"/>
+        <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
+        <exclude name="io/qt/**/Test*OpenGLWidgets.java" unless="${qtjambi.openglwidgets.any.true}"/>
+        <exclude name="io/qt/**/Test*Positioning.java" unless="${qtjambi.positioning.any.true}"/>
+        <exclude name="io/qt/**/Test*PrintSupport.java" unless="${qtjambi.printsupport.any.true}"/>
+        <exclude name="io/qt/**/Test*Purchasing.java" unless="${qtjambi.purchsing.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DAnimation.java" unless="${qtjambi.qt3danimation.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DCore.java" unless="${qtjambi.qt3dcore.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DExtras.java" unless="${qtjambi.qt3dextras.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DInput.java" unless="${qtjambi.qt3dinput.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DLogic.java" unless="${qtjambi.qt3dlogic.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DQuick.java" unless="${qtjambi.qt3dquick.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DQuickExtras.java" unless="${qtjambi.qt3dquickextras.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DQuickScene2D.java" unless="${qtjambi.qt3dquickscene2d.any.true}"/>
+        <exclude name="io/qt/**/Test*Qt3DRender.java" unless="${qtjambi.qt3drender.any.true}"/>
+        <exclude name="io/qt/**/Test*Xmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
+        <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
+        <exclude name="io/qt/**/Test*DataVisualization.java" unless="${qtjambi.datavisualization.any.true}"/>
+        <exclude name="io/qt/**/Test*Nfc.java" unless="${qtjambi.nfc.any.true}"/>
+        <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
+        <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
+        <exclude name="io/qt/**/Test*3DCore.java" unless="${qtjambi.3dcore.any.true}"/>
+        <exclude name="io/qt/**/Test*Quick3D.java" unless="${qtjambi.quick3d.any.true}"/>
+        <exclude name="io/qt/**/Test*VirtualKeyboard.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
+        <exclude name="io/qt/**/Test*Testlib.java" unless="${qtjambi.test.any.true}"/>
+        <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/Test*Sensors.java" unless="${qtjambi.sensors.any.true}"/>
+        <exclude name="io/qt/**/Test*Scxml.java" unless="${qtjambi.scxml.any.true}"/>
+        <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
+        <exclude name="io/qt/**/Test*Quick.java" unless="${qtjambi.quick.any.true}"/>
+        <exclude name="io/qt/**/Test*QuickControls.java" unless="${qtjambi.quickcontrols.any.true}"/>
+        <exclude name="io/qt/**/Test*QuickWidgets.java" unless="${qtjambi.quickwidgets.any.true}"/>
+        <exclude name="io/qt/**/Test*Location.java" unless="${qtjambi.location.any.true}"/>
+        <exclude name="io/qt/**/Test*RemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
+        <exclude name="io/qt/**/Test*Statemachine.java" unless="${qtjambi.statemachine.any.true}"/>
+        <exclude name="io/qt/**/Test*SerialBus.java" unless="${qtjambi.serialbus.any.true}"/>
+        <exclude name="io/qt/**/Test*SerialPort.java" unless="${qtjambi.serialport.any.true}"/>
+        <exclude name="io/qt/**/Test*Svg.java" unless="${qtjambi.svg.any.true}"/>
+        <exclude name="io/qt/**/Test*SvgWidgets.java" unless="${qtjambi.svgwidgets.any.true}"/>
+        <exclude name="io/qt/**/Test*TextToSpeech.java" unless="${qtjambi.texttospeech.any.true}"/>
+        <exclude name="io/qt/**/Test*UITools.java" unless="${qtjambi.uitools.any.true}"/>
+        <exclude name="io/qt/**/Test*WebChannel.java" unless="${qtjambi.webchannel.any.true}"/>
+        <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
+        <exclude name="io/qt/**/Test*WebEngineCore.java" unless="${qtjambi.webenginecore.any.true}"/>
+        <exclude name="io/qt/**/Test*WebEngineQuick.java" unless="${qtjambi.webenginequick.any.true}"/>
+        <exclude name="io/qt/**/Test*WebEngineWidgets.java" unless="${qtjambi.webenginewidgets.any.true}"/>
+        <exclude name="io/qt/**/Test*WebSockets.java" unless="${qtjambi.websockets.any.true}"/>
+        <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
+        <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
+        <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
+        <exclude name="io/qt/**/TestDBus*.java" unless="${qtjambi.dbus.any.true}"/>
+        <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
+        <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
+        <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
+        <exclude name="io/qt/**/TestWebEngine*.java" unless="${qtjambi.webengine.any.true}"/>
+        <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
+        <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
+        <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
+        <exclude name="io/qt/**/TestDesigner*.java" unless="${qtjambi.designer.any.true}"/>
+        <exclude name="io/qt/**/TestUiTools*.java" unless="${qtjambi.uitools.any.true}"/>
+        <exclude name="io/qt/**/TestXml*.java" unless="${qtjambi.xml.any.true}"/>
+        <exclude name="io/qt/**/TestHelp*.java" unless="${qtjambi.help.any.true}"/>
+        <exclude name="io/qt/**/TestMultimedia*.java" unless="${qtjambi.multimedia.any.true}"/>
+        <exclude name="io/qt/**/TestXmlpatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/TestXmlPatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
+        <exclude name="io/qt/**/TestSql*.java" unless="${qtjambi.sql.any.true}"/>
+        <exclude name="io/qt/**/TestSQL*.java" unless="${qtjambi.sql.any.true}"/>
+        <exclude name="io/qt/**/Test3DCore*.java" unless="${qtjambi.3dcore.any.true}"/>
+        <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
+        <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
+        <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
+        <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
+        <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/TestSensors*.java" unless="${qtjambi.sensors.any.true}"/>
+        <exclude name="io/qt/**/TestScxml*.java" unless="${qtjambi.scxml.any.true}"/>
+        <exclude name="io/qt/**/TestWinExtras*.java" unless="${qtjambi.winextras.any.true}"/>
+        <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
+        <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
+        <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
+        <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
+        <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
+        <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
+        <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
+    </fileset>
+
 
     <property file="tests.properties"/>
 
@@ -53,7 +168,7 @@
                 inputDirectory="${generatorDir}${psep}${basedir}/autotestlib"
                 outputDirectory="${outputDir}/tests/autotest-generator"
                 generatorDirectory="${generator.builddir}"
-                typesystem="${basedir}/autotestlib/build.txt"
+                typesystem="${basedir}/autotestlib/typesystem-autotestlib.xml"
                 header="${basedir}/autotestlib/masterinclude.h"
                 qtincludedirectory="${qtjambi.qt.includedir}"
                 qtlibdirectory="${tools.qt.libdir}"
@@ -107,15 +222,19 @@
 
     <target name="compile.java" depends="init.build, compile.deps, check.junit, check.ssl">
         <ant inheritrefs="true" target="compile.java.impl">
+        <property name="module.suffix" value=""/>
             <property name="test.java.outdir" location="${outputDir}/tests/java"/>
+            <property name="test.java.srcoutdir" location="${outputDir}/tests/java-src"/>
         </ant>
     </target>
     <target name="compile.java8" depends="init.build, compile.deps, check.junit, check.ssl">
         <ant inheritrefs="true" target="compile.java.impl">
             <property name="minimum.java.version" value="1.8"/>
             <property name="source.java.version" value="1.8"/>
+            <property name="module.suffix" value="-jre8"/>
             <property name="java.module.based" value="false"/>
             <property name="test.java.outdir" location="${outputDir}/tests/java8"/>
+            <property name="test.java.srcoutdir" location="${outputDir}/tests/java8-src"/>
         </ant>
     </target>
     <target name="compile.java.impl" depends="init.build, compile.deps, check.junit, check.ssl">
@@ -125,190 +244,65 @@
         no ASCII/ISO-8859-1 characters and the MacOSX Java using "MacRoman"
         character set by default. -->
         <if>
+            <equals arg1="${test.java.outdir}" arg2="${outputDir}/tests/java8"/>
+            <then>
+                <path id="qtjambi.classpath">
+                    <fileset dir="${deploymentdir}">
+                        <include name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi-*native-*.jar"/>
+                    </fileset>
+                    <pathelement location="${tests.junit}" />
+                    <pathelement location="${tests.hamcrest}" />
+                    <pathelement location="${jna.lib}" />
+                </path>
+            </then>
+            <else>
+                <path id="qtjambi.classpath">
+                    <fileset dir="${deploymentdir}">
+                        <include name="qtjambi*-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi-*native-*.jar"/>
+                    </fileset>
+                    <pathelement location="${tests.junit}" />
+                    <pathelement location="${tests.hamcrest}" />
+                    <pathelement location="${jna.lib}" />
+                </path>
+            </else>
+        </if>
+        <delete dir="${test.java.srcoutdir}"/>
+        <mkdir dir="${test.java.srcoutdir}"/>
+        <copy todir="${test.java.srcoutdir}">
+            <fileset refid="qtjambi.autotest.classes"/>
+        </copy>
+        <copy todir="${test.java.srcoutdir}">
+            <fileset dir="src/java/autotest">
+                <include name="io/qt/**/*"/>
+                <exclude name="io/qt/**/Test*.java"/>
+            </fileset>
+        </copy>
+        <copy todir="${test.java.srcoutdir}">
+            <fileset dir="${outputDir}/tests/autotest-generator/java" includes="*.java,io/qt/**/*.java"/>
+        </copy>
+        <if>
             <istrue value="${java.module.based}"/>
             <then>
-                <module-info outputDirectory="${outputDir}/tests/autotest-generator/java" javaDirectory="${outputDir}/java"/>
-                <javac destdir="${test.java.outdir}" debug="true"
+                <autotest-module-info outputDirectory="${outputDir}/tests/autotest-generator/java" javaDirectory="${generator.outputdir}/java"/>
+                <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
                         includeantruntime="false"
                         source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <compilerarg value="--add-exports" />
-                    <compilerarg value="qtjambi/io.qt.internal=qtjambi.autotest" />
-                    <modulepath>
-                        <fileset dir="${deploymentdir}">
-                            <include name="qtjambi-*.jar"/>
-                            <exclude name="qtjambi-*-src.jar"/>
-                            <exclude name="qtjambi-native-*.jar"/>
-                        </fileset>
-                        <pathelement location="${tests.junit}" />
-                        <pathelement location="${tests.hamcrest}" />
-                    </modulepath>
-                    <src path="${basedir}/src/java/autotest"/>
-                    <!-- pick up the generated code from compile.native -->
-                    <src path="${outputDir}/tests/autotest-generator/java"/>
-                    <include name="io/qt/**/*.java"/>
-                    <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
-                    <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Help.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*3DCore.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick3D.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/Test*VirtualKeyboard.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sensors.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/Test*Scxml.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/Test*Location.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/Test*RemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/Test*Testlib.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/TestDBus*.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestWebEngine*.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/TestDesigner*.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/TestUiTools*.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/TestXml*.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/TestHelp*.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/TestMultimedia*.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlpatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlPatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/TestSql*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/TestSQL*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test3DCore*.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestSensors*.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/TestScxml*.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/TestWinExtras*.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
+                    <modulepath refid="qtjambi.classpath"/>
                 </javac>
             </then>
             <else>
-                <javac destdir="${test.java.outdir}" debug="true"
+            <delete file="${test.java.srcoutdir}/module-info.java"/>
+                <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}" excludes="module-info.java"
                         includeantruntime="false"
                         source="${source.java.version}" target="${minimum.java.version}" encoding="UTF-8">
                     <compilerarg value="-Xlint:deprecation" />
                     <compilerarg value="-Xlint:unchecked" />
-                    <classpath>
-                        <fileset dir="${deploymentdir}">
-                            <include name="qtjambi-*.jar"/>
-                            <exclude name="qtjambi-*-src.jar"/>
-                            <exclude name="qtjambi-native-*.jar"/>
-                        </fileset>
-                        <pathelement location="${tests.junit}" />
-                        <pathelement location="${tests.hamcrest}" />
-                    </classpath>
-                    <src path="${basedir}/src/java/autotest"/>
-                    <!-- pick up the generated code from compile.native -->
-                    <src path="${outputDir}/tests/autotest-generator/java"/>
-                    <include name="io/qt/**/*.java"/>
-                    <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
-                    <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Help.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*3DCore.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick3D.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/Test*VirtualKeyboard.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sensors.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/Test*Scxml.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/Test*Location.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/Test*RemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/Test*Testlib.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/TestDBus*.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestWebEngine*.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/TestDesigner*.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/TestUiTools*.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/TestXml*.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/TestHelp*.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/TestMultimedia*.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlpatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlPatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/TestSql*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/TestSQL*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test3DCore*.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestSensors*.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/TestScxml*.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/TestWinExtras*.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
+                    <classpath refid="qtjambi.classpath"/>
                 </javac>
             </else>
         </if>
@@ -326,16 +320,129 @@
         <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
             <property name="qtjambi.testbuild" value="true"/>
         </ant>
+        <if>
+            <or>
+                <equals arg1="${qtjambi.configuration}" arg2="release" />
+                <equals arg1="${qtjambi.configuration}" arg2="test" />
+                <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+            </or>
+            <then>
+                <if>
+                    <istrue value="${qtjambi.qml.any.true}"/>
+                    <then>
+                        <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                            <property name="qtjambi.testbuild" value="true"/>
+                            <property name="platformjar.debug" value="false"/>
+                            <property name="qtjambi.qml.bundle" value="true"/>
+                            <property name="module.suffix" value=""/>
+                        </ant>
+                    </then>
+                </if>
+                <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+                    <property name="qtjambi.testbuild" value="true"/>
+                    <property name="platformjar.debug" value="false"/>
+                    <property name="qtjambi.plugin.bundle" value="true"/>
+                    <property name="module.suffix" value=""/>
+                </ant>
+            </then>
+        </if>
+        <if>
+            <or>
+                <equals arg1="${qtjambi.configuration}" arg2="debug" />
+                <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
+            </or>
+            <then>
+                <if>
+                    <istrue value="${qtjambi.qml.any.true}"/>
+                    <then>
+                        <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
+                            <property name="qtjambi.testbuild" value="true"/>
+                            <property name="platformjar.debug" value="true"/>
+                            <property name="qtjambi.qml.bundle" value="true"/>
+                        </ant>
+                    </then>
+                </if>
+                <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
+                    <property name="qtjambi.testbuild" value="true"/>
+                    <property name="platformjar.debug" value="true"/>
+                    <property name="qtjambi.plugin.bundle" value="true"/>
+                </ant>
+            </then>
+        </if>
     </target>
 
     <target name="run.test" depends="init.test, check.junit">
         <qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
-        <property name="nativeBaseDir" location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}"/>
-        <property name="qtLib"         location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/lib"/>
-        <property name="qtBin"         location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/bin"/>
-        <property name="qtTools"       location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/tools"/>
-        <property name="jambiLib"      location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/lib"/>
-        <property name="jambiBin"      location="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/bin"/>
+        <property name="nativeBaseDir" location="${basedir}/deployment/native/${qtjambi.osname}/${kind}"/>
+        <property name="qtLib"         location="${qtjambi.qt.libdir}"/>
+        <property name="qtBin"         location="${qtjambi.qt.bindir}"/>
+        <property name="qtTools"       location="${QTDIR}/tools"/>
+        <property name="jambiLib"      location="${basedir}/deployment/native/${qtjambi.osname}/${kind}/lib"/>
+        <property name="jambiBin"      location="${basedir}/deployment/native/${qtjambi.osname}/${kind}/bin"/>
+        <if>
+            <equals arg1="${jdk-exec-version}" arg2="8"/>
+            <then>
+                <if>
+                    <os family="windows"/>
+                    <then>
+                        <property name="test.jvm" location="${java8.home.target}/bin/java.exe"/>
+                    </then>
+                    <else>
+                        <property name="test.jvm" location="${java8.home.target}/bin/java"/>
+                    </else>
+                </if>
+                <if>
+                    <not>
+                        <available file="${test.jvm}" type="file"/>
+                    </not>
+                    <then>
+                        <fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
+                    </then>
+                </if>
+                <path id="qtjambi.classpath">
+                    <fileset dir="${deploymentdir}">
+                        <include name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi-*native-*.jar"/>
+                    </fileset>
+                    <pathelement location="${tests.junit}" />
+                    <pathelement location="${tests.hamcrest}" />
+                    <pathelement location="${sqlite.jdbc}" />
+                    <pathelement location="${jna.lib}" />
+                    <pathelement path="${absOutputDir}/tests/java8" />
+                </path>
+            </then>
+            <else>
+                <if>
+                    <os family="windows"/>
+                    <then>
+                        <property name="test.jvm" location="${java.home.target}/bin/java.exe"/>
+                    </then>
+                    <else>
+                        <property name="test.jvm" location="${java.home.target}/bin/java"/>
+                    </else>
+                </if>
+                <if>
+                    <not>
+                        <available file="${test.jvm}" type="file"/>
+                    </not>
+                    <then>
+                        <property name="test.jvm" location="java"/>
+                    </then>
+                </if>
+                <path id="qtjambi.classpath">
+                    <fileset dir="${deploymentdir}">
+                        <include name="qtjambi*-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi*-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
+                        <exclude name="qtjambi-*native-*.jar"/>
+                    </fileset>
+                    <pathelement location="${tests.junit}" />
+                    <pathelement location="${tests.hamcrest}" />
+                    <pathelement location="${sqlite.jdbc}" />
+                    <pathelement location="${jna.lib}" />
+                    <pathelement path="${absOutputDir}/tests/java" />
+                </path>
+            </else>
+        </if>
         <if>
             <os family="windows"/>
             <then>
@@ -360,6 +467,15 @@
             </else>
         </if>
         <if>
+            <available type="file" file="${jna.lib}"/>
+            <then>
+            </then>
+            <else>
+                <mkdir dir="extjars"/>
+                <get src="${jna.lib.download.url}" dest="${jna.lib}" verbose="true"/>
+            </else>
+        </if>
+        <if>
             <os family="mac"/>
             <then>
                 <property name="XstartOnFirstThread" value="-XstartOnFirstThread" />
@@ -377,120 +493,36 @@
                 <os family="windows"/>
             </not>
             <then>
-                <symlink link="${outputDir}/tests/${kind}/lib" resource="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/${kind}/lib"/>
+                <symlink link="${outputDir}/tests/${kind}/lib" resource="${basedir}/deployment/native/${qtjambi.osname}/${kind}/lib"/>
             </then>
         </if>
-        <junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="480000" showoutput="yes" logfailedtests="yes">
-            <classpath>
-                <fileset dir="${deploymentdir}">
-                    <include name="qtjambi-*.jar"/>
-                    <exclude name="qtjambi-*-src.jar"/>
-                    <exclude name="qtjambi-native-*.jar"/>
-                </fileset>
-                <pathelement location="${tests.junit}" />
-                <pathelement location="${tests.hamcrest}" />
-                <pathelement location="${sqlite.jdbc}" />
-                <pathelement path="${absOutputDir}/tests/java${jdk-exec-version}" />
-            </classpath>
-            <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
-            <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
-            <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
-            <jvmarg value="-Dio.qt.debug.inhibitNativeResourceThread=true"/>
-            <jvmarg value="-Dio.qt.debug.level=${io.qt.debug.level}"/>
-            <jvmarg value="-Dio.qt.exceptions-for-messages=none"/>
-            <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-            <jvmarg value="${XstartOnFirstThread}"/>
-            <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
-            from native code (so we can see where/why it crashed) otherwise
-            the JVM may promote SIGSEGV to NullPointerException, which is
-            not that useful for debugging. -->
-            <jvmarg value="-Xcheck:jni"/>
-            <env key="${env.qtjambi.debug.trace}" value="1"/>
-            <env key="JAVA_HOME" path="${jdk-home}"/>
-            <env key="JAVA_HOME_TARGET" path="${jdk-home}"/>
-            <env key="PATH" path="${jdk-home}/bin${psep}${env.PATH}"/>
-            <!--env key="PATH" path="${qtjambi.qt.bindir}${psep}${env.PATH}"/-->
-            <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
-            <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
-            <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
-<!--            <jvmarg value="-verbose"/> -->
-            <formatter type="xml" usefile="yes" />
-            <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
-                <fileset dir="src/java/autotest">
-                    <include name="io/qt/**/Test*.java"/>
-                    <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
-                    <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/Test*Auth.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/Test*DBus.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/Test*Network.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/Test*Designer.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/Test*UiTools.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xml.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Help.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/Test*Multimedia.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/Test*Xmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sql.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*SQL.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test*3DCore.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick3D.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/Test*VirtualKeyboard.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/Test*Testlib.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/Test*Sensors.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/Test*Scxml.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/Test*WinExtras.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/Test*Quick.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/Test*Location.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/Test*RemoteObjects.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
-                    <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
-                    <exclude name="io/qt/**/TestDBus*.java" unless="${qtjambi.dbus.any.true}"/>
-                    <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
-                    <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestQScript*.java" unless="${qtjambi.script.any.true}"/>
-                    <exclude name="io/qt/**/TestWebEngine*.java" unless="${qtjambi.webengine.any.true}"/>
-                    <exclude name="io/qt/**/TestWebView*.java" unless="${qtjambi.webview.any.true}"/>
-                    <exclude name="io/qt/**/TestConcurrent*.java" unless="${qtjambi.concurrent.any.true}"/>
-                    <exclude name="io/qt/**/TestNetwork*.java" unless="${qtjambi.network.any.true}"/>
-                    <exclude name="io/qt/**/TestDesigner*.java" unless="${qtjambi.designer.any.true}"/>
-                    <exclude name="io/qt/**/TestUiTools*.java" unless="${qtjambi.uitools.any.true}"/>
-                    <exclude name="io/qt/**/TestXml*.java" unless="${qtjambi.xml.any.true}"/>
-                    <exclude name="io/qt/**/TestHelp*.java" unless="${qtjambi.help.any.true}"/>
-                    <exclude name="io/qt/**/TestMultimedia*.java" unless="${qtjambi.multimedia.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlpatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestXmlPatterns*.java" unless="${qtjambi.xmlpatterns.any.true}"/>
-                    <exclude name="io/qt/**/TestSql*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/TestSQL*.java" unless="${qtjambi.sql.any.true}"/>
-                    <exclude name="io/qt/**/Test3DCore*.java" unless="${qtjambi.3dcore.any.true}"/>
-                    <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
-                    <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
-                    <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
-                    <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestSensors*.java" unless="${qtjambi.sensors.any.true}"/>
-                    <exclude name="io/qt/**/TestScxml*.java" unless="${qtjambi.scxml.any.true}"/>
-                    <exclude name="io/qt/**/TestWinExtras*.java" unless="${qtjambi.winextras.any.true}"/>
-                    <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
-                    <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
-                    <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
-                    <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
-                    <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
-                    <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
-                </fileset>
-            </batchtest>
-        </junit>
+            <junit fork="yes" jvm="${test.jvm}" printsummary="true" haltonfailure="no" timeout="480000" showoutput="yes" logfailedtests="yes">
+                <classpath refid="qtjambi.classpath"/>
+                <jvmarg value="-Djava.library.path=${absQtPath}${psep}${absJambiPath}${psep}${outputDir}/tests/bin${psep}${outputDir}/tests/lib"/>
+                <jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
+                <jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
+                <jvmarg value="-Dio.qt.debug.inhibitNativeResourceThread=true"/>
+                <jvmarg value="-Dio.qt.debug.level=${io.qt.debug.level}"/>
+                <jvmarg value="-Dio.qt.exceptions-for-messages=none"/>
+                <jvmarg value="-Dio.qt.no-deployment-spec=true"/>
+                <jvmarg value="-Dio.qt.pluginpath=${basedir}/deployment/native/${qtjambi.osname}/${kind}/plugins${psep}${outputDir}/tests/${kind}/plugins"/>
+                <jvmarg value="${XstartOnFirstThread}"/>
+                <jvmarg value="-Dqtjambi.deployer.test.jdbc=${sqlite.jdbc}"/>
+                <jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+                from native code (so we can see where/why it crashed) otherwise
+                the JVM may promote SIGSEGV to NullPointerException, which is
+                not that useful for debugging. -->
+                <jvmarg value="-Xcheck:jni"/>
+                <env key="${env.qtjambi.debug.trace}" value="1"/>
+                <env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
+                <!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/>
+                <env key="QML2_IMPORT_PATH" value="${absQtPath}/../qml"/-->
+    <!--            <jvmarg value="-verbose"/> -->
+                <formatter type="xml" usefile="yes" />
+                <batchtest fork="yes" todir="${outputDir}/tests/junitxml-${kind}${jdk-exec-version}">
+                    <fileset refid="qtjambi.autotest.classes"/>
+                </batchtest>
+            </junit>
         <if>
             <not>
                 <os family="windows"/>
@@ -509,13 +541,13 @@
 
     <target name="run" depends="init">
         <if>
-            <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/debug" type="dir"/>
+            <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <antcall target="debug.run"/>
             </then>
             <else>
                 <if>
-                    <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/release" type="dir"/>
+                    <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
                     <then>
                         <antcall target="release.run"/>
                     </then>
@@ -529,12 +561,10 @@
     
     <target name="release.run" depends="init">
         <if>
-            <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/release" type="dir"/>
+            <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value=""/>
-                    <param name="jdk-home" value="${java.home.target}"/>
-                    <param name="test.jvm" value="java"/>
                     <param name="kind"          value="release"/>
                 </antcall>
             </then>
@@ -546,12 +576,10 @@
     
     <target name="debug.run" depends="init">
         <if>
-            <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/debug" type="dir"/>
+            <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value=""/>
-                    <param name="jdk-home" value="${java.home.target}"/>
-                    <param name="test.jvm" value="java"/>
                     <param name="kind"          value="debug"/>
                 </antcall>
             </then>
@@ -563,35 +591,13 @@
     
     <target name="release.run8" depends="init">
         <if>
-            <available file="${basedir}/deployment/jdk8" type="dir"/>
+            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
             <then>
                 <if>
-                    <os family="windows"/>
-                    <then>
-                        <property name="test.jvm" location="${java8.home.target}/bin/java.exe"/>
-                    </then>
-                    <else>
-                        <property name="test.jvm" location="${java8.home.target}/bin/java"/>
-                    </else>
-                </if>
-                <if>
-                    <and>
-                        <istrue value="${check.jdk8}"/>
-                        <not>
-                            <available file="${test.jvm}" type="file"/>
-                        </not>
-                    </and>
-                    <then>
-                        <fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
-                    </then>
-                </if>
-                <if>
-                    <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/release" type="dir"/>
+                    <available file="${basedir}/deployment/native/${qtjambi.osname}/release" type="dir"/>
                     <then>
                         <antcall target="run.test">
                             <param name="jdk-exec-version" value="8"/>
-                            <param name="deploymentdir" location="deployment/jdk8"/>
-                            <param name="jdk-home" value="${java8.home.target}"/>
                             <param name="kind"             value="release"/>
                         </antcall>
                     </then>
@@ -605,35 +611,13 @@
     
     <target name="debug.run8" depends="init">
         <if>
-            <available file="${basedir}/deployment/jdk8" type="dir"/>
+            <available file="${basedir}/deployment/qtjambi-jre8-${qtjambi.soname.version.major}.${qtjambi.soname.version.minor}.jar"/>
             <then>
                 <if>
-                    <os family="windows"/>
-                    <then>
-                        <property name="test.jvm" location="${java8.home.target}/bin/java.exe"/>
-                    </then>
-                    <else>
-                        <property name="test.jvm" location="${java8.home.target}/bin/java"/>
-                    </else>
-                </if>
-                <if>
-                    <and>
-                        <istrue value="${check.jdk8}"/>
-                        <not>
-                            <available file="${test.jvm}" type="file"/>
-                        </not>
-                    </and>
-                    <then>
-                        <fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
-                    </then>
-                </if>
-                <if>
-                    <available file="${basedir}/deployment/${qtjambi.osname}/${qtjambi.compiler}/debug" type="dir"/>
+                    <available file="${basedir}/deployment/native/${qtjambi.osname}/debug" type="dir"/>
                     <then>
                         <antcall target="run.test">
                             <param name="jdk-exec-version" value="8"/>
-                            <param name="deploymentdir" location="deployment/jdk8"/>
-                            <param name="jdk-home" value="${java8.home.target}"/>
                             <param name="kind"          value="debug"/>
                         </antcall>
                     </then>
@@ -650,6 +634,12 @@
 
     <target name="tests.compile"
             depends="init.build, compile.native, compile.java, compile.java8" description="Builds all tests without recalling generator"/>
+            
+    <target name="tests.compile.native"
+            depends="init.build, compile.native" description="Builds native test components"/>
+            
+    <target name="tests.compile.java"
+            depends="init.build, compile.java, compile.java8" description="Builds java test components"/>
 
     <target name="tests.run"
             depends="init.build, init.test, setenv, run" description="Runs tests and generates report in TestReport subdir"/>

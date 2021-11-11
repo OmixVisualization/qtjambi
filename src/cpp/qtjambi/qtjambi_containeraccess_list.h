@@ -107,7 +107,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QList<T>::const_iterator(reinterpret_cast<const QList<T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QList<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QList<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -117,7 +117,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QList<T>::const_iterator(reinterpret_cast<const QList<T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QList<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QList<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -138,9 +138,9 @@ public:
 
     void appendList(JNIEnv * env, void* container, jobject list) override {
         if (qtjambi_is_QList(env, list, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, list)){
+            if(QList<T>* ptr = qtjambi_to_object<QList<T>>(env, list)){
                 QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QList<T> *>(container)->append(*reinterpret_cast<QList<T> *>(ptr));
+                reinterpret_cast<QList<T> *>(container)->append(*ptr);
             }
         }else{
             jobject iter = qtjambi_collection_iterator(env, list);
@@ -344,9 +344,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QList(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QList<T>* ptr = qtjambi_to_object<QList<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                return *reinterpret_cast<const QList<T> *>(container)==*reinterpret_cast<QList<T> *>(ptr);
+                return *reinterpret_cast<const QList<T> *>(container)==*ptr;
             }
         }else{
             QTJAMBI_ELEMENT_LOCKER

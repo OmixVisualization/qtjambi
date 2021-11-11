@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_winextras_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtWinExtras{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/winextras,QtWin$ColorizationColorInfo,

@@ -61,7 +61,7 @@ public class TestQt3DCore extends QApplicationTest {
 	 */
 //    @Test
     public void test_3D_text() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         Qt3DWindow view = new Qt3DWindow();
         view.defaultFrameGraph().setClearColor(new QColor(210, 210, 220));
 

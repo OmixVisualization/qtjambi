@@ -42,18 +42,11 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DQuick">
+<typesystem qt-library="Qt3DQuick" description="Qt3DQuick Contains classes used for implementing QML functionality into Qt3D applications.">
     <namespace-type name="Qt3DCore::Quick" java-name="Qt3DQuick" generate="no"/>
     <enum-type name="Qt3DCore::Quick::QQmlAspectEngine::Status"/>
     <object-type name="Qt3DCore::Quick::QQmlAspectEngine" java-name="QQmlAspectEngine">
-        <extra-includes>
-            <include file-name="qtjambi/qtjambi_exceptions.h" location="global"/>
-        </extra-includes>
-        <modify-function signature="setSource(const QUrl &amp;)">
-            <inject-code class="native" position="beginning">
-            QTJAMBI_BLOCK_EXCEPTIONS(true)
-            </inject-code>
-            <inject-code class="native" position="end">qtjambi_check_blocked_exception();</inject-code>
+        <modify-function signature="setSource(const QUrl &amp;)" block-exceptions="yes">
         </modify-function>
     </object-type>
     <object-type name="Qt3DCore::Quick::Quick3DConfiguration" java-name="Quick3DConfiguration">

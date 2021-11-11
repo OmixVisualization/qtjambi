@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSerialBus">
+<typesystem qt-library="QtSerialBus" description="Provides access to serial industrial bus interface. Currently the module supports the CAN bus and Modbus protocols.">
     <rejection class="QModbusPdu::IsType"/>
     <object-type name="QModbusClient">
     </object-type>
@@ -60,17 +60,33 @@
     <value-type name="QCanBusDevice::Filter">
     </value-type>
     <value-type name="QCanBusDeviceInfo">
+        <extra-includes>
+            <include file-name="QCanBusDevice" location="global"/>
+        </extra-includes>
         <custom-constructor>
             if(copy){
                 return new(placement) QCanBusDeviceInfo(*copy);
             }else{
-                return nullptr;
+                struct CanBusDevice : QCanBusDevice{
+                    static QCanBusDeviceInfo createDeviceInfo(){
+                        return QCanBusDevice::createDeviceInfo({});
+                    }
+                };
+                return new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());
             }
+        </custom-constructor>
+        <custom-constructor type="default">
+            struct CanBusDevice : QCanBusDevice{
+                static QCanBusDeviceInfo createDeviceInfo(){
+                    return QCanBusDevice::createDeviceInfo({}, {}, false, false);
+                }
+            };
+            new(placement) QCanBusDeviceInfo(CanBusDevice::createDeviceInfo());
         </custom-constructor>
         <modify-function signature="operator=(const QCanBusDeviceInfo &amp;)" remove="all"/>
     </value-type>
     <interface-type name="QCanBusFactory"/>
-    <interface-type name="QCanBusFactoryV2"/>
+    <interface-type name="QCanBusFactoryV2" until="5.*"/>
     <enum-type name="QCanBusFrame::FrameError" flags="QCanBusFrame::FrameErrors"/>
     <enum-type name="QCanBusFrame::FrameType"/>
     <value-type name="QCanBusFrame">
@@ -80,6 +96,7 @@
     <enum-type name="QModbusDataUnit::RegisterType"/>
     <value-type name="QModbusDataUnit">
     </value-type>
+    <enum-type name="QModbusDevice::IntermediateError" since="6.2.0"/>
     <enum-type name="QModbusDevice::ConnectionParameter"/>
     <enum-type name="QModbusDevice::Error"/>
     <enum-type name="QModbusDevice::State"/>
@@ -92,7 +109,7 @@
     </value-type>
     <enum-type name="QModbusPdu::ExceptionCode"/>
     <enum-type name="QModbusPdu::FunctionCode"/>
-    <value-type name="QModbusPdu" polymorphic-base="yes" polymorphic-id-expression="typeid(*%1) == typeid(QModbusPdu)">
+    <value-type name="QModbusPdu">
         <custom-constructor>
             QModbusPdu* clone = new(placement) QModbusPdu();
             if(copy){
@@ -120,18 +137,22 @@
     </functional-type>
     <functional-type name="QModbusRequest::CalcFuncPtr" generate="no"/>
     <functional-type name="QModbusResponse::CalcFuncPtr" generate="no"/>
-    <value-type name="QModbusRequest" polymorphic-id-expression="typeid(*%1) == typeid(QModbusRequest)">
+    <value-type name="QModbusRequest">
     </value-type>
-    <value-type name="QModbusResponse" polymorphic-id-expression="typeid(*%1) == typeid(QModbusResponse)">
+    <value-type name="QModbusResponse">
     </value-type>
-    <value-type name="QModbusExceptionResponse" polymorphic-id-expression="typeid(*%1) == typeid(QModbusExceptionResponse)">
+    <value-type name="QModbusExceptionResponse">
     </value-type>
     <enum-type name="QModbusReply::ReplyType"/>
     <object-type name="QModbusReply">
     </object-type>
-    <object-type name="QModbusRtuSerialMaster">
+    <object-type name="QModbusRtuSerialMaster" until="5.*">
     </object-type>
-    <object-type name="QModbusRtuSerialSlave">
+    <object-type name="QModbusRtuSerialClient" since="6.2.0">
+    </object-type>
+    <object-type name="QModbusRtuSerialSlave" until="5.*">
+    </object-type>
+    <object-type name="QModbusRtuSerialServer" since="6.2.0">
     </object-type>
     <enum-type name="QModbusServer::Option"/>
     <object-type name="QModbusServer">

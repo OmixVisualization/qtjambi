@@ -138,7 +138,9 @@ struct Modification {
         ThreadAffine =          uint(ThreadAffinity::Yes),
         UIThreadAffine =        uint(ThreadAffinity::UI),
         PixmapThreadAffine =    uint(ThreadAffinity::Pixmap),
-        NoExcept =              0x02000000
+        NoExcept =              0x02000000,
+        BlockExcept =           0x10000000,
+        RethrowExcept =         0x20000000
     };
 
     Modification() : modifiers(0) { }
@@ -162,6 +164,8 @@ struct Modification {
 
     bool isDeprecated() const { return modifiers & Deprecated; }
     bool isNoExcept() const { return modifiers & NoExcept; }
+    bool isBlockExceptions() const { return modifiers & BlockExcept; }
+    bool isRethrowExceptions() const { return modifiers & RethrowExcept; }
 
     void setRenamedTo(const QString &name) { renamedToName = name; }
     QString renamedTo() const { return renamedToName; }

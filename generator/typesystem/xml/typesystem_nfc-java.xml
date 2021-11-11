@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.nfc" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.nfc" module="qtjambi.nfc" default-superclass="io.qt.QtObject">
     <value-type name="QNdefFilter">
         <inject-code>
         @io.qt.QtUninvokable

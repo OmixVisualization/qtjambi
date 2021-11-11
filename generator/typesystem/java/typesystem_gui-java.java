@@ -44,6 +44,196 @@ import io.qt.core.QPoint;
 import io.qt.core.QPointF;
 import io.qt.gui.*;
 
+class QShortcut__{
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent){
+        this(key, parent, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent){
+        this(key, parent, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, (java.lang.Object)null, (java.lang.Object)null, context);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent, java.lang.String member, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, member, (java.lang.String)null, context);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent, java.lang.String member, java.lang.String ambiguousMember){
+        this(key, parent, member, ambiguousMember, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent, java.lang.String member){
+        this(key, parent, member, (java.lang.String)null, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent, java.lang.String member, java.lang.String ambiguousMember, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, context);
+        if(member!=null && !member.isEmpty())
+            activated.connect(parent, member);
+        if(ambiguousMember!=null && !ambiguousMember.isEmpty())
+            activatedAmbiguously.connect(parent, ambiguousMember);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, (java.lang.Object)null, (java.lang.Object)null, context);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent, java.lang.String member, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, member, (java.lang.String)null, context);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent, java.lang.String member, java.lang.String ambiguousMember){
+        this(key, parent, member, ambiguousMember, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent, java.lang.String member){
+        this(key, parent, member, (java.lang.String)null, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent, java.lang.String member, java.lang.String ambiguousMember, io.qt.core.Qt.ShortcutContext context){
+        this(key, parent, context);
+        if(member!=null && !member.isEmpty())
+            activated.connect(parent, member);
+        if(ambiguousMember!=null && !ambiguousMember.isEmpty())
+            activatedAmbiguously.connect(parent, ambiguousMember);
+    }
+    
+    private static io.qt.core.QObject parent(io.qt.core.QMetaObject.Slot0 slot){
+        io.qt.core.QObject parent = QtJambi_LibraryUtilities.internal.lambdaContext(java.util.Objects.requireNonNull(slot));
+        if(parent==null)
+            throw new IllegalArgumentException("Slot needs to be member of a QObject instance.");
+        return parent;
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent(slot), context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2,
+            io.qt.core.Qt.ShortcutContext context)
+    {
+        this(key, parent, context);
+        activated.connect(slot);
+        activatedAmbiguously.connect(slot2);
+    }
+
+    public QShortcut(io.qt.gui.QKeySequence.StandardKey key, io.qt.core.QObject parent,
+            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.QMetaObject.Slot0 slot2)
+    {
+        this(key, parent, slot, io.qt.core.Qt.ShortcutContext.WindowShortcut);
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T> T parent(Class<T> type) {
+        return type.cast(parent());
+    }
+    
+    public final io.qt.widgets.QWidget parentWidget() { 
+        return parent(io.qt.widgets.QWidget.class); 
+    }
+}// class
+
 class QAbstractTextDocumentLayout___ extends QAbstractTextDocumentLayout {
     /**
      * Registers the given component as a handler for items of the given objectType.
@@ -99,7 +289,7 @@ class QDesktopServices___ extends QDesktopServices {
                     this.urlHandler = urlHandler;
                 }
 
-                @io.qt.internal.NativeAccess
+                @io.qt.NativeAccess
                 public void handleUrl(io.qt.core.QUrl url) {
                     urlHandler.handleUrl(url);
                 }
@@ -137,22 +327,6 @@ class QGuiApplication___ extends QGuiApplication {
             io.qt.core.QCoreApplication.shutdown();
         }
         
-        public static int exec() {
-            io.qt.core.QCoreApplication instance = io.qt.core.QCoreApplication.instance();
-            if (instance == null)
-                throw new RuntimeException("QGuiApplication has not been initialized with QGuiApplication.initialize()");
-            else if(instance.thread()!=io.qt.core.QThread.currentThread())
-                throw new RuntimeException("exec() must be called from the main thread.");
-            else if(io.qt.internal.QtJambiInternal.countEventLoops(instance.thread())>0)
-                throw new RuntimeException("The event loop is already running.");
-            else if(instance instanceof io.qt.widgets.QApplication)
-                return io.qt.widgets.QApplication.exec();
-            else if(instance instanceof io.qt.gui.QGuiApplication)
-                return exec_internal();
-            else
-                return io.qt.core.QCoreApplication.exec();
-        }
-        
         public static QGuiApplication instance() {
             io.qt.core.QCoreApplication app = io.qt.core.QCoreApplication.instance();
             if (app instanceof QGuiApplication)
@@ -163,16 +337,16 @@ class QGuiApplication___ extends QGuiApplication {
 
 class QImage___ extends QImage {
         public QImage(byte data[], int width, int height, Format format) {
-            __qt_QImage_new(this, data, width, height, format);
+            initialize_native(this, data, width, height, format);
         }
 
-        private static native void __qt_QImage_new(Object instance, byte data[], int width, int height, Format format);
+        private static native void initialize_native(QImage instance, byte data[], int width, int height, Format format);
         
         public QImage(java.nio.Buffer data, int width, int height, Format format) {
-            __qt_QImage_new(this, data, width, height, format);
+            initialize_native(this, data, width, height, format);
         }
 
-        private static native void __qt_QImage_new(Object instance, java.nio.Buffer data, int width, int height, Format format);
+        private static native void initialize_native(QImage instance, java.nio.Buffer data, int width, int height, Format format);
 }// class
 
 class QImage::JNI{
@@ -198,7 +372,7 @@ void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
     new(__qtjambi_ptr) QImage_shell(*qt_data, width, height, qtjambi_cast<QImage::Format>(env, format), [](void* ptr){ delete reinterpret_cast<JBufferConstData*>(ptr); }, qt_data);
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage__1_1qt_1QImage_1new__Ljava_lang_Object_2_3BIILio_qt_gui_QImage_00024Format_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2_3BIILio_qt_gui_QImage_00024Format_2)
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
@@ -215,7 +389,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 }
 
 // QImage::QImage(unsigned char * data, int width, int height, QImage::Format format)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage__1_1qt_1QImage_1new__Ljava_lang_Object_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2)
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
@@ -234,14 +408,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 }// class
 
 class QPointerEvent___{
-
     @io.qt.QtUninvokable
-    public final void setPoint(long i, QEventPoint point) {
-        __qt_QPointerEvent_setPoint(nativeId(this), i, checkedNativeId(point));
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QPointerEvent_setPoint(long __this__nativeId, long i, long pointId);
-
+    public final native void setPoint(long i, QEventPoint point);
 }// class
 
 class QPointerEvent_native__{
@@ -312,32 +480,35 @@ class QPainter___ extends QPainter {
     
     @io.qt.QtUninvokable
     private void initialize(QPaintDevice device, boolean inConstructor){
-        if(device instanceof io.qt.widgets.QWidget || device instanceof QPaintDeviceWindow){
-            java.util.List<QPainter> painters = __paintedDevices.get(device);
-            if(painters==null){
-                if(inConstructor)
-                    throw new QPaintingOutsidePaintEventException();
-            }else if(painters.size()==0){
-                threadCheck(nativeId((io.qt.core.QObject)device));
-                painters = java.util.Collections.singletonList(this);
-                __paintedDevices.put(device, painters);
-            }else{
-                threadCheck(nativeId((io.qt.core.QObject)device));
-                if(painters.size()==1){
-                    painters = new java.util.LinkedList<>(painters);
+        if(device instanceof io.qt.core.QObject){
+            io.qt.core.QObject object = (io.qt.core.QObject)device;
+            if(object.isWidgetType() || device instanceof QPaintDeviceWindow) {
+                java.util.List<QPainter> painters = __paintedDevices.get(device);
+                if(painters==null){
+                    if(inConstructor)
+                        throw new QPaintingOutsidePaintEventException();
+                }else if(painters.size()==0){
+                    threadCheck((io.qt.core.QObject)device);
+                    painters = java.util.Collections.singletonList(this);
                     __paintedDevices.put(device, painters);
+                }else{
+                    threadCheck((io.qt.core.QObject)device);
+                    if(painters.size()==1){
+                        painters = new java.util.LinkedList<>(painters);
+                        __paintedDevices.put(device, painters);
+                    }
+                    painters.add(this);
                 }
-                painters.add(this);
+            }else {
+                threadCheck((io.qt.core.QObject)device);
             }
-        }else if(device instanceof io.qt.core.QObject){
-            threadCheck(nativeId((io.qt.core.QObject)device));
-        }else{
+        }else if(device==null){
             java.util.Objects.requireNonNull(device, "Argument 'QPaintDevice': null not expected.");
         }
     }
     
     @io.qt.QtUninvokable
-    private static native void threadCheck(long objectId);
+    private static native void threadCheck(io.qt.core.QObject object);
     
     private static java.util.Map<QPaintDevice,java.util.List<QPainter>> __paintedDevices = new java.util.HashMap<>();
 }// class
@@ -434,14 +605,14 @@ class QPolygonF___ extends QPolygonF {
 class QValidator___ extends QValidator {
 
         public static class QValidationData {
-                @io.qt.internal.NativeAccess
+                @io.qt.NativeAccess
                 public QValidationData(String input, int pos) {
                     string = input;
                     position = pos;
                 }
 
-                public @io.qt.internal.NativeAccess String string;
-                public @io.qt.internal.NativeAccess int position;
+                public @io.qt.NativeAccess String string;
+                public @io.qt.NativeAccess int position;
         }
 
 }// class
@@ -551,11 +722,7 @@ class QGradient_java__{
 class QOpenGLContext___{
 
     @io.qt.QtUninvokable
-    public final <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(Class<T> type){
-        return versionFunctions(nativeId(this), java.util.Objects.requireNonNull(type));
-    }
-    @io.qt.QtUninvokable
-    private native <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(long __this__nativeId, Class<T> type);
+    public native final <T extends io.qt.gui.QAbstractOpenGLFunctions> T versionFunctions(Class<T> type);
 
 }// class
 
@@ -608,13 +775,13 @@ class QAction___ extends QAction {
         }
 
         @io.qt.QtUninvokable
-        public final QMenu menu(){
-            return menu(QMenu.class);
+        public final io.qt.widgets.QMenu menu(){
+            return menu(io.qt.widgets.QMenu.class);
         }
         
         @io.qt.QtUninvokable
-        public final <T extends QMenu> T menu(Class<T> type) {
-            io.qt.core.QObject result = menu(nativeId(this));
+        public final <T> T menu(Class<T> type) {
+            io.qt.core.QObject result = menuObject();
             if(!type.isInstance(result))
                 return type.cast(result);
             return null;
@@ -623,24 +790,19 @@ class QAction___ extends QAction {
         private Object __rcMenu;
     
         @io.qt.QtUninvokable
-        public final void setMenu(QMenu menu){
-            setMenu(nativeId(this), checkedNativeId(menu));
-            __rcMenu = menu();
+        public final void setMenu(io.qt.core.QObject menu){
+            setMenuObject(menu);
+            __rcMenu = menuObject();
         }
         
         @io.qt.QtUninvokable
-        private native io.qt.core.QObject menu(long __this__nativeId);
+        private native io.qt.core.QObject menuObject();
         
         @io.qt.QtUninvokable
-        private native void setMenu(long __this__nativeId, long menu);
+        private native void setMenuObject(io.qt.core.QObject menu);
         
         @io.qt.QtUninvokable
-        public final QWidget parentWidget(){
-            return parentWidget(QWidget.class);
-        }
-        
-        @io.qt.QtUninvokable
-        public final <T extends QWidget> T parentWidget(Class<T> type) {
+        public final <T> T parent(Class<T> type) {
             io.qt.core.QObject result = parent();
             while (result!=null && !type.isInstance(result))
                 result = result.parent();
@@ -648,12 +810,7 @@ class QAction___ extends QAction {
         }
         
         @io.qt.QtUninvokable
-        public final java.util.List<QWidget> associatedWidgets() {
-            return associatedWidgets(QWidget.class);
-        }
-        
-        @io.qt.QtUninvokable
-        public final <T extends QWidget> java.util.List<T> associatedWidgets(Class<T> type) {
+        public final <T> java.util.List<T> associatedObjects(Class<T> type) {
             java.util.List<T> result = new java.util.ArrayList<>();
             for (io.qt.core.QObject object : associatedObjects())
                 if (type.isInstance(object))
@@ -662,18 +819,18 @@ class QAction___ extends QAction {
         }
         
         @io.qt.QtUninvokable
-        public final java.util.List<QGraphicsWidget> associatedGraphicsWidgets() {
-            return associatedGraphicsWidgets(QGraphicsWidget.class);
+        public final io.qt.widgets.QWidget parentWidget(){
+            return parent(io.qt.widgets.QWidget.class);
         }
         
         @io.qt.QtUninvokable
-        public final <T extends QGraphicsWidget> java.util.List<T> associatedGraphicsWidgets(Class<T> type) {
-            java.util.List<T> result = new java.util.ArrayList<>();
-            for (io.qt.core.QObject object : associatedObjects())
-                if (type.isInstance(object))
-                    result.add(type.cast(object));
-            return result;
+        public final java.util.List<io.qt.widgets.QWidget> associatedWidgets() {
+            return associatedObjects(io.qt.widgets.QWidget.class);
+        }
+        
+        @io.qt.QtUninvokable
+        public final java.util.List<io.qt.widgets.QGraphicsWidget> associatedGraphicsWidgets() {
+            return associatedObjects(io.qt.widgets.QGraphicsWidget.class);
         }
 }// class
-
 

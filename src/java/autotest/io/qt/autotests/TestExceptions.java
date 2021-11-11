@@ -33,11 +33,14 @@ import org.junit.Test;
 
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
+import io.qt.core.QEventLoop;
 import io.qt.core.QList;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QRunnable;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
+import io.qt.core.Qt;
 import io.qt.gui.QPaintDevice;
 import io.qt.gui.QPaintEngine;
 import io.qt.widgets.QApplication;
@@ -170,7 +173,7 @@ public class TestExceptions extends QApplicationTest {
     }
     	
     @Test
-    public void testExceptionDuringEvent() {
+    public void testExceptionDuringEvent_threaded() {
     	{
 			QThread t = new QThread();
 			class ExnEventObject extends QObject{
@@ -190,12 +193,100 @@ public class TestExceptions extends QApplicationTest {
 			o.moveToThread(t);
 			QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
 			t.start();
-			try {
-				t.join();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			t.join();
 		}
+    }
+    
+    static class SimpleExnEventObject extends QObject{
+		@Override
+		public boolean event(QEvent event) {
+			if(event.type()==QEvent.Type.WinEventAct) {
+				throw new RuntimeException("Event Exception");
+			}
+			return super.event(event);
+		}
+	}
+    
+    @Test
+    public void testExceptionDuringEvent_send() {
+    	SimpleExnEventObject o = new SimpleExnEventObject();
+		try{
+			QCoreApplication.sendEvent(o, new QEvent(QEvent.Type.WinEventAct));
+			Assert.fail("Exception expected to be thrown.");
+		}catch(RuntimeException e) {
+			Assert.assertEquals("Event Exception", e.getMessage());
+		}
+    }
+    
+    @Test
+    public void testExceptionDuringEvent_posted() {
+    	SimpleExnEventObject o = new SimpleExnEventObject();
+		QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
+		try{
+			QCoreApplication.sendPostedEvents(o);
+			Assert.fail("Exception expected to be thrown.");
+		}catch(RuntimeException e) {
+			Assert.assertEquals("Event Exception", e.getMessage());
+		}
+    }
+    
+    @Test
+    public void testExceptionDuringEvent_notify() {
+    	SimpleExnEventObject o = new SimpleExnEventObject();
+		try {
+			QCoreApplication.instance().notify(o, new QEvent(QEvent.Type.WinEventAct));
+			Assert.fail("Exception expected to be thrown.");
+		}catch(RuntimeException e) {
+			Assert.assertEquals("Event Exception", e.getMessage());
+		}
+    }
+    
+    @Test
+    public void testExceptionDuringEvent_eventLoop() {
+    	SimpleExnEventObject o = new SimpleExnEventObject();
+    	QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
+    	QEventLoop loop = new QEventLoop();
+    	QMetaObject.invokeMethod(loop::quit, Qt.ConnectionType.QueuedConnection);
+    	int result = loop.exec();
+		Assert.assertEquals(-1, result);
+    }
+    
+    @Test
+    public void testExceptionDuringEvent_threaded_handled() {
+    	QThread thread = new QThread();
+    	Throwable[] thrown = {null};
+    	thread.setUncaughtExceptionHandler((Thread t, Throwable e)->{
+    		thrown[0] = e;
+    		QThread.thread(t).exit(-1);
+    	});
+    	thread.moveToThread(thread);
+    	SimpleExnEventObject o = new SimpleExnEventObject();
+    	o.moveToThread(thread);
+    	QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
+    	thread.start();
+    	Assert.assertTrue(thread.join(15000));
+		Assert.assertTrue(thrown[0]!=null);
+		Assert.assertEquals("Event Exception", thrown[0].getMessage());
+    }
+    
+    @Test
+    public void testExceptionDuringEvent_eventLoop_handled() {
+    	Throwable[] thrown = {null};
+    	QThread.currentThread().setUncaughtExceptionHandler((Thread t, Throwable e)->{
+    		thrown[0] = e;
+    		QThread.thread(t).exit(-1);
+    	});
+    	try {
+	    	SimpleExnEventObject o = new SimpleExnEventObject();
+	    	QCoreApplication.postEvent(o, new QEvent(QEvent.Type.WinEventAct));
+	    	QEventLoop loop = new QEventLoop();
+	    	int result = loop.exec();
+			Assert.assertEquals(-1, result);
+			Assert.assertTrue(thrown[0]!=null);
+			Assert.assertEquals("Event Exception", thrown[0].getMessage());
+    	}finally {
+    		QThread.currentThread().setUncaughtExceptionHandler(null);
+    	}
     }
 
     public static void main(String args[]) {

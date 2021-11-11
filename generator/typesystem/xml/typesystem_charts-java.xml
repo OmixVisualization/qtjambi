@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.charts" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.charts" module="qtjambi.charts" default-superclass="io.qt.QtObject">
     <object-type name="QtCharts::QChart">
         <inject-code>
             <import-file name="typesystem/java/typesystem_chart-java.java" quote-after-line="class QChart___" quote-before-line="}// class"/>
@@ -52,5 +52,20 @@
         <inject-code>
             <import-file name="typesystem/java/typesystem_chart-java.java" quote-after-line="class QPolarChart___" quote-before-line="}// class"/>
         </inject-code>
+    </object-type>
+    <object-type name="QtCharts::QXYSeries">
+        <modify-function signature="bestFitLineEquation(bool&amp;)const" since="6.2.0">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    bool %out = false;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <conversion-rule class="native">
+                    jobject %out = __qt_%1 ? qtjambi_cast&lt;jobject>(%env, %in) : nullptr;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
     </object-type>
 </typesystem>

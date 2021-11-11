@@ -31,9 +31,10 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 
-import io.qt.core.QList;
 import io.qt.test.QSignalSpy;
 import io.qt.widgets.QCheckBox;
 
@@ -45,8 +46,8 @@ public class TestQTest extends QApplicationTest {
     	assertEquals(0, spy.count());
     	box.click();
     	assertEquals(1, spy.count());
-    	QList<Object> arguments = spy.takeFirst();
-    	assertEquals(true, arguments.at(0));
+    	List<Object> arguments = spy.takeFirst();
+    	assertEquals(true, arguments.get(0));
     }
     
     public static void main(String args[]) {

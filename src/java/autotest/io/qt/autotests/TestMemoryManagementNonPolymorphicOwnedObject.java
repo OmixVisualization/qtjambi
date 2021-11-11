@@ -34,9 +34,9 @@ import java.lang.ref.WeakReference;
 import org.junit.Test;
 
 import io.qt.QtObject;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.InvalidatorNonPolymorphicOwnedObjectType;
 import io.qt.autotests.generated.NonPolymorphicOwnedObjectType;
-import io.qt.internal.QtJambiInternal;
 
 public class TestMemoryManagementNonPolymorphicOwnedObject extends MemoryManagement {
     @Override
@@ -68,7 +68,7 @@ public class TestMemoryManagementNonPolymorphicOwnedObject extends MemoryManagem
             public void overrideMe(NonPolymorphicOwnedObjectType t) {
                 if (returnReference) {
                     temporaryObject = t;
-                    QtJambiInternal.setJavaOwnership(temporaryObject);
+                    General.internalAccess.setJavaOwnership(temporaryObject);
                 }
             }
         }.invalidateObject((NonPolymorphicOwnedObjectType) obj);

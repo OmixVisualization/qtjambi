@@ -5,7 +5,6 @@
 
 class DocTypeDef : public DocElement
 {
-    Q_OBJECT
 public:
     DocTypeDef(QObject* parent);
 private:

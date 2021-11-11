@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambi_core.h"
 #include <QtCore/private/qobject_p.h>
 #include <QtCore/QThread>
@@ -39,8 +41,6 @@
 #include "qtjambidebugtools_p.h"
 #include "qtjambi_containers.h"
 #include "qtjambi_containeraccess_p.h"
-
-QT_WARNING_DISABLE_DEPRECATED
 
 DestructorInfo::DestructorInfo() : ptr(nullptr),
     destructor(nullptr),
@@ -117,9 +117,14 @@ void swap(DestructorInfo& a, DestructorInfo& b) noexcept{
 
 JNIEnv *qtjambi_current_environment(bool initializeJavaThread);
 
-const QSharedPointer<const QtJambiFunctionTable>&qtjambi_setup_vtable(JNIEnv *, jobject, const std::type_info&, const SuperTypeInfos*, const QMetaObject*, JavaException& ocurredException);
+const QSharedPointer<const QtJambiFunctionTable>&qtjambi_setup_vtable(JNIEnv *, jclass, jobject, const std::type_info&, const SuperTypeInfos*, const QMetaObject*, JavaException& ocurredException);
 
 const char *const QtJambiShellImpl::id = "QtJambiShell";
+
+const void * QtJambiShell::qt_metacast(const char *className, bool* ok) const
+{
+    return const_cast<QtJambiShell*>(this)->qt_metacast(className, ok);
+}
 
 void * QtJambiShell::qt_metacast(const char *className, bool* ok)
 {
@@ -130,7 +135,7 @@ void * QtJambiShell::qt_metacast(const char *className, bool* ok)
     }else if (className==QtJambiShellImpl::id){
         rv = const_cast<QtJambiShellImpl*>(static_cast<const QtJambiShellImpl*>(this));
         if(ok) *ok = true;
-    }else if(QSharedPointer<QtJambiLink> link = static_cast<const QtJambiShellImpl*>(this)->link()){
+    }else if(QSharedPointer<QtJambiLink> link = static_cast<const QtJambiShellImpl*>(this)->m_link){
         const std::type_info* qtType = getTypeByQtName(className);
         if(qtType && link->isInterfaceAvailable(*qtType)){
             rv = link->typedPointer(*qtType);
@@ -162,7 +167,7 @@ int QtJambiShell::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     const QMetaObject *meta_object = metaObject();
     if(const QtJambiMetaObject *dynamic_meta_object = QtJambiMetaObject::cast(meta_object)){
-        if (QSharedPointer<QtJambiLink> __link = static_cast<const QtJambiShellImpl*>(this)->link()) {
+        if (QSharedPointer<QtJambiLink> __link = static_cast<const QtJambiShellImpl*>(this)->m_link) {
              if(JNIEnv *__jni_env = qtjambi_current_environment()){
                   QTJAMBI_JNI_LOCAL_FRAME(__jni_env, 1000)
                   jobject __obj = __link->getJavaObjectLocalRef(__jni_env);
@@ -191,7 +196,6 @@ int QtJambiShell::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 #else
                   case QMetaObject::BindableProperty:
                       _id = dynamic_meta_object->bindableProperty(__jni_env, __obj, _id, _a); break;
-                      break;
 #endif
 #if 0
                   case QMetaObject::IndexOfMethod:
@@ -216,7 +220,7 @@ int QtJambiShell::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewObject(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos,
                                                created_by_java, is_shell, destructor_function, ownerFunction, ocurredException))
@@ -226,7 +230,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             PtrOwnerFunction ownerFunction, JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewObject(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos, metaType,
                                                created_by_java, is_shell, ownerFunction, ocurredException))
@@ -236,7 +240,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             AbstractContainerAccess* containerAccess, JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewContainer(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos, metaType,
                                                created_by_java, is_shell, containerAccess, ocurredException))
@@ -246,7 +250,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             PtrDeleterFunction destructor_function, JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewObject(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos,
                                                created_by_java, is_shell, destructor_function, ocurredException))
@@ -256,7 +260,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewObject(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos,
                                                created_by_java, is_shell, ocurredException))
@@ -266,7 +270,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
             JavaException& ocurredException)
   : m_ptr(ptr),
-    m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
+    m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, nullptr, ocurredException)),
     m_link(QtJambiLink::createLinkForNewObject(__jni_env, objectClass, nativeLink,
                                                __jni_object, typeId, ptr, superTypeInfos, metaType,
                                                created_by_java, is_shell, ocurredException))
@@ -275,7 +279,7 @@ QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobjec
 
 QtJambiShellImpl::QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool isDeclarativeCall, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException)
     : m_ptr(ptr),
-      m_vtable(qtjambi_setup_vtable(__jni_env, __jni_object, typeId, superTypeInfos, originalMetaObject, ocurredException)),
+      m_vtable(qtjambi_setup_vtable(__jni_env, objectClass, __jni_object, typeId, superTypeInfos, originalMetaObject, ocurredException)),
       m_link(QtJambiLink::createLinkForNewQObject(__jni_env, objectClass, nativeLink, __jni_object, typeId, m_vtable ? m_vtable->metaObject() : nullptr, ptr, superTypeInfos, created_by_java, isDeclarativeCall, is_shell, ocurredException))
 {
 }
@@ -295,7 +299,7 @@ QtJambiShellImpl::~QtJambiShellImpl()
 }
 
 void QtJambiShellImpl::init(JNIEnv* env){
-    if(QSharedPointer<QtJambiLink> lnk = link()){
+    if(QSharedPointer<QtJambiLink> lnk = m_link){
         lnk->init(env);
     }
 }
@@ -305,25 +309,25 @@ QSharedPointer<QtJambiLink> QtJambiShellImpl::link() const
     return m_link.toStrongRef();
 }
 
-void QtJambiShellImpl::warnForMethod(const char* method) const
+void QtJambiShell::warnForMethod(const char* method) const
 {
-    if(QSharedPointer<QtJambiLink> lnk = link()){
+    if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
         qWarning("%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
     }else{
         qWarning("%s: The java object has been deleted prior to the native object [object link deleted].", method);
     }
 }
 
-void QtJambiShellImpl::warnForMethod(const char* method, const QObject* object) const
+void QtJambiShell::warnForMethod(const char* method, const QObject* object) const
 {
     if(object){
-        if(QSharedPointer<QtJambiLink> lnk = link()){
+        if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
             qWarning("%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", %s].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()), qPrintable(lnk->describe()));
         }else{
             qWarning("%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", object link deleted].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()));
         }
     }else{
-        if(QSharedPointer<QtJambiLink> lnk = link()){
+        if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
             qWarning("%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
         }else{
             qWarning("%s: The java object has been deleted prior to the native object [object link deleted].", method);
@@ -331,10 +335,10 @@ void QtJambiShellImpl::warnForMethod(const char* method, const QObject* object) 
     }
 }
 
-jobject QtJambiShellImpl::getJavaObjectLocalRef(JNIEnv *env) const
+jobject QtJambiShell::getJavaObjectLocalRef(JNIEnv *env) const
 {
-    if(QSharedPointer<QtJambiLink> link = m_link.toStrongRef()){
-        return link->getJavaObjectLocalRef(env);
+    if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
+        return lnk->getJavaObjectLocalRef(env);
     }
     return nullptr;
 }
@@ -343,29 +347,29 @@ void QtJambiShellImpl::overrideLink(const QSharedPointer<QtJambiLink>& link){
     m_link = link.toWeakRef();
 }
 
-jclass QtJambiShellImpl::javaClass() const
+jclass QtJambiShell::javaClass() const
 {
-    Q_ASSERT(m_vtable);
-    return m_vtable->javaClass();
+    Q_ASSERT(static_cast<const QtJambiShellImpl*>(this)->m_vtable);
+    return static_cast<const QtJambiShellImpl*>(this)->m_vtable->javaClass();
 }
 
-jmethodID QtJambiShellImpl::javaMethod(const std::type_info& typeId, int pos) const
+jmethodID QtJambiShell::javaMethod(const std::type_info& typeId, int pos) const
 {
-    Q_ASSERT(m_vtable);
-    return m_vtable->javaMethod(typeId, pos);
+    Q_ASSERT(static_cast<const QtJambiShellImpl*>(this)->m_vtable);
+    return static_cast<const QtJambiShellImpl*>(this)->m_vtable->javaMethod(typeId, pos);
 }
 
-const QMetaObject* QtJambiShellImpl::metaObject() const
+const QMetaObject* QtJambiShell::metaObject() const
 {
-    Q_ASSERT(m_vtable);
-    return m_vtable->metaObject();
+    Q_ASSERT(static_cast<const QtJambiShellImpl*>(this)->m_vtable);
+    return static_cast<const QtJambiShellImpl*>(this)->m_vtable->metaObject();
 }
 
 void QtJambiShellImpl::deleteShell(){
 #if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
     const char* qtTypeName = nullptr;
 #endif
-    if(QSharedPointer<QtJambiLink> lnk = link()){
+    if(QSharedPointer<QtJambiLink> lnk = m_link){
 #if defined(QTJAMBI_DEBUG_TOOLS) || !defined(QT_NO_DEBUG)
         qtTypeName = lnk->qtTypeName();
 #endif
@@ -1865,6 +1869,7 @@ void qtjambi_initialize_native_qobject(JNIEnv *env, jclass callingClass, jobject
                     if(ocurredException.object()){
                         delete shell;
                         ocurredException.raise();
+                        return;
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     qtjambi_register_qobject_initialization(ptr, shell->link());

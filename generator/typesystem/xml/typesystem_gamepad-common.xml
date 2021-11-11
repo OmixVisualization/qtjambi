@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtGamepad">
+<typesystem qt-library="QtGamepad" description="Enables Qt applications to support the use of gamepad hardware.">
   <enum-type name="QGamepadManager::GamepadButton"/>
   <enum-type name="QGamepadManager::GamepadAxis"/>
   <object-type name="QGamepad">

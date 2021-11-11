@@ -28,12 +28,14 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <QtCore/QCoreApplication>
 #include "qtjambi_core.h"
 #include "qtjambi_jobjectwrapper.h"
 #include "qtjambi_repository_p.h"
 #include "qtjambi_registry_p.h"
-#include "qtjambi_exceptions.h"
 #include "qtjambitypemanager_p.h"
 
 struct JObjectGlobalWrapperCleanup{
@@ -938,7 +940,7 @@ JObjectWrapperRef& JObjectWrapperRef::operator=(jobject newValue)
         if(JNIEnv *env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             env->SetObjectArrayElement(jobjectArray(m_arrayWrapper.object()), m_index, newValue);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
         }
     }
     return *this;
@@ -950,7 +952,7 @@ JObjectWrapperRef& JObjectWrapperRef::operator=(const JObjectWrapper &newValue)
         if(JNIEnv *env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             env->SetObjectArrayElement(jobjectArray(m_arrayWrapper.object()), m_index, newValue.object());
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
         }
     }
     return *this;
@@ -962,7 +964,7 @@ JObjectWrapperRef::operator JObjectWrapper() const
         if(JNIEnv *env = qtjambi_current_environment()){
             QTJAMBI_JNI_LOCAL_FRAME(env, 200)
             jobject value = env->GetObjectArrayElement(jobjectArray(m_arrayWrapper.object()), m_index);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             return JObjectWrapper(env, value);
         }
     }
@@ -975,7 +977,7 @@ JObjectWrapperRef::operator jobject() const
         if(JNIEnv *env = qtjambi_current_environment()){
             env->PushLocalFrame(200);
             jobject value = env->GetObjectArrayElement(jobjectArray(m_arrayWrapper.object()), m_index);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             return env->PopLocalFrame(value);
         }
     }
@@ -1046,7 +1048,7 @@ jsize JObjectArrayWrapper::length() const
 
 jobject JObjectArrayWrapper::at(JNIEnv *env, jsize index) const{
     jobject value = env->GetObjectArrayElement(object(), index);
-    qtjambi_throw_java_exception(env)
+    qtjambi_throw_java_exception(env);
     return value;
 }
 
@@ -1054,7 +1056,7 @@ JObjectWrapper JObjectArrayWrapper::operator[](jsize index) const{
     if(JNIEnv* env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 500)
         jobject value = env->GetObjectArrayElement(object(), index);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         return JObjectWrapper(env, value);
     }
     return JObjectWrapper();
@@ -1083,7 +1085,7 @@ QString JObjectArrayWrapper::toString(bool * ok) const{
             if(i>0)
                 result += QLatin1String(",");
             jobject value = env->GetObjectArrayElement(object(), i);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             result += JObjectWrapper(env, value).toString(ok);
             if(ok && !*ok)
                 return QString();
@@ -1171,15 +1173,12 @@ void JObjectWeakWrapperData::clear(JNIEnv* env) {
 QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj){
     if(JNIEnv *env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        QtJambiExceptionHandler __exnhandler;
         try{
             jobject jstream = qtjambi_from_object(env, &out, typeid(QDataStream), false);
             Java::QtJambi::QtJambiInternal::writeSerializableJavaObject(env, jstream, myObj.object());
         }catch(const JavaException& exn){
-            if(qtjambi_is_exceptions_blocked()){
-                qtjambi_push_blocked_exception(env, exn);
-            }else{
-                exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-            }
+            __exnhandler.handle(env, exn, "operator<<(QDataStream &, const JObjectWrapper &)");
         }
     }
     return out;
@@ -1188,6 +1187,7 @@ QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj){
 QDataStream &operator>>(QDataStream &in, JObjectWrapper &myObj){
     if(JNIEnv *env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        QtJambiExceptionHandler __exnhandler;
         try{
             jobject jstream = qtjambi_from_object(env, &in, typeid(QDataStream), false);
             jobject res = Java::QtJambi::QtJambiInternal::readSerializableJavaObject(env, jstream);
@@ -1233,11 +1233,7 @@ QDataStream &operator>>(QDataStream &in, JObjectWrapper &myObj){
                 }
             }
         }catch(const JavaException& exn){
-            if(qtjambi_is_exceptions_blocked()){
-                qtjambi_push_blocked_exception(env, exn);
-            }else{
-                exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-            }
+            __exnhandler.handle(env, exn, "operator>>(QDataStream &, JObjectWrapper &)");
         }
     }
     return in;
@@ -1310,6 +1306,7 @@ void jobjectwrapper_load(QDataStream &stream, void *_jObjectWrapper)
 {
     if(JNIEnv *env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        QtJambiExceptionHandler __exnHandler;
         try{
             JObjectWrapper *jObjectWrapper = static_cast<JObjectWrapper *>(_jObjectWrapper);
             jobject jstream = qtjambi_from_object(env, &stream, typeid(QDataStream), false);
@@ -1356,11 +1353,7 @@ void jobjectwrapper_load(QDataStream &stream, void *_jObjectWrapper)
                 }
             }
         }catch(const JavaException& exn){
-            if(qtjambi_is_exceptions_blocked()){
-                qtjambi_push_blocked_exception(env, exn);
-            }else{
-                exn.raise( QTJAMBI_STACKTRACEINFO_ENV(env) );
-            }
+            __exnHandler.handle(env, exn, nullptr);
         }
     }
 }

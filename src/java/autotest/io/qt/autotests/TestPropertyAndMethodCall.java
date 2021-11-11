@@ -51,6 +51,7 @@ import io.qt.QtPropertyNotify;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
 import io.qt.QtUninvokable;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.PropertyAndMethodCallTest;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
@@ -60,7 +61,6 @@ import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QDrag;
 import io.qt.gui.QPainter;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QStyleOptionGraphicsItem;
 import io.qt.widgets.QWidget;
@@ -438,7 +438,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 
 			public DerivedQObject() {
 				super((QObject) null);
-				this.setObjectName("DerivedQObject#" + Long.toHexString(QtJambiInternal.nativeId(this)));
+				this.setObjectName("DerivedQObject#" + Long.toHexString(General.internalAccess.nativeId(this)));
 			}
 
 		}
@@ -508,7 +508,7 @@ public class TestPropertyAndMethodCall extends QApplicationTest {
 			myList.add("test item 3");
 			myList.add("test item 4");
 			myModel = new QStringListModel(myList);
-			myModel.setObjectName("model#" + Long.toHexString(QtJambiInternal.nativeId(myModel)));
+			myModel.setObjectName("model#" + Long.toHexString(General.internalAccess.nativeId(myModel)));
 		}
 
 		@QtPropertyReader(name = "qobject")

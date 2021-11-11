@@ -27,6 +27,9 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
+
 #include "qtjambi_core.h"
 #include <QtCore/QtCore>
 #include "qtjambi_repository_p.h"
@@ -36,6 +39,9 @@
 #include "qtjambi_application.h"
 
 #include <stdlib.h>
+#include <unordered_set>
+#include <unordered_map>
+#include <set>
 #include "qtjambi_cast.h"
 
 /*******************************************************************************
@@ -66,6 +72,49 @@ uint qHash(const QMap<QString,int>&){return 0;}
 
 
 void test(JNIEnv *env){
+    QtJambiScope scope;
+    enum E{};
+    registerEnumTypeInfoNoMetaObject<E>("qt_name", "java_name");
+    registerEnumTypeInfoNoMetaObject<E>("qt_name", "java_name", "flags_qt_name", "flags_qt_name_alias", "flags_java_name");
+    {
+        qtjambi_cast<jobject>(env, QFutureInterface<void>());
+        qtjambi_cast<jobject>(env, QFutureInterface<int>());
+        qtjambi_cast<jobject>(env, QFutureInterface<QVariant>());
+        qtjambi_cast<QFutureInterface<void>>(env, jobject(nullptr));
+        qtjambi_cast<QFutureInterface<int>>(env, jobject(nullptr));
+        qtjambi_cast<QFutureInterface<QVariant>>(env, jobject(nullptr));
+        qtjambi_cast<const QFutureInterface<void>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<const QFutureInterface<int>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<const QFutureInterface<QVariant>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFutureInterface<void>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFutureInterface<int>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFutureInterface<QVariant>&>(env, scope, jobject(nullptr));
+    }
+    {
+        qtjambi_cast<jobject>(env, QFuture<void>());
+        qtjambi_cast<jobject>(env, QFuture<int>());
+        qtjambi_cast<jobject>(env, QFuture<QVariant>());
+        qtjambi_cast<QFuture<void>>(env, jobject(nullptr));
+        qtjambi_cast<QFuture<int>>(env, jobject(nullptr));
+        qtjambi_cast<QFuture<QVariant>>(env, scope, jobject(nullptr));
+        qtjambi_cast<const QFuture<void>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<const QFuture<int>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<const QFuture<QVariant>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFuture<void>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFuture<int>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QFuture<QVariant>&>(env, scope, jobject(nullptr));
+    }
+    {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        void* ptr = nullptr;
+        qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<void>*>(ptr));
+        qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<int>*>(ptr));
+        qtjambi_cast<jobject>(env, *reinterpret_cast<QPromise<QVariant>*>(ptr));
+        qtjambi_cast<QPromise<void>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QPromise<int>&>(env, scope, jobject(nullptr));
+        qtjambi_cast<QPromise<QVariant>&>(env, scope, jobject(nullptr));
+#endif
+    }
     {
         qtjambi_cast<jobject>(env, std::vector<int>());
         qtjambi_cast<std::vector<int>>(env, jobject(nullptr));
@@ -110,6 +159,78 @@ void test(JNIEnv *env){
         qtjambi_cast<jobject>(env, l);
         QtJambiScope __qtjambi_scope;
         qtjambi_cast<jobject>(env, __qtjambi_scope, lr);
+    }
+    {
+        jobject list(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const QList<QPair<QString, QString>>&>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>>>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>>&>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>>*>(env, __qtjambi_scope, list);
+        qtjambi_cast<const QList<QPair<QString, QString>*>&>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>*>>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>*>&>(env, __qtjambi_scope, list);
+        qtjambi_cast<QList<QPair<QString, QString>*>*>(env, __qtjambi_scope, list);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::map<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::map<QString,QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::map<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::map<QString,QString>*>(env, __qtjambi_scope, obj);
+        std::map<QString,QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::multimap<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multimap<QString,QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multimap<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multimap<QString,QString>*>(env, __qtjambi_scope, obj);
+        std::multimap<QString,QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::unordered_map<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_map<QString,QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_map<QString,QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_map<QString,QString>*>(env, __qtjambi_scope, obj);
+        std::unordered_map<QString,QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::unordered_set<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_set<QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_set<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::unordered_set<QString>*>(env, __qtjambi_scope, obj);
+        std::unordered_set<QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::set<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::set<QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::set<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::set<QString>*>(env, __qtjambi_scope, obj);
+        std::set<QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
+    }
+    {
+        jobject obj(nullptr);
+        QtJambiScope __qtjambi_scope;
+        qtjambi_cast<const std::multiset<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multiset<QString>>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multiset<QString>&>(env, __qtjambi_scope, obj);
+        qtjambi_cast<std::multiset<QString>*>(env, __qtjambi_scope, obj);
+        std::multiset<QString> map;
+        qtjambi_cast<jobject>(env, __qtjambi_scope, map);
     }
     {
     QString string;
@@ -237,7 +358,6 @@ void test(JNIEnv *env){
         qtjambi_cast<Qt::Orientations>(env, i);
     }
 
-    QtJambiScope scope(nullptr);
     QList<bool> results;
     {
         {
@@ -1394,7 +1514,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromArray)
 
             void *ptr = nullptr;
             if (java_object) {
-                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object))
+                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object))
                     ptr = link->pointer();
                 else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
                     Java::QtJambi::QNoNativeResourcesException::throwNew(env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1514,7 +1634,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromObject)
   (JNIEnv * __jni_env, jclass, jobject object)
 {
     try{
-        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(__jni_env, object))
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, object))
             return qtjambi_from_cpointer(__jni_env, link->pointer(), QNativePointer::Type::Pointer, 1);
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, object))
             Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1641,7 +1761,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeObject)
         }
         void *ptr = nullptr;
         if (value) {
-            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(__jni_env, value))
+            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, value))
                 ptr = link->pointer();
             else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, value))
                 Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QString("Incomplete object of type: %1").arg(qtjambi_object_class_name(__jni_env, value).replace("$", ".")) QTJAMBI_STACKTRACEINFO );

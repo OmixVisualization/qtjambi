@@ -91,6 +91,23 @@
         <taskdef resource="net/sf/antcontrib/antlib.xml"
                  classpath="extjars/ant-contrib.jar"/>
     </target>
+    <target name="source.ivy">
+        <!--taskdef uri="antlib:openpgp" resource="org/apache/commons/openpgp/ant/antlib.xml">
+            <classpath>
+                <pathelement location="${basedir}/extjars/commons-openpgp-1.0-SNAPSHOT.jar"/>
+                <pathelement location="${basedir}/extjars/bcpg-jdk15on-1.68.jar"/>
+                <pathelement location="${basedir}/extjars/bcprov-jdk15on-1.68.jar"/>
+            </classpath>
+        </taskdef>
+        <taskdef uri="antlib:org.apache.ivy" resource="org/apache/ivy/ant/antlib.xml">
+            <classpath>
+                <pathelement location="${basedir}/extjars/apache-ivy-2.5.0/ivy-2.5.0.jar"/>
+                <fileset dir="${basedir}/extjars/apache-ivy-2.5.0/lib/">
+                    <include name="*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef-->
+    </target>
 
     <!--
         Handle environment variables.

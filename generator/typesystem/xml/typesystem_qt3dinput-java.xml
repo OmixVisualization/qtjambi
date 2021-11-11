@@ -42,5 +42,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.input" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.qt3d.input" module="qtjambi.qt3dinput" default-superclass="io.qt.QtObject">
 </typesystem>

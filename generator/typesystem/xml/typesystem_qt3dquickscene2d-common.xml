@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DQuickScene2D">
+<typesystem qt-library="Qt3DQuickScene2D" description="Qt 3D Scene2D Module">
     <namespace-type name="Qt3DRender::Quick" generate="no"/>
     <enum-type name="Qt3DRender::Quick::QScene2D::RenderPolicy" />
     <object-type name="Qt3DRender::Quick::QScene2D" java-name="QScene2D" since="5.11.0">

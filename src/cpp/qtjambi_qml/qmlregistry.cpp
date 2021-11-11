@@ -1398,7 +1398,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL Java_io_qt_qml_QtQml_qmlRegisterType__Lio_
   (JNIEnv * env, jclass, jobject url, jstring uri, jint versionMajor, jint versionMinor, jstring qmlName){
     env->EnsureLocalCapacity(300);
     try{
-        QUrl* _url = reinterpret_cast<QUrl*>(qtjambi_to_object(env, url));
+        QUrl* _url = qtjambi_cast<QUrl*>(env, url);
         QString _qmlName = qtjambi_to_qstring(env, qmlName);
         return qmlRegisterType(_url ? *_url : QUrl(), qPrintable(qtjambi_to_qstring(env, uri)), int(versionMajor), int(versionMinor), _qmlName.isEmpty() ? nullptr : qPrintable(_qmlName));
     }catch(const JavaException& exn){

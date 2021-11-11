@@ -316,7 +316,7 @@ public static class WhileFlag{
         public WhileFlag(boolean flag) {
             long ptr = create(flag);
             this.flag = ptr;
-            registerCleaner(this, ()->destroy(ptr));
+            QtJambi_LibraryUtilities.internal.registerCleaner(this, ()->destroy(ptr));
         }
         
         public void set(boolean flag) {

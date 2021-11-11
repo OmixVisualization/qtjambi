@@ -43,10 +43,8 @@
 #include "prigenerator.h"
 
 class CppGenerator : public Generator {
-    Q_OBJECT
-
 public:
-    /*virtual*/ QString resolveOutputDirectory() const { return cppOutputDirectory(); }
+    QString resolveOutputDirectory() const override { return cppOutputDirectory(); }
 
     QString cppOutputDirectory() const {
         if (!m_cpp_out_dir.isNull())
@@ -56,10 +54,10 @@ public:
     void setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
 
     static QString subDirectoryForPackage(const QString &package);
-    virtual QString subDirectoryForFunctional(const AbstractMetaFunctional * cls) const
+    virtual QString subDirectoryForFunctional(const AbstractMetaFunctional * cls) const override
     { return subDirectoryForPackage(cls->targetTypeSystem()); }
 
-    virtual QString subDirectoryForClass(const AbstractMetaClass *cls) const {
+    virtual QString subDirectoryForClass(const AbstractMetaClass *cls) const override {
         return subDirectoryForPackage(cls->targetTypeSystem());
     }
 
@@ -73,10 +71,11 @@ public:
                                        const QStringList &extra_arguments = QStringList(),
                                        int numArguments = -1);
     static void writeFunctionArguments(QTextStream &s, const AbstractMetaArgumentList &arguments,
+                                       const AbstractMetaFunction *java_function,
                                        Option option = NoOption,
                                        int numArguments = -1);
 
-    bool shouldGenerate(const AbstractMetaClass *java_class) const {
+    bool shouldGenerate(const AbstractMetaClass *java_class) const override {
         return (!java_class->isNamespace() || java_class->functionsInTargetLang().size() > 0)
                && !java_class->isInterface()
                && !java_class->typeEntry()->isVariant()
@@ -85,13 +84,15 @@ public:
                && !java_class->isFake();
     }
 
-    bool shouldGenerate(const AbstractMetaFunctional *functional) const {
+    bool shouldGenerate(const AbstractMetaFunctional *functional) const override {
         if(functional->enclosingClass()){
-            return !functional->enclosingClass()->isFake()
-                    && functional->enclosingClass()->typeEntry()
-                    && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
+            if(!(!functional->enclosingClass()->isFake()
+                 && functional->enclosingClass()->typeEntry()
+                 && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
+                return false;
+            }
         }
-        return true; /*functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp;*/
+        return functional->typeEntry()->getUsing().isEmpty() || functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp;
     }
 
     static QString shellClassName(const AbstractMetaClass *java_class) {
@@ -122,6 +123,22 @@ public:
 
     static QStringList getFunctionPPConditions(const AbstractMetaFunction *java_function);
 
+    static QString translateType(const AbstractMetaType *java_type, Option option = NoOption);
+
+    static QString marshalledArguments(const AbstractMetaFunction *java_function);
+
+    enum JNISignatureFormat {
+        Underscores = 0x0001,        //!< Used in the jni exported function names
+        SlashesAndStuff = 0x0010,     //!< Used for looking up functions through jni
+        ReturnType = 0x0100,
+        NoQContainers = 0x0200,
+        NoModification = 0x1000
+    };
+
+    static QString jni_signature(const QString &_full_name, JNISignatureFormat format);
+    static QString jni_signature(const AbstractMetaFunction *function, JNISignatureFormat format);
+    static QString jni_signature(const AbstractMetaFunctional *function, JNISignatureFormat format);
+    static QString jni_signature(const AbstractMetaType *java_type, JNISignatureFormat format);
 protected:
     PriGenerator *priGenerator;
     QString m_cpp_out_dir;

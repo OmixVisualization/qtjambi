@@ -42,33 +42,36 @@
 #include "metajava.h"
 
 class CppHeaderGenerator : public CppGenerator {
-        Q_OBJECT
-
     public:
         CppHeaderGenerator(PriGenerator *pri) {
             priGenerator = pri;
         }
 
-        virtual QString fileNameForClass(const AbstractMetaClass *cls) const;
-        virtual QString fileNameForFunctional(const AbstractMetaFunctional *cls) const;
+        QString fileNameForClass(const AbstractMetaClass *cls) const override;
+        QString fileNameForFunctional(const AbstractMetaFunctional *cls) const override;
 
-        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0);
-        void write(QTextStream &s, const AbstractMetaFunctional *java_functional, int nesting_level = 0);
+        void write(QTextStream &s, const AbstractMetaClass *java_class, int nesting_level = 0) override;
+        void write(QTextStream &s, const AbstractMetaFunctional *java_functional, int nesting_level = 0) override;
         void writeFunction(QTextStream &s, const AbstractMetaFunction *java_function, Option options = NoOption);
-        void writePublicFunctionOverride(QTextStream &s, const AbstractMetaFunction *java_function);
-        void writeVirtualFunctionOverride(QTextStream &s, const AbstractMetaFunction *java_function);
+        void writeFunctionOverride(QTextStream &s, const AbstractMetaFunction *java_function, const QString& prefix);
         void writeForwardDeclareSection(QTextStream &s, const AbstractMetaClass *java_class);
         void writeForwardDeclareSection(QTextStream &s, const AbstractMetaFunctional *java_class);
         void writeVariablesSection(QTextStream &s, const AbstractMetaClass *java_class, bool isInterface);
         void writeFieldAccessors(QTextStream &s, const AbstractMetaField *java_field);
-        void writeInjectedCode(QTextStream &s, const AbstractMetaClass *java_class);
+        static void writeInjectedCode(QTextStream &s, const AbstractMetaClass *java_class, const QList<CodeSnip::Position>& positions);
+        static void writeInjectedCode(QTextStream &s, const AbstractMetaFunctional *java_class, const QList<CodeSnip::Position>& positions);
 
-        bool shouldGenerate(const AbstractMetaClass *java_class) const {
+        bool shouldGenerate(const AbstractMetaClass *java_class) const override {
             return (java_class->generateShellClass()
                     && CppGenerator::shouldGenerate(java_class))
                    || (  !java_class->isFake()
                        && java_class->queryFunctions(AbstractMetaClass::Signals).size() > 0
                        && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
+        }
+
+        bool shouldGenerate(const AbstractMetaFunctional *functional) const override {
+            return (!(functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
+                        && CppGenerator::shouldGenerate(functional));
         }
 };
 

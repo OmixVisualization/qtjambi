@@ -30,8 +30,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_quick3d_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtQuick3D{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick3d,QQuick3DObject,

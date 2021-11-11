@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtQuick3D">
+<typesystem qt-library="QtQuick3D" description="Provides a high-level API for creating 3D content or UIs based on Qt Quick.">
     <object-type name="QQuick3D" target-type="final class">
         <modify-function signature="QQuick3D()" remove="all" />
     </object-type>
@@ -79,7 +79,6 @@
         <extra-includes>
             <include file-name="qtjambi_quick3d_repository.h" location="local"/>
         </extra-includes>
-        <interface-polymorphy interface="QQmlParserStatus" condition="dynamic_cast&lt;const QQuick3DObject*>(%1)" />
         <modify-function signature="setParentItem(QQuick3DObject *)" thread-affine="yes">
             <modify-argument index="1" thread-affine="yes">
                 <reference-count action="ignore"/>

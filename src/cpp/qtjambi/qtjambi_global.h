@@ -89,7 +89,7 @@
 
 #ifndef QT_JAMBI_RUN
 
-typedef void (*PtrDeleterFunction)(void *);
+typedef void (*PtrDeleterFunction)(void *,bool);
 
 typedef void* (*CopyFunction)(const void *);
 

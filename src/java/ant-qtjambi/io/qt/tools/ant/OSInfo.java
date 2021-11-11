@@ -56,9 +56,7 @@ public class OSInfo
         Unknown ("unkwnown"),
         Windows ("windows"),
         Linux ("linux"),
-        MacOS ("macosx"),
-        Solaris ("sunos"),
-        FreeBSD ("freebsd"),
+        MacOS ("macos"),
         Android ("android"),
         IOS ("ios");
 
@@ -76,23 +74,20 @@ public class OSInfo
         }
     }
 
-    public static final String K_SUNOS32 = "sunos32";
-    public static final String K_SUNOS64 = "sunos64";
+    public static final String K_WIN_X86 = "windows-x86";
+    public static final String K_WIN_X64 = "windows-x64";
+    public static final String K_WIN_ARM32 = "windows-arm32";
+    public static final String K_WIN_ARM64 = "windows-arm64";
 
-    public static final String K_WIN32 = "win32";
-    public static final String K_WIN64 = "win64";
+    public static final String K_LINUX_X86 = "linux-x86";
+    public static final String K_LINUX_X64 = "linux-x64";
+    public static final String K_LINUX_ARM32 = "linux-arm32";
+    public static final String K_LINUX_ARM64 = "linux-arm64";
 
-    public static final String K_LINUX32 = "linux32";
-    public static final String K_LINUX64 = "linux64";
-
-    public static final String K_FREEBSD32 = "freebsd32";
-    public static final String K_FREEBSD64 = "freebsd64";
-
-    public static final String K_SUNOS = "sunos";
     public static final String K_WINDOWS = "windows";
+    public static final String K_ANDROID = "android";
     public static final String K_LINUX = "linux";
-    public static final String K_FREEBSD = "freebsd";
-    public static final String K_MACOSX = "macosx";
+    public static final String K_MACOS = "macos";
 
     /**
      * Returns the operating system
@@ -104,12 +99,10 @@ public class OSInfo
                 os = OS.Linux;
             else if (osname.contains("windows"))
                 os = OS.Windows;
-            else if (osname.contains("mac os x"))
+            else if (osname.contains("mac os"))
                 os = OS.MacOS;
-            else if (osname.contains("sunos"))
-                os = OS.Solaris;
-            else if (osname.contains("freebsd"))
-                os = OS.FreeBSD;
+            else if (osname.contains("android"))
+                os = OS.Android;
             else
                 os = OS.Unknown;
         }
@@ -145,22 +138,39 @@ public class OSInfo
         if (osArchName == null) {
             switch (os()) {
             case Windows:
-                osArchName = System.getProperty("os.arch").equalsIgnoreCase("amd64")
-                             ? K_WIN64
-                             : K_WIN32;
+            	switch(System.getProperty("os.arch").toLowerCase()) {
+            	case "arm":
+            	case "arm32":
+            		osArchName = K_WIN_ARM32; break;
+            	case "arm64":
+            	case "aarch64":
+            		osArchName = K_WIN_ARM64; break;
+            	case "x86_64":
+            	case "x64":
+            	case "amd64":
+            		osArchName = K_WIN_X64; break;
+            	default:
+            		osArchName = K_WIN_X86; break;
+            	}
                 break;
             case Linux:
-                osArchName = System.getProperty("os.arch").equalsIgnoreCase("amd64")
-                             ? K_LINUX64
-                             : K_LINUX32;
-                break;
-            case FreeBSD:
-                osArchName = System.getProperty("os.arch").equalsIgnoreCase("amd64")
-                             ? K_FREEBSD64
-                             : K_FREEBSD32;
+        		switch(System.getProperty("os.arch").toLowerCase()) {
+            	case "arm":
+            	case "arm32":
+            		osArchName = K_LINUX_ARM32; break;
+            	case "arm64":
+            	case "aarch64":
+            		osArchName = K_LINUX_ARM64; break;
+            	case "x86_64":
+            	case "x64":
+            	case "amd64":
+            		osArchName = K_LINUX_X64; break;
+            	default:
+            		osArchName = K_LINUX_X86; break;            	
+            	}
                 break;
             case MacOS:
-                osArchName = "macosx";
+                osArchName = "macos";
                 break;
             case Android:
                 osArchName = "android";
@@ -168,63 +178,12 @@ public class OSInfo
             case IOS:
                 osArchName = "ios";
                 break;
-            case Solaris:
-                // sparc || sparcv9
-                osArchName = System.getProperty("os.arch").equalsIgnoreCase("sparcv9")
-                             ? K_SUNOS32
-                             : K_SUNOS64;
-                break;
             case Unknown:
                 osArchName = "unknown";
                 break;
             }
         }
         return osArchName;
-    }
-
-    public static boolean isWindows() {
-        if(os() == OS.Windows)
-            return true;
-        return false;
-    }
-
-    public static boolean isLinux() {
-        if(os() == OS.Linux)
-            return true;
-        return false;
-    }
-
-    public static boolean isMacOS() {
-        if(os() == OS.MacOS)
-            return true;
-        return false;
-    }
-
-    public static boolean isFreeBSD() {
-        if(os() == OS.FreeBSD)
-            return true;
-        return false;
-    }
-
-    public static boolean isSolaris() {
-        if(os() == OS.Solaris)
-            return true;
-        return false;
-    }
-
-    public static Boolean is64bit() {
-        String s = osArchName();
-        if(K_LINUX64.equals(s))
-            return Boolean.TRUE;
-        if(K_WIN64.equals(s))
-           return Boolean.TRUE;
-        if(K_MACOSX.equals(s))
-            return Boolean.TRUE;
-        if(K_FREEBSD64.equals(s))
-            return Boolean.TRUE;
-        if(K_SUNOS64.equals(s))
-            return Boolean.TRUE;
-        return Boolean.FALSE;
     }
 
     static void setQMakeXSpec(String qmakeXSpec) {

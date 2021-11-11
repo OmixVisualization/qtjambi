@@ -54,7 +54,7 @@ class MetaJavaFunctional;
 class MetaJavaType : public AbstractMetaType {};
 
 class MetaJavaArgument : public AbstractMetaArgument {
-    virtual QString argumentName() const;
+    QString argumentName() const override;
 };
 
 class MetaJavaField : public AbstractMetaField {};

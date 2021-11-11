@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.remoteobjects" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.remoteobjects" module="qtjambi.remoteobjects" default-superclass="io.qt.QtObject">
   <object-type name="QRemoteObjectHostBase">
         <modify-function signature="proxy(const QUrl &amp;, const QUrl &amp;, QRemoteObjectHostBase::RemoteObjectNameFilter)">
             <modify-argument index="2">
@@ -83,6 +83,8 @@
   <namespace-type name="QtRemoteObjects">
         <inject-code>
             <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QtRemoteObjects___" quote-before-line="}// class"/>
+            <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QtRemoteObjects_5__" quote-before-line="}// class" until="5.*"/>
+            <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QtRemoteObjects_6__" quote-before-line="}// class" since="6.2.0"/>
         </inject-code>
   </namespace-type>
   <object-type name="ServerIoDevice">
@@ -108,11 +110,11 @@
                     jobject %out = nullptr;
                     if(%in){
                         jclass cls = resolveClass(%env, "io/qt/remoteobjects/ServerIoDevice$ReadResult");
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                         jmethodID constructor = resolveMethod(%env, "&lt;init>", "(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)V", cls, false);
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                         %out = %env->NewObject(cls, constructor, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                     }
                 </conversion-rule>
             </modify-argument>
@@ -144,11 +146,11 @@
                     jobject %out = nullptr;
                     if(%in){
                         jclass cls = resolveClass(%env, "io/qt/remoteobjects/ClientIoDevice$ReadResult");
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                         jmethodID constructor = resolveMethod(%env, "&lt;init>", "(Lio/qt/remoteobjects/QtRemoteObjects$QRemoteObjectPacketTypeEnum;Ljava/lang/String;)V", cls, false);
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                         %out = %env->NewObject(cls, constructor, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                     }
                 </conversion-rule>
             </modify-argument>
@@ -188,6 +190,47 @@
             <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class IoDevice___" quote-before-line="}// class"/>
         </inject-code>
   </object-type>
+  <object-type name="QtROIoDeviceBase">
+        <extra-includes>
+            <include file-name="qtjambi_remoteojects_repository.h" location="local"/>
+        </extra-includes>
+        <modify-function signature="read(QtRemoteObjects::QRemoteObjectPacketTypeEnum &amp;, QString &amp;)">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    QtRemoteObjects::QRemoteObjectPacketTypeEnum %out(QtRemoteObjects::Invalid);
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    QString %out;
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="0">
+                <replace-type modified-type="io.qt.remoteobjects.QtROIoDeviceBase$ReadResult"/>
+                <conversion-rule class="native">
+                    jobject %out = nullptr;
+                    if(%in){
+                        %out = Java::QtRemoteObjects::QtROIoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast&lt;jobject>(%env, __qt_%1), qtjambi_cast&lt;jobject>(%env, __qt_%2));
+                    }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class IoDevice___" quote-before-line="}// class"/>
+        </inject-code>
+  </object-type>
+  <interface-type name="QRemoteObjectPendingCall">
+        <modify-function signature="waitForFinished(int)">
+            <modify-argument index="1">
+                <remove-default-expression/>
+            </modify-argument>
+        </modify-function>
+        <inject-code class="interface">
+            <import-file name="typesystem/java/typesystem_remoteobjects-java.java" quote-after-line="class QRemoteObjectPendingCall___" quote-before-line="}// class"/>
+        </inject-code>
+  </interface-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QRemoteObjectHostBase' set to non-final, as it is extended by other classes" />
   <suppress-warning text="WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcHostSideConnection' in '*' but not both." />
 </typesystem>

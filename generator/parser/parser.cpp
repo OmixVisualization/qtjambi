@@ -513,6 +513,8 @@ bool Parser::parseDeclaration(DeclarationAST *&node) {
                 switch (token_stream.lookAhead(1)){
                 case Token_typedef:
                     return parseTypedef(node);
+                case Token_Q_ENUM:
+                    return parseQ_ENUM(node);
                 }
                 break;
             case Token_QTJAMBI_DEPRECATED_X:{
@@ -691,9 +693,17 @@ bool Parser::parseNamespace(DeclarationAST *&node) {
     CHECK(Token_namespace);
 
     std::size_t namespace_name = 0;
+    std::size_t namespace_name_size = 0;
     if (token_stream.lookAhead() == Token_identifier) {
         namespace_name = token_stream.cursor();
         token_stream.nextToken();
+        ++namespace_name_size;
+    }
+    while(token_stream.lookAhead() == Token_scope
+          && token_stream.lookAhead(1) == Token_identifier) {
+        token_stream.nextToken();
+        token_stream.nextToken();
+        ++namespace_name_size;
     }
 
     if (token_stream.lookAhead() == '=') {
@@ -722,6 +732,7 @@ bool Parser::parseNamespace(DeclarationAST *&node) {
 
     NamespaceAST *ast = CreateNode<NamespaceAST>(_M_pool);
     ast->namespace_name = namespace_name;
+    ast->namespace_name_size = namespace_name_size;
     parseLinkageBody(ast->linkage_body);
 
     UPDATE_POS(ast, start, token_stream.cursor());
@@ -747,6 +758,10 @@ bool Parser::parseUsing(DeclarationAST *&node) {
     NameAST *name = nullptr;
     if (!parseName(name))
         return false;
+
+    const ListNode<std::size_t> *storageSpec = nullptr;
+    StringLiteralAST *deprecationComment = nullptr;
+    parseDeprecatedSpecifier(storageSpec, deprecationComment);
 
     if (token_stream.lookAhead() == '=') {
         const ListNode<std::size_t> *cv = nullptr;
@@ -861,26 +876,33 @@ bool Parser::parseOperatorFunctionId(OperatorFunctionIdAST *&node) {
     if (!parseOperator(ast->op)) {
         ast->op = nullptr;
 
-        if (token_stream.lookAhead() == Token_typename) {
+        if (token_stream.lookAhead() == Token_string_literal
+                && token_stream.lookAhead(1) == Token_identifier) {
             ast->type_name = token_stream.cursor();
             token_stream.nextToken();
+            token_stream.nextToken();
+        }else{
+            if (token_stream.lookAhead() == Token_typename) {
+                ast->type_name = token_stream.cursor();
+                token_stream.nextToken();
+            }
+
+            // parse cast operator
+            const ListNode<std::size_t> *cv = nullptr;
+            parseCvQualify(cv);
+
+            if (!parseSimpleTypeSpecifier(ast->type_specifier)) {
+                syntaxError();
+                return false;
+            }
+
+            parseCvQualify(cv);
+            ast->type_specifier->cv = cv;
+
+            PtrOperatorAST *ptr_op = nullptr;
+            while (parsePtrOperator(ptr_op))
+                ast->ptr_ops = snoc(ast->ptr_ops, ptr_op, _M_pool);
         }
-
-        // parse cast operator
-        const ListNode<std::size_t> *cv = nullptr;
-        parseCvQualify(cv);
-
-        if (!parseSimpleTypeSpecifier(ast->type_specifier)) {
-            syntaxError();
-            return false;
-        }
-
-        parseCvQualify(cv);
-        ast->type_specifier->cv = cv;
-
-        PtrOperatorAST *ptr_op = nullptr;
-        while (parsePtrOperator(ptr_op))
-            ast->ptr_ops = snoc(ast->ptr_ops, ptr_op, _M_pool);
     }
 
     UPDATE_POS(ast, start, token_stream.cursor());
@@ -2203,8 +2225,15 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
         ADVANCE('(', "(")
         ExpressionAST *alignmentExpression(nullptr);
         if(!parseExpression(alignmentExpression)){
-            token_stream.rewind(start);
-            return false;
+            TypeSpecifierAST *node(nullptr);
+            if(!parseTypeSpecifierOrClassSpec(node)){
+                token_stream.rewind(start);
+                return false;
+            }
+            PtrOperatorAST *ptrOp = nullptr;
+            while (parsePtrOperator(ptrOp)) {
+                //ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
+            }
         }
         ADVANCE(')', ")")
     }
@@ -2371,8 +2400,15 @@ bool Parser::parseMemberSpecification(DeclarationAST *&node) {
         ADVANCE('(', "(")
         ExpressionAST *alignmentExpression(nullptr);
         if(!parseExpression(alignmentExpression)){
-            token_stream.rewind(start);
-            return false;
+            TypeSpecifierAST *node(nullptr);
+            if(!parseTypeSpecifierOrClassSpec(node)){
+                token_stream.rewind(start);
+                return false;
+            }
+            PtrOperatorAST *ptrOp = nullptr;
+            while (parsePtrOperator(ptrOp)) {
+                //ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
+            }
         }
         ADVANCE(')', ")")
     }
@@ -3541,8 +3577,15 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
         ADVANCE('(', "(")
         ExpressionAST *alignmentExpression(nullptr);
         if(!parseExpression(alignmentExpression)){
-            token_stream.rewind(start);
-            return false;
+            TypeSpecifierAST *node(nullptr);
+            if(!parseTypeSpecifierOrClassSpec(node)){
+                token_stream.rewind(start);
+                return false;
+            }
+            PtrOperatorAST *ptrOp = nullptr;
+            while (parsePtrOperator(ptrOp)) {
+                //ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
+            }
         }
         ADVANCE(')', ")")
     }
@@ -3557,8 +3600,15 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
         ADVANCE('(', "(")
         ExpressionAST *alignmentExpression(nullptr);
         if(!parseExpression(alignmentExpression)){
-            token_stream.rewind(start);
-            return false;
+            TypeSpecifierAST *node(nullptr);
+            if(!parseTypeSpecifierOrClassSpec(node)){
+                token_stream.rewind(start);
+                return false;
+            }
+            PtrOperatorAST *ptrOp = nullptr;
+            while (parsePtrOperator(ptrOp)) {
+                //ast->ptr_ops = snoc(ast->ptr_ops, ptrOp, _M_pool);
+            }
         }
         ADVANCE(')', ")")
     }
@@ -3930,23 +3980,21 @@ bool Parser::parseLambdaExpression(ExpressionAST *&) {
             return false;
         }
         token_stream.nextToken();
-        if(token_stream.lookAhead()!='('){
-            token_stream.rewind(start);
-            return false;
-        }
-        token_stream.nextToken();
-        if(token_stream.lookAhead()!=')'){
-            ParameterDeclarationClauseAST *params = nullptr;
-            if (!parseParameterDeclarationClause(params)) {
-                token_stream.rewind(start);
-                return false;
-            }
+        if(token_stream.lookAhead()=='('){ // parameters are optional
+            token_stream.nextToken();
             if(token_stream.lookAhead()!=')'){
-                token_stream.rewind(start);
-                return false;
+                ParameterDeclarationClauseAST *params = nullptr;
+                if (!parseParameterDeclarationClause(params)) {
+                    token_stream.rewind(start);
+                    return false;
+                }
+                if(token_stream.lookAhead()!=')'){
+                    token_stream.rewind(start);
+                    return false;
+                }
             }
+            token_stream.nextToken();
         }
-        token_stream.nextToken();
         if(token_stream.lookAhead()==Token_mutable){
             token_stream.nextToken();
         }
@@ -5123,6 +5171,27 @@ bool Parser::parseQ_ENUMS(DeclarationAST *&node) {
 }
 
 bool Parser::parseQ_ENUM(DeclarationAST *&node) {
+    std::size_t start = token_stream.cursor();
+    if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED) {
+        token_stream.nextToken();
+        if (token_stream.lookAhead() != Token_Q_ENUM) {
+            token_stream.rewind(start);
+        }
+    }
+    if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED_X) {
+        token_stream.nextToken();
+        ADVANCE('(', "(")
+        StringLiteralAST *comment = nullptr;
+        if(!parseStringLiteral(comment)){
+            token_stream.rewind(start);
+            return false;
+        }
+        ADVANCE(')', ")")
+        if (token_stream.lookAhead() != Token_Q_ENUM) {
+            token_stream.rewind(start);
+        }
+    }
+
     if (token_stream.lookAhead() != Token_Q_ENUM)
         return false;
 

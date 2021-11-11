@@ -174,8 +174,7 @@ bool qtjambi_is_QHash(JNIEnv *env, jobject mapObject){
     return qtjambi_is_QHash(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V));
 }
 
-
-typedef void(* PointerDeleter)(void *);
+typedef void(* PointerDeleter)(void *, bool);
 typedef void*(*PointerGetter)(const void *);
 
 enum class ListType{

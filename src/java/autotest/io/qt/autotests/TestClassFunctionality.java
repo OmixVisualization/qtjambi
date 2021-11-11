@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +54,7 @@ import io.qt.QNoImplementationException;
 import io.qt.QtEnumerator;
 import io.qt.QtFlagEnumerator;
 import io.qt.QtInvokable;
+import io.qt.QtObject;
 import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.GraphicsSceneSubclass;
 import io.qt.autotests.generated.OrdinaryDestroyed;
@@ -75,8 +77,6 @@ import io.qt.core.QTimer;
 import io.qt.core.QUuid;
 import io.qt.core.Qt;
 import io.qt.gui.*;
-import io.qt.internal.QtJambiInternal;
-import io.qt.internal.QtJambiObject;
 import io.qt.widgets.*;
 
 public class TestClassFunctionality extends QApplicationTest {
@@ -118,7 +118,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test
     public void testGraphicsSceneDrawItemsInjections() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         GraphicsSceneSubclassSubclass gsss = new GraphicsSceneSubclassSubclass();
         QGraphicsEllipseItem item1 = new QGraphicsEllipseItem(new QRectF(1.0, 2.0, 3.0, 4.0));
         item1.setZValue(2.0);
@@ -156,8 +156,8 @@ public class TestClassFunctionality extends QApplicationTest {
         assertTrue(GraphicsSceneSubclassSubclass.items[0] == item2);
         assertTrue(GraphicsSceneSubclassSubclass.items[1] == item1);
         
-        assertTrue("item still alive", QtJambiInternal.nativeId(GraphicsSceneSubclassSubclass.items[0])!=0);
-        assertTrue("item still alive", QtJambiInternal.nativeId(GraphicsSceneSubclassSubclass.items[1])!=0);
+        assertTrue("item still alive", General.internalAccess.nativeId(GraphicsSceneSubclassSubclass.items[0])!=0);
+        assertTrue("item still alive", General.internalAccess.nativeId(GraphicsSceneSubclassSubclass.items[1])!=0);
 
         QRectF brect = GraphicsSceneSubclassSubclass.items[0].boundingRect();
         assertEquals(2.0, brect.left(), 0.0001);
@@ -206,7 +206,7 @@ public class TestClassFunctionality extends QApplicationTest {
     }
 
     static class TestQObject extends QObject {
-        private Signal0 a = new Signal0();
+        private final Signal0 a = new Signal0();
 
         public boolean slot_called = false;
 
@@ -245,7 +245,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
         Method method = null;
         try {
-            method = QtJambiInternal.class.getDeclaredMethod("fetchFieldNative", Object.class, Field.class, boolean.class);
+            method = io.qt.internal.QtJambiInternal.class.getDeclaredMethod("fetchFieldNative", Object.class, Field.class, boolean.class);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             assertEquals(e, null);
@@ -270,7 +270,7 @@ public class TestClassFunctionality extends QApplicationTest {
         }
 
         try {
-            method = QtJambiInternal.class.getDeclaredMethod("invokeMethod", Object.class, Method.class, boolean.class, Byte.TYPE, Object[].class, byte[].class);
+            method = io.qt.internal.QtJambiInternal.class.getDeclaredMethod("invokeMethod", Object.class, Method.class, boolean.class, Byte.TYPE, Object[].class, byte[].class);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
             assertEquals(e, null);
@@ -305,7 +305,7 @@ public class TestClassFunctionality extends QApplicationTest {
     		{
 	    		QObject globalObject = OrdinaryDestroyed.getGlobalQObjectSplitOwnership();
 	    		assertTrue(globalObject!=null);
-	    		assertEquals(QtJambiInternal.Ownership.Split, QtJambiInternal.ownership(globalObject));
+	    		assertTrue(General.internalAccess.isSplitOwnership(globalObject));
 	    		hashes.add(System.identityHashCode(globalObject));
 	    		globalObject = null;
     		}
@@ -346,7 +346,7 @@ public class TestClassFunctionality extends QApplicationTest {
             OrdinarySubclass sc = new OrdinarySubclass(counter);
             OrdinaryDestroyed.deleteFromCpp(sc);
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(sc), 0L);
+            assertTrue(sc.isDisposed());
         }
 
         // Delete through virtual destructor
@@ -355,7 +355,7 @@ public class TestClassFunctionality extends QApplicationTest {
             OrdinarySuperclass sc = new OrdinarySubclass(counter);
             OrdinaryDestroyed.deleteFromCppOther(sc);
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(sc), 0L);
+            assertTrue(sc.isDisposed());
         }
 
         // Delete QObject from Java
@@ -364,7 +364,7 @@ public class TestClassFunctionality extends QApplicationTest {
             QObjectSubclass qobject = new QObjectSubclass(counter, null);
             qobject.dispose();
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(qobject), 0L);
+            assertTrue(qobject.isDisposed());
         }
 
         // Delete QObject from parent
@@ -374,7 +374,7 @@ public class TestClassFunctionality extends QApplicationTest {
             QObject qobject = new QObjectSubclass(counter, parent);
             parent.dispose();
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(qobject), 0L);
+            assertTrue(qobject.isDisposed());
         }
 
         // Delete QObject later
@@ -385,7 +385,7 @@ public class TestClassFunctionality extends QApplicationTest {
             QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(qobject), 0L);
+            assertTrue(qobject.isDisposed());
         }
 
         // Delete QObject from C++
@@ -394,7 +394,7 @@ public class TestClassFunctionality extends QApplicationTest {
             QObjectSubclass qobject = new QObjectSubclass(counter, null);
             QObjectDestroyed.deleteFromCpp(qobject);
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(qobject), 0L);
+            assertTrue(qobject.isDisposed());
         }
 
         // Delete QObject from C++ through virtual destructor
@@ -403,7 +403,7 @@ public class TestClassFunctionality extends QApplicationTest {
             QObject qobject = new QObjectSubclass(counter, null);
             QObjectDestroyed.deleteFromCppOther(qobject);
             assertEquals(1, counter.disposedCount());
-            assertEquals(QtJambiInternal.nativeId(qobject), 0L);
+            assertTrue(qobject.isDisposed());
         }
     }
 
@@ -413,7 +413,7 @@ public class TestClassFunctionality extends QApplicationTest {
     @SuppressWarnings("deprecation")
     @Test
     public void run_callPrivateVirtualFunction() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QTableWidget w = new QTableWidget();
 
         boolean gotException = false;
@@ -432,7 +432,7 @@ public class TestClassFunctionality extends QApplicationTest {
      * a signal emittion...
      */
     private static class SenderTester extends QObject {
-        Signal0 signal = new Signal0();
+        final Signal0 signal = new Signal0();
 
         public boolean is_null, is_valid;
 
@@ -601,7 +601,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test
     public void run_cppAndJavaObjects() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         CustomEvent event1 = new CustomEvent("this is my stuff");
         QResizeEvent event2 = new QResizeEvent(new QSize(101, 102), new QSize(103, 104));
 
@@ -690,7 +690,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test
     public void testDialog() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         String[] childrenClassList = {".QGridLayout",".QLabel",".QComboBox",".QLabel",".QComboBox",".QLabel",".QComboBox",".QPushButton",".QTableWidget",".QLabel", ".QPushButton"};
 
         TestDialog dialog = new TestDialog();
@@ -743,7 +743,6 @@ public class TestClassFunctionality extends QApplicationTest {
     @Test
     public void run_settersAndGetters() {
         QStyleOptionButton so = new QStyleOptionButton();
-
         assertTrue(so.icon().isNull());
 
         QPixmap pm = new QPixmap(100, 100);
@@ -779,17 +778,13 @@ public class TestClassFunctionality extends QApplicationTest {
             assertEquals(b2[i], b_orig[i]);
 
         // Wrong number of entries
-        Exception fe = null;
         try {
             byte b[] = new byte[6];
             uuid.setData4(b);
-        } catch (Exception e) {
-            // java.lang.IllegalArgumentException: Wrong number of elements in array. Found: 6, expected: 8
-            fe = e;
+            Assert.fail("IllegalArgumentException expected to be thrown.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Argument 'data4': Wrong number of elements in array. Found: 6, expected: 8", e.getMessage());
         }
-
-        assertTrue(fe != null);
-        assertTrue(fe instanceof IllegalArgumentException);
 
         // Make sure it wasn't set after all
         b2 = uuid.data4();
@@ -797,17 +792,13 @@ public class TestClassFunctionality extends QApplicationTest {
         for (int i = 0; i < 8; ++i)
             assertEquals(b2[i], b_orig[i]);
 
-        fe = null;
         try {
             byte b[] = new byte[100];
             uuid.setData4(b);
-        } catch (Exception e) {
-            // java.lang.IllegalArgumentException: Wrong number of elements in array. Found: 100, expected: 8
-            fe = e;
+            Assert.fail("IllegalArgumentException expected to be thrown.");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Argument 'data4': Wrong number of elements in array. Found: 100, expected: 8", e.getMessage());
         }
-
-        assertTrue(fe != null);
-        assertTrue(fe instanceof IllegalArgumentException);
     }
 
     static class MySpinBox extends QDoubleSpinBox {
@@ -838,7 +829,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test 
     public void testVirtualCallToFixup() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         MySpinBox spinBox = new MySpinBox();
         SpinBoxHandler handler = new SpinBoxHandler();
 
@@ -850,7 +841,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test 
     public void testVirtualCallToValidate() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         MySpinBox spinBox = new MySpinBox();
         SpinBoxHandler handler = new SpinBoxHandler();
 
@@ -864,7 +855,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test 
     public void testFinalCallToFixup() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         SpinBoxSubclass sbs = new SpinBoxSubclass();
 
         String returned = sbs.fixup("Thou dost hang canary birds in parlour windows");
@@ -874,7 +865,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test 
     public void testFinalCallToValidate() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         SpinBoxSubclass sbs = new SpinBoxSubclass();
 
         QValidator.QValidationData data = new QValidator.QValidationData("dream and you have a sloppy body from being brought to bed of crocuses", 14);
@@ -891,7 +882,7 @@ public class TestClassFunctionality extends QApplicationTest {
 
     @Test
     public void resetAfterUseTemporary() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         painterReference = null;
 
         QCalendarWidget w = new QCalendarWidget() {
@@ -905,12 +896,12 @@ public class TestClassFunctionality extends QApplicationTest {
         General.callPaintCell(w, null);
 
         assertTrue(painterReference != null);
-        assertTrue("painterReference deleted", 0==QtJambiInternal.nativeId(painterReference));
+        assertTrue("painterReference deleted", painterReference.isDisposed());
     }
 
     @Test
     public void resetAfterUseNonTemporary() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         painterReference = null;
 
         QCalendarWidget w = new QCalendarWidget() {
@@ -924,13 +915,13 @@ public class TestClassFunctionality extends QApplicationTest {
         General.callPaintCell(w, p);
 
         assertTrue(painterReference != null);
-        assertTrue("painterReference deleted", 0 != QtJambiInternal.nativeId(painterReference));
+        assertTrue("painterReference deleted", !painterReference.isDisposed());
         assertEquals(p, painterReference);
     }
 
     @Test
     public void resetAfterUseNull() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         painterReference = new QPainter();
 
         QCalendarWidget w = new QCalendarWidget() {
@@ -1010,7 +1001,7 @@ class EventReceiver extends QWidget {
             customEventType = event.type();
             customEventString = ce.s;
         } else if (event.type() == QEvent.Type.Paint) {
-            QtJambiObject new_event = event; /*null;
+            QtObject new_event = event; /*null;
             try {
                 new_event = QtJambiObject.reassignNativeResources(event, QPaintEvent.class);
             } catch (Exception e) {

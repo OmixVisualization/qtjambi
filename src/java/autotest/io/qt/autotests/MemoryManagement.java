@@ -49,10 +49,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtObject;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.internal.QtJambiDebugTools;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QApplication;
 
 // Attempt at complete test for general memory leaks and crashes
@@ -87,7 +87,7 @@ public abstract class MemoryManagement extends QApplicationTest{
 
     @BeforeClass
     public static void testInitialize() throws Exception {
-        org.junit.Assume.assumeThat(QtJambiDebugTools.hasDebugTools(), QApplicationTest.trueMatcher("Prerequisite 1 of 2: These tests can only be run in debug mode or when \"Qt Jambi\" is compiled with DEFINES += QTJAMBI_DEBUG_TOOLS"));
+        org.junit.Assume.assumeTrue("These tests can only run in debug mode or when \"QtJambi\" is compiled with DEFINES += QTJAMBI_DEBUG_TOOLS", QtJambiDebugTools.hasDebugTools());
         QApplicationTest.testInitialize();
     }
 
@@ -398,7 +398,7 @@ public abstract class MemoryManagement extends QApplicationTest{
 
     private WeakReference<QtObject> createInstanceInNativeWithJavaOwnership() {
         QtObject obj = Objects.requireNonNull(createInstanceInNative(), "createInstanceInNative");
-        QtJambiInternal.setJavaOwnership(obj);
+        General.internalAccess.setJavaOwnership(obj);
         return new WeakReference<QtObject>(obj);
     }
 
@@ -480,7 +480,7 @@ public abstract class MemoryManagement extends QApplicationTest{
     	{
             QtObject obj = createInstanceInJava();
             ref = new WeakReference<QtObject>(obj);
-            QtJambiInternal.setCppOwnership(obj);
+            General.internalAccess.setCppOwnership(obj);
             obj.dispose();
         }
 
@@ -575,7 +575,7 @@ public abstract class MemoryManagement extends QApplicationTest{
     	{
             QtObject obj = Objects.requireNonNull(createInstanceInNative(), "createInstanceInNative");
             ref = new WeakReference<QtObject>(obj);
-            QtJambiInternal.setJavaOwnership(obj);
+            General.internalAccess.setJavaOwnership(obj);
             obj.dispose();
         }
 
@@ -623,8 +623,7 @@ public abstract class MemoryManagement extends QApplicationTest{
     	{
             QtObject obj = Objects.requireNonNull(createInstanceInNative(), "createInstanceInNative");
             Objects.requireNonNull(obj, "createInstanceInNative() needs to be not null.");
-            QtJambiInternal.ownership(obj);
-            QtJambiInternal.setCppOwnership(obj);
+            General.internalAccess.setCppOwnership(obj);
             ref = new WeakReference<QtObject>(obj);
             obj.dispose();
         }
@@ -684,7 +683,7 @@ public abstract class MemoryManagement extends QApplicationTest{
             		);
 	        }
     	}finally {
-    		QtJambiInternal.invalidateObject(ref.get());
+    		General.internalAccess.invalidateObject(ref.get());
     	}
     }
 
@@ -693,11 +692,11 @@ public abstract class MemoryManagement extends QApplicationTest{
     	{
             QtObject obj = createInstanceInJava();
             ref = new WeakReference<QtObject>(obj);
-            QtJambiInternal.setCppOwnership(obj);
+            General.internalAccess.setCppOwnership(obj);
 
             deleteLastInstance();
             if (hasVirtualDestructor())
-                assertEquals(0L, QtJambiInternal.nativeId(obj));
+                assertTrue(obj.isDisposed());
         }
 
         if (hasVirtualDestructor())
@@ -773,7 +772,7 @@ public abstract class MemoryManagement extends QApplicationTest{
             		);
 	        }
     	}finally {
-    		QtJambiInternal.invalidateObject(ref.get());
+    		General.internalAccess.invalidateObject(ref.get());
     	}
     }
 
@@ -781,7 +780,7 @@ public abstract class MemoryManagement extends QApplicationTest{
     private WeakReference<QtObject> createInNativeDisableGCAndDeleteInNative_internal() {
         QtObject obj = Objects.requireNonNull(createInstanceInNative(), "createInstanceInNative");
         WeakReference<QtObject> ref = new WeakReference<QtObject>(obj);
-        QtJambiInternal.setCppOwnership(obj);
+        General.internalAccess.setCppOwnership(obj);
         return ref;
     }
 
@@ -1200,9 +1199,9 @@ public abstract class MemoryManagement extends QApplicationTest{
     	{
             QtObject obj = Objects.requireNonNull(createInstanceInNative(), "createInstanceInNative");
             if(isSharedPointer()) {
-            	assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(obj));
+            	assertTrue(General.internalAccess.isJavaOwnership(obj));
             }else{
-            	assertEquals(QtJambiInternal.Ownership.Split, QtJambiInternal.ownership(obj));
+            	assertTrue(General.internalAccess.isSplitOwnership(obj));
             }
             ref = new WeakReference<QtObject>(obj);
             invalidateObject(obj, false);

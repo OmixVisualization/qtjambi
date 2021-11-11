@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QDataStream>
 #include <QtCore/QDebug>
 #include <qtjambi/qtjambi_core.h>

@@ -44,7 +44,7 @@
 
 class ClassListGenerator: public Generator {
     public:
-        virtual void generate();
+        void generate() override;
 
         QString fileName() const;
 };

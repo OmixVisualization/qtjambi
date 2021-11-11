@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import io.qt.QtObject;
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.Tulip;
 import io.qt.autotests.generated.Variants;
 import io.qt.core.QCoreApplication;
@@ -56,7 +57,6 @@ import io.qt.core.QSet;
 import io.qt.gui.QStandardItemModel;
 import io.qt.gui.QTextCursor;
 import io.qt.gui.QTextDocument;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QGraphicsEllipseItem;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsPathItem;
@@ -1005,7 +1005,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.add(object);
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1052,7 +1052,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.add(object);
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1686,7 +1686,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.add(QList.of(object));
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1737,7 +1737,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.add(QList.of(object));
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1788,7 +1788,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.put(""+i, QList.of(object));
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1839,7 +1839,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.put(""+i, QList.of(object));
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1890,7 +1890,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 					return 0;
 	    		};
 	    		container.add(QSet.of(object));
-	    		QtJambiInternal.setJavaOwnership(object);
+	    		General.internalAccess.setJavaOwnership(object);
 	    		QtUtilities.getSignalOnDispose(object).connect(counter::incrementAndGet);
 	    		object = null;
 	    	}
@@ -1936,7 +1936,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 		selection.select(model.index(2, 2), model.index(4, 4));
 		selection.select(model.index(1, 2), model.index(1, 4));
 		Assert.assertEquals(2, selection.size());
-		Assert.assertEquals(model, QtJambiInternal.owner(selection));
+		Assert.assertEquals(model, General.internalAccess.owner(selection));
 		selection = null;
     }
     
@@ -1945,7 +1945,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QTextCursor> list = QList.of(new QTextCursor(owner));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -1954,7 +1954,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QList<QTextCursor>> list = QList.of(QList.of(new QTextCursor(owner)));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -1963,7 +1963,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QMap<QTextCursor,String>> list = QList.of(QMap.of(new QTextCursor(owner), "QTextCursor"));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -1973,7 +1973,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 		QMap<String,QSet<QList<QTextCursor>>> container = QMap.of("A", new QSet<>(QMetaType.fromType(QList.class, QMetaType.fromType(QTextCursor.class))), 
 															      "Z", QSet.of(QList.of(new QTextCursor(owner))));
 		Assert.assertEquals(2, container.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(container));
+		Assert.assertEquals(owner, General.internalAccess.owner(container));
 		container = null;
     }
     
@@ -1982,7 +1982,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QHash<QTextCursor,String>> list = QList.of(QHash.of(new QTextCursor(owner), "QTextCursor"));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -1992,7 +1992,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 		QHash<String,QSet<QList<QTextCursor>>> container = QHash.of("A", new QSet<>(QMetaType.fromType(QList.class, QMetaType.fromType(QTextCursor.class))), 
 															      "Z", QSet.of(QList.of(new QTextCursor(owner))));
 		Assert.assertEquals(2, container.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(container));
+		Assert.assertEquals(owner, General.internalAccess.owner(container));
 		container = null;
     }
     
@@ -2001,7 +2001,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QMultiMap<QTextCursor,String>> list = QList.of(QMultiMap.of(new QTextCursor(owner), "QTextCursor"));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -2011,7 +2011,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 		QMultiMap<String,QSet<QList<QTextCursor>>> container = QMultiMap.of("A", new QSet<>(QMetaType.fromType(QList.class, QMetaType.fromType(QTextCursor.class))), 
 															      "Z", QSet.of(QList.of(new QTextCursor(owner))));
 		Assert.assertEquals(2, container.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(container));
+		Assert.assertEquals(owner, General.internalAccess.owner(container));
 		container = null;
     }
     
@@ -2020,7 +2020,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
     	QTextDocument owner = new QTextDocument();
 		QList<QMultiHash<QTextCursor,String>> list = QList.of(QMultiHash.of(new QTextCursor(owner), "QTextCursor"));
 		Assert.assertEquals(1, list.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(list));
+		Assert.assertEquals(owner, General.internalAccess.owner(list));
 		list = null;
     }
     
@@ -2030,7 +2030,7 @@ public class TestReferenceCountingContainers extends QApplicationTest {
 		QMultiHash<String,QSet<QList<QTextCursor>>> container = QMultiHash.of("A", new QSet<>(QMetaType.fromType(QList.class, QMetaType.fromType(QTextCursor.class))), 
 															      "Z", QSet.of(QList.of(new QTextCursor(owner))));
 		Assert.assertEquals(2, container.size());
-		Assert.assertEquals(owner, QtJambiInternal.owner(container));
+		Assert.assertEquals(owner, General.internalAccess.owner(container));
 		container = null;
     }
     

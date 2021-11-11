@@ -17,4 +17,4 @@ INCLUDEPATH += $$(QTDIR)/include/QtWidgets
 
 HEADERS += qtjambi_sql_hashes.h
 
-lessThan(QT_MAJOR_VERSION, 6): SOURCES += QtJambiSqlRelationalDelegate.cpp
+SOURCES += QtJambiSqlRelationalDelegate.cpp

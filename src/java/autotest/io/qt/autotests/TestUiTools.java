@@ -4,25 +4,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QDir;
-import io.qt.core.QFile;
-import io.qt.core.QIODevice;
-import io.qt.core.QList;
-import io.qt.core.QObject;
-import io.qt.core.QRect;
-import io.qt.core.QTimer;
-import io.qt.core.Qt;
-import io.qt.gui.QKeySequence;
-import io.qt.widgets.QDialog;
-import io.qt.widgets.QDialogButtonBox;
-import io.qt.widgets.QGridLayout;
-import io.qt.widgets.QToolBox;
-import io.qt.widgets.QWidget;
-import io.qt.widgets.tools.QUiLoader;
+import io.qt.core.*;
+import io.qt.gui.*;
+import io.qt.quick.*;
+import io.qt.widgets.*;
+import io.qt.widgets.tools.*;
 
 public class TestUiTools extends QApplicationTest {
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+		QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
+		QApplicationTest.testInitialize();
+	}
     
     @Test
     public void test()

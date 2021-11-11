@@ -44,7 +44,14 @@
 **
 ****************************************************************************-->
 <typesystem qt-library="QtCore">
+    <description>&lt;p>QtJambi base module containing QtCore, QtGui and QtWidgets.&lt;/p>
+&lt;ul>
+&lt;li>QtCore - Core non-graphical classes used by other modules.&lt;/li>
+&lt;li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.&lt;/li>
+&lt;li>QtWidgets - Classes to extend Qt GUI with C++ widgets.&lt;/li>
+&lt;/ul></description>
     <rejection class="" enum-name="QtJambiNativeID"/>
+    <rejection class="QHashSeed"/>
     <rejection class="QFutureSynchronizer"/>
     <rejection class="JNIEnv_"/>
     <rejection class="QJniEnvironment"/>
@@ -104,8 +111,10 @@
     <rejection class="QStringConverter::Interface"/>
     <rejection class="QList::MemoryLayout"/>
     <rejection class="QList" enum-name="MemoryLayout"/>
+    <rejection class="QPropertyObserverBase" enum-name="ObserverTag" since="6.0.0"/>
     <rejection class="QReadWriteLock" function-name="stateForWaitCondition"/>
     <rejection class="QFactoryLoader" function-name="library"/>
+    <rejection class="QByteArrayView" function-name="m_data"/>
     <rejection class="QList" function-name="empty"/>
     <rejection class="QList" function-name="front"/>
     <rejection class="QList" function-name="pop_back"/>
@@ -381,7 +390,6 @@
     <rejection class="QtStartUpFunction"/>
     <rejection class="QtPluginInstanceFunction"/>
     <rejection class="QtPluginMetaDataFunction"/>
-    <rejection class="QFunctionPointer"/>
     <rejection class="QThreadStorageData"/>
     <rejection class="QTypeInfo"/>
     <rejection class="QTypeInfoQuery"/>
@@ -447,6 +455,11 @@
     <rejection class="QJsonValuePtr" />
     <rejection class="QJsonValueRefPtr" />
     <rejection class="QMimeTypePrivate" />
+    <rejection class="QAtomicOpsSupport" since="6.2.0"/>
+    <rejection class="QCalendar::SystemId" since="6.2.0"/>
+    <rejection class="QFuture::const_iterator"/>
+    <rejection class="QNativeInterface::NativeInterface"/>
+    <rejection class="QNativeInterface::has_type_info"/>
 
     <rejection class="Qt" enum-name="Initialization" />
 
@@ -463,6 +476,8 @@
     <rejection class="QCoreApplication" function-name="filterEvent"/>
     <rejection class="QCoreApplication" function-name="filterNativeEvent"/>
     <rejection class="QCoreApplication" function-name="setEventFilter"/>
+    <rejection class="QCoreApplication" function-name="nativeInterface" since="6.2.0"/>
+    <rejection class="QCoreApplication" function-name="resolveInterface" since="6.2.0"/>
     <rejection class="QCoreApplication" enum-name="enum_1"/><!-- since 4.8 -->
     <rejection class="QRandomGenerator" function-name="bounded"/>
     <rejection class="QFile" function-name="setDecodingFunction"/>
@@ -552,7 +567,6 @@
     <rejection class="QAbstractFileEngine::UnMapExtensionOption"/>
     <rejection class="QSharedPointer" function-name="*"/>
     <rejection class="QWeakPointer" function-name="*"/>
-    <rejection class="QLibrary" function-name="resolve"/>
     <rejection class="QModelRoleData" function-name="setData"/>
     <rejection class="QAtomicOps"/>
     <rejection class="QAtomicTraits"/>
@@ -595,8 +609,13 @@
     <rejection class="QMultiMapIterator"/>
     <rejection class="QMutableMultiHashIterator"/>
     <rejection class="QMutableMultiMapIterator"/>
+    <rejection class="QNativeInterface::QGLXContext"/>
     <rejection class="QNativeInterface::QEGLContext"/>
+    <rejection class="QNativeInterface::QX11Context"/>
     <rejection class="QNativeInterface::QSGVulkanTexture"/>
+    <rejection class="QNativeInterface::QX11Application"/>
+    <rejection class="TypeInfo"/>
+    <rejection class="QPropertyProxyBindingData"/>
     <rejection class="QObjectBindableProperty"/>
     <rejection class="QObjectComputedProperty"/>
     <rejection class="QPluginMetaData"/>
@@ -604,6 +623,7 @@
     <rejection class="QPropertyAlias"/>
     <rejection class="QPropertyBindingPrivatePtr"/>
     <rejection class="QPropertyChangeHandler"/>
+    <rejection class="QPropertyNotifier"/>
     <rejection class="QPropertyData"/>
     <rejection class="QSequentialConstIterator"/>
     <rejection class="QSequentialIterator"/>
@@ -626,6 +646,9 @@
         <modify-function signature="convertFromPlainText(const QString &amp;, Qt::WhiteSpaceMode)" remove="all" /-->
     </namespace-type>
     <namespace-type name="QtPrivate" generate="no"/>
+    <namespace-type name="QApplicationPermission" since="6.2.0"/>
+    <enum-type name="QApplicationPermission::PermissionType" since="6.2.0"/>
+    <enum-type name="QApplicationPermission::PermissionResult" since="6.2.0"/>
 
     <enum-type name="PropertyFlags" flags="PropertyAttributes" package="io.qt.internal"/>
     <enum-type name="MethodFlags" flags="MethodAttributes" package="io.qt.internal">
@@ -686,7 +709,9 @@
     <enum-type name="QIODevice::OpenModeFlag" flags="QIODevice::OpenMode" until="5.*"/>
     <enum-type name="QIODeviceBase::OpenModeFlag" flags="QIODeviceBase::OpenMode" since="6.0.0"/>
     <enum-type name="QLibraryInfo::LibraryLocation" until="5.*"/>
-    <enum-type name="QLibraryInfo::LibraryPath" since="6.0.0"/>
+    <enum-type name="QLibraryInfo::LibraryPath" since="6.0.0">
+        <reject-enum-value name="Qml2ImportsPath" since="6.2.0"/>
+    </enum-type>
     <enum-type name="QLocale::CurrencySymbolFormat"/><!-- since 4.8 -->
     <enum-type name="QLocale::FormatType"/>
     <enum-type name="QLocale::NumberOption" flags="QLocale::NumberOptions"/>
@@ -860,6 +885,7 @@
         <reject-enum-value name="Qt_5_14" since="5.14.0"/>
         <reject-enum-value name="Qt_5_15" since="5.15.0"/>
         <reject-enum-value name="Qt_6_1" since="6.1.0"/>
+        <reject-enum-value name="Qt_6_2" since="6.2.0"/>
         <reject-enum-value name="Qt_DefaultCompiledVersion"/>
     </enum-type>
 
@@ -935,6 +961,11 @@
         <reject-enum-value name="VaticanCityState" since="6.0.0"/>
         <reject-enum-value name="WallisAndFutunaIslands" since="6.0.0"/>
         <reject-enum-value name="Swaziland" since="6.0.0"/>
+        <reject-enum-value name="AnyTerritory" since="6.2.0"/>
+        <reject-enum-value name="NauruTerritory" since="6.2.0"/>
+        <reject-enum-value name="TokelauTerritory" since="6.2.0"/>
+        <reject-enum-value name="TuvaluTerritory" since="6.2.0"/>
+        <reject-enum-value name="LastTerritory" since="6.2.0"/>
     </enum-type>
 
     <enum-type name="QLocale::Script"><!-- since 4.8 -->
@@ -991,7 +1022,9 @@
     <enum-type name="QTimeZone::TimeType"/>
     <enum-type name="QTimeZone::NameType"/>
     
-    <enum-type name="QSysInfo::Endian"/>
+    <enum-type name="QSysInfo::Endian">
+        <reject-enum-value name="ByteOrder"/>
+    </enum-type>
     <enum-type name="Qt::ReturnByValueConstant" since="5.15.0" generate="no"/>
     <namespace-type name="QSysInfo"/>
     
@@ -2033,7 +2066,7 @@
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
         #if defined(Q_OS_WIN) &amp;&amp; QT_VERSION &lt; QT_VERSION_CHECK(6,0,0)
         public:
             inline bool registerEventNotifier(QWinEventNotifier *) override {return false;}
@@ -2102,8 +2135,8 @@
         <modify-function signature="QIODeviceBase()" remove="all"/>
     </interface-type>
     <object-type name="QIODevice"/>
-    <object-type name="QStateMachine::SignalEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StateMachineSignal" until="5.*"/>
-    <object-type name="QStateMachine::WrappedEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StateMachineWrapped" until="5.*"/>
+    <object-type name="QStateMachine::SignalEvent" until="5.*"/>
+    <object-type name="QStateMachine::WrappedEvent" until="5.*"/>
 
     <object-type name="QCryptographicHash">
         <modify-function signature="addData(QIODevice*)">
@@ -2159,9 +2192,6 @@
     <!--object-type name="QStringConverter::Interface">
     </object-type-->
     <object-type name="QTextCodec" until="5.*">
-        <modify-field name="ConvertInvalidToNull" read="false" write="false" since="6.0.0"/>
-        <modify-field name="DefaultConversion" read="false" write="false" since="6.0.0"/>
-        <modify-field name="IgnoreHeader" read="false" write="false" since="6.0.0"/>
         <modify-function signature="setCodecForLocale(QTextCodec*)">
         <modify-argument index="1">
             <reference-count action="set" variable-name="__rcCodecForLocale"/>
@@ -2261,26 +2291,15 @@
         </extra-includes>
     </object-type>
     
-    <object-type name="QThreadStorage" generate="no" />
-    <object-type name="QtJambiThreadStorage" java-name="QThreadStorage" generic-class="yes">
+    <object-type name="QThreadStorage" template="yes">
+        <instantiation arguments="JObjectWrapper"/>
     </object-type>
-    <!--object-type name="QBooleanThreadStorage">
+    <object-type name="QThreadStorage&lt;JObjectWrapper>" generic-class="yes">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+        </extra-includes>
     </object-type>
-    <object-type name="QByteThreadStorage">
-    </object-type>
-    <object-type name="QShortThreadStorage">
-    </object-type>
-    <object-type name="QIntThreadStorage">
-    </object-type>
-    <object-type name="QLongThreadStorage">
-    </object-type>
-    <object-type name="QFloatThreadStorage">
-    </object-type>
-    <object-type name="QDoubleThreadStorage">
-    </object-type>
-    <object-type name="QCharThreadStorage">
-    </object-type-->
-    <object-type name="QThread" pp-condition="!defined(QT_QTJAMBI_PORT)"><!-- In case of patched Qt library, QThread type entry is replaced in generator internally -->
+    <object-type name="QThread"><!-- In case of patched Qt library, QThread type entry is replaced in generator internally -->
         <extra-includes>
             <include file-name="qtjambi/qtjambi_thread.h" location="global"/>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
@@ -2325,6 +2344,7 @@
             <include file-name="QtCore/QThread" location="global"/>
             <include file-name="qtjambi/qtjambi_application.h" location="global"/>
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+            <include file-name="qtjambi_core_repository.h" location="local"/>
         </extra-includes>
         <modify-function signature="destroyed(QObject *)">
             <modify-argument index="1">
@@ -2386,10 +2406,10 @@
     <object-type name="QCoreApplication" is-value-owner="yes">
         <extra-includes>
         <include file-name="QStringList" location="global"/>
-        <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>
 
-        <modify-function signature="notify(QObject*,QEvent*)" no-except="yes">
+        <modify-function signature="notify(QObject*,QEvent*)" no-except="yes" block-exceptions="yes">
+            <modify-argument index="1" thread-affine="yes"/>
             <modify-argument index="2" invalidate-after-use="yes" />
         </modify-function>
 
@@ -2402,7 +2422,7 @@
             <reference-count action="ignore"/>
         </modify-argument>
         </modify-function>
-        <modify-function signature="sendEvent(QObject *, QEvent *)">
+        <modify-function signature="sendEvent(QObject *, QEvent *)" rethrow-exceptions="yes">
         <modify-argument index="1" thread-affine="yes">
         </modify-argument>
         </modify-function>
@@ -2418,7 +2438,9 @@
             <reference-count action="remove" variable-name="__rcTranslators"/>
         </modify-argument>
         </modify-function>
-        <modify-function signature="postEvent(QObject*,QEvent*,int)">
+        <modify-function signature="sendPostedEvents(QObject*, int)" rethrow-exceptions="yes">
+        </modify-function>
+        <modify-function signature="postEvent(QObject*,QEvent*,int)" rethrow-exceptions="yes">
             <modify-argument index="2">
                 <define-ownership class="native" owner="cplusplus" />
             </modify-argument>
@@ -2437,7 +2459,7 @@
                 <reference-count action="ignore"/>
             </modify-argument>
             <inject-code position="end">
-                setReferenceCount(instance().thread(), QThread.class, "__rcEventDispatcher", false, false, eventDispatcher);
+                QtJambi_LibraryUtilities.internal.setReferenceCount(instance().thread(), QThread.class, "__rcEventDispatcher", false, false, eventDispatcher);
             </inject-code>
         </modify-function>
     </object-type>
@@ -2502,7 +2524,7 @@
 
     <!--value-type name="QEvent::PointerEventTag"/>
     <value-type name="QEvent::InputEventTag"/-->
-    <object-type name="QEvent" polymorphic-base="yes" polymorphic-id-expression="%1-&gt;type() == QEvent::None">
+    <object-type name="QEvent">
         <modify-function signature="operator=(const QEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
@@ -2514,7 +2536,7 @@
         </modify-function>
         <modify-field name="t" read="false" write="false"/>
     </object-type>
-    <object-type name="QChildEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::ChildAdded || %1-&gt;type() == QEvent::ChildPolished || %1-&gt;type() == QEvent::ChildRemoved">
+    <object-type name="QChildEvent">
         <modify-field name="c" read="false" write="false"/>
         <modify-function signature="operator=(const QChildEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
@@ -2526,7 +2548,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QTimerEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::Timer">
+    <object-type name="QTimerEvent">
         <modify-field name="id" read="false" write="yes" rename="timerId"/>
         <modify-function signature="operator=(const QTimerEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
@@ -2538,7 +2560,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QDeferredDeleteEvent" java-name="QDeferredDisposeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DeferredDelete">
+    <object-type name="QDeferredDeleteEvent" java-name="QDeferredDisposeEvent">
         <modify-function signature="operator=(const QDeferredDeleteEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
@@ -2549,7 +2571,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QDynamicPropertyChangeEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::DynamicPropertyChange">
+    <object-type name="QDynamicPropertyChangeEvent">
         <modify-function signature="operator=(const QDynamicPropertyChangeEvent &amp;)" rename="set">
             <modify-argument index="return" replace-type="void"/>
         </modify-function>
@@ -2598,6 +2620,7 @@
         <modify-function signature="QTextStream(const QByteArray&amp;, QFlags&lt;QIODeviceBase::OpenModeFlag&gt;)" remove="all" since="6.0.0"/>
         <modify-function signature="QTextStream(QString*,QFlags&lt;QIODevice::OpenModeFlag&gt;)" remove="all" until="5.*"/>
         <modify-function signature="QTextStream(QString*,QFlags&lt;QIODeviceBase::OpenModeFlag&gt;)" remove="all" since="6.0.0"/>
+        <modify-function signature="device() const" access="private" rename="device_private"/>
         <modify-function signature="readLineInto(QString *, long long)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QLatin1String)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(const QStringRef &amp;)" remove="all" until="5.*"/>
@@ -2635,198 +2658,46 @@
         </modify-function>
     </object-type>
 
-    <object-type name="QPromise" generate="no" since="6.0.0">
-        <modify-function signature="QPromise(QPromise &amp;&amp;)" remove="all"/>
-        <modify-function signature="operator=(QPromise &amp;&amp;)" remove="all"/>
-        <modify-function signature="future()const" remove="all" />
+    <object-type name="QPromise" template="yes" disable-native-id-usage="yes" since="6.0.0">
+        <instantiation arguments="QVariant"/>
     </object-type>
-    <object-type name="QVoidPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <!--object-type name="QBooleanPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QBytePromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QShortPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QIntPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QLongPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QFloatPromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QDoublePromise" target-type="final class" since="6.0.0">
-    </object-type>
-    <object-type name="QCharPromise" target-type="final class" since="6.0.0">
-    </object-type-->
-    <object-type name="QtJambiPromise" java-name="QPromise" target-type="final class" generic-class="yes" since="6.0.0">
-    </object-type>
-    <iterator-type name="QFuture::const_iterator" generic-class="yes"/>
-    <value-type name="QFuture" generate="no">
-        <modify-function signature="operator T() const" remove="all" until="5.*"/>
-        <modify-function signature="operator=(const QFuture &amp;)" remove="all" />
-        <modify-function signature="QFuture(QFutureInterfaceBase*)" remove="all" since="6.0.0"/>
-        <modify-function signature="QFuture(const QFuture &amp;)" remove="all" since="6.0.0"/>
-        <modify-function signature="constBegin()const" remove="all" />
-        <modify-function signature="constEnd()const" remove="all" />
+    <object-type name="QPromise&lt;QVariant>" target-type="final class" disable-native-id-usage="yes" generic-class="yes" generate="no" since="6.0.0"/>
+    <value-type name="QFuture" template="yes" disable-native-id-usage="yes">
+        <instantiation arguments="QVariant"/>
     </value-type>
-    <value-type name="QVoidFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <!--modify-function signature="resultCount()const" remove="all" /-->
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <!--value-type name="QBooleanFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QByteFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QShortFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QIntFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QLongFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QFloatFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QDoubleFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type>
-    <value-type name="QCharFuture" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-        <modify-function signature="isResultReadyAt(int)const" remove="all" />
-        <modify-function signature="begin()const" remove="all" />
-        <modify-function signature="end()const" remove="all" />
-    </value-type-->
-    <value-type name="QtJambiFuture" java-name="QFuture" generic-class="yes" target-type="final class">
-        <extra-includes>
-            <include file-name="qtjambiqfuture.h" location="local"/>
-            <include file-name="qtjambi_core_repository.h" location="local"/>
-        </extra-includes>
-    </value-type>
+    <value-type name="QFuture&lt;QVariant>" generic-class="yes" disable-native-id-usage="yes" target-type="final class" generate="no"/>
     <namespace-type name="QtFuture" since="6.0.0">
         <extra-includes>
+            <include file-name="QtCore/QFuture" location="global"/>
             <include file-name="qfuture_impl.h" location="global" suppressed="yes"/>
         </extra-includes>
         <modify-function signature="makeReadyFuture()" remove="all" since="6.1.0"/>
     </namespace-type>
     <enum-type name="QtFuture::Launch" since="6.0.0"/>
-    <enum-type name="QFutureInterfaceBase::State"/>
+    <enum-type name="QFutureInterfaceBase::State" extensible="true"/>
+    <functional-type name="QFutureInterfaceBase::Continuation" using="std::function&lt;void(const QFutureInterfaceBase &amp;)>" generate="no"/>
     <value-type name="QFutureInterfaceBase">
         <extra-includes>
             <include file-name="qtjambi_core_repository.h" location="local"/>
+            <include file-name="qtjambi_core_future.h" location="local"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>
         <modify-function signature="operator=(const QFutureInterfaceBase&amp;)" remove="all" />
     </value-type>
 
     <object-type name="QFutureWatcherBase">
+        <extra-includes>
+            <include file-name="qtjambi_core_future.h" location="local"/>
+        </extra-includes>
     </object-type>
-    <object-type name="QFutureWatcher" generate="no">
-        <modify-function signature="future()const" remove="all" />
+    <object-type name="QFutureWatcher" template="yes" disable-native-id-usage="yes">
+        <instantiation arguments="QVariant"/>
     </object-type>
-    <object-type name="QVoidFutureWatcher">
-    </object-type>
-    <!--object-type name="QBooleanFutureWatcher">
-    </object-type>
-    <object-type name="QByteFutureWatcher">
-    </object-type>
-    <object-type name="QShortFutureWatcher">
-    </object-type>
-    <object-type name="QIntFutureWatcher">
-    </object-type>
-    <object-type name="QLongFutureWatcher">
-    </object-type>
-    <object-type name="QFloatFutureWatcher">
-    </object-type>
-    <object-type name="QDoubleFutureWatcher">
-    </object-type>
-    <object-type name="QCharFutureWatcher">
-    </object-type-->
-    <object-type name="QtJambiFutureWatcher" java-name="QFutureWatcher" generic-class="yes">
-    </object-type>
-    <value-type name="QFutureInterface" generate="no">
-        <modify-function signature="QFutureInterface(const QFutureInterface&amp;)" remove="all" />
-        <modify-function signature="operator=(const QFutureInterface&amp;)" remove="all" />
-        <modify-function signature="reportFinished(const T*)" remove="all" since="6.0.0"/>
-        <modify-function signature="reportResult(const T *, int)" remove="all" />
-        <modify-function signature="resultPointer(int) const" remove="all" />
-        <modify-function signature="resultReference(int) const" rename="result" />
-        <modify-function signature="future()" remove="all" />
+    <object-type name="QFutureWatcher&lt;QVariant>" generic-class="yes" disable-native-id-usage="yes" generate="no"/>
+    <value-type name="QFutureInterface" template="yes" disable-native-id-usage="yes">
+        <instantiation arguments="QVariant"/>
     </value-type>
-    <value-type name="QtJambiFutureInterface" java-name="QFutureInterface" generic-class="yes" target-type="final class">
-    </value-type>
-    <value-type name="QVoidFutureInterface" target-type="final class">
-    </value-type>
-    <!--object-type name="QBooleanFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QByteFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QShortFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QIntFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QLongFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QFloatFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QDoubleFutureInterface" target-type="final class">
-    </object-type>
-    <object-type name="QCharFutureInterface" target-type="final class">
-    </object-type-->
-
+    <value-type name="QFutureInterface&lt;QVariant>" generic-class="yes" disable-native-id-usage="yes" target-type="final class" generate="no"/>
     <object-type name="QThreadPool" />
 
     <interface-type name="QRunnable">
@@ -3076,6 +2947,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <functional-type name="QFunctionPointer" function-name="invoke" generate="no-shell"/>
     <object-type name="QLibrary"/>
     <namespace-type name="QtJambiStringUtil" java-name="QString" target-type="final class"/>
     <namespace-type name="QtJambiStringListUtil" target-type="final class" force-friendly="yes"/>
@@ -3190,12 +3062,12 @@
     <object-type name="QUntypedPropertyData" since="6.0.0">
     </object-type>
     <value-type name="QUntypedBindable" since="6.0.0">
+        <modify-function signature="QUntypedBindable(QUntypedPropertyData *, const QtPrivate::QBindableInterface *)" remove="non-native"/>
         <modify-function signature="takeBinding()" access="non-final" since="6.1.0"/>
     </value-type>
     <object-type name="QPropertyObserverBase" since="6.0.0">
+        <modify-function signature="QPropertyObserverBase()" remove="all"/>
     </object-type>
-    <enum-type name="QPropertyObserverBase::ObserverTag" since="6.0.0">
-    </enum-type>
     <object-type name="QtPrivate::QBindableInterface" since="6.0.0">
         <modify-function signature="QBindableInterface()" remove="all"/>
     </object-type>
@@ -3206,6 +3078,7 @@
     <rejection class="QtPrivate::QBindableInterface" field-name="getBinding" since="6.0.0"/>
     <rejection class="QtPrivate::QBindableInterface" field-name="setObserver" since="6.0.0"/>
     <rejection class="QtPrivate::QBindableInterface" field-name="metaType" since="6.0.0"/>
+    <rejection class="QtPrivate::QBindableInterface" field-name="MetaTypeAccessorFlag" since="6.2.0"/>
     <object-type name="QPropertyObserver" since="6.0.0">
     </object-type>
     <value-type name="QPropertyBindingError" since="6.0.0">
@@ -3214,11 +3087,13 @@
     <enum-type name="QPropertyBindingError::Type" since="6.0.0">
     </enum-type>
     <value-type name="QUntypedPropertyBinding" since="6.0.0">
+        <modify-function signature="QUntypedPropertyBinding(const QUntypedPropertyBinding&amp;)" remove="non-native"/>
         <modify-function signature="operator=(const QUntypedPropertyBinding&amp;)" remove="all"/>
     </value-type>
     <rejection class="QPropertyObserverBase::ChangeHandler"/>
     <object-type name="QtPrivate::QPropertyBindingData" since="6.0.0">
         <modify-field name="BindingBit" read="no" write="no"/>
+        <modify-field name="DelayedNotificationBit" read="no" write="no" since="6.2.0"/>
     </object-type>
     <value-type name="QPropertyBindingSourceLocation" generate="no" since="6.0.0">
     </value-type>
@@ -3276,7 +3151,7 @@
         <modify-function signature="QRandomGenerator(const unsigned int *, qsizetype)" remove="all"/>
         <modify-function signature="operator=(QRandomGenerator)" remove="all"/>
     </object-type>
-    <functional-type name="QtMessageHandler" count="4" no-except="true"/>
+    <functional-type name="QtMessageHandler" count="4"/>
     <rejection class="QUntypedPropertyData::InheritsQUntypedPropertyData"/>
     <rejection class="QPropertyData::DisableRValueRefs"/>
     <rejection class="QtPrivate::BindingFunctionVTable"/>
@@ -3495,6 +3370,7 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type char (&amp;)[Size] const (is_busted)"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QUntypedPropertyBinding::BindingFunctionVTable const*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyChangeHandler*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyNotifier*'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QPropertyObserverBase::ChangeHandler'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: function 'QtMessageHandler' is specified in typesystem, but not declared" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator', unmatched parameter type 'quint32 const[N]'" />
@@ -3502,4 +3378,9 @@
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::_fillRange', unmatched parameter type 'qptrdiff'" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture'*" />
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'reportFinished(const JObjectWrapper*)' for function modification in 'QtJambiFutureInterface' not found.*" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QFuture::*', unmatched parameter type 'QFuture*'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QCalendar::QCalendar', unmatched parameter type 'QCalendar::SystemId'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QMetaProperty::getMetaPropertyData', unmatched return type 'QMetaProperty::Data'" />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'QPropertyObserverBase()' for function modification in 'QPropertyObserverBase' not found. Possible candidates: " />
+  <suppress-warning text="WARNING(MetaJavaBuilder) :: Operator type unknown: QFuture::operator T()const" />
 </typesystem>

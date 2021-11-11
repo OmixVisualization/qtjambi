@@ -611,6 +611,39 @@ struct qtjambi_type_container1<QSet,T>{
 };
 #endif
 
+#if defined(QFUTUREINTERFACE_H)
+template<typename T>
+struct qtjambi_type_container1<QFutureInterface,T>{
+    using type = QFutureInterface<QVariant>;
+};
+
+template<>
+struct qtjambi_type_container1<QFutureInterface,void>{
+    using type = QFutureInterface<void>;
+};
+
+template<typename T>
+struct qtjambi_type_container1<QFuture,T>{
+    using type = QFuture<QVariant>;
+};
+
+template<>
+struct qtjambi_type_container1<QFuture,void>{
+    using type = QFuture<void>;
+};
+#endif
+
+#if defined(QFUTUREWATCHER_H)
+template<typename T>
+struct qtjambi_type_container1<QFutureWatcher,T>{
+    using type = QFutureWatcher<QVariant>;
+};
+template<>
+struct qtjambi_type_container1<QFutureWatcher,void>{
+    using type = QFutureWatcher<void>;
+};
+#endif
+
 #ifdef QQUEUE_H
 template<typename T>
 struct qtjambi_type_container1<QQueue,T>{
@@ -653,7 +686,7 @@ struct qtjambi_type_container1<QWeakPointer,T> : qtjambi_type<T>{
 
 template<template<typename K, typename T> class Container, typename K, typename T>
 struct qtjambi_type_container2{
-    using type = Container<QVariant,QVariant>;
+    using type = Container<K,T>;
 };
 
 template<typename K, typename T>
@@ -685,17 +718,82 @@ struct qtjambi_type_container2<QHash,K,T>{
 
 template<typename K, typename T>
 struct qtjambi_type_container2<QMultiHash,K,T>{
-    using type = std::vector<QVariant>;
+    using type = QMultiHash<QVariant,QVariant>;
 };
 
 template<typename K, typename T>
 struct qtjambi_type_container2<QScopedPointer,K,T> : qtjambi_type<K>{
 };
 
+template<typename K, typename T>
+struct qtjambi_type_container2<std::unique_ptr,K,T> : qtjambi_type<K>{
+};
+
 template<typename T, typename A>
 struct qtjambi_type_container2<std::vector,T,A>{
     using type = std::vector<QVariant>;
 };
+
+template<typename T, typename A>
+struct qtjambi_type_container2<std::list,T,A>{
+    using type = std::list<QVariant>;
+};
+
+template<template<typename K, typename T, typename A> class Container, typename K, typename T, typename A>
+struct qtjambi_type_container3{
+    using type = Container<K,T,A>;
+};
+
+#if defined(_SET_) || defined(_SET) || defined(_LIBCPP_SET) || defined(_GLIBCXX_SET)
+template<typename T, typename A, typename B>
+struct qtjambi_type_container3<std::set,T,A,B>{
+    using type = std::set<QVariant>;
+};
+
+template<typename T, typename A, typename B>
+struct qtjambi_type_container3<std::multiset,T,A,B>{
+    using type = std::multiset<QVariant>;
+};
+#endif
+
+template<template<typename K, typename T, typename A, typename B> class Container, typename K, typename T, typename A, typename B>
+struct qtjambi_type_container4{
+    using type = Container<K,T,A,B>;
+};
+
+template<typename K, typename T, typename A, typename B>
+struct qtjambi_type_container4<std::map,K,T,A,B>{
+    using type = std::map<QVariant,QVariant>;
+};
+
+template<typename K, typename T, typename A, typename B>
+struct qtjambi_type_container4<std::multimap,K,T,A,B>{
+    using type = std::multimap<QVariant,QVariant>;
+};
+
+#if defined(_UNORDERED_SET_) || defined(_UNORDERED_SET) || defined(_LIBCPP_UNORDERED_SET) || defined(_GLIBCXX_UNORDERED_SET)
+template<typename K, typename T, typename A, typename B>
+struct qtjambi_type_container4<std::unordered_set,K,T,A,B>{
+    using type = std::unordered_set<QVariant>;
+};
+#endif
+
+template<template<typename K, typename T, typename A, typename B, typename C> class Container, typename K, typename T, typename A, typename B, typename C>
+struct qtjambi_type_container5{
+    using type = Container<K,T,A,B,C>;
+};
+
+#if defined(_UNORDERED_MAP_) || defined(_UNORDERED_MAP) || defined(_LIBCPP_UNORDERED_MAP) || defined(_GLIBCXX_UNORDERED_MAP)
+template<typename K, typename T, typename A, typename B, typename C>
+struct qtjambi_type_container5<std::unordered_map,K,T,A,B,C>{
+    using type = std::unordered_map<QVariant,QVariant>;
+};
+
+template<typename K, typename T, typename A, typename B, typename C>
+struct qtjambi_type_container5<std::unordered_multimap,K,T,A,B,C>{
+    using type = std::unordered_multimap<QVariant,QVariant>;
+};
+#endif
 
 template<template<typename...Ts> class Container, int parameterCount, typename...Ts>
 struct qtjambi_type_container_selector{
@@ -713,6 +811,27 @@ constexpr qtjambi_type_container2<_Container, K, T> qtjambi_type_container2_sele
 
 template<template<typename...Ts> class Container, typename...Ts>
 struct qtjambi_type_container_selector<Container, 2, Ts...> : decltype(qtjambi_type_container2_selector<Container,Ts...>()){
+};
+
+template<template<typename K, typename T, typename A> class _Container, typename K, typename T, typename A>
+constexpr qtjambi_type_container3<_Container, K, T, A> qtjambi_type_container3_selector(){ return {}; }
+
+template<template<typename...Ts> class Container, typename...Ts>
+struct qtjambi_type_container_selector<Container, 3, Ts...> : decltype(qtjambi_type_container3_selector<Container,Ts...>()){
+};
+
+template<template<typename K, typename T, typename A, typename B> class _Container, typename K, typename T, typename A, typename B>
+constexpr qtjambi_type_container4<_Container, K, T, A, B> qtjambi_type_container4_selector(){ return {}; }
+
+template<template<typename...Ts> class Container, typename...Ts>
+struct qtjambi_type_container_selector<Container, 4, Ts...> : decltype(qtjambi_type_container4_selector<Container,Ts...>()){
+};
+
+template<template<typename K, typename T, typename A, typename B, typename C> class _Container, typename K, typename T, typename A, typename B, typename C>
+constexpr qtjambi_type_container5<_Container, K, T, A, B, C> qtjambi_type_container5_selector(){ return {}; }
+
+template<template<typename...Ts> class Container, typename...Ts>
+struct qtjambi_type_container_selector<Container, 5, Ts...> : decltype(qtjambi_type_container5_selector<Container,Ts...>()){
 };
 
 template<typename T>

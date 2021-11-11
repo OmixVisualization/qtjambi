@@ -282,11 +282,11 @@ private:
     QByteArray m_cppProperty;
 
 protected:
-    virtual void connectNotify(const QMetaMethod & signal){
+    virtual void connectNotify(const QMetaMethod & signal) override{
         qDebug() << "connecting signal " << signal.name();
     }
 
-    virtual void disconnectNotify(const QMetaMethod & signal){
+    virtual void disconnectNotify(const QMetaMethod & signal) override{
         if(signal.isValid())
             qDebug() << "disconnecting signal " << signal.name();
         else

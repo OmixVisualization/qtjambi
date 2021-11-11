@@ -5,7 +5,6 @@
 
 class DocFunction: public DocElement
 {
-    Q_OBJECT
 public:
     DocFunction(QObject* parent);
 

@@ -39,7 +39,7 @@ QObject* attachedProperties(const JObjectWrapper& clazzWrapper, jmethodID qmlAtt
     if(JNIEnv * env = qtjambi_current_environment()){
         QTJAMBI_JNI_LOCAL_FRAME(env, 200)
         jobject result = env->CallStaticObjectMethod(jclass(clazzWrapper.object()), qmlAttachedProperties, qtjambi_from_QObject(env, parent));
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         qtjambi_rethrowing(env,
             return qtjambi_to_qobject(env, result);
         )

@@ -43,10 +43,10 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtNfc">
-    <enum-type name="QNearFieldShareManager::ShareError"/>
-    <enum-type name="QNearFieldShareManager::ShareMode" flags="QNearFieldShareManager::ShareModes"/>
-    <object-type name="QNearFieldShareManager">
+<typesystem qt-library="QtNfc" description="Provides access to Near-Field communication (NFC) hardware.">
+    <enum-type name="QNearFieldShareManager::ShareError" until="5.*"/>
+    <enum-type name="QNearFieldShareManager::ShareMode" flags="QNearFieldShareManager::ShareModes" until="5.*"/>
+    <object-type name="QNearFieldShareManager" until="5.*">
     </object-type>
     <object-type name="QNearFieldShareTarget">
     </object-type>
@@ -62,17 +62,17 @@
     <enum-type name="QNearFieldManager::AdapterState"/>
     <enum-type name="QNearFieldManager::TargetAccessMode" flags="QNearFieldManager::TargetAccessModes"/>
     <object-type name="QNearFieldManager">
-        <modify-function signature="registerNdefMessageHandler(QObject *, const char *)">
+        <modify-function signature="registerNdefMessageHandler(QObject *, const char *)" until="5.*">
             <modify-argument index="2">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="registerNdefMessageHandler(QNdefRecord::TypeNameFormat, const QByteArray &amp;, QObject *, const char *)">
+        <modify-function signature="registerNdefMessageHandler(QNdefRecord::TypeNameFormat, const QByteArray &amp;, QObject *, const char *)" until="5.*">
             <modify-argument index="4">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="registerNdefMessageHandler(const QNdefFilter &amp;, QObject *, const char *)">
+        <modify-function signature="registerNdefMessageHandler(const QNdefFilter &amp;, QObject *, const char *)" until="5.*">
             <modify-argument index="3">
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
@@ -85,6 +85,7 @@
     <value-type name="QNdefFilter::Record">
     </value-type>
     <value-type name="QNdefMessage">
+        <modify-function signature="operator=(const QNdefMessage &amp;)" remove="all" since="6.2.0"/>
     </value-type>
     <enum-type name="QNdefNfcSmartPosterRecord::Action"/>
     <value-type name="QNdefNfcSmartPosterRecord" polymorphic-id-expression="%1->isRecordType&lt;QNdefNfcSmartPosterRecord>()">
@@ -92,20 +93,20 @@
     </value-type>
     <enum-type name="QNdefNfcTextRecord::Encoding"/>
     <value-type name="QNdefNfcTextRecord" polymorphic-id-expression="%1->isRecordType&lt;QNdefNfcTextRecord>()">
-        <modify-function signature="operator=(const QNdefNfcTextRecord &amp;)" remove="all"/>
+        <modify-function signature="operator=(const QNdefNfcTextRecord &amp;)" remove="all" until="5.*"/>
     </value-type>
     <value-type name="QNdefNfcUriRecord" polymorphic-id-expression="%1->isRecordType&lt;QNdefNfcUriRecord>()">
     </value-type>
     <value-type name="QNdefNfcIconRecord" polymorphic-id-expression="%1->isRecordType&lt;QNdefNfcIconRecord>()">
     </value-type>
     <enum-type name="QNdefRecord::TypeNameFormat"/>
-    <value-type name="QNdefRecord" polymorphic-base="yes" polymorphic-id-expression="%1->isRecordType%lt;QQmlNdefRecord>()">
+    <value-type name="QNdefRecord" polymorphic-base="yes" polymorphic-id-expression="%1->isRecordType%lt;QNdefRecord>()">
         <modify-function signature="operator=(const QNdefRecord &amp;)" remove="all"/>
         <modify-function signature="isRecordType() const" remove="all"/>
         <modify-function signature="setPayload(const QByteArray &amp;)" access="non-final"/>
     </value-type>
-    <enum-type name="QQmlNdefRecord::TypeNameFormat"/>
-    <object-type name="QQmlNdefRecord">
+    <enum-type name="QQmlNdefRecord::TypeNameFormat" until="5.*"/>
+    <object-type name="QQmlNdefRecord" until="5.*">
     </object-type>
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QNdefFilter::Record." />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type QNdefFilter." />

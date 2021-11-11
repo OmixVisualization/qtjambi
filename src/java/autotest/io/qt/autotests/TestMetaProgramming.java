@@ -1561,7 +1561,7 @@ public class TestMetaProgramming extends QApplicationTest {
 			b.parameter = null;
 			value = new QEasingCurve.EasingFunction() {
 				@Override
-				public double call(double progress) {
+				public double applyAsDouble(double progress) {
 					return 0;
 				}
 			};

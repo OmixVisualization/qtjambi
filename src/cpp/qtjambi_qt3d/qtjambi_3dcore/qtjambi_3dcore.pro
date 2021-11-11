@@ -8,7 +8,7 @@ include(../$$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 DESTDIR = ../../lib
 DLLDESTDIR = ../../bin
 
-QT += core gui 3dcore 3dcore-private
+QT = core 3dcore 3dcore-private
 
 macx:{
     INCLUDEPATH += $$(QTDIR)/lib/Qt3DCore.framework/Headers/$$QT_VERSION/Qt3DCore/private

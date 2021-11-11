@@ -8,7 +8,7 @@ include(../$$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 DESTDIR = ../../lib
 DLLDESTDIR = ../../bin
 
-QT += core gui qml quick 3dcore 3dinput 3drender
+QT = core 3dinput
 
 HEADERS += \
     qt3dinput.h

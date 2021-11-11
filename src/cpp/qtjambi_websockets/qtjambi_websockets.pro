@@ -11,4 +11,4 @@ include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 # To be able to remove this we need to make generator better/smarter about #include directives
 #  and it might not include these files at all.
 
-QT += core network websockets
+QT = core network websockets

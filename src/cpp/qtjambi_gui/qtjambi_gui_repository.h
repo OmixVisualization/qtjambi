@@ -17,6 +17,11 @@ namespace QtGui{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QTextCursor$SelectedTableCells,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
 }
+namespace QtWidgets{
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QMenu,)
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QApplication,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(exec))
+}
 }
 
 #endif // QTJAMBI_GUI_REPOSITORY_H

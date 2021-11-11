@@ -42,5 +42,5 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.keyboard" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.keyboard" module="qtjambi.virtualkeyboard" default-superclass="io.qt.QtObject">
 </typesystem>

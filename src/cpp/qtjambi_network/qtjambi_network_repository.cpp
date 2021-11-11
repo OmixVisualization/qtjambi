@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_network_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtNetwork{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/network,QTimeoutException,

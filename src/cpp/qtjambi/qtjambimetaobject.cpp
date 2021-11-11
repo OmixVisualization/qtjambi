@@ -28,6 +28,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include "qtjambimetaobject_p.h"
 #include "qtjambi_core.h"
 #include "qtjambi_application.h"
@@ -36,8 +38,8 @@
 #include "qtjambi_registry_p.h"
 #include "qtjambitypemanager_p.h"
 #include "qtjambi_functionpointer.h"
-#include "qtjambi_exceptions.h"
 #include "qtjambi_thread_p.h"
+#include "qtjambilink_p.h"
 
 #include <cstring>
 #include <QtCore/QHash>
@@ -48,8 +50,6 @@
 #include <QtCore/private/qmetaobject_p.h>
 
 #include "qtjambi_cast.h"
-
-QT_WARNING_DISABLE_DEPRECATED
 
 #define QTJAMBI_MAX_NUMBER_OF_CLASSES 1024
 #define QTJAMBI_MAX_NUMBER_OF_CLASSES_DIVISOR 100
@@ -466,19 +466,19 @@ void analyze_methods(JNIEnv *env, jobject classLoader, int count, jobject method
     Q_UNUSED(classLoader)
     for(int i=0; i<count; ++i){
         jobject methodObject = qtjambi_list_get(env, methodList, i);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         if(methodObject){
             jobject methodTypesStringAndClasses = Java::QtJambi::MetaObjectTools::methodTypes(env, methodObject);
             if(methodTypesStringAndClasses){
                 jobjectArray methodTypeClasses = jobjectArray(Java::QtCore::QPair::first(env, methodTypesStringAndClasses));
-                qtjambi_throw_java_exception(env)
+                qtjambi_throw_java_exception(env);
                 jobjectArray qtMethodTypeStrings = jobjectArray(Java::QtCore::QPair::second(env, methodTypesStringAndClasses));
-                qtjambi_throw_java_exception(env)
+                qtjambi_throw_java_exception(env);
                 Q_ASSERT(methodTypeClasses);
                 Q_ASSERT(qtMethodTypeStrings);
                 JMethodInfo info;
                 int length = env->GetArrayLength(methodTypeClasses);
-                qtjambi_throw_java_exception(env)
+                qtjambi_throw_java_exception(env);
                 info.methodId = env->FromReflectedMethod(methodObject);
                 if(Java::Runtime::Method::isInstanceOf(env, methodObject)){
                     int modif = Java::Runtime::Executable::getModifiers(env, methodObject);
@@ -497,7 +497,7 @@ void analyze_methods(JNIEnv *env, jobject classLoader, int count, jobject method
                 info.parameterTypeInfos.reserve(length);
                 for(int j=0; j<length; ++j){
                     jstring qel = jstring(env->GetObjectArrayElement(qtMethodTypeStrings, j));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     QByteArray qTypeName = qtjambi_to_qstring(env, qel).toLatin1();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     QMetaType qMetaType(QMetaType::type(qPrintable(qTypeName)));
@@ -507,7 +507,7 @@ void analyze_methods(JNIEnv *env, jobject classLoader, int count, jobject method
                     if(qMetaType.isValid())
                         qTypeName = qMetaType.name();
                     jclass javaClass = jclass(env->GetObjectArrayElement(methodTypeClasses, j));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     if(j==0){
                         if(Java::Runtime::Void::isPrimitiveType(env, javaClass)){
                             info.methodType = JMethodType::v;
@@ -591,7 +591,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
         char* stringdata = new char[size_t(string_data_len+1)];
         stringdata[string_data_len] = '\0';
         env->GetStringUTFRegion(string_data_entry, 0, string_data_len, stringdata);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         stringdataList.append(stringdata);
         __stringdata[i].ref.atomic._q_value = -1L;
         __stringdata[i].alloc = 0;
@@ -625,7 +625,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
         offsetsAndSize[i].second = uint(string_data_len);
         char* __stringdata = m_stringData.data()+totalOffset;
         env->GetStringUTFRegion(string_data_entry, 0, string_data_len, __stringdata);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         totalOffset += uint(string_data_len) + 1;
     }
     q->d.stringdata = reinterpret_cast<uint*>(m_stringData.data());
@@ -653,6 +653,9 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
         m_intData[i] = qtjambi_to_int(env, entry);
     }
     q->d.data = reinterpret_cast<uint*>(m_intData.get());
+    /*if(QMetaObjectPrivate::get(q)->flags & DynamicMetaObject){
+
+    }*/
 
     q->d.extradata = nullptr;
     q->d.relatedMetaObjects = nullptr;
@@ -670,7 +673,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
         m_signals.resize(m_signal_count);
         for(int i=0; i<m_signal_count; ++i){
             jobject fieldObject = qtjambi_list_get(env, signalFields, i);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             if(fieldObject){
                 JMethodInfo& info = m_signals[i].emitMethodInfo;
                 info.methodType = JMethodType::v;
@@ -678,18 +681,18 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                 jobject methodTypesStringAndClasses = Java::QtJambi::MetaObjectTools::methodTypes(env, fieldObject);
                 if(methodTypesStringAndClasses){
                     jobjectArray methodTypeClasses = jobjectArray(Java::QtCore::QPair::first(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     jobjectArray qtMethodTypeStrings = jobjectArray(Java::QtCore::QPair::second(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     Q_ASSERT(methodTypeClasses);
                     Q_ASSERT(qtMethodTypeStrings);
                     int length = env->GetArrayLength(methodTypeClasses);
                     info.parameterTypeInfos.reserve(length);
                     for(int j=0; j<length; ++j){
                         jclass javaClass = jclass(env->GetObjectArrayElement(methodTypeClasses, j));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         jstring qel = jstring(env->GetObjectArrayElement(qtMethodTypeStrings, j));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         QByteArray qTypeName = qtjambi_to_qstring(env, qel).toLatin1();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         QMetaType qMetaType(QMetaType::type(qPrintable(qTypeName)));
@@ -773,18 +776,18 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                 jobject methodTypesStringAndClasses = Java::QtJambi::MetaObjectTools::methodTypes(env, fieldObject);
                 if(methodTypesStringAndClasses){
                     jobjectArray methodTypeClasses = jobjectArray(Java::QtCore::QPair::first(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     jobjectArray qtMethodTypeStrings = jobjectArray(Java::QtCore::QPair::second(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     Q_ASSERT(methodTypeClasses);
                     Q_ASSERT(qtMethodTypeStrings);
                     int length = env->GetArrayLength(methodTypeClasses);
                     info.parameterTypeInfos.reserve(length);
                     for(int j=0; j<length; ++j){
                         jclass javaClass = jclass(env->GetObjectArrayElement(methodTypeClasses, j));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         jstring qel = jstring(env->GetObjectArrayElement(qtMethodTypeStrings, j));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         QByteArray qTypeName = qtjambi_to_qstring(env, qel).toLatin1();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         QMetaType qMetaType(QMetaType::type(qPrintable(qTypeName)));
@@ -826,17 +829,17 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                 jobject methodTypesStringAndClasses = Java::QtJambi::MetaObjectTools::methodTypes(env, fieldObject);
                 if(methodTypesStringAndClasses){
                     jobjectArray methodTypeClasses = jobjectArray(Java::QtCore::QPair::first(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     jobjectArray qtMethodTypeStrings = jobjectArray(Java::QtCore::QPair::second(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     Q_ASSERT(methodTypeClasses);
                     Q_ASSERT(qtMethodTypeStrings);
                     int length = env->GetArrayLength(methodTypeClasses);
                     if(length==1){
                         jclass javaClass = jclass(env->GetObjectArrayElement(methodTypeClasses, 0));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         jstring qel = jstring(env->GetObjectArrayElement(qtMethodTypeStrings, 0));
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         QByteArray qTypeName = qtjambi_to_qstring(env, qel).toLatin1();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         QMetaType qMetaType(QMetaType::type(qPrintable(qTypeName)));
@@ -947,16 +950,16 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                 jobject methodTypesStringAndClasses = Java::QtJambi::MetaObjectTools::methodTypes(env, fieldObject);
                 if(methodTypesStringAndClasses){
                     jobjectArray methodTypeClasses = jobjectArray(Java::QtCore::QPair::first(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     jobjectArray qtMethodTypeStrings = jobjectArray(Java::QtCore::QPair::second(env, methodTypesStringAndClasses));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     Q_ASSERT(methodTypeClasses);
                     Q_ASSERT(qtMethodTypeStrings);
                     int length = env->GetArrayLength(methodTypeClasses);
                     if(length==1){
                         jclass javaClass = jclass(env->GetObjectArrayElement(methodTypeClasses, 0));
                         jclass fieldType = Java::Runtime::Field::getType(env, fieldObject);
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         m_propertyMembers[i].member = env->FromReflectedField(fieldObject);
                         m_propertyMembers[i].canWrite = !Java::Runtime::Modifier::isFinal(env, Java::Runtime::Field::getModifiers(env, fieldObject));
                         if(Java::Runtime::Boolean::isPrimitiveType(env, fieldType)){
@@ -978,7 +981,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
                         }else{
                             m_propertyMembers[i].type = jValueType::l;
                             jstring qel = jstring(env->GetObjectArrayElement(qtMethodTypeStrings, 0));
-                            qtjambi_throw_java_exception(env)
+                            qtjambi_throw_java_exception(env);
                             QByteArray qTypeName = qtjambi_to_qstring(env, qel).toLatin1();
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                             QMetaType qMetaType(QMetaType::type(qPrintable(qTypeName)));
@@ -1069,6 +1072,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, jclass java_class, const 
 
 void QtJambiMetaObjectPrivate::invokeMethod(JNIEnv *env, jobject object, const JMethodInfo& methodInfo, void **_a, bool forceObjectType) const
 {
+    QtJambiExceptionHandler __exceptionHandler;
     QTJAMBI_JNI_LOCAL_FRAME(env, 1000)
     QtJambiScope scope(nullptr);
     try{
@@ -1146,7 +1150,7 @@ void QtJambiMetaObjectPrivate::invokeMethod(JNIEnv *env, jobject object, const J
                     returnValue.l = env->CallObjectMethodA(object, methodInfo.methodId, args); break;
                 }
             }
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             if(_a[0]){
                 if(!isVoid){
                     methodInfo.parameterTypeInfos[0].convertExternalToInternal(env, nullptr, returnValue, _a[0], jValueType(methodInfo.methodType));
@@ -1154,7 +1158,7 @@ void QtJambiMetaObjectPrivate::invokeMethod(JNIEnv *env, jobject object, const J
             }
         }
     }catch(const JavaException& exn){
-        qtjambi_push_blocked_exception(env, exn);
+        __exceptionHandler.handle(env, exn, nullptr);
     }
 }
 
@@ -1180,10 +1184,11 @@ void QtJambiMetaObjectPrivate::invokeConstructor(JNIEnv *env, const JMethodInfo&
     if (success) {
         jvalue *args = converted_arguments.data();
         jobject object = env->NewObjectA(m_clazz, methodInfo.methodId, args);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         if(Java::QtJambi::QtObjectInterface::isAssignableFrom(env, m_clazz)){
             void* &pointer = *reinterpret_cast<void**>(_a[0]);
-            pointer = qtjambi_to_object(env, object);
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object))
+                pointer = link->pointer();
         }else{
             jobject &pointer = *reinterpret_cast<jobject*>(_a[0]);
             pointer = object;
@@ -1272,7 +1277,7 @@ jclass QtJambiMetaObject::javaClass(JNIEnv * env, const QMetaObject* metaObject,
     }else{
         if(const std::type_info* typeId = getTypeByMetaObject(metaObject)){
             jclass result = env->FindClass(getJavaName(*typeId));
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             return result;
         }else if(exactOrNull){
             return nullptr;
@@ -1867,6 +1872,89 @@ int QtJambiMetaObjectPrivate::methodFromJMethod(jmethodID methodId) const{
     return index;
 }
 
+int QtJambiMetaObject::metaCall(QObject * o, QMetaObject::Call cl, int idx, void **argv){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        switch(cl){
+        case QMetaObject::CreateInstance:
+            return invokeConstructor(env, idx, argv);
+        case QMetaObject::InvokeMetaMethod:
+            if(!o){
+                return static_metacall(cl, idx + methodOffset(), argv);
+            }
+            break;
+        default:
+            break;
+        }
+        if(jobject object = o ? qtjambi_from_qobject(env, o) : nullptr){
+            switch(cl){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            case QMetaObject::QueryPropertyUser:
+                queryPropertyUser(env, object, idx, argv, true);
+                break;
+            case QMetaObject::QueryPropertyDesignable:
+                queryPropertyDesignable(env, object, idx, argv, true);
+                break;
+            case QMetaObject::QueryPropertyScriptable:
+                queryPropertyScriptable(env, object, idx, argv, true);
+                break;
+            case QMetaObject::QueryPropertyStored:
+                queryPropertyStored(env, object, idx, argv, true);
+                break;
+            case QMetaObject::QueryPropertyEditable:
+                queryPropertyEditable(env, object, idx, argv, true);
+                break;
+#else
+            case QMetaObject::BindableProperty:
+                bindableProperty(env, object, idx, argv, true);
+                break;
+#endif
+            case QMetaObject::ResetProperty:
+                resetProperty(env, object, idx, argv, true);
+                break;
+            case QMetaObject::ReadProperty:
+                readProperty(env, object, idx, argv, true);
+                break;
+            case QMetaObject::WriteProperty:
+                writeProperty(env, object, idx, argv, true);
+                break;
+            case QMetaObject::InvokeMetaMethod:
+                invokeSignalOrSlot(env, object, idx, argv, true);
+                break;
+#if 0
+            case QMetaObject::IndexOfMethod:
+                printf("QMetaObject::IndexOfMethod\n");
+                break;
+            case QMetaObject::RegisterPropertyMetaType:
+                printf("QMetaObject::RegisterPropertyMetaType\n");
+                break;
+            case QMetaObject::RegisterMethodArgumentMetaType:
+                printf("QMetaObject::RegisterMethodArgumentMetaType\n");
+                break;
+#endif
+            default:
+                break;
+            }
+        }
+    }
+    return idx;
+}
+
+int QtJambiMetaObject::metaCall(QMetaObject::Call cl, int idx, void ** argv){
+    if(JNIEnv* env = qtjambi_current_environment()){
+        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+        switch(cl){
+        case QMetaObject::CreateInstance:
+            return invokeConstructor(env, idx, argv);
+        case QMetaObject::InvokeMetaMethod:
+            return static_metacall(cl, idx + methodOffset(), argv);
+        default:
+            break;
+        }
+    }
+    return idx;
+}
+
 int QtJambiMetaObject::invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, void **_a, bool direct) const
 {
     Q_D(const QtJambiMetaObject);
@@ -1878,24 +1966,20 @@ int QtJambiMetaObject::invokeSignalOrSlot(JNIEnv *env, jobject object, int _id, 
 
     // Emit the correct signal
     if (_id < d->m_signal_count) {
-#ifndef QT_QTJAMBI_PORT
         if(Java::QtCore::QObject::isInstanceOf(env, object)){
             QMetaObject::activate(qtjambi_cast<QObject*>(env, object), this, _id, _a);
         }else{
-#endif
             jobject signal_object = env->GetObjectField(object, d->m_signals[_id].signalField);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             Q_ASSERT(signal_object);
             d->invokeMethod(env, signal_object, d->m_signals[_id].emitMethodInfo, _a);
-#ifndef QT_QTJAMBI_PORT
         }
-#endif
     } else if (_id < d->m_signal_count + d->m_method_count) { // Call the correct method
         d->invokeMethod(env, object, d->m_methods[_id - d->m_signal_count], _a);
     } else if (_id < d->m_signal_count + d->m_method_count + d->m_constructor_count) { // Call the correct constructor
         d->invokeConstructor(env, d->m_constructors[_id - d->m_signal_count - d->m_method_count], _a);
     }
-    qtjambi_throw_java_exception(env)
+    qtjambi_throw_java_exception(env);
 
     return _id - d->m_method_count - d->m_signal_count - d->m_constructor_count;
 }
@@ -1927,51 +2011,52 @@ int QtJambiMetaObject::readProperty(JNIEnv *env, jobject object, int _id, void *
             d->invokeMethod(env, qProperty, d->m_property_QProperty_fields[_id].valueMethod, _a);
 #endif
         }else if (d->m_propertyMembers[_id].member){
+            QtJambiExceptionHandler __exceptionHandler;
             try{
                 switch(d->m_propertyMembers[_id].type){
                 case jValueType::z:
                     *reinterpret_cast<jboolean*>(_a[0]) = env->GetBooleanField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::b:
                     *reinterpret_cast<jbyte*>(_a[0]) = env->GetByteField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::s:
                     *reinterpret_cast<jshort*>(_a[0]) = env->GetShortField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::i:
                     *reinterpret_cast<jint*>(_a[0]) = env->GetIntField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::j:
                     *reinterpret_cast<jlong*>(_a[0]) = env->GetLongField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::f:
                     *reinterpret_cast<float*>(_a[0]) = env->GetFloatField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::d:
                     *reinterpret_cast<double*>(_a[0]) = env->GetDoubleField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::c:
                     *reinterpret_cast<jchar*>(_a[0]) = env->GetCharField(object, d->m_propertyMembers[_id].member);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::l:{
                         jvalue value;
                         value.l = env->GetObjectField(object, d->m_propertyMembers[_id].member);
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         QtJambiScope scope;
                         d->m_propertyMembers[_id].memberTypeInfo.convertExternalToInternal(env, &scope, value, _a[0], jValueType::l);
                     }
                     break;
                 }
             }catch(const JavaException& exn){
-                qtjambi_push_blocked_exception(env, exn);
+                __exceptionHandler.handle(env, exn, nullptr);
             }
         }
     }
@@ -2000,39 +2085,40 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, int _id, void 
             d->invokeMethod(env, qProperty, d->m_property_QProperty_fields[_id].setValueMethod, a, d->m_property_QProperty_fields[_id].valueMethod.methodType==JMethodType::l);
 #endif
         }else if (d->m_propertyMembers[_id].member && d->m_propertyMembers[_id].canWrite){
+            QtJambiExceptionHandler __exceptionHandler;
             try{
                 switch(d->m_propertyMembers[_id].type){
                 case jValueType::z:
                     env->SetBooleanField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jboolean*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::b:
                     env->SetByteField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jbyte*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::s:
                     env->SetShortField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jshort*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::i:
                     env->SetIntField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jint*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::j:
                     env->SetLongField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<jlong*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::f:
                     env->SetFloatField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<float*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::d:
                     env->SetDoubleField(object, d->m_propertyMembers[_id].member, *reinterpret_cast<double*>(_a[0]));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::c:
                     env->SetCharField(object, d->m_propertyMembers[_id].member, jchar(*reinterpret_cast<jchar*>(_a[0])));
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                     break;
                 case jValueType::l:
                     jvalue value;
@@ -2040,13 +2126,13 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, int _id, void 
                     QtJambiScope scope;
                     if (d->m_propertyMembers[_id].memberTypeInfo.convertInternalToExternal(env, &scope, _a[0], &value, true)) {
                         env->SetObjectField(object, d->m_propertyMembers[_id].member, value.l);
-                        qtjambi_throw_java_exception(env)
+                        qtjambi_throw_java_exception(env);
                         break;
                     }
                     break;
                 }
             }catch(const JavaException& exn){
-                qtjambi_push_blocked_exception(env, exn);
+                __exceptionHandler.handle(env, exn, nullptr);
             }
         }
     }
@@ -2085,7 +2171,7 @@ int QtJambiMetaObject::notifyProperty(JNIEnv *env, jobject object, int _id, void
             && d->m_property_notifies[_id].emitMethodInfo.methodId) {
         jfieldID field_id = d->m_property_notifies[_id].signalField;
         jobject signal_object = env->GetObjectField(object, field_id);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         Q_ASSERT(signal_object);
         d->invokeMethod(env, signal_object, d->m_property_notifies[_id].emitMethodInfo, _a);
     }
@@ -2411,7 +2497,7 @@ void clear_metaobjects_at_shutdown(JNIEnv * env)
             metaObjects << dynamo->dispose(env);
         }
     }
-    if(QThread *thread = QCoreApplicationPrivate::mainThread()){
+    if(QThread *thread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
         if(QThreadUserData* data = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, thread)){
             data->doAtThreadEnd([metaObjects](){/*delete captured list after function call*/});
         }

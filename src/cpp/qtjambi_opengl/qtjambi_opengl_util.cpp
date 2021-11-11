@@ -10,11 +10,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_open
 (JNIEnv *__jni_env,
  jclass,
  jclass type,
- QtJambiNativeID contextId)
+ jobject _context)
 {
     try{
-        QOpenGLContext *context = qtjambi_object_from_nativeId<QOpenGLContext>(contextId);
-        QAbstractOpenGLFunctions* __qt_return_value = nullptr;
+        QOpenGLContext *context = qtjambi_to_object<QOpenGLContext>(__jni_env, _context);
+        //QAbstractOpenGLFunctions* __qt_return_value = nullptr;
         QString className = qtjambi_class_name(__jni_env, type);
         if(className == "io.qt.opengl.QOpenGLFunctions_ES2"){
 #if defined(QT_OPENGL_ES_2)

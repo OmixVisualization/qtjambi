@@ -11,7 +11,7 @@ include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 # To be able to remove this we need to make generator better/smarter about #include directives
 #  and it might not include these files at all.
 
-QT += core qml quick widgets webengine webenginecore webenginewidgets
+QT = core qml quick widgets webenginecore webenginewidgets
 
 HEADERS += \
     qtjambi_webenginewidgets_hashes.h \

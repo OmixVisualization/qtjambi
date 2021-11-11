@@ -42,5 +42,224 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.webengine.core" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.webengine.core" module="qtjambi.webenginecore" default-superclass="io.qt.QtObject">
+    <required-library name="QtQuick"/>
+    <required-library name="QtWebChannel"/>
+    <required-library name="QtPositioning"/>
+    <required-library name="QtDBus" optional="yes"/>
+    <template name="webc.comsumer.function">
+        std::function&lt;void(%TYPE)> %out;
+        if(%in){
+            JObjectWrapper wrapper(%env, %in);
+            %out = [wrapper](%TYPE value){
+                        if(JNIEnv *env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                            jobject _value = qtjambi_cast&lt;jobject>(env, value);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                        }
+                    };
+        }
+    </template>
+    <object-type name="QWebEngineProfile">
+        <modify-function signature="installUrlSchemeHandler(QByteArray,QWebEngineUrlSchemeHandler*)">
+            <modify-argument index="2">
+                <reference-count action="add" variable-name="__rcUrlSchemeHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="removeUrlSchemeHandler(QWebEngineUrlSchemeHandler*)">
+            <modify-argument index="1">
+                <reference-count action="remove" variable-name="__rcUrlSchemeHandler"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcUrlRequestInterceptor"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setNotificationPresenter(std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)>)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;QWebEngineNotification>"/>
+                <conversion-rule class="native">
+                    std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)> %out;
+                    if(%in){
+                        JObjectWrapper wrapper(%env, %in);
+                        %out = [wrapper](std::unique_ptr&lt;QWebEngineNotification> value){
+                                    if(JNIEnv *env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        QtJambiScope __qtjambi_scope;
+                                        jobject _value = qtjambi_cast&lt;jobject>(env, __qtjambi_scope, value);
+                                        Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                                    }
+                                };
+                    }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QWebEngineCookieStore">
+        <modify-function signature="setCookieFilter(std::function&lt;bool(const QWebEngineCookieStore::FilterRequest &amp;)>)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Predicate&lt;FilterRequest>"/>
+                <conversion-rule class="native">
+                    std::function&lt;bool(const QWebEngineCookieStore::FilterRequest &amp;)> %out;
+                    if(%in){
+                        JObjectWrapper wrapper(%env, %in);
+                        %out = [wrapper](const QWebEngineCookieStore::FilterRequest &amp; value) -> bool {
+                                    if(JNIEnv *env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        jobject _value = qtjambi_cast&lt;jobject>(env, value);
+                                        return Java::Runtime::Predicate::test(env, wrapper.object(), _value);
+                                    }
+                                    return false;
+                                };
+                    }
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QWebEnginePage">
+        <extra-includes>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+        </extra-includes>
+        <modify-function signature="findText(QString, QFlags&lt;QWebEnginePage::FindFlag>, std::function&lt;void(const QWebEngineFindTextResult &amp;)>)">
+            <modify-argument index="3">
+                <replace-default-expression with="null"/>
+                <replace-type modified-type="java.util.function.Consumer&lt;Boolean>"/>
+                <conversion-rule class="native">
+                    <insert-template name="webc.comsumer.function">
+                        <replace from="%TYPE" to="const QWebEngineFindTextResult &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="toHtml(const std::function&lt;void(const QString &amp;)> &amp;) const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;String>"/>
+                <conversion-rule class="native">
+                    <insert-template name="webc.comsumer.function">
+                        <replace from="%TYPE" to="const QString &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="toPlainText(const std::function&lt;void(const QString &amp;)> &amp;) const">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;String>"/>
+                <conversion-rule class="native">
+                    <insert-template name="webc.comsumer.function">
+                        <replace from="%TYPE" to="const QString &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="runJavaScript(QString, const std::function&lt;void(const QVariant &amp;)> &amp;)">
+            <modify-argument index="2">
+                <replace-type modified-type="java.util.function.Consumer&lt;Object>"/>
+                <conversion-rule class="native">
+                    <insert-template name="webc.comsumer.function">
+                        <replace from="%TYPE" to="const QVariant &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="runJavaScript(QString, unsigned int, const std::function&lt;void(const QVariant &amp;)> &amp;)">
+            <modify-argument index="3">
+                <replace-type modified-type="java.util.function.Consumer&lt;Object>"/>
+                <conversion-rule class="native">
+                    <insert-template name="webc.comsumer.function">
+                        <replace from="%TYPE" to="const QVariant &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setDevToolsPage(QWebEnginePage*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcDevToolsPage"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setInspectedPage(QWebEnginePage*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcInspectedPage"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcUrlRequestInterceptor"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setWebChannel(QWebChannel*,uint)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcWebChannel"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="authenticationRequired(const QUrl&amp;,QAuthenticator*)">
+            <modify-argument index="2">
+                <replace-type modified-type="io.qt.network.QAuthenticator" />
+                <no-null-pointer/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="proxyAuthenticationRequired(const QUrl&amp;,QAuthenticator*, const QString&amp;)">
+            <modify-argument index="2">
+                <replace-type modified-type="io.qt.network.QAuthenticator" />
+                <no-null-pointer/>
+                <conversion-rule class="shell">
+                    jobject %out = qtjambi_cast&lt;jobject>(%env, %in);
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QAuthenticator* %out  = qtjambi_cast&lt;QAuthenticator*>(%env, %scope, %in);
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="javaScriptPrompt(const QUrl &amp;, const QString &amp;, const QString &amp;, QString *)">
+            <modify-argument index="0">
+                <replace-type modified-type="java.lang.String"/>
+                <conversion-rule class="native">
+                    jstring %out = nullptr;
+                    if(%in){
+                        %out = qtjambi_cast&lt;jstring>(%env, %4);
+                    }
+                </conversion-rule>
+                <conversion-rule class="shell">
+                    bool %out = %in;
+                    if(%out &amp;&amp; %in){
+                        qtjambi_to_qstring(*%4, %env, %in);
+                    }
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="4">
+                <remove-argument/>
+                <conversion-rule class="shell">
+                </conversion-rule>
+                <conversion-rule class="native">
+                    QString %in;
+                    QString* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="printToPdf(const QString &amp;, const QPageLayout &amp;, const QPageRanges &amp;)">
+            <modify-argument index="2">
+                <replace-default-expression with="new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="printToPdf(const std::function&lt;void(const QByteArray &amp;)> &amp;, const QPageLayout &amp;, const QPageRanges &amp;)">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;io.qt.core.QByteArray>"/>
+                <no-null-pointer/>
+                <conversion-rule class="native">
+                    <insert-template name="web.comsumer.function">
+                        <replace from="%TYPE" to="const QByteArray &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <replace-default-expression with="new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
 </typesystem>

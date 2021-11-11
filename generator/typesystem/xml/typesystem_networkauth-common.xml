@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtNetworkAuth">
+<typesystem qt-library="QtNetworkAuth" description="Provides support for OAuth-based authorization to online services.">
     <enum-type name="QAbstractOAuth::Status" />
     <enum-type name="QAbstractOAuth::Stage" />
     <enum-type name="QAbstractOAuth::Error" />

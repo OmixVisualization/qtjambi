@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtCharts">
+<typesystem qt-library="QtCharts" description="UI Components for displaying visually pleasing charts, driven by static or dynamic data models.">
     <namespace-prefix prefix="QtCharts" namespace="QtCharts" naming-policy="cut" until="5.*"/>
     <namespace-prefix prefix="QtCharts" namespace="" since="6.0.0"/>
     <namespace-type name="QtCharts" generate="no" until="5.*"/>
@@ -216,6 +216,8 @@
     <enum-type name="QtCharts::QChart::ChartTheme"/>
     <enum-type name="QtCharts::QChart::ChartType"/>
     <object-type name="QtCharts::QChart">
+        <modify-function signature="scroll(qreal,qreal)" rename="scrollBy">
+        </modify-function>
         <modify-function signature="axes(QFlags&lt;Qt::Orientation>, QtCharts::QAbstractSeries *)const">
             <modify-argument index="1">
                 <remove-default-expression/>
@@ -270,7 +272,7 @@
             <inject-code>
                 <argument-map index="1" meta-name="%1" />
                 if (oldChart!=null &amp;&amp; oldChart!=%1 &amp;&amp; oldChart.parent()==null)
-                    setJavaOwnership(%this);
+                    QtJambi_LibraryUtilities.internal.setJavaOwnership(%this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -510,9 +512,14 @@
     <enum-type name="QtCharts::QValueAxis::TickType"/>
     <object-type name="QtCharts::QValueAxis">
     </object-type>
+    <object-type name="QtCharts::QColorAxis">
+    </object-type>
     <object-type name="QtCharts::QXYLegendMarker">
     </object-type>
+    <enum-type name="QtCharts::QXYSeries::PointConfiguration" since="6.2.0"/>
     <object-type name="QtCharts::QXYSeries">
+        <modify-function signature="markerSize() const" access="non-final" since="6.2.0"/>
+        <modify-function signature="setMarkerSize(qreal)" access="non-final" since="6.2.0"/>
         <modify-function signature="replace(QVector&lt;QPointF>)" remove="all" until="5.*"/>
         <modify-function signature="operator&lt;&lt;(QList&lt;QPointF>)" remove="all"/>
         <modify-function signature="operator&lt;&lt;(QPointF)" remove="all"/>

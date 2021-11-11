@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DInput">
+<typesystem qt-library="Qt3DInput" description="The Qt 3D Input module provides classes for handling user input in applications using Qt3D.">
     <rejection class="Qt3DInput::QPhysicalDeviceCreatedChange"/>
     <namespace-type name="Qt3DInput" generate="no"/>
     <object-type name="Qt3DInput::QButtonAxisInput" java-name="QButtonAxisInput" since="5.7.0">
@@ -250,12 +250,8 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="Qt3DInput::QPhysicalDeviceCreatedChangeBase" java-name="QPhysicalDeviceCreatedChange"
-    polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeCreated &amp;&amp; reinterpret_cast&lt;Qt3DCore::QNodeCreatedChangeBase*>(%1)-&gt;metaObject()-&gt;inherits(&amp;Qt3DInput::QAbstractPhysicalDevice::staticMetaObject)"
-    since="5.7.0">
+    <object-type name="Qt3DInput::QPhysicalDeviceCreatedChangeBase" java-name="QPhysicalDeviceCreatedChange" since="5.7.0">
     </object-type>
-    <!--object-type name="Qt3DInput::QPhysicalDeviceCreatedChange" java-name="QPhysicalDeviceCreatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyUpdatedChangeBase)" since="5.7.0">
-    </object-type-->
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function '*::doClone', unmatched return type 'QNode*'"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractActionInput' set to non-final, as it is extended by other classes" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractAxisInput' set to non-final, as it is extended by other classes" />

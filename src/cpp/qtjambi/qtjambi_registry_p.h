@@ -77,9 +77,6 @@ int registeredInterfaceOffset(const std::type_info& qt_base, const std::type_inf
 const QVector<const SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject);
 ParameterInfoProvider registeredParameterInfoProvider(const QMetaObject* metaObject);
 bool isValueOwner(const QMetaObject* metaObject);
-#ifdef QT_QTJAMBI_PORT
-SignalConnector signalConnector(const QMetaObject* metaObject);
-#endif
 const std::type_info* getTypeByMetaType(int metaType);
 const std::type_info* getTypeByMetaType(const QMetaType& metaType);
 PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId);

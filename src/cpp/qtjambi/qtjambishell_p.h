@@ -55,15 +55,9 @@ public:
                 PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException);
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool isDeclarativeCall, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
     ~QtJambiShellImpl() override;
-    void init(JNIEnv* env);
     void deleteShell() override;
+    void init(JNIEnv* env);
     QSharedPointer<QtJambiLink> link() const;
-    void warnForMethod(const char*) const final override;
-    void warnForMethod(const char*, const QObject*) const final override;
-    jobject getJavaObjectLocalRef(JNIEnv *env) const final override;
-    jclass javaClass() const final override;
-    jmethodID javaMethod(const std::type_info& typeId, int pos) const final override;
-    const QMetaObject* metaObject() const override;
     static const char *const id;
 protected:
     void overrideLink(const QSharedPointer<QtJambiLink>& link);
@@ -72,6 +66,7 @@ private:
     const QSharedPointer<const QtJambiFunctionTable> m_vtable;
     QWeakPointer<QtJambiLink> m_link;
     Q_DISABLE_COPY_MOVE(QtJambiShellImpl)
+    friend QtJambiShell;
 };
 
 class SingleTypeShell : public QtJambiShellImpl{
@@ -88,10 +83,10 @@ public:
     SingleTypeShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
                 AbstractContainerAccess* containerAccess, JavaException& ocurredException);
     SingleTypeShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool isDeclarativeCall, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
-    ~SingleTypeShell();
-    void destructed(const std::type_info& typeId);
-    void constructed(const std::type_info& typeId);
-    void deleteShell();
+    ~SingleTypeShell() override;
+    void destructed(const std::type_info& typeId) override;
+    void constructed(const std::type_info& typeId) override;
+    void deleteShell() override;
 private:
 #ifdef QT_DEBUG
     bool m_isAlive;
@@ -139,10 +134,10 @@ public:
     MultiTypeShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
                 AbstractContainerAccess* containerAccess, JavaException& ocurredException);
     MultiTypeShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool isDeclarativeCall, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
-    ~MultiTypeShell();
-    void destructed(const std::type_info& typeId);
-    void constructed(const std::type_info& typeId);
-    void deleteShell();
+    ~MultiTypeShell() override;
+    void destructed(const std::type_info& typeId) override;
+    void constructed(const std::type_info& typeId) override;
+    void deleteShell() override;
     void superDeleteShell();
 private:
     QSet<size_t> m_constructedTypes;
@@ -154,7 +149,7 @@ private:
 class DestructionHelper : public QObject {
 public:
     DestructionHelper(const QPointer<const QObject>& owner, std::function<void()> purge);
-    bool event(QEvent * e);
+    bool event(QEvent * e) override;
 private:
     QPointer<const QObject> m_owner;
     std::function<void()> m_purge;

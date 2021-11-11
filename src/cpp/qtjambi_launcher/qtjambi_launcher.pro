@@ -20,5 +20,5 @@ OTHER_FILES = icon.rc
 win32:RC_FILE = icon.rc
 
 macx:QMAKE_SONAME_PREFIX = @rpath
-macx:QMAKE_RPATHDIR = @executable_path/.
+macx:QMAKE_RPATHDIR = @executable_path/. @executable_path/lib @executable_path/../lib @executable_path/../../lib @executable_path/Frameworks @executable_path/../Frameworks @executable_path/../../Frameworks
 linux-g++*:QMAKE_RPATHDIR = $ORIGIN/.:$ORIGIN/lib:$ORIGIN/../lib

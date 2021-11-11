@@ -66,7 +66,7 @@ class QScxmlStateMachine___ {
     
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType type){
-        return connectToState(io.qt.internal.QtJambiInternal.nativeId(this), scxmlStateName, b->slot.invoke(), type.value());
+        return connectToState(scxmlStateName, b->slot.invoke(), type.value());
     }
     
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName, io.qt.core.QMetaObject.Slot1<Boolean> slot){
@@ -75,10 +75,10 @@ class QScxmlStateMachine___ {
     
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QMetaObject.Slot1<Boolean> slot, io.qt.core.Qt.ConnectionType type){
-        return connectToState(io.qt.internal.QtJambiInternal.nativeId(this), scxmlStateName, slot, type.value());
+        return connectToState(scxmlStateName, slot, type.value());
     }
     
-    private native io.qt.core.QMetaObject.Connection connectToState(long nativeId, String scxmlStateName, io.qt.core.QMetaObject.Slot1<Boolean> slot, int type);
+    private native io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName, io.qt.core.QMetaObject.Slot1<Boolean> slot, int type);
     
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName, io.qt.core.QMetaObject.Slot0 slot){
         return connectToEvent(scxmlStateName, slot, io.qt.core.Qt.ConnectionType.AutoConnection);
@@ -86,7 +86,7 @@ class QScxmlStateMachine___ {
     
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType type){
-        return connectToEvent(io.qt.internal.QtJambiInternal.nativeId(this), scxmlStateName, e->slot.invoke(), type.value());
+        return connectToEvent(scxmlStateName, e->slot.invoke(), type.value());
     }
     
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName, io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot){
@@ -95,9 +95,9 @@ class QScxmlStateMachine___ {
     
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot, io.qt.core.Qt.ConnectionType type){
-        return connectToEvent(io.qt.internal.QtJambiInternal.nativeId(this), scxmlStateName, slot, type.value());
+        return connectToEvent(scxmlStateName, slot, type.value());
     }
     
-    private native io.qt.core.QMetaObject.Connection connectToEvent(long nativeId, String scxmlStateName, io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot, int type);
+    private native io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName, io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot, int type);
 }// class
 

@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtPrintSupport">
+<typesystem qt-library="QtPrintSupport" description="Classes to make printing easier and more portable.">
     <rejection class="QPrinter" function-name="printerSelectionOption"/>
     <rejection class="QPrinter" function-name="setPrinterSelectionOption"/>
 
@@ -80,8 +80,6 @@
     <object-type name="QPrintEngine"/>
     <object-type name="QPrinter">
         <modify-function signature="devType() const" remove="all" />
-        <interface-polymorphy interface="QPaintDevice" condition="%1->devType()==QInternal::Printer" />
-        <interface-polymorphy interface="QPagedPaintDevice" condition="%1->devType()==QInternal::Printer" />
         <modify-function signature="setEngines(QPrintEngine*,QPaintEngine*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcPrintEngine"/>

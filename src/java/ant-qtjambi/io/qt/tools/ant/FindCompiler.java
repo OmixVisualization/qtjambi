@@ -246,7 +246,7 @@ public class FindCompiler {
      */
     void checkCompilerBits() {
         if(OSInfo.os() == OSInfo.OS.Windows) {
-            boolean vmx64 = OSInfo.osArchName().contains("64");
+            boolean vmx64 = OSInfo.osArchName().equals(OSInfo.K_WIN_X64);
             boolean compiler64 = compiler == Compiler.MSVC2005_64 || compiler == Compiler.MSVC2008_64 || compiler == Compiler.MSVC2010_64 || compiler == Compiler.MSVC2012_64 || compiler == Compiler.MSVC2013_64 || compiler == Compiler.MSVC2015_64 || compiler == Compiler.MSVC2017_64;
             if(vmx64 != compiler64) {
                 // This is allowed and is not an outright build failure, but warn the user.
@@ -311,20 +311,6 @@ public class FindCompiler {
         }
     }
 
-    private void checkSolarisCompiler() {
-        String spec = System.getenv("QMAKESPEC");
-        if(spec == null) {
-            System.out.println("QMAKESPEC environment variable not specified using SunCC compiler");
-            compiler = Compiler.SUNCC;
-        } else if(spec.contains("cc")) {
-            compiler = Compiler.SUNCC;
-        } else if(spec.contains("g++")) {
-            compiler = Compiler.GCC;
-        } else {
-            throw new BuildException("Invalid QMAKESPEC variable...");
-        }
-    }
-
     Compiler decideCompiler() {
         switch(OSInfo.crossOS()) {
         case Windows:
@@ -335,13 +321,9 @@ public class FindCompiler {
             compiler = Compiler.CLANG;
             break;
         case Linux:
-        case FreeBSD:
             compiler = testForGCC();
             if(compiler==null)
             	compiler = testForCLANG();
-            break;
-        case Solaris:
-            checkSolarisCompiler();
             break;
         case Android:
         	compiler = testForCLANG();
@@ -363,13 +345,9 @@ public class FindCompiler {
                     compiler = Compiler.GCC;
                     break;
                 case Linux:
-                case FreeBSD:
                     compiler = testForGCC();
                     if(compiler==null)
                     	compiler = testForCLANG();
-                    break;
-                case Solaris:
-                    checkSolarisCompiler();
                     break;
                 case Android:
                 	compiler = testForCLANG();
@@ -401,7 +379,7 @@ public class FindCompiler {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
             String cmd = "gcc";
-            if(OSInfo.isWindows())
+            if(OSInfo.os()==OSInfo.OS.Windows)
             	cmd += ".exe";
             if(compilerPathValue!=null)
             	cmd = compilerPathValue+File.separator+cmd;
@@ -586,12 +564,7 @@ public class FindCompiler {
                         return Compiler.MSVC2017_64;
                     return Compiler.MSVC2017;
                 }
-				if(stderr.contains("19.24")) {
-                    if(stderr.contains("x64"))
-                        return Compiler.MSVC2019_64;
-                    return Compiler.MSVC2019;
-                }
-				if(stderr.contains("19.26")) {
+				if(stderr.contains("19.2")) {
                     if(stderr.contains("x64"))
                         return Compiler.MSVC2019_64;
                     return Compiler.MSVC2019;

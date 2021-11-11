@@ -4,6 +4,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QCborValue>
 #include <QtCore/QCborMap>
+#include <QtCore/QCborStreamReader>
 #include <QtCore/QCborArray>
 #include <QtCore/QBuffer>
 #include <QtCore/QSettings>
@@ -20,6 +21,7 @@
 static JavaVM* javaVM = nullptr;
 static QLibrary* jvmLibrary = nullptr;
 
+#ifndef Q_OS_MAC
 static constexpr unsigned char metaData[] = {
     'Q', 'T', 'J', 'A', 'M', 'B', 'I', '_', 'L', 'A', 'U', 'N', 'C', 'H', 'E', 'R', '!',//[17]
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,//32
@@ -535,6 +537,7 @@ static constexpr unsigned char metaData[] = {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,//16384
 };
+#endif
 
 enum JVMDetectionModes : qint64{
     AutoDetect,
@@ -549,12 +552,31 @@ enum Parameters : qint64{
     ClassPath,
     ModulePath,
     LibraryPath,
-    JVMArguments
+    JVMArguments,
+    JNIMinimumVersion
 };
+
+void findJVM(const QDir& directory, QFileInfo& jvmLibraryInfo, const QString& libraryNamePattern){
+    for(const QFileInfo& info : directory.entryInfoList()) {
+        if(info.isDir()){
+            findJVM(info.absoluteFilePath(), jvmLibraryInfo, libraryNamePattern);
+            if(jvmLibraryInfo.isFile())
+                return;
+        }else if(info.fileName()==libraryNamePattern.arg(QLatin1String("jvm"))
+#ifdef Q_OS_MAC
+                 || info.fileName()==libraryNamePattern.arg(QLatin1String("jli"))
+#endif
+        ){
+            jvmLibraryInfo = info;
+            return;
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
     QFileInfo programFile = QFileInfo(QLatin1String(argv[0]));
+    QDir programDir = programFile.absoluteDir();
     QString programName = programFile.fileName();
     if(programName.endsWith(".exe"))
         programName.chop(4);
@@ -562,13 +584,30 @@ int main(int argc, char *argv[])
     //QDir current = QDir::current();
     //const char* __metaData = reinterpret_cast<const char *>(metaData+17);
     QCborParserError error;
+#ifndef Q_OS_MAC
     QCborValue value = QCborValue::fromCbor(metaData, 16384+17, &error);
+#else
+    QCborValue value;
+    {
+        QFile paramsFile(programDir.absoluteFilePath("../Resources/params.cbor"));
+        if(!paramsFile.open(QIODevice::ReadOnly)){
+            if(paramsFile.exists())
+                fprintf( stderr, "Unable to read runtime parameters.");
+            else
+                fprintf( stderr, "Launcher does not provide any runtime parameters.");
+            return -1;
+        }
+        QCborStreamReader reader(&paramsFile);
+        value = QCborValue::fromCbor(reader);
+        paramsFile.close();
+    }
+#endif
     if(error.error!=QCborError::NoError){
-        qWarning("Error while loading runtime parameters: %s", qPrintable(error.errorString()));
+        fprintf( stderr, "Error while loading runtime parameters: %s", qPrintable(error.errorString()));
         return -1;
     }
     if(!value.isMap()){
-        qWarning("Launcher does not provide any runtime parameters.");
+        fprintf( stderr, "Launcher does not provide any runtime parameters.");
         return -1;
     }
     QString vmLocation;
@@ -603,9 +642,15 @@ int main(int argc, char *argv[])
             }
         }
 #elif defined(Q_OS_MAC)
+        bool isArm64 = QSysInfo::currentCpuArchitecture()=="arm64";
         for(int v=20; v>=minimumJVM; --v){
             QProcess process;
-            process.start("/usr/libexec/java_home", QStringList() << "-v" << QString::number(v) << "-d64");
+            QStringList args;
+            if(isArm64)
+                args = QStringList{"-F", "-v", QString::number(v), "-a", "arm64"};
+            else
+                args = QStringList{"-F", "-v", QString::number(v)};
+            process.start("/usr/libexec/java_home", args);
             if (process.waitForFinished()){
                 QByteArray data = process.readAll();
                 vmLocation = QString::fromUtf8(data.constData()).trimmed();
@@ -624,11 +669,12 @@ int main(int argc, char *argv[])
             QFileInfo appletJava("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java");
             if(appletJava.isFile() && appletJava.isExecutable()){
                 QProcess process;
-                process.start(appletJava.absoluteFilePath(), QStringList() << "-version");
+                process.start(appletJava.absoluteFilePath(), QStringList{"-Xinternalversion"});
                 if (process.waitForFinished()){
                     QString data = QString::fromUtf8(process.readAll().constData());
+                    QString pattern = isArm64 ? QLatin1String("-aarch64 JRE (%1") : QLatin1String("-amd64 JRE (%1");
                     for(int v=20; v>=minimumJVM; --v){
-                        if(data.contains(QString("java version \"%1").arg(QString::number(v))) && data.contains("64-Bit")){
+                        if(data.contains(QString(pattern).arg(v==8 ? QString("1.8") : QString::number(v)))){
                             QDir dir = appletJava.absoluteDir();
                             dir.cdUp();
                             vmLocation = dir.canonicalPath();
@@ -745,7 +791,6 @@ int main(int argc, char *argv[])
     case UseRelativePath:{
         QString jvmPath = runtimeParameters.value(JVMPath).toString();
         if(!jvmPath.isEmpty()){
-            QDir programDir = programFile.absoluteDir();
             vmLocation = programDir.filePath(jvmPath);
         }
     }
@@ -784,21 +829,26 @@ int main(int argc, char *argv[])
         Q_UNUSED(cookie)
         SetDefaultDllDirectories(LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 #endif
-#ifndef Q_OS_MAC
-        QStringList subdirs{QLatin1String("server"), QLatin1String("client")};
+        QStringList subdirs{QLatin1String("server"), QLatin1String("client")
+#ifdef Q_OS_LINUX
+                    , QLatin1String("amd64/server"), QLatin1String("amd64/client")
+#endif
+                };
         QFileInfo jvmLibraryInfo;
         for(const QString& subdir : subdirs) {
             QDir subDir = vmDir;
             subDir.cd(subdir);
-            QString libName = libraryNamePattern.arg(QLatin1String("jvm"));
-            jvmLibraryInfo.setFile(subDir.filePath(libName));
+            jvmLibraryInfo.setFile(subDir.filePath(QString(libraryNamePattern).arg(QLatin1String("jvm"))));
             if(jvmLibraryInfo.isFile())
                 break;
         }
-#else
-        QString libName = libraryNamePattern.arg(QLatin1String("jli"));
-        QFileInfo jvmLibraryInfo(vmDir.filePath(libName));
+#ifdef Q_OS_MAC
+        if(!jvmLibraryInfo.isFile())
+            jvmLibraryInfo.setFile(vmDir.filePath(libraryNamePattern.arg(QLatin1String("jli"))));
 #endif
+        if(!jvmLibraryInfo.isFile()){
+            findJVM(vmDir, jvmLibraryInfo, libraryNamePattern);
+        }
         jvmLibrary = new QLibrary(jvmLibraryInfo.absoluteFilePath());
         jvmLibrary->setLoadHints(QLibrary::ResolveAllSymbolsHint | QLibrary::ExportExternalSymbolsHint | QLibrary::DeepBindHint);
         auto libdeleter = qScopeGuard([] { delete jvmLibrary; jvmLibrary = nullptr; });
@@ -820,20 +870,20 @@ int main(int argc, char *argv[])
                 QCborArray modulePaths = runtimeParameters.value(ModulePath).toArray();
                 QCborArray libraryPaths = runtimeParameters.value(LibraryPath).toArray();
                 QCborArray jvmArguments = runtimeParameters.value(JVMArguments).toArray();
+                jint minimumJNIVersion = jint(runtimeParameters.value(JNIMinimumVersion).toInteger(JNI_VERSION_1_8));
                 QList<QByteArray> options;
                 QStringList classPath, modulePath, libraryPath;
-                QDir currentDir(programFile.absoluteDir());
                 for (int i = 0; i < classPaths.size(); ++i) {
                     QString p = classPaths[i].toString();
-                    classPath << QDir::toNativeSeparators(currentDir.filePath(p));
+                    classPath << QDir::toNativeSeparators(QFileInfo(programDir.filePath(p)).canonicalFilePath());
                 }
                 for (int i = 0; i < modulePaths.size(); ++i) {
                     QString p = modulePaths[i].toString();
-                    modulePath << QDir::toNativeSeparators(currentDir.filePath(p));
+                    modulePath << QDir::toNativeSeparators(QFileInfo(programDir.filePath(p)).canonicalFilePath());
                 }
                 for (int i = 0; i < libraryPaths.size(); ++i) {
                     QString p = libraryPaths[i].toString();
-                    libraryPath << QDir::toNativeSeparators(currentDir.filePath(p));
+                    libraryPath << QDir::toNativeSeparators(QFileInfo(programDir.filePath(p)).canonicalFilePath());
                 }
 #ifdef Q_OS_WIN
                 const char sep = ';';
@@ -844,7 +894,8 @@ int main(int argc, char *argv[])
                     options << QByteArray("-Djava.class.path=") + classPath.join(sep).toUtf8();
                 }
                 if(!modulePath.isEmpty()){
-                    options << QByteArray("-Djava.module.path=") + modulePath.join(sep).toUtf8();
+                    minimumJNIVersion = JNI_VERSION_9;
+                    options << QByteArray("--module-path=") + modulePath.join(sep).toUtf8();
                 }
                 if(!libraryPath.isEmpty()){
                     options << QByteArray("-Djava.library.path=") + libraryPath.join(sep).toUtf8();
@@ -852,10 +903,17 @@ int main(int argc, char *argv[])
 #ifndef QT_NO_DEBUG
                 options << "-Dio.qt.debug=debug";
 #endif
+                bool hasAddModules = false;
                 for (int i = 0; i < jvmArguments.size(); ++i) {
                     QByteArray option = jvmArguments[i].toByteArray();
-                    if(!option.isEmpty())
+                    if(!option.isEmpty()){
                         options << option;
+                        if(option.startsWith("--add-modules="))
+                            hasAddModules = true;
+                    }
+                }
+                if(!modulePath.isEmpty() && !hasAddModules){
+                    options << "--add-modules=ALL-MODULE-PATH,ALL-DEFAULT";
                 }
                 QScopedArrayPointer<JavaVMOption> vm_options(new JavaVMOption[size_t(options.size())]);
                 for (int i=0; i<options.size(); ++i){
@@ -866,53 +924,53 @@ int main(int argc, char *argv[])
                 }
                 vm_args.nOptions = jint(options.size());
                 vm_args.options = vm_options.get();
-                vm_args.version = jint(JNI_VERSION_1_8);
+                vm_args.version = minimumJNIVersion;
                 int result = ptrGetDefaultJavaVMInitArgs(&vm_args);
                 if(result!=JNI_OK){
-                    qWarning("Unable to get default init args for Java Virtual Machine");
+                    fprintf( stderr, "Unable to get default init args for Java Virtual Machine. MinimumJNIVersion=%s, JVMArgs=%s", qPrintable(QString::number(minimumJNIVersion, 16)), options.join(" ").data());
                     return -1;
                 }
 
                 JNIEnv * env = nullptr;
                 result = ptrCreateJavaVM(&javaVM, reinterpret_cast<void**>(&env), &vm_args);
                 if(result!=JNI_OK || !javaVM){
-                    qWarning("Unable to create Java Virtual Machine");
+                    fprintf( stderr, "Unable to create Java Virtual Machine");
                     return -1;
                 }
                 auto vmdestroyer = qScopeGuard([] { javaVM->DestroyJavaVM(); javaVM = nullptr; });
 
                 QString mainClass = runtimeParameters.value(MainClass).toString();
                 if(mainClass.isEmpty()){
-                    qWarning("Main class not specified");
+                    fprintf( stderr, "Main class not specified");
                     return -1;
                 }
                 jclass jmainClass = env->FindClass(qPrintable("L"+mainClass.replace('.', '/')+";"));
                 if(env->ExceptionCheck()){
-                    qWarning("Exception occurred while loading main class");
+                    fprintf( stderr, "Exception occurred while loading main class");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 if(!jmainClass){
-                    qWarning("Main class not found: %s", qPrintable(mainClass));
+                    fprintf( stderr, "Main class not found: %s", qPrintable(mainClass));
                     return -1;
                 }
                 jmethodID mainMethod = env->GetStaticMethodID(jmainClass, "main", "([Ljava/lang/String;)V");
                 if(env->ExceptionCheck()){
-                    qWarning("Exception occurred while loading main method");
+                    fprintf( stderr, "Exception occurred while loading main method");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 jclass stringClass = env->FindClass("Ljava/lang/String;");
                 if(env->ExceptionCheck()){
-                    qWarning("Exception occurred while loading String class");
+                    fprintf( stderr, "Exception occurred while loading String class");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 if(!stringClass){
-                    qWarning("Class not found: java.lang.String");
+                    fprintf( stderr, "Class not found: java.lang.String");
                     return -1;
                 }
                 jobjectArray mainArgs = env->NewObjectArray(argc-1, stringClass, nullptr);
@@ -921,28 +979,28 @@ int main(int argc, char *argv[])
                     env->SetObjectArrayElement(mainArgs, i-1, s);
                 }
                 if(env->ExceptionCheck()){
-                    qWarning("Exception occurred while creating argument array");
+                    fprintf( stderr, "Exception occurred while creating argument array");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
                 env->CallStaticVoidMethod(jmainClass, mainMethod, mainArgs);
                 if(env->ExceptionCheck()){
-                    qWarning("Exception occurred while executing main method");
+                    fprintf( stderr, "Exception occurred while executing main method");
                     env->ExceptionDescribe();
                     env->ExceptionClear();
                     return -1;
                 }
             }
         }else{
-            qWarning("Unable to load JVM: %s", qPrintable(jvmLibrary->errorString()));
+            fprintf( stderr, "Unable to load JVM: %s", qPrintable(jvmLibrary->errorString()));
             return -1;
         }
     }else if(!vmLocation.isEmpty()){
-        qWarning("Java expected to be installed in %s", qPrintable(vmLocation));
+        fprintf( stderr, "Java expected to be installed in %s", qPrintable(vmLocation));
         return -1;
     }else{
-        qWarning("Unable to find Java");
+        fprintf( stderr, "Unable to find Java");
         return -1;
     }
     return 0;

@@ -42,8 +42,6 @@
 #include "metajavabuilder.h"
 
 class GeneratorSetJava : public GeneratorSet {
-        Q_OBJECT
-
     public:
         GeneratorSetJava();
 

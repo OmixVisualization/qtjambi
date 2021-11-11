@@ -132,9 +132,9 @@ class Exec {
     }
 
     private static String whichLDEnvironmentVariable() {
-        if(OSInfo.isLinux())
+        if(OSInfo.os()==OSInfo.OS.Linux)
             return K_LD_LIBRARY_PATH;
-        else if(OSInfo.isMacOS())
+        else if(OSInfo.os()==OSInfo.OS.MacOS)
             return K_DYLD_LIBRARY_PATH;
         return null;
     }

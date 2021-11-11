@@ -33,12 +33,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import io.qt.QtUninvokable;
 import io.qt.autotests.generated.CustomEvent;
 import io.qt.autotests.generated.CustomStyleOption;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.PolymorphicType;
 import io.qt.core.QEvent;
 import io.qt.core.QRect;
@@ -47,7 +49,6 @@ import io.qt.core.QSize;
 import io.qt.core.Qt.Orientations;
 import io.qt.gui.QPaintEvent;
 import io.qt.gui.QPainter;
-import io.qt.internal.QtJambiInternal;
 import io.qt.widgets.QFormLayout;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsObject;
@@ -107,6 +108,13 @@ public class TestPolymorphicTypes extends QApplicationTest {
 	@Before
 	public void init() {
 		widget = new TestWidget();
+	}
+	
+	@After
+	public void after() {
+		if(widget!=null)
+			widget.dispose();
+		widget = null;
 	}
 	
     /**
@@ -381,7 +389,7 @@ public class TestPolymorphicTypes extends QApplicationTest {
         PolymorphicType.sendPaintEvent(widget);
         assertEquals(QEvent.Type.Paint, widget.eventType);
         assertEquals(QPaintEvent.class, widget.eventClass);
-        assertEquals(0, QtJambiInternal.nativeId(widget.m_event));
+        assertEquals(0, General.internalAccess.nativeId(widget.m_event));
     }
 
     @Test
@@ -390,7 +398,7 @@ public class TestPolymorphicTypes extends QApplicationTest {
         PolymorphicType.sendCustomEvent(widget, 20);
         assertEquals(CustomEvent.customType(), widget.eventType);
         assertEquals(CustomEvent.class, widget.eventClass);
-        assertEquals(0, QtJambiInternal.nativeId(widget.m_event));
+        assertEquals(0, General.internalAccess.nativeId(widget.m_event));
         assertEquals(20, widget.customEventSomething);
     }
 

@@ -6,10 +6,12 @@ VERSION = $$QT_VERSION
 include(../qtjambi/qtjambi_include.pri)
 include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-HEADERS += qtjambiqfuture.h \
+HEADERS += \
     qtjambi_biginteger.h \
+    qtjambi_core_future.h \
     qtjambi_core_qhashes.h \
-    qtjambi_core_repository.h
+    qtjambi_core_repository.h \
+    qtjambi_stringutil.h
 
 SOURCES +=\
     QHash_shell.cpp \
@@ -19,8 +21,9 @@ SOURCES +=\
     QMap_shell.cpp \
     QLinkedList_shell.cpp \
     QList_shell.cpp \
-    containers.cpp \
     qtjambi_biginteger.cpp \
+#    qtjambi_core_functionpointer.cpp \
+    qtjambi_core_future.cpp \
     qtjambi_core_repository.cpp \
     qtjambi_core_util.cpp \
     qtjambi_core_variant.cpp \
@@ -44,11 +47,6 @@ SOURCES +=\
     qtjambi_containers_multimap4.cpp \
     qtjambi_containers_multimap5.cpp \
     qtjambi_containers_multimap6.cpp
-
-macx:{
-    INCLUDEPATH += $$(QTDIR)/lib/QtCore.framework/Headers/$$QT_VERSION/QtCore/private
-}
-INCLUDEPATH += $$(QTDIR)/include/QtCore/$$QT_VERSION/QtCore/private
 
 QT = core core-private
 

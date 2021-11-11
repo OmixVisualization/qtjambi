@@ -5,7 +5,6 @@
 
 class DocVariable : public DocElement
 {
-    Q_OBJECT
 public:
     DocVariable(QObject* parent);
 

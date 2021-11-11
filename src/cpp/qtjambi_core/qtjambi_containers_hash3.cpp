@@ -34,9 +34,9 @@
 **
 ****************************************************************************/
 
-#include <qtjambi/qtjambi_containeraccess_hash.h>
-
+#include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include <qtjambi/qtjambi_containeraccess_hash.h>
 
 void qtjambi_register_hash_access3(){
     ELEMENT_CONVERTER_HASH_IMPL4(QHash,2)

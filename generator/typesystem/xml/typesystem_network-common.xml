@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtNetwork">
+<typesystem qt-library="QtNetwork" description="Classes to make network programming easier and more portable.">
     <rejection class="QSslKey" function-name="backendImplementation"/>
     <rejection class="QSslCertificate" function-name="backendImplementation"/>
     <namespace-type name="QSsl">
@@ -85,6 +85,7 @@
     <enum-type name="QSsl::AlertLevel" />
     <enum-type name="QLocalSocket::LocalSocketError" />
     <enum-type name="QLocalSocket::LocalSocketState" />
+    <enum-type name="QLocalSocket::SocketOption" flags="QLocalSocket::SocketOptions" since="6.2.0"/>
     <enum-type name="QLocalServer::SocketOption" flags="QLocalServer::SocketOptions" />
     <enum-type name="QNetworkAccessManager::Operation" />
     <enum-type name="QNetworkCookie::RawForm" />
@@ -116,6 +117,11 @@
         <reject-enum-value name="Ieee80211"/>
     </enum-type>
     <enum-type name="QHostAddress::ConversionModeFlag" flags="QHostAddress::ConversionMode" since="5.8.0" />
+    <enum-type name="QHostAddress::NetworkLayerProtocol" since="7.0.0" />
+    <rejection class="QHostAddress" field-name="IPv4Protocol" since="6.2.0"/>
+    <rejection class="QHostAddress" field-name="IPv6Protocol" since="6.2.0"/>
+    <rejection class="QHostAddress" field-name="AnyIPProtocol" since="6.2.0"/>
+    <rejection class="QHostAddress" field-name="UnknownNetworkLayerProtocol" since="6.2.0"/>
     <enum-type name="QHstsPolicy::PolicyFlag" flags="QHstsPolicy::PolicyFlags" since="5.9.0" />
     <enum-type name="QAlertLevel" since="6.0.0" />
     <enum-type name="QAlertType" since="6.0.0" />

@@ -357,11 +357,54 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
     if(virtualFcts){
         for (int i=0; i<virtualFcts->size(); ++i) {
             const FunctionInfo& info = (*virtualFcts)[i];
-            jmethodID method_id = env->GetMethodID(object_class, info.name, info.signature);
-            if (!method_id) {
+            if (jmethodID method_id = env->GetMethodID(object_class, info.name, info.signature)) {
+                if (jobject method_object = env->ToReflectedMethod(object_class, method_id, false)) {
+                    if (Java::QtJambi::QtJambiInternal::isImplementedInJava(env,
+                                                     jboolean(info.flags & FunctionInfo::Abstract),
+                                                     method_object, typeEntry->javaClass())) {
+                        if(info.flags & FunctionInfo::Private){
+                            bool isPrivateOverride = Java::Runtime::AccessibleObject::isAnnotationPresent(env, method_object, Java::QtJambi::QtPrivateOverride::getClass(env));
+                            if(!isPrivateOverride){
+                                QString message(QLatin1String("Method '%1' in class %2 misses @QtPrivateOverride annotation."));
+                                message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
+                                message = message.arg(qtjambi_class_display_name(env, object_class));
+                                Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
+                            }
+                        }
+                        methods << method_id;
+                    }else if(info.flags & FunctionInfo::Abstract){
+                        QString message(QLatin1String("Class %1 does not implement pure virtual function '%2' from Qt declared in %3."));
+                        message = message.arg(qtjambi_class_display_name(env, object_class));
+                        message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
+                        message = message.arg(QLatin1String(typeEntry->qtName()));
+                        Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        methods << nullptr;
+                    }
+                    env->DeleteLocalRef(method_object);
+                }else{
+                    fprintf(stderr,
+                            "vtable setup conversion to reflected method failed: %s::%s %s\n",
+                            qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
+                    qtjambi_throw_java_exception(env);
+                    methods << nullptr;
+                }
+            }else{
                 if(is_interface){
                     if(env->ExceptionCheck()){
                         env->ExceptionClear();
+                    }
+                    if(info.flags & FunctionInfo::Abstract){
+                        QString message;
+                        if(isFunctional(typeId)){
+                            message = QLatin1String("Class %1 does not implement functional interface method '%2' from Qt declared in %3.");
+                        }else{
+                            message = QLatin1String("Class %1 does not implement pure virtual function '%2' from Qt declared in %3.");
+                        }
+                        message = message.arg(qtjambi_class_display_name(env, object_class));
+                        message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
+                        message = message.arg(QLatin1String(typeEntry->qtName()));
+                        Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
                     }
                 }else if(info.flags & FunctionInfo::Private){
                     if(env->ExceptionCheck()){
@@ -375,58 +418,23 @@ QList<jmethodID> get_methods(JNIEnv *env, jclass object_class, const std::type_i
                 }else{
                     fprintf(stderr, "vtable setup failed: %s::%s %s\n",
                             qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
-                    qtjambi_throw_java_exception(env)
+                    qtjambi_throw_java_exception(env);
                 }
                 methods << nullptr;
-                continue;
             }
-
-            jobject method_object = env->ToReflectedMethod(object_class, method_id, false);
-            if (!method_object) {
-                fprintf(stderr,
-                        "vtable setup conversion to reflected method failed: %s::%s %s\n",
-                        qPrintable(qtjambi_class_display_name(env, object_class)), info.name, info.signature);
-                qtjambi_throw_java_exception(env)
-                methods << nullptr;
-                continue;
-            }
-
-            if(info.flags & FunctionInfo::Private){
-                bool isPrivateOverride = Java::Runtime::AccessibleObject::isAnnotationPresent(env, method_object, Java::QtJambi::QtPrivateOverride::getClass(env));
-                if(!isPrivateOverride){
-                    QString message(QLatin1String("Method '%1' in class %2 misses @QtPrivateOverride annotation."));
-                    message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
-                    message = message.arg(qtjambi_class_display_name(env, object_class));
-                    Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
-                }
-            }else if (Java::QtJambi::QtJambiInternal::isImplementedInJava(env,
-                                             jboolean(info.flags & FunctionInfo::Abstract),
-                                             method_object, typeEntry->javaClass())) {
-                methods << method_id;
-            }else if(info.flags & FunctionInfo::Abstract){
-                QString message(QLatin1String("Class %1 does not implement pure virtual function '%2' from Qt declared in %3."));
-                message = message.arg(qtjambi_class_display_name(env, object_class));
-                message = message.arg(jniSignatureToJava(QLatin1String(info.signature), QLatin1String(info.name)));
-                message = message.arg(QLatin1String(typeEntry->qtName()));
-                Java::QtJambi::QMissingVirtualOverridingException::throwNew(env, message QTJAMBI_STACKTRACEINFO );
-            }else{
-                methods << nullptr;
-            }
-
-            env->DeleteLocalRef(method_object);
         }
     }
     return methods;
 }
 
-const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *env, jobject object, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos, const QMetaObject* originalMetaObject, JavaException& ocurredException)
+const QSharedPointer<const QtJambiFunctionTable> &qtjambi_setup_vtable(JNIEnv *env, jclass object_class, jobject object, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos, const QMetaObject* originalMetaObject, JavaException& ocurredException)
 {
     if(!ocurredException.object()){
         try {
             Q_UNUSED(typeId)
 
             Q_ASSERT(object);
-            jclass object_class = env->GetObjectClass(object);
+            Q_ASSERT(object_class);
 
             int classHashCode = Java::Runtime::Object::hashCode(env,object_class);
             {

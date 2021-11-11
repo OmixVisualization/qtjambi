@@ -148,20 +148,20 @@ namespace NameSpace
             {
             public:
                 ObjectD(const QString &s) : ObjectC(s) {}
-                virtual ~ObjectD(){}
+                virtual ~ObjectD() override {}
 
-                ObjectD *fooBar2(ObjectC *obj)
+                ObjectD *fooBar2(ObjectC *obj) override
                 {
                     return new ObjectD(obj->str());
                 }
 
-                InterfaceA *fooBar(InterfaceA *obj)
+                InterfaceA *fooBar(InterfaceA *obj) override
                 {
                     return obj->fooBar(fooBar(this));
                 }
 
             protected:
-                InterfaceA *protectedFooBar(InterfaceA *obj)
+                InterfaceA *protectedFooBar(InterfaceA *obj) override
                 {
                     return obj->fooBar(fooBar(this));
                 }

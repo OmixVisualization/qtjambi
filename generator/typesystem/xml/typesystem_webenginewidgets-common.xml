@@ -42,35 +42,35 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWebEngineWidgets">
-    <enum-type name="QWebEngineCertificateError::Error"/>
-    <enum-type name="QWebEngineDownloadItem::DownloadState"/>
-    <enum-type name="QWebEngineDownloadItem::DownloadType"/>
-    <enum-type name="QWebEngineDownloadItem::DownloadInterruptReason"/>
-    <enum-type name="QWebEngineDownloadItem::SavePageFormat"/>
-    <enum-type name="QWebEnginePage::Feature"/>
-    <enum-type name="QWebEnginePage::FileSelectionMode"/>
-    <enum-type name="QWebEnginePage::FindFlag" flags="QWebEnginePage::FindFlags"/>
-    <enum-type name="QWebEnginePage::JavaScriptConsoleMessageLevel"/>
-    <enum-type name="QWebEnginePage::NavigationType"/>
-    <enum-type name="QWebEnginePage::PermissionPolicy"/>
-    <enum-type name="QWebEnginePage::RenderProcessTerminationStatus"/>
-    <enum-type name="QWebEnginePage::WebAction"/>
-    <enum-type name="QWebEnginePage::WebWindowType"/>
-    <enum-type name="QWebEnginePage::LifecycleState" since="5.14.0"/>
-    <enum-type name="QWebEngineProfile::HttpCacheType"/>
-    <enum-type name="QWebEngineProfile::PersistentCookiesPolicy"/>
-    <enum-type name="QWebEngineScript::InjectionPoint"/>
-    <enum-type name="QWebEngineScript::ScriptWorldId"/>
-    <enum-type name="QWebEngineSettings::FontFamily"/>
-    <enum-type name="QWebEngineSettings::FontSize"/>
-    <enum-type name="QWebEngineSettings::WebAttribute"/>
-    <enum-type name="QWebEngineSettings::UnknownUrlSchemePolicy"/>
-    <enum-type name="QWebEngineContextMenuData::MediaType"/>
-    <enum-type name="QWebEngineContextMenuData::MediaFlag" flags="QWebEngineContextMenuData::MediaFlags"/>
-    <enum-type name="QWebEngineContextMenuData::EditFlag" flags="QWebEngineContextMenuData::EditFlags"/>
+<typesystem qt-library="QtWebEngineWidgets" description="Provides C++ classes for rendering web content in a QWidget based application.">
+    <enum-type name="QWebEngineCertificateError::Error" until="5.*"/>
+    <enum-type name="QWebEngineDownloadItem::DownloadState" until="5.*"/>
+    <enum-type name="QWebEngineDownloadItem::DownloadType" until="5.*"/>
+    <enum-type name="QWebEngineDownloadItem::DownloadInterruptReason" until="5.*"/>
+    <enum-type name="QWebEngineDownloadItem::SavePageFormat" until="5.*"/>
+    <enum-type name="QWebEnginePage::Feature" until="5.*"/>
+    <enum-type name="QWebEnginePage::FileSelectionMode" until="5.*"/>
+    <enum-type name="QWebEnginePage::FindFlag" flags="QWebEnginePage::FindFlags" until="5.*"/>
+    <enum-type name="QWebEnginePage::JavaScriptConsoleMessageLevel" until="5.*"/>
+    <enum-type name="QWebEnginePage::NavigationType" until="5.*"/>
+    <enum-type name="QWebEnginePage::PermissionPolicy" until="5.*"/>
+    <enum-type name="QWebEnginePage::RenderProcessTerminationStatus" until="5.*"/>
+    <enum-type name="QWebEnginePage::WebAction" until="5.*"/>
+    <enum-type name="QWebEnginePage::WebWindowType" until="5.*"/>
+    <enum-type name="QWebEnginePage::LifecycleState" since="5.14.0" until="5.*"/>
+    <enum-type name="QWebEngineProfile::HttpCacheType" until="5.*"/>
+    <enum-type name="QWebEngineProfile::PersistentCookiesPolicy" until="5.*"/>
+    <enum-type name="QWebEngineScript::InjectionPoint" until="5.*"/>
+    <enum-type name="QWebEngineScript::ScriptWorldId" until="5.*"/>
+    <enum-type name="QWebEngineSettings::FontFamily" until="5.*"/>
+    <enum-type name="QWebEngineSettings::FontSize" until="5.*"/>
+    <enum-type name="QWebEngineSettings::WebAttribute" until="5.*"/>
+    <enum-type name="QWebEngineSettings::UnknownUrlSchemePolicy" until="5.*"/>
+    <enum-type name="QWebEngineContextMenuData::MediaType" until="5.*"/>
+    <enum-type name="QWebEngineContextMenuData::MediaFlag" flags="QWebEngineContextMenuData::MediaFlags" until="5.*"/>
+    <enum-type name="QWebEngineContextMenuData::EditFlag" flags="QWebEngineContextMenuData::EditFlags" until="5.*"/>
 
-    <value-type name="QWebEngineCertificateError">
+    <value-type name="QWebEngineCertificateError" until="5.*">
         <modify-function signature="operator=(const QWebEngineCertificateError &amp;)" remove="all"/>
         <custom-constructor>
             if(copy){
@@ -84,10 +84,11 @@
         </custom-constructor>
     </value-type>
 
-    <object-type name="QWebEngineDownloadItem">
+    <object-type name="QWebEngineDownloadItem" until="5.*">
     </object-type>
-    <object-type name="QWebEngineHistory"/>
-    <value-type name="QWebEngineHistoryItem">
+    <object-type name="QWebEngineHistory" until="5.*"/>
+    <object-type name="QWebEngineHistoryModel" until="5.*"/>
+    <value-type name="QWebEngineHistoryItem" until="5.*">
         <custom-constructor>
             if(copy){
                 return new(placement) QWebEngineHistoryItem(*copy);
@@ -101,21 +102,21 @@
             </modify-argument>
         </modify-function>
     </value-type>
-    <value-type name="QWebEngineScript">
+    <value-type name="QWebEngineScript" until="5.*">
         <modify-function signature="operator=(QWebEngineScript)" rename="set">
             <modify-argument index="0">
                 <replace-type modified-type="void"/>
             </modify-argument>
         </modify-function>
     </value-type>
-    <value-type name="QWebEngineContextMenuData">
+    <value-type name="QWebEngineContextMenuData" until="5.*">
         <modify-function signature="operator=(QWebEngineContextMenuData)" rename="set">
             <modify-argument index="0">
                 <replace-type modified-type="void"/>
             </modify-argument>
         </modify-function>
     </value-type>
-    <value-type name="QWebEngineClientCertificateSelection">
+    <value-type name="QWebEngineClientCertificateSelection" until="5.*">
         <custom-constructor>
             if(copy){
                 return new(placement) QWebEngineClientCertificateSelection(*copy);
@@ -129,9 +130,10 @@
             </modify-argument>
         </modify-function>
     </value-type>
-    <object-type name="QWebEnginePage">
+    <object-type name="QWebEnginePage" until="5.*">
         <extra-includes>
             <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
         </extra-includes>
         <modify-function signature="setView(QWidget*)">
             <modify-argument index="1">
@@ -154,24 +156,48 @@
             <modify-argument invalidate-after-use="yes" index="1" />
         </modify-function>
     </object-type>
-    <object-type name="QWebEngineFullScreenRequest">
+    <object-type name="QWebEngineFullScreenRequest" until="5.*">
     </object-type>
-    <object-type name="QWebEngineProfile">
+    <object-type name="QWebEngineProfile" until="5.*">
+        <extra-includes>
+            <include file-name="QtWebEngineCore/QWebEngineNotification" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+        </extra-includes>
     </object-type>
-    <functional-type name="QWebEngineProfile::NotificationPresenter" using="std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)>">
+    <functional-type name="QWebEngineProfile::NotificationPresenter" using="std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)>" generate="no" until="5.*">
         <extra-includes>
             <include file-name="QtWebEngineCore/QWebEngineNotification" location="global"/>
         </extra-includes>
     </functional-type>
-    <object-type name="QWebEngineScriptCollection"/>
-    <object-type name="QWebEngineSettings"/>
+    <object-type name="QWebEngineScriptCollection" until="5.*"/>
+    <object-type name="QWebEngineSettings" until="5.*"/>
+    <functional-type name="QWebEngineView::BooleanConsumer" using="std::function&lt;void(bool)>" generate="no" since="6.2.0"/>
+    <functional-type name="QWebEngineView::DataConsumer" using="std::function&lt;void(const QByteArray&amp;)>" generate="no" since="6.2.0"/>
+    <functional-type name="QWebEngineView::DataConsumer2" using="std::function&lt;void (const QByteArray&amp;)>" generate="no" since="6.2.0"/>
+    <functional-type name="QWebEngineView::ResultConsumer" using="std::function&lt;void(QWebEngineFindTextResult)>" generate="no" since="6.2.0">
+        <extra-includes>
+            <include file-name="QtWebEngineCore/QWebEngineFindTextResult" location="global"/>
+        </extra-includes>
+    </functional-type>
     <object-type name="QWebEngineView">
+        <extra-includes>
+            <include file-name="QtWebEngineCore/QWebEngineFindTextResult" location="global"/>
+            <include file-name="qtjambi/qtjambi_repository.h" location="global"/>
+            <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
+        </extra-includes>
         <modify-function signature="setPage(QWebEnginePage*)">
             <modify-argument index="1">
                 <define-ownership class="native" owner="cplusplus"/>
             </modify-argument>
         </modify-function>
         <modify-function signature="createWindow(QWebEnginePage::WebWindowType)">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createStandardContextMenu()" since="6.2.0">
             <modify-argument index="0">
                 <define-ownership class="shell" owner="cplusplus"/>
                 <define-ownership class="native" owner="java"/>
@@ -184,5 +210,6 @@
     <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineCertificateError::QWebEngineCertificateError', unmatched parameter type 'QSharedPointer&lt;CertificateErrorController> const&amp;'" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineClientCertificateSelection' is missing a default constructor. The resulting C++ code will not compile.*" />
     <suppress-warning text="WARNING(CppImplGenerator) :: Value type 'QWebEngineHistoryItem' is missing a default constructor. The resulting C++ code will not compile.*" />
+    <suppress-warning text="WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function&lt;void(bool)> * (is_busted)" since="6.2.0"/>
 </typesystem>
 

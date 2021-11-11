@@ -15,7 +15,7 @@
 #endif
 #include <QtCore/private/qplugin_p.h>
 
-QString libraryPath(QueryMetadata qt_plugin_query_metadata){
+QString qtjambi_function_library_path(const void* qt_plugin_query_metadata){
 #ifdef Q_OS_WIN32
 #ifdef UNICODE
     QChar data[MAX_PATH];
@@ -45,7 +45,7 @@ QString libraryPath(QueryMetadata qt_plugin_query_metadata){
 #endif // !UNICODE
 #else
     Dl_info info;
-    if (dladdr(reinterpret_cast<const void*>(qt_plugin_query_metadata), &info))
+    if (dladdr(qt_plugin_query_metadata, &info))
     {
        return QLatin1String(info.dli_fname);
     }
@@ -56,7 +56,7 @@ QString libraryPath(QueryMetadata qt_plugin_query_metadata){
 
 QObject* qtjambi_plugin_instance(QueryMetadata qt_plugin_query_metadata){
     Q_ASSERT(qt_plugin_query_metadata);
-    QString libPath = libraryPath(qt_plugin_query_metadata);
+    QString libPath = qtjambi_function_library_path(reinterpret_cast<const void*>(qt_plugin_query_metadata));
     const char* qt_plugin_metadata = qt_plugin_query_metadata();
     if(qt_plugin_metadata){
         qt_plugin_metadata += 16;
@@ -71,7 +71,7 @@ QObject* qtjambi_plugin_instance(QueryMetadata qt_plugin_query_metadata){
             QString pluginName = cbPluginName.toString();
             if(JNIEnv* env =  qtjambi_current_environment()){
                 QTJAMBI_JNI_LOCAL_FRAME(env, 500)
-                jobject result = Java::QtJambi::QtJambiInternal::loadPluginInstance(
+                jobject result = Java::QtJambi::QtJambiPlugins::loadPluginInstance(
                             env,
                             qtjambi_cast<jstring>(env, libPath),
                             qtjambi_cast<jstring>(env, className),

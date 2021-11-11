@@ -30,8 +30,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_qml_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtQml{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qml,QQmlExpression$ValueIsUndefined,

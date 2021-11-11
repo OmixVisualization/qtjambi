@@ -43,21 +43,21 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.multimedia" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.multimedia" module="qtjambi.multimedia" default-superclass="io.qt.QtObject">
     <object-type name="QAbstractVideoSurface">
     </object-type>
     <object-type name="QAudioInput">
-    <modify-function signature="QAudioInput(const QAudioFormat &amp;,QObject*)">
+    <modify-function signature="QAudioInput(const QAudioFormat &amp;,QObject*)" until="5.*">
             <modify-argument index="1">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="QAudioInput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)">
+        <modify-function signature="QAudioInput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)" until="5.*">
             <modify-argument index="2">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="notify()" rename="notifySignal">
+        <modify-function signature="notify()" rename="notifySignal" until="5.*">
         </modify-function>
     </object-type>
     
@@ -94,25 +94,20 @@
     </value-type>
 
     <object-type name="QAudioOutput">
-    <modify-function signature="QAudioOutput(const QAudioFormat &amp;,QObject*)">
+    <modify-function signature="QAudioOutput(const QAudioFormat &amp;,QObject*)" until="5.*">
             <modify-argument index="1">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="QAudioOutput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)">
+        <modify-function signature="QAudioOutput(const QAudioDeviceInfo &amp;,const QAudioFormat &amp;,QObject*)" until="5.*">
             <modify-argument index="2">
                 <replace-default-expression with="new QAudioFormat()"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="notify()" rename="notifySignal">
+        <modify-function signature="notify()" rename="notifySignal" until="5.*">
         </modify-function>
     </object-type>
 
-    <value-type name="QAudioFormat">
-        <modify-function signature="operator=(const QAudioFormat)" remove="all"/>
-        <modify-function signature="operator==(const QAudioFormat)const" remove="all"/>
-        <modify-function signature="operator!=(const QAudioFormat)const" remove="all"/>
-    </value-type>
     <value-type name="QVideoSurfaceFormat">
         <extra-includes>
             <include file-name="QtCore/QScopedPointer" location="global"/>
@@ -133,7 +128,24 @@
         </modify-function>
     </value-type>
     <value-type name="QVideoFrame">
-        <modify-function signature="bits() const">
+        <modify-function signature="bits(int) const" since="6.2.0">
+            <modify-argument index="0">
+                <replace-type modified-type="byte[]"/>
+                <conversion-rule class="native">
+                    jbyteArray %out = %env->NewByteArray(__qt_this->mappedBytes(%1));
+                    %env->SetByteArrayRegion(%out, 0, __qt_this->mappedBytes(%1), reinterpret_cast&lt;const jbyte *>(%in));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="bits(int)" rename="buffer" since="6.2.0">
+            <modify-argument index="0">
+                <replace-type modified-type="java.nio.ByteBuffer"/>
+                <conversion-rule class="native">
+                    jobject %out = %env->NewDirectByteBuffer(%in, __qt_this->mappedBytes(%1));
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="bits() const" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="byte[]"/>
                 <conversion-rule class="native">
@@ -462,7 +474,7 @@
         <extra-includes>
             <include file-name="qtjambi_multimedia_repository.h" location="local"/>
         </extra-includes>
-        <modify-function signature="supportedAudioSampleRates(const QAudioEncoderSettings &amp;, bool *) const">
+        <modify-function signature="supportedAudioSampleRates(const QAudioEncoderSettings &amp;, bool *) const" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Integer>"/>
                 <conversion-rule class="native">
@@ -489,7 +501,7 @@
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const">
+        <modify-function signature="supportedFrameRates(const QVideoEncoderSettings &amp;, bool *) const" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;Double>"/>
                 <conversion-rule class="native">
@@ -516,7 +528,7 @@
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const">
+        <modify-function signature="supportedResolutions(const QVideoEncoderSettings &amp;, bool *) const" until="5.*">
             <modify-argument index="0">
                 <replace-type modified-type="io.qt.multimedia.QMediaService$ListResult&lt;io.qt.core.QSize>"/>
                 <conversion-rule class="native">
@@ -546,6 +558,20 @@
     </object-type>
     <value-type name="QCameraViewfinderSettings">
     </value-type>
+    <object-type name="QCamera">
+        <inject-code until="5.*">
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QCamera__" quote-before-line="}// class"/>
+        </inject-code>
+        <modify-function signature="setViewfinder(QVideoWidget*)" rename="setViewfinderImpl" access="private" until="5.*">
+            <modify-argument index="1">
+            <replace-type modified-type="io.qt.core.QObject" />
+            <conversion-rule class="native">
+                QVideoWidget* %out = reinterpret_cast&lt;QVideoWidget*>(qtjambi_cast&lt;QObject*>(%env, %in));
+            </conversion-rule>
+            <reference-count action="set" variable-name="__rcViewfinder"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
     <object-type name="QMediaPlaylist">
         <extra-includes>
             <include file-name="QtCore/QScopedPointer" location="global"/>
@@ -682,7 +708,7 @@
                         jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
                         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
                         %env->SetObjectArrayElement(%out, jsize(i), element);
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 </conversion-rule>
@@ -743,7 +769,7 @@
                         jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);
                         jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
                         %env->SetObjectArrayElement(%out, jsize(i), element);
-                        qtjambi_throw_java_exception(%env)
+                        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
                     }
                 }
                 </conversion-rule>
@@ -848,6 +874,104 @@
             </modify-argument>
         </modify-function>
     </object-type>
+    <value-type name="QAudioFormat">
+        <inject-code>
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QAudioFormat__" quote-before-line="}// class" since="6.2.0"/>
+        </inject-code>
+        <modify-function signature="normalizedSampleValue(const void*)const" since="6.2.0">
+            <modify-argument index="1">
+                <array-type as-buffer="yes" min-length="1"/>
+            </modify-argument>
+        </modify-function>
+    </value-type>
+    <object-type name="QMediaCaptureSession">
+        <modify-function signature="setAudioInput(QAudioInput*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcAudioInput"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setAudioOutput(QAudioOutput*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcAudioOutput"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setCamera(QCamera*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcCamera"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setRecorder(QMediaRecorder*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcRecorder"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setImageCapture(QImageCapture*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcImageCapture"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setVideoOutput(QObject*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcVideoOutput"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setVideoSink(QVideoSink*)">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcVideoSink"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <object-type name="QMediaPlayer">
+        <modify-function signature="setAudioOutput(QAudioOutput*)" since="6.2.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcAudioOutput"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setSourceDevice(QIODevice*,QUrl)" since="6.2.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcSourceDevice"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setVideoOutput(QObject*)" since="6.2.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcVideoOutput"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setVideoSink(QVideoSink*)" since="6.2.0">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcVideoSink"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setVideoOutput(QVideoWidget*)" rename="setVideoOutputImpl" access="private" until="5.*">
+            <modify-argument index="1">
+            <reference-count action="set" variable-name="__rcVideoOutput"/>
+            <replace-type modified-type="io.qt.core.QObject" />
+            <conversion-rule class="native">
+                QVideoWidget* %out = reinterpret_cast&lt;QVideoWidget*>(qtjambi_cast&lt;QObject*>(%env, %in));
+            </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <inject-code until="5.*">
+            <import-file name="typesystem/java/typesystem_multimedia-java.java" quote-after-line="class QMediaPlayer__" quote-before-line="}// class"/>
+        </inject-code>
+    </object-type>
+    <object-type name="QWaveDecoder">
+        <modify-function signature="setIODevice(QIODevice *)" remove="all">
+            <modify-argument index="1">
+                <reference-count action="set" variable-name="__rcIODevice"/>
+            </modify-argument>
+        </modify-function>
+    </object-type>
+    <value-type name="QVideoFrameFormat">
+        <modify-function signature="updateUniformData(QByteArray *, const QVideoFrame &amp;, const QMatrix4x4 &amp;, float) const" since="6.0.0">
+            <modify-argument index="1">
+            <replace-type modified-type="io.qt.core.QByteArray" />
+            <conversion-rule class="native">
+                QByteArray* %out = qtjambi_cast&lt;QByteArray*>(%env, %in);
+            </conversion-rule>
+            </modify-argument>
+        </modify-function>
+    </value-type>
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />

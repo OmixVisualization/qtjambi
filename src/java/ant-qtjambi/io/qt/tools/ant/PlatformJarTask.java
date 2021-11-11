@@ -72,7 +72,7 @@ public class PlatformJarTask extends Task {
     private Set<String> libraryDir          = new HashSet<String>();
     private List<String> unpackLibs         = new ArrayList<String>();
     private List<String> runtimeLibs        = new ArrayList<String>();
-    private String systemLibs               = OSInfo.os() == OSInfo.OS.Solaris ? SYSLIB_NONE : SYSLIB_AUTO;
+    private String systemLibs               = SYSLIB_AUTO;
     private List<PluginPath> pluginPaths    = new ArrayList<PluginPath>();
     private List<PluginDesignerPath> pluginDesignerPaths = new ArrayList<PluginDesignerPath>();
     private List<Directory> directoryList   = new ArrayList<Directory>();
@@ -143,8 +143,6 @@ public class PlatformJarTask extends Task {
     }
 
     public void setSyslibs(String s) {
-        if(OSInfo.os() == OSInfo.OS.Solaris)
-            return;
         if(s.equals(SYSLIB_NONE) || s.equals(SYSLIB_AUTO))
             systemLibs = s;
         else
@@ -846,11 +844,11 @@ public class PlatformJarTask extends Task {
 	                if(e.getType().equals(LibraryEntry.TYPE_QT)
 	            		&& Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK))
 	            		&& !Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
-	                	copySubdirs(e, srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"));
-	                	symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"));
+	                	copySubdirs(srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"), debug, additionalFiles);
+	                	symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getOriginalname()+".framework"), new File(destDir, e.getOriginalname()+".framework"), debug, symlinks);
                     }else if(e.getType().equals(LibraryEntry.TYPE_QTJAMBI_EXE_UTILITY) && OSInfo.crossOS() == OSInfo.OS.MacOS){
-                        copySubdirs(e, srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"));
-                        symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"));
+                        copySubdirs(srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"), debug, additionalFiles);
+                        symlinkSubdirs(srcDir.getParentFile(), new File(srcDir, e.getName()+".app"), new File(destDir, e.getName()+".app"), debug, symlinks);
 	                }else {
 		                //getProject().log(this, "Copying " + srcFile + " to " + destFile + " (type: " + e.getType() + ", target file: "+e.getTargetName()+", absolute path: "+e.getAbsolutePath()+")", Project.MSG_INFO);
 	                	if(e.getType().equals(LibraryEntry.TYPE_EXE)) {
@@ -865,9 +863,7 @@ public class PlatformJarTask extends Task {
 			                    String libInfix = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_QT_LIBINFIX);
 			                	switch(OSInfo.crossOS()) {
 			                    case MacOS:
-			                    case Solaris:
 			                    case Linux:
-			                    case FreeBSD:
 			        				Path target = Path.of(destFile.getName());
 			                    	File link;
 			                    	String name;
@@ -983,60 +979,66 @@ public class PlatformJarTask extends Task {
         }
     }
     
-    private void copySubdirs(LibraryEntry e, File root, File srcDir, File destDir) throws IOException {
-    	for(File content : srcDir.listFiles()) {
-    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
-    				&& !content.getName().equals("Headers")) {
-    			if(!Files.isSymbolicLink(content.toPath())){
-    				if(content.isDirectory()) {
-        				copySubdirs(e, root, new File(srcDir, content.getName()), new File(destDir, content.getName()));
-        			}else {
-	    				File destFile = new File(destDir, content.getName());
-	    				destDir.mkdirs();
-	    				Util.copy(content, destFile);
-	    				if(content.canExecute())
-		                	destFile.setExecutable(true);
-	    				additionalFiles.add(root.toPath().relativize(content.toPath()).toString());
-        			}
-    			}
-    		}
+    static void copySubdirs(File root, File srcDir, File destDir, boolean debug, List<String> additionalFiles) throws IOException {
+    	if(srcDir.isDirectory()) {
+	    	for(File content : srcDir.listFiles()) {
+	    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
+	    				&& !content.getName().equals("Headers")) {
+	    			if(!Files.isSymbolicLink(content.toPath())){
+	    				if(content.isDirectory()) {
+	        				copySubdirs(root, new File(srcDir, content.getName()), new File(destDir, content.getName()), debug, additionalFiles);
+	        			}else {
+		    				File destFile = new File(destDir, content.getName());
+		    				destDir.mkdirs();
+		    				Util.copy(content, destFile);
+		    				if(content.canExecute())
+			                	destFile.setExecutable(true);
+		    				additionalFiles.add(root.toPath().relativize(content.toPath()).toString());
+	        			}
+	    			}
+	    		}
+	    	}
+    	}else {
+    		System.err.println("cannot copy directory "+srcDir);
     	}
     }
     
-    private void symlinkSubdirs(File root, File srcDir, File destDir) throws IOException {
-    	for(File content : srcDir.listFiles()) {
-    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
-    				&& !content.getName().equals("Headers")) {
-    			if(Files.isSymbolicLink(content.toPath())){
-    				File destFile = new File(destDir, content.getName());
-    				Path target = null;
-    				try {
-    					target = Files.readSymbolicLink(content.toPath());
-    					if(target.isAbsolute())
-    						target = srcDir.toPath().relativize(target);
-    					if(!Files.exists(destFile.toPath())) {
-    						try{
-    							Files.createSymbolicLink(destFile.toPath(), target);
-    						}catch(java.nio.file.FileAlreadyExistsException e) {}
-    					}else if(!Files.isSymbolicLink(destFile.toPath())){
-    						destFile.delete();
-    						try{
-	    						Files.createSymbolicLink(destFile.toPath(), target);
-							}catch(java.nio.file.FileAlreadyExistsException e) {}
-    					}
-    					if(!target.isAbsolute())
-    						target = srcDir.toPath().resolve(target);
-						symlinks.add(new SimpleEntry<>(root.toPath().relativize(content.toPath()).toString(), root.toPath().relativize(target).toString()));
-					} catch (Exception e) {
-						System.out.println("root: "+root.toPath());
-						System.out.println("link: "+content.toPath());
-						System.out.println("target: "+target);
-						e.printStackTrace();
-					}
-    			}else if(content.isDirectory()) {
-					symlinkSubdirs(root, new File(srcDir, content.getName()), new File(destDir, content.getName()));
-    			}
-    		}
+    static void symlinkSubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,String>> symlinks) throws IOException {
+    	if(srcDir.isDirectory()) {
+	    	for(File content : srcDir.listFiles()) {
+	    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
+	    				&& !content.getName().equals("Headers")) {
+	    			if(Files.isSymbolicLink(content.toPath())){
+	    				File destFile = new File(destDir, content.getName());
+	    				Path target = null;
+	    				try {
+	    					target = Files.readSymbolicLink(content.toPath());
+	    					if(target.isAbsolute())
+	    						target = srcDir.toPath().relativize(target);
+	    					if(!Files.exists(destFile.toPath())) {
+	    						try{
+	    							Files.createSymbolicLink(destFile.toPath(), target);
+	    						}catch(java.nio.file.FileAlreadyExistsException e) {}
+	    					}else if(!Files.isSymbolicLink(destFile.toPath())){
+	    						destFile.delete();
+	    						try{
+		    						Files.createSymbolicLink(destFile.toPath(), target);
+								}catch(java.nio.file.FileAlreadyExistsException e) {}
+	    					}
+	    					if(!target.isAbsolute())
+	    						target = srcDir.toPath().resolve(target);
+							symlinks.add(new SimpleEntry<>(root.toPath().relativize(content.toPath()).toString(), root.toPath().relativize(target).toString()));
+						} catch (Exception e) {
+							System.out.println("root: "+root.toPath());
+							System.out.println("link: "+content.toPath());
+							System.out.println("target: "+target);
+							e.printStackTrace();
+						}
+	    			}else if(content.isDirectory()) {
+						symlinkSubdirs(root, new File(srcDir, content.getName()), new File(destDir, content.getName()), debug, symlinks);
+	    			}
+	    		}
+	    	}
     	}
     }
 
@@ -1755,7 +1757,7 @@ public class PlatformJarTask extends Task {
     	return result;
     }
 
-    private String xmlEscape(String s) {
+    static String xmlEscape(String s) {
         if(s == null)
             return s;
         StringBuilder sb = new StringBuilder();

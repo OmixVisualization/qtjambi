@@ -81,10 +81,10 @@ interface QXmlEntityResolver___ extends QXmlEntityResolver {
 
     public static final class ResolvedEntity {
 
-            public final @io.qt.internal.NativeAccess boolean error;
-            public final @io.qt.internal.NativeAccess QXmlInputSource inputSource;
+            public final @io.qt.NativeAccess boolean error;
+            public final @io.qt.NativeAccess QXmlInputSource inputSource;
 
-            @io.qt.internal.NativeAccess
+            @io.qt.NativeAccess
             public ResolvedEntity(boolean error, QXmlInputSource inputSource) {
 
                 this.error = error;

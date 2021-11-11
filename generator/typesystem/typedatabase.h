@@ -144,7 +144,7 @@ class TypeDatabase {
             return "typesystem.txt";
         }
 
-        void initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion, bool isQtjambiPort);
+        void initialize(const QString &filename, const QStringList &importInputDirectoryList, uint qtVersion);
 
         void parseFile(const QString &filename, const QStringList &importInputDirectoryList, bool generate = true, bool optional = false);
 
@@ -174,6 +174,7 @@ class TypeDatabase {
 
         QList<TypeRejection> m_rejections;
         QStringList m_rebuild_classes;
+        QMap<QString,bool> m_rejectedClasses;
 
         DefinedPtr m_defined;
         QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;

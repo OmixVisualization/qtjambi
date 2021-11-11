@@ -11,3 +11,6 @@ QT += widgets uiplugin designer
 HEADERS +=  \
             designer.h \
             qtjambiresourcebrowser.h
+
+SOURCES += \
+    qtjambi_designer_util.cpp

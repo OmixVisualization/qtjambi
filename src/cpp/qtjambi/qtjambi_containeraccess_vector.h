@@ -108,7 +108,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -118,7 +118,7 @@ public:
         return qtjambi_from_QIterator(env,
                                       ownerId,
                                       new typename QVector<T>::const_iterator(reinterpret_cast<const QVector<T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QVector<T>::const_iterator*>(ptr); },
                                       access);
     }
 
@@ -139,9 +139,9 @@ public:
 
     void appendVector(JNIEnv * env, void* container, jobject list) override {
         if (qtjambi_is_QVector(env, list, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, list)){
+            if(QVector<T>* ptr = qtjambi_to_object<QVector<T>>(env, list)){
                 QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QVector<T> *>(container)->append(*reinterpret_cast<QVector<T> *>(ptr));
+                reinterpret_cast<QVector<T> *>(container)->append(*ptr);
             }
         }else{
             jobject iter = qtjambi_collection_iterator(env, list);
@@ -349,12 +349,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QVector(env, other, elementMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
-
+            if(QVector<T>* ptr = qtjambi_to_object<QVector<T>>(env, other)){
                 QTJAMBI_ELEMENT_LOCKER
-                bool equals = *reinterpret_cast<const QVector<T> *>(container)==*reinterpret_cast<QVector<T> *>(ptr);
-
-                return equals;
+                return *reinterpret_cast<const QVector<T> *>(container)==*ptr;
             }
         }else{
             QTJAMBI_ELEMENT_LOCKER

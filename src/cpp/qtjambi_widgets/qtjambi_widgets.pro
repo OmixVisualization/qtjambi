@@ -8,7 +8,6 @@ SOURCES += \
     qtjambi_widgets_repository.cpp \
     qtjambiitemeditorcreator.cpp \
     qwidgetutils.cpp \
-    signalmapper.cpp \
     qtjambi_widgets_core.cpp
 
 HEADERS += \

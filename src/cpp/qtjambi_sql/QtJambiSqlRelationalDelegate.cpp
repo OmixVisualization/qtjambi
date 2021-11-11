@@ -35,8 +35,8 @@
 ****************************************************************************/
 
 #include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_registry.h>
 #include <qtjambi/qtjambi_cast.h>
-#include <QtWidgets/QtWidgets>
 #include <QtSql/QSqlRelationalDelegate>
 
 void initialize_meta_info_QSqlRelationalDelegate(){
@@ -46,4 +46,12 @@ void initialize_meta_info_QSqlRelationalDelegate(){
     Q_UNUSED(typeId)
 #endif //QT_WIDGETS_LIB
 #endif //QT_CONFIG(sqlmodel)
+}
+
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_sql_QSqlDriverCreator_getConstructorHandle)(JNIEnv *env, jobject, jclass type){
+    return jlong(env->GetMethodID(type, "<init>", "()V"));
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_sql_QSqlDriverCreator_create)(JNIEnv *env, jobject, jclass type, jlong methodId){
+    return env->NewObject(type, jmethodID(methodId));
 }

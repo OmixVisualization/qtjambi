@@ -47,6 +47,8 @@
 
 #ifndef QT_JAMBI_RUN
 #include <qtjambi/qtjambi_global.h>
+#include <qtjambi/qtjambi_core.h>
+#include <qtjambi/qtjambi_jobjectwrapper.h>
 #endif
 #include <QtCore/QtCore>
 #include <QtGui/QPixmap>

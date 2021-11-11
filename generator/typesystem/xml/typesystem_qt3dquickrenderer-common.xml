@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem>
+<typesystem description="">
     <namespace-type name="Qt3DRender::Render::Quick" java-name="Qt3DQuickRenderer" generate="no"/>
     <object-type name="Qt3DRender::Render::Quick::Quick3DEffect" java-name="Quick3DEffect">
         <extra-includes>

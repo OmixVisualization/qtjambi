@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DCore">
+<typesystem qt-library="Qt3DCore" description="The Qt 3D module contains functionality to support near-realtime simulation systems.">
     <namespace-type name="Qt3DCore">
         <modify-function signature="functorTypeId()" remove="all"/>
         <modify-function signature="elementType(GLint)" remove="all"/>
@@ -262,17 +262,9 @@
     <enum-type name="Qt3DCore::QSceneChange::Priority" until="5.6"/>
     <enum-type name="Qt3DCore::QSceneChange::ObservableType" until="5.6"/>
     <enum-type name="Qt3DCore::QSceneChange::DeliveryFlag" flags="Qt3DCore::QSceneChange::DeliveryFlags" until="5.*"/>
-    <object-type name="Qt3DCore::QSceneChange" java-name="QSceneChange" polymorphic-base="yes" 
-        polymorphic-id-expression="%1-&gt;type() != Qt3DCore::NodeCreated 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::NodeDeleted 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyUpdated 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyValueAdded 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::PropertyValueRemoved 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::ComponentAdded 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::ComponentRemoved 
-                        &amp;&amp; %1-&gt;type() != Qt3DCore::CommandRequested" until="5.*">
+    <object-type name="Qt3DCore::QSceneChange" java-name="QSceneChange" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QNodeCommand" java-name="QNodeCommand" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::CommandRequested" until="5.*">
+    <object-type name="Qt3DCore::QNodeCommand" java-name="QNodeCommand" until="5.*">
     </object-type>
     <enum-type name="Qt3DCore::QBackendNode::Mode"/>
     <object-type name="Qt3DCore::QBackendNode" java-name="QBackendNode">
@@ -396,36 +388,34 @@
     </object-type>
     <object-type name="Qt3DCore::QTranslateTransform" java-name="QTranslateTransform">
     </object-type>
-    <object-type name="Qt3DCore::QComponentAddedChange" java-name="QComponentAddedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::ComponentAdded" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QComponentAddedChange" java-name="QComponentAddedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QComponentRemovedChange" java-name="QComponentRemovedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::ComponentRemoved" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QComponentRemovedChange" java-name="QComponentRemovedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QDynamicPropertyUpdatedChange" java-name="QDynamicPropertyUpdatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QDynamicPropertyUpdatedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QDynamicPropertyUpdatedChange" java-name="QDynamicPropertyUpdatedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QNodeCreatedChangeBase" java-name="QNodeCreatedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeCreated" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QNodeCreatedChangeBase" java-name="QNodeCreatedChange" since="5.7.0" until="5.*">
     </object-type>
-    <!--object-type name="Qt3DCore::QNodeCreatedChange" java-name="QNodeCreatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyUpdatedChangeBase)" since="5.7.0">
-    </object-type-->
     <value-type name="Qt3DCore::QNodeIdTypePair" java-name="QNodeIdTypePair" since="5.8.0"/>
-    <object-type name="Qt3DCore::QNodeDestroyedChange" java-name="QNodeDestroyedChange" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeDeleted" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QNodeDestroyedChange" java-name="QNodeDestroyedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyNodeAddedChange" java-name="QPropertyNodeAddedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyNodeAddedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyNodeAddedChange" java-name="QPropertyNodeAddedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyNodeRemovedChange" java-name="QPropertyNodeRemovedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyNodeRemovedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyNodeRemovedChange" java-name="QPropertyNodeRemovedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyUpdatedChange" java-name="QPropertyUpdatedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyUpdatedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyUpdatedChange" java-name="QPropertyUpdatedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyUpdatedChangeBase" java-name="QPropertyUpdatedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyUpdated" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyUpdatedChangeBase" java-name="QPropertyUpdatedChangeBase" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyValueAddedChange" java-name="QPropertyValueAddedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyValueAddedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyValueAddedChange" java-name="QPropertyValueAddedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyValueAddedChangeBase" java-name="QPropertyValueAddedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyValueAdded" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyValueAddedChangeBase" java-name="QPropertyValueAddedChangeBase" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyValueRemovedChange" java-name="QPropertyValueRemovedChange" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QPropertyValueRemovedChange)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyValueRemovedChange" java-name="QPropertyValueRemovedChange" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QPropertyValueRemovedChangeBase" java-name="QPropertyValueRemovedChangeBase" polymorphic-id-expression="%1-&gt;type() == Qt3DCore::PropertyValueRemoved" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QPropertyValueRemovedChangeBase" java-name="QPropertyValueRemovedChangeBase" since="5.7.0" until="5.*">
     </object-type>
-    <object-type name="Qt3DCore::QStaticPropertyUpdatedChangeBase" java-name="QStaticPropertyUpdatedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyUpdatedChangeBase)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QStaticPropertyUpdatedChangeBase" java-name="QStaticPropertyUpdatedChangeBase" since="5.7.0" until="5.*">
         <modify-function signature="propertyName() const">
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
@@ -444,7 +434,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="Qt3DCore::QStaticPropertyValueAddedChangeBase" java-name="QStaticPropertyValueAddedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyValueAddedChangeBase)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QStaticPropertyValueAddedChangeBase" java-name="QStaticPropertyValueAddedChangeBase" since="5.7.0" until="5.*">
         <modify-function signature="propertyName() const">
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>
@@ -463,7 +453,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="Qt3DCore::QStaticPropertyValueRemovedChangeBase" java-name="QStaticPropertyValueRemovedChangeBase" polymorphic-id-expression="typeid(*%1)==typeid(Qt3DCore::QStaticPropertyValueRemovedChangeBase)" since="5.7.0" until="5.*">
+    <object-type name="Qt3DCore::QStaticPropertyValueRemovedChangeBase" java-name="QStaticPropertyValueRemovedChangeBase" since="5.7.0" until="5.*">
         <modify-function signature="propertyName() const">
             <modify-argument index="return">
                 <replace-type modified-type="java.lang.String"/>

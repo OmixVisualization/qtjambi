@@ -43,24 +43,28 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSensors">
-    <object-type name="QSensorGesture">
+<typesystem qt-library="QtSensors" description="Provides access to sensor hardware and motion gesture recognition.">
+    <rejection class="QSensorGesture" function-name="metaObject"/>
+    <rejection class="QSensorGesture" function-name="qt_metacall"/>
+    <object-type name="QSensorGesture" generate="no-shell" until="5.">
         <modify-function signature="detected(QString)" remove="all"/>
     </object-type>
-    <object-type name="QSensorGestureManager">
+    <object-type name="QSensorGestureManager" until="5.">
     </object-type>
-    <interface-type name="QSensorGesturePluginInterface">
+    <interface-type name="QSensorGesturePluginInterface" until="5.">
     </interface-type>
-    <object-type name="QSensorGestureRecognizer">
+    <object-type name="QSensorGestureRecognizer" until="5.">
     </object-type>
     <enum-type name="QAccelerometer::AccelerationMode"/>
     <object-type name="QAccelerometer">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QAccelerometerReading">
     </object-type>
     <object-type name="QAltimeter">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QAltimeterReading">
     </object-type>
@@ -69,24 +73,29 @@
     </object-type>
     <object-type name="QAmbientLightSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QAmbientTemperatureReading">
     </object-type>
     <object-type name="QAmbientTemperatureSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QCompass">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QCompassReading">
     </object-type>
     <object-type name="QGyroscope">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QGyroscopeReading">
     </object-type>
     <object-type name="QDistanceSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QDistanceReading">
     </object-type>
@@ -94,29 +103,35 @@
     </object-type>
     <object-type name="QHolsterSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QHumidityReading">
     </object-type>
     <object-type name="QHumiditySensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QIRProximityReading">
     </object-type>
     <object-type name="QIRProximitySensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QLidReading">
     </object-type>
     <object-type name="QLidSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QMagnetometer">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QMagnetometerReading">
     </object-type>
     <object-type name="QOrientationSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QOrientationReading">
     </object-type>
@@ -125,27 +140,32 @@
     </object-type>
     <object-type name="QPressureSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QProximityReading">
     </object-type>
     <object-type name="QProximitySensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QRotationReading">
     </object-type>
     <object-type name="QRotationSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <enum-type name="QTapReading::TapDirection"/>
     <object-type name="QTapReading">
     </object-type>
     <object-type name="QTapSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <object-type name="QTiltReading">
     </object-type>
     <object-type name="QTiltSensor">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <enum-type name="QSensor::AxesOrientationMode"/>
     <enum-type name="QSensor::Feature"/>
@@ -157,6 +177,7 @@
     </object-type>
     <object-type name="QLightSensor" since="5.15.0">
         <modify-field name="type" read="false"/>
+        <modify-field name="sensorType" read="false"/>
     </object-type>
     <value-type name="qoutputrange" java-name="QOutputRange">
     </value-type>

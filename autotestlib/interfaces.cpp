@@ -98,3 +98,47 @@ bool FunctionManager::callStringConsumer(){
     return bool(m_stringConsumer);
 }
 QString FunctionManager::text() const {return m_text;}
+
+class MoccedInternalSub1Object : public MoccedSub1Object{
+};
+
+class UnMoccedInternalSub1Object : public UnMoccedSub1Object{
+};
+
+class MoccedInternalSub2Object : public MoccedSub2Object{
+};
+
+class UnMoccedInternalSub2Object : public UnMoccedSub2Object{
+};
+
+class MoccedInternalObject : public MoccedObject{
+};
+
+class UnMoccedInternalObject : public UnMoccedObject{
+};
+
+QObject* UnMoccedObject::create(int type){
+    switch(type){
+    case 1:
+        return new MoccedObject;
+    case 2:
+        return new MoccedSub1Object;
+    case 3:
+        return new MoccedSub2Object;
+    case 4:
+        return new MoccedInternalSub1Object;
+    case 5:
+        return new MoccedInternalSub2Object;
+    case -1:
+        return new UnMoccedObject;
+    case -2:
+        return new UnMoccedSub1Object;
+    case -3:
+        return new UnMoccedSub2Object;
+    case -4:
+        return new UnMoccedInternalSub1Object;
+    case -5:
+        return new UnMoccedInternalSub2Object;
+    }
+    return nullptr;
+}

@@ -34,9 +34,9 @@ import java.lang.ref.WeakReference;
 import org.junit.Test;
 
 import io.qt.QtObject;
+import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.InvalidatorQObjectType;
 import io.qt.autotests.generated.QObjectType;
-import io.qt.internal.QtJambiInternal;
 
 public class TestMemoryManagementSharedQObjectTypeInterfaces extends MemoryManagement {
     @Override
@@ -92,7 +92,7 @@ public class TestMemoryManagementSharedQObjectTypeInterfaces extends MemoryManag
             public void overrideMe(QObjectType t) {
                 if (returnReference) {
                     temporaryObject = t;
-                    QtJambiInternal.setJavaOwnership(temporaryObject);
+                    General.internalAccess.setJavaOwnership(temporaryObject);
                 }
             }
         }.invalidateObject((QObjectType) obj);

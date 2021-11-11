@@ -266,6 +266,7 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
                     && init_declarator->initializer->initializer_clause->expression){
                 if(init_declarator->initializer->initializer_clause->expression->kind==AST::Kind_DeclDeleteAST){
                     fun->setAccessPolicy(CodeModel::Private);
+                    fun->setDeleted(true);
                 }else if(init_declarator->initializer->initializer_clause->expression->kind==AST::Kind_DeclDefaultAST){
                     // do nothing
                 }else{
@@ -280,6 +281,8 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
                 int kind = decode_token(declarator->fun_cv->at(i)->element);
                 if(kind==Token_const){
                     fun->setConstant(true);
+                }else if(kind==Token_constexpr){
+                    fun->setConstExpr(true);
                 }else if(kind==Token_volatile){
                     fun->setVolatile(true);
                 }
@@ -419,6 +422,16 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         TypeInfo typeInfo = CompilerUtils::typeDescription(node->type_specifier,
                             declarator,
                             this);
+        if (node->type_specifier && node->type_specifier->cv) {
+            const ListNode<std::size_t> *it = node->type_specifier->cv->toFront();
+            const ListNode<std::size_t> *end = it;
+            do {
+                int kind = _M_token_stream->kind(it->element);
+                if (kind == Token_constexpr)
+                    var->setConstExpr(true);
+                it = it->next;
+            } while (it != end);
+        }
         if (declarator != init_declarator->declarator
                 && init_declarator->declarator->parameter_declaration_clause != nullptr) {
             typeInfo.setFunctionPointer(true);
@@ -492,6 +505,8 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
             int kind = decode_token(declarator->fun_cv->at(i)->element);
             if(kind==Token_const){
                 _M_current_function->setConstant(true);
+            }else if(kind==Token_constexpr){
+                _M_current_function->setConstExpr(true);
             }else if(kind==Token_volatile){
                 _M_current_function->setVolatile(true);
             }
@@ -711,6 +726,9 @@ void Binder::visitNamespace(NamespaceAST *node) {
 
         QStringList qualified_name = scope->qualifiedName();
         qualified_name += name;
+        for(int i=1; i<node->namespace_name_size; ++i){
+            qualified_name += decode_symbol(node->namespace_name+(i*2))->as_string();
+        }
         NamespaceModelItem ns =
             model_safe_cast<NamespaceModelItem>(_M_model->findItem(qualified_name,
                                                 _M_current_file->toItem()));
@@ -1038,6 +1056,9 @@ void Binder::applyStorageSpecifiers(const ListNode<std::size_t> *it, MemberModel
                 break;
             case Token_static:
                 item->setStatic(true);
+                break;
+            case Token_constexpr:
+                item->setConstExpr(true);
                 break;
             case Token_QTJAMBI_DEPRECATED:
                 item->setDeprecated(true);

@@ -47,7 +47,6 @@ import io.qt.core.QVariant;
 import io.qt.sql.QSqlError;
 import io.qt.sql.QSqlField;
 
-@SuppressWarnings("deprecation")
 class QJdbcSqlUtil
 {
     private static HashMap<String, QVariant.Type> javaToVariant = new HashMap<String, QVariant.Type>();
@@ -129,7 +128,6 @@ class QJdbcSqlUtil
         }
     }
 
-    @SuppressWarnings("deprecation")
 	static QSqlError getError(SQLException ex, String driverText, QSqlError.ErrorType t)
     {
         StringBuilder dbText = new StringBuilder();

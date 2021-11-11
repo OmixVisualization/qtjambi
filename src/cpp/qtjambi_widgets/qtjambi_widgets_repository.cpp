@@ -1,8 +1,6 @@
 #include <QtCore/QMutex>
 #include "qtjambi_widgets_repository.h"
 
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
-
 namespace Java{
 namespace QtWidgets{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QGraphicsItem$BlockedByModalPanelInfo,

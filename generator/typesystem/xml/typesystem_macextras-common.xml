@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtMacExtras">
+<typesystem qt-library="QtMacExtras" description="Provides platform-specific APIs for macOS.">
   <rejection class="QCocoaWindowFunctions::BottomLeftClippedByNSWindowOffset"/>
   <namespace-type name="QtMac"/>
   <enum-type name="QMacToolBarItem::StandardItem"/>

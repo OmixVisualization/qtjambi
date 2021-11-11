@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtTextToSpeech">
+<typesystem qt-library="QtTextToSpeech" description="Provides support for accessibility features such as text-to-speech.">
     <enum-type name="QTextToSpeech::State"/>
     <object-type name="QTextToSpeech">
     </object-type>

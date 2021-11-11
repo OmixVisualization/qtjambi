@@ -36,18 +36,49 @@
 
 class QRemoteObjectNode___ {
     
+    /**
+     * <p>Overloaded function for {@link #acquireModel(java.lang.String, io.qt.remoteobjects.QtRemoteObjects.InitialAction, java.util.Collection)}</p>
+     * <p>with: </p><ul>
+     * <li><code>action = io.qt.remoteobjects.QtRemoteObjects.InitialAction.FetchRootSize</code></li>
+     * </ul>
+     */
     @io.qt.QtUninvokable
-    public final java.util.List<java.lang.String> instances(Class<? extends io.qt.core.QObject> type){
+    public final io.qt.remoteobjects.QAbstractItemModelReplica acquireModel(java.lang.String name, int...rolesHint) {
+        return acquireModel(name, io.qt.remoteobjects.QtRemoteObjects.InitialAction.FetchRootSize, rolesHint);
+    }
+    
+    /**
+     * <p>Overloaded function for {@link #acquireModel(java.lang.String, io.qt.remoteobjects.QtRemoteObjects.InitialAction, java.util.Collection)}.
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.remoteobjects.QAbstractItemModelReplica acquireModel(java.lang.String name, io.qt.remoteobjects.QtRemoteObjects.InitialAction action, int...rolesHint) {
+        java.util.List<Integer> _rolesHint = new java.util.ArrayList<>();
+        for (int hint : rolesHint) {
+            _rolesHint.add(hint);
+        }
+        return acquireModel(name, action, _rolesHint);
+    }
+    
+    @io.qt.QtUninvokable
+    public final io.qt.core.QStringList instances(Class<? extends io.qt.core.QObject> type){
         for(io.qt.core.QPair<String, String> info : io.qt.core.QMetaObject.forType(type).classInfos()) {
             if("RemoteObject Type".equals(info.first)) {
                 return instances(info.second);
             }
         }
-        return new java.util.ArrayList<>();
+        return new io.qt.core.QStringList();
+    }
+    
+    @io.qt.QtUninvokable
+    public final <T extends QRemoteObjectReplica> T acquire(Class<T> type) throws NoSuchMethodException{
+        return acquire(type, null);
     }
     
     @io.qt.QtUninvokable
     public final <T extends QRemoteObjectReplica> T acquire(Class<T> type, java.lang.String name) throws NoSuchMethodException{
+        if(type==QRemoteObjectDynamicReplica.class) {
+            return type.cast(acquireDynamic(name));
+        }
         java.lang.reflect.Constructor<T> constructor = type.getConstructor(QRemoteObjectNode.class, String.class);
         try {
             return constructor.newInstance(this, name);
@@ -96,18 +127,6 @@ class QtRemoteObjects___ {
     }
     
     @io.qt.QtUninvokable
-    public static void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type){
-        try {
-            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
-            qRegisterRemoteObjectsClient(id, type, constructor);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    @io.qt.QtUninvokable
-    private static native void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type, java.lang.reflect.Constructor<?> constructor);
-    
-    @io.qt.QtUninvokable
     public static void qRegisterRemoteObjectsServer(java.lang.String id, Class<? extends QConnectionAbstractServer> type){
         try {
             java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
@@ -121,6 +140,34 @@ class QtRemoteObjects___ {
     
 }// class
 
+class QtRemoteObjects_5__ {
+    @io.qt.QtUninvokable
+    public static void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type){
+        try {
+            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
+            qRegisterRemoteObjectsClient(id, type, constructor);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @io.qt.QtUninvokable
+    private static native void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends ClientIoDevice> type, java.lang.reflect.Constructor<?> constructor);
+}// class
+
+class QtRemoteObjects_6__ {
+    @io.qt.QtUninvokable
+    public static void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends QtROClientIoDevice> type){
+        try {
+            java.lang.reflect.Constructor<?> constructor = type.getConstructor(io.qt.core.QObject.class);
+            qRegisterRemoteObjectsClient(id, type, constructor);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    @io.qt.QtUninvokable
+    private static native void qRegisterRemoteObjectsClient(java.lang.String id, Class<? extends QtROClientIoDevice> type, java.lang.reflect.Constructor<?> constructor);
+}// class
+
 class IoDevice___ {
     
     public class ReadResult{
@@ -132,6 +179,20 @@ class IoDevice___ {
             this.packetType = packetType;
             this.result = result;
         }
+    }
+    
+}// class
+
+class QRemoteObjectPendingCall___{
+    
+    /**
+     * <p>Overloaded function for {@link #waitForFinished(int)}
+     *  with <code>timeout = 30000</code>.</p>
+     */
+    @io.qt.QtDeclaredFinal
+    @io.qt.QtUninvokable
+    public default void waitForFinished() {
+        waitForFinished((int)30000);
     }
     
 }// class

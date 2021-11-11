@@ -42,12 +42,35 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.webengine.widgets" default-superclass="io.qt.QtObject">
-    <inject-code position="3">
-        io.qt.QtUtilities.initializePackage("io.qt.quick.widgets");
-        if(io.qt.QtUtilities.isAvailableQtLibrary("Positioning"))
-            io.qt.QtUtilities.loadQtLibrary("Positioning");
-    </inject-code>
+<typesystem package="io.qt.webengine.widgets" module="qtjambi.webenginewidgets" default-superclass="io.qt.QtObject">
+    <required-library name="QtQuickWidgets" optional="yes"/>
+    <required-library name="QtPrintSupport"/>
+´    <template name="web.comsumer.function">
+        std::function&lt;void(%TYPE)> %out;
+        if(%in){
+            JObjectWrapper wrapper(%env, %in);
+            %out = [wrapper](%TYPE value){
+                        if(JNIEnv *env = qtjambi_current_environment()){
+                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                            jobject _value = qtjambi_cast&lt;jobject>(env, value);
+                            Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                        }
+                    };
+        }
+    </template>
+    <template name="web.comsumer.QWebEngineCallback">
+        QWebEngineCallback&lt;%TYPE> %out;
+        if(%in){
+            JObjectWrapper wrapper(%env, %in);
+            %out = [wrapper](%TYPE value){
+                if(JNIEnv *env = qtjambi_current_environment()){
+                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                    jobject _value = qtjambi_cast&lt;jobject>(env, value);
+                    Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                }
+            };
+        }
+    </template>
     <object-type name="QWebEngineProfile">
         <modify-function signature="installUrlSchemeHandler(QByteArray,QWebEngineUrlSchemeHandler*)">
             <modify-argument index="2">
@@ -67,6 +90,26 @@
         <modify-function signature="setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcUrlRequestInterceptor"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="setNotificationPresenter(std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)>)">
+            <modify-argument index="1">
+                <replace-default-expression with="null"/>
+                <replace-type modified-type="java.util.function.Consumer&lt;io.qt.webengine.core.QWebEngineNotification>"/>
+                <conversion-rule class="native">
+                    std::function&lt;void(std::unique_ptr&lt;QWebEngineNotification>)> %out;
+                    if(%in){
+                        JObjectWrapper wrapper(%env, %in);
+                        %out = [wrapper](std::unique_ptr&lt;QWebEngineNotification> value){
+                                    if(JNIEnv *env = qtjambi_current_environment()){
+                                        QTJAMBI_JNI_LOCAL_FRAME(env, 200)
+                                        QtJambiScope __qtjambi_scope;
+                                        jobject _value = qtjambi_cast&lt;jobject>(env, __qtjambi_scope, value);
+                                        Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+                                    }
+                                };
+                    }
+                </conversion-rule>
             </modify-argument>
         </modify-function>
     </object-type>
@@ -172,14 +215,9 @@
                 <replace-type modified-type="java.util.function.Consumer&lt;io.qt.core.QByteArray>"/>
                 <no-null-pointer/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;const QByteArray&amp;> %out([wrapper](const QByteArray&amp; data){
-                        if(JNIEnv *env = qtjambi_current_environment()){
-                            QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                            jobject _data = qtjambi_cast&lt;jobject>(env, data);
-                            Java::Runtime::Consumer::accept(env, wrapper.object(), _data);
-                        }
-                    });
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="const QByteArray &amp;"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
             <modify-argument index="2">
@@ -191,15 +229,9 @@
                 <replace-default-expression with="null"/>
                 <replace-type modified-type="java.util.function.Consumer&lt;Boolean>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;bool> %out = %in ? QWebEngineCallback&lt;bool>(
-                        [wrapper](bool b){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _b = qtjambi_cast&lt;jobject>(env, b);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _b);
-                            }
-                        }) : QWebEngineCallback&lt;bool>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="bool"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -208,15 +240,9 @@
                 <no-null-pointer/>
                 <replace-type modified-type="java.util.function.Consumer&lt;String>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;const QString &amp;> %out = %in ? QWebEngineCallback&lt;const QString &amp;>(
-                        [wrapper](const QString &amp; strg){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _strg = qtjambi_cast&lt;jobject>(env, strg);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _strg);
-                            }
-                        }) : QWebEngineCallback&lt;const QString &amp;>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="const QString &amp;"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -225,15 +251,9 @@
                 <no-null-pointer/>
                 <replace-type modified-type="java.util.function.Consumer&lt;String>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;const QString &amp;> %out = %in ? QWebEngineCallback&lt;const QString &amp;>(
-                        [wrapper](const QString &amp; strg){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _strg = qtjambi_cast&lt;jobject>(env, strg);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _strg);
-                            }
-                        }) : QWebEngineCallback&lt;const QString &amp;>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="const QString &amp;"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -242,15 +262,9 @@
                 <no-null-pointer/>
                 <replace-type modified-type="java.util.function.Consumer&lt;Object>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;const QVariant &amp;> %out = %in ? QWebEngineCallback&lt;const QVariant &amp;>(
-                        [wrapper](const QVariant &amp; strg){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _strg = qtjambi_cast&lt;jobject>(env, strg);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _strg);
-                            }
-                        }) : QWebEngineCallback&lt;const QVariant &amp;>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="const QVariant &amp;"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -259,15 +273,9 @@
                 <no-null-pointer/>
                 <replace-type modified-type="java.util.function.Consumer&lt;Object>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;const QVariant &amp;> %out = %in ? QWebEngineCallback&lt;const QVariant &amp;>(
-                        [wrapper](const QVariant &amp; strg){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _strg = qtjambi_cast&lt;jobject>(env, strg);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _strg);
-                            }
-                        }) : QWebEngineCallback&lt;const QVariant &amp;>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="const QVariant &amp;"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -275,15 +283,9 @@
             <modify-argument index="2">
                 <replace-type modified-type="java.util.function.Consumer&lt;Boolean>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;bool> %out = %in ? QWebEngineCallback&lt;bool>(
-                        [wrapper](bool b){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _b = qtjambi_cast&lt;jobject>(env, b);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _b);
-                            }
-                        }) : QWebEngineCallback&lt;bool>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="bool"/>
+                    </insert-template>
                 </conversion-rule>
             </modify-argument>
         </modify-function>
@@ -293,21 +295,44 @@
             <include file-name="qtjambi/qtjambi_jobjectwrapper.h" location="global"/>
             <include file-name="qtjambi_webenginewidgets_repository.h" location="local"/>
         </extra-includes>
-        <modify-function signature="findText(const QString &amp;, QFlags&lt;QWebEnginePage::FindFlag>, QWebEngineCallback)">
+        <modify-function signature="findText(QString, QFlags&lt;QWebEnginePage::FindFlag>, std::function&lt;void(QWebEngineFindTextResult)>)" since="6.2.0">
+            <modify-argument index="3">
+                <replace-default-expression with="null"/>
+                <replace-type modified-type="java.util.function.Consumer&lt;io.qt.webengine.core.QWebEngineFindTextResult>"/>
+                <conversion-rule class="native">
+                    <insert-template name="web.comsumer.function">
+                        <replace from="%TYPE" to="const QWebEngineFindTextResult &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="findText(const QString &amp;, QFlags&lt;QWebEnginePage::FindFlag>, QWebEngineCallback)" until="5.*">
             <modify-argument index="3">
                 <replace-default-expression with="null"/>
                 <replace-type modified-type="java.util.function.Consumer&lt;Boolean>"/>
                 <conversion-rule class="native">
-                    JObjectWrapper wrapper(%env, %in);
-                    QWebEngineCallback&lt;bool> %out = %in ? QWebEngineCallback&lt;bool>(
-                        [wrapper](bool b){
-                            if(JNIEnv *env = qtjambi_current_environment()){
-                                QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                                jobject _b = qtjambi_cast&lt;jobject>(env, b);
-                                Java::Runtime::Consumer::accept(env, wrapper.object(), _b);
-                            }
-                        }) : QWebEngineCallback&lt;bool>();
+                    <insert-template name="web.comsumer.QWebEngineCallback">
+                        <replace from="%TYPE" to="bool"/>
+                    </insert-template>
                 </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="printToPdf(const QString &amp;, const QPageLayout &amp;,QPageRanges)" since="6.2.0">
+            <modify-argument index="2">
+                <replace-default-expression with="new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="printToPdf(std::function&lt;void(const QByteArray&amp;)>, const QPageLayout &amp;,QPageRanges)" since="6.2.0">
+            <modify-argument index="1">
+                <replace-type modified-type="java.util.function.Consumer&lt;io.qt.core.QByteArray>"/>
+                <conversion-rule class="native">
+                    <insert-template name="web.comsumer.function">
+                        <replace from="%TYPE" to="const QByteArray &amp;"/>
+                    </insert-template>
+                </conversion-rule>
+            </modify-argument>
+            <modify-argument index="2">
+                <replace-default-expression with="new io.qt.gui.QPageLayout(new io.qt.gui.QPageSize(io.qt.gui.QPageSize.PageSizeId.A4), io.qt.gui.QPageLayout.Orientation.Portrait, new io.qt.core.QMarginsF())"/>
             </modify-argument>
         </modify-function>
     </object-type>

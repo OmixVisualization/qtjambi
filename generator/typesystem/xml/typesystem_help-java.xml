@@ -43,16 +43,12 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.help" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.sql");
-        io.qt.QtUtilities.initializePackage("io.qt.widgets");
-    </inject-code>
+<typesystem package="io.qt.help" module="qtjambi.help" default-superclass="io.qt.QtObject">
     <object-type name="QHelpEngine">
         <modify-function signature="QHelpEngine(const QString &amp;, QObject *)">
             <inject-code position="end">
                 <argument-map index="2" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -60,7 +56,7 @@
         <modify-function signature="QHelpEngineCore(const QString &amp;, QObject *)">
             <inject-code position="end">
                 <argument-map index="2" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -68,7 +64,7 @@
         <modify-function signature="QHelpSearchEngine ( QHelpEngineCore *, QObject *)">
             <inject-code position="end">
                 <argument-map index="2" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -76,7 +72,7 @@
         <modify-function signature="QHelpSearchQueryWidget ( QWidget *)">
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>

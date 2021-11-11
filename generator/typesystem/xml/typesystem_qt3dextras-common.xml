@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DExtras">
+<typesystem qt-library="Qt3DExtras" description="The Qt 3D Extras module provides a set of prebuilt elements to help you get started with Qt 3D.">
     <namespace-type name="Qt3DExtras" generate="no" since="5.10.0"/>
     <value-type name="Qt3DExtras::QAbstractCameraController::InputState" java-name="QAbstractCameraController$InputState"/>
     <object-type name="Qt3DExtras::QAbstractCameraController" java-name="QAbstractCameraController" since="5.10.0">
@@ -203,6 +203,12 @@
             <modify-argument index="1" invalidate-after-use="yes" />
         </modify-function>
     </object-type>
+    <object-type name="Qt3DExtras::QConeGeometryView" java-name="QConeGeometryView" since="6.0.0"/>
+    <object-type name="Qt3DExtras::QCuboidGeometryView" java-name="QCuboidGeometryView" since="6.0.0"/>
+    <object-type name="Qt3DExtras::QCylinderGeometryView" java-name="QCylinderGeometryView" since="6.0.0"/>
+    <object-type name="Qt3DExtras::QPlaneGeometryView" java-name="QPlaneGeometryView" since="6.0.0"/>
+    <object-type name="Qt3DExtras::QSphereGeometryView" java-name="QSphereGeometryView" since="6.0.0"/>
+    <object-type name="Qt3DExtras::QTorusGeometryView" java-name="QTorusGeometryView" since="6.0.0"/>
     <suppress-warning text="WARNING(MetaJavaBuilder) :: Final class 'QAbstractSpriteSheet' set to non-final, as it is extended by other classes" />
     <suppress-warning text="WARNING(JavaGenerator) :: No ==/!= operator found for value type Qt3DExtras::QAbstractCameraController::InputState." />
 </typesystem>

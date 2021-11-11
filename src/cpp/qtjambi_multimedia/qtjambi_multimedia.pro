@@ -11,10 +11,15 @@ QT = core gui multimedia
 INCLUDEPATH += $$PWD
 DEPENDPATH += $$PWD
 
-macx:{
-    INCLUDEPATH += $$(QTDIR)/lib/QtMultimediaWidgets.framework/Headers/
+lessThan(QT_MAJOR_VERSION, 6):{
+    macx:{
+        INCLUDEPATH += $$(QTDIR)/lib/QtMultimediaWidgets.framework/Headers/
+    }
+    INCLUDEPATH += $$(QTDIR)/include/QtMultimediaWidgets
+}else{
+    QMAKE_LIBS_WMF = \
+
 }
-INCLUDEPATH += $$(QTDIR)/include/QtMultimediaWidgets
 
 HEADERS += \
     qtjambi_multimedia.h \

@@ -44,7 +44,7 @@ public class TestQuickWidgetsQt5 extends QApplicationTest {
 	@BeforeClass
 	public static void testInitialize() throws Exception {
 		QApplicationTest.testInitialize();
-		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
 
 	

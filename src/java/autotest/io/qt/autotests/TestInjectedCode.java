@@ -251,7 +251,7 @@ public class TestInjectedCode extends QApplicationTest {
             System.out.println("here");
         }
 
-        public Signal0 myActionTriggered = new Signal0();
+        public final Signal0 myActionTriggered = new Signal0();
     }
 
     static class ValidatorSubclassSubclass extends ValidatorSubclass {
@@ -656,7 +656,7 @@ public class TestInjectedCode extends QApplicationTest {
     	if(fileName.endsWith(".exe")) {
     		fileName = fileName.substring(0, fileName.length()-4);
     	}
-    	assertEquals(fileName, info.appname);
+    	assertEquals(info.appname, fileName);
     }
     
     @Test
@@ -1956,6 +1956,13 @@ public class TestInjectedCode extends QApplicationTest {
     	QSplitter edit = new QSplitter();
     	QSplitter.Range range = edit.getRange(0);
     	Assert.assertTrue(range!=null);
+    }
+    
+    @Test
+    public void testActionMenu() {
+    	QAction action = new QAction((QObject)null);
+    	action.setMenu(null);
+    	action.menu();
     }
     
     public static void main(String args[]) {

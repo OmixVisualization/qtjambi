@@ -42,17 +42,11 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.quick3d" default-superclass="io.qt.QtObject">
-    <inject-code position="2">
-    if(io.qt.QtUtilities.isAvailableQtLibrary("Quick3DUtils"))
-        io.qt.QtUtilities.loadQtLibrary("Quick3DUtils");
-    if(io.qt.QtUtilities.isAvailableQtLibrary("Quick3DAssetImport"))
-        io.qt.QtUtilities.loadQtLibrary("Quick3DAssetImport");
-    if(io.qt.QtUtilities.isAvailableQtLibrary("Quick3DRender"))
-        io.qt.QtUtilities.loadQtLibrary("Quick3DRender");
-    if(io.qt.QtUtilities.isAvailableQtLibrary("ShaderTools"))
-        io.qt.QtUtilities.loadQtLibrary("ShaderTools");
-    </inject-code>
+<typesystem package="io.qt.quick3d" module="qtjambi.quick3d" default-superclass="io.qt.QtObject">
+    <required-library name="QtQuick3DUtils" optional="yes"/>
+    <required-library name="QtQuick3DAssetImport" optional="yes"/>
+    <required-library name="QtQuick3DRender" optional="yes"/>
+    <required-library name="QtShaderTools" optional="yes"/>
     <object-type name="QQuick3DObject">
         <modify-function signature="itemChange(QQuick3DObject::ItemChange, const QQuick3DObject::ItemChangeData &amp;)">
             <modify-argument index="2">
@@ -95,7 +89,7 @@
                 <conversion-rule class="native">
                     //conversion-rule-native
                     QQuick3DObject::ItemChangeData %out(false);
-                    switch(%1){
+                    switch(__qt_%1){
                     case QQuick3DObject::ItemChildAddedChange:      // value.item
                     case QQuick3DObject::ItemChildRemovedChange:    // value.item
                     case QQuick3DObject::ItemParentHasChanged:      // value.item
@@ -138,7 +132,7 @@
                 </conversion-rule>
             </modify-argument>
         </modify-function>
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
         public: QSSGRenderGraphObject* updateSpatialNode(QSSGRenderGraphObject* n) override {return n;}
         </inject-code>
     </object-type>

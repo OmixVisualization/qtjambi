@@ -37,8 +37,6 @@
 #include "qtjambi_cast_container1_util_p.h"
 #include "qtjambi_cast_container2_util_p.h"
 
-QT_WARNING_DISABLE_DEPRECATED
-
 template<class O, class T>
 constexpr O qtjambi_cast(JNIEnv *env, T& in);
 template<class O, class T>
@@ -94,8 +92,7 @@ struct qtjambi_shared_pointer_caster<false, has_scope,
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         const NativeType* pointer = reinterpret_cast<const NativeType*>(qtjambi_to_qobject_from_shared_pointer(env, in, &createPointer<Pointer, T_content>, &deletePointer<Pointer, T_content>, &getQObjectFromPointer<Pointer, T_content>));
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, T>::create(
-                    env, scope, pointer, "Pointer<T>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -136,8 +133,7 @@ struct qtjambi_shared_pointer_caster<false, has_scope,
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         const NativeType* pointer = reinterpret_cast<const NativeType*>(qtjambi_to_object_from_shared_pointer(env, in, &createPointer<Pointer, T_content>, &deletePointer<Pointer, T_content>, &getFromPointer<Pointer, T_content>));
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, T>::create(
-                    env, scope, pointer, "Pointer<T>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -274,15 +270,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QList<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QList<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QList<T> *list = nullptr;
                 if(c_is_const){
@@ -300,7 +295,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QList<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -347,15 +342,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QLinkedList<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QLinkedList<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QLinkedList<T> *list = nullptr;
                 if(c_is_const){
@@ -373,7 +367,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QLinkedList<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 #endif
@@ -421,15 +415,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QSet<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                 reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QSet<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QSet<T> *list = nullptr;
                 if(c_is_const){
@@ -447,7 +440,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QSet<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -506,15 +499,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QStack<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QStack<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                             reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QStack<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QStack<T> *list = nullptr;
                 if(c_is_const){
@@ -532,7 +524,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QStack<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -579,15 +571,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QQueue<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                 reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QQueue<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QQueue<T> *list = nullptr;
                 if(c_is_const){
@@ -605,7 +596,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QQueue<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -656,15 +647,14 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QVector<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QVector<T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QVector<T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QVector<T> *list = nullptr;
                 if(c_is_const){
@@ -682,7 +672,7 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QVector<T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 #endif
@@ -746,15 +736,14 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QMap<K,T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QMap<K,T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QMap<K,T> *map = nullptr;
                 if(c_is_const){
@@ -773,7 +762,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QMap<K,T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -835,15 +824,14 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QMultiMap<K,T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QMultiMap<K,T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QMultiMap<K,T> *map = nullptr;
                 if(c_is_const){
@@ -862,7 +850,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QMultiMap<K,T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -924,15 +912,14 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QHash<K,T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                             reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QHash<K,T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QHash<K,T> *map = nullptr;
                 if(c_is_const){
@@ -951,7 +938,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QHash<K,T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 
@@ -1013,15 +1000,14 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
     typedef typename std::conditional<p_is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QScopedPointer<NativeType> pointer;
+        std::unique_ptr<NativeType> pointer;
         if (in) {
             if (qtjambi_is_QMultiHash<K,T>(env, in)) {
-                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, Pointer, C_content>::create(env, scope,
+                return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(qtjambi_to_object_from_shared_pointer(env, in,
                                                                                                             createPointer<Pointer,C_content>,
                                                                                                             deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)),
-                                                                                                            "Pointer<QMultiHash<K,T>>");
+                                                                                                            getFromPointer<Pointer,C_content>)));
             } else {
                 QMultiHash<K,T> *map = nullptr;
                 if(c_is_const){
@@ -1040,7 +1026,7 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
                 }
             }
         }
-        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, Pointer, C_content>::create(env, scope, pointer, "Pointer<QMultiHash<K,T>>");
+        return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope, NativeType>::create(env, scope, pointer);
     }
 };
 

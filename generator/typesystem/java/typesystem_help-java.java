@@ -34,34 +34,3 @@
 **
 ****************************************************************************/
 
-package generator;
-
-import io.qt.*;
-import io.qt.QtJambiObject.QPrivateConstructor;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QPoint;
-import io.qt.core.QPointF;
-import io.qt.gui.*;
-
-class QHelpContentItem___ extends QHelpContentItem {
-
-    @io.qt.QtUninvokable
-    public final int childPosition(QHelpContentItem child)    {
-        long nativeId = io.qt.internal.QtJambiInternal.nativeId(this);
-        if (nativeId == 0)
-            throw new QNoNativeResourcesException("Function call on incomplete object of type: " +getClass().getName());
-        return __qt_QHelpContentItem_childPosition_nativepointer(nativeId, child == null ? null : QNativePointer.fromObject(child));
-    }
-
-    @io.qt.QtUninvokable
-    public final QHelpContentItem child(int row)    {
-        return __child(row).object(QHelpContentItem.class);
-    }
-
-    @io.qt.QtUninvokable
-    public final QHelpContentItem parent()    {
-        return __parent().object(QHelpContentItem.class);
-    }
-
-}// class
-

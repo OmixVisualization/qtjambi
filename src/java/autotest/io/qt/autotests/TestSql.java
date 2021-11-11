@@ -40,9 +40,11 @@ import org.junit.Test;
 import io.qt.core.QFileInfo;
 import io.qt.core.QStandardPaths;
 import io.qt.core.internal.QFactoryLoader;
+import io.qt.internal.QtJambiInternal;
 import io.qt.sql.QSqlDatabase;
 import io.qt.sql.QSqlDriver;
 import io.qt.sql.QSqlDriverPlugin;
+import io.qt.sql.QSqlError;
 import io.qt.sql.QSqlQuery;
 import io.qt.unittests.support.FilterSQL;
 
@@ -63,18 +65,20 @@ public class TestSql extends QApplicationTest {
     @Test
     public void testSqlDriverPlugin() {
 		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
-		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QSQLITE", "QSQLITE");
+		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QSQLITE");
 		Assert.assertTrue(plugin!=null);
 		Assert.assertEquals("QSQLiteDriver", plugin.metaObject().className());
+		Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(plugin));
 		plugin.dispose();
 	}
     
     @Test
     public void testSqlDriverPlugin_Jdbc() {
 		QFactoryLoader loader = new QFactoryLoader(QSqlDriverPlugin.class, "/sqldrivers");
-		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QJDBC", "QJDBC");
+		QSqlDriver plugin = loader.loadPlugin(QSqlDriverPlugin::create, "QJDBC");
 		Assert.assertTrue(plugin!=null);
 		Assert.assertEquals("io::qt::sql::jdbc::QJdbcSqlDriver", plugin.metaObject().className());
+		Assert.assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(plugin));
 		plugin.dispose();
 	}
     
@@ -87,7 +91,9 @@ public class TestSql extends QApplicationTest {
     	try {
 	    	Assert.assertFalse(file.exists());
 	    	db.setDatabaseName("jdbc:sqlite:"+file.absoluteFilePath());
-	    	Assert.assertTrue(db.open());
+	    	boolean isOpen = db.open();
+	    	QSqlError lastError = db.lastError();
+	    	Assert.assertTrue(lastError.driverText() + " " + lastError.databaseText(), isOpen);
 	    	try {
 		    	Assert.assertTrue(file.exists());
 		    	QSqlQuery query = new QSqlQuery(db);

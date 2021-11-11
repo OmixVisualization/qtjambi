@@ -42,7 +42,8 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.winextras" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.winextras" module="qtjambi.winextras" default-superclass="io.qt.QtObject">
+    <required-library name="QtWidgets"/>
     <namespace-type name="QtWin">
         <extra-includes>
             <include file-name="qtjambi_winextras_repository.h" location="local"/>

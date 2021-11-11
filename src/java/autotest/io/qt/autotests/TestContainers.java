@@ -260,7 +260,7 @@ public class TestContainers extends QApplicationTest {
             s.insert(i);
         Set<Integer> s2 = tulip.do_QSet_of_int(s);
         assertTrue(s2 != null);
-        assertEquals(s, s2);
+        assertEquals(s2, s);
     }
 
     @Test

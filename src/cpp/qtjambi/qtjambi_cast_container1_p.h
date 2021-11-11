@@ -40,7 +40,6 @@
 #endif
 
 QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
-QT_WARNING_DISABLE_DEPRECATED
 
 namespace QtJambiPrivate {
 
@@ -203,11 +202,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QList, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QList<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -217,7 +216,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QList, T>::create(env, scope, list, "QList<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
     }
 };
 
@@ -237,11 +236,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QList, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QList<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -251,7 +250,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QList, T>::create(env, scope, list, "QList<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
     }
 };
 
@@ -273,7 +272,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
         NativeType *list = nullptr;
         if (in) {
             if (qtjambi_is_QList<T>(env, in)) {
-                list = reinterpret_cast<NativeType *>(qtjambi_to_object(env, in));
+                list = qtjambi_to_object<NativeType>(env, in);
             } else {
                 if(is_const){
                     list = new NativeType();
@@ -329,11 +328,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
      static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QSet<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QSet, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QSet<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -343,7 +342,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QSet, T>::create(env, scope, list, "QSet<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -363,11 +362,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QSet<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QSet, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QSet<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -377,7 +376,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QSet, T>::create(env, scope, list, "QSet<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -399,7 +398,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
          NativeType *list = nullptr;
          if (in) {
              if (qtjambi_is_QSet<T>(env, in)) {
-                 list = reinterpret_cast<NativeType *>(qtjambi_to_object(env, in));
+                 list = qtjambi_to_object<NativeType>(env, in);
              } else {
                  if(is_const){
                      list = new NativeType();
@@ -457,11 +456,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QLinkedList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QLinkedList, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QLinkedList<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -471,7 +470,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QLinkedList, T>::create(env, scope, list, "QLinkedList<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -491,11 +490,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QLinkedList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QLinkedList, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QLinkedList<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -505,7 +504,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QLinkedList, T>::create(env, scope, list, "QLinkedList<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -527,7 +526,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
          NativeType *list = nullptr;
          if (in) {
              if (qtjambi_is_QLinkedList<T>(env, in)) {
-                 list = reinterpret_cast<NativeType *>(qtjambi_to_object(env, in));
+                 list = qtjambi_to_object<NativeType>(env, in);
              } else {
                  if(is_const){
                      list = new NativeType();
@@ -588,11 +587,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QVector<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QVector<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QVector, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QVector<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -602,7 +601,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QVector, T>::create(env, scope, list, "QVector<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
     }
 };
 
@@ -624,11 +623,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QVector<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QVector<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QVector, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QVector<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -638,7 +637,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QVector, T>::create(env, scope, list, "QVector<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -662,7 +661,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
          NativeType *list = nullptr;
          if (in) {
              if (qtjambi_is_QVector<T>(env, in)) {
-                 list = reinterpret_cast<NativeType *>(qtjambi_to_object(env, in));
+                 list = qtjambi_to_object<NativeType>(env, in);
              } else {
                  if(is_const){
                      list = new NativeType();
@@ -734,11 +733,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QStack<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QStack<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QStack, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QStack<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -748,7 +747,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QStack, T>::create(env, scope, list, "QStack<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
     }
 };
 
@@ -770,11 +769,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     Q_STATIC_ASSERT_X(std::is_default_constructible<T>::value || std::is_copy_assignable<T>::value || std::is_move_assignable<T>::value, "Cannot cast to QStack<T> because T does not have a standard constructor.");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QStack<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QStack, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QStack<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -784,7 +783,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QStack, T>::create(env, scope, list, "QStack<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -808,7 +807,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
         QStack<T> *list = nullptr;
         if (in) {
             if (qtjambi_is_QStack<T>(env, in)) {
-                list = reinterpret_cast<QStack<T> *>(qtjambi_to_object(env, in));
+                list = qtjambi_to_object<QStack<T>>(env, in);
             } else {
                 if(is_const){
                     list = new QStack<T>();
@@ -866,11 +865,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
      static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QQueue<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QQueue, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QQueue<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -880,7 +879,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QQueue, T>::create(env, scope, list, "QQueue<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -900,11 +899,11 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         QScopedPointer<NativeType> list;
+         std::unique_ptr<NativeType> list;
          if(in){
              if (qtjambi_is_QQueue<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, QQueue, T>::create(
-                             env, scope, reinterpret_cast<NativeType *>(qtjambi_to_object(env, in)), "QQueue<T>");
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
+                             env, scope, qtjambi_to_object<NativeType>(env, in));
              }else{
                  list.reset(new NativeType());
                  jobject iterator = qtjambi_collection_iterator(env, in);
@@ -914,7 +913,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
                  }
              }
          }
-         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QQueue, T>::create(env, scope, list, "QQueue<T>");
+         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
      }
 };
 
@@ -936,7 +935,7 @@ struct qtjambi_jnitype_container1_cast<false, true,
          NativeType *list = nullptr;
          if (in) {
              if (qtjambi_is_QQueue<T>(env, in)) {
-                 list = reinterpret_cast<NativeType *>(qtjambi_to_object(env, in));
+                 list = qtjambi_to_object<NativeType>(env, in);
              } else {
                  if(is_const){
                      list = new NativeType();
@@ -993,14 +992,12 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QDBusReply<QVariant>* reply = reinterpret_cast<QDBusReply<QVariant>*>(qtjambi_to_object(env, in));
+        QDBusReply<QVariant>* reply = qtjambi_to_object<QDBusReply<QVariant>>(env, in);
         if(reply){
-            QScopedPointer<NativeType> reply2(QDBusReplyUtility<T>::reverseCreateFrom(*reply));
-            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, QDBusReply, T>::create(
-                        env, scope, reply2, "QDBusReply<T>");
+            std::unique_ptr<NativeType> reply2(QDBusReplyUtility<T>::reverseCreateFrom(*reply));
+            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, reply2);
         }else{
-            return create_container_pointer<is_pointer, is_const, is_reference, false, QDBusReply, T>::create(
-                        env, scope, nullptr, "QDBusReply<T>");
+            return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, nullptr);
         }
     }
 };
@@ -1036,9 +1033,8 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        QDBusReply<QVariant>* reply = reinterpret_cast<QDBusReply<QVariant>*>(qtjambi_to_object(env, in));
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QDBusReply, QVariant>::create(
-                    env, scope, reply, "QDBusReply<QVariant>");
+        QDBusReply<QVariant>* reply = qtjambi_to_object<QDBusReply<QVariant>>(env, in);
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, reply);
     }
 };
 #endif
@@ -1077,8 +1073,8 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QQmlListProperty, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QQmlListProperty<T>");
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
+                    env, scope, qtjambi_to_object<NativeType>(env, in));
     }
 };
 #endif
@@ -1116,7 +1112,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        return reinterpret_cast<NativeType*>(qtjambi_to_object(env, in));
+        return qtjambi_to_object<NativeType>(env, in);
     }
 };
 
@@ -1152,7 +1148,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        return reinterpret_cast<NativeType*>(qtjambi_to_object(env, in));
+        return qtjambi_to_object<NativeType>(env, in);
     }
 };
 
@@ -1187,7 +1183,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        return reinterpret_cast<NativeType*>(qtjambi_to_object(env, in));
+        return qtjambi_to_object<NativeType>(env, in);
     }
 };
 
@@ -1222,28 +1218,256 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
 static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        return reinterpret_cast<NativeType*>(qtjambi_to_object(env, in));
+        return qtjambi_to_object<NativeType>(env, in);
     }
 };
 #endif
 #endif
 
-#ifdef QFUTUREWATCHER_H
+#ifdef QFUTUREINTERFACE_H
+
 template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
+         bool is_pointer, bool is_const, bool is_reference>
 struct qtjambi_jnitype_container1_cast<true, has_scope,
                                  jobject,
-                                 QFutureWatcher, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureWatcher<T> NativeType;
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 void>{
+    typedef QFutureInterface<void> NativeType;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
          NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         return qtjambi_from_qobject(env, _in);
+         return qtjambi_from_object(env, &_in, true, false);
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
+                                 jobject,
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 void>{
+    typedef QFutureInterface<void> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
+                    env, scope, qtjambi_to_object<NativeType>(env, in));
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<true, has_scope,
+                                 jobject,
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 QVariant>{
+    typedef QFutureInterface<QVariant> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+         return qtjambi_from_object(env, &_in, true, false);
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
+                                 jobject,
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 QVariant>{
+    typedef QFutureInterface<QVariant> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
+                    env, scope, qtjambi_to_object<NativeType>(env, in));
+    }
+};
+
+template<typename T>
+QFutureInterface<QVariant> convert_T_future_interface(const QFutureInterface<T>& future, const char* translatedType = "QFutureInterface"){
+    QFutureInterface<QVariant> jpromise;
+    QFutureInterfaceBase* availableResult = qtjambi_translate_futureinterfaces(
+                                 QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<T>(future)),
+                                 QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<QVariant>(jpromise)),
+                                 translatedType,
+                                 [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
+                                    if(count==1){
+                                        dynamic_cast<QFutureInterface<QVariant>*>(targetFuture.get())->reportResult(QVariant::fromValue<T>(sourceFuture->resultStoreBase().resultAt(beginIndex).template value<T>()), beginIndex);
+                                    }else{
+                                        QVector<QVariant> results(count);
+                                        for(int i=0; i<count; ++i){
+                                            results << QVariant::fromValue<T>(sourceFuture->resultStoreBase().resultAt(beginIndex).template value<T>());
+                                        }
+                                        dynamic_cast<QFutureInterface<QVariant>*>(targetFuture.get())->reportResults(results, count);
+                                    }
+                                },
+                                [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>&targetFuture, int beginIndex, int count){
+                                    if(count==1){
+                                        dynamic_cast<QFutureInterface<T>*>(sourceFuture.get())->reportResult(targetFuture->resultStoreBase().resultAt(beginIndex).template value<QVariant>().template value<T>(), beginIndex);
+                                    }else{
+                                        QVector<T> results(count);
+                                        for(int i=0; i<count; ++i){
+                                            results << targetFuture->resultStoreBase().resultAt(i).template value<QVariant>().template value<T>();
+                                        }
+                                        dynamic_cast<QFutureInterface<T>*>(sourceFuture.get())->reportResults(results, count);
+                                    }
+                                });
+    if(QFutureInterface<QVariant>* newResult = dynamic_cast<QFutureInterface<QVariant>*>(availableResult)){
+        return *newResult;
+    }
+    return jpromise;
+}
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T>
+struct qtjambi_jnitype_container1_cast<true, has_scope,
+                                 jobject,
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 T>{
+    typedef QFutureInterface<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+         QFutureInterface<QVariant> jpromise = convert_T_future_interface<T>(_in);
+         return qtjambi_from_object(env, &jpromise, true, false);
+    }
+};
+
+template<typename T>
+QFutureInterface<T> convert_future_interface(QFutureInterface<QVariant>* future, const char* translatedType = "QFutureInterface"){
+    QFutureInterface<T> result;
+    if(future){
+        QFutureInterfaceBase* availableResult = qtjambi_translate_futureinterfaces(
+                    QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<QVariant>(*future)),
+                    QSharedPointer<QFutureInterfaceBase>(new QFutureInterface<T>(result)),
+                    translatedType,
+                    [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>&targetFuture, int beginIndex, int count){
+                        if(count==1){
+                            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResult(sourceFuture->resultStoreBase().resultAt(beginIndex).template value<QVariant>().template value<T>(), beginIndex);
+                        }else{
+                            QVector<T> results(count);
+                            for(int i=0; i<count; ++i){
+                                results << sourceFuture->resultStoreBase().resultAt(i).template value<QVariant>().template value<T>();
+                            }
+                            dynamic_cast<QFutureInterface<T>*>(targetFuture.get())->reportResults(results, count);
+                        }
+                    },
+                    [](JNIEnv *, const QSharedPointer<QFutureInterfaceBase>& sourceFuture, const QSharedPointer<QFutureInterfaceBase>& targetFuture, int beginIndex, int count){
+                       if(count==1){
+                           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResult(QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>()), beginIndex);
+                       }else{
+                           QVector<QVariant> results(count);
+                           for(int i=0; i<count; ++i){
+                               results << QVariant::fromValue<T>(targetFuture->resultStoreBase().resultAt(beginIndex).template value<T>());
+                           }
+                           dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())->reportResults(results, count);
+                       }
+                   });
+        if(QFutureInterface<T>* newResult = dynamic_cast<QFutureInterface<T>*>(availableResult)){
+            return *newResult;
+        }
+    }
+    return result;
+}
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
+                                 jobject,
+                                 QFutureInterface, is_pointer, is_const, is_reference,
+                                 T>{
+    typedef QFutureInterface<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast to QFutureInterface & without scope.");
+    Q_STATIC_ASSERT_X(!is_pointer || has_scope, "Cannot cast to QFutureInterface* without scope.");
+
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        QFutureInterface<T> tfuture = convert_future_interface<T>(qtjambi_to_object<QFutureInterface<QVariant>>(env, in));
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &tfuture);
+    }
+};
+#endif // defined(QFUTUREINTERFACE_H)
+
+#if defined(QFUTUREWATCHER_H)
+
+template<typename T>
+struct FutureResultFactory{
+    static jobject futureResult(JNIEnv * env, QFutureWatcherBase* base, int index) {
+        QFutureWatcher<T>* watcher = dynamic_cast<QFutureWatcher<T>*>(base);
+        QVariant value = QVariant::fromValue<T>(watcher->resultAt(index));
+        return qtjambi_from_qvariant(env, value);
+    };
+};
+
+template<>
+struct FutureResultFactory<void>{
+    static constexpr FutureResult futureResult = nullptr;
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T>
+struct qtjambi_jnitype_container1_cast<true, has_scope,
+                                 jobject,
+                                 QFutureWatcher, is_pointer, is_const, is_reference,
+                                 T>{
+    typedef QFutureWatcher<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+         if(NativeType_c* _in = ref_ptr<is_pointer, NativeType_c>::ref(in)){
+            return qtjambi_from_QFutureWatcher(env, _in,
+                                               [](JNIEnv * env, QFutureWatcherBase* base, jobject future){
+                                                    QFutureWatcher<T>* watcher = dynamic_cast<QFutureWatcher<T>*>(base);
+                                                    QFuture<T> ft = qtjambi_jnitype_container1_cast<false,false,jobject,QFuture,false,false,false,T>::cast(env, future, nullptr, nullptr);
+                                                    watcher->setFuture(ft);
+                                                },
+                                               FutureResultFactory<T>::futureResult,
+                                               [](JNIEnv * env, QFutureWatcherBase* base) -> jobject {
+                                                    QFutureWatcher<T>* watcher = dynamic_cast<QFutureWatcher<T>*>(base);
+                                                    QFuture<T> ft = watcher->future();
+                                                    return qtjambi_jnitype_container1_cast<true,false,jobject,QFuture,false,false,false,T>::cast(env, ft, nullptr, nullptr);
+                                                }
+                                            );
+         }else return nullptr;
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
+                                 jobject,
+                                 QFutureWatcher, is_pointer, is_const, is_reference,
+                                 void>{
+    typedef QFutureWatcher<void> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        QFutureWatcherBase* watcher = qtjambi_scoped_cast<has_scope,QFutureWatcherBase*,jobject>::cast(env, in, nullptr, scope);
+        return ptr2ref<is_reference,NativeType>::value(env, reinterpret_cast<NativeType*>(watcher));
     }
 };
 
@@ -1259,72 +1483,277 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
-        return reinterpret_cast<QFutureWatcher<T>*>(qtjambi_to_qobject(env, in));
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        QFutureWatcherBase* watcher = qtjambi_scoped_cast<has_scope,QFutureWatcherBase*,jobject>::cast(env, in, nullptr, scope);
+        QFutureWatcher<T>* result = dynamic_cast<QFutureWatcher<T>*>(watcher);
+        if(!result){
+            if(jobject jfutureInterface = qtjambi_get_QFutureInterface(env, in)){
+                if(QFutureInterfaceBase* base = qtjambi_scoped_cast<has_scope,QFutureInterfaceBase*,jobject>::cast(env, jfutureInterface, nullptr, scope)){
+                    if(QFutureInterface<T>* futureInterface = dynamic_cast<QFutureInterface<T>*>(base)){
+                        NativeType* _watcher = new NativeType(watcher);
+                        _watcher->setFuture(QFuture<T>(futureInterface));
+                        return _watcher;
+                    }else if(QFutureInterface<QVariant>* futureInterface = dynamic_cast<QFutureInterface<QVariant>*>(base)){
+                        QFutureInterface<T> _futureInterface = convert_future_interface<T>(futureInterface, "QFutureWatcher");
+                        NativeType* _watcher = new NativeType(watcher);
+                        _watcher->setFuture(_futureInterface.future());
+                        return _watcher;
+                    }else if(QFutureInterface<void>* futureInterface = dynamic_cast<QFutureInterface<void>*>(base)){
+                        JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                    }else{
+                        QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
+                        if(baseType==QLatin1String("QFutureInterfaceBase")
+                                || baseType==QLatin1String("QFutureInterfaceBase_shell")){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                        }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                        }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QFutureWatcher%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+                        }
+                    }
+                }
+            }
+            if(watcher){
+                QString watcherType = QLatin1String(qtjambi_type_name(typeid(*watcher)));
+                if(watcherType==QLatin1String("QFutureWatcher_shell")){
+                    watcherType = QLatin1String("QFutureWatcher<?>");
+                }
+                JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast %1 to %2.").arg(watcherType).arg(QLatin1String(qtjambi_type_name(typeid(NativeType))))) QTJAMBI_STACKTRACEINFO );
+            }else if(is_reference)
+                JavaException::raiseNullPointerException(env, "Cannot cast null to QFutureWatcher&." QTJAMBI_STACKTRACEINFO );
+        }
+        return ptr2ref<is_reference,NativeType>::value(env, result);
     }
 };
+#endif //defined(QFUTUREWATCHER_H)
+
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QFUTURE_H)
+}
+
+namespace QtPrivate{
+    template<class T>
+    class Continuation<T,bool,bool>{
+    public:
+        typedef decltype(std::declval<QFuture<T>>().d) FutureInterface;
+        static FutureInterface &sourceFuture(const QFuture<T>& future){return future.d;}
+    };
+}
+
+namespace QtJambiPrivate {
 #endif
 
 #ifdef QPROMISE_H
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
+
+template<bool has_scope, typename T>
 struct qtjambi_jnitype_container1_cast<true, has_scope,
                                  jobject,
-                                 QPromise, is_pointer, is_const, is_reference,
+                                 QPromise, false, false, true,
                                  T>{
     typedef QPromise<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         return qtjambi_from_object(env, &_in, false, false);
+    static jobject cast(JNIEnv *env, QPromise<T>& in, const char*, QtJambiScope* scope){
+         QFuture<T> future = in.future();
+         auto futureInterface = QtPrivate::Continuation<T,bool,bool>::sourceFuture(future);
+         jobject jfutureInterface = qtjambi_scoped_cast<has_scope,jobject,decltype(futureInterface)>::cast(env, futureInterface, nullptr, scope);
+         return qtjambi_create_QPromise(env, jfutureInterface, &in, scope);
     }
 };
 
-template<bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<true, true,
+template<bool has_scope, typename T>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
                                  jobject,
-                                 QPromise, is_pointer, is_const, is_reference,
+                                 QPromise, false, false, true,
                                  T>{
-    typedef QPromise<T> NativeType;
+    static QPromise<T>& cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!in)
+            JavaException::raiseNullPointerException(env, "Cannot cast null to QPromise&." QTJAMBI_STACKTRACEINFO );
+        void* promisePtr = qtjambi_get_native_QPromise(env, in);
+        if(promisePtr){
+            QFutureInterfaceBase* base = reinterpret_cast<QFutureInterfaceBase*>(promisePtr);
+            if(QFutureInterface<T>* futureInterface = dynamic_cast<QFutureInterface<T>*>(base)){
+                return *reinterpret_cast<QPromise<T>*>(promisePtr);
+            }else if constexpr (std::is_same<void, T>::value){
+                QFutureInterface<T> _futureInterface(*base);
+                if(scope==nullptr)
+                    JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
+                QPromise<T>* promise = new QPromise<T>(_futureInterface);
+                QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
+                scope->addFinalAction([promiseContent](){
+                    delete promiseContent;
+                });
+                return *promise;
+            }else if(QFutureInterface<QVariant>* futureInterface = dynamic_cast<QFutureInterface<QVariant>*>(base)){
+                if(scope==nullptr)
+                    JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
+                QFutureInterface<T> _futureInterface = convert_future_interface<T>(futureInterface, "QPromise");
+                QPromise<T>* promise = new QPromise<T>(_futureInterface);
+                QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
+                scope->addFinalAction([promiseContent](){
+                    delete promiseContent;
+                });
+                return *promise;
+            }else if(base){
+                QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
+                if(baseType==QLatin1String("QFutureInterfaceBase")
+                        || baseType==QLatin1String("QFutureInterfaceBase_shell")){
+                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
+                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
+                    JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                }
+            }
+        }else{
+            if(jobject jfutureInterface = qtjambi_get_QFutureInterface(env, in)){
+                if(QFutureInterfaceBase* base = qtjambi_scoped_cast<has_scope,QFutureInterfaceBase*,jobject>::cast(env, jfutureInterface, nullptr, scope)){
+                    if(QFutureInterface<T>* futureInterface = dynamic_cast<QFutureInterface<T>*>(base)){
+                        if(scope==nullptr)
+                            JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
+                        QPromise<T>* promise = new QPromise<T>(*futureInterface);
+                        QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
+                        scope->addFinalAction([promiseContent](){delete promiseContent;});
+                        return *promise;
+                    }else if constexpr (std::is_same<void, T>::value){
+                        QFutureInterface<T> _futureInterface(*base);
+                        if(scope==nullptr)
+                            JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
+                        QPromise<T>* promise = new QPromise<T>(_futureInterface);
+                        QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
+                        scope->addFinalAction([promiseContent](){
+                            delete promiseContent;
+                        });
+                        return *promise;
+                    }else if(QFutureInterface<QVariant>* futureInterface = dynamic_cast<QFutureInterface<QVariant>*>(base)){
+                        if(scope==nullptr)
+                            JavaException::raiseError(env, "Cannot cast QPromise without scope." QTJAMBI_STACKTRACEINFO );
+                        QFutureInterface<T> _futureInterface = convert_future_interface<T>(futureInterface, "QPromise");
+                        QPromise<T>* promise = new QPromise<T>(_futureInterface);
+                        QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
+                        scope->addFinalAction([promiseContent](){
+                            delete promiseContent;
+                        });
+                        return *promise;
+                    }else{
+                        QString baseType = QLatin1String(qtjambi_type_name(typeid(*base)));
+                        if(baseType==QLatin1String("QFutureInterfaceBase")
+                                || baseType==QLatin1String("QFutureInterfaceBase_shell")){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise<void> to %1.").arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                        }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(16)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                        }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
+                            JavaException::raiseIllegalArgumentException(env, qPrintable(QString("Cannot cast QPromise%1 to %2.").arg(baseType.mid(22)).arg(QLatin1String(qtjambi_type_name(typeid(QPromise<T>))))) QTJAMBI_STACKTRACEINFO );
+                        }
+                    }
+                }
+            }else{
+                JavaException::raiseNullPointerException(env, "Cannot cast null to QPromise&." QTJAMBI_STACKTRACEINFO );
+            }
+        }
+        JavaException::raiseIllegalArgumentException(env, "Cannot cast QPromise<A> to QPromise<B>." QTJAMBI_STACKTRACEINFO );
+        throw "Cannot cast QPromise<A> to QPromise<B>.";
+    }
+};
+
+#endif //def QPROMISE_H
+
+#ifdef QFUTURE_H
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<true, has_scope,
+                                 jobject,
+                                 QFuture, is_pointer, is_const, is_reference,
+                                 void>{
+    typedef QFuture<void> NativeType;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
          NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         jobject result = qtjambi_from_object(env, &_in, false, false);
-         if(scope){
-             scope->addFinalAction([env, result](){qtjambi_invalidate_object(env, result);});
-         }
-         return result;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+         auto fi = qtjambi_get_QFutureInterface(_in);
+#else
+         auto fi = QtPrivate::Continuation<void,bool,bool>::sourceFuture(_in);
+#endif
+         jobject futureInterface = qtjambi_scoped_cast<has_scope,jobject,decltype(fi)>::cast(
+                                            env, fi, nullptr, scope);
+        return qtjambi_create_QFuture(env, futureInterface);
     }
 };
 
 template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
+         bool is_pointer, bool is_const, bool is_reference>
 struct qtjambi_jnitype_container1_cast<false, has_scope,
                                  jobject,
-                                 QPromise, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QPromise<T> NativeType;
+                                 QFuture, is_pointer, is_const, is_reference,
+                                 void>{
+    typedef QFuture<void> NativeType;
     typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QPromise, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QPromise<T>");
+        jobject futureInterface = qtjambi_get_QFutureInterface(env, in);
+        QFutureInterfaceBase* base = qtjambi_scoped_cast<has_scope,QFutureInterfaceBase*,jobject>::cast(env, futureInterface, nullptr, scope);
+        if(base){
+            QFuture<void> future(base);
+            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &future);
+        }else{
+            QFuture<void> future;
+            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &future);
+        }
     }
 };
-#endif
 
-#ifdef QFUTURE_H
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<true, has_scope,
+                                 jobject,
+                                 QFuture, is_pointer, is_const, is_reference,
+                                 QVariant>{
+    typedef QFuture<QVariant> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
+         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+         jobject futureInterface = qtjambi_jnitype_container1_cast<true,has_scope,jobject,QFutureInterface,false,false,false,QVariant>::cast(env,
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                            _in.d
+#else
+                                            QtPrivate::Continuation<QVariant,bool,bool>::sourceFuture(_in)
+#endif
+                , nullptr, scope);
+        return qtjambi_create_QFuture(env, futureInterface);
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_container1_cast<false, has_scope,
+                                 jobject,
+                                 QFuture, is_pointer, is_const, is_reference,
+                                 QVariant>{
+    typedef QFuture<QVariant> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        jobject futureInterface = qtjambi_get_QFutureInterface(env, in);
+        QFutureInterface<QVariant>* _futureInterface = qtjambi_scoped_cast<has_scope,QFutureInterface<QVariant>*,jobject>::cast(env, futureInterface, nullptr, scope);
+        if(_futureInterface){
+            QFuture<QVariant> future(_futureInterface);
+            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &future);
+        }else{
+            QFuture<QVariant> future;
+            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &future);
+        }
+    }
+};
+
 template<bool has_scope,
          bool is_pointer, bool is_const, bool is_reference,
          typename T>
@@ -1337,9 +1766,20 @@ struct qtjambi_jnitype_container1_cast<true, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
          NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         return qtjambi_from_object(env, &_in, true, false);
+         const QFuture<T>& future = reinterpret_cast<const QFuture<T>&>(_in);
+         QFutureInterface<QVariant> jpromise = convert_T_future_interface<T>(
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                                            future.d,
+#else
+                                            QtPrivate::Continuation<T,bool,bool>::sourceFuture(future),
+#endif
+                                            "QFuture"
+                                        );
+         jobject futureInterface = qtjambi_jnitype_container1_cast<true,has_scope,jobject,QFutureInterface,false,false,false,QVariant>::cast(env, jpromise, nullptr, scope);
+         return qtjambi_create_QFuture(env, futureInterface);
     }
 };
 
@@ -1355,124 +1795,19 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast to QFuture & without scope.");
+    Q_STATIC_ASSERT_X(!is_pointer || has_scope, "Cannot cast to QFuture* without scope.");
+
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QFuture, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QFuture<T>");
+        jobject futureInterface = qtjambi_get_QFutureInterface(env, in);
+        QFutureInterfaceBase* base = qtjambi_scoped_cast<has_scope,QFutureInterfaceBase*,jobject>::cast(env, futureInterface, nullptr, scope);
+        QFutureInterface<QVariant>* future = dynamic_cast<QFutureInterface<QVariant>*>(base);
+        QFutureInterface<T> tpromise = convert_future_interface<T>(future, "QFuture");
+        QFuture<T> ft = tpromise.future();
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &ft);
     }
 };
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<true, has_scope,
-                                 jobject,
-                                 QFutureIterator, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureIterator<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         return qtjambi_from_object(env, &_in, true, false);
-    }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<false, has_scope,
-                                 jobject,
-                                 QFutureIterator, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureIterator<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QFutureInterface, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QFutureInterface<T>");
-    }
-};
-#endif
-
-#ifdef QFUTUREINTERFACE_H
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<true, has_scope,
-                                 jobject,
-                                 QFutureInterface, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureInterface<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-         return qtjambi_from_object(env, &_in, true, false);
-    }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<false, has_scope,
-                                 jobject,
-                                 QFutureInterface, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureInterface<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QFutureInterface, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QFutureInterface<T>");
-    }
-};
-#endif
-
-#ifdef QFUTURESYNCHRONIZER_H
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<true, has_scope,
-                                 jobject,
-                                 QFutureSynchronizer, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureSynchronizer<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-         NativeType_c* _in = ref_ptr<is_pointer, NativeType_c>::ref(in);
-         return qtjambi_from_object(env, _in, false, false);
-    }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename T>
-struct qtjambi_jnitype_container1_cast<false, has_scope,
-                                 jobject,
-                                 QFutureSynchronizer, is_pointer, is_const, is_reference,
-                                 T>{
-    typedef QFutureSynchronizer<T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        return create_container_pointer<is_pointer, is_const, is_reference, false, QFutureSynchronizer, T>::create(
-                    env, scope, reinterpret_cast<NativeType*>(qtjambi_to_object(env, in)), "QFutureSynchronizer<T>");
-    }
-};
-#endif
+#endif // QFUTURE_H
 
 #if defined(_OPTIONAL_) || defined(_OPTIONAL) || (defined(_LIBCPP_OPTIONAL) && _LIBCPP_STD_VER > 14) || defined(_GLIBCXX_OPTIONAL)
 
@@ -2586,7 +2921,7 @@ struct qtjambi_jnitype_container1_cast<false, has_scope,
         Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to std::initializer_list<bool> &");
         Q_STATIC_ASSERT_X(!is_pointer, "Cannot cast to std::initializer_list<bool> *");
         if(scope==nullptr){
-              JavaException::raiseError(env, "Cannot cast to std::initializer_list<T>" QTJAMBI_STACKTRACEINFO );
+              JavaException::raiseError(env, "Cannot cast to std::initializer_list<T> without scope." QTJAMBI_STACKTRACEINFO );
               return NativeType();
         }else{
             JCharArrayPointer * data = nullptr;

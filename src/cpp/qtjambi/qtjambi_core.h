@@ -149,19 +149,20 @@ public:
     virtual void destructed(const std::type_info& typeId) = 0;
     virtual void constructed(const std::type_info& typeId) = 0;
     virtual void deleteShell() = 0;
-    virtual void warnForMethod(const char*) const = 0;
-    virtual void warnForMethod(const char*, const QObject* object) const = 0;
-    virtual jobject getJavaObjectLocalRef(JNIEnv *env) const = 0;
-    virtual jclass javaClass() const = 0;
-    virtual jmethodID javaMethod(const std::type_info& typeId, int pos) const = 0;
-    virtual const QMetaObject* metaObject() const = 0;
+    const QMetaObject* metaObject() const;
+    void warnForMethod(const char*) const;
+    void warnForMethod(const char*, const QObject* object) const;
+    jobject getJavaObjectLocalRef(JNIEnv *env) const;
+    jclass javaClass() const;
+    jmethodID javaMethod(const std::type_info& typeId, int pos) const;
     void * qt_metacast(const char *className, bool* ok = nullptr);
+    const void * qt_metacast(const char *className, bool* ok = nullptr) const;
     int qt_metacall(QMetaObject::Call _c, int _id, void **_a);
-protected:
+private:
     QtJambiShell();
     virtual ~QtJambiShell();
-private:
     Q_DISABLE_COPY_MOVE(QtJambiShell)
+    friend class QtJambiShellImpl;
 };
 
 class FunctorBasePrivate;
@@ -219,13 +220,6 @@ private:
 #define QTJAMBI_STACKTRACEINFO_DECL
 #endif
 
-// To avoid binary incompatibilities, we keep the qtjambi_exception_check() function but
-// override it with a macro.
-QTJAMBI_EXPORT bool qtjambi_exception_check(JNIEnv *env QTJAMBI_STACKTRACEINFO_DECL );
-#ifdef QTJAMBI_STACKTRACE
-#define qtjambi_exception_check(ENV) qtjambi_exception_check(ENV QTJAMBI_STACKTRACEINFO )
-#endif
-
 class JavaExceptionPrivate;
 
 class QTJAMBI_EXPORT JavaException : public QException
@@ -271,14 +265,48 @@ private:
     QSharedDataPointer<JavaExceptionPrivate> p;
 };
 
-#define QTJAMBI_THROW_EXCEPTION(Exception,env,Message)\
-    JavaException::raise##Exception(env, Message QTJAMBI_STACKTRACEINFO );
-
 #define qtjambi_throw_java_exception(env)\
-    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    JavaException::check(env QTJAMBI_STACKTRACEINFO )
 
-#define qtjambi_throw_java_exception_no_stackinfo(env)\
-    JavaException::check(env);
+class QTJAMBI_EXPORT QtJambiExceptionHandler{
+public:
+    QtJambiExceptionHandler();
+    ~QtJambiExceptionHandler();
+    void handle(JNIEnv *env, const JavaException& exn, const char* methodName);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(QtJambiExceptionHandler)
+};
+
+class QTJAMBI_EXPORT QtJambiExceptionInhibitor{
+public:
+    QtJambiExceptionInhibitor();
+    ~QtJambiExceptionInhibitor();
+    void handle(JNIEnv *env, const JavaException& exn, const char* methodName);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(QtJambiExceptionInhibitor)
+};
+
+class QTJAMBI_EXPORT QtJambiExceptionBlocker{
+public:
+    QtJambiExceptionBlocker();
+    ~QtJambiExceptionBlocker();
+    void release(JNIEnv *env);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(QtJambiExceptionBlocker)
+};
+
+class QTJAMBI_EXPORT QtJambiExceptionRaiser{
+public:
+    QtJambiExceptionRaiser();
+    ~QtJambiExceptionRaiser();
+    void raise(JNIEnv *env);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(QtJambiExceptionRaiser)
+};
 
 #ifdef QTJAMBI_STACKTRACE
 #define qtjambi_rethrowing(env, epression)\
@@ -317,10 +345,31 @@ QTJAMBI_EXPORT jobject qtjambi_java_object_reference(QtJambiNativeID nativeId, J
 
 QTJAMBI_EXPORT bool qtjambi_is_shell(QtJambiNativeID nativeId);
 
+QTJAMBI_EXPORT bool qtjambi_object_is_shell(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool qtjambi_interface_is_shell(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT QtJambiNativeID qtjambi_get_object_native_id(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT QtJambiNativeID qtjambi_get_interface_native_id(JNIEnv *env, jobject object);
+
 QTJAMBI_EXPORT void *qtjambi_from_nativeId(QtJambiNativeID nativeId);
 
 QTJAMBI_EXPORT void *qtjambi_from_nativeId(QtJambiNativeID nativeId, const std::type_info& typeId);
 
+QTJAMBI_EXPORT void qtjambi_invalidate_object(JNIEnv *env, QtJambiNativeID nativeId);
+
+QTJAMBI_EXPORT jclass qtjambi_lambda_return_type(JNIEnv *env, jobject lambdaExpression);
+
+QTJAMBI_EXPORT void qtjambi_register_dependent_interface(JNIEnv *env, jobject dependentObject, jobject owner);
+
+QTJAMBI_EXPORT void qtjambi_register_dependent_object(JNIEnv *env, jobject dependentObject, jobject owner);
+
+QTJAMBI_EXPORT void qtjambi_unregister_dependent_interface(JNIEnv *env, jobject dependentObject, jobject owner);
+
+QTJAMBI_EXPORT void qtjambi_unregister_dependent_object(JNIEnv *env, jobject dependentObject, jobject owner);
+
+QTJAMBI_EXPORT jobject qtjambi_get_internal_access(JNIEnv *env, jclass cls);
 template<typename T>
 T *qtjambi_object_from_nativeId(QtJambiNativeID nativeId)
 {
@@ -335,65 +384,65 @@ T *qtjambi_interface_from_nativeId(QtJambiNativeID nativeId)
 
 inline jintArray qtjambi_to_jintArray(JNIEnv *__jni_env, const jint* in, jsize length) {
     jintArray out = __jni_env->NewIntArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetIntArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jshortArray qtjambi_to_jshortArray(JNIEnv *__jni_env, const jshort* in, jsize length) {
     jshortArray out = __jni_env->NewShortArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetShortArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jbyteArray qtjambi_to_jbyteArray(JNIEnv *__jni_env, const jbyte* in, jsize length) {
     jbyteArray out = __jni_env->NewByteArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetByteArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jlongArray qtjambi_to_jlongArray(JNIEnv *__jni_env, const jlong* in, jsize length) {
     jlongArray out = __jni_env->NewLongArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetLongArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jfloatArray qtjambi_to_jfloatArray(JNIEnv *__jni_env, const jfloat* in, jsize length) {
     jfloatArray out = __jni_env->NewFloatArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetFloatArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jdoubleArray qtjambi_to_jdoubleArray(JNIEnv *__jni_env, const jdouble* in, jsize length) {
     jdoubleArray out = __jni_env->NewDoubleArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetDoubleArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jcharArray qtjambi_to_jcharArray(JNIEnv *__jni_env, const jchar* in, jsize length) {
     jcharArray out = __jni_env->NewCharArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetCharArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
 inline jbooleanArray qtjambi_to_jbooleanArray(JNIEnv *__jni_env, const jboolean* in, jsize length) {
     jbooleanArray out = __jni_env->NewBooleanArray(length);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     __jni_env->SetBooleanArrayRegion(out, 0, length, in);
-    qtjambi_throw_java_exception(__jni_env)
+    qtjambi_throw_java_exception(__jni_env);
     return out;
 }
 
@@ -406,7 +455,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const char *class
     jobjectArray out = qtjambi_create_array(__jni_env, className, length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, convertFunction(__jni_env, iterable.begin()[i]));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -418,7 +467,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const T<E>& itera
     jobjectArray out = qtjambi_create_array(__jni_env, typeid(E), length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, getFunction(__jni_env, iterable, i));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -429,7 +478,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const T<E>& itera
     jobjectArray out = qtjambi_create_array(__jni_env, typeid(E), length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, getFunction(__jni_env, iterable, i));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -440,7 +489,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const char *class
     jobjectArray out = qtjambi_create_array(__jni_env, className, length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, convertFunction(__jni_env, iterable->begin()[i]));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -450,7 +499,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const char *class
     jobjectArray out = qtjambi_create_array(__jni_env, className, length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, convertFunction(__jni_env, array[i]));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -460,7 +509,7 @@ inline jobjectArray qtjambi_to_jobjectArray(JNIEnv *__jni_env, const T* array, j
     jobjectArray out = qtjambi_create_array(__jni_env, typeid(T), length);
     for (jsize i = 0; i < length; ++i) {
         __jni_env->SetObjectArrayElement(out, i, convertFunction(__jni_env, array[i]));
-        qtjambi_throw_java_exception(__jni_env)
+        qtjambi_throw_java_exception(__jni_env);
     }
     return out;
 }
@@ -487,7 +536,7 @@ QTJAMBI_EXPORT QString qtjambi_to_qstring(JNIEnv *env, jstring java_string);
 extern "C" QTJAMBI_EXPORT void qtjambi_to_qstring(QString& result, JNIEnv *env, jstring java_string);
 
 template<template <typename> class Pointer, typename Instantiation>
-inline void deletePointer(void* pointer){
+inline void deletePointer(void* pointer,bool){
     Pointer<Instantiation>* _pointer = reinterpret_cast<Pointer<Instantiation>*>(pointer);
     delete _pointer;
 }
@@ -516,9 +565,27 @@ QTJAMBI_EXPORT void *qtjambi_to_interface(JNIEnv *env, jobject java_object,
                                   const std::type_info& typeId);
 
 template<typename T>
+T *qtjambi_to_QObject(JNIEnv *env, jobject java_object)
+{
+    return dynamic_cast<T*>(qtjambi_to_qobject(env, java_object));
+}
+
+template<typename T>
+T *qtjambi_to_object(JNIEnv *env, jobject java_object)
+{
+    return reinterpret_cast<T*>(qtjambi_to_object(env, java_object));
+}
+
+template<typename T>
 T *qtjambi_to_interface(JNIEnv *env, jobject java_object)
 {
     return reinterpret_cast<T*>(qtjambi_to_interface(env, java_object, typeid(T)));
+}
+
+template<typename T>
+T *qtjambi_to_object_deref(JNIEnv *env, jobject java_object)
+{
+    return checked_deref(env, reinterpret_cast<T*>(qtjambi_to_object(env, java_object)));
 }
 
 template<typename T>
@@ -704,7 +771,7 @@ jobject qtjambi_from_functional(JNIEnv *env, const void *qt_object, const char *
 QTJAMBI_EXPORT
 jobject qtjambi_from_functional(JNIEnv *env, const void *qt_object, const char *className);
 
-typedef void(* PointerDeleter)(void *);
+typedef void(* PointerDeleter)(void *, bool);
 typedef void*(* PointerCreator)(void *);
 typedef QObject*(*PointerQObjectGetter)(const void *);
 typedef void*(*PointerGetter)(const void *);
@@ -958,6 +1025,13 @@ const T& qtjambi_value_from_nativeId(QtJambiNativeID nativeId){
         }
     }
     return qtjambi_get_default_value<T>();
+}
+
+template<typename T>
+const T& qtjambi_to_value(JNIEnv *env, jobject java_object)
+{
+    T* v = reinterpret_cast<T*>(qtjambi_to_object(env, java_object));
+    return v ? *v : qtjambi_get_default_value<T>();
 }
 
 template <template<typename I> class V, class I>
@@ -1259,77 +1333,77 @@ class QTJAMBI_EXPORT CharPointerArray : public PointerArray<jbyteArray,char>
 {
 public:
     CharPointerArray(JNIEnv *env, char* pointer, jsize size);
-    ~CharPointerArray();
+    ~CharPointerArray() override;
 };
 
 class QTJAMBI_EXPORT Int8PointerArray : public PointerArray<jbyteArray,qint8>
 {
 public:
     Int8PointerArray(JNIEnv *env, qint8* pointer, jsize size);
-    ~Int8PointerArray();
+    ~Int8PointerArray() override;
 };
 
 class QTJAMBI_EXPORT Int16PointerArray : public PointerArray<jshortArray,qint16>
 {
 public:
     Int16PointerArray(JNIEnv *env, qint16* pointer, jsize size);
-    ~Int16PointerArray();
+    ~Int16PointerArray() override;
 };
 
 class QTJAMBI_EXPORT Int32PointerArray : public PointerArray<jintArray,qint32>
 {
 public:
     Int32PointerArray(JNIEnv *env, qint32* pointer, jsize size);
-    ~Int32PointerArray();
+    ~Int32PointerArray() override;
 };
 
 class QTJAMBI_EXPORT Int64PointerArray : public PointerArray<jlongArray,qint64>
 {
 public:
     Int64PointerArray(JNIEnv *env, qint64* pointer, jsize size);
-    ~Int64PointerArray();
+    ~Int64PointerArray() override;
 };
 
 class QTJAMBI_EXPORT BoolPointerArray : public PointerArray<jbooleanArray,bool>
 {
 public:
     BoolPointerArray(JNIEnv *env, bool* pointer, jsize size);
-    ~BoolPointerArray();
+    ~BoolPointerArray() override;
 };
 
 class QTJAMBI_EXPORT Bool2PointerArray : public PointerArray<jbooleanArray,uchar>
 {
 public:
     Bool2PointerArray(JNIEnv *env, uchar* pointer, jsize size);
-    ~Bool2PointerArray();
+    ~Bool2PointerArray() override;
 };
 
 class QTJAMBI_EXPORT DoublePointerArray : public PointerArray<jdoubleArray,double>
 {
 public:
     DoublePointerArray(JNIEnv *env, double* pointer, jsize size);
-    ~DoublePointerArray();
+    ~DoublePointerArray() override;
 };
 
 class QTJAMBI_EXPORT FloatPointerArray : public PointerArray<jfloatArray,float>
 {
 public:
     FloatPointerArray(JNIEnv *env, float* pointer, jsize size);
-    ~FloatPointerArray();
+    ~FloatPointerArray() override;
 };
 
 class QTJAMBI_EXPORT WCharPointerArray : public PointerArray<jcharArray,ushort>
 {
 public:
     WCharPointerArray(JNIEnv *env, ushort* pointer, jsize size);
-    ~WCharPointerArray();
+    ~WCharPointerArray() override;
 };
 
 class QTJAMBI_EXPORT QCharPointerArray : public PointerArray<jcharArray,QChar>
 {
 public:
     QCharPointerArray(JNIEnv *env, QChar* pointer, jsize size);
-    ~QCharPointerArray();
+    ~QCharPointerArray() override;
 };
 
 template<typename T>
@@ -1343,7 +1417,7 @@ public:
     ObjectPointerArray(JNIEnv *env, T* pointer, jsize _size,
                        std::function<jobject(JNIEnv *,const T&)> getter,
                        std::function<void(T&,JNIEnv *,jobject)> setter);
-    ~ObjectPointerArray();
+    ~ObjectPointerArray() override;
 private:
     std::function<void(T&,JNIEnv *,jobject)> m_setter;
 };
@@ -1357,11 +1431,11 @@ inline ObjectPointerArray<T>::ObjectPointerArray(JNIEnv *env, T* pointer, jsize 
       m_setter(setter)
 {
     if(pointer){
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         for(jsize i=0; i<PointerArray<jobjectArray,T>::size(); ++i){
             env->SetObjectArrayElement(PointerArray<jobjectArray,T>::array(), i, getter(env, pointer[i]));
         }
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 }
 
@@ -1371,11 +1445,11 @@ inline ObjectPointerArray<T>::ObjectPointerArray(JNIEnv *env, T* pointer, jsize 
                    std::function<void(T&,JNIEnv *,jobject)> setter)
     : PointerArray<jobjectArray,T>(env, pointer, qtjambi_create_array(env, typeid(typename std::remove_pointer<T>::type), pointer ? _size : 0), pointer ? _size : 0), m_setter(setter) {
     if(pointer){
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         for(jsize i=0; i<PointerArray<jobjectArray,T>::size(); ++i){
             env->SetObjectArrayElement(PointerArray<jobjectArray,T>::array(), i, getter(env, pointer[i]));
         }
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 }
 
@@ -1394,77 +1468,66 @@ class QTJAMBI_EXPORT ConstCharPointerArray : public PointerArray<jbyteArray,cons
 {
 public:
     ConstCharPointerArray(JNIEnv *env, const char* pointer, jsize size);
-    ~ConstCharPointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstInt8PointerArray : public PointerArray<jbyteArray,const qint8>
 {
 public:
     ConstInt8PointerArray(JNIEnv *env, const qint8* pointer, jsize size);
-    ~ConstInt8PointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstInt16PointerArray : public PointerArray<jshortArray,const qint16>
 {
 public:
     ConstInt16PointerArray(JNIEnv *env, const qint16* pointer, jsize size);
-    ~ConstInt16PointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstInt32PointerArray : public PointerArray<jintArray,const qint32>
 {
 public:
     ConstInt32PointerArray(JNIEnv *env, const qint32* pointer, jsize size);
-    ~ConstInt32PointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstInt64PointerArray : public PointerArray<jlongArray,const qint64>
 {
 public:
     ConstInt64PointerArray(JNIEnv *env, const qint64* pointer, jsize size);
-    ~ConstInt64PointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstBoolPointerArray : public PointerArray<jbooleanArray,const bool>
 {
 public:
     ConstBoolPointerArray(JNIEnv *env, const bool* pointer, jsize size);
-    ~ConstBoolPointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstBool2PointerArray : public PointerArray<jbooleanArray,const uchar>
 {
 public:
     ConstBool2PointerArray(JNIEnv *env, const uchar* pointer, jsize size);
-    ~ConstBool2PointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstDoublePointerArray : public PointerArray<jdoubleArray,const double>
 {
 public:
     ConstDoublePointerArray(JNIEnv *env, const double* pointer, jsize size);
-    ~ConstDoublePointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstFloatPointerArray : public PointerArray<jfloatArray,const float>
 {
 public:
     ConstFloatPointerArray(JNIEnv *env, const float* pointer, jsize size);
-    ~ConstFloatPointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstWCharPointerArray : public PointerArray<jcharArray,const ushort>
 {
 public:
     ConstWCharPointerArray(JNIEnv *env, const ushort* pointer, jsize size);
-    ~ConstWCharPointerArray(){}
 };
 
 class QTJAMBI_EXPORT ConstQCharPointerArray : public PointerArray<jcharArray,const QChar>
 {
 public:
     ConstQCharPointerArray(JNIEnv *env, const QChar* pointer, jsize size);
-    ~ConstQCharPointerArray(){}
 };
 
 template<typename T>
@@ -1476,7 +1539,6 @@ public:
                             std::function<jobject(JNIEnv *,const T&)> getter);
     ConstObjectPointerArray(JNIEnv *env, const T* pointer, jsize _size,
                             std::function<jobject(JNIEnv *,const T&)> getter);
-    ~ConstObjectPointerArray();
 };
 
 template<typename T>
@@ -1486,11 +1548,11 @@ inline ConstObjectPointerArray<T>::ConstObjectPointerArray(JNIEnv *env, const T*
     : PointerArray<jobjectArray,const T>(env, pointer, qtjambi_create_array(env, javaClass, pointer ? _size : 0), pointer ? _size : 0)
 {
     if(pointer){
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         for(jsize i=0; i<PointerArray<jobjectArray,const T>::size(); ++i){
             env->SetObjectArrayElement(PointerArray<jobjectArray,const T>::array(), i, getter(env, pointer[i]));
         }
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 }
 
@@ -1500,16 +1562,13 @@ inline ConstObjectPointerArray<T>::ConstObjectPointerArray(JNIEnv *env, const T*
     : PointerArray<jobjectArray,const T>(env, pointer, qtjambi_create_array(env, typeid(typename std::remove_pointer<T>::type), pointer ? _size : 0), pointer ? _size : 0)
 {
     if(pointer){
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         for(jsize i=0; i<PointerArray<jobjectArray,const T>::size(); ++i){
             env->SetObjectArrayElement(PointerArray<jobjectArray,const T>::array(), i, getter(env, pointer[i]));
         }
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 }
-
-template<typename T>
-inline ConstObjectPointerArray<T>::~ConstObjectPointerArray(){}
 
 template<typename JArray, typename JType>
 class QTJAMBI_EXPORT JArrayPointer{
@@ -1520,7 +1579,7 @@ public:
           m_is_copy(false),
           m_array_elements(nullptr),
           m_writable(writable) {
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
     }
 
     inline virtual ~JArrayPointer()
@@ -1563,7 +1622,7 @@ class QTJAMBI_EXPORT JByteArrayPointer : public JArrayPointer<jbyteArray, jbyte>
 {
 public:
     JByteArrayPointer(JNIEnv *env, jbyteArray array, bool writable = true);
-    ~JByteArrayPointer();
+    ~JByteArrayPointer() override;
     operator char* () { return reinterpret_cast<char*>(m_array_elements); }
     operator const char* () const { return reinterpret_cast<const char*>(m_array_elements); }
     operator qint8* () { return reinterpret_cast<qint8*>(m_array_elements); }
@@ -1582,7 +1641,7 @@ class QTJAMBI_EXPORT JIntArrayPointer : public JArrayPointer<jintArray, jint>
 {
 public:
     JIntArrayPointer(JNIEnv *env, jintArray array, bool writable = true);
-    ~JIntArrayPointer();
+    ~JIntArrayPointer() override;
     operator int* () { return reinterpret_cast<int*>(m_array_elements); }
     operator const int* () const { return reinterpret_cast<int*>(m_array_elements); }
     operator uint* () { return reinterpret_cast<uint*>(m_array_elements); }
@@ -1594,7 +1653,7 @@ class QTJAMBI_EXPORT JLongArrayPointer : public JArrayPointer<jlongArray, jlong>
 {
 public:
     JLongArrayPointer(JNIEnv *env, jlongArray array, bool writable = true);
-    ~JLongArrayPointer();
+    ~JLongArrayPointer() override;
     operator qint64* () { return reinterpret_cast<qint64*>(m_array_elements); }
     operator const qint64* () const { return reinterpret_cast<qint64*>(m_array_elements); }
     operator quint64* () { return reinterpret_cast<quint64*>(m_array_elements); }
@@ -1606,7 +1665,7 @@ class QTJAMBI_EXPORT JFloatArrayPointer : public JArrayPointer<jfloatArray, jflo
 {
 public:
     JFloatArrayPointer(JNIEnv *env, jfloatArray array, bool writable = true);
-    ~JFloatArrayPointer();
+    ~JFloatArrayPointer() override;
     operator float* () { return reinterpret_cast<float*>(m_array_elements); }
     operator const float* () const { return reinterpret_cast<float*>(m_array_elements); }
     static bool isValidArray(JNIEnv *env, jobject object);
@@ -1616,7 +1675,7 @@ class QTJAMBI_EXPORT JDoubleArrayPointer : public JArrayPointer<jdoubleArray, jd
 {
 public:
     JDoubleArrayPointer(JNIEnv *env, jdoubleArray array, bool writable = true);
-    ~JDoubleArrayPointer();
+    ~JDoubleArrayPointer() override;
     operator double* () { return reinterpret_cast<double*>(m_array_elements); }
     operator const double* () const { return reinterpret_cast<double*>(m_array_elements); }
     static bool isValidArray(JNIEnv *env, jobject object);
@@ -1626,7 +1685,7 @@ class QTJAMBI_EXPORT JShortArrayPointer : public JArrayPointer<jshortArray, jsho
 {
 public:
     JShortArrayPointer(JNIEnv *env, jshortArray array, bool writable = true);
-    ~JShortArrayPointer();
+    ~JShortArrayPointer() override;
     operator qint16* () { return reinterpret_cast<qint16*>(m_array_elements); }
     operator const qint16* () const { return reinterpret_cast<qint16*>(m_array_elements); }
     operator quint16* () { return reinterpret_cast<quint16*>(m_array_elements); }
@@ -1638,7 +1697,7 @@ class QTJAMBI_EXPORT JCharArrayPointer : public JArrayPointer<jcharArray, jchar>
 {
 public:
     JCharArrayPointer(JNIEnv *env, jcharArray array, bool writable = true);
-    ~JCharArrayPointer();
+    ~JCharArrayPointer() override;
     operator qint16* () { return reinterpret_cast<qint16*>(m_array_elements); }
     operator const qint16* () const { return reinterpret_cast<qint16*>(m_array_elements); }
     operator quint16* () { return reinterpret_cast<quint16*>(m_array_elements); }
@@ -1658,7 +1717,7 @@ class QTJAMBI_EXPORT JBooleanArrayPointer : public JArrayPointer<jbooleanArray, 
 {
 public:
     JBooleanArrayPointer(JNIEnv *env, jbooleanArray array, bool writable = true);
-    ~JBooleanArrayPointer();
+    ~JBooleanArrayPointer() override;
     static bool isValidArray(JNIEnv *env, jobject object);
     jboolean* booleanArray();
     const jboolean* booleanArray() const;
@@ -1692,7 +1751,7 @@ public:
         }
     }
 
-    ~JObjectArrayPointer(){
+    ~JObjectArrayPointer() override {
         if(JArrayPointer<jobjectArray, Type>::m_array){
             if(JArrayPointer<jobjectArray, Type>::m_writable){
                 if(JNIEnv* env = qtjambi_current_environment()){
@@ -1873,19 +1932,6 @@ private:
     AboutToPaint __about_to_paint_##object(env, object);\
     Q_UNUSED(__about_to_paint_##object)
 
-class QTJAMBI_EXPORT BlockExceptions{
-public:
-    BlockExceptions(bool block);
-    ~BlockExceptions();
-private:
-    bool m_blocked;
-    Q_DISABLE_COPY_MOVE(BlockExceptions)
-};
-
-#define QTJAMBI_BLOCK_EXCEPTIONS(block)\
-    BlockExceptions __block_exceptions(block);\
-    Q_UNUSED(__block_exceptions)
-
 class QTJAMBI_EXPORT JniLocalFrame{
 public:
     JniLocalFrame(JNIEnv *env, int capacity);
@@ -1906,6 +1952,7 @@ public:
     QtJambiScope();
     QtJambiScope(QtJambiShell* shell);
     QtJambiScope(QtJambiNativeID nativeId);
+    QtJambiScope(JNIEnv *env, jobject object);
     ~QtJambiScope();
     void addFinalAction(std::function<void()> action);
     QtJambiNativeID relatedNativeID() const;
@@ -2010,9 +2057,19 @@ T& qtjambi_interface_from_nativeId_deref(JNIEnv *env, QtJambiNativeID nativeId)
     return checked_deref<T>(env, qtjambi_interface_from_nativeId<T>(nativeId));
 }
 
-QTJAMBI_EXPORT void qtjambi_register_pointer_deletion(void* ptr, bool* isShell = nullptr);
+QTJAMBI_EXPORT void qtjambi_register_pointer_deletion(void* ptr);
 
-QTJAMBI_EXPORT void qtjambi_register_pointer_deletion(void* ptr, void(*purgeFunction)(void*), bool* isShell = nullptr);
+QTJAMBI_EXPORT bool qtjambi_is_java_ownership(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool qtjambi_is_cpp_ownership(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool qtjambi_is_split_ownership(JNIEnv *env, jobject object);
+
+QTJAMBI_EXPORT bool qtjambi_is_java_ownership(QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool qtjambi_is_cpp_ownership(QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT bool qtjambi_is_split_ownership(QtJambiNativeID objectId);
 
 QTJAMBI_EXPORT void qtjambi_set_java_ownership(JNIEnv *env, jobject object);
 
@@ -2085,6 +2142,32 @@ QTJAMBI_EXPORT void qtjambi_constructor_window_thread_check(JNIEnv *env, const s
 QTJAMBI_EXPORT void qtjambi_constructor_application_thread_check(JNIEnv *env, const std::type_info& constructedType);
 
 QTJAMBI_EXPORT const QObject* qtjambi_pixmap_owner_function(const void *);
+
+class QFutureInterfaceBase;
+class QFutureWatcherBase;
+
+typedef void(*ResultTranslator)(JNIEnv *, const QSharedPointer<QFutureInterfaceBase>&, const QSharedPointer<QFutureInterfaceBase>&, int, int);
+
+QTJAMBI_EXPORT QFutureInterfaceBase* qtjambi_translate_futureinterfaces(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, const char* translatedType, ResultTranslator resultTranslator, ResultTranslator resultRetranslator);
+
+typedef void(*FutureSetter)(JNIEnv *, QFutureWatcherBase*, jobject);
+typedef jobject(*FutureResult)(JNIEnv *, QFutureWatcherBase*, int);
+typedef jobject(*FutureGetter)(JNIEnv *, QFutureWatcherBase*);
+QTJAMBI_EXPORT jobject qtjambi_from_QFutureWatcher(JNIEnv* env, const QFutureWatcherBase* futureWatcher,
+                                                   FutureSetter futureSetter, FutureResult futureResult, FutureGetter futureGetter);
+
+QTJAMBI_EXPORT jobject qtjambi_create_QFuture(JNIEnv* env, jobject futureInterface);
+
+QTJAMBI_EXPORT jobject qtjambi_get_QFutureInterface(JNIEnv* env, jobject future);
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+template <typename T> class QFuture;
+QTJAMBI_EXPORT QFutureInterfaceBase& qtjambi_get_QFutureInterface(const QFuture<void>& future);
+#else
+QTJAMBI_EXPORT jobject qtjambi_create_QPromise(JNIEnv* env, jobject futureInterface, const void* promise, QtJambiScope* scope);
+
+QTJAMBI_EXPORT void* qtjambi_get_native_QPromise(JNIEnv* env, jobject promise);
+#endif
 
 #endif // QTJAMBI_CORE_H
 

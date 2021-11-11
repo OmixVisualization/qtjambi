@@ -52,14 +52,11 @@
 
 #include <QObject>
 #include <QFile>
+#include <QFlags>
 
 class Generator : public QObject {
-        Q_OBJECT
-
-        Q_PROPERTY(QString outputDirectory READ outputDirectory WRITE setOutputDirectory)
-
     public:
-        enum Option : qint64{
+        enum Option : quint64{
             NoOption                        = 0x000000000,
             BoxedPrimitive                  = 0x000000001,
             ExcludeConst                    = 0x000000002,
@@ -100,6 +97,9 @@ class Generator : public QObject {
             EnumFromInt                     = 0x0400000000,
             InFunctionComment               = 0x0800000000,
             FunctionOverride                = 0x1000000000,
+            NoEnumAsInts                    = 0x2000000000,
+            NoSuppressExports               = 0x4000000000,
+            JNIProxyFunction                = 0x8000000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };
@@ -169,12 +169,12 @@ class Indentor {
 
 class Indentation {
     public:
-        Indentation(Indentor &indentor):
-                indentor(indentor) {
-            indentor.indent++;
+        Indentation(Indentor &indentor, uint offset = 1):
+                indentor(indentor), m_offset(offset) {
+            indentor.indent+=offset;
         }
         ~Indentation() {
-            indentor.indent--;
+            indentor.indent-=m_offset;
         }
         const QString &string() const {
             return indentor.string();
@@ -182,6 +182,7 @@ class Indentation {
 
     private:
         Indentor &indentor;
+        uint m_offset;
 };
 
 class IndentationReset {

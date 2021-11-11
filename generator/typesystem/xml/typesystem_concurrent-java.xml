@@ -43,11 +43,10 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.concurrent" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.concurrent" module="qtjambi.concurrent" default-superclass="io.qt.QtObject">
   <namespace-type name="QtConcurrent">
         <extra-includes>
             <include file-name="io.qt.core.*" location="java"/>
-            <include file-name="static io.qt.internal.QtJambiInternal.*" location="java" since="6.0.0"/>
         </extra-includes>
     <inject-code class="java">
         <import-file name="typesystem/java/typesystem_concurrent-java.java" quote-after-line="class QtConcurrent___" quote-before-line="}// class"/>

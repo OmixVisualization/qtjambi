@@ -210,7 +210,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		}
 		if(QTDIR != null)
             getProject().log(this, "QTDIR is set: " + prettyValue(QTDIR), Project.MSG_INFO);
-//        else if(OSInfo.isWindows() || OSInfo.isMacOS())
+//        else if(OSInfo.os() == OSInfo.OS.Windows || OSInfo.os() == OSInfo.OS.MacOS)
 //            getProject().log(this, "WARNING QTDIR is not set, yet this platform usually requires it to be set", Project.MSG_WARN);
         else{
         	String value = AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR);
@@ -348,20 +348,17 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         if(CROSS_COMPILE != null)
             getProject().log(this, "CROSS_COMPILE is set: " + prettyValue(CROSS_COMPILE), Project.MSG_INFO);
 
-        if(OSInfo.isMacOS())
-            mySetProperty(0, Constants.QTJAMBI_CONFIG_ISMACOSX, " (set by init)", "true", false);
-
         s = null;
-        if(OSInfo.isLinux())
-            s = OSInfo.K_LINUX;
-        else if(OSInfo.isWindows())
-            s = OSInfo.K_WINDOWS;
-        else if(OSInfo.isMacOS())
-            s = OSInfo.K_MACOSX;
-        else if(OSInfo.isFreeBSD())
-            s = OSInfo.K_FREEBSD;
-        else if(OSInfo.isSolaris())
-            s = OSInfo.K_SUNOS;
+        switch(OSInfo.os()) {
+        case Linux: s = OSInfo.K_LINUX; break;
+        case Windows: s = OSInfo.K_WINDOWS; break;
+        case Android: s = OSInfo.K_ANDROID; break;
+        case MacOS: 
+        	s = OSInfo.K_MACOS;
+        	mySetProperty(0, Constants.QTJAMBI_CONFIG_ISMACOSX, " (set by init)", "true", false);
+        break;
+        default: break;
+        }
         if(s != null)
             AntUtil.setNewProperty(propertyHelper, Constants.OSPLATFORM, s);
 
@@ -401,7 +398,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 
         String javaOsarchTarget = decideJavaOsarchTarget();
         if(javaOsarchTarget == null) {
-            if(OSInfo.isMacOS() == false)  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
+            if(OSInfo.os() != OSInfo.OS.MacOS)  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
                 throw new BuildException("Unable to determine JAVA_OSARCH_TARGET, setup environment variable JAVA_OSARCH_TARGET or edit build.properties");
         }
 
@@ -492,14 +489,14 @@ public class InitializeBuildTask extends AbstractInitializeTask {
         }
         
         List<String> privateModules = Arrays.asList(AntUtil.getPropertyAsString(propertyHelper, Constants.PRIVATE_MODULES).split(","));
-        if(OSInfo.isMacOS()){
+        if(OSInfo.os() == OSInfo.OS.MacOS){
 	        String wantedSdk = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_MACOSX_MAC_SDK);
 	        detectMacosxSdk(wantedSdk);
         }
         {
             String privateIncludes = "";
             String generatorIncludepaths = AntUtil.getPropertyAsString(propertyHelper, Constants.GENERATOR_INCLUDEPATHS);
-            if(OSInfo.isMacOS() && useQtFramework){
+            if(OSInfo.os() == OSInfo.OS.MacOS && useQtFramework){
                 String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
                 for(File frameworkDir : new File(libdir).listFiles()){
                     if(frameworkDir.isDirectory() && frameworkDir.getName().endsWith(".framework")){
@@ -651,7 +648,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             sourceValue = null;
             s = null;
 //            s = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_MACOSX_QTMENUNIB_DIR);
-            if(OSInfo.isMacOS()) {
+            if(OSInfo.os() == OSInfo.OS.MacOS) {
                 s = doesQtLibExistDir(qtjambiQtLibdir, "Resources/qt_menu.nib");
                 if(s == null)
                     s = doesQtLibExistDir(qtjambiQtLibdir, "qt_menu.nib");
@@ -665,10 +662,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                     sourceValue = " (auto-detected)";
             }
             if(s == null) {
-                if(!OSInfo.isMacOS())
-                    sourceValue = " (expected for non-MacOSX platform)";
-                else
+                if(OSInfo.os() == OSInfo.OS.MacOS)
                     sourceValue = " (WARNING you should resolve this for targetting MacOSX)";
+                else
+                    sourceValue = " (expected for non-MacOSX platform)";
                 s = "";
             }
             mySetProperty(-1, Constants.QTJAMBI_MACOSX_QTMENUNIB_DIR, sourceValue, s, false);
@@ -696,194 +693,144 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        
 	        boolean openglAvailable = qtMajorVersion>=6 && detectQtDsoExistAndSetProperty(Constants.OPENGL, "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "opengl");
 	        
-	        boolean widgetsAvailable = guiAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.WIDGETS, "QtWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "widgets");
+	        boolean widgetsAvailable = detectQtDsoExistAndSetProperty(Constants.WIDGETS, "QtWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "widgets");
 	        
-	        boolean openglwidgetsAvailable = qtMajorVersion>=6 && openglAvailable && widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGLWIDGETS, "QtOpenGLWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "openglwidgets");
+	        boolean openglwidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.OPENGLWIDGETS, "QtOpenGLWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "openglwidgets");
 	    	
 	        boolean dbusAvailable = detectQtDsoExistAndSetProperty(Constants.DBUS, "QtDBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "dbus");
 
 			boolean luceneAvailable = detectQtDsoExistAndSetProperty(Constants.CLUCENE, "QtCLucene", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
-	        boolean iopluginAvailable = widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.UIPLUGIN, "QtUiPlugin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uiplugin");
+	        boolean iopluginAvailable = detectQtDsoExistAndSetProperty(Constants.UIPLUGIN, "QtUiPlugin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uiplugin");
 	        
-	        boolean iotoolsAvailable = openglwidgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.UITOOLS, "QtUiTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uitools");
+	        boolean iotoolsAvailable = detectQtDsoExistAndSetProperty(Constants.UITOOLS, "QtUiTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "uitools");
 	        
 	        boolean chartsAvailable = detectQtDsoExistAndSetProperty(Constants.CHARTS, "QtCharts", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "charts");
 	        
 	        boolean datavisAvailable = detectQtDsoExistAndSetProperty(Constants.DATA_VISUALIZATION, "QtDataVisualization", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "datavisualization");
 	        
-	        boolean designerAvailable = xmlAvailable && widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.DESIGNER, "QtDesigner", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "designer");
+	        boolean designerAvailable = detectQtDsoExistAndSetProperty(Constants.DESIGNER, "QtDesigner", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "designer");
 
-	        boolean designerCompnentsAvailable = designerAvailable && 
-	        		detectQtDsoExistAndSetProperty(Constants.DESIGNERCOMPONENTS, "QtDesignerComponents", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean designerCompnentsAvailable = detectQtDsoExistAndSetProperty(Constants.DESIGNERCOMPONENTS, "QtDesignerComponents", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
 	        boolean sqlAvailable = detectQtDsoExistAndSetProperty(Constants.SQL, "QtSql", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "sql");
 
-	        boolean helpAvailable = widgetsAvailable && sqlAvailable && networkAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.HELP, "QtHelp", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "help");
+	        boolean helpAvailable = detectQtDsoExistAndSetProperty(Constants.HELP, "QtHelp", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "help");
 
-	        boolean multimediaAvailable = guiAvailable && networkAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIA, "QtMultimedia", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimedia");
+	        boolean multimediaAvailable = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIA, "QtMultimedia", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimedia");
 
-	        boolean networkAuthAvailable = networkAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.NETWORKAUTH, "QtNetworkAuth", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "networkauth");
+	        boolean networkAuthAvailable = detectQtDsoExistAndSetProperty(Constants.NETWORKAUTH, "QtNetworkAuth", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "networkauth");
 			
 	        boolean scriptAvailable = detectQtDsoExistAndSetProperty(Constants.SCRIPT, "QtScript", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "script");
 
-	        boolean scriptToolsAvailable = scriptAvailable && widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.SCRIPTTOOLS, "QtScriptTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scripttools");
+	        boolean scriptToolsAvailable = detectQtDsoExistAndSetProperty(Constants.SCRIPTTOOLS, "QtScriptTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scripttools");
 
-	        boolean svgAvailable = (widgetsAvailable || qtMajorVersion>=6)
-	        		&& detectQtDsoExistAndSetProperty(Constants.SVG, "QtSvg", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svg");
+	        boolean svgAvailable = detectQtDsoExistAndSetProperty(Constants.SVG, "QtSvg", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svg");
 	        
-	        boolean svgWidgetsAvailable = widgetsAvailable
-	        		&& svgAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.SVGWIDGETS, "QtSvgWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svgwidgets");
+	        boolean svgWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.SVGWIDGETS, "QtSvgWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "svgwidgets");
 
 	        boolean testAvailable = detectQtDsoExistAndSetProperty(Constants.TEST, "QtTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "test");
 			
-	        boolean gamepadAvailable = guiAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.GAMEPAD, "QtGamepad", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "gamepad");
+	        boolean gamepadAvailable = detectQtDsoExistAndSetProperty(Constants.GAMEPAD, "QtGamepad", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "gamepad");
 			
-	        boolean qmlAvailable = networkAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QML, "QtQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qml");
+	        boolean qmlAvailable = detectQtDsoExistAndSetProperty(Constants.QML, "QtQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qml");
 	        
-	        boolean qmlModelsAvailable = qmlAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QML_MODELS, "QtQmlModels", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qmlmodels");
+	        boolean qmlModelsAvailable = detectQtDsoExistAndSetProperty(Constants.QML_MODELS, "QtQmlModels", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "qmlmodels");
 	        
-	        boolean quickAvailable = guiAvailable && qmlModelsAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICK, "QtQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick");
+	        boolean quickAvailable = detectQtDsoExistAndSetProperty(Constants.QUICK, "QtQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick");
 	        
-	        boolean quickWidgetsAvailable = quickAvailable && widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICKWIDGETS, "QtQuickWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickwidgets");
+	        boolean quickWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKWIDGETS, "QtQuickWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickwidgets");
 	        
-	        boolean printSupportAvailable = widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.PRINTSUPPORT, "QtPrintSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "printsupport");
+	        boolean printSupportAvailable = detectQtDsoExistAndSetProperty(Constants.PRINTSUPPORT, "QtPrintSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "printsupport");
 	        
 	        boolean positioningAvailable = detectQtDsoExistAndSetProperty(Constants.POSITIONING, "QtPositioning", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "positioning");
 	        
-	        boolean positioningQuickAvailable = positioningAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.POSITIONINGQUICK, "QtPositioningQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean positioningQuickAvailable = detectQtDsoExistAndSetProperty(Constants.POSITIONINGQUICK, "QtPositioningQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean webChannelAvailable = qmlAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBCHANNEL, "QtWebChannel", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webchannel");
+	        boolean webChannelAvailable = detectQtDsoExistAndSetProperty(Constants.WEBCHANNEL, "QtWebChannel", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webchannel");
 	        
-	        boolean webengineCoreAvailable = quickAvailable && positioningAvailable && webChannelAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBENGINECORE, "QtWebEngineCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginecore");
+	        boolean webengineCoreAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINECORE, "QtWebEngineCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginecore");
 			
-	        boolean webengineAvailable = webengineCoreAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBENGINE, "QtWebEngine", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webengine");
+	        boolean webengineAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINE, "QtWebEngine", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webengine");
+	        
+	        boolean webengineQuickAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINEQUICK, "QtWebEngineQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginequick");
 			
-	        boolean webengineWidgetsAvailable = webengineCoreAvailable && quickWidgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBENGINEWIDGETS, "QtWebEngineWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginewidgets");
+	        boolean webengineWidgetsAvailable = detectQtDsoExistAndSetProperty(Constants.WEBENGINEWIDGETS, "QtWebEngineWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webenginewidgets");
 	        
 	        detectQtDsoExistAndSetProperty("qtjambi.purchasing", "QtPurchasing", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "purchasing");
 			
-	        boolean bodymovinAvailable = guiAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.bodymovin", "QtBodymovin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bodymovin");
+	        boolean bodymovinAvailable = detectQtDsoExistAndSetProperty("qtjambi.bodymovin", "QtBodymovin", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bodymovin");
 	        
-	        boolean webViewAvailable = quickAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBVIEW, "QtWebView", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webview");
+	        boolean webViewAvailable = detectQtDsoExistAndSetProperty(Constants.WEBVIEW, "QtWebView", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "webview");
 	        
 			boolean labTemplatesAvailable = detectQtDsoExistAndSetProperty(Constants.LABSTEMPLATES, "QtLabsTemplates", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "labstemplates");
 			
 			boolean angleAvailable = detectQtDsoExistAndSetProperty(Constants.ANGLE, "QtANGLE", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "angle");
 
-	        boolean xmlPatternsAvailable = networkAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.XMLPATTERNS, "QtXmlPatterns", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "xmlpatterns");
+	        boolean xmlPatternsAvailable = detectQtDsoExistAndSetProperty(Constants.XMLPATTERNS, "QtXmlPatterns", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "xmlpatterns");
 	        
 	        detectQtDsoExistAndSetProperty("qtjambi.virtualkeyboard", "QtVirtualKeyboard", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "virtualkeyboard");
 	        
 	        boolean quick3dAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quick3d");
-	        boolean quick3dAssetImportAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dRenderAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dUtilsAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "QtQuick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean quick3dRuntimeRenderAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
-	        boolean shaderToolsAvailable = quick3dAvailable && detectQtDsoExistAndSetProperty("qtjambi.shadertools", "QtShaderTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dAssetImportAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dUtilsAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "QtQuick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3dRuntimeRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean shaderToolsAvailable = detectQtDsoExistAndSetProperty("qtjambi.shadertools", "QtShaderTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean eglDeviceIntegrationAvailable = detectQtDsoExistAndSetProperty(Constants.EGLDEVICEINTEGRATION, "QtEglDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean eglFSDeviceIntegrationAvailable = guiAvailable && dbusAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.eglfsdeviceintegration", "QtEglFSDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean eglFSDeviceIntegrationAvailable = detectQtDsoExistAndSetProperty("qtjambi.eglfsdeviceintegration", "QtEglFSDeviceIntegration", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	    	
-	        boolean eglFsKmsSupportAvailable = guiAvailable && dbusAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.eglfskmssupport", "QtEglFsKmsSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean eglFsKmsSupportAvailable = detectQtDsoExistAndSetProperty("qtjambi.eglfskmssupport", "QtEglFsKmsSupport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
-	        boolean waylandClientAvailable = guiAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WAYLANDCLIENT, "QtWaylandClient", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean waylandClientAvailable = detectQtDsoExistAndSetProperty(Constants.WAYLANDCLIENT, "QtWaylandClient", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
-	        boolean waylandCompositorAvailable = quickAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.waylandcompositor", "QtWaylandCompositor", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean waylandCompositorAvailable = detectQtDsoExistAndSetProperty("qtjambi.waylandcompositor", "QtWaylandCompositor", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
-	        boolean xcbQpaAvailable = dbusAvailable && guiAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.XCBQPA, "QtXcbQpa", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean xcbQpaAvailable = detectQtDsoExistAndSetProperty(Constants.XCBQPA, "QtXcbQpa", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	    	
-	        boolean winExtrasAvailable = widgetsAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.WINEXTRAS, "QtWinExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "winextras");
+	        boolean winExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.WINEXTRAS, "QtWinExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "winextras");
 	    	
-	        boolean macExtrasAvailable = widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.MACEXTRAS, "QtMacExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "macextras");
+	        boolean macExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.MACEXTRAS, "QtMacExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "macextras");
 	    	
-	        boolean x11ExtrasAvailable = guiAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.X11EXTRAS, "QtX11Extras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "x11extras");
+	        boolean x11ExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.X11EXTRAS, "QtX11Extras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "x11extras");
 	    	
 	        boolean concurrentAvailable = detectQtDsoExistAndSetProperty(Constants.CONCURRENT, "QtConcurrent", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "concurrent");
 	        
-	        boolean _3DCoreAvailable = networkAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DCORE, "Qt3DCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dcore");
+	        boolean _3DCoreAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DCORE, "Qt3DCore", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dcore");
 	    	
-	        boolean _3DRenderAvailable = _3DCoreAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DRENDER, "Qt3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3drender");
+	        boolean _3DRenderAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DRENDER, "Qt3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3drender");
 			
-	        boolean _3DQuickRenderAvailable = quickAvailable && _3DCoreAvailable && _3DRenderAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DQUICKRENDER, "Qt3DQuickRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickrender");
+	        boolean _3DQuickRenderAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKRENDER, "Qt3DQuickRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickrender");
 			
-	        boolean _3DQuickInputAvailable = gamepadAvailable && _3DCoreAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DQUICKINPUT, "Qt3DQuickInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickinput");
+	        boolean _3DQuickInputAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKINPUT, "Qt3DQuickInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickinput");
 	    	
-	        boolean _3DQuickAvailable = quickAvailable && _3DCoreAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DQUICK, "Qt3DQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquick");
+	        boolean _3DQuickAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICK, "Qt3DQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquick");
 			
-	        boolean _3DExtrasAvailable = concurrentAvailable && _3DQuickRenderAvailable && _3DQuickInputAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DEXTRAS, "Qt3DExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dextras");
+	        boolean _3DExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DEXTRAS, "Qt3DExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dextras");
 	        
-	        boolean _3DQuickExtrasAvailable = _3DExtrasAvailable && _3DQuickAvailable && _3DRenderAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DQUICKEXTRAS, "Qt3DQuickExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickextras");
+	        boolean _3DQuickExtrasAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKEXTRAS, "Qt3DQuickExtras", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickextras");
 	    	
-	        boolean _3DAnimationAvailable = _3DRenderAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DANIMATION, "Qt3DAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3danimation");
+	        boolean _3DAnimationAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DANIMATION, "Qt3DAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3danimation");
 			
-	        boolean _3DQuickScene2DAvailable = _3DQuickAvailable && _3DRenderAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DQUICKSCENE2D, "Qt3DQuickScene2D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickscene2d");
+	        boolean _3DQuickScene2DAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DQUICKSCENE2D, "Qt3DQuickScene2D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dquickscene2d");
 			
-	        boolean _3DLogicAvailable = _3DCoreAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DLOGIC, "Qt3DLogic", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dlogic");
+	        boolean _3DLogicAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DLOGIC, "Qt3DLogic", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dlogic");
 			
-	        boolean _3DInputAvailable = _3DCoreAvailable && gamepadAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QT3DINPUT, "Qt3DInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dinput");
+	        boolean _3DInputAvailable = detectQtDsoExistAndSetProperty(Constants.QT3DINPUT, "Qt3DInput", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "3dinput");
 	    	
-	        boolean quick3DUtilsAvailable = guiAvailable && quickAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "Qt5Quick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3DUtilsAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dutils", "Qt5Quick3DUtils", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean _3DQuickAnimationAvailable = quick3DUtilsAvailable 
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.3dquickanimation", "Qt3DQuickAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean _3DQuickAnimationAvailable = detectQtDsoExistAndSetProperty("qtjambi.3dquickanimation", "Qt3DQuickAnimation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean quick3DRenderAvailable = quick3DUtilsAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3DRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3drender", "QtQuick3DRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean quick3DAssetImportAvailable = quick3DUtilsAvailable && quickAvailable && quick3DRenderAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3DAssetImportAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3dassetimport", "QtQuick3DAssetImport", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean quick3DRuntimeRenderAvailable = quick3DRenderAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3DRuntimeRenderAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3druntimerender", "QtQuick3DRuntimeRender", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 
-	        boolean quick3DAvailable = quick3DRuntimeRenderAvailable && quick3DAssetImportAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quick3DAvailable = detectQtDsoExistAndSetProperty("qtjambi.quick3d", "QtQuick3D", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean libEGLAvailable = detectQtDsoExistAndSetProperty(Constants.LIBEGL, "libEGL", libInfix, -1, -1, -1, null);
 	        
@@ -911,33 +858,25 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        
 	        boolean bluetoothAvailable = detectQtDsoExistAndSetProperty(Constants.BLUETOOTH, "QtBluetooth", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "bluetooth");
 	        
-	        boolean locationAvailable = positioningQuickAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.LOCATION, "QtLocation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "location");
+	        boolean locationAvailable = detectQtDsoExistAndSetProperty(Constants.LOCATION, "QtLocation", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "location");
 	        
-	        boolean webSocketsAvailable = networkAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.WEBSOCKETS, "QtWebSockets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "websockets");
+	        boolean webSocketsAvailable = detectQtDsoExistAndSetProperty(Constants.WEBSOCKETS, "QtWebSockets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "websockets");
 	        
 	        boolean serialPortAvailable = detectQtDsoExistAndSetProperty(Constants.SERIALPORT, "QtSerialPort", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "serialport");
 	        
-	        boolean serialBusAvailable = serialPortAvailable && networkAvailable
-	        		&& detectQtDsoExistAndSetProperty("qtjambi.serialbus", "QtSerialBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "serialbus");
+	        boolean serialBusAvailable = detectQtDsoExistAndSetProperty("qtjambi.serialbus", "QtSerialBus", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "serialbus");
 	        
 	        boolean sensorsAvailable = detectQtDsoExistAndSetProperty(Constants.SENSORS, "QtSensors", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "sensors");
 	        
-	        boolean quickTestAvailable = quickAvailable && testAvailable && widgetsAvailable
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICKTEST, "QtQuickTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quickTestAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKTEST, "QtQuickTest", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean quickParticlesAvailable = quickAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICKPARTICLES, "QtQuickParticles", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quickParticlesAvailable = detectQtDsoExistAndSetProperty(Constants.QUICKPARTICLES, "QtQuickParticles", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 			
-	        boolean quickTemplates2Available = quickAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICKTEMPLATES2, "QtQuickTemplates2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean quickTemplates2Available = detectQtDsoExistAndSetProperty(Constants.QUICKTEMPLATES2, "QtQuickTemplates2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 			
-	        boolean quickControls2Available = quickTemplates2Available 
-	        		&& detectQtDsoExistAndSetProperty(Constants.QUICKCONTROLS2, "QtQuickControls2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickcontrols2");
+	        boolean quickControls2Available = detectQtDsoExistAndSetProperty(Constants.QUICKCONTROLS2, "QtQuickControls2", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "quickcontrols2");
 	        
-	        boolean remoteObjectsAvailable = networkAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.REMOTEOBJECTS, "QtRemoteObjects", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "remoteobjects");
+	        boolean remoteObjectsAvailable = detectQtDsoExistAndSetProperty(Constants.REMOTEOBJECTS, "QtRemoteObjects", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "remoteobjects");
 	        
 	        boolean scxmlAvailable = detectQtDsoExistAndSetProperty(Constants.SCXML, "QtScxml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "scxml");
 	        boolean scxmlQmlAvailable = scxmlAvailable && detectQtDsoExistAndSetProperty(Constants.SCXML+"qml", "QtScxmlQml", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
@@ -954,15 +893,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        boolean openGl5Availability = !openglAvailable && widgetsAvailable 
 	        		&& detectQtDsoExistAndSetProperty(Constants.OPENGL+".util", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
-	        boolean multimediaWidgetsAvailability = multimediaAvailable 
-	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS, "QtMultimediaWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimediawidgets");
+	        boolean multimediaWidgetsAvailability = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS, "QtMultimediaWidgets", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, "multimediawidgets");
 	        
 	        if(!openglAvailable && !openGl5Availability && multimediaWidgetsAvailability){
 	            detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAWIDGETS+".opengl", "QtOpenGL", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        }
 	        
-	        boolean multimediaGstToolsAvailable = multimediaWidgetsAvailability
-	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAGSTTOOLS, "QtMultimediaGstTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
+	        boolean multimediaGstToolsAvailable = detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAGSTTOOLS, "QtMultimediaGstTools", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
 	        
 	        boolean multimediaQuickAvailable = multimediaAvailable && quickAvailable
 	        		&& detectQtDsoExistAndSetProperty(Constants.MULTIMEDIAQUICK, "QtMultimediaQuick", libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null);
@@ -989,7 +926,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales", "true");
 	        		AntUtil.setProperty(propertyHelper, "qtjambi.webengine.locales.debug", "true");
 	        	}
-	        	if(OSInfo.isMacOS() && useQtFramework){
+	        	if(OSInfo.os() == OSInfo.OS.MacOS && useQtFramework){
 	            	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
 		                String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
 		                boolean noResources = true;
@@ -1027,7 +964,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	            }else{
 	                String includedir = AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR);
 	                AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengine.resourcesdir", AntUtil.getPropertyAsString(propertyHelper, Constants.RESOURCESDIR));
-	                if(OSInfo.isWindows()) {
+	                if(OSInfo.os() == OSInfo.OS.Windows) {
 	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.dir", AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR));
 	                	AntUtil.setProperty(propertyHelper, "qtjambi.qt.webengineprocess.targetdir", "bin");
 	                }else {
@@ -1378,7 +1315,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 	        if((packagingDsoSsleay32Message.length() > 0 || ("false".equals(packagingDsoSsleay32) == false) && packagingDsoSsleay32 != null))
 	            getProject().log(this, Constants.PACKAGING_DSO_SSLEAY32 + ": " + packagingDsoSsleay32 + packagingDsoSsleay32Message, Project.MSG_INFO);
 
-	        if(OSInfo.isWindows()) {
+	        if(OSInfo.os() == OSInfo.OS.Windows) {
 	            String packagingDsoZlib1 = decideQtBinDso(Constants.PACKAGING_DSO_ZLIB1, "zlib1", null, null, false);
 	            mySetProperty(-1, Constants.PACKAGING_DSO_ZLIB1, null, packagingDsoZlib1, false);
 	        } else {
@@ -1431,7 +1368,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
             prettifyPathSeparator(INCLUDE, false);
         }
 
-        if(OSInfo.isLinux()) {    // Check we have libQtCore.so.4 in one of the paths in LD_LIBRARY_PATH
+        if(OSInfo.os() == OSInfo.OS.Linux) {    // Check we have libQtCore.so.4 in one of the paths in LD_LIBRARY_PATH
             String LD_LIBRARY_PATH = System.getenv("LD_LIBRARY_PATH");
             getProject().log(this, "LD_LIBRARY_PATH is set: " + ((LD_LIBRARY_PATH == null) ? "<notset>" : LD_LIBRARY_PATH), Project.MSG_INFO);
             if(LD_LIBRARY_PATH != null) {
@@ -1467,7 +1404,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                 getProject().log(this, " WARNING: LD_LIBRARY_PATH environment variable is not set; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
             }
         }
-        if(OSInfo.isWindows()) {    // Check we have QtCore4.dll/Qt5Core.dll in one of the paths in PATH
+        if(OSInfo.os() == OSInfo.OS.Windows) {    // Check we have QtCore4.dll/Qt5Core.dll in one of the paths in PATH
             String PATH = System.getenv("PATH");
             getProject().log(this, "PATH is set: " + ((PATH == null) ? "<notset>" : PATH), Project.MSG_INFO);
             if(PATH != null) {
@@ -1503,7 +1440,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                 getProject().log(this, " WARNING: PATH environment variable is not set; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
             }
         }
-        if(OSInfo.isMacOS()) {    // Check we have libQtCore.4.dylib in one of the paths in DYLD_LIBRARY_PATH
+        if(OSInfo.os() == OSInfo.OS.MacOS) {    // Check we have libQtCore.4.dylib in one of the paths in DYLD_LIBRARY_PATH
             String DYLD_LIBRARY_PATH = System.getenv("DYLD_LIBRARY_PATH");
             getProject().log(this, "DYLD_LIBRARY_PATH is set: " + ((DYLD_LIBRARY_PATH == null) ? "<notset>" : DYLD_LIBRARY_PATH), Project.MSG_INFO);
             if(DYLD_LIBRARY_PATH != null) {
@@ -1517,16 +1454,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                 int found = 0;
                 for(String element : sA) {
                     File testDir = new File(element);
-                    if(testDir.isDirectory() == false)
-                        getProject().log(this, " WARNING: DYLD_LIBRARY_PATH directory does not exit: " + element, Project.MSG_INFO);
                     File testFile = new File(element, filename);
                     if(testFile.isFile()) {
                         getProject().log(this, "   FOUND: DYLD_LIBRARY_PATH directory contains QtCore: " + testFile.getAbsolutePath(), Project.MSG_INFO);
                         found++;
                     }
                 }
-                if(found == 0)
-                    getProject().log(this, " WARNING: DYLD_LIBRARY_PATH environment variable is set, but does not contain a valid location for libQtCore.*.dylib; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
 
                 // FIXME: Refactor this duplicate code later (we look for !debug here but don't WARNING is we dont find it)
                 if(useQtFramework){
@@ -1544,8 +1477,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
                         found++;
                     }
                 }
-            } else {
-                getProject().log(this, " WARNING: DYLD_LIBRARY_PATH environment variable is not set; this is usually needed to allow 'generator' and 'juic' executables to run during the build", Project.MSG_INFO);
             }
         }
 
@@ -1727,7 +1658,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
     
     // wantedSdk maybe "MacOSX10.5.sdk" or "/Developer/SDKs/MacOSX10.5.sdk"
     private String detectMacosxSdk(String wantedSdk) {
-        if(OSInfo.isMacOS() == false || qtMajorVersion>=5)
+        if(OSInfo.os() == OSInfo.OS.MacOS == false || qtMajorVersion>=5)
             return null;
 
         //QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
@@ -2343,6 +2274,18 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINE");
 		}
 		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINEQUICK+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINEQUICK");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINECORE+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINECORE");
+		}
+		
+		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBENGINEWIDGETS+".any.true"))){
+			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBENGINEWIDGETS");
+		}
+		
 		if(!Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, Constants.WEBVIEW+".any.true"))){
 			generatorPreProcDefinesList.add("QTJAMBI_NO_WEBVIEW");
 		}
@@ -2921,8 +2864,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				libSuffixes = new String[]{".a"};
 				libName = "lib"+libName;
 				break;
-			case FreeBSD:
-			case Solaris:
 			case Linux:
 			case Unknown:
 			default:
@@ -2947,7 +2888,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 								libInfix = fileName;
 								break loop;
 							}
-						}else if(OSInfo.isMacOS() && libfile.isDirectory() && fileName.equals("QtGui.framework")){
+						}else if(OSInfo.os() == OSInfo.OS.MacOS && libfile.isDirectory() && fileName.equals("QtGui.framework")){
                             mySetProperty(-1, Constants.MAC_OS_USE_FRAMEWORK, " (as detected in lib directory)", "true", false);
                             useQtFramework = true;
                             break loop;

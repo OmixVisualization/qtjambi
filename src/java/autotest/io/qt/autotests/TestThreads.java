@@ -43,6 +43,7 @@ import org.junit.Test;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
@@ -51,8 +52,6 @@ import io.qt.core.QThread;
 import io.qt.core.QVariantAnimation;
 import io.qt.core.Qt;
 import io.qt.internal.QtJambiDebugTools;
-import io.qt.internal.QtJambiInternal;
-import io.qt.internal.QtJambiThreadUtility;
 import io.qt.widgets.QWidget;
 
 public class TestThreads extends QApplicationTest {
@@ -115,7 +114,7 @@ public class TestThreads extends QApplicationTest {
     				});
 	    			QtUtilities.getSignalOnDispose(qthread).connect(()->threadDisposed.set(true), Qt.ConnectionType.DirectConnection);
 					qthread.destroyed.connect(()->qthreadDestroyed.set(true), Qt.ConnectionType.DirectConnection);
-	    			QtJambiInternal.registerCleaner(qthread, ()->qthreadCleaned.set(true));
+	    			General.internalAccess.registerCleaner(qthread, ()->qthreadCleaned.set(true));
 					QObject object = new QObject();
 					QtUtilities.getSignalOnDispose(object).connect(()->qobjectDisposed.set(true), Qt.ConnectionType.DirectConnection);
 					object.destroyed.connect(()->qobjectDestroyed.set(true), Qt.ConnectionType.DirectConnection);
@@ -125,7 +124,7 @@ public class TestThreads extends QApplicationTest {
 				}
 	    	});
 	    	thread.setName("\0\0");
-	    	QtJambiInternal.registerCleaner(thread, ()->threadCleaned.set(true));
+	    	General.internalAccess.registerCleaner(thread, ()->threadCleaned.set(true));
 	    	thread.setDaemon(true);
 	    	thread.start();
 	    	thread = null;
@@ -251,7 +250,7 @@ public class TestThreads extends QApplicationTest {
         public int numPings = 0;
         public PingPong other;
         public boolean affinityOk = true;
-        Signal0 done = new Signal0();
+        final Signal0 done = new Signal0();
         @Override
         public boolean event(QEvent e) {
             if (e.type() == ID_PING) {
@@ -379,8 +378,8 @@ public class TestThreads extends QApplicationTest {
         @SuppressWarnings("unused")
 		public PingPongSS other;
         public boolean affinityOk = true;
-        Signal0 done = new Signal0();
-        Signal0 ping = new Signal0();
+        final Signal0 done = new Signal0();
+        final Signal0 ping = new Signal0();
 
         public void pong() {
             int thisNumPings;
@@ -520,80 +519,10 @@ public class TestThreads extends QApplicationTest {
         assertTrue("ping.object.affinityOk", ping.object.affinityOk);
     }
 
-
-
-    /*private static class MoveToThreadObject extends QObject {
-        Thread timerEventThread;
-        Thread customEventThread;
-        Thread slotThread;
-
-        Signal0 theSignal = new Signal0();
-        Signal0 done = new Signal0();
-
-        MoveToThreadObject() {
-            this(null);
-        }
-        MoveToThreadObject(QObject parent) {
-            super(parent);
-        }
-
-        protected void customEvent(QEvent e)
-        {
-            if (customEventThread != null)
-                throw new RuntimeException("customEventThread expected to be null at this point");
-            customEventThread = Thread.currentThread();
-            theSignal.emit();
-        }
-
-        protected void timerEvent(QTimerEvent e)
-        {
-            if (timerEventThread != null)
-                throw new RuntimeException("timerEventThread expected to be null at this point");
-            timerEventThread = Thread.currentThread();
-            theSignal.emit();
-        }
-
-        void theSlot()
-        {
-            if (slotThread != null)
-                throw new RuntimeException("slotThread expected to be null at this point");
-            slotThread = Thread.currentThread();
-            theSignal.emit();
-        }
-
-        public void emitDone() {
-            done.emit();
-        }
-    }*/
-
-
-
-    /*private static class MoveToThreadThread extends QObject implements Runnable {
-        Signal0 started = new Signal0();
-        Thread thread = new Thread(this);
-        QEventLoop loop;
-        public void start() {
-            QEventLoop eventLoop = new QEventLoop();
-            started.connect(eventLoop, "quit()");
-
-            thread.start();
-
-            // wait for thread to start
-            eventLoop.exec();
-        }
-
-        public void run() {
-            started.emit();
-            loop = new QEventLoop();
-            loop.exec();
-        }
-    }
-    */
-
     @Test
     public void run_moveToThread() throws Exception
     {
-        Object currentThread = QThread.currentThread();
+    	QThread currentThread = QThread.currentThread();
 
         {
             QObject object = new QObject();
@@ -603,7 +532,7 @@ public class TestThreads extends QApplicationTest {
             object.moveToThread(null);
             assertEquals(object.thread(), null);
             assertEquals(child.thread(), null);
-            object.moveToThread(QtJambiThreadUtility.castToThread(currentThread));
+            object.moveToThread(currentThread);
             assertEquals(object.thread(), currentThread);
             assertEquals(child.thread(), currentThread);
             object.moveToThread(null);
@@ -612,127 +541,6 @@ public class TestThreads extends QApplicationTest {
             // can delete an object with no thread anywhere
             object.dispose();
         }
-
-        /*
-        {
-            MoveToThreadThread thread;
-            thread.start();
-
-            QObject object = new QObject();
-            QObject child = new QObject(object);
-            QObject opointer = object;
-            QObject cpointer = object;
-
-            assertEquals(object.thread(), currentThread);
-            assertEquals(child.thread(), currentThread);
-            object.moveToThread(thread);
-            assertEquals(object.thread(), thread);
-            assertEquals(child.thread(), thread);
-
-            connect(object.destroyed, new Slot(thread, "quit()"), Qt.DirectConnection);
-            object.deleteLater();
-            thread.wait();
-
-            assertTrue(opointer == 0);
-            assertTrue(cpointer == 0);
-        }
-        */
-
-//        {
-//            // make sure posted events are moved with the object
-//            MoveToThreadThread thread = new MoveToThreadThread();
-//            thread.start();
-//
-//            MoveToThreadObject object = new MoveToThreadObject();
-//            MoveToThreadObject child = new MoveToThreadObject(object);
-//
-//            QObject.connect(object.theSignal, new Slot(thread.loop, "quit()"), Qt.DirectConnection);
-//            QCoreApplication.postEvent(child, new QEvent(QEvent.User));
-//            QCoreApplication.postEvent(object, new QEvent(QEvent.User));
-//
-//            assertEquals(object.thread(), currentThread);
-//            assertEquals(child.thread(), currentThread);
-//            object.moveToThread(thread.thread);
-//            assertEquals(object.thread(), thread);
-//            assertEquals(child.thread(), thread);
-//
-//            thread.thread.join();
-//
-//            assertEquals(object.customEventThread, thread);
-//            assertEquals(child.customEventThread, thread);
-//
-//            thread.start();
-//            QObject.connect(object.done, new Slot(thread.loop, "quit()"), Qt.DirectConnection);
-//            object.emitDone();
-//            thread.thread.join();
-//        }
-//
-//        {
-//            // make sure timers are moved with the object
-//            MoveToThreadThread thread = new MoveToThreadThread();
-//            thread.start();
-//
-//            MoveToThreadObject object = new MoveToThreadObject();
-//            MoveToThreadObject child = new MoveToThreadObject(object);
-//
-//            QObject.connect(object.theSignal, new Slot(thread.loop, "quit()"), Qt.DirectConnection);
-//            child.startTimer(90);
-//            object.startTimer(100);
-//
-//            assertEquals(object.thread(), currentThread);
-//            assertEquals(child.thread(), currentThread);
-//            object.moveToThread(thread.thread);
-//            assertEquals(object.thread(), thread);
-//            assertEquals(child.thread(), thread);
-//
-//            thread.thread.join();
-//
-//            assertEquals(object.timerEventThread, thread);
-//            assertEquals(child.timerEventThread, thread);
-//
-//            thread.start();
-//            QObject.connect(object.done, new Slot(thread.loop, "quit()"), Qt.DirectConnection);
-//            object.emitDone();
-//            thread.thread.join();
-//        }
-
-        /*
-        {
-            // make sure socket notifiers are moved with the object
-            MoveToThreadThread thread;
-            thread.start();
-
-            QTcpServer server;
-            assertTrue(server.listen(QHostAddress.LocalHost, 0));
-            QTcpSocket *socket = new QTcpSocket();
-            MoveToThreadObject *child = new MoveToThreadObject(socket);
-            connect(socket, SIGNAL(disconnected()), child, SLOT(theSlot()), Qt.DirectConnection);
-            connect(child, SIGNAL(theSignal()), thread, SLOT(quit()), Qt::DirectConnection);
-
-            socket.connectToHost(server.serverAddress(), server.serverPort());
-
-            server.waitForNewConnection();
-            QTcpSocket *serverSocket = server.nextPendingConnection();
-            assertTrue("serverSocket", serverSocket);
-
-            socket.waitForConnected();
-
-            assertEquals(socket.thread(), currentThread);
-            socket.moveToThread(thread);
-            assertEquals(socket.thread(), thread);
-
-            serverSocket.close();
-
-            assertTrue(thread.join(10000));
-
-            assertEquals(child.slotThread, (Thread *)thread);
-
-            thread.start();
-            connect(socket, SIGNAL(destroyed()), thread, SLOT(quit()), Qt.DirectConnection);
-            socket.deleteLater();
-            thread.join();
-        }
-        */
     }
     
     @Test

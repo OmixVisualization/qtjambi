@@ -34,6 +34,7 @@
 
     <target name="jar.qtjambi" depends="init.build, javac.excludes">
         <ant inheritrefs="true" target="jar.qtjambi.impl">
+            <property name="module.suffix" value=""/>
         </ant>
     </target>
     <target name="jar8.qtjambi" depends="init.build, javac.excludes">
@@ -41,26 +42,49 @@
             <property name="minimum.java.version" value="1.8"/>
             <property name="source.java.version" value="1.8"/>
             <property name="java.module.based" value="false"/>
+            <property name="module.suffix" value="-jre8"/>
             <property name="java.outdir" location="build/java8"/>
             <property name="java.outsrcdir" location="build/java8-src"/>
-            <property name="deploymentdir" location="deployment/jdk8"/>
         </ant>
     </target>
 
     <target name="jar.qtjambi.impl" depends="init.build, javac.excludes">
-        <ant antfile="${basedir}/src/java/qtjambi/modules.xml" inheritrefs="true" target="build">
+        <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-build" value="true"/>
         </ant>
         <ant antfile="${basedir}/src/java/qtjambi-plugins/plugins.xml" inheritrefs="true" target="build">
             <property name="qtjambi.testbuild" value="false"/>
+            <property name="qtjambi.plugin.bundle" value="false"/>
         </ant>
         <if>
             <istrue value="${qtjambi.qml.any.true}"/>
             <then>
                 <ant antfile="${basedir}/src/java/qtjambi-qml/qml.xml" inheritrefs="true" target="build">
                     <property name="qtjambi.testbuild" value="false"/>
+                    <property name="qtjambi.qml.bundle" value="false"/>
                 </ant>
             </then>
         </if>
+    </target>
+    
+    <target name="deploy-snapshot" depends="init.build">
+        <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="true"/>
+        </ant>
+    </target>
+    
+    <target name="deploy-release" depends="init.build">
+        <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy" value="true"/>
+            <property name="qtjambi-deploy-snapshot" value="false"/>
+        </ant>
+    </target>
+    
+    <target name="deploy-bundle" depends="init.build">
+        <ant antfile="${basedir}/src/java/qtjambi-modules/modules.xml" inheritrefs="true" target="build">
+            <property name="qtjambi-deploy-bundle" value="true"/>
+        </ant>
     </target>
     
     <target name="jar.qtjambi.plugins" depends="init.build, javac.excludes">

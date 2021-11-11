@@ -210,7 +210,7 @@
     </value-type>
 
     <value-type name="MetaJavaClassList">
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
         QList&lt;MetaJavaClass *&gt; &amp;operator=(const QList&lt;MetaJavaClass *&gt; &amp;other)
         {
             return ((QList&lt;MetaJavaClass *&gt; *)this)-&gt;operator=(other);
@@ -218,7 +218,7 @@
         </inject-code>
     </value-type>
     <value-type name="MetaJavaEnumValueList">
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
         QList&lt;MetaJavaEnumValue *&gt; &amp;operator=(const QList&lt;MetaJavaEnumValue *&gt; &amp;other)
         {
             return ((QList&lt;MetaJavaEnumValue *&gt; *)this)-&gt;operator=(other);

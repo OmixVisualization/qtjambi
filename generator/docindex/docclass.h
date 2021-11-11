@@ -11,7 +11,6 @@
 
 class DocClass: public DocElement
 {
-    Q_OBJECT
 public:
     DocClass(QObject* parent);
 

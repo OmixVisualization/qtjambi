@@ -60,8 +60,6 @@ inline
 
 #include <qtjambi/qtjambi_typetests.h>
 
-QT_WARNING_DISABLE_DEPRECATED
-
 #if !defined(Q_CC_MSVC) && !defined(QT_JAMBI_RUN)
 template<typename RET, typename... ARGS>
 inline

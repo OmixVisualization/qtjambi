@@ -37,13 +37,9 @@
 class QOpenGLVersionFunctionsFactory___{
     @io.qt.QtUninvokable
     public static <T extends io.qt.opengl.QAbstractOpenGLFunctions> T get(Class<T> type){
-        return get(type, 0);
+        return get(type, null);
     }
     @io.qt.QtUninvokable
-    public static <T extends io.qt.opengl.QAbstractOpenGLFunctions> T get(Class<T> type, io.qt.gui.QOpenGLContext context){
-        return get(type, nativeId(context));
-    }
-    @io.qt.QtUninvokable
-    private static native <T extends io.qt.opengl.QAbstractOpenGLFunctions> T get(Class<T> type, long contextId);
+    public static native <T extends io.qt.opengl.QAbstractOpenGLFunctions> T get(Class<T> type, io.qt.gui.QOpenGLContext context);
 }// class
 

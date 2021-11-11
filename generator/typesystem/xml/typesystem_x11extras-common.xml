@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtX11Extras">
+<typesystem qt-library="QtX11Extras" description="Provides platform-specific APIs for X11.">
     <enum-type name="QX11Info::PeekOption" flags="QX11Info::PeekOptions" since="5.10.0" />
   <object-type name="QX11Info">
   </object-type>

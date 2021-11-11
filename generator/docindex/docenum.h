@@ -5,7 +5,6 @@
 
 class DocEnum: public DocElement
 {
-    Q_OBJECT
 public:
     DocEnum(QObject* parent);
 };

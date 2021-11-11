@@ -43,10 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.svg" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.gui");
-    </inject-code>
+<typesystem package="io.qt.svg" module="qtjambi.svg" default-superclass="io.qt.QtObject">
     <object-type name="QGraphicsSvgItem" until="5.*">
         <!--<modify-function signature="setGroup(QGraphicsItemGroup*)">
             <modify-argument index="1">-->
@@ -69,19 +66,19 @@
             </inject-code>
             <inject-code position="end">
             if (oldRenderer != null)
-                io.qt.internal.QtJambiInternal.setDefaultOwnership(oldRenderer);
+                QtJambi_LibraryUtilities.internal.setDefaultOwnership(oldRenderer);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsSvgItem(QGraphicsItem*)">
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1" />
-            if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+            if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
         <modify-function signature="QGraphicsSvgItem(const QString &amp;,QGraphicsItem*)">
             <inject-code position="end">
                 <argument-map index="2" meta-name="%2" />
-            if (%2 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+            if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
 

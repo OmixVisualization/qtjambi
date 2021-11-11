@@ -33,7 +33,9 @@
     <taskdef name="juic" classname="io.qt.tools.ant.JuicTask"/>
     <taskdef name="qmake" classname="io.qt.tools.ant.QMakeTask"/>
     <taskdef name="make" classname="io.qt.tools.ant.MakeTask"/>
-    <taskdef name="module-info" classname="io.qt.tools.ant.ModuleInfoTask"/>
+    <taskdef name="create-pom" classname="io.qt.tools.ant.CreatePOMTask"/>
+    <taskdef name="create-native-deployment" classname="io.qt.tools.ant.CreateNativeDeploymentTask"/>
+    <taskdef name="autotest-module-info" classname="io.qt.tools.ant.AutotestModuleInfoTask"/>
     <taskdef name="generator"
         classname="io.qt.tools.ant.GeneratorTask"/>
     <taskdef name="install-name-tool"

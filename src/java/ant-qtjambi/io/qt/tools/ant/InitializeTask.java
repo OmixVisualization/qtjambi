@@ -93,16 +93,23 @@ public class InitializeTask extends AbstractInitializeTask {
         String s;
 
         s = null;
-        if(OSInfo.isLinux())
-            s = OSInfo.K_LINUX;
-        else if(OSInfo.isWindows())
-            s = OSInfo.K_WINDOWS;
-        else if(OSInfo.isMacOS())
-            s = OSInfo.K_MACOSX;
-        else if(OSInfo.isFreeBSD())
-            s = OSInfo.K_FREEBSD;
-        else if(OSInfo.isSolaris())
-            s = OSInfo.K_SUNOS;
+        switch(OSInfo.os()) {
+		case Android:
+			s = OSInfo.K_ANDROID;
+			break;
+		case Linux:
+			s = OSInfo.K_LINUX;
+			break;
+		case MacOS:
+			s = OSInfo.K_MACOS;
+			break;
+		case Windows:
+			s = OSInfo.K_WINDOWS;
+			break;
+		default:
+			break;
+        
+        }
         if(s != null)
             AntUtil.setNewProperty(propertyHelper, Constants.OSPLATFORM, s);
 
@@ -122,8 +129,11 @@ public class InitializeTask extends AbstractInitializeTask {
         if("arm".equals(javaOsArch)) {
             // FIXME get LE or BE
             s = "arm";
+        } else if("arm64".equals(javaOsArch)) {
+            // FIXME get LE or BE
+            s = "arm64";
         } else {
-            if(osname.endsWith("64"))
+        	if(osname.endsWith("64"))
                 s = "x86_64";
             else
                 s = "i386";
@@ -138,7 +148,7 @@ public class InitializeTask extends AbstractInitializeTask {
 
         String javaOsarchTarget = decideJavaOsarchTarget();
         if(javaOsarchTarget == null) {
-            if(!OSInfo.isMacOS())  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
+            if(OSInfo.os()!=OSInfo.OS.MacOS)  // On MacOSX there is no sub-dir inside the JDK include directory that contains jni.h
                 throw new BuildException("Unable to determine JAVA_OSARCH_TARGET, setup environment variable JAVA_OSARCH_TARGET or edit build.properties");
         }
 
@@ -150,7 +160,7 @@ public class InitializeTask extends AbstractInitializeTask {
         if(javaOscpuTarget  == null)
                 throw new BuildException("Unable to determine JAVA_OSCPU_TARGET, setup environment variable JAVA_OSCPU_TARGET or edit build.properties");
 
-        if(OSInfo.isMacOS())
+        if(OSInfo.os()==OSInfo.OS.MacOS)
             mySetProperty(0, Constants.QTJAMBI_CONFIG_ISMACOSX, " (set by init)", "true", false);
     }
 }

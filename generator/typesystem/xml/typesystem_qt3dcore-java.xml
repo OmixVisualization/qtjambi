@@ -42,7 +42,8 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.core" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.qt3d.core" module="qtjambi.qt3dcore" default-superclass="io.qt.QtObject">
+    <required-library name="QtConcurrent"/>
     <object-type name="Qt3DCore::QScenePropertyChange">
         <extra-includes>
             <include file-name="QtCore/QScopedPointer" location="global"/>

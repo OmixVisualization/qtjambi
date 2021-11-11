@@ -49,9 +49,9 @@ class QObject___ extends QObject {
      */
     protected static final class QDeclarativeConstructor { 
         private QDeclarativeConstructor(Class<?> cls, long placement) { this.placement = placement; this.cls = cls; }
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private final long placement;
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private final Class<?> cls;
     }
     
@@ -81,7 +81,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source) {
-        String scope = classToScope(callerClassProvider().get());
+        String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source);
     }
 
@@ -96,7 +96,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source, String comment) {
-        String scope = classToScope(callerClassProvider().get());
+        String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment);
     }
 
@@ -113,7 +113,7 @@ class QObject___ extends QObject {
      * @return translated version of the source text.
      */
     public static String tr(String source, String comment, int count) {
-        String scope = classToScope(callerClassProvider().get());
+        String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
         return QCoreApplication.translate(scope, source, comment, count);
     }
 
@@ -209,11 +209,11 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final <T extends QObject> T findChild(Class < T > cl, String name, Qt.FindChildOptions options) {
-        return findChild(nativeId(this), java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, name, options.value());
+        return findChild(java.util.Objects.requireNonNull(cl), QMetaObject.forType(cl).metaObjectPointer, name, options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> T findChild(long nativeId, Class < T > cl, long metaObjectPointer, String name, int options);
+    private native final <T extends QObject> T findChild(Class < T > cl, long metaObjectPointer, String name, int options);
     
     /**
      * <p>Overloaded function for {@link #findChildren(Class)}
@@ -295,11 +295,11 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final <T extends QObject> QList<T> findChildren(Class < T > cl, String name, Qt.FindChildOptions options){
-        return findChildrenString(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, name, options.value());
+        return findChildrenString(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, name, options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenString(long nativeId, long metaObjectPointer, String name, int options);
+    private native final <T extends QObject> QList<T> findChildrenString(long metaObjectPointer, String name, int options);
     
     /**
      * <p>Overloaded function for {@link #findChildren(Class,QRegularExpression,Qt.FindChildOptions)}
@@ -342,11 +342,11 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegularExpression re, Qt.FindChildOptions options){
-        return findChildrenQRegularExpression(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, nativeId(re), options.value());
+        return findChildrenQRegularExpression(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, re, options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenQRegularExpression(long nativeId, long metaObjectPointer, long re, int options);
+    private native final <T extends QObject> QList<T> findChildrenQRegularExpression(long metaObjectPointer, QRegularExpression re, int options);
     
     /**
      * Declare and instantiate a field of this class in your
@@ -2288,8 +2288,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static void emit(PrivateSignal0 signal) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit();
         }else {
@@ -2306,8 +2306,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A> void emit(PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1);
         }else {
@@ -2326,8 +2326,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B> void emit(PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2);
         }else {
@@ -2348,8 +2348,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C> void emit(PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3);
         }else {
@@ -2372,8 +2372,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D> void emit(PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4);
         }else {
@@ -2398,8 +2398,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D,E> void emit(PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5);
         }else {
@@ -2426,8 +2426,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D,E,F> void emit(PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
         }else {
@@ -2456,8 +2456,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D,E,F,G> void emit(PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }else {
@@ -2488,8 +2488,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D,E,F,G,H> void emit(PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }else {
@@ -2522,8 +2522,8 @@ class QObject___ extends QObject {
      * @throws io.qt.QSignalAccessException if signal is emitted from outside the declaring class.
      */
     protected static <A,B,C,D,E,F,G,H,I> void emit(PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
-        Class<?> callerClass = callerClassProvider().get();
-        Class<?> signalDeclaringClass = signalDeclaringClass(signal);
+        Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
+        Class<?> signalDeclaringClass = signal.signalDeclaringClass();
         if(callerClass==signalDeclaringClass) {
             signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
         }else {
@@ -4602,8 +4602,6 @@ class QObject___ extends QObject {
      */
     public static QMetaObject.Connection connect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
         java.util.Objects.requireNonNull(signal);
-        long sender_id = checkedNativeId(java.util.Objects.requireNonNull(sender));
-        long receiver_id = checkedNativeId(java.util.Objects.requireNonNull(receiver));
         java.util.Objects.requireNonNull(slot);
         byte flags = 0;
         if(connectionType!=null && connectionType.length>0) {
@@ -4612,10 +4610,10 @@ class QObject___ extends QObject {
             }
         }
         return QMetaObject.connectMethods(
-                sender_id,
+                java.util.Objects.requireNonNull(sender),
                 signal.methodIndex(),
                 signal.enclosingMetaObject().metaObjectPointer,
-                receiver_id,
+                receiver,
                 slot.methodIndex(),
                 slot.enclosingMetaObject().metaObjectPointer,
                 flags
@@ -4728,13 +4726,11 @@ class QObject___ extends QObject {
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
     public static boolean disconnect(QObject sender, QMetaMethod signal, QObject receiver, QMetaMethod slot) {
-        long sender_id = checkedNativeId(java.util.Objects.requireNonNull(sender));
-        long receiver_id = checkedNativeId(receiver);
         return QMetaObject.disconnectMethods(
-                sender_id,
+                java.util.Objects.requireNonNull(sender),
                 signal==null ? -1 : signal.methodIndex(),
                 signal==null ? 0 : signal.enclosingMetaObject().metaObjectPointer,
-                receiver_id,
+                receiver,
                 slot==null ? -1 : slot.methodIndex(),
                 slot==null ? 0 : slot.enclosingMetaObject().metaObjectPointer
             );
@@ -4750,7 +4746,7 @@ class QObject___ extends QObject {
      * 
      */
     public static boolean disconnect(QMetaObject.Connection connection) {
-        return io.qt.internal.QtJambiInternal.disconnect(connection);
+        return QMetaObject.AbstractSignal.disconnectOne(connection);
     }
 
     /**
@@ -4758,7 +4754,7 @@ class QObject___ extends QObject {
      * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
      */
     public final boolean disconnect() {
-        return disconnectAll(this, null);
+        return QMetaObject.AbstractSignal.disconnectAll(this, null);
     }
 
     /**
@@ -4770,7 +4766,7 @@ class QObject___ extends QObject {
     public final boolean disconnect(Object receiver) {
         if(receiver instanceof QMetaObject.Connection)
             return disconnect((QMetaObject.Connection)receiver);
-        else return disconnectAll(this, receiver);
+        else return QMetaObject.AbstractSignal.disconnectAll(this, receiver);
     }
 
     /**
@@ -4778,13 +4774,8 @@ class QObject___ extends QObject {
      * @return the object's meta-object
      */
     @io.qt.QtUninvokable
-    public final QMetaObject metaObject() {
-        return metaObject(nativeId(this));
-    }
-    
-    @io.qt.QtUninvokable
-    private static native QMetaObject metaObject(long nativeId);
-    
+    public native final QMetaObject metaObject();
+        
     /**
      * Casts an object to the given <i>targetType</i>. Returns null if object is not instance of <i>targetType</i>.
      * @param <T> type
@@ -4804,7 +4795,7 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     public final boolean inherits(Class<?> targetType){
-        return targetType.isInstance(this) || inherits(internalNameOfArgumentType(targetType).replace("*", ""));
+        return targetType.isInstance(this) || inherits(QMetaObject.internalNameOfType(targetType).replace("*", ""));
     }
     
     /**
@@ -4812,10 +4803,11 @@ class QObject___ extends QObject {
      */
     @io.qt.QtUninvokable
     protected final int receivers(io.qt.core.QMetaObject.AbstractSignal signalObject){
-        String signal = cppSignalSignature(signalObject);
-        if(signal.isEmpty())
-          return 0;
-        return __qt_QObject_receivers_const_char_ptr_constfct(nativeId(this), signal);
+        if(signalObject.methodIndex()>=0 && signalObject.containingObject()==this) {
+            QMetaMethod method = metaObject().methods().get(signalObject.methodIndex());
+            return receivers("2" + method.cppMethodSignature());
+        }
+        return 0;
     }
 }// class
 
@@ -4830,8 +4822,14 @@ class QObject_6__ extends QObject {
                 if(bindable.data()==property) {
                     QMetaObject.AbstractSignal.registerPropertyField(metaProperty, reflectedField);
                     QMetaMethod notifySignal = metaProperty.notifySignal();
-                    if(notifySignal.isValid() && notifySignal.parameterCount()==0) {
-                        return notifySignal;
+                    if(notifySignal.isValid()) {
+                        if(notifySignal.parameterCount()==0) {
+                            return notifySignal;
+                        }else if(notifySignal.parameterCount()==1 && metaProperty.metaType().equals(notifySignal.parameterMetaType(0))) {
+                            return notifySignal;
+                        }else {
+                            return null;
+                        }
                     }else {
                         return null;
                     }
@@ -4841,18 +4839,36 @@ class QObject_6__ extends QObject {
         return null;
     }
     
-    private class EmitSignal implements Runnable{
+    private class EmitSignal0 implements Runnable{
         @Override
         public void run() {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(QObject.this), methodIndex); 
+                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex); 
             }catch(QNoNativeResourcesException e){}
         }
-
+    
         private final int methodIndex;
-
-        public EmitSignal(int methodIndex) {
+    
+        public EmitSignal0(int methodIndex) {
             super();
+            this.methodIndex = methodIndex;
+        }
+    }
+    
+    private class EmitSignal1<T> implements Runnable{
+        @Override
+        public void run() {
+            try {
+                QMetaObject.AbstractSignal.emitNativeSignal(QObject.this, methodIndex, supplier.get());
+            }catch(QNoNativeResourcesException e){}
+        }
+    
+        private final int methodIndex;
+        private final java.util.function.Supplier<T> supplier;
+        
+        public EmitSignal1(int methodIndex, java.util.function.Supplier<T> supplier) {
+            super();
+            this.supplier = supplier;
             this.methodIndex = methodIndex;
         }
     }
@@ -4878,13 +4894,13 @@ class QObject_6__ extends QObject {
         boolean hasSignal(QProperty<T> property) { return false; }
         final T value(QBindingStorage bindingStorage, QProperty<T> property){
             bindingStorage.maybeUpdateBindingAndRegister(property);
-            return io.qt.core.QProperty.getValueBypassingBindings(nativeId(property), checkedNativeId(metaType));
+            return io.qt.core.QProperty.getValueBypassingBindings(QtJambi_LibraryUtilities.internal.nativeId(property), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType));
         }
         final QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create) {
             return bindingStorage.bindingData(property, create);
         }
         boolean setValueBypassingBindings(QProperty<T> property, Object val) {
-            return io.qt.core.QProperty.setValueBypassingBindings(nativeId(property), checkedNativeId(metaType), val);
+            return io.qt.core.QProperty.setValueBypassingBindings(QtJambi_LibraryUtilities.internal.nativeId(property), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), val);
         }
         private final QMetaType metaType;
     }
@@ -4896,7 +4912,7 @@ class QObject_6__ extends QObject {
         }
         void emitSignal(QProperty<T> property) {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(java.util.Objects.requireNonNull(property.owner())), methodIndex); 
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex); 
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
@@ -4925,7 +4941,7 @@ class QObject_6__ extends QObject {
         }
         void emitSignal(QProperty<T> property) {
             try {
-                QMetaObject.AbstractSignal.emitNativeSignal(checkedNativeId(java.util.Objects.requireNonNull(property.owner())), methodIndex); 
+                QMetaObject.AbstractSignal.emitNativeSignal(java.util.Objects.requireNonNull(property.owner()), methodIndex);
             }catch(QNoNativeResourcesException e){}
         }
         boolean hasSignal(QProperty<T> property) { return true; }
@@ -4956,10 +4972,10 @@ class QObject_6__ extends QObject {
                         property.core = new SignalPropertyCore<>(result.metaType, result.notifySignal.methodIndex());
                     }
                 }
-                io.qt.core.QProperty.__qt_new(property, result.metaType, val);
+                io.qt.core.QProperty.initialize_native(property, result.metaType, val);
             }else {
                 property.core = new PropertyCore<>(result.metaType);
-                io.qt.core.QProperty.__qt_new(property, result.metaType, val);
+                io.qt.core.QProperty.initialize_native(property, result.metaType, val);
                 QMetaMethod notifySignal = findNotifySignalByBindables(property.owner(), result.reflectedField, property);
                 if(notifySignal!=null) {
                     if(result.metaType.flags().isSet(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
@@ -4975,6 +4991,7 @@ class QObject_6__ extends QObject {
             return property.core.value(bindingStorage, property);
         }
         final QPropertyBindingData bindingData(QBindingStorage bindingStorage, QProperty<T> property, boolean create) {
+            initialize(property);
             return property.core.bindingData(bindingStorage, property, create);
         }
         void emitSignal(QProperty<T> property) {
@@ -5286,7 +5303,7 @@ class QObject_6__ extends QObject {
         {
             return new QPropertyChangeHandler(bindingData(), f);
         }
-    
+        
         /**
          * Subscribes the given functor f as a callback that is called immediately and whenever the value of the property changes in the future.
          * @param f
@@ -5300,6 +5317,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() {
@@ -5311,6 +5343,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             core.emitSignal(this);
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         @QtUninvokable
@@ -5333,8 +5371,7 @@ class QObject_6__ extends QObject {
         @QtUninvokable
         @Override
         public final T getValueBypassingBindings() {
-            long metaTypeId = checkedNativeId(core.valueMetaType(this));
-            return io.qt.core.QProperty.getValueBypassingBindings(nativeId(this), metaTypeId);
+            return io.qt.core.QProperty.getValueBypassingBindings(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(core.valueMetaType(this)));
         }
         
         /**
@@ -5566,6 +5603,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -5577,6 +5629,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -5591,7 +5649,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -5824,6 +5885,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -5835,6 +5911,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -5849,7 +5931,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -6084,6 +6169,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -6095,6 +6195,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -6109,7 +6215,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -6342,6 +6451,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -6353,6 +6477,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -6367,7 +6497,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -6600,6 +6733,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -6611,6 +6759,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -6625,7 +6779,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -6858,6 +7015,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -6869,6 +7041,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -6883,7 +7061,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7116,6 +7297,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -7127,6 +7323,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -7141,7 +7343,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7374,6 +7579,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         QPropertyBindingData bindingData() { 
@@ -7385,6 +7605,12 @@ class QObject_6__ extends QObject {
             if (binding!=null)
                 binding.notifyObservers(this);
             emitSignal();
+        }
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            QPropertyBindingData bd = bindingStorage().bindingData(this);
+            notifyProperty(bd);
         }
         
         private Runnable signal = () -> {
@@ -7399,7 +7625,10 @@ class QObject_6__ extends QObject {
                 this.signal = NO_SIGNAL;
             }else{
                 int methodIndex = notifySignal.methodIndex();
-                this.signal = new EmitSignal(methodIndex);
+                if(notifySignal.parameterCount()==0)
+                    this.signal = new EmitSignal0(methodIndex);
+                else
+                    this.signal = new EmitSignal1<>(methodIndex, this::getValueBypassingBindings);
             }
             this.signal.run();
         };
@@ -7447,6 +7676,21 @@ class QObject_6__ extends QObject {
             f.run();
             return onValueChanged(f);
         }
+    
+        /**
+         * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+         * <p>The returned property notifier object keeps track of the registration. 
+         * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+         * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+         * @param f
+         * @return property notifier
+         * @see QPropertyNotifier
+         */
+        @io.qt.QtUninvokable
+        public QPropertyNotifier addNotifier(Runnable f)
+        {
+            return new QPropertyNotifier(bindingData(), f);
+        }
         
         @QtUninvokable
         final QPropertyBindingData bindingData() { 
@@ -7455,6 +7699,15 @@ class QObject_6__ extends QObject {
         
         @QtUninvokable
         public abstract QMetaType valueMetaType();
+        
+        @QtUninvokable
+        public final void notifyProperty() {
+            // computed property can't store a binding, so there's nothing to mark
+            io.qt.core.QBindingStorage storage = bindingStorage();
+            QPropertyBindingData bd = storage.bindingData(this, false);
+            if (bd!=null)
+                bd.notifyObservers(this, bindingStorage());
+        }
     }
     
     /**
@@ -7842,11 +8095,11 @@ class QObject_5__ extends QObject {
     @Deprecated
     @io.qt.QtUninvokable
     public final <T extends QObject> QList<T> findChildren(Class < T > cl, QRegExp regExp, Qt.FindChildOptions options){
-        return findChildrenQRegExp(nativeId(this), QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, nativeId(regExp), options.value());
+        return findChildrenQRegExp(QMetaObject.forType(java.util.Objects.requireNonNull(cl)).metaObjectPointer, regExp, options.value());
     }
     
     @io.qt.QtUninvokable
-    private native final <T extends QObject> QList<T> findChildrenQRegExp(long nativeId, long metaObjectPointer, long regExp, int options);
+    private native final <T extends QObject> QList<T> findChildrenQRegExp(long metaObjectPointer, QRegExp regExp, int options);
     
     /**
      * <p>Overloaded function for {@link #findChildren(Class,QRegExp,Qt.FindChildOptions)}.</p>
@@ -7896,8 +8149,8 @@ class QSignalTransition___{
         super((QPrivateConstructor)null);
         if(signal.containingObject() instanceof io.qt.core.QObject) {
             io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
-            String signalSignature = cppSignalSignature(signal);
-            __qt_QSignalTransition_new_const_QObject_ptr_const_char_ptr_QState_ptr(this, sender, signalSignature, sourceState);
+            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
+            initialize_native(this, sender, signalSignature, sourceState);
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -7910,9 +8163,9 @@ class QSignalTransition___{
     public final void setSignal(io.qt.core.QMetaObject.AbstractSignal signal){
         if(signal.containingObject() instanceof io.qt.core.QObject) {
             io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
-            String signalSignature = cppSignalSignature(signal);
-            __qt_QSignalTransition_setSenderObject_const_QObject_ptr(nativeId(this), checkedNativeId(sender));
-            __qt_QSignalTransition_setSignal_cref_QByteArray(nativeId(this), nativeId(new io.qt.core.QByteArray(signalSignature)));
+            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
+            setSenderObject(sender);
+            setSignal(new io.qt.core.QByteArray(signalSignature));
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -7928,10 +8181,10 @@ class QState___{
      */
     @io.qt.QtUninvokable
     public final QSignalTransition addTransition(io.qt.core.QMetaObject.AbstractSignal signal, QAbstractState target) {
-        if(signal.containingObject() instanceof io.qt.core.QObject) {
+        if(signal.containingObject() instanceof io.qt.core.QObject && signal.methodIndex()!=0) {
             io.qt.core.QObject sender = (io.qt.core.QObject)signal.containingObject();
-            String signalSignature = cppSignalSignature(signal);
-            return __qt_QState_addTransition_const_QObject_ptr_const_char_ptr_QAbstractState_ptr(nativeId(this), checkedNativeId(sender), signalSignature, checkedNativeId(target));
+            String signalSignature = "2" + sender.metaObject().methods().get(signal.methodIndex()).cppMethodSignature();
+            return addTransition(sender, signalSignature, target);
         }else {
             throw new IllegalArgumentException("Signal is not owned by a QObject.");
         }
@@ -8113,26 +8366,18 @@ abstract class QUrl___ extends QUrl{
 
 abstract class QAbstractItemModel___ extends QAbstractItemModel {
     
-        private native boolean setData_native(long id, int row, int col, Object value, int role);
-
         public final boolean setData(int row, int col, Object value) {
-            return setData_native(nativeId(this), row, col, value, io.qt.core.Qt.ItemDataRole.DisplayRole);
+            return setData(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, value, io.qt.core.Qt.ItemDataRole.DisplayRole);
         }
 
-        public final boolean setData(int row, int col, Object value, int role) {
-            return setData_native(nativeId(this), row, col, value, role);
-        }
-
-        private native Object data_native(long id, int row, int col, int role);
-
-        public final Object data(int row, int col, int role) {
-            return data_native(nativeId(this), row, col, role);
-        }
+        public native final boolean setData(long nativeId, int row, int col, Object value, int role);
 
         public final Object data(int row, int col) {
-            return data_native(nativeId(this), row, col, Qt.ItemDataRole.DisplayRole);
+            return data(QtJambi_LibraryUtilities.internal.nativeId(this), row, col, Qt.ItemDataRole.DisplayRole);
         }
         
+        public native final Object data(long nativeId, int row, int col, int role);
+
         @io.qt.QtUninvokable
         protected final io.qt.core.QModelIndex createIndex(int row, int column){
             return createIndex(row, column, 0);
@@ -8155,7 +8400,7 @@ class QTimer___ extends QTimer {
                 dispose();
                 return;
             }
-            setCppOwnership(this);
+            QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             timeout.connect(obj, method);
             timerId = startTimer(msec, timeType);
         }
@@ -8172,7 +8417,7 @@ class QTimer___ extends QTimer {
                 dispose();
                 return;
             }
-            setCppOwnership(this);
+            QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             timerId = startTimer(msec, timeType);
         }
     
@@ -8308,6 +8553,7 @@ class QCoreApplication___ extends QCoreApplication {
     
     private static boolean __qt_isInitializing = false;
 
+    @io.qt.QtUninvokable
     private static native void preinit();
 
     /**
@@ -8322,6 +8568,7 @@ class QCoreApplication___ extends QCoreApplication {
      * @param args
      * @return QCoreApplication instance
      */
+    @io.qt.QtUninvokable
     public static QCoreApplication initialize(String args[]) {
         return initialize(null, args, QCoreApplication::new);
     }
@@ -8332,6 +8579,7 @@ class QCoreApplication___ extends QCoreApplication {
      * @param args
      * @return QCoreApplication instance
      */
+    @io.qt.QtUninvokable
     public static QCoreApplication initialize(String applicationName, String args[]) {
         return initialize(applicationName, args, QCoreApplication::new);
     }
@@ -8343,6 +8591,7 @@ class QCoreApplication___ extends QCoreApplication {
      * @param constructor
      * @return T instance
      */
+    @io.qt.QtUninvokable
     public static <T extends QCoreApplication> T initialize(String args[], java.util.function.Function<String[],T> constructor) {
         return initialize(null, args, constructor);
     }
@@ -8355,6 +8604,7 @@ class QCoreApplication___ extends QCoreApplication {
      * @param constructor
      * @return T instance
      */
+    @io.qt.QtUninvokable
     public static <T extends QCoreApplication> T initialize(String applicationName, String args[], java.util.function.Function<String[],T> constructor) {
         if (instance() != null)
             throw new RuntimeException("QCoreApplication can only be initialized once");
@@ -8370,7 +8620,12 @@ class QCoreApplication___ extends QCoreApplication {
         __qt_isInitializing = true;
         try {
             T application = java.util.Objects.requireNonNull(constructor.apply(args), "Constructor function does not instantiate QCoreApplication.");
-            setCppOwnership(application);
+            QtJambi_LibraryUtilities.internal.setCppOwnership(application);
+            removeLibraryPath(QDir.fromNativeSeparators(System.getProperty("sun.boot.library.path")));
+            QDir userDir = new QDir(System.getProperty("user.dir"));
+            if(userDir.cd("plugins")){
+                addLibraryPath(userDir.canonicalPath());
+            }
             return application;
         } catch (Error e) {
             throw e;
@@ -8386,13 +8641,34 @@ class QCoreApplication___ extends QCoreApplication {
     /**
      * Destroys the QCoreApplication instance and purges Qt.
      */
+    @io.qt.QtUninvokable
     public static void shutdown() {
         QCoreApplication app = instance();
         if(app != null) {
-            app.disposeLater();
+            QThread currentThread = QThread.currentThread();
+            if(currentThread!=app.thread())
+                throw new io.qt.QThreadAffinityException("Must not call QCoreApplication.shutdown() from outside main thread.", null, app.thread(), currentThread);
+            if(app.thread().loopLevel()>0)
+                throw new IllegalStateException("Must not call QCoreApplication.shutdown() in event loop.");
+            if(app instanceof io.qt.widgets.QApplication) {
+                for(io.qt.widgets.QWidget widget : new java.util.ArrayList<>(io.qt.widgets.QApplication.topLevelWidgets())) {
+                    if(!widget.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(widget)) {
+                        widget.dispose();
+                    }
+                }
+            }
+            if(app instanceof io.qt.gui.QGuiApplication) {
+                for(io.qt.gui.QWindow window : new java.util.ArrayList<>(io.qt.gui.QGuiApplication.topLevelWindows())) {
+                    if(!window.isDisposed() && QtJambi_LibraryUtilities.internal.isJavaOwnership(window) && currentThread==window.thread()) {
+                        window.dispose();
+                    }
+                }
+            }
+            app.dispose();
             app = null;        // discard hard-reference
+            System.gc();
+            System.runFinalization();
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
-            quit();            // finish up cause an aboutToQuit() to fire
             processEvents();    // process quit
             QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());    // allow deleteLater() to work some magic
         }
@@ -8400,47 +8676,66 @@ class QCoreApplication___ extends QCoreApplication {
             java.util.logging.Logger.getLogger("io.qt.core").log(java.util.logging.Level.WARNING, "WARNING: QCoreApplication.shutdown() QCoreApplication.instance()!=null");
         System.gc();
         System.runFinalization();
-    }
-
-    /**
-     * Enters the main event loop and waits until exit() is called. 
-     * 
-     * @return the value that was passed to exit() (which is 0 if exit() is called via quit()).
-     */
-    public static int exec() {
-        QCoreApplication instance = QCoreApplication.instance();
-        if (instance == null)
-            throw new RuntimeException("QCoreApplication has not been initialized with QCoreApplication.initialize()");
-        else if(instance.thread()!=QThread.currentThread())
-            throw new RuntimeException("exec() must be called from the main thread.");
-        else if(io.qt.internal.QtJambiInternal.countEventLoops(instance.thread())>0)
-            throw new RuntimeException("The event loop is already running.");
-        else if(instance instanceof io.qt.widgets.QApplication)
-            return io.qt.widgets.QApplication.exec();
-        else if(instance instanceof io.qt.gui.QGuiApplication)
-            return io.qt.gui.QGuiApplication.exec();
-        else 
-            return exec_internal();
+        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
     }
     
     /**
      * Adds a pre-routine to be executed before initializing QCoreApplication.
      * @see initialize(String[])
      */
-    public native static void addPreRoutine(Runnable startUpFunction);
-    
+    @io.qt.QtUninvokable
+    public static void addPreRoutine(Runnable startUpFunction) {
+        preRoutines.add(startUpFunction);
+    }
+
     /**
      * Adds a post-routine to be executed when deleting QCoreApplication.
      * @see shutdown()
      */
-    public native static void addPostRoutine(Runnable cleanUpFunction);
-    
+    @io.qt.QtUninvokable
+    public static void addPostRoutine(Runnable cleanUpFunction) {
+        postRoutines.add(cleanUpFunction);
+    }
+
     /**
      * Removes a previously added post-routine.
      * @see addPostRoutine(Runnable)
      * @see shutdown()
      */
-    public native static void removePostRoutine(Runnable cleanUpFunction);
+    @io.qt.QtUninvokable
+    public static void removePostRoutine(Runnable cleanUpFunction){
+        postRoutines.remove(cleanUpFunction);
+    }
+
+    private static final java.util.List<Runnable> preRoutines = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+
+    private static final java.util.List<Runnable> postRoutines = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+
+    @io.qt.NativeAccess
+    @io.qt.QtUninvokable
+    private static void execPreRoutines() {
+        for(Runnable preRoutine : new java.util.ArrayList<>(preRoutines)) {
+            try {
+                preRoutine.run();
+            }catch(Throwable t) {
+                java.util.logging.Logger.getLogger("io.qt.core").throwing("Runnable", "run", t);
+            }
+        }
+        preRoutines.clear();
+    }
+
+    @io.qt.NativeAccess
+    @io.qt.QtUninvokable
+    private static void execPostRoutines() {
+        for(Runnable postRoutine : new java.util.ArrayList<>(postRoutines)) {
+            try {
+                postRoutine.run();
+            }catch(Throwable t) {
+                java.util.logging.Logger.getLogger("io.qt.core").throwing("Runnable", "run", t);
+            }
+        }
+        postRoutines.clear();
+    }
 }// class
 
 class QTranslator___ extends QTranslator {
@@ -8450,7 +8745,7 @@ class QItemSelection_6__ extends QItemSelection {
     
     public QItemSelection() {
         super((QPrivateConstructor)null);
-        __qt_QItemSelection_new(this, null);
+        initialize_native(this, null);
     }
     
 }// class
@@ -8459,10 +8754,10 @@ class QItemSelection___ extends QItemSelection {
     
     public QItemSelection(java.util.Collection<QItemSelectionRange> other) {
         super((QPrivateConstructor)null);
-        __qt_QItemSelection_new(this, other);
+        initialize_native(this, other);
     }
     
-    private native static <T> void __qt_QItemSelection_new(Object instance, java.util.Collection<QItemSelectionRange> other);
+    private native static <T> void initialize_native(QItemSelection instance, java.util.Collection<QItemSelectionRange> other);
 }// class
 
 class QXmlStreamAttributes___ extends QXmlStreamAttributes {
@@ -8482,12 +8777,12 @@ class autoclosedelete {
 
 class QDebug___ extends QDebug {
     
-    /**
+/**
      * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug endl(){
-        endl(nativeId(this));
+        endl(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8499,7 +8794,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug flush(){
-        flush(nativeId(this));
+        flush(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8511,7 +8806,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug reset(){
-        reset(nativeId(this));
+        reset(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8523,7 +8818,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug bin(){
-        bin(nativeId(this));
+        bin(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8535,7 +8830,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug oct(){
-        oct(nativeId(this));
+        oct(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8547,7 +8842,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug hex(){
-        hex(nativeId(this));
+        hex(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8559,7 +8854,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug dec(){
-        dec(nativeId(this));
+        dec(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8571,7 +8866,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug showbase(){
-        showbase(nativeId(this));
+        showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8583,7 +8878,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug forcesign(){
-        forcesign(nativeId(this));
+        forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8595,7 +8890,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug forcepoint(){
-        forcepoint(nativeId(this));
+        forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8607,7 +8902,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug noshowbase(){
-        noshowbase(nativeId(this));
+        noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8619,7 +8914,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug noforcesign(){
-        noforcesign(nativeId(this));
+        noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8631,7 +8926,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug noforcepoint(){
-        noforcepoint(nativeId(this));
+        noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8643,7 +8938,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug uppercasebase(){
-        uppercasebase(nativeId(this));
+        uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8655,7 +8950,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug uppercasedigits(){
-        uppercasedigits(nativeId(this));
+        uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8667,7 +8962,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug lowercasebase(){
-        lowercasebase(nativeId(this));
+        lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8679,7 +8974,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug lowercasedigits(){
-        lowercasedigits(nativeId(this));
+        lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8691,7 +8986,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug fixed(){
-        fixed(nativeId(this));
+        fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8703,7 +8998,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug scientific(){
-        scientific(nativeId(this));
+        scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8715,7 +9010,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug left(){
-        left(nativeId(this));
+        left(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8727,7 +9022,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug right(){
-        right(nativeId(this));
+        right(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8739,7 +9034,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug center(){
-        center(nativeId(this));
+        center(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8751,7 +9046,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug bom(){
-        bom(nativeId(this));
+        bom(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8763,7 +9058,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug ws(){
-        ws(nativeId(this));
+        ws(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -8775,7 +9070,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug qSetFieldWidth(int width){
-        setFieldWidth(nativeId(this), width);
+        setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
         return this;
     }
     
@@ -8787,7 +9082,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug qSetRealNumberPrecision(int precision){
-        setRealNumberPrecision(nativeId(this), precision);
+        setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
         return this;
     }
     
@@ -8799,7 +9094,7 @@ class QDebug___ extends QDebug {
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug qSetPadChar(char ch){
-        setPadChar(nativeId(this), ch);
+        setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
         return this;
     }
     
@@ -8817,7 +9112,7 @@ class QDebug___ extends QDebug {
     @io.qt.QtUninvokable
     public final io.qt.core.QDebug append(java.lang.Object obj){
         QMetaType metaType = QList.getMetaType(obj);
-        debugStream(nativeId(this), nativeId(metaType), obj);
+        debugStream(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
         return this;
     }
     
@@ -8826,13 +9121,24 @@ class QDebug___ extends QDebug {
 }// class
 
 class QTextStream___ extends QTextStream {
-    public CharSequence string() {
-        QIODevice device = __qt_QTextStream_device_constfct(nativeId(this));
+    public final CharSequence string() {
+        QIODevice device = device_private();
         if(device instanceof StringDevice) {
             flush();
             return ((StringDevice<?>) device).string;
         }
         return null;
+    }
+    
+    /**
+     * <p>See <a href="https://doc.qt.io/qt/qtextstream.html#device">QTextStream::device()const</a></p>
+     */
+    @io.qt.QtUninvokable
+    public final io.qt.core.QIODevice device(){
+        io.qt.core.QIODevice __qt_return_value = device_private();
+        if(__qt_return_value instanceof StringDevice)
+            return null;
+        return __qt_return_value;
     }
     
     @SuppressWarnings("hiding")
@@ -9053,12 +9359,7 @@ class QByteArray___ extends QByteArray {
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
     
     @io.qt.QtUninvokable
-    public static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep) {
-        return join(stringList, checkedNativeId(sep));
-    }
-    
-    @io.qt.QtUninvokable
-    private native static QByteArray join(java.util.Collection<QByteArray> stringList, long sep);
+    public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep);
     
 }// class
 
@@ -9364,60 +9665,60 @@ class QByteArrayView___ extends QByteArray {
     public QByteArrayView(byte[] data){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
-        __qt_QByteArrayView_newBytes(this, data, pointerOut);
+        initialize_native(this, data, pointerOut);
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
-            purgeTask = ()->__qt_QByteArrayView_purgeBytes(pointer);
-            getSignalOnDispose(this, true).connect(purgeTask::run);        		
+            purgeTask = ()->purgeBytes(pointer);
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);        		
         }
     }
-    private native static void __qt_QByteArrayView_newBytes(Object instance, byte[] data, Long[] pointerOut);
-    private native static void __qt_QByteArrayView_purgeBytes(long pointer);
+    private native static void initialize_native(QByteArrayView instance, byte[] data, Long[] pointerOut);
+    private native static void purgeBytes(long pointer);
     
     public QByteArrayView(String data){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
-        __qt_QByteArrayView_newString(this, data, pointerOut);
+        initialize_native(this, data, pointerOut);
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
-            purgeTask = ()->__qt_QByteArrayView_purgeString(pointer);
-            getSignalOnDispose(this, true).connect(purgeTask::run);        		
+            purgeTask = ()->purgeString(pointer);
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);        		
         }
     }
-    private native static void __qt_QByteArrayView_newString(Object instance, String data, Long[] pointerOut);
-    private native static void __qt_QByteArrayView_purgeString(long pointer);
+    private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
+    private native static void purgeString(long pointer);
     
     public QByteArrayView(java.nio.ByteBuffer data){
         super((QPrivateConstructor)null);
         if(data.isDirect()) {
-            __qt_QByteArrayView_newDirectBuffer(this, data);
+            initialize_native(this, data);
             purgeTask = data::hashCode;
-            getSignalOnDispose(this, true).connect(purgeTask::run);
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
             Long[] pointerOut = {null};
-            __qt_QByteArrayView_newBuffer(this, data, pointerOut);
+            initialize_native(this, data, pointerOut);
             if(pointerOut[0]!=null) {
                 long pointer = pointerOut[0];
-                purgeTask = ()->__qt_QByteArrayView_purgeBuffer(pointer);
-                getSignalOnDispose(this, true).connect(purgeTask::run);
+                purgeTask = ()->purgeBuffer(pointer);
+                io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
             }
         }
     }
-    private native static void __qt_QByteArrayView_newDirectBuffer(Object instance, java.nio.ByteBuffer data);
-    private native static void __qt_QByteArrayView_newBuffer(Object instance, java.nio.Buffer data, Long[] pointerOut);
-    private native static void __qt_QByteArrayView_purgeBuffer(long pointer);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data);
+    private native static void initialize_native(QByteArrayView instance, java.nio.Buffer data, Long[] pointerOut);
+    private native static void purgeBuffer(long pointer);
     
     public QByteArrayView(QByteArray data){
         super((QPrivateConstructor)null);
         if(data!=null) {
-            __qt_QByteArrayView_newByteArray(this, data);
+            initialize_native(this, data);
             purgeTask = data::isDisposed;
-            getSignalOnDispose(this, true).connect(purgeTask::run);
+            io.qt.QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
-            __qt_QByteArrayView_new(this);
+            initialize_native(this);
         }
     }
-    private native static void __qt_QByteArrayView_newByteArray(Object instance, QByteArray data);
+    private native static void initialize_native(QByteArrayView instance, QByteArray data);
     
     private Runnable purgeTask;
     
@@ -9678,488 +9979,18 @@ class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_Un
     }
 }// class
 
-class QFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QFutureInterface<T> futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QFutureInterface<T> futureInterface(long __this__nativeId);
-}// class
-
-class QVoidFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QFutureInterfaceBase futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QFutureInterfaceBase futureInterface(long __this__nativeId);
-}// class
-
-class QBooleanFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QBooleanFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QBooleanFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QByteFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QByteFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QByteFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QShortFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QShortFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QShortFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QIntFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QIntFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QIntFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QLongFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QLongFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QLongFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QFloatFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QFloatFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QFloatFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QDoubleFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QDoubleFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QDoubleFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QCharFuture___ extends QFuture {
-    @io.qt.QtUninvokable
-    final io.qt.core.QCharFutureInterface futureInterface() {
-    	return futureInterface(nativeId(this));
-	}
-    
-    @io.qt.QtUninvokable
-    private native io.qt.core.QCharFutureInterface futureInterface(long __this__nativeId);
-}// class
-
-class QFuture_6__ extends QFuture {
-
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(java.util.function.Function<QFuture<T>, R> function){
-        return then(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> then(long __this_nativeId, java.util.function.Function<QFuture<T>, R> function);
-    
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QtFuture.Launch policy, java.util.function.Function<QFuture<T>, R> function){
-        return thenLaunch(nativeId(this), policy.value(), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenLaunch(long __this_nativeId, int policy, java.util.function.Function<QFuture<T>, R> function);
-    
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QThreadPool pool, java.util.function.Function<QFuture<T>, R> function){
-        return thenPool(nativeId(this), nativeId(pool), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenPool(long __this_nativeId, long pool, java.util.function.Function<QFuture<T>, R> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(java.util.function.Consumer<QFuture<T>> function){
-        return thenVoid(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenVoid(long __this_nativeId, java.util.function.Consumer<QFuture<T>> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QtFuture.Launch policy, java.util.function.Consumer<QFuture<T>> function){
-        return thenLaunchVoid(nativeId(this), policy.value(), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenLaunchVoid(long __this_nativeId, int policy, java.util.function.Consumer<QFuture<T>> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QThreadPool pool, java.util.function.Consumer<QFuture<T>> function){
-        return thenPoolVoid(nativeId(this), nativeId(pool), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenPoolVoid(long __this_nativeId, long pool, java.util.function.Consumer<QFuture<T>> function);
-    
-    @io.qt.QtUninvokable
-    public QFuture<T> onFailed(java.util.function.Function<Throwable, T> function){
-        return onFailed(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onFailed(long __this_nativeId, java.util.function.Function<Throwable, T> function);
-    
-    @io.qt.QtUninvokable
-    public QFuture<T> onCanceled(java.util.function.Supplier<T> function){
-        return onCanceled(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onCanceled(long __this_nativeId, java.util.function.Supplier<T> function);
-}// class
-
-class QFuture_6_1__ extends QFuture {
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QObject context, java.util.function.Function<QFuture<T>, R> function){
-        return thenPool(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QFuture<T>, R> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QObject context, java.util.function.Consumer<QFuture<T>> function){
-        return thenPoolVoid(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QFuture<T>> function);
-    
-    @io.qt.QtUninvokable
-    public QFuture<T> onFailed(QObject context, java.util.function.Function<Throwable, T> function){
-        return onFailedContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onFailedContext(long __this_nativeId, long contextId, java.util.function.Function<Throwable, T> function);
-    
-    @io.qt.QtUninvokable
-    public QFuture<T> onCanceled(QObject context, java.util.function.Supplier<T> function){
-        return onCanceledContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T> QFuture<T> onCanceledContext(long __this_nativeId, long contextId, java.util.function.Supplier<T> function);
-}// class
-
-class QVoidFuture_6_1__ extends QFuture {
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QObject context, java.util.function.Function<QVoidFuture,R> function){
-        return thenContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <R> QFuture<R> thenContext(long __this_nativeId, long contextId, java.util.function.Function<QVoidFuture,R> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QObject context, java.util.function.Consumer<QVoidFuture> function){
-        return thenContextVoid(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenContextVoid(long __this_nativeId, long contextId, java.util.function.Consumer<QVoidFuture> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture onFailed(QObject context, java.util.function.Consumer<Throwable> function){
-        return onFailedContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static QVoidFuture onFailedContext(long __this_nativeId, long contextId, java.util.function.Consumer<Throwable> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture onCanceled(QObject context, java.lang.Runnable function){
-        return onCanceledContext(nativeId(this), checkedNativeId(java.util.Objects.requireNonNull(context)), function);
-    }
-    @io.qt.QtUninvokable
-    private native static QVoidFuture onCanceledContext(long __this_nativeId, long contextId, java.lang.Runnable function);
-}// class
-
-class QVoidFuture_6__ extends QFuture {
-
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(java.util.function.Function<QVoidFuture,R> function){
-        return then(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <R> QFuture<R> then(long __this_nativeId, java.util.function.Function<QVoidFuture,R> function);
-    
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QtFuture.Launch policy, java.util.function.Function<QVoidFuture,R> function){
-        return thenLaunch(nativeId(this), policy.value(), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <R> QFuture<R> thenLaunch(long __this_nativeId, int policy, java.util.function.Function<QVoidFuture,R> function);
-    
-    @io.qt.QtUninvokable
-    public <R> QFuture<R> then(QThreadPool pool, java.util.function.Function<QVoidFuture,R> function){
-        return thenPool(nativeId(this), nativeId(pool), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <R> QFuture<R> thenPool(long __this_nativeId, long pool, java.util.function.Function<QVoidFuture,R> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(java.util.function.Consumer<QVoidFuture> function){
-        return thenVoid(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenVoid(long __this_nativeId, java.util.function.Consumer<QVoidFuture> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QtFuture.Launch policy, java.util.function.Consumer<QVoidFuture> function){
-        return thenLaunchVoid(nativeId(this), policy.value(), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenLaunchVoid(long __this_nativeId, int policy, java.util.function.Consumer<QVoidFuture> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture then(QThreadPool pool, java.util.function.Consumer<QVoidFuture> function){
-        return thenPoolVoid(nativeId(this), nativeId(pool), function);
-    }
-    @io.qt.QtUninvokable
-    private native static <T,R> QVoidFuture thenPoolVoid(long __this_nativeId, long pool, java.util.function.Consumer<QVoidFuture> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture onFailed(java.util.function.Consumer<Throwable> function){
-        return onFailed(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static QVoidFuture onFailed(long __this_nativeId, java.util.function.Consumer<Throwable> function);
-    
-    @io.qt.QtUninvokable
-    public QVoidFuture onCanceled(java.lang.Runnable function){
-        return onCanceled(nativeId(this), function);
-    }
-    @io.qt.QtUninvokable
-    private native static QVoidFuture onCanceled(long __this_nativeId, java.lang.Runnable function);
-}// class
-
 class QFutureInterfaceBase___ {
-    
     @io.qt.QtUninvokable
-    public final void reportException(Throwable e) {
-        reportException(nativeId(this), java.util.Objects.requireNonNull(e));
-    }
-    
-    @io.qt.QtUninvokable
-    private native void reportException(long nativeId, Throwable e);
-    
-    @io.qt.QtUninvokable
-    protected final void setContinuation(java.util.function.Consumer<QFutureInterfaceBase> continuation) {
-        setContinuation(nativeId(this), continuation);
-    }
-    @io.qt.QtUninvokable
-    private native void setContinuation(long nativeId, java.util.function.Consumer<QFutureInterfaceBase> continuation);
-}// class
-
-class QtJambiFutureWatcher__{
-    
-    /**
-     * <p>See <a href="@docRoot/qfuturewatcher.html#future">QFutureWatcher::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QFuture<T> future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QFuture<T> __qt_future(long nativeId);
-    
-    /**
-     * <p>See <a href="@docRoot/qfuturewatcher.html#result">QFutureWatcher::result() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final T result(){
-        return future().result();
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qfuturewatcher.html#resultAt">QFutureWatcher::resultAt(int index) const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final T resultAt(int index){
-        return future().resultAt(index);
-    }
-    
-}// class
-
-class QtJambiFutureInterface__{
-    @io.qt.QtUninvokable
-    public final boolean reportFinished(T result){
-        boolean resultReported = reportResult(result);
-        reportFinished();
-        return resultReported;
-    }
-}// class
-
-function future__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QFuture<T> future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QFuture<T> __qt_future(long nativeId);
-
-}// class
-
-function futurevoid__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QVoidFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QVoidFuture __qt_future(long nativeId);
-
-}// class
-
-function futureboolean__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QBooleanFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QBooleanFuture __qt_future(long nativeId);
-
-}// class
-
-function futurebyte__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QByteFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QByteFuture __qt_future(long nativeId);
-
-}// class
-
-function futureshort__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QShortFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QShortFuture __qt_future(long nativeId);
-
-}// class
-
-function futureint__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QIntFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QIntFuture __qt_future(long nativeId);
-
-}// class
-
-function futurelong__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QLongFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QLongFuture __qt_future(long nativeId);
-
-}// class
-
-function futurefloat__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QFloatFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QFloatFuture __qt_future(long nativeId);
-
-}// class
-
-function futurechar__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QCharFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QCharFuture __qt_future(long nativeId);
-
-}// class
-
-function futuredouble__ {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuture.html#future">QFuture::future() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QDoubleFuture future() {
-        return __qt_future(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QDoubleFuture __qt_future(long nativeId);
-
+    public native final void reportException(Throwable e);
 }// class
 
 class QtFuture___ {
 
     @io.qt.QtUninvokable
-    public static QVoidFuture connect(QMetaObject.AbstractPrivateSignal0 signal) {
+    public static QFuture<Void> connect(QMetaObject.AbstractPrivateSignal0 signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QVoidFutureInterface promise = new QVoidFutureInterface();
+            QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect(()->{
@@ -10408,216 +10239,23 @@ class QtFuture_6_1__ {
     }
     
     @io.qt.QtUninvokable
-    public static QVoidFuture makeReadyFuture()
+    public static QFuture<Void> makeReadyFuture()
     {
-        QVoidFutureInterface promise = new QVoidFutureInterface();
+        QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
         promise.reportStarted();
         promise.reportFinished();
         return promise.future();
     }
     
     @io.qt.QtUninvokable
-    public static QVoidFuture makeExceptionalFuture(Throwable exception)
+    public static QFuture<Void> makeExceptionalFuture(Throwable exception)
     {
-        QVoidFutureInterface promise = new QVoidFutureInterface();
+        QFutureInterface<Void> promise = QFutureInterface.createVoidFutureInterface();
         promise.reportStarted();
         promise.reportException(exception);
         promise.reportFinished();
         return promise.future();
     }
-}// class
-
-class QFutureSynchronizer___ extends QFutureSynchronizer {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuturesynchronizer.html#futures">QFutureSynchronizer::futures() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QList<QFuture<T>> futures() {
-        return __qt_futures(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QList<QFuture<T>> __qt_futures(long nativeId);
-
-}// class
-
-class QFutureSynchronizerVoid___ extends QFutureSynchronizerVoid {
-    
-    /**
-     * <p>See <a href="@docRoot/qfuturesynchronizer.html#futures">QFutureSynchronizer::futures() const</a></p>
-     */
-    @io.qt.QtUninvokable
-    public final QList<QVoidFuture> futures() {
-        return __qt_futures(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native QList<QVoidFuture> __qt_futures(long nativeId);
-
-}// class
-
-class QVoidPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final void setException(Throwable e) {
-        setException(nativeId(this), java.util.Objects.requireNonNull(e));
-    }
-    
-    @io.qt.QtUninvokable
-    private native void setException(long nativeId, Throwable e);
-    
-}// class
-
-class QPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(T result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(T result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, T result, int index);
-    
-}// class
-
-class QBooleanPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(boolean result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(boolean result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, boolean result, int index);
-    
-}// class
-
-class QBytePromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(byte result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(byte result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, byte result, int index);
-    
-}// class
-
-class QShortPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(short result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(short result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, short result, int index);
-    
-}// class
-
-class QIntPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(int result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(int result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, int result, int index);
-    
-}// class
-
-class QLongPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(long result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(long result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, long result, int index);
-    
-}// class
-
-class QCharPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(char result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(char result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, char result, int index);
-    
-}// class
-
-class QFloatPromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(float result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(float result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, float result, int index);
-    
-}// class
-
-class QDoublePromise___ {
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(double result) {
-        return addResult(nativeId(this), result, -1);
-    }
-    
-    @io.qt.QtUninvokable
-    public final boolean addResult(double result, int index) {
-        return addResult(nativeId(this), result, index);
-    }
-    
-    @io.qt.QtUninvokable
-    private native boolean addResult(long nativeId, double result, int index);
-    
 }// class
 
 class QXmlStreamWriter___ extends QXmlStreamWriter {
@@ -10860,7 +10498,7 @@ class QMetaType___ extends QMetaType {
     public static int metaTypeId(Class<?> clazz, QMetaType... instantiations){
         if(clazz==null)
             return QMetaType.Type.Nullptr.value();
-        initializePackage(clazz);
+        io.qt.QtUtilities.initializePackage(clazz);
         Object[] typeParameters = clazz.getTypeParameters();
         if(typeParameters.length>0) {
             if(typeParameters.length!=instantiations.length) {
@@ -10975,7 +10613,7 @@ class QMetaType___ extends QMetaType {
     public static final class GenericFlags extends io.qt.QFlags<GenericFlag> implements GenericTypeInterface{
         private static final long serialVersionUID = -7659504264600507749L;
     
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericFlags(int type, int value) {
             super(value);
             this.type = type;
@@ -11007,7 +10645,7 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown enumerator.
      */
     private abstract static class AbstractGenericEnumerator implements io.qt.QtAbstractEnumerator, GenericTypeInterface{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private AbstractGenericEnumerator(int type, int index, String name) {
             super();
             this.type = type;
@@ -11079,7 +10717,7 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown 32 Bit enumerator.
      */
     public final static class GenericEnumerator extends AbstractGenericEnumerator implements io.qt.QtEnumerator{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericEnumerator(int type, int index, int value, String name) {
             super(type, index, name);
             this.value = value;
@@ -11128,7 +10766,7 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown 8 Bit enumerator.
      */
     public final static class GenericByteEnumerator extends AbstractGenericEnumerator implements io.qt.QtByteEnumerator{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericByteEnumerator(int type, int index, byte value, String name) {
             super(type, index, name);
             this.value = value;
@@ -11177,7 +10815,7 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown 16 Bit enumerator.
      */
     public final static class GenericShortEnumerator extends AbstractGenericEnumerator implements io.qt.QtShortEnumerator{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericShortEnumerator(int type, int index, short value, String name) {
             super(type, index, name);
             this.value = value;
@@ -11226,7 +10864,7 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown 64 Bit enumerator.
      */
     public final static class GenericLongEnumerator extends AbstractGenericEnumerator implements io.qt.QtLongEnumerator{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericLongEnumerator(int type, int index, long value, String name) {
             super(type, index, name);
             this.value = value;
@@ -11275,17 +10913,18 @@ class QMetaType___ extends QMetaType {
      * This class represents a QMetaType-registered but Java-unknown value type.
      */
     public final static class GenericValue extends io.qt.QtObject implements Cloneable, GenericTypeInterface{
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private GenericValue(QPrivateConstructor p) { super(p); }
         
-        private static native GenericValue clone(long _this, int type);
+        private native GenericValue clone(int type);
+        private native java.nio.ByteBuffer buffer(int type);
         
         @Override
         public GenericValue clone() {
-            return clone(nativeId(this), type);
+            return clone(type);
         }
 
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
         @io.qt.QtUninvokable
@@ -11294,7 +10933,7 @@ class QMetaType___ extends QMetaType {
         }
         
         public java.nio.ByteBuffer buffer(){
-            return QMetaType.buffer(nativeId(this), type);
+            return buffer(type);
         }
     }
     
@@ -11304,7 +10943,7 @@ class QMetaType___ extends QMetaType {
     public final static class GenericObject extends io.qt.QtObject implements GenericTypeInterface{
         private GenericObject(QPrivateConstructor p) { super(p); }
         
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
         @io.qt.QtUninvokable
@@ -11319,7 +10958,7 @@ class QMetaType___ extends QMetaType {
     public final static class GenericGadget extends io.qt.QtGadget implements GenericTypeInterface{
         private GenericGadget(QPrivateConstructor p) {super(p);}
         
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private final int type = QMetaType.Type.UnknownType.value();
         
         @io.qt.QtUninvokable
@@ -11327,8 +10966,6 @@ class QMetaType___ extends QMetaType {
             return new QMetaType(type);
         }
     }
-
-    private static native java.nio.ByteBuffer buffer(long __this__nativeId, int type);
 }// class
 
 class QMetaMethod___ {
@@ -11341,13 +10978,13 @@ class QMetaMethod___ {
     @io.qt.QtUninvokable
     public final java.util.List<Class<?>> parameterClassTypes() {
         if(parameterClassTypes==null) {
-            parameterClassTypes = java.util.Collections.unmodifiableList(parameterClassTypes(nativeId(this)));
+            parameterClassTypes = java.util.Collections.unmodifiableList(parameterClassTypes_native());
         }
         return parameterClassTypes;
     }
     
     @io.qt.QtUninvokable
-    private static native final java.util.List<Class<?>> parameterClassTypes(long __this_nativeId);
+    private native final java.util.List<Class<?>> parameterClassTypes_native();
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#parameterType">QMetaMethod::parameterType(int index) const</a></p>
@@ -11363,12 +11000,12 @@ class QMetaMethod___ {
     @io.qt.QtUninvokable
     public final Class<?> returnClassType(){
         if(returnClassType==null)
-            returnClassType = returnClassType(nativeId(this));
+            returnClassType = returnClassType_native();
         return returnClassType;
     }
     
     @io.qt.QtUninvokable
-    private static native final Class<?> returnClassType(long __this_nativeId);
+    private native final Class<?> returnClassType_native();
         
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#methodSignature">QMetaMethod::methodSignature() const</a></p>
@@ -11428,7 +11065,6 @@ class QMetaMethod___ {
     public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, io.qt.QUnsuccessfulInvocationException {
         if(!isValid())
             throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
-        long object_id = checkedNativeId(java.util.Objects.requireNonNull(object));
         if(parameterCount() != args.length) {
             throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
         }
@@ -11458,11 +11094,11 @@ class QMetaMethod___ {
         for(int i=0; i<parameterClassTypes.size(); ++i) {
             argClassTypes[i+1] = parameterClassTypes.get(i);
         }
-        return _invoke(object_id, nativeId(this), argClassTypes, connection.ordinal(), args);
+        return invoke_native(object, argClassTypes, connection.ordinal(), args);
     }
     
     @io.qt.QtUninvokable
-    private static native Object _invoke(long object__id, long metaMethodId, Class<?>[] argClassTypes, int connection, Object[] args);
+    private native Object invoke_native(QObject object__id, Class<?>[] argClassTypes, int connection, Object[] args);
     
     /**
      * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget">QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
@@ -11473,10 +11109,6 @@ class QMetaMethod___ {
             throw new io.qt.QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
         if(parameterCount() != args.length) {
             throw new IllegalArgumentException(String.format("Wrong number of arguments. expected: %2$s, given: %1$s", args.length, parameterCount()));
-        }
-        long object_id = 0;
-        if(object instanceof io.qt.QtObjectInterface){
-            object_id = checkedNativeId((io.qt.QtObjectInterface)object);
         }
         {
             QMetaObject enclosingMetaObject = enclosingMetaObject();
@@ -11492,11 +11124,11 @@ class QMetaMethod___ {
         for(int i=0; i<parameterClassTypes.size(); ++i) {
             argClassTypes[i+1] = parameterClassTypes.get(i);
         }
-        return _invokeOnGadget(object_id, object, nativeId(this), argClassTypes, args);
+        return invoke_native(object, argClassTypes, args);
     }
     
     @io.qt.QtUninvokable
-    private static native Object _invokeOnGadget(long object_id, Object object, long metaMethodId, Class<?>[] argClassTypes, Object[] args);
+    private native Object invoke_native(Object object, Class<?>[] argClassTypes, Object[] args);
     
     @io.qt.QtUninvokable
     public final java.lang.reflect.Method toReflectedMethod() {
@@ -11504,7 +11136,7 @@ class QMetaMethod___ {
             switch(methodType()) {
             case Method:
             case Slot:
-                java.lang.reflect.AccessibleObject reflected = toReflected(nativeId(this));
+                java.lang.reflect.AccessibleObject reflected = toReflected();
                 if(reflected instanceof java.lang.reflect.Method){
                     return (java.lang.reflect.Method)reflected;
                 }
@@ -11522,13 +11154,13 @@ class QMetaMethod___ {
     }
     
     @io.qt.QtUninvokable
-    private static native java.lang.reflect.AccessibleObject toReflected(long object_id);
+    private native java.lang.reflect.AccessibleObject toReflected();
     
     @io.qt.QtUninvokable
     public final java.lang.reflect.Constructor<?> toReflectedConstructor() {
         if(isValid()) {
             if(methodType()==MethodType.Constructor) {
-                java.lang.reflect.AccessibleObject reflected = toReflected(nativeId(this));
+                java.lang.reflect.AccessibleObject reflected = toReflected();
                 if(reflected instanceof java.lang.reflect.Constructor<?>){
                     return (java.lang.reflect.Constructor<?>)reflected;
                 }
@@ -11548,7 +11180,7 @@ class QMetaMethod___ {
     public final QMetaObject.AbstractSignal toSignal(QObject sender) {
         if(isValid()) {
             if(methodType()==MethodType.Signal) {
-                return findSignal(sender, name().toString(), parameterClassTypes().toArray(new Class[parameterCount()]));
+                return io.qt.internal.QtJambiInternal.findSignal(sender, name().toString(), parameterClassTypes().toArray(new Class[parameterCount()]));
             }else {
                 throw new IllegalArgumentException("Method " + this + " is not a signal.");
             }
@@ -11596,7 +11228,7 @@ class QMetaMethod___ {
     private static native QMetaMethod methodFromMethod(long metaObjectPointer, Object[] method);
     
     private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
-        LambdaInfo info = lamdaInfo(method);
+        io.qt.internal.QtJambiInternal.LambdaInfo info = io.qt.internal.QtJambiInternal.lamdaInfo(method);
         if(info!=null && info.lambdaArgs.isEmpty()) {
             if(info.reflectiveMethod!=null)
                 return fromReflectedMethod(info.reflectiveMethod);
@@ -11699,34 +11331,19 @@ class QMetaProperty___{
      * <p>See <a href="@docRoot/qmetaproperty.html#resetOnGadget">QMetaProperty::resetOnGadget(const void *) const</a></p>
      */
     @io.qt.QtUninvokable
-    public final boolean resetOnGadget(Object object){
-        return resetOnGadget(nativeId(this), object);
-    }
+    public native final boolean resetOnGadget(Object object);
     
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#readOnGadget">QMetaProperty::readOnGadget(const void *) const</a></p>
      */
     @io.qt.QtUninvokable
-    public final Object readOnGadget(Object object) {
-        return readOnGadget(nativeId(this), object);
-    }
+    public native final Object readOnGadget(Object object);
     
     /**
      * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &) const</a></p>
      */
     @io.qt.QtUninvokable
-    public final boolean writeOnGadget(Object object, Object value) {
-        return writeOnGadget(nativeId(this), object, value);
-    }
-    
-    @io.qt.QtUninvokable
-    private static native boolean resetOnGadget(long nativeId, Object object);
-    
-    @io.qt.QtUninvokable
-    private static native boolean writeOnGadget(long nativeId, Object object, Object value);
-    
-    @io.qt.QtUninvokable
-    private static native Object readOnGadget(long nativeId, Object object);
+    public native final boolean writeOnGadget(Object value);
     
     @Override
     @io.qt.QtUninvokable
@@ -11742,14 +11359,14 @@ class QMetaProperty___{
     @io.qt.QtUninvokable
     public final Class<?> classType(){
         if(classType==null)
-            classType = classType(nativeId(this));
+            classType = classType_native();
         if(classType==null)
             classType = QMetaType.javaType(this.userType());
         return classType;
     }
     
     @io.qt.QtUninvokable
-    private static native final Class<?> classType(long __this_nativeId);
+    private native final Class<?> classType_native();
 }// class
 
 class QMetaEnum___{
@@ -11791,7 +11408,7 @@ class QMetaEnum___{
     }
     
     @io.qt.QtUninvokable
-    @io.qt.internal.NativeAccess
+    @io.qt.NativeAccess
     private static Class<?> flagsType(Class<?> enumType){
         try {
             Class<?> result = enumType.getMethod("asFlags").getReturnType();
@@ -11901,54 +11518,29 @@ class QCborValue_java__{
     }
     
     @io.qt.QtUninvokable
-    public final void setValue(java.lang.String key, io.qt.core.QCborValue value){
-        __qt_QCborValue_setValue_cref_QString(nativeId(this), key, value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborValue_setValue_cref_QString(long __this__nativeId, java.lang.String key, io.qt.core.QCborValue value);
+    public native final void setValue(java.lang.String key, io.qt.core.QCborValue value);
     
     @io.qt.QtUninvokable
-    public final void setValue(long key, io.qt.core.QCborValue value){
-        __qt_QCborValue_setValue_long_long(nativeId(this), key, value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborValue_setValue_long_long(long __this__nativeId, long key, io.qt.core.QCborValue value);
+    public native final void setValue(long key, io.qt.core.QCborValue value);
     
 }// class
 
 class QCborArray_java__{
 
     @io.qt.QtUninvokable
-    public final void setValue(long i, io.qt.core.QCborValue value){
-        __qt_QCborArray_setValue_qsizetype(nativeId(this), i, value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborArray_setValue_qsizetype(long __this__nativeId, long i, io.qt.core.QCborValue value);
-
+    public native final void setValue(long i, io.qt.core.QCborValue value);
 }// class
 
 class QCborMap_java__{
     
     @io.qt.QtUninvokable
-    public final void setValue(io.qt.core.QCborValue key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_cref_QCborValue(nativeId(this), nativeId(key), value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborMap_setValue_cref_QCborValue(long __this__nativeId, long key, io.qt.core.QCborValue value);
+    public native final void setValue(io.qt.core.QCborValue key, io.qt.core.QCborValue value);
 
     @io.qt.QtUninvokable
-    public final void setValue(java.lang.String key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_cref_QString(nativeId(this), key, value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborMap_setValue_cref_QString(long __this__nativeId, java.lang.String key, io.qt.core.QCborValue value);
+    public native final void setValue(java.lang.String key, io.qt.core.QCborValue value);
 
     @io.qt.QtUninvokable
-    public final void setValue(long key, io.qt.core.QCborValue value){
-        __qt_QCborMap_setValue_long_long(nativeId(this), key, value);
-    }
-    @io.qt.QtUninvokable
-    private native void __qt_QCborMap_setValue_long_long(long __this__nativeId, long key, io.qt.core.QCborValue value);
+    public native final void setValue(long key, io.qt.core.QCborValue value);
     
 }// class
 
@@ -11977,25 +11569,13 @@ class QCborStreamReader_java__{
     };
     
     @io.qt.QtUninvokable
-    public final io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> readByteArray(){
-        return __qt_QCborStreamReader_readByteArray(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> __qt_QCborStreamReader_readByteArray(long __this__nativeId);
+    public native final io.qt.core.QCborStreamReader.StringResult<io.qt.core.QByteArray> readByteArray();
 
     @io.qt.QtUninvokable
-    public final io.qt.core.QCborStreamReader.StringResult<String> readString(){
-        return __qt_QCborStreamReader_readString(nativeId(this));
-    }
-    @io.qt.QtUninvokable
-    private native io.qt.core.QCborStreamReader.StringResult<String> __qt_QCborStreamReader_readString(long __this__nativeId);
+    public native final io.qt.core.QCborStreamReader.StringResult<String> readString();
 
     @io.qt.QtUninvokable
-    public final io.qt.core.QCborStreamReader.StringResult<Long> readChunk(java.nio.ByteBuffer buffer){
-        return __qt_QCborStreamReader_readChunk(nativeId(this), buffer);
-    }
-    @io.qt.QtUninvokable
-    private native io.qt.core.QCborStreamReader.StringResult<Long> __qt_QCborStreamReader_readChunk(long __this__nativeId, java.nio.ByteBuffer buffer);
+    public native final io.qt.core.QCborStreamReader.StringResult<Long> readChunk(java.nio.ByteBuffer buffer);
     
 }// class
 
@@ -12014,7 +11594,207 @@ class QFactoryLoader__{
         if(createMethod==null) {
             throw new IllegalArgumentException("Missing factory method in interface "+factoryClass.getName());
         }
-        qRegisterPluginInterface(factoryClass);
+        io.qt.internal.QtJambiPlugins.qRegisterPluginInterface(factoryClass);
+    }
+    
+    public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method2<P, String, R> create, String key) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, R> R loadPlugin(QMetaObject.Method3<P, String, A, R> create, String key, A a) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, R> R loadPlugin(QMetaObject.Method4<P, String, A, B, R> create, String key, A a, B b) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, R> R loadPlugin(QMetaObject.Method5<P, String, A, B, C, R> create, String key, A a, B b, C c) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, R> R loadPlugin(QMetaObject.Method6<P, String, A, B, C, D, R> create, String key, A a, B b, C c, D d) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, R> R loadPlugin(QMetaObject.Method7<P, String, A, B, C, D, E, R> create, String key, A a, B b, C c, D d, E e) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, F, R> R loadPlugin(QMetaObject.Method8<P, String, A, B, C, D, E, F, R> create, String key, A a, B b, C c, D d, E e, F f) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e, f);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public <P extends QtObjectInterface, A, B, C, D, E, F, G, R> R loadPlugin(QMetaObject.Method9<P, String, A, B, C, D, E, F, G, R> create, String key, A a, B b, C c, D d, E e, F f, G g) {
+        int index = indexOf(key);
+        if (index != -1) {
+            QJsonValue iidValue = metaData().get(index).value("IID");
+            if(iidValue.isString()) {
+                QByteArray iid = new QByteArray(iidValue.toString());
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
+                    QObject factoryObject = instance(index);
+                    P factory = QMetaObject.cast(factoryClass, factoryObject);
+                    if(factory!=null){
+                        try {
+                            return create.invoke(factory, key, a, b, c, d, e, f, g);
+                        } catch (RuntimeException | Error ex) {
+                            throw ex;
+                        } catch (Throwable ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
     
     public <P extends QtObjectInterface, R> R loadPlugin(QMetaObject.Method1<P, R> create, String key) {
@@ -12023,8 +11803,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12046,8 +11826,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12071,8 +11851,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12096,8 +11876,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12121,8 +11901,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12146,8 +11926,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12171,8 +11951,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12196,8 +11976,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12221,8 +12001,8 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<P> factoryClass = getFactoryClass(create);
-                if(factoryClass!=null && factoryClass==qRegisteredPluginInterface(iid)) {
+                Class<P> factoryClass = io.qt.internal.QtJambiInternal.getFactoryClass(create);
+                if(factoryClass!=null && factoryClass==io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid)) {
                     QObject factoryObject = instance(index);
                     P factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
@@ -12250,21 +12030,50 @@ class QFactoryLoader__{
             QJsonValue iidValue = metaData().get(index).value("IID");
             if(iidValue.isString()) {
                 QByteArray iid = new QByteArray(iidValue.toString());
-                Class<? extends QtObjectInterface> factoryClass = qRegisteredPluginInterface(iid);
+                Class<? extends QtObjectInterface> factoryClass = io.qt.internal.QtJambiPlugins.qRegisteredPluginInterface(iid);
                 if(factoryClass!=null) {
                     QObject factoryObject = instance(index);
                     QtObjectInterface factory = QMetaObject.cast(factoryClass, factoryObject);
                     if(factory!=null){
                         Method createMethod = null;
                         for(Method method : factoryClass.getDeclaredMethods()) {
-                            if(method.getParameterCount()==args.length
+                            Class<?>[] argClassTypes = method.getParameterTypes();
+                            if(argClassTypes.length==args.length
                                     && !Modifier.isStatic(method.getModifiers())
                                     && Modifier.isPublic(method.getModifiers())
                                     && pluginClass==method.getReturnType()) {
-                                Class<?>[] argClassTypes = method.getParameterTypes();
                                 createMethod = method;
                                 for (int i = 0; i < method.getParameterCount(); i++) {
                                     Class<?> argClassType = argClassTypes[i];
+                                    if(argClassType.isPrimitive()) {
+                                        if(args[i]==null
+                                                || (argClassType==int.class && !(args[i] instanceof Integer))
+                                                || (argClassType==short.class && !(args[i] instanceof Short))
+                                                || (argClassType==byte.class && !(args[i] instanceof Byte))
+                                                || (argClassType==long.class && !(args[i] instanceof Long))
+                                                || (argClassType==boolean.class && !(args[i] instanceof Boolean))
+                                                || (argClassType==float.class && !(args[i] instanceof Float))
+                                                || (argClassType==char.class && !(args[i] instanceof Character))
+                                                || (argClassType==double.class && !(args[i] instanceof Double)) 
+                                            ) {
+                                            createMethod = null;
+                                            break;
+                                        }
+                                    }else if(args[i]!=null && !argClassType.isInstance(args[i])){
+                                        createMethod = null;
+                                        break;
+                                    }
+                                }
+                                if(createMethod!=null)
+                                    break;
+                            }else if(argClassTypes.length==args.length+1
+                            		&& argClassTypes[0]==String.class
+                                    && !Modifier.isStatic(method.getModifiers())
+                                    && Modifier.isPublic(method.getModifiers())
+                                    && pluginClass==method.getReturnType()) {
+                                createMethod = method;
+                                for (int i = 0; i <= method.getParameterCount(); i++) {
+                                    Class<?> argClassType = argClassTypes[i+1];
                                     if(argClassType.isPrimitive()) {
                                         if(args[i]==null
                                                 || (argClassType==int.class && !(args[i] instanceof Integer))
@@ -12290,7 +12099,15 @@ class QFactoryLoader__{
                         }
                         if(createMethod!=null) {
                             try {
-                                Object result = invokeMethod(createMethod, factory, args);
+                                Object result;
+                                if(createMethod.getParameterCount()==args.length+1) {
+                                    Object[] _args = new Object[args.length+1];
+                                    System.arraycopy(args, 0, _args, 1, args.length);
+                                    _args[0] = key;
+                                	result = io.qt.internal.QtJambiInternal.invokeMethod(createMethod, factory, _args);
+                                }else {
+                                	result = io.qt.internal.QtJambiInternal.invokeMethod(createMethod, factory, args);
+                                }
                                 if(pluginClass.isInterface() && result instanceof QObject) {
                                     return QMetaObject.cast(pluginClass, (QObject)result);
                                 }else if(result!=null){
@@ -12314,31 +12131,31 @@ class QFactoryLoader__{
 class QPluginLoader_java__{
     
     public static void registerStaticPluginFunction(QObject instance){
-        qRegisterStaticPluginFunction(instance, (QJsonObject)null);
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, (QJsonObject)null);
     }
     
     public static void registerStaticPluginFunction(QObject instance, QJsonObject metaData){
-        qRegisterStaticPluginFunction(instance, metaData);
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, metaData);
     }
     
     public static void registerStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
-        qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
     }
     
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass){
-        qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
     }
     
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData){
-        qRegisterStaticPluginFunction(pluginClass, metaData);
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, metaData);
     }
     
     public static void registerStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
-        qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
+        io.qt.internal.QtJambiPlugins.qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
     
     public static void registerPluginInterface(Class<? extends io.qt.QtObjectInterface> factoryClass){
-        qRegisterPluginInterface(factoryClass);
+        io.qt.internal.QtJambiPlugins.qRegisterPluginInterface(factoryClass);
     }
     
     @io.qt.QtUninvokable
@@ -12349,11 +12166,7 @@ class QPluginLoader_java__{
 
 class QStaticPlugin_java__{
     @io.qt.QtUninvokable
-    public final io.qt.core.QObject instance(){
-        return instance(nativeId(this));
-    }
-    
-    private static native final io.qt.core.QObject instance(long nativeId);
+    public final native io.qt.core.QObject instance();
 }// class
 
 class QThread___{
@@ -12363,7 +12176,7 @@ class QThread___{
     
     public QThread(ThreadGroup group, String name, long stackSize, io.qt.core.QObject parent) {
         super((QPrivateConstructor)null);        
-        __qt_QThread_new_QObject_ptr(this, parent);
+        initialize_native(this, parent);
         initialize(group);
         if(name!=null)
             setName(name);
@@ -12508,104 +12321,96 @@ class QThread___{
     }
     
     private void initialize(ThreadGroup group) {
-        if(group==null) {
-            Thread parent = Thread.currentThread();
-            SecurityManager security = System.getSecurityManager();
-            if (security != null) {
-                group = security.getThreadGroup();
-            }
-            if (group == null) {
-                group = parent.getThreadGroup();
-            }
-        }
-        initialize(nativeId(this), group);
+        if(group==null)
+            group = Thread.currentThread().getThreadGroup();
+        __qt_initialize(group);
     }
     
     public final ThreadGroup getThreadGroup() {
         if(javaThread!=null) {
             return javaThread.getThreadGroup();
         }
-        return getThreadGroup(nativeId(this));
+        return __qt_getThreadGroup();
     }
     
-    private native ThreadGroup getThreadGroup(long __this__nativeId);
+    private native ThreadGroup __qt_getThreadGroup();
     
     public void setName(String name) {
         if(!isRunning() && javaThread==null)
-            setName(nativeId(this), name);
+            __qt_setName(name);
     }
     
-    private native void setName(long __this__nativeId, String name);
+    private native void __qt_setName(String name);
     
     public final String getName() {
         if(javaThread!=null) {
             return javaThread.getName();
         }
-        return getName(nativeId(this));
+        return __qt_getName();
     }
     
-    private native String getName(long __this__nativeId);
+    private native String __qt_getName();
     
     public void setDaemon(boolean daemon) {
         if(!isRunning() && javaThread==null)
-            setDaemon(nativeId(this), daemon);
+            __qt_setDaemon(daemon);
     }
     
-    private native void setDaemon(long __this__nativeId, boolean daemon);
+    private native void __qt_setDaemon(boolean daemon);
     
     public final boolean isDaemon() {
         if(javaThread!=null) {
             return javaThread.isDaemon();
         }
-        return isDaemon(nativeId(this));
+        return __qt_isDaemon();
     }
     
-    private native boolean isDaemon(long __this__nativeId);
+    private native boolean __qt_isDaemon();
     
     public void setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler) {
         if(javaThread!=null) {
             javaThread.setUncaughtExceptionHandler(handler);
         }else {
-            setUncaughtExceptionHandler(nativeId(this), handler);
+            __qt_setUncaughtExceptionHandler(handler);
         }
     }
     
-    private native void setUncaughtExceptionHandler(long __this__nativeId, Thread.UncaughtExceptionHandler handler);
+    private native void __qt_setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler handler);
     
     public final Thread.UncaughtExceptionHandler getUncaughtExceptionHandler() {
         if(javaThread!=null) {
             return javaThread.getUncaughtExceptionHandler();
         }
-        return getUncaughtExceptionHandler(nativeId(this));
+        return __qt_getUncaughtExceptionHandler();
     }
     
-    private native Thread.UncaughtExceptionHandler getUncaughtExceptionHandler(long __this__nativeId);
+    private native Thread.UncaughtExceptionHandler __qt_getUncaughtExceptionHandler();
     
     public void setContextClassLoader(ClassLoader cl) {
         if(javaThread!=null) {
             javaThread.setContextClassLoader(cl);
         }else {
-            setContextClassLoader(nativeId(this), cl);
+            __qt_setContextClassLoader(cl);
         }
     }
     
-    private native void setContextClassLoader(long __this__nativeId, ClassLoader cl);
+    private native void __qt_setContextClassLoader(ClassLoader cl);
     
     public final ClassLoader getContextClassLoader() {
         if(javaThread!=null) {
             return javaThread.getContextClassLoader();
         }
-        return getContextClassLoader(nativeId(this));
+        return __qt_getContextClassLoader();
     }
     
-    private native ClassLoader getContextClassLoader(long __this__nativeId);
+    private native ClassLoader __qt_getContextClassLoader();
     
-    private static native void initialize(long nativeId, ThreadGroup group);
+    private native void __qt_initialize(ThreadGroup group);
     private final Thread javaThread = null;
     
-    public final Thread javaThread() { return javaThread==null ? javaThread(nativeId(this)) : javaThread; }
+    public final Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
     
-    private native Thread javaThread(long nativeId);
+    private native Thread __qt_javaThread();
     public static native QThread thread(Thread thread);
     
     public final boolean isAlive() {
@@ -12616,6 +12421,10 @@ class QThread___{
         if(javaThread!=null && javaThread.isInterrupted())
             return true;
         return isInterruptionRequested();
+    }
+    
+    public static boolean interrupted() {
+        return Thread.interrupted();
     }
     
     public final void interrupt() {
@@ -12635,9 +12444,9 @@ class QThread___{
                             Thread thread = (Thread)args[0];
                             if(thread.isAlive()) {
                                 QThread qthread = thread(thread);
-                                try(Monitor monitor = synchronizedNativeId(qthread)){
+                                try(io.qt.internal.QtJambiInternal.Monitor monitor = io.qt.internal.QtJambiInternal.synchronizedNativeId(qthread)){
                                     if(qthread!=null && !qthread.isDisposed() && !qthread.isInterruptionRequested()){
-                                        qthread.__qt_QThread_requestInterruption(nativeId(qthread));
+                                        qthread.requestInterruption();
                                     }
                                 }
                             }
@@ -12677,11 +12486,11 @@ class QSharedMemory_java__{
     public static class DataAccess implements AutoCloseable{
         
         private final QSharedMemory sharedMemory;
-        private final Cleanable cleanable;
+        private final io.qt.InternalAccess.Cleanable cleanable;
         
         DataAccess(QSharedMemory sharedMemory){
             this.sharedMemory = sharedMemory;
-            cleanable = registerCleaner(this, new CleanTask(sharedMemory));
+            cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, new CleanTask(sharedMemory));
         }
         
         @Override
@@ -12695,7 +12504,7 @@ class QSharedMemory_java__{
                 throw new IllegalStateException();
             }
             java.nio.ByteBuffer result = sharedMemory.data();
-            if(sharedMemory.__qt_accessMode==AccessMode.ReadOnly.value()){
+            if(sharedMemory.__qt_accessMode==AccessMode.ReadOnly){
                 result = result.asReadOnlyBuffer();
             }
             return result;
@@ -12703,7 +12512,7 @@ class QSharedMemory_java__{
         
     }
     
-    private int __qt_accessMode = 0;
+    private AccessMode __qt_accessMode = AccessMode.ReadOnly;
     private boolean __qt_isInUse;
     
     public DataAccess access() throws IllegalStateException{
@@ -12723,12 +12532,7 @@ class QSettings__{
 class QModelRoleData___{
     
     @io.qt.QtUninvokable
-    public final void setData(Object data){
-        __qt_QModelRoleData_setData(nativeId(this), data);
-    }
-    
-    @io.qt.QtUninvokable
-    private native void __qt_QModelRoleData_setData(long __this__nativeId, Object data);
+    public native final void setData(Object data);
     
 }// class
 
@@ -12771,37 +12575,21 @@ class QFile__{
 
 class QUntypedPropertyBinding_java__{
     QUntypedPropertyBinding(Object functor){
-        __qt_QUntypedPropertyBinding_new_functor(this, java.util.Objects.requireNonNull(functor));
+        initialize_native(this, java.util.Objects.requireNonNull(functor));
     }
-    private native static void __qt_QUntypedPropertyBinding_new_functor(Object instance, Object functor);
+    private native static void initialize_native(QUntypedPropertyBinding instance, Object functor);
     
     QUntypedPropertyBinding(QPropertyBindingData bindingData) {
-        __qt_QUntypedPropertyBinding_new_bindingData(this, bindingData);
+        initialize_native(this, bindingData);
     }
-    private native static void __qt_QUntypedPropertyBinding_new_bindingData(Object instance, QPropertyBindingData bindingData);
+    private native static void initialize_native(QUntypedPropertyBinding instance, QPropertyBindingData bindingData);
     
-    QUntypedPropertyBinding(QUntypedPropertyBinding other, boolean copy){
+    QUntypedPropertyBinding(QUntypedPropertyBinding other){
         super((QPrivateConstructor)null);
-        __qt_QUntypedPropertyBinding_new_copy(this, other);
+        initialize_native(this, other);
     }
     
-    private native static void __qt_QUntypedPropertyBinding_new_copy(Object instance, QUntypedPropertyBinding other);
-}// class
-
-class QPropertyObserver_java__{
-    QPropertyObserver(io.qt.core.QUntypedPropertyData aliasedPropertyPtr, boolean isAlias){
-        super((QPrivateConstructor)null);
-        __qt_QPropertyObserver_newAlias(this, aliasedPropertyPtr);
-    }
-    
-    private native static void __qt_QPropertyObserver_newAlias(Object instance, io.qt.core.QUntypedPropertyData aliasedPropertyPtr);
-    
-    QPropertyObserver(boolean isPropertyChangeHandler){
-        super((QPrivateConstructor)null);
-        __qt_QPropertyObserver_newPropertyChangeHandler(this);
-    }
-    
-    private native static void __qt_QPropertyObserver_newPropertyChangeHandler(Object instance);
+    private native static void initialize_native(QUntypedPropertyBinding instance, QUntypedPropertyBinding other);
 }// class
 
 class QPropertyObserver_shell__{
@@ -12818,34 +12606,24 @@ QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHa
     __shell()->constructed(typeid(QPropertyObserver));
 }
 
-// new QPropertyChangeHandler()
-void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
+void __qt_construct_QPropertyObserver_with_ChangeHandler(void* __qtjambi_ptr, void (*changeHandler)(QPropertyObserver*, QUntypedPropertyData *))
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QPropertyChangeHandler()")
-    new(__qtjambi_ptr) QPropertyObserver_shell([](QPropertyObserver* self, QUntypedPropertyData *){
-            try{
-                if(JNIEnv *env = qtjambi_current_environment()) {
-                    QTJAMBI_JNI_LOCAL_FRAME(env, 200)
-                    try{
-                        jobject _self = qtjambi_cast<jobject>(env, self);
-                        Java::QtCore::QPropertyChangeHandler::invoke(env, _self);
-                    }catch(const JavaException& exn){
-                        exn.report(env);
-                    }
-                }
-            }catch(...){}
-        });
+    new(__qtjambi_ptr) QPropertyObserver_shell(changeHandler);
+}
+
+size_t sizeof_QPropertyObserver_shell(){
+    return sizeof(QPropertyObserver_shell);
 }
 
 }// class
 
 class QUntypedBindable_java__{
-    QUntypedBindable(io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i, boolean copy){
+    QUntypedBindable(io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i){
         super((QPrivateConstructor)null);
-        __qt_QUntypedBindable_new_copy(this, d, i);
+        initialize_native(this, d, i);
     }
     
-    private native static void __qt_QUntypedBindable_new_copy(Object instance, io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i);
+    private native static void initialize_native(QUntypedBindable instance, io.qt.core.QUntypedPropertyData d, io.qt.core.QBindableInterface i);
     
     /**
      * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
@@ -12878,22 +12656,36 @@ class QUntypedBindable_java__{
         return onValueChanged(f);
     }
     
+    /**
+     * <p>Registers the given functor f as a callback that shall be called whenever the value of the bindable changes.</p>
+     * <p>The returned property notifier object keeps track of the registration. 
+     * As long as the notifier is alive i.e. as long as a reference to the {@link QPropertyNotifier} instance exists, 
+     * the callback remains installed. When the garbage collection deletes the instance, the callback is de-registered.</p>
+     * @param f
+     * @return property notifier
+     * @see QPropertyNotifier
+     */
     @io.qt.QtUninvokable
-    final io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QUntypedPropertyBinding binding){
-        return overrideBinding(checkedNativeId(this.iface()), checkedNativeId(this.data()), checkedNativeId(binding));
+    public final QPropertyNotifier addNotifier(Runnable f)
+    {
+        QPropertyNotifier handler = new QPropertyNotifier(f);
+        observe(handler);
+        return handler;
     }
     
     @io.qt.QtUninvokable
-    private native io.qt.core.QUntypedPropertyBinding overrideBinding(long ifaceId, long dataId, long binding);
+    final io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QUntypedPropertyBinding binding){
+        return overrideBinding(this.iface(), this.data(), binding);
+    }
+    
+    @io.qt.QtUninvokable
+    private native io.qt.core.QUntypedPropertyBinding overrideBinding(io.qt.core.QBindableInterface iface, io.qt.core.QUntypedPropertyData data, io.qt.core.QUntypedPropertyBinding binding);
     
 }// class
 
 class QBindableInterface__{
     @io.qt.QtUninvokable
-    final QMetaType metaType() { return metaType(io.qt.internal.QtJambiInternal.nativeId(this)); }
-    
-    @io.qt.QtUninvokable
-    private static native QMetaType metaType(long nativeId);
+    final native QMetaType metaType();
 }// class
 
 class QLoggingCategory__{
@@ -12906,5 +12698,69 @@ class QLoggingCategory__{
         this(category==null ? null : new QByteArray(category), severityLevel);
     }
     
+}// class
+
+class QFunctionPointer__{
+    /**
+     * Overloaded function for <code>invoke(void.class, arguments)</code>.
+     * @param arguments
+     */
+    @io.qt.QtDeclaredFinal
+    @io.qt.QtUninvokable
+    public void invoke(Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+        invoke_native(this, void.class, arguments);
+    }
+    
+    /**
+     * Overloaded function for <code>invoke(QGenericReturnType.of(returnType), arguments)</code>.
+     * @param returnType
+     * @param arguments
+     */
+    @io.qt.QtDeclaredFinal
+    @io.qt.QtUninvokable
+    public <R> R invoke(Class<R> returnType, Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+        return invoke_native(this, returnType, arguments);
+    }
+    
+    /**
+     * <p>Invokes the underlying function pointer with given arguments.</p>
+     * <p>Object types are used as pointers, value types as call-by-value. This also applies for the return value.</p>
+     * <p>Use {@link QGenericArgument} to specify call-by-reference.
+     * E.g. <code>QGenericArgument.value("any string").asConstRef()</code>
+     * for <code>const QString&amp;</code></p>
+     * <p>Requires Java Native Access library (JNA) in class path.</p>
+     * @see https://github.com/java-native-access/jna
+     * @param returnType
+     * @param arguments argument values or wrapped as QGenericArgument
+     */
+    @io.qt.QtUninvokable
+    public <R> R invoke(QGenericReturnType<R> returnType, Object... arguments) throws io.qt.QUnsuccessfulInvocationException {
+        if(arguments==null) {
+            return invoke_native(this, returnType, null);
+        }else {
+            return invoke_native(this, returnType, arguments);
+        }
+    }
+    
+    /**
+     * Converts this function pointer into given functional interface type.
+     * @param functionalInterface
+     * @return converted function pointer
+     */
+    @io.qt.QtUninvokable
+    public <T extends io.qt.QtObjectInterface> T cast(Class<T> functionalInterface) {
+        return cast(this, functionalInterface);
+    }
+    
+    /**
+     * Converts the given function into given functional interface type.
+     * @param functionalInterface
+     * @return converted function pointer
+     */
+    @io.qt.QtUninvokable
+    public native static <T extends io.qt.QtObjectInterface> T cast(io.qt.QtObjectInterface function, Class<T> functionalInterface);
+    
+    @io.qt.QtUninvokable
+    static native <R> R invoke_native(io.qt.QtObjectInterface function, Object returnType, Object[] arguments);
 }// class
 

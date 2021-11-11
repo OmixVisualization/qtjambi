@@ -42,10 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.quick.widgets" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.widgets");
-    </inject-code>
+<typesystem package="io.qt.quick.widgets" module="qtjambi.quickwidgets" default-superclass="io.qt.QtObject">
     <suppress-warning text="WARNING(CppImplGenerator) :: protected function '*' in final class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'" />
     <suppress-warning text="WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'" />

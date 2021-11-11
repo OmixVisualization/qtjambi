@@ -44,4 +44,88 @@
 
 #include "destruction.h"
 
+DestroyCounter::DestroyCounter() : m_destroyed(0) { }
+DestroyCounter::~DestroyCounter() { }
+void DestroyCounter::increaseDestroyedCount() { m_destroyed++; }
+int DestroyCounter::destroyedCount() const { return m_destroyed; }
 
+OrdinarySuperclass::OrdinarySuperclass() { }
+OrdinarySuperclass::~OrdinarySuperclass() { }
+
+OrdinaryDestroyed::OrdinaryDestroyed(DestroyCounter* destroyCounter): m_destroyCounter(destroyCounter)
+{
+    // nanana
+}
+
+OrdinaryDestroyed::~OrdinaryDestroyed()
+{
+    if(m_destroyCounter)
+        m_destroyCounter->increaseDestroyedCount();
+}
+
+OrdinaryDestroyed *OrdinaryDestroyed::virtualGetObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+OrdinaryDestroyed *OrdinaryDestroyed::virtualGetObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+void OrdinaryDestroyed::virtualSetDefaultOwnership(OrdinaryDestroyed *) { }
+
+void OrdinaryDestroyed::deleteFromCpp(OrdinaryDestroyed *destroyed)
+{
+    delete destroyed;
+}
+
+void OrdinaryDestroyed::deleteFromCppOther(OrdinarySuperclass *destroyed)
+{
+    delete destroyed;
+}
+
+OrdinaryDestroyed *OrdinaryDestroyed::callGetObjectJavaOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
+{
+    return _this->virtualGetObjectJavaOwnership(destroyCounter);
+}
+
+OrdinaryDestroyed *OrdinaryDestroyed::callGetObjectCppOwnership(DestroyCounter* destroyCounter, OrdinaryDestroyed *_this)
+{
+    return _this->virtualGetObjectCppOwnership(destroyCounter);
+}
+
+void OrdinaryDestroyed::callSetDefaultOwnership(OrdinaryDestroyed *_this, OrdinaryDestroyed *obj)
+{
+    return _this->virtualSetDefaultOwnership(obj);
+}
+
+// Set in type system
+OrdinaryDestroyed *OrdinaryDestroyed::getObjectJavaOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+
+// Default ownership
+OrdinaryDestroyed *OrdinaryDestroyed::getObjectSplitOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+
+// Set in type system
+OrdinaryDestroyed *OrdinaryDestroyed::getObjectCppOwnership(DestroyCounter* destroyCounter) { return new OrdinaryDestroyed(destroyCounter); }
+void OrdinaryDestroyed::setDefaultOwnership(OrdinaryDestroyed *) { }
+
+QObject *OrdinaryDestroyed::getGlobalQObjectSplitOwnership() {
+    static QPointer<QObject> object = QPointer<QObject>([] () -> QObject* {
+                                                            QObject* object = new QObject();
+                                                            if(QCoreApplication::instance()){
+                                                                QObject::connect(QCoreApplication::instance(), &QObject::destroyed, object, [object](){ delete object; });
+                                                            }
+                                                            return object;
+                                                        }());
+    return object;
+}
+
+QObjectDestroyed::QObjectDestroyed(DestroyCounter* destroyCounter, QObject *parent)  : QObject(parent), m_destroyCounter(destroyCounter) { }
+
+QObjectDestroyed::~QObjectDestroyed() {
+    if(m_destroyCounter)
+        m_destroyCounter->increaseDestroyedCount();
+}
+
+void QObjectDestroyed::deleteFromCpp(QObjectDestroyed *destroyed)
+{
+    delete destroyed;
+}
+
+void QObjectDestroyed::deleteFromCppOther(QObject *destroyed)
+{
+    delete destroyed;
+}

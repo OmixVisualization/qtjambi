@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtQml">
+<typesystem qt-library="QtQml" description="Classes for QML and JavaScript languages.">
     <rejection class="QJSEngine::FunctionWithArgSignature"/>
     <rejection class="QJSEngine::FunctionSignature"/>
     <rejection class="QJSEngine" function-name="fromScriptValue"/>
@@ -156,11 +156,17 @@
     <value-type name="QJSPrimitiveValue" since="6.1.0">
         <modify-function signature="QJSPrimitiveValue(QJSPrimitiveNull)" remove="all"/>
         <modify-function signature="QJSPrimitiveValue(QJSPrimitiveUndefined)" remove="all"/>
+        <modify-function signature="operator+()" remove="all" since="6.2.0"/>
+        <modify-function signature="operator++()" remove="all" since="6.2.0"/>
+        <modify-function signature="operator-()" remove="all" since="6.2.0"/>
+        <modify-function signature="operator--()" remove="all" since="6.2.0"/>
         <modify-function signature="operator%(QJSPrimitiveValue)" rename="modulo"/>
         <modify-function signature="operator/(QJSPrimitiveValue)" rename="divided"/>
         <modify-function signature="operator*(QJSPrimitiveValue)" rename="multiplied"/>
         <modify-function signature="operator+(QJSPrimitiveValue)" rename="added"/>
         <modify-function signature="operator-(QJSPrimitiveValue)" rename="substracted"/>
+        <modify-function signature="operator--(int)" rename="decremented" since="6.2.0"/>
+        <modify-function signature="operator++(int)" rename="incremented" since="6.2.0"/>
     </value-type>
     <value-type name="QJSPrimitiveNull" generate="no" since="6.1.0">
     </value-type>
@@ -228,10 +234,10 @@
                     switch(%2){
                     case CppOwnership: 
                         if(%1.parent()==null){
-                            io.qt.internal.QtJambiInternal.setJavaOwnership(%1);
+                            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);
                         }
                     default:
-                        io.qt.internal.QtJambiInternal.setCppOwnership(%1);
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
                     }
                 }
             </inject-code>
@@ -275,10 +281,10 @@
                     switch(%2){
                     case CppOwnership: 
                         if(%1.parent()==null){
-                            io.qt.internal.QtJambiInternal.setJavaOwnership(%1);
+                            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);
                         }
                     default:
-                        io.qt.internal.QtJambiInternal.setCppOwnership(%1);
+                        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
                     }
                 }
             </inject-code>
@@ -288,11 +294,8 @@
         <modify-function signature="rootObjects()" remove="all" since="5.9.0" until="5.*"/>
     </object-type>
     <object-type name="QQmlExtensionPlugin">
-        <interface-polymorphy interface="QQmlExtensionInterface" condition="dynamic_cast&lt;const QQmlExtensionPlugin*>(%1)" />
-        <interface-polymorphy interface="QQmlTypesExtensionInterface" condition="dynamic_cast&lt;const QQmlExtensionPlugin*>(%1)" />
     </object-type>
     <object-type name="QQmlEngineExtensionPlugin" since="5.15.0">
-        <interface-polymorphy interface="QQmlEngineExtensionInterface" condition="dynamic_cast&lt;const QQmlEngineExtensionPlugin*>(%1)" />
     </object-type>
     <object-type name="QQmlComponent">
         <modify-function signature="setInitialProperties(QObject*,QMap&lt;QString,QVariant>)">

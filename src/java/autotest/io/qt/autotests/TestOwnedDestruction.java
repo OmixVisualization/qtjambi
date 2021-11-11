@@ -28,12 +28,19 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.*;
-import java.util.*;
-import org.junit.*;
-import io.qt.core.*;
-import io.qt.gui.*;
-import io.qt.internal.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+
+import io.qt.autotests.generated.General;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QEvent;
+import io.qt.core.QThread;
+import io.qt.gui.QTextCursor;
+import io.qt.gui.QTextDocument;
 
 public class TestOwnedDestruction extends QApplicationTest {
     @Test
@@ -55,7 +62,7 @@ public class TestOwnedDestruction extends QApplicationTest {
         			cursors.add(c.clone());
     			}
         		for (QTextCursor textCursor : cursors) {
-					assertEquals(document, QtJambiInternal.owner(textCursor));
+					assertEquals(document, General.internalAccess.owner(textCursor));
 				}
         		threadDatas.add(cursors);
     		}

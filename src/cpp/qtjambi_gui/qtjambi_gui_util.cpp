@@ -1,12 +1,14 @@
 #include <QtGui/QGradient>
+#include <QtGui/QGuiApplication>
 #include <qtjambi/qtjambi_core.h>
+#include "qtjambi_gui_repository.h"
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
-(JNIEnv *env, jclass, QtJambiNativeID objectId)
+(JNIEnv *env, jclass, jobject _object)
 {
     try{
-        QObject* object = qtjambi_object_from_nativeId<QObject>(objectId);
+        QObject* object = qtjambi_to_QObject<QObject>(env, _object);
         qtjambi_check_resource(env, object);
         qtjambi_argument_thread_check(env, "device", object);
     }catch(const JavaException& exn){
@@ -24,12 +26,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 // QOpenGLContext::versionFunctions<T>() const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QOpenGLContext_versionFunctions)
 (JNIEnv *__jni_env,
- jclass,
- QtJambiNativeID __this_nativeId,
+ jobject _this,
  jclass type)
 {
     try{
-        const QOpenGLContext *__qt_this = qtjambi_object_from_nativeId<QOpenGLContext>(__this_nativeId);
+        const QOpenGLContext *__qt_this = qtjambi_to_object<QOpenGLContext>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         QString className = qtjambi_class_name(__jni_env, type);
         if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
@@ -77,18 +78,21 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_
 #include <qtjambi/qtjambi_cast.h>
 
 // QAction::setMenu(QMenu * menu)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_setMenu)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_setMenuObject)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- QtJambiNativeID arg__1)
+ jobject _this,
+ jobject arg__1)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QAction::setMenu(QMenu * menu)")
     try{
 #if QT_CONFIG(action)
-        QAction *__qt_this = qtjambi_object_from_nativeId<QAction>(__this_nativeId);
+        QAction *__qt_this = qtjambi_to_QObject<QAction>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QObject* __qt_arg__1 = qtjambi_object_from_nativeId<QObject>(arg__1);
+        static bool iswidgetApplication = QGuiApplication::instance()->inherits("QApplication");
+        if(iswidgetApplication && arg__1 && !Java::QtWidgets::QMenu::isInstanceOf(__jni_env, arg__1)){
+            JavaException::raiseIllegalArgumentException(__jni_env, "QAction.setMenu(menu) expects a QMenu in widget applications." QTJAMBI_STACKTRACEINFO );
+        }
+        QObject* __qt_arg__1 = qtjambi_cast<QObject*>(arg__1);
         __qt_this->setMenu(__qt_arg__1);
 #else
         Q_UNUSED(__this_nativeId)
@@ -101,15 +105,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAc
 }
 
 // QAction::menu() const
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_menu)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QAction_menuObject)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QAction::menu() const")
     try{
 #if QT_CONFIG(action)
-        const QAction *__qt_this = qtjambi_object_from_nativeId<QAction>(__this_nativeId);
+        QAction *__qt_this = qtjambi_to_QObject<QAction>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
         QObject* __qt_return_value = __qt_this->menu<QObject*>();
         return qtjambi_cast<jobject>(__jni_env, __qt_return_value);
@@ -124,19 +127,17 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_
 
 }
 
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPointerEvent__1_1qt_1QPointerEvent_1setPoint)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPointerEvent_setPoint)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
+ jobject _this,
  jlong i0,
- QtJambiNativeID __point_nativeId)
+ jobject __point)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QPointerEvent::setPoint(qsizetype, QEventPoint)")
     try{
-        QPointerEvent *__qt_this = qtjambi_object_from_nativeId<QPointerEvent>(__this_nativeId);
+        QPointerEvent *__qt_this = qtjambi_to_object<QPointerEvent>(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this);
-        QEventPoint *__qt_point = qtjambi_object_from_nativeId<QEventPoint>(__point_nativeId);
-        if(__qt_point){
+        if(QEventPoint *__qt_point = qtjambi_cast<QEventPoint*>(__jni_env, __point)){
             QEventPoint& point = __qt_this->point(static_cast<qsizetype>(i0));
             point = *__qt_point;
         }

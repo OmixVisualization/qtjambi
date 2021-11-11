@@ -34,7 +34,6 @@ import org.junit.Test;
 
 import io.qt.*;
 import io.qt.core.*;
-import io.qt.internal.*;
 import io.qt.test.*;
 
 public class TestTestlib extends QApplicationTest {
@@ -49,12 +48,12 @@ public class TestTestlib extends QApplicationTest {
     		object.sig.emit(i, ""+i);
     	}
     	assertEquals(5, signalSpy.size());
-    	QList<?> list = QtJambiInternal.fetchField(signalSpy, QSignalSpy.class, "list", QList.class);
+//    	QList<?> list = io.qt.internal.QtJambiInternal.fetchField(signalSpy, QSignalSpy.class, "list", QList.class);
 //    	System.out.println(signalSpy.toString());
     	assertFalse(signalSpy.isDisposed());
-    	assertFalse(list.isDisposed());
+//    	assertFalse(list.isDisposed());
     	signalSpy.dispose();
     	assertTrue(signalSpy.isDisposed());
-    	assertTrue(list.isDisposed());
+//    	assertTrue(list.isDisposed());
     }    
 }

@@ -33,8 +33,6 @@
 #include "qtjambi_cast_util_p.h"
 #include "qtjambi_cast_container_util_p.h"
 
-QT_WARNING_DISABLE_DEPRECATED
-
 template<typename T>
 int registerMetaType(const QByteArray& typeName);
 
@@ -69,7 +67,7 @@ struct qtjambi_QIterator_caster{
     static jobject cast(JNIEnv * env, QtJambiNativeID __list_nativeId, typename std::conditional<std::is_pointer<Iterator>::value, Iterator, const Iterator&>::type iter){
         return qtjambi_from_QIterator(env, __list_nativeId,
             new Iterator(iter),
-            [](void* ptr) {
+            [](void* ptr,bool) {
                 Iterator* iterator = static_cast<Iterator*>(ptr);
                 delete iterator;
             },
@@ -91,7 +89,7 @@ struct CloneContainer<Container,T,false,true>{
 
 template<template<typename T> class Container, typename T>
 struct DeleteContainer{
-    static void del(void* ptr) { delete reinterpret_cast<Container<T>*>(ptr); }
+    static void del(void* ptr,bool) { delete reinterpret_cast<Container<T>*>(ptr); }
     static constexpr PtrDeleterFunction function = &del;
 };
 
@@ -199,14 +197,14 @@ template<template<typename T> class Container, typename T, IsContainerFunction i
 struct ContainerIntersects{
     static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
             if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+                __qt_other_pointer = qtjambi_to_object<Container<T>>(env, other);
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
-                __qt_other_pointer = __qt_scoped_pointer.data();
+                __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -215,7 +213,7 @@ struct ContainerIntersects{
             }
         }else{
             __qt_scoped_pointer.reset(new Container<T> ());
-            __qt_other_pointer = __qt_scoped_pointer.data();
+            __qt_other_pointer = __qt_scoped_pointer.get();
         }
         return container->intersects(*__qt_other_pointer);
     }
@@ -225,14 +223,14 @@ template<template<typename T> class Container, typename T, IsContainerFunction i
 struct ContainerIntersect{
     static void function(JNIEnv * env, void* ptr, jobject other) {
         Container<T> *container = static_cast<Container<T> *>(ptr);
-        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
             if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+                __qt_other_pointer = qtjambi_to_object<Container<T>>(env, other);
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
-                __qt_other_pointer = __qt_scoped_pointer.data();
+                __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -241,7 +239,7 @@ struct ContainerIntersect{
             }
         }else{
             __qt_scoped_pointer.reset(new Container<T> ());
-            __qt_other_pointer = __qt_scoped_pointer.data();
+            __qt_other_pointer = __qt_scoped_pointer.get();
         }
         container->intersect(*__qt_other_pointer);
     }
@@ -251,14 +249,14 @@ template<template<typename T> class Container, typename T, IsContainerFunction i
 struct ContainerUnite{
     static void function(JNIEnv * env, void* ptr, jobject other) {
         Container<T> *container = static_cast<Container<T> *>(ptr);
-        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
             if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+                __qt_other_pointer = qtjambi_to_object<Container<T>>(env, other);
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
-                __qt_other_pointer = __qt_scoped_pointer.data();
+                __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -267,7 +265,7 @@ struct ContainerUnite{
             }
         }else{
             __qt_scoped_pointer.reset(new Container<T> ());
-            __qt_other_pointer = __qt_scoped_pointer.data();
+            __qt_other_pointer = __qt_scoped_pointer.get();
         }
         container->unite(*__qt_other_pointer);
     }
@@ -277,14 +275,14 @@ template<template<typename T> class Container, typename T, IsContainerFunction i
 struct ContainerSubtract{
     static void function(JNIEnv * env, void* ptr, jobject other) {
         Container<T> *container = static_cast<Container<T> *>(ptr);
-        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
             if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+                __qt_other_pointer = qtjambi_to_object<Container<T>>(env, other);
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
-                __qt_other_pointer = __qt_scoped_pointer.data();
+                __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -293,7 +291,7 @@ struct ContainerSubtract{
             }
         }else{
             __qt_scoped_pointer.reset(new Container<T> ());
-            __qt_other_pointer = __qt_scoped_pointer.data();
+            __qt_other_pointer = __qt_scoped_pointer.get();
         }
         container->subtract(*__qt_other_pointer);
     }
@@ -399,14 +397,14 @@ template<template<typename T> class Container, typename T, IsContainerFunction i
 struct ContainerEquals<Container, T, is_Container1_fct, true>{
     static jboolean function(JNIEnv * env, const void* ptr, jobject other) {
         const Container<T> *container = static_cast<const Container<T> *>(ptr);
-        QScopedPointer<Container<T> > __qt_scoped_pointer;
+        std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
             if (is_Container1_fct(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = reinterpret_cast<Container<T> *>(qtjambi_to_object(env, other));
+                __qt_other_pointer = qtjambi_to_object<Container<T>>(env, other);
             } else {
                 __qt_scoped_pointer.reset(new Container<T> ());
-                __qt_other_pointer = __qt_scoped_pointer.data();
+                __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, other);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -415,7 +413,7 @@ struct ContainerEquals<Container, T, is_Container1_fct, true>{
             }
         }else{
             __qt_scoped_pointer.reset(new Container<T> ());
-            __qt_other_pointer = __qt_scoped_pointer.data();
+            __qt_other_pointer = __qt_scoped_pointer.get();
         }
         const Container<T>& __qt_other = *__qt_other_pointer;
         return (*container)==__qt_other;
@@ -520,14 +518,14 @@ template<typename T>
 struct ContainerAppendList<T, true>{
     static void function(JNIEnv * env, void* ptr, jobject object) {
         QList<T> *container = static_cast<QList<T> *>(ptr);
-        QScopedPointer<QList<T> > __qt_scoped_pointer;
+        std::unique_ptr<QList<T> > __qt_scoped_pointer;
         QList<T> *__qt_object_pointer = nullptr;
         if (object!= nullptr) {
             if (qtjambi_is_QList<T>(env, object)) {
-                __qt_object_pointer = reinterpret_cast<QList<T> *>(qtjambi_to_object(env, object));
+                __qt_object_pointer = qtjambi_to_object<QList<T>>(env, object);
             } else {
                 __qt_scoped_pointer.reset(new QList<T>());
-                __qt_object_pointer = __qt_scoped_pointer.data();
+                __qt_object_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, object);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -536,7 +534,7 @@ struct ContainerAppendList<T, true>{
             }
         }else{
             __qt_scoped_pointer.reset(new QList<T> ());
-            __qt_object_pointer = __qt_scoped_pointer.data();
+            __qt_object_pointer = __qt_scoped_pointer.get();
         }
         container->append(*__qt_object_pointer);
     }
@@ -554,14 +552,14 @@ template<typename T>
 struct ContainerAppendVector<T, true>{
     static void function(JNIEnv * env, void* ptr, jobject object) {
         QVector<T> *container = static_cast<QVector<T> *>(ptr);
-        QScopedPointer<QVector<T> > __qt_scoped_pointer;
+        std::unique_ptr<QVector<T> > __qt_scoped_pointer;
         QVector<T> *__qt_object_pointer = nullptr;
         if (object!= nullptr) {
             if (qtjambi_is_QVector(env, object, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_object_pointer = reinterpret_cast<QVector<T> *>(qtjambi_to_object(env, object));
+                __qt_object_pointer = qtjambi_to_object<QVector<T>>(env, object);
             } else {
                 __qt_scoped_pointer.reset(new QVector<T>());
-                __qt_object_pointer = __qt_scoped_pointer.data();
+                __qt_object_pointer = __qt_scoped_pointer.get();
                 jobject iterator = qtjambi_collection_iterator(env, object);
                 while(qtjambi_iterator_has_next(env, iterator)) {
                     jobject element = qtjambi_iterator_next(env, iterator);
@@ -570,7 +568,7 @@ struct ContainerAppendVector<T, true>{
             }
         }else{
             __qt_scoped_pointer.reset(new QVector<T> ());
-            __qt_object_pointer = __qt_scoped_pointer.data();
+            __qt_object_pointer = __qt_scoped_pointer.get();
         }
         container->append(*__qt_object_pointer);
     }
@@ -1705,139 +1703,6 @@ public:
     }
     void unite(JNIEnv * env, void* container, jobject other) override {
         ContainerUnite<QSet, T, qtjambi_is_QSet>::function(env, container, other);
-    }
-};
-
-template<bool is_pointer, bool is_const, bool is_reference, bool buffer, template<typename T> class Container, typename T>
-struct create_container_pointer{
-    static Container<T> create(JNIEnv *, QtJambiScope*, Container<T>*, const char*){
-        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
-    }
-
-    static Container<T> create(JNIEnv *, QtJambiScope*, const Container<T>*, const char*){
-        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
-    }
-
-    static Container<T> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>&, const char*){
-        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
-    }
-};
-
-template<bool is_const, template<typename T> class Container, typename T>
-struct create_container_pointer<true, is_const, false, false, Container, T>{
-    typedef typename std::conditional<is_const, typename std::add_const<Container<T>>::type, Container<T>>::type Container_const;
-    static Container<T>* create(JNIEnv *, QtJambiScope*, Container<T>* t, const char*){
-        return t;
-    }
-    static Container_const* create(JNIEnv *, QtJambiScope*, const Container<T>* t, const char*){
-        Q_STATIC_ASSERT_X(is_const, "Cannot cast const pointer to non-const pointer without scope.");
-        return t;
-    }
-    static Container<T>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>& t, const char*){
-        return t.take();
-    }
-};
-
-template<bool is_const, template<typename T> class Container, typename T>
-struct create_container_pointer<true, is_const, false, true, Container, T>{
-    static Container<T>* create(JNIEnv *, QtJambiScope*, Container<T>* t, const char*){
-        return t;
-    }
-    static Container<T>* create(JNIEnv *env, QtJambiScope* scope, const Container<T>* t, const char* type){
-        if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to non-const %1* without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        if(t){
-            Container<T>* result = new Container<T>(*t);
-            scope->addFinalAction([result](){ delete result; });
-            return result;
-        }else{
-            return nullptr;
-        }
-    }
-    static Container<T>* create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>& t, const char*){
-        return t.take();
-    }
-};
-
-template<bool is_const, bool buffer, template<typename T> class Container, typename T>
-struct create_container_pointer<false, is_const, false, buffer, Container, T>{
-    static Container<T> create(JNIEnv *, QtJambiScope*, const Container<T>* t, const char*){
-        return t ? *t : Container<T>();
-    }
-    static Container<T> create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>& t, const char*){
-        return t ? *t : Container<T>();
-    }
-};
-
-template<bool buffer, template<typename T> class Container, typename T>
-struct create_container_pointer<false, true, true, buffer, Container, T>{
-    static const Container<T>& create(JNIEnv *, QtJambiScope*, const Container<T>* t, const char*){
-        return t ? *t : qtjambi_get_default_value<Container<T>>();
-    }
-    static const Container<T>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<T>>& t, const char* type){
-        Q_STATIC_ASSERT_X(buffer, "Cannot cast to Container reference without scope.");
-        if(t && !scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        Container<T>* ptr = t.take();
-        scope->addFinalAction([ptr](){ delete ptr; });
-        return ptr ? *ptr : qtjambi_get_default_value<Container<T>>();
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct create_container_pointer<false, false, true, true, Container, T>{
-    static Container<T>& create(JNIEnv *env, QtJambiScope* scope, Container<T>* t, const char* type){
-        if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        if(t){
-            scope->addFinalAction([t](){ delete t; });
-            return *t;
-        }else{
-            Container<T>* result = new Container<T>();
-            scope->addFinalAction([result](){ delete result; });
-            return *result;
-        }
-    }
-
-    static const Container<T>& create(JNIEnv *env, QtJambiScope* scope, const Container<T>* t, const char* type){
-        if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        if(t){
-            scope->addFinalAction([t](){ delete t; });
-            return *t;
-        }else{
-            Container<T>* result = new Container<T>();
-            scope->addFinalAction([result](){ delete result; });
-            return *result;
-        }
-    }
-
-    static Container<T>& create(JNIEnv *env, QtJambiScope* scope, QScopedPointer<Container<T>>& ptr, const char* type){
-        if(!scope)
-            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        Container<T>* t = ptr.take();
-        if(t){
-            scope->addFinalAction([t](){ delete t; });
-            return *t;
-        }else{
-            Container<T>* result = new Container<T>();
-            scope->addFinalAction([result](){ delete result; });
-            return *result;
-        }
-    }
-};
-
-template<template<typename T> class Container, typename T>
-struct create_container_pointer<false, false, true, false, Container, T>{
-    static Container<T>& create(JNIEnv *env, QtJambiScope*, Container<T>* t, const char* type){
-        if(!t){
-            JavaException::raiseNullPointerException(env, qPrintable( QString("%1 is null.").arg(QLatin1String(type)) ) QTJAMBI_STACKTRACEINFO );
-        }
-        return *t;
-    }
-    static Container<T>& create(JNIEnv *, QtJambiScope*, QScopedPointer<Container<T>>& t, const char*){
-        Q_STATIC_ASSERT_X(false && std::is_pointer<Container<T>>::value, "Cannot cast to Container reference without scope.");
-        return *t;
     }
 };
 

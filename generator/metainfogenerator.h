@@ -81,10 +81,9 @@ class MetaInfoGenerator : public JavaGenerator {
         bool qtJambiDebugTools() const { return m_qtjambi_debug_tools; }
         void setQtJambiDebugTools(bool bf) { m_qtjambi_debug_tools = bf; }
         bool shouldGenerate(const TypeEntry *entry) const;
-
+        void writeLibraryInitializers();
     private:
         void writeCppFile();
-        void writeLibraryInitializers();
         void buildSkipList();
 
         QHash<QString, quint8> m_packageGenerationPolicies;

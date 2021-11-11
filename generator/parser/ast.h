@@ -601,6 +601,7 @@ struct NamespaceAST: public DeclarationAST {
     DECLARE_AST_NODE(Namespace)
 
     std::size_t namespace_name;
+    std::size_t namespace_name_size;
     LinkageBodyAST *linkage_body;
 };
 

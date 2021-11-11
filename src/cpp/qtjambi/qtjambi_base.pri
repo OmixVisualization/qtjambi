@@ -82,9 +82,15 @@ macx {
     contains(QT_CONFIG, ppc):CONFIG += ppc
     contains(QT_CONFIG, x86_64):CONFIG += x86_64
     contains(QT_CONFIG, ppc64):CONFIG += ppc64
+    contains(QT_CONFIG, arm64):CONFIG += arm64
     CONFIG -= precompile_header
     QMAKE_CXXFLAGS += -Wc++14-extensions
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
+    greaterThan(QT_MAJOR_VERSION, 5):{
+        greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 1):{
+            QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+        }
+    }
 }
 
 # gcc reports some functions as unused when they are not.

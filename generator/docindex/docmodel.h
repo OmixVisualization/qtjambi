@@ -11,7 +11,6 @@ class DocClass;
 
 class DocModel: public QObject
 {
-    Q_OBJECT
 public:
     DocModel();
     void addNamespace(DocNamespace*);

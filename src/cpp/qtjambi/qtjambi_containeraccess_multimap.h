@@ -127,7 +127,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -175,7 +175,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -197,7 +197,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->find(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -266,7 +266,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    K _qkey = reinterpret_cast<const QMultiMap<K,T> *>(container)->key(_qvalue, _qkey);
+                    K _qkey = reinterpret_cast<const QMultiMap<K,T> *>(container)->key(_qvalue, _qdefaultkey);
                     jv.l = nullptr;
                     if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, &jv, true)){
                         result = jv.l;
@@ -369,7 +369,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->lowerBound(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -380,9 +380,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QMultiMap(env, other, keyMetaType(), valueMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QMultiMap<K,T>* ptr = qtjambi_to_object<QMultiMap<K,T>>(env, other)){
                 QTJAMBI_KEY_VALUE_LOCKER
-                bool equals = *reinterpret_cast<const QMultiMap<K,T> *>(container)==*reinterpret_cast<QMultiMap<K,T> *>(ptr);
+                bool equals = *reinterpret_cast<const QMultiMap<K,T> *>(container)==*ptr;
                 return equals;
             }
         }else{
@@ -466,7 +466,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->upperBound(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -623,7 +623,7 @@ public:
                     result = qtjambi_from_QMapIterator(env,
                                                   ownerId,
                                                   new typename QMultiMap<K,T>::const_iterator(reinterpret_cast<const QMultiMap<K,T> *>(container)->find(_qkey, _qvalue)),
-                                                  [](void* ptr){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
+                                                  [](void* ptr,bool){ delete reinterpret_cast<typename QMultiMap<K,T>::const_iterator*>(ptr); },
                                                   access);
                 }
             }
@@ -673,9 +673,9 @@ public:
 
     void unite(JNIEnv *env, void* container, jobject other) override {
         if (qtjambi_is_QMultiMap(env, other, keyMetaType(), valueMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QMultiMap<K,T>* ptr = qtjambi_to_object<QMultiMap<K,T>>(env, other)){
                 QTJAMBI_KEY_VALUE_LOCKER
-                reinterpret_cast<QMultiMap<K,T> *>(container)->unite(*reinterpret_cast<QMultiMap<K,T> *>(ptr));
+                reinterpret_cast<QMultiMap<K,T> *>(container)->unite(*ptr);
             }
         }
     }

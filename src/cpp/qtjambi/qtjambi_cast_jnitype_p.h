@@ -35,6 +35,7 @@
 #include "qtjambi_cast_container2_p.h"
 #include "qtjambi_cast_container3_p.h"
 #include "qtjambi_cast_container4_p.h"
+#include "qtjambi_cast_container5_p.h"
 
 namespace QtJambiPrivate {
 
@@ -92,6 +93,16 @@ template<bool forward, bool has_scope,
          typename... Ts>
 struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 4, Ts...>
         : decltype(qtjambi_jnitype_container4_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
+
+template<bool forward, bool has_scope, typename JniType, template<typename K, typename T, typename A, typename B, typename C> class Container, bool is_pointer, bool is_const, bool is_reference, typename K, typename T, typename A, typename B, typename C>
+constexpr qtjambi_jnitype_container5_cast<forward, has_scope, JniType, Container, is_pointer, is_const, is_reference, K, T, A, B, C> qtjambi_jnitype_container5_supertype(){ return {};}
+
+template<bool forward, bool has_scope,
+         typename JniType,
+         template<typename... Ts> class NativeType, bool is_pointer, bool is_const, bool is_reference,
+         typename... Ts>
+struct qtjambi_jnitype_container_cast_decider<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, 5, Ts...>
+        : decltype(qtjambi_jnitype_container5_supertype<forward, has_scope, JniType, NativeType, is_pointer, is_const, is_reference, Ts...>()){};
 
 template<bool forward, bool has_scope,
          typename JniType,
@@ -1333,7 +1344,7 @@ struct qtjambi_jnitype_caster<true, has_scope,
                                   scope ? scope->relatedNativeID() : InvalidNativeID,
                                   ref_ptr<is_pointer, Container>::ref(in),
                                   is_pointer ? nullptr : CopyFunction([](const void* ptr) -> void* { return new QStringList(*reinterpret_cast<const QStringList*>(ptr)); }),
-                                  [](void* ptr) { delete reinterpret_cast<QStringList*>(ptr); },
+                                  [](void* ptr,bool) { delete reinterpret_cast<QStringList*>(ptr); },
                                   is_pointer && is_const
                                 );
     }

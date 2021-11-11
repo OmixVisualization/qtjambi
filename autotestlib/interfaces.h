@@ -102,8 +102,8 @@ class TestInterfaceObject : public QObject, public TestInterface
     Q_OBJECT
 public:
     explicit TestInterfaceObject(const QString & s);
-    virtual ~TestInterfaceObject();
-    virtual bool setReferenceCountTest1(QObject* object);
+    virtual ~TestInterfaceObject() override;
+    virtual bool setReferenceCountTest1(QObject* object) override;
     void nonVirtualMethod();
     virtual void virtualMethod();
     virtual void virtualImplementedMethod();
@@ -116,20 +116,20 @@ class TestInterfaceObject2 : public TestInterfaceObject{
     Q_OBJECT
 public:
     explicit TestInterfaceObject2(const QString & s);
-    virtual ~TestInterfaceObject2();
-    void virtualImplementedMethod();
-    void virtualImplementedInterfaceMethod();
-    void protectedImplementedVirtualInterfaceMethod();
-    QString method4() const;
-    QString method5() const;
+    virtual ~TestInterfaceObject2() override;
+    void virtualImplementedMethod() override;
+    void virtualImplementedInterfaceMethod() override;
+    void protectedImplementedVirtualInterfaceMethod() override;
+    QString method4() const override;
+    QString method5() const override;
 };
 
 class TestInterfaceImpl : public TestInterface
 {
 public:
     explicit TestInterfaceImpl(const QString & s);
-    virtual ~TestInterfaceImpl();
-    virtual bool setReferenceCountTest1(QObject* object);
+    virtual ~TestInterfaceImpl() override;
+    virtual bool setReferenceCountTest1(QObject* object) override;
 };
 
 class TestPrivateInterface
@@ -152,7 +152,7 @@ class FunctionManager : public QObject{
     Q_OBJECT
 public:
     FunctionManager(QObject* parent = nullptr);
-    virtual ~FunctionManager();
+    virtual ~FunctionManager() override;
 
     typedef std::function<QString(int)> StringSupplier;
     typedef std::function<void(const QString&)> StringConsumer;
@@ -167,6 +167,39 @@ private:
     QString m_text;
     StringSupplier m_stringSupplier;
     StringConsumer m_stringConsumer;
+};
+
+class MoccedObject : public QObject{
+    Q_OBJECT
+public:
+    MoccedObject(QObject* parent = nullptr) : QObject(parent) {}
+};
+
+class UnMoccedObject : public MoccedObject{
+public:
+    UnMoccedObject(QObject* parent = nullptr) : MoccedObject(parent) {}
+
+    static QObject* create(int type);
+};
+
+class MoccedSub1Object : public MoccedObject{
+public:
+    MoccedSub1Object(QObject* parent = nullptr) : MoccedObject(parent) {}
+};
+
+class UnMoccedSub1Object : public UnMoccedObject{
+public:
+    UnMoccedSub1Object(QObject* parent = nullptr) : UnMoccedObject(parent) {}
+};
+
+class MoccedSub2Object : public MoccedObject{
+public:
+    MoccedSub2Object(QObject* parent = nullptr) : MoccedObject(parent) {}
+};
+
+class UnMoccedSub2Object : public UnMoccedObject{
+public:
+    UnMoccedSub2Object(QObject* parent = nullptr) : UnMoccedObject(parent) {}
 };
 
 #endif

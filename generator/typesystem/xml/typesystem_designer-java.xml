@@ -43,7 +43,10 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.designer" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.designer" module="qtjambi.designer" default-superclass="io.qt.QtObject">
+    <inject-code class="module-info">
+    exports io.qt.designer.util;
+    </inject-code>
     <primitive-type name="qdesigner_internal::FlagType" java-name="int" preferred-conversion="no" jni-name="jint" />
     <primitive-type name="qdesigner_internal::EnumType" java-name="int" preferred-conversion="no" jni-name="jint" />
     <object-type name="QExtensionFactory">
@@ -203,7 +206,7 @@
         </modify-function>
     </object-type>
     <object-type name="QDesignerFormWindowInterface">
-        <inject-code class="shell-declaration">
+        <inject-code class="shell-declaration" position="end">
 public:
     inline QtResourceSet *resourceSet() const override {return m_resourceSet;}
     inline void setResourceSet(QtResourceSet *resourceSet) override { m_resourceSet = resourceSet; }

@@ -127,7 +127,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -175,7 +175,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -197,7 +197,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->find(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -238,7 +238,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    K _qkey = reinterpret_cast<const QMultiHash<K,T> *>(container)->key(_qvalue, _qkey);
+                    K _qkey = reinterpret_cast<const QMultiHash<K,T> *>(container)->key(_qvalue, _qdefaultkey);
                     jv.l = nullptr;
                     if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, &jv, true)){
                         result = jv.l;
@@ -284,7 +284,7 @@ public:
             T _qvalue;
             void *_qvaluePtr = &_qvalue;
             if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) || QT_VERSION >= QT_VERSION_CHECK(6,2,0)
                 const void* keys = new QList<K>(reinterpret_cast<const QMultiHash<K,T> *>(container)->keys(_qvalue));
 #else
                 QList<K>* _keys = new QList<K>();
@@ -313,9 +313,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QMultiHash(env, other, keyMetaType(), valueMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QMultiHash<K,T>* ptr = qtjambi_to_object<QMultiHash<K,T>>(env, other)){
                 QTJAMBI_KEY_VALUE_LOCKER
-                return *reinterpret_cast<const QMultiHash<K,T> *>(container)==*reinterpret_cast<QMultiHash<K,T> *>(ptr);
+                return *reinterpret_cast<const QMultiHash<K,T> *>(container)==*ptr;
             }
         }else{
             QTJAMBI_KEY_VALUE_LOCKER
@@ -545,7 +545,7 @@ public:
                     result = qtjambi_from_QMapIterator(env,
                                                   ownerId,
                                                   new typename QMultiHash<K,T>::const_iterator(reinterpret_cast<const QMultiHash<K,T> *>(container)->find(_qkey, _qvalue)),
-                                                  [](void* ptr){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
+                                                  [](void* ptr,bool){ delete reinterpret_cast<typename QMultiHash<K,T>::const_iterator*>(ptr); },
                                                   access);
                 }
             }
@@ -595,9 +595,9 @@ public:
 
     void unite(JNIEnv *env, void* container, jobject other) override {
         if (qtjambi_is_QMultiHash(env, other, keyMetaType(), valueMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QMultiHash<K,T>* ptr = qtjambi_to_object<QMultiHash<K,T>>(env, other)){
                 QTJAMBI_KEY_VALUE_LOCKER
-                reinterpret_cast<QMultiHash<K,T> *>(container)->unite(*reinterpret_cast<QMultiHash<K,T> *>(ptr));
+                reinterpret_cast<QMultiHash<K,T> *>(container)->unite(*ptr);
             }
         }
     }

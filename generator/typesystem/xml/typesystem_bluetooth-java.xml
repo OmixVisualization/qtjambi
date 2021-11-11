@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.bluetooth" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.bluetooth" module="qtjambi.bluetooth" default-superclass="io.qt.QtObject">
   <value-type name="QBluetoothUuid">
         <modify-function signature="toUInt128() const" rename="toBytes">
             <modify-argument index="0">
@@ -119,7 +119,7 @@
             }
         }
         </inject-code>
-        <modify-function signature="serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const" since="5.14">
+        <modify-function signature="serviceUuids(QBluetoothDeviceInfo::DataCompleteness *) const" since="5.14" until="5.*">
             <modify-argument index="1">
                 <remove-argument/>
                 <conversion-rule class="native">
@@ -157,7 +157,12 @@
                 <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
-        <modify-function signature="createCentral(QBluetoothAddress,QBluetoothAddress,QObject*)">
+        <modify-function signature="createCentral(const QBluetoothDeviceInfo &amp;,QBluetoothAddress,QObject *)" since="6.2.0">
+            <modify-argument index="return">
+                <define-ownership class="native" owner="java"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createCentral(QBluetoothAddress,QBluetoothAddress,QObject*)" until="5.*">
             <modify-argument index="return">
                 <define-ownership class="native" owner="java"/>
             </modify-argument>

@@ -37,7 +37,6 @@
 
 #include <qtjambi/qtjambi_global.h>
 #include <QtCore/QtCore>
-#include <qtjambi_core/qtjambiqfuture.h>
 
 class QWidget;
 
@@ -171,18 +170,45 @@ inline hash_type qHash(const QSize &size)
     hashCode = hashCode * 31 + qHash(size.height());
     return hashCode;
 }
+#else
+
+template<class T>
+bool operator==(const QFuture<T> &f1, const QFuture<T> &f2) {
+    struct Future{
+        QFutureInterfaceBase d;
+    };
+    return reinterpret_cast<const Future*>(&f1)->d==reinterpret_cast<const Future*>(&f2)->d;
+}
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 2, 0)
 inline hash_type qHash(const QPointF &point)
 {
     hash_type hashCode = qHash(qint64(point.x()));
     hashCode = hashCode * 31 + qHash(qint64(point.y()));
     return hashCode;
 }
+#else
+inline hash_type qHash(const QPointF &point, QHashDummyValue)
+{
+    hash_type hashCode = qHash(qint64(point.x()));
+    hashCode = hashCode * 31 + qHash(qint64(point.y()));
+    return hashCode;
+}
+#endif
 
 inline hash_type qHash(const QFutureInterfaceBase &value)
 {
     return qHash(quintptr(&value.resultStoreBase()));
+}
+
+template<class T>
+inline hash_type qHash(const QFuture<T> &value)
+{
+    struct Future{
+        QFutureInterfaceBase d;
+    };
+    return qHash(reinterpret_cast<const Future*>(&value)->d);
 }
 
 inline hash_type qHash(const QFileInfo &fileInfo)
@@ -249,8 +275,10 @@ inline int qHash(const QDateTime &dateTime)
 
 inline hash_type qHash(const QLineF &line)
 {
-    hash_type hashCode = qHash(line.p1());
-    hashCode = hashCode * 31 + qHash(line.p2());
+    hash_type hashCode = qHash(line.p1().x());
+    hashCode = hashCode * 31 + qHash(line.p1().y());
+    hashCode = hashCode * 31 + qHash(line.p2().x());
+    hashCode = hashCode * 31 + qHash(line.p2().y());
     return hashCode;
 }
 
@@ -472,22 +500,6 @@ inline hash_type qHash(const QElapsedTimer &value)
     hash_type hashCode = qHash(t->t1);
     hashCode = hashCode * 31 + qHash(t->t2);
     return hashCode;
-}
-
-inline hash_type qHash(const QVoidFuture &value)
-{
-    struct Future{
-        QFutureInterfaceBase d;
-    };
-    return qHash(reinterpret_cast<const Future*>(&value)->d);
-}
-
-inline hash_type qHash(const QtJambiFuture &value)
-{
-    struct Future{
-        QFutureInterfaceBase d;
-    };
-    return qHash(reinterpret_cast<const Future*>(&value)->d);
 }
 
 inline hash_type qHash(const QMetaObject &value)

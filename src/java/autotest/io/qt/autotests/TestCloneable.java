@@ -820,7 +820,11 @@ public class TestCloneable extends QApplicationTest {
 	@Test
 	public void run_clone_QBitmap() {
 		QBitmap org = new QBitmap(100, 400);
+		assertEquals(100, org.width());
+		assertEquals(400, org.height());
 		QBitmap clone = org.clone();
+		assertEquals(org.width(), clone.width());
+		assertEquals(org.height(), clone.height());
 		assertEquals(QtJambiInternal.Ownership.Java, QtJambiInternal.ownership(clone));
 		org.dispose();
 		QBitmap clone2 = clone.clone();

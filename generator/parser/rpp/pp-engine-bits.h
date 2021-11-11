@@ -601,7 +601,9 @@ namespace rpp {
                             "QPointF",
                             "qanimationclipdata.h",
                             "qchannel.h",
-                            "QStringList"
+                            "QStringList",
+                            "cstdint",
+                            "cstdlib"
                         };
                     if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0 && !ignoredFiles.contains(QByteArray(filename.c_str()))) {
                         QString message = QString("No such file or directory: %1%2%3")
@@ -692,8 +694,29 @@ namespace rpp {
 
                 macro.definition = pp_symbol::get(definition);
                 if((verbose & DEBUGLOG_DEFINE) != 0) {
-                    std::cout << "#define " << std::string(macro_name->begin(), macro_name->end()) <<
-                        " " << std::string(macro.definition->begin(), macro.definition->end()) << std::endl;
+                    std::cout << "#define " << std::string(macro_name->begin(), macro_name->end());
+                    if(macro.function_like){
+                        std::cout << "(";
+                        bool b = false;
+                        for(auto f : macro.formals){
+                            if(b)
+                                std::cout << ", ";
+                            else
+                                b = true;
+                            std::cout << f->begin();
+                        }
+                        if(macro.variadics){
+                            if(b)
+                                std::cout << ", ";
+                            else
+                                b = true;
+                            std::cout << "...";
+                        }
+                        std::cout << ")";
+                    }
+                    if(macro.definition->size()>0)
+                        std::cout << " = " << std::string(macro.definition->begin(), macro.definition->end());
+                    std::cout << std::endl;
                 }
                 env.bind(macro_name, macro);
 
@@ -838,9 +861,20 @@ namespace rpp {
                             __first = eval_constant_expression(__first, __last, result);
                         next_token(__first, __last, &token);
 
+                        if(!isHasInclude){
+                            while(token == ','){
+                                __first = next_token(__first, __last, &token);
+                                __first = eval_constant_expression(__first, __last, result);
+                                next_token(__first, __last, &token);
+                            }
+                        }
+
                         if (token != ')') {
                             pp_fast_string const *snippet = pp_symbol::get(__first, __last);
-                            env.log(QString("Expected \")\", found token %1 in context \"%2\"").arg(token).arg(QString::fromStdString(std::string(snippet->begin(), snippet->end()))).toStdString());
+                            if(token<TOKEN_NUMBER)
+                                env.log(QString("Expected \")\", found token \"%1\" in context \"%2\"").arg(QChar(token)).arg(QString::fromStdString(std::string(snippet->begin(), snippet->end()))).toStdString());
+                            else
+                                env.log(QString("Expected \")\", found token %1 in context \"%2\"").arg(token).arg(QString::fromStdString(std::string(snippet->begin(), snippet->end()))).toStdString());
                         } else {
                             __first = next_token(__first, __last, &token);
                         }

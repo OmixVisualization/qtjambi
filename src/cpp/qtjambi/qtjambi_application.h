@@ -96,30 +96,30 @@ private:
 QTJAMBI_EXPORT jobject qtjambi_find_object(JNIEnv *env, const void * pointer);
 
 QTJAMBI_EXPORT jobject qtjambi_metamethod_invoke
-    (JNIEnv * env, QtJambiNativeID object__id, QtJambiNativeID metaMethodId, jobjectArray argClassTypeArray, jint connection, jobjectArray args);
+    (JNIEnv * env, jobject _metaMethod, jobject _qobject, jobjectArray argClassTypeArray, jint connection, jobjectArray args);
 
 QTJAMBI_EXPORT jobject qtjambi_metamethod_invoke_on_gadget
-    (JNIEnv * env, QtJambiNativeID object_id, jobject object, QtJambiNativeID metaMethodId, jobjectArray argClassTypeArray, jobjectArray args);
+    (JNIEnv * env, jobject _metaMethod, jobject object, jobjectArray argClassTypeArray, jobjectArray args);
 
-QTJAMBI_EXPORT jobject qtjambi_metamethod_to_reflected(JNIEnv * env, QtJambiNativeID object__id);
+QTJAMBI_EXPORT jobject qtjambi_metamethod_to_reflected(JNIEnv * env, jobject _this);
 
-QTJAMBI_EXPORT jobject qtjambi_metamethod_parameter_class_types(JNIEnv * env, QtJambiNativeID object__id);
+QTJAMBI_EXPORT jobject qtjambi_metamethod_parameter_class_types(JNIEnv * env, jobject _this);
 
-QTJAMBI_EXPORT jobject qtjambi_metamethod_return_class_type(JNIEnv * env, QtJambiNativeID object__id);
+QTJAMBI_EXPORT jobject qtjambi_metamethod_return_class_type(JNIEnv * env, jobject _this);
 
 QTJAMBI_EXPORT jobject qtjambi_method_from_javamethod(JNIEnv * env, jlong metaObjectPointer, jobjectArray ok);
 
 QTJAMBI_EXPORT jboolean qtjambi_metaproperty_reset_on_gadget
-    (JNIEnv *env, QtJambiNativeID __this_nativeId, jobject gadget);
+    (JNIEnv *env, jobject _this, jobject gadget);
 
 QTJAMBI_EXPORT jclass qtjambi_metaproperty_class
-    (JNIEnv *env, QtJambiNativeID __this_nativeId);
+    (JNIEnv *env, jobject _this);
 
 QTJAMBI_EXPORT jobject qtjambi_metaproperty_read_on_gadget
-    (JNIEnv *env, QtJambiNativeID __this_nativeId, jobject gadget);
+    (JNIEnv *env, jobject _this, jobject gadget);
 
 QTJAMBI_EXPORT jboolean qtjambi_metaproperty_write_on_gadget
-    (JNIEnv *env, QtJambiNativeID __this_nativeId, jobject gadget, jobject value);
+    (JNIEnv *env, jobject _this, jobject gadget, jobject value);
 
 class QIODevice;
 QTJAMBI_EXPORT QIODevice* qtjambi_new_direct_address_device
@@ -128,7 +128,7 @@ QTJAMBI_EXPORT QIODevice* qtjambi_new_direct_address_device
 QTJAMBI_EXPORT jobject qtjambi_metaobject_javatype
     (JNIEnv *env, const QMetaObject *metaObject, bool exactOrNull = false);
 
-QTJAMBI_EXPORT jobject qtjambi_metaobject_cast(JNIEnv *env, QtJambiNativeID object_id, jclass type);
+QTJAMBI_EXPORT jobject qtjambi_metaobject_cast(JNIEnv *env, jobject object, jclass type);
 
 QTJAMBI_EXPORT QMetaMethod qtjambi_metaobject_get_method(const QMetaObject *metaObject, const QString& sig);
 
@@ -142,6 +142,22 @@ QTJAMBI_EXPORT jobject qtjambi_install_message_handler(JNIEnv *env, jobject supp
 
 typedef bool(*ThreadedPixmapsChecker)();
 QTJAMBI_EXPORT void qtjambi_install_threaded_pixmaps_checker(ThreadedPixmapsChecker threadedPixmapsChecker);
+
+QTJAMBI_EXPORT jclass qtjambi_class_for_metatype(JNIEnv *env, int id);
+
+QTJAMBI_EXPORT jobject qtjambi_invoke_function_pointer(JNIEnv * __jni_env, QFunctionPointer __qt_this, jobject returnType, jobjectArray arguments);
+
+QTJAMBI_EXPORT jobject qtjambi_function_pointer_cast(JNIEnv * __jni_env, jobject function, jclass functionalInterface);
+
+QTJAMBI_EXPORT jclass qtjambi_function_pointer_return_type(JNIEnv * __jni_env, jobject returnType);
+
+QTJAMBI_EXPORT jobject qtjambi_function_pointer_convert_return(JNIEnv * __jni_env, jobject returnType, jobject result);
+
+QTJAMBI_EXPORT void qtjambi_function_pointer_get_parameter_types(JNIEnv * __jni_env, jobjectArray argumentTypes, jobjectArray parameterTypes, jboolean isVarArgs);
+
+QTJAMBI_EXPORT void qtjambi_function_pointer_convert_parameters(JNIEnv * __jni_env, jobjectArray argumentTypes, jobjectArray args, jobjectArray convertedArgs, jboolean isVarArgs, jboolean forward);
+
+QTJAMBI_EXPORT void qtjambi_function_pointer_dispose(JNIEnv * __jni_env, jlong peer);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_EXPORT const QtPrivate::AbstractDebugStreamFunction * qtjambi_registered_debugstream_operator(int typeId);

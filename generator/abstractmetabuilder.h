@@ -99,7 +99,7 @@ class AbstractMetaBuilder {
         bool setupTemplateInstantiations(AbstractMetaClass *meta_class);
         AbstractMetaClass *traverseNamespace(NamespaceModelItem item);
         AbstractMetaEnum *traverseEnum(EnumModelItem item, AbstractMetaClass *enclosing, const QSet<QString> &enumsDeclarations);
-        AbstractMetaClass * instantiateIterator(IteratorTypeEntry *iteratorTypeEntry, AbstractMetaClass *subclass, const QList<const AbstractMetaType *>& template_types, const QMap<const TypeEntry *,const AbstractMetaType *>& template_types_by_name);
+        AbstractMetaClass * instantiateIterator(IteratorTypeEntry *iteratorTypeEntry, AbstractMetaClass *subclass, const QList<const AbstractMetaType *>& template_types, const QHash<const TypeEntry *,const AbstractMetaType *>& template_types_by_name);
         void traverseEnums(ScopeModelItem item, AbstractMetaClass *parent, const QStringList &enumsDeclarations);
         void traverseFunctions(ScopeModelItem item, AbstractMetaClass *parent);
         void traverseFields(ScopeModelItem item, AbstractMetaClass *parent);
@@ -131,10 +131,7 @@ class AbstractMetaBuilder {
                              const TypeParser::Info &info);
         AbstractMetaType *inheritTemplateType(const QList<const AbstractMetaType *> &template_types, const AbstractMetaType *meta_type, bool *ok = nullptr);
 
-        bool isQObject(const QString &qualified_name);
-        bool isQWidget(const QString &qualified_name);
-        bool isQWindow(const QString &qualified_name);
-        bool isQCoreApplication(const QString &qualified_name);
+        bool isClass(const QString &qualified_name, const QString& className);
         bool isEnum(const QStringList &qualified_name);
 
         void fixQObjectForScope(TypeDatabase *types,
@@ -144,6 +141,7 @@ class AbstractMetaBuilder {
         void setOutputDirectory(const QString &outDir) { m_out_dir = outDir; }
         void setFeatures(const QMap<QString, QString>& features){ m_features = &features; }
         void setQtVersion(uint qtVersion) {m_qtVersion = qtVersion;}
+        const QMap<QString,TypeSystemTypeEntry *>& typeSystemByPackage() const { return m_typeSystemByPackage; }
     protected:
         AbstractMetaClass *argumentToClass(ArgumentModelItem, const QString &contextString);
 
@@ -215,6 +213,7 @@ class AbstractMetaBuilder {
         };
         QList<MissingIterator> m_missing_iterators;
         const QMap<QString, QString>* m_features;
+        QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
         uint m_qtVersion;
 };
 

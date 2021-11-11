@@ -41,11 +41,7 @@ class QSGGeometry.AttributeSet__{
 }// class
 
 class QSGGeometry__{
-    public VertexData<?> vertexData(){
-        return __qt_QSGGeometry_vertexData(io.qt.internal.QtJambiInternal.nativeId(this));        
-    }
-
-    private native VertexData<?> __qt_QSGGeometry_vertexData(long __this__nativeId);
+    public native VertexData<?> vertexData();
 
     private static native ColoredPoint2D getColoredPoint2D(long pointer, int index);
 

@@ -87,6 +87,7 @@ namespace TypeSystem {
         Interface           = 0x0080,
         Signal              = 0x0100,
         MetaInfo            = 0x0200,
+        ModuleInfo          = 0x0400,
 
         // masks
         All                 = TargetLangCode
@@ -98,7 +99,8 @@ namespace TypeSystem {
         | Interface
         | DestructorFunction
         | Signal
-        | MetaInfo,
+        | MetaInfo
+        | ModuleInfo,
 
         JavaAndNativeCode   = TargetLangCode | NativeCode,
         TargetLangAndNativeCode   = TargetLangCode | NativeCode

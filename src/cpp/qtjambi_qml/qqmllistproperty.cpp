@@ -48,16 +48,16 @@
 // emitting (writeToStringFunction)
 // emitting (writeCloneFunction)
 
-void deleter_QQmlListProperty(void* ptr){
+void deleter_QQmlListProperty(void* ptr, bool){
     delete reinterpret_cast<QQmlListProperty<QObject> *>(ptr);
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1clone)
-(JNIEnv *__jni_env, jobject, QtJambiNativeID __this_nativeId)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_clone_1native)
+(JNIEnv *__jni_env, jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clone(QQmlListProperty)")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return qtjambi_cast<jobject>(__jni_env, *__qt_this);
     }catch(const JavaException& exn){
@@ -198,7 +198,7 @@ void __qt_destruct_QQmlListProperty(void* ptr)
 // emitting (writeSignalFunction)
 // emitting  (functionsInTargetLang writeFinalFunction)
 // QQmlListProperty::QQmlListProperty()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1QQmlListProperty_1new__Ljava_lang_Object_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_initialize_1native__Lio_qt_qml_QQmlListProperty_2)
 (JNIEnv *__jni_env,
  jclass __jni_class, jobject __jni_object)
 {
@@ -211,7 +211,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1QQmlListProperty_1new__Ljava_lang_Object_2Lio_qt_core_QObject_2Ljava_util_List_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_initialize_1native__Lio_qt_qml_QQmlListProperty_2Lio_qt_core_QObject_2Ljava_util_List_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
@@ -230,15 +230,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::append(QObject object)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1append_1QObject__JLio_qt_core_QObject_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_append)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
+ jobject _this,
  jobject object0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::append(QObject object)")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->append)
             __qt_this->append(__qt_this, qtjambi_cast<QObject*>(__jni_env, object0));
@@ -248,19 +247,18 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::at(int index)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1at_1int__JI)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_at)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId,
- jint index0)
+ jobject _this,
+ jlong index0)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::at(int index)")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         jobject __qt_return_value = nullptr;
         if(__qt_this->at){
-            QObject*  qt_return_value = __qt_this->at(__qt_this, int(index0));
+            QObject*  qt_return_value = __qt_this->at(__qt_this, index0);
             __qt_return_value = qtjambi_cast<jobject>(__jni_env, qt_return_value);
         }
         return __qt_return_value;
@@ -271,14 +269,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 }
 
 // QQmlListProperty::canAppend()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1canAppend__J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canAppend)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAppend()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return __qt_this->append!=nullptr;
     }catch(const JavaException& exn){
@@ -288,14 +285,13 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canAt()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1canAt__J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canAt)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAt()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return __qt_this->at!=nullptr;
     }catch(const JavaException& exn){
@@ -305,14 +301,13 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canClear()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1canClear__J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canClear)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canClear()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return __qt_this->clear!=nullptr;
     }catch(const JavaException& exn){
@@ -322,14 +317,13 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::canCount()
-extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1canCount__J)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_canCount)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canCount()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return __qt_this->count!=nullptr;
     }catch(const JavaException& exn){
@@ -339,14 +333,13 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
 }
 
 // QQmlListProperty::clear()
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1clear__J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_clear)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clear()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->clear)
             __qt_this->clear(__qt_this);
@@ -356,14 +349,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::count()
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1count__J)
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_count)
 (JNIEnv * __jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::count()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         if(__qt_this->count)
             return __qt_this->count(__qt_this);
@@ -374,14 +366,13 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 }
 
 // QQmlListProperty::object()
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty__1_1qt_1object__J)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQmlListProperty_object)
 (JNIEnv *__jni_env,
- jobject,
- QtJambiNativeID __this_nativeId)
+ jobject _this)
 {
     QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::object()")
     try{
-        QQmlListProperty<QObject> *__qt_this = qtjambi_object_from_nativeId<QQmlListProperty<QObject> >(__this_nativeId);
+        QQmlListProperty<QObject> *__qt_this = qtjambi_to_object<QQmlListProperty<QObject> >(__jni_env, _this);
         qtjambi_check_resource(__jni_env, __qt_this, typeid(QQmlListProperty<QObject>));
         return qtjambi_cast<jobject>(__jni_env, __qt_this->object);
     }catch(const JavaException& exn){

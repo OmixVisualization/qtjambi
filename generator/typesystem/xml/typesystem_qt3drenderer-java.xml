@@ -42,10 +42,8 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.qt3d.render" default-superclass="io.qt.QtObject">
-    <inject-code position="2">
-    io.qt.QtUtilities.initializePackage("io.qt.concurrent");
-    </inject-code>
+<typesystem package="io.qt.qt3d.render" module="qtjambi.qt3drender" default-superclass="io.qt.QtObject">
+    <required-library name="QtConcurrent" optional="no"/>
     <object-type name="Qt3DRender::QMaterial">
         <modify-function signature="setTextureParameter(QString,Qt3DRender::QAbstractTextureProvider*)" until="5.6">
             <modify-argument index="2">

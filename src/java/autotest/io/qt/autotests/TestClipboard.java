@@ -70,9 +70,10 @@ public class TestClipboard extends QApplicationTest {
 	@org.junit.BeforeClass
 	public static void testInitialize() throws Exception {
 		QApplicationTest.testInitialize();
-		Assume.assumeThat(QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.MacOS
+		Assume.assumeTrue("Cannot run on macOS because of using AWT event loop.",
+				QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.MacOS
 					   && QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.IOS
-					   && QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.WatchOS, QApplicationTest.trueMatcher("Cannot run on macOS because of using AWT event loop."));
+					   && QOperatingSystemVersion.currentType()!=QOperatingSystemVersion.OSType.WatchOS);
 	}
 	
     static class Foo implements ClipboardOwner {

@@ -63,11 +63,11 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
-import io.qt.internal.QtJambiThreadUtility;
 
 // This testcase attempts to validate that the APIs allow and emit/deliver
 //  signals across threads correctly.
@@ -123,7 +123,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 
 	// Source implementation
 	static class MyImpl extends QObject implements Runnable {
-		public Signal1<Object> signalReceiver;
+		public QMetaObject.AbstractPublicSignal1<Object> signalReceiver;
 
 		public Object dataObject;
 		private Notifiable notifyObject;
@@ -488,14 +488,14 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 	
 			helperImplThreadOut(thread::start, myReceiver, myImpl, myRecvNotifiable, mySendNotifiable, connectionType);
 	
-			assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
+			assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 			assertTrue("thread is not alive: "+thread, thread.isAlive());
 			myImpl.signalShutdown();
 			QEventLoop loop = new QEventLoop();
 			QTimer.singleShot(2000, loop::quit);
 			loop.exec();
 			thread.join(4000);
-			assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
+			assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 			assertFalse("thread is not alive: "+thread, thread.isAlive());
 		}catch(AssertionError e) {
 			throw e;
@@ -593,7 +593,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 
 		helperImplThreadIn(thread::start, myImpl, myRecvNotifiable, connectionType);
 
-		assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
+		assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 		assertTrue("thread is not alive: "+thread, thread.isAlive());
 		myImpl.signalShutdown();
 		QEventLoop loop = new QEventLoop();
@@ -605,7 +605,7 @@ public class TestSignalCrossThread extends QApplicationTest implements UncaughtE
 			e.printStackTrace();
 			assertTrue(false);
 		}
-		assertEquals("caught exception", null, uncaughtExceptions.get(QtJambiThreadUtility.javaThread(thread)));
+		assertEquals("caught exception", null, uncaughtExceptions.get(thread.javaThread()));
 		assertFalse("thread is not alive: "+thread, thread.isAlive());
 	}
 

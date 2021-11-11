@@ -57,8 +57,9 @@ static const char* colorReset = "";
 
 FileOut::FileOut(QString n):
         m_name(n),
-        stream(&tmp),
-        isDone(false) {}
+        tmp(),
+        isDone(false),
+        stream(&tmp) {}
 
 static int* lcsLength(QList<QByteArray> a, QList<QByteArray> b) {
     const auto height = a.size() + 1;

@@ -16,8 +16,6 @@ uint qHash(const std::pair<const int&,const int&>&);
 #include <QtCore/QSet>
 #include <QtCore/QByteArray>
 
-QT_WARNING_DISABLE_DEPRECATED
-
 #include <qtjambi/qtjambi_typetests.h>
 
 class QHash_int : public QHash<int, int> { };

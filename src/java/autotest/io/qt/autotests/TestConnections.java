@@ -78,7 +78,7 @@ import io.qt.gui.QDesktopServices;
 import io.qt.gui.QGuiApplication;
 import io.qt.internal.QtJambiDebugTools;
 import io.qt.internal.QtJambiInternal;
-import io.qt.internal.QtJambiObject;
+import io.qt.QtObject;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QColorDialog;
 import io.qt.widgets.QGraphicsScene;
@@ -88,21 +88,6 @@ import io.qt.widgets.QWidget;
 
 public class TestConnections extends QApplicationTest
 {
-	private final static int NativeConnectionPolicy;
-    static{
-    	if(QtJambiInternal.isQtPatched()) {
-        	int c = 0;
-        	try {
-				c = Integer.valueOf(System.getProperty("io.qt.native.connection.policy", "0"));
-			} catch (NumberFormatException e) {
-				e.printStackTrace();
-			}
-        	NativeConnectionPolicy = c;
-    	}else {
-    		NativeConnectionPolicy = 4;
-    	}
-    }
-    
     public TestConnections()
     {
     }
@@ -134,7 +119,7 @@ public class TestConnections extends QApplicationTest
     }
 
     class SignalEmitter implements QtSignalEmitterInterface, QInstanceMemberSignals {
-        public Signal2<String, Integer> mySignal = new Signal2<String, Integer>(this);
+        public final Signal2<String, Integer> mySignal = new Signal2<String, Integer>(this);
     }
 
     @Test public void run_connectFromNonQObjects() {
@@ -158,20 +143,6 @@ public class TestConnections extends QApplicationTest
 
         assertEquals("I have this many friends:", o.receivedFoo);
         assertEquals(100, o.receivedBar);
-    }
-
-    @Test public void run_shouldAlsoConnectToUnnormalizedSignatures() {
-    	Assume.assumeThat(QtJambiInternal.isQtPatched(), QApplicationTest.trueMatcher("Requires patched Qt."));
-        SignalsAndSlotsSubclass sas = new SignalsAndSlotsSubclass();
-        assertEquals(0, sas.java_slot5_called);
-        assertEquals(0, sas.slot1_1_called());
-
-        sas.connectSignal6ToUnnormalizedSignature();
-        sas.signal6.connect(sas::slot1_1);
-        sas.signal6.emit("abc", 11);
-
-        assertEquals(33, sas.java_slot5_called);
-        assertEquals(1, sas.slot1_1_called());
     }
 
     @Test public void run_shouldNotConnectBySignatureToBlockedSlots()
@@ -567,10 +538,10 @@ public class TestConnections extends QApplicationTest
         QMetaObject.Connection c3 = sasSub.signal1.connect(sasSub::slot1_1);
         QMetaObject.Connection c4 = sasSub.signal2.connect(((SignalsAndSlots)sasSub)::slot2);
         
-        assertEquals(NativeConnectionPolicy==2 || NativeConnectionPolicy==1 || NativeConnectionPolicy==4, c1 instanceof QtJambiObject);
-        assertEquals(NativeConnectionPolicy==2 || NativeConnectionPolicy==1 || NativeConnectionPolicy==4, c2 instanceof QtJambiObject);
-        assertEquals(NativeConnectionPolicy==2 || NativeConnectionPolicy==1 || NativeConnectionPolicy==4, c3 instanceof QtJambiObject);
-        assertEquals(NativeConnectionPolicy==2 || NativeConnectionPolicy==1 || NativeConnectionPolicy==4, c4 instanceof QtJambiObject);
+        assertTrue(c1 instanceof QtObject);
+        assertTrue(c2 instanceof QtObject);
+        assertTrue(c3 instanceof QtObject);
+        assertTrue(c4 instanceof QtObject);
 
         sasSub.disconnect(sasBase);
 
@@ -915,7 +886,7 @@ public class TestConnections extends QApplicationTest
 
     @Test public void run_connectJavaQt()
     {
-		Assume.assumeThat(!QGuiApplication.screens().isEmpty(), QApplicationTest.trueMatcher("A screen is required to create a window."));
+		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QWidget widget = new QWidget();
 
         assertTrue(!widget.isVisible());
@@ -1802,7 +1773,7 @@ public class TestConnections extends QApplicationTest
     }
 
     private static class JavaSignal extends SignalsAndSlots {
-        public Signal2<String, QByteArray> aJavaSignal = new Signal2<String, QByteArray>();
+        public final Signal2<String, QByteArray> aJavaSignal = new Signal2<String, QByteArray>();
     }
 
     @Test public void javaEmitShouldEmitCpp() {
@@ -1831,7 +1802,7 @@ public class TestConnections extends QApplicationTest
             received = args;
         }
 
-        public Signal1<String[]> zootBaz = new Signal1<String[]>();
+        public final Signal1<String[]> zootBaz = new Signal1<String[]>();
     }
 
     @Test
@@ -1958,7 +1929,7 @@ public class TestConnections extends QApplicationTest
 	//@Test
     public void testRecursionBlockingSignals() {
 		class Sender extends QObject{
-			Signal0 test = new Signal0();
+			final Signal0 test = new Signal0();
 			{
 				test.connect(this::recursionTest);
 			}
@@ -2057,6 +2028,26 @@ public class TestConnections extends QApplicationTest
         QCoreApplication.processEvents();
         // nothing should happen
 	}
+	
+	@Test public void testLambdaSlot() {
+		QObject object = new QObject();
+		boolean[] called = {false};
+		object.objectNameChanged.connect(()->{
+			called[0] = true;
+		});
+		object.setObjectName("A");
+		assertTrue(called[0]);
+		class TestObject implements QInstanceMemberSignals, QtSignalEmitterInterface{
+			public final Signal1<Throwable> exceptionOccurred = new Signal1<>(this);
+		}
+		TestObject emitter = new TestObject();
+		called[0] = false;
+		emitter.exceptionOccurred.connect(()->{
+			called[0] = true;
+		});
+		emitter.exceptionOccurred.emit(new RuntimeException());
+		assertTrue(called[0]);
+	}
 
     public static void main(String args[]) {
     	org.junit.runner.JUnitCore.main(TestConnections.class.getName());
@@ -2072,7 +2063,7 @@ class SignalsAndSlotsSubclass extends SignalsAndSlots
     public int java_non_slot_called = 0;
     public int java_slot5_called = 0;
 
-    public Signal0 signal4 = new Signal0();
+    public final Signal0 signal4 = new Signal0();
 
     public class NonQObjectSubclass {
         public Signal1<String> s = new Signal1<String>();

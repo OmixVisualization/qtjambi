@@ -1,7 +1,10 @@
 #include <QtCore/QMetaType>
 #include <QtCore/QHash>
-#include "qtjambi_registry.h"
 #include "qtjambi_application.h"
+#include "qtjambi_registry.h"
+#include "qtjambi_repository_p.h"
+#include "qtjambilink_p.h"
+#include "qtjambi_internal.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 namespace QtPrivate{
@@ -95,3 +98,4 @@ void qtjambi_unregister_converter(int from, int to){
 #endif
 }
 #endif
+

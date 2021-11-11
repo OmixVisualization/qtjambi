@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtHelp">
+<typesystem qt-library="QtHelp" description="Classes for integrating documentation into applications, similar to Qt Assistant.">
   <!--<enum-type name="QGraphicsSvgItem::enum_1"/>-->
 
 <!--   <object-type name="QHelpContentItem"> -->

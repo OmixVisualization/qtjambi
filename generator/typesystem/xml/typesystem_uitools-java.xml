@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.widgets.tools" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.widgets.tools" module="qtjambi.uitools" default-superclass="io.qt.QtObject">
     <object-type name="QUiLoader">
         <modify-function signature="createAction(QObject *,QString)">
             <modify-argument index="return">

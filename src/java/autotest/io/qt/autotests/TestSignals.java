@@ -36,6 +36,8 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.QSignalDeclarationException;
+import io.qt.QSignalInitializationException;
 import io.qt.QtPrimitiveType;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QInstanceMemberSignals;
@@ -48,6 +50,18 @@ import io.qt.widgets.*;
 
 @SuppressWarnings("unused")
 public class TestSignals extends QApplicationTest{
+	
+	public static class QObjectSignalOwner extends QObject{
+		final Signal1<String> testSignal = new Signal1<>();
+	}
+	
+	public static class QObjectNonFinalSignalOwner extends QObject{
+		Signal1<String> testSignal = new Signal1<>();
+	}
+	
+	public static class QObjectStaticSignalOwner extends QObject{
+		static Signal1<String> testSignal;
+	}
 	
 	public static class StaticMemberSignalOwner{
 		public final static QStaticMemberSignals.Signal2<Integer, String> testSinal = new QStaticMemberSignals.Signal2<>();
@@ -67,6 +81,24 @@ public class TestSignals extends QApplicationTest{
 	
 	public static class DeclarableSignalOwnerQObject extends QObject{
 		public final QDeclarableSignals.Signal1<String> testSinal = new QDeclarableSignals.Signal1<>(String.class);
+	}
+	
+	@Test
+    public void testQObjectSignal() {
+		try {
+			new QObjectStaticSignalOwner();
+		} catch (RuntimeException e) {
+			assertEquals(QSignalDeclarationException.class, e.getClass());
+			assertEquals("Modifier 'static' not allowed for signal QObjectStaticSignalOwner.testSignal. Use QStaticMemberSignals instead to declare a static signal.", e.getMessage());
+		}
+		try {
+			new QObjectNonFinalSignalOwner();
+		} catch (RuntimeException e) {
+			assertEquals(QSignalDeclarationException.class, e.getClass());
+			assertEquals("Missing modifier 'final' at signal QObjectNonFinalSignalOwner.testSignal.", e.getMessage());
+		}
+		QObjectSignalOwner obj2 = new QObjectSignalOwner();
+		obj2.metaObject().methods().forEach(System.out::println);
 	}
 	
 	@Test
@@ -111,7 +143,7 @@ public class TestSignals extends QApplicationTest{
 			assertEquals(Arrays.asList(Integer.class, String.class), new NonStaticMemberSignalOwner().testSinal.argumentTypes());
 			Assert.assertTrue(false);
 		} catch (RuntimeException e) {
-			assertEquals(RuntimeException.class, e.getClass());
+			assertEquals(QSignalInitializationException.class, e.getClass());
 			assertEquals("Static signals must be declared as static members of a class.", e.getMessage());
 		}
     }
@@ -123,7 +155,7 @@ public class TestSignals extends QApplicationTest{
 	    	assertEquals(Arrays.asList(int.class, String.class), testSinal.argumentTypes());
 			Assert.assertTrue(false);
 		} catch (RuntimeException e) {
-			assertEquals(RuntimeException.class, e.getClass());
+			assertEquals(QSignalInitializationException.class, e.getClass());
 			assertEquals("Static signals must be declared as static members of a class.", e.getMessage());
 		}
     }

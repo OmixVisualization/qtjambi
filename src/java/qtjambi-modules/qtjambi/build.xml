@@ -1,0 +1,28 @@
+<project default="build">
+    <target name="build">
+        <dirname property="antfile.dir" file="${ant.file}"/>
+        <basename property="module" file="${antfile.dir}"/>
+        <condition property="build.module" value="true">
+            <available file="${generator.outputdir}/java/${module}" type="dir"/>
+        </condition>
+        <antcall inheritrefs="true" target="build.impl"/>
+    </target>
+    <target name="build.impl" if="build.module">
+        <delete dir="${java.outdir}/${module}" failonerror="no"/>
+        <mkdir dir="${java.outdir}/${module}/io/qt/internal"/>
+        <qtjambi-version-properties targetdir="${java.outdir}/${module}/io/qt/internal"/>
+        <condition property="qtjambi-retro" value="Retro" else="RetroJDK8">
+            <istrue value="${java.module.based}"/>
+        </condition>
+        <property name="destdir" value="${deploymentdir}"/>
+        <mkdir dir="${destdir}"/>
+        <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build.impl4">
+            <property name="sourcedir" value="${generator.outputdir}/java/${module}"/>
+            <property name="sourcedir2" value="${antfile.dir}/main"/>
+            <property name="sourcedir3" value="${antfile.dir}/${qtjambi-retro}"/>
+            <property name="sourcedir4" value="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+            <property name="jar.excludes" value=""/>
+            <property name="module.excludes" value=""/>
+        </ant>
+    </target>
+</project>

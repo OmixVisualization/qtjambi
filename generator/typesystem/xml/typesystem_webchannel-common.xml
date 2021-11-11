@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtWebChannel">
+<typesystem qt-library="QtWebChannel" description="Provides access to QObject or QML objects from HTML clients for seamless integration of Qt applications with HTML/JavaScript clients.">
     <rejection class="QQmlWebChannel" function-name="qmlAttachedProperties"/>
     <rejection class="QQmlWebChannelAttached"/>
   <object-type name="QWebChannel">

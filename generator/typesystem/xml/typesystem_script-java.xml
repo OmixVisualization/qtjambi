@@ -42,12 +42,12 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.script" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.script" module="qtjambi.script" default-superclass="io.qt.QtObject">
     <object-type name="QScriptEngine">
         <modify-function signature="QScriptEngine(QObject *)">
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>
@@ -55,7 +55,7 @@
         <modify-function signature="QScriptExtensionPlugin(QObject *)">
             <inject-code position="end">
                 <argument-map index="1" meta-name="%1"/>
-                if (%1 != null) io.qt.internal.QtJambiInternal.setCppOwnership(this);
+                if (%1 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             </inject-code>
         </modify-function>
     </object-type>

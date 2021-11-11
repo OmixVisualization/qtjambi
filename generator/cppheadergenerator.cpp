@@ -102,13 +102,13 @@ void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const AbstractMetaF
     if (mod.isWritable() && isWritable && setter->wasProtected()){
         if((hasPPS = !pps.isEmpty()))
             s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
-        writeFunction(s, setter);
+        writeFunction(s, setter, Option(EnumAsInts | UseNativeIds | JNIProxyFunction));
     }
 
     if (mod.isReadable() && getter->wasProtected()) {
         if(!hasPPS && (hasPPS = !pps.isEmpty()))
             s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
-        writeFunction(s, getter);
+        writeFunction(s, getter, Option(EnumAsInts | UseNativeIds | JNIProxyFunction));
     }
     if(hasPPS)
         s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
@@ -146,6 +146,20 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         }
     }
     writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    bool hasDeprecation = java_class->isDeclDeprecated() || (java_class->type() && (java_class->type()->typeEntry()->isDeclDeprecated() || java_class->type()->typeEntry()->isContainer()));
+    if(!hasDeprecation){
+        for(const AbstractMetaArgument* arg : java_class->arguments()){
+            if(arg->type()->typeEntry()->isDeclDeprecated() || arg->type()->typeEntry()->isContainer()){
+                hasDeprecation = true;
+                break;
+            }
+        }
+    }
+    if(hasDeprecation){
+        writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
+        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
+    }
+    writeInjectedCode(s, java_class, {CodeSnip::Position1});
     if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
         if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                 || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
@@ -165,19 +179,19 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         if (inc.type != Include::TargetLangImport)
             writeInclude(s, inc, included);
     }
-    //writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_registry.h"), included);
-    //writeInclude(s, Include(Include::IncludePath, "qtjambi/qtjambi_templates.h"), included);
     s << Qt::endl;
 
     if(java_class->enclosingClass() && !java_class->enclosingClass()->typeEntry()->ppCondition().isEmpty()){
         s << Qt::endl << "#if " << java_class->enclosingClass()->typeEntry()->ppCondition() << Qt::endl;
     }
     writeForwardDeclareSection(s, java_class);
+    writeInjectedCode(s, java_class, {CodeSnip::Position2, CodeSnip::Beginning});
 
     s << Qt::endl
       << "class " << shellClassName(java_class) << " final : public FunctionalBase" << Qt::endl
-      << "{" << Qt::endl
-      << "public:" << Qt::endl
+      << "{" << Qt::endl;
+    writeInjectedCode(s, java_class, {CodeSnip::Beginning});
+    s << "public:" << Qt::endl
       << "    " << shellClassName(java_class) << "();" << Qt::endl
       << "    ~" << shellClassName(java_class) << "() override;" << Qt::endl
       << "    void getFunctional(JNIEnv*, void*) override;" << Qt::endl
@@ -214,9 +228,11 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaFunctional *jav
         s << "    std::function<void()> m_functionPointerDeleter;" << Qt::endl
           << "    static std::function<const Functor*(" << java_class->typeEntry()->qualifiedCppName() << ")> reverseFunctionGetter;" << Qt::endl;
     }
+    writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
 
     s  << "};" << Qt::endl << Qt::endl;
 
+    writeInjectedCode(s, java_class, {CodeSnip::Position4});
 
 
     if(java_class->enclosingClass() && !java_class->enclosingClass()->typeEntry()->ppCondition().isEmpty()){
@@ -262,6 +278,35 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         }
     }
     writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    bool hasDeprecation = java_class->isDeclDeprecated();
+    if(!hasDeprecation){
+        for(const AbstractMetaFunction* f : java_class->functions()){
+            if(!f->wasPrivate()){
+                if(f->isDeclDeprecated()){
+                    hasDeprecation = true;
+                    break;
+                }else{
+                    if(f->type() && (f->type()->typeEntry()->isDeclDeprecated() || f->type()->typeEntry()->isContainer())){
+                        hasDeprecation = true;
+                        break;
+                    }
+                    for(const AbstractMetaArgument* arg : f->arguments()){
+                        if(arg->type()->typeEntry()->isDeclDeprecated() || arg->type()->typeEntry()->isContainer()){
+                            hasDeprecation = true;
+                            break;
+                        }
+                    }
+                    if(hasDeprecation)
+                        break;
+                }
+            }
+        }
+    }
+    if(hasDeprecation){
+        writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
+        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
+    }
+    writeInjectedCode(s, java_class, {CodeSnip::Position1});
     if(m_qtVersion >= QT_VERSION_CHECK(6,0,0)){
         if(java_class->typeEntry()->qualifiedCppName().startsWith("QQuick")
                 || java_class->typeEntry()->qualifiedCppName().startsWith("QSG")){
@@ -292,14 +337,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         s << Qt::endl << "#if " << java_class->typeEntry()->ppCondition() << Qt::endl;
     }
 
-    for(const AbstractMetaFunction* f : java_class->functions()){
-        if(!f->wasPrivate() && f->isDeclDeprecated()){
-            s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
-            break;
-        }
-    }
-
     writeForwardDeclareSection(s, java_class);
+    writeInjectedCode(s, java_class, {CodeSnip::Position2, CodeSnip::Beginning});
 
     if (java_class->generateShellClass()) {
         s << Qt::endl
@@ -309,7 +348,7 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             s << ", public QtJambiShellInterface";
         s << Qt::endl
           << "{" << Qt::endl;
-
+        writeInjectedCode(s, java_class, {CodeSnip::Beginning});
         s << "public:" << Qt::endl;
         if(!java_class->hasPrivateDestructor() && java_class->instantiateShellClass()){
             for(const AbstractMetaFunction *function : java_class->functions()) {
@@ -398,31 +437,6 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
             }
         }
 
-        // Public call throughs for protected functions
-        for(const AbstractMetaFunction *function : java_class->publicOverrideFunctions()) {
-            if(functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
-                writePublicFunctionOverride(s, function);
-        }
-
-        // Override all virtual functions to get the decision on static/virtual call
-        for(const AbstractMetaFunction *function : java_class->virtualOverrideFunctions()) {
-            if(!function->hasTemplateArgumentTypes()
-                    && !function->isRemovedFrom(java_class, TypeSystem::TargetLangCode)
-                    && !function->isRemovedFrom(function->declaringClass(), TypeSystem::TargetLangCode)
-                    && !function->isModifiedRemoved(TypeSystem::NativeCode)
-                    && !function->hasRReferences()
-                    && !function->wasPrivate()
-            ){
-                writeVirtualFunctionOverride(s, function);
-            }
-        }
-
-        // Field accessors
-        for(const AbstractMetaField *field : java_class->fields()) {
-            if (field->wasProtected())
-                writeFieldAccessors(s, field);
-        }
-
         const AbstractMetaClass* interfaceClass = nullptr;
         for(const AbstractMetaClass* iface : java_class->interfaces()){
             ImplementorTypeEntry * origin = static_cast<const InterfaceTypeEntry *>(iface->typeEntry())->origin();
@@ -497,8 +511,8 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
                     }else{
                         s << INDENT << "return registerEnumTypeInfo" << (entry->isHiddenMetaObject() ? "NoMetaObject" : "") << "<" << qtEnumName << ">(\"" << qtEnumName << "\", \"" << javaEnumName << "\");" << Qt::endl;
                     }
-                    s << INDENT << "}" << Qt::endl;
                 }
+                s << INDENT << "}" << Qt::endl;
             }
         }
 
@@ -516,9 +530,57 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
         }
 
         //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
-        writeInjectedCode(s, java_class);
+        writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
 
         s  << "};" << Qt::endl << Qt::endl;
+
+        bool needsAccess = !java_class->publicOverrideFunctions().isEmpty() || !java_class->virtualOverrideFunctions().isEmpty();
+        if(!needsAccess){
+            for(const AbstractMetaField *field : java_class->fields()) {
+                if (field->wasProtected()){
+                    needsAccess = true;
+                    break;
+                }
+            }
+        }
+
+        if(needsAccess){
+            s << "struct " << java_class->name() + "_access"
+              << " : public " << java_class->qualifiedCppName() << Qt::endl
+              << "{" << Qt::endl;
+            {
+                INDENTATION(INDENT)
+                // Public call throughs for protected functions
+                for(const AbstractMetaFunction *function : java_class->publicOverrideFunctions()) {
+                    if(functionsInTargetLang.contains(function) || signalsInTargetLang.contains(function))
+                        writeFunctionOverride(s, function, "__qt_");
+                }
+
+                // Override all virtual functions to get the decision on static/virtual call
+                for(const AbstractMetaFunction *function : java_class->virtualOverrideFunctions()) {
+                    if(!function->hasTemplateArgumentTypes()
+                            && !function->isRemovedFrom(java_class, TypeSystem::TargetLangCode)
+                            && !function->isRemovedFrom(function->declaringClass(), TypeSystem::TargetLangCode)
+                            && !function->isModifiedRemoved(TypeSystem::NativeCode)
+                            && !function->wasPrivate()
+                            && (function->implementingClass()==java_class
+                                || function->implementingClass()==java_class->extractInterface()
+                                || ( (java_class->isAbstract() || java_class->isInterface()) && function->isAbstract() ))
+                    ){
+                        writeFunctionOverride(s, function, "__qt_");
+                    }
+                }
+
+                // Field accessors
+                for(const AbstractMetaField *field : java_class->fields()) {
+                    if (field->wasProtected())
+                        writeFieldAccessors(s, field);
+                }
+            }
+            s  << "};" << Qt::endl << Qt::endl;
+        }
+
+        writeInjectedCode(s, java_class, {CodeSnip::Position4});
     }
 
     if(!java_class->typeEntry()->ppCondition().isEmpty()){
@@ -538,8 +600,6 @@ void CppHeaderGenerator::write(QTextStream &s, const AbstractMetaClass *java_cla
     can be reimplemented from the java side.
 */
 void CppHeaderGenerator::writeFunction(QTextStream &s, const AbstractMetaFunction *java_function, Option options) {
-    if (java_function->hasRReferences())
-        return ;
     if (java_function->isModifiedRemoved(TypeSystem::ShellCode))
         return;
     if (java_function->hasTemplateArgumentTypes())
@@ -556,31 +616,14 @@ void CppHeaderGenerator::writeFunction(QTextStream &s, const AbstractMetaFunctio
     }
 }
 
-void CppHeaderGenerator::writePublicFunctionOverride(QTextStream &s,
-        const AbstractMetaFunction *java_function) {
+void CppHeaderGenerator::writeFunctionOverride(QTextStream &s,
+        const AbstractMetaFunction *java_function, const QString& prefix) {
     QStringList pps = getFunctionPPConditions(java_function);
     if(!pps.isEmpty()){
         s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
     }
     s << "    ";
-    writeFunctionSignature(s, java_function, nullptr, "__public_", Option(EnumAsInts |
-                           ShowStatic | UnderscoreSpaces));
-    s << ";" << Qt::endl;
-    if(!pps.isEmpty()){
-        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
-    }
-}
-
-
-void CppHeaderGenerator::writeVirtualFunctionOverride(QTextStream &s,
-        const AbstractMetaFunction *java_function) {
-    QStringList pps = getFunctionPPConditions(java_function);
-    if(!pps.isEmpty()){
-        s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
-    }
-    s << "    ";
-    writeFunctionSignature(s, java_function, nullptr, "__override_", Option(EnumAsInts | ShowStatic |
-                           UnderscoreSpaces), QString(), QStringList() << ( java_function->isAbstract() ? "JNIEnv *__jni_env, QtJambiNativeID __this_nativeId" : "QtJambiNativeID __this_nativeId") );
+    writeFunctionSignature(s, java_function, nullptr, prefix, Option(EnumAsInts | JNIProxyFunction | ShowStatic | UseNativeIds | UnderscoreSpaces | SkipRemovedArguments));
     s << ";" << Qt::endl;
     if(!pps.isEmpty()){
         s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
@@ -597,17 +640,32 @@ void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &s, const Abstra
     }
 }
 
-void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &, const AbstractMetaFunctional *) {
+void CppHeaderGenerator::writeForwardDeclareSection(QTextStream &s, const AbstractMetaFunctional *java_class) {
+    CodeSnipList code_snips = java_class->typeEntry()->codeSnips();
+    for(const CodeSnip &cs : code_snips) {
+        if (cs.language == TypeSystem::ShellCode) {
+            s << cs.code() << Qt::endl;
+        }
+    }
 }
 
 
 void CppHeaderGenerator::writeVariablesSection(QTextStream &, const AbstractMetaClass *, bool) {
 }
 
-void CppHeaderGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaClass *java_class) {
+void CppHeaderGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaClass *java_class, const QList<CodeSnip::Position>& positions) {
     CodeSnipList code_snips = java_class->typeEntry()->codeSnips();
     for(const CodeSnip &cs : code_snips) {
-        if (cs.language == TypeSystem::ShellDeclaration) {
+        if (positions.contains(cs.position) && cs.language == TypeSystem::ShellDeclaration) {
+            s << cs.code() << Qt::endl;
+        }
+    }
+}
+
+void CppHeaderGenerator::writeInjectedCode(QTextStream &s, const AbstractMetaFunctional *java_class, const QList<CodeSnip::Position>& positions) {
+    CodeSnipList code_snips = java_class->typeEntry()->codeSnips();
+    for(const CodeSnip &cs : code_snips) {
+        if (positions.contains(cs.position) && cs.language == TypeSystem::ShellDeclaration) {
             s << cs.code() << Qt::endl;
         }
     }

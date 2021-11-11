@@ -48,9 +48,9 @@ class QDocGenerator: public JavaGenerator {
     public:
         QDocGenerator();
 
-        virtual void generate();
-        virtual QString subDirectoryForClass(const AbstractMetaClass *java_class) const;
-        virtual QString fileNameForClass(const AbstractMetaClass *java_class) const;
+        void generate() override;
+        QString subDirectoryForClass(const AbstractMetaClass *java_class) const override;
+        QString fileNameForClass(const AbstractMetaClass *java_class) const override;
         virtual void write(QTextStream &s, const AbstractMetaClass *java_class);
         virtual void write(QTextStream &s, const int size, const AbstractMetaEnumValue *java_enum_value);
         virtual void write(QTextStream &s, const AbstractMetaEnum *java_enum);

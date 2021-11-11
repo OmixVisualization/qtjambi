@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.positioning" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.positioning" module="qtjambi.positioning" default-superclass="io.qt.QtObject">
     <object-type name="QGeoAreaMonitorSource">
         <inject-code>
             <import-file name="typesystem/java/typesystem_positioning-java.java" quote-after-line="class QGeoAreaMonitorSource___" quote-before-line="}// class"/>
@@ -57,17 +57,17 @@
                 QByteArray %out;
                 if(!%in)
                     JavaException::raiseNullPointerException(%env, "Parameter 'signal' must not be null." QTJAMBI_STACKTRACEINFO);
+                jobject containingObject = Java::QtJambi::QtJambiSignals$AbstractSignal::containingObject(%env, %in);
                 if(jobject __java_this = qtjambi_java_object_reference(__this_nativeId, %env)) {
-                    jobject containingObject = Java::QtJambi::QtJambiSignals$AbstractSignal::containingObject(%env, %in);
                     if(!%env->IsSameObject(__java_this, containingObject)){
                         JavaException::raiseIllegalArgumentException(%env, "Given signal has to be one of the instance's signals." QTJAMBI_STACKTRACEINFO);
                     }
-                    jint signalIndex = Java::QtJambi::QtJambiSignals$AbstractSignal::methodIndex(%env, %in);
-                    QMetaMethod metaSignal = __qt_this->metaObject()->method(signalIndex);
-                    if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)
-                        return false;
-                    %out = qFlagLocation(QByteArray("2").append(metaSignal.methodSignature()));
                 }
+                jint signalIndex = Java::QtJambi::QtJambiSignals$AbstractSignal::methodIndex(%env, %in);
+                QMetaMethod metaSignal = this->metaObject()->method(signalIndex);
+                if(!metaSignal.isValid() || metaSignal.methodType()==QMetaMethod::Signal)
+                    return false;
+                %out = qFlagLocation(QByteArray("2").append(metaSignal.methodSignature()));
                 </conversion-rule>
                 <conversion-rule class="shell">
                 QMetaMethod metaSignal = metaObject()->method(%in ? metaObject()->indexOfMethod(%in+1) : -1);
@@ -148,6 +148,24 @@
                     __rcDevice = null;
                 }
             </inject-code>
+        </modify-function>
+  </object-type>
+  <object-type name="QNmeaSatelliteInfoSource">
+        <modify-function signature="parseSatelliteInfoFromNmea(const char *, int, QList&lt;QGeoSatelliteInfo> &amp;, QGeoSatelliteInfo::SatelliteSystem &amp;)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <array-type length-parameter="2"/>
+            </modify-argument>
+            <modify-argument index="4">
+                <no-null-pointer/>
+                <array-type min-length="1"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="parseSatellitesInUseFromNmea(const char *, int, QList&lt;int> &amp;)">
+            <modify-argument index="1">
+                <no-null-pointer/>
+                <array-type length-parameter="2"/>
+            </modify-argument>
         </modify-function>
   </object-type>
 </typesystem>

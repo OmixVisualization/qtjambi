@@ -6,7 +6,7 @@ VERSION = $$QT_VERSION
 include(../qtjambi/qtjambi_include.pri)
 include($$QTJAMBI_CPP/$$QTJAMBILIB/generated.pri)
 
-QT += remoteobjects remoteobjects-private
+QT = core remoteobjects remoteobjects-private
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 

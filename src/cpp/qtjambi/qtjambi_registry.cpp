@@ -1,3 +1,6 @@
+#include <qglobal.h>
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <QtCore/QByteArray>
 #include <QtCore/QThreadStorage>
 #include <QtCore/QEvent>
@@ -16,7 +19,6 @@
 #include "qtjambitypemanager_p.h"
 #include "qtjambilink_p.h"
 #include "qtjambi_interfaces_p.h"
-#include "qtjambi_exceptions.h"
 #include "qtjambi_qml.h"
 
 //#define QTJAMBI_LOG_CLASSNAMES
@@ -96,10 +98,6 @@ Q_GLOBAL_STATIC(InterfaceOffsetHash, gInterfaceOffsetHash)
 
 typedef QMap<size_t, const QMetaObject*> MetaObjectHash;
 Q_GLOBAL_STATIC(MetaObjectHash, gOriginalMetaObjectHash)
-#ifdef QT_QTJAMBI_PORT
-typedef QHash<const QMetaObject*, SignalConnector> SignalConnectorHash;
-Q_GLOBAL_STATIC(SignalConnectorHash, gSignalConnectors)
-#endif
 typedef QHash<const QMetaObject*, QVector<SignalMetaInfo> > SignalMetaInfoHash;
 Q_GLOBAL_STATIC(SignalMetaInfoHash, gSignalMetaInfos)
 typedef QHash<const QMetaObject*, const std::type_info* > TypeIdsByMetaObjectHash;
@@ -151,12 +149,6 @@ Q_GLOBAL_STATIC(ClassHash, gQtSuperclassHash)
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gEmitMethodLock, (QReadWriteLock::Recursive))
 Q_GLOBAL_STATIC(MethodIdHash, gEmitMethodHash)
-
-typedef QThreadStorage<JavaException> JavaExceptionStorage;
-Q_GLOBAL_STATIC(JavaExceptionStorage, gJavaExceptionStorage)
-
-typedef QThreadStorage<bool> BoolStorage;
-Q_GLOBAL_STATIC(BoolStorage, gBlockExceptionStorage)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 typedef QHash<const QtPrivate::QMetaTypeInterface*,const QMetaObject*> MetaTypeMetaObjectHash;
@@ -1067,13 +1059,18 @@ PtrOwnerFunction registeredOwnerFunction(const std::type_info& typeId)
     return gOwnerFunctionHash->value(typeId.hash_code(), nullptr);
 }
 
+void clear_type_entry(const std::type_info& typeId);
+
 void registerPolymorphyHandler(const std::type_info& polymorphicBaseTypeId, PolymorphyHandler handler, const char *class_name, const std::type_info& targetTypeId, bool isQObject)
 {
     if(handler){
-        QWriteLocker locker(gLock());
-        Q_UNUSED(locker)
-        g_polymorphic_ids->insert(polymorphicBaseTypeId.hash_code(), new PolymorphicIdHandler(handler, class_name, targetTypeId, isQObject));
-        gPolymorphicBasesHash->insert(targetTypeId.hash_code(), &polymorphicBaseTypeId);
+        {
+            QWriteLocker locker(gLock());
+            Q_UNUSED(locker)
+            g_polymorphic_ids->insert(polymorphicBaseTypeId.hash_code(), new PolymorphicIdHandler(handler, class_name, targetTypeId, isQObject));
+            gPolymorphicBasesHash->insert(targetTypeId.hash_code(), &polymorphicBaseTypeId);
+        }
+        clear_type_entry(polymorphicBaseTypeId);
     }
 }
 
@@ -1314,9 +1311,6 @@ void registerMetaObject(const std::type_info& typeId, const QMetaObject& origina
 }
 
 void registerMetaObject(const std::type_info& typeId, const QMetaObject& metaObject, bool isValueOwner,
-#ifdef QT_QTJAMBI_PORT
-                        SignalConnector signalConnector,
-#endif
                         std::initializer_list<SignalMetaInfo> signalMetaInfos,
                         ParameterInfoProvider parameterTypeInfoProvider,
                         QMetaMethodRenamer methodRenamer)
@@ -1325,10 +1319,6 @@ void registerMetaObject(const std::type_info& typeId, const QMetaObject& metaObj
     Q_UNUSED(locker)
     gOriginalMetaObjectHash->insert(typeId.hash_code(), &metaObject);
     gTypeIdsByMetaObject->insert(&metaObject, &typeId);
-#ifdef QT_QTJAMBI_PORT
-    if(!gSignalConnectors->contains(&metaObject))
-        gSignalConnectors->insert(&metaObject, signalConnector);
-#endif
     if(!gSignalMetaInfos->contains(&metaObject))
         gSignalMetaInfos->insert(&metaObject, signalMetaInfos);
     if(parameterTypeInfoProvider && !gParameterTypeInfoProviders->contains(&metaObject))
@@ -1378,15 +1368,6 @@ const QMetaObject* registeredOriginalMetaObject(const std::type_info& typeId){
     Q_UNUSED(locker)
     return gOriginalMetaObjectHash->value(typeId.hash_code(), nullptr);
 }
-
-#ifdef QT_QTJAMBI_PORT
-SignalConnector signalConnector(const QMetaObject* metaObject)
-{
-    QReadLocker locker(gLock());
-    Q_UNUSED(locker)
-    return gSignalConnectors->value(metaObject, nullptr);
-}
-#endif
 
 const QVector<const SignalMetaInfo>* signalMetaInfos(const QMetaObject* metaObject)
 {
@@ -1439,26 +1420,6 @@ QMetaMethodRenamer registeredMetaMethodRenamer(const QMetaObject* metaObject)
         return nullptr;
     }
 }
-
-#ifdef QT_QTJAMBI_PORT
-static QSignalMapperConnector signalMapperConnector = nullptr;
-
-void registerSignalMapperConnector(QSignalMapperConnector _signalMapperConnector)
-{
-    QWriteLocker locker(gLock());
-    Q_UNUSED(locker)
-    if(signalMapperConnector==nullptr)
-        signalMapperConnector = _signalMapperConnector;
-}
-
-QMetaObject::Connection connectSignalMapper(QSignalMapper* object, const WeakNativeID& link, QSignalMapperMapped signalMapperMapped){
-    QWriteLocker locker(gLock());
-    Q_UNUSED(locker)
-    if(signalMapperConnector)
-        return signalMapperConnector(object, link, signalMapperMapped);
-    else return QMetaObject::Connection();
-}
-#endif // QT_QTJAMBI_PORT
 
 void registerFunctionalResolver(const std::type_info& typeId, FunctionalResolver resolver)
 {
@@ -1625,7 +1586,7 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
         // It is not allowed to call env->FindClass() with an exception pending, this is illegal JNI
         //  usage and must be the result of a software design error.
         qWarning("findClass(\"%s\") with Exception pending", qualifiedName);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         Q_ASSERT(false);
         return nullptr;
     }
@@ -1744,7 +1705,8 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
                     *oldUrlBase() = qtClassPath;
                 }
                 // Look up the class in our custom class loader
-                returned = Java::Runtime::ClassLoader::loadClass(env, className);
+                if(classLoader)
+                    returned = Java::Runtime::ClassLoader::loadClass(env, classLoader, className);
                 if (returned == nullptr && exception) {
 #ifdef QTJAMBI_STACKTRACE
                     if(qtClassName=="io.qt.internal.QtJambiInternal")
@@ -1890,7 +1852,7 @@ jclass resolveClass(JNIEnv *env, const char *className, jobject classLoader)
 #endif // QTJAMBI_NOCACHE
         if(className && !QString(QLatin1String(className)).contains("$Lambda$") && !QLatin1String(className).isEmpty()){
             returned = findClass(env, className, classLoader);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             returned = getGlobalClassRef(env, returned, className);
 #ifndef QTJAMBI_NOCACHE
         }
@@ -1979,7 +1941,7 @@ jmethodID resolveMethod(JNIEnv *env, const char *methodName, const char *signatu
             returned = env->GetMethodID(clazz, methodName, signature);
         else
             returned = env->GetStaticMethodID(clazz, methodName, signature);
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
 #ifndef QTJAMBI_NOCACHE
         QWriteLocker locker(gMethodLock());
         Q_UNUSED(locker)
@@ -2006,7 +1968,7 @@ jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz){
         QWriteLocker locker(gConstructorLock());
         Q_UNUSED(locker)
         constructor = env->GetMethodID(clazz, "<init>", "(Lio/qt/QtObject$QPrivateConstructor;)V");
-        qtjambi_throw_java_exception(env)
+        qtjambi_throw_java_exception(env);
         gConstructorHash->insert(key, constructor);
     }
     return constructor;
@@ -2077,56 +2039,6 @@ jclass resolveClosestQtSuperclass(JNIEnv *env, jclass clazz, jobject classLoader
     return nullptr;
 }
 
-bool qtjambi_block_exceptions(bool block){
-    bool old = gBlockExceptionStorage->localData();
-    gBlockExceptionStorage->setLocalData(block);
-    return old;
-}
-
-bool qtjambi_is_exceptions_blocked(){
-    return gBlockExceptionStorage->localData();
-}
-
-
-class JavaExceptionChecker : public QObject{
-public:
-    JavaExceptionChecker(){}
-    ~JavaExceptionChecker(){}
-    bool event(QEvent *event){
-        if(event->type()==QEvent::DeferredDelete){
-            bool b = QObject::event(event);
-            qtjambi_check_blocked_exception();
-            return b;
-        }else{
-            return QObject::event(event);
-        }
-    }
-};
-
-void qtjambi_push_blocked_exception(JNIEnv * env, const JavaException& exn){
-    if(qtjambi_is_exceptions_blocked()){
-        if(gJavaExceptionStorage->hasLocalData()){
-            gJavaExceptionStorage->localData().addSuppressed(env, exn);
-        }else{
-            gJavaExceptionStorage->setLocalData(exn);
-        }
-        if(QThread::currentThread()->eventDispatcher()){
-            JavaExceptionChecker* checker = new JavaExceptionChecker();
-            checker->deleteLater();
-        }
-    }else{
-        exn.raise();
-    }
-}
-
-void qtjambi_check_blocked_exception(){
-    if(gJavaExceptionStorage->hasLocalData()){
-        JavaException exn = gJavaExceptionStorage->localData();
-        gJavaExceptionStorage->setLocalData(JavaException());
-        exn.raise();
-    }
-}
-
 static CreateQmlErrorDummyObject createQmlErrorDummyObjectFunction = nullptr;
 
 void registerCreateQmlErrorDummyObjectFunction(CreateQmlErrorDummyObject createQmlErrorDummyObject)
@@ -2151,47 +2063,6 @@ jobject qtjambi_find_QmlAttachedProperties(JNIEnv * env, jclass clazz){
     return Java::QtJambi::QtJambiInternal::findQmlAttachedProperties(env, clazz);
 }
 
-#ifdef QT_QTJAMBI_PORT
-
-class WeakNativeIDPrivate : public QSharedData{
-public:
-    WeakNativeIDPrivate(const QSharedPointer<QtJambiLink>& link)
-        :QSharedData(),
-          weakLink(link)
-    {}
-
-    static WeakNativeID weakNativeID(const QSharedPointer<QtJambiLink>& link)
-    {
-        return new WeakNativeID(*new WeakNativeIDPrivate(link));
-    }
-
-    static QWeakPointer<QtJambiLink> getLink(const WeakNativeID& weakNativeID)
-    {
-        return weakNativeID.d->weakLink;
-    }
-private:
-    QWeakPointer<QtJambiLink> weakLink;
-};
-
-WeakNativeID qtjambi_to_Weak_native_id(const QSharedPointer<QtJambiLink>& link)
-{
-    return WeakNativeIDPrivate::weakNativeID(link);
-}
-
-void qtjambi_emit_signal(JNIEnv * env, const WeakNativeID& weakNativeID, SignalMethodIndexProvider signalMethodIndexProvider, jvalue *arguments)
-{
-    if(QSharedPointer<QtJambiLink> link = getLink(weakNativeID)){
-        if(link->isQObject()){
-            if(link->isSharedPointer()){
-                static_cast<QSharedPointerToQObjectLink*>(link.data())->emitSignal(env, signalMethodIndexProvider, arguments);
-            }else{
-                static_cast<PointerToQObjectLink*>(link.data())->emitSignal(env, signalMethodIndexProvider, arguments);
-            }
-        }
-    }
-}
-#endif
-
 jmethodID findEmitMethod(JNIEnv * env, jclass signalClass){
     if(!env->IsSameObject(signalClass, nullptr)){
         uint key = uint(Java::Runtime::Object::hashCode(env,signalClass));
@@ -2207,7 +2078,7 @@ jmethodID findEmitMethod(JNIEnv * env, jclass signalClass){
         jobject signal_emit_method = Java::QtJambi::QtJambiInternal::findEmitMethod(env, signalClass);
         if(signal_emit_method){
             (*gEmitMethodHash)[key] = env->FromReflectedMethod(signal_emit_method);
-            qtjambi_throw_java_exception(env)
+            qtjambi_throw_java_exception(env);
             return (*gEmitMethodHash)[key];
         }
     }

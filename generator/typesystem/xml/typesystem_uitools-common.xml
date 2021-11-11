@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtUiTools">
+<typesystem qt-library="QtUiTools" description="Classes for loading QWidget based forms created in Qt Designer dynamically, at runtime.">
     <object-type name="QUiLoader">
     </object-type>
 </typesystem>

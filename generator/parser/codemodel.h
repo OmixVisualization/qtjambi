@@ -284,7 +284,6 @@ class _ScopeModelItem: public _CodeModelItem {
 
     public:
         ScopeModelItem toScope() const;
-        ClassList classes() const;
         EnumList enums() const;
         FunctionDefinitionList functionDefinitions() const;
         FunctionList functions() const;
@@ -316,7 +315,7 @@ class _ScopeModelItem: public _CodeModelItem {
         void addEnumsDeclaration(const QString &enumsDeclaration);
         const QStringList& enumsDeclarations() const { return _M_enumsDeclarations; }
 
-        inline const QHash<QString, ClassModelItem>& classMap() const { return _M_classes; }
+        inline const QList<ClassModelItem>& classes() const { return _M_classList; }
         inline const QHash<QString, EnumModelItem>& enumMap() const { return _M_enums; }
         inline const QHash<QString, TypeAliasModelItem>& typeAliasMap() const { return _M_typeAliases; }
         inline const QHash<QString, VariableModelItem>& variableMap() const { return _M_variables; }
@@ -330,6 +329,7 @@ class _ScopeModelItem: public _CodeModelItem {
                 : _CodeModelItem(model, kind) {}
 
     private:
+        QList<ClassModelItem> _M_classList;
         QHash<QString, ClassModelItem> _M_classes;
         QHash<QString, EnumModelItem> _M_enums;
         QHash<QString, TypeAliasModelItem> _M_typeAliases;
@@ -482,6 +482,9 @@ class _MemberModelItem: public _CodeModelItem {
         bool isConstant() const;
         void setConstant(bool isConstant);
 
+        bool isConstExpr() const;
+        void setConstExpr(bool isConstExpr);
+
         bool isVolatile() const;
         void setVolatile(bool isVolatile);
 
@@ -525,16 +528,17 @@ class _MemberModelItem: public _CodeModelItem {
                 _M_flags(None) {}
 
     private:
-        enum Flag : quint8{
+        enum Flag : quint16{
             None = 0x00,
-            IsConstant = 0x01,
-            IsVolatile = 0x02,
-            IsStatic = 0x04,
-            IsFriend = 0x08,
-            IsRegister = 0x10,
-            IsExtern = 0x20,
-            IsMutable = 0x40,
-            IsDeprecated = 0x80,
+            IsConstant = 0x001,
+            IsVolatile = 0x002,
+            IsStatic = 0x004,
+            IsFriend = 0x008,
+            IsRegister = 0x010,
+            IsExtern = 0x020,
+            IsMutable = 0x040,
+            IsDeprecated = 0x080,
+            IsConstExpr = 0x100,
         };
 
         TemplateParameterList _M_templateParameters;
@@ -581,6 +585,8 @@ class _FunctionModelItem: public _MemberModelItem {
         void setVariadics(bool isVariadics);
         bool hasBody() const;
         void setHasBody(bool hasBody);
+        bool isDeleted() const;
+        void setDeleted(bool deleted);
 
         TypeInfo::ReferenceType referenceType() const;
         void setReferenceType(TypeInfo::ReferenceType referenceType);
@@ -594,16 +600,17 @@ class _FunctionModelItem: public _MemberModelItem {
                 _M_flags(None), _M_referenceType(TypeInfo::NoReference) {}
 
     private:
-        enum Flag : quint8{
-            None = 0x00,
-            IsVirtual = 0x01,
-            IsInline = 0x02,
-            IsAbstract = 0x04,
-            IsExplicit = 0x08,
-            IsVariadics = 0x10,
-            IsInvokable = 0x20,
-            IsDeclFinal = 0x40,
-            HasBody = 0x80,
+        enum Flag : quint16{
+            None = 0x000,
+            IsVirtual = 0x001,
+            IsInline = 0x002,
+            IsAbstract = 0x004,
+            IsExplicit = 0x008,
+            IsVariadics = 0x010,
+            IsInvokable = 0x020,
+            IsDeclFinal = 0x040,
+            HasBody = 0x080,
+            IsDeleted = 0x100,
         };
         ArgumentList _M_arguments;
         CodeModel::FunctionType _M_functionType;

@@ -43,7 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSvg">
+<typesystem qt-library="QtSvg" description="Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard.">
    <rejection class="QGraphicsSvgItem" enum-name="enum_1" until="5.*"/>
    
    <namespace-type name="QSvg" />
@@ -67,7 +67,6 @@
             <reference-count action="set" variable-name="__rcOutputDevice" />
         </modify-argument>
     </modify-function>
-        <interface-polymorphy interface="QPaintDevice" condition="false" />
     <modify-function signature="devType() const" remove="all" />
   </object-type>
   
@@ -79,7 +78,6 @@
         <include file-name="QSize" location="global" />
     </extra-includes>
     <modify-function signature="type() const" remove="all" />
-    <interface-polymorphy interface="QGraphicsItem" condition="%1->type()==int(QGraphicsSvgItem::Type)" />
     <modify-function signature="QGraphicsSvgItem(QGraphicsItem*)">
         <modify-argument index="1" thread-affine="yes"/>
     </modify-function>

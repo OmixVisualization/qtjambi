@@ -28,6 +28,9 @@
 ****************************************************************************/
 
 #include <qglobal.h>
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
+
 #include <cstring>
 
 #include <QtCore/QAbstractItemModel>
@@ -49,7 +52,6 @@
 #include <QtCore/QCryptographicHash>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
 #endif
@@ -562,7 +564,6 @@ jobject qtjambi_from_QLinkedList(JNIEnv *env,
                                 )
 {
     Q_ASSERT(containerAccess);
-    QT_WARNING_DISABLE_DEPRECATED
     if(qtjambi_from_nativeId(owner)==listPtr){
         jobject obj = qtjambi_java_object_reference(owner, env);
         if(Java::QtCore::QLinkedList::isInstanceOf(env, obj)){
@@ -1404,7 +1405,7 @@ void initialize_QList(JNIEnv *env, jobject object, jclass elementType, QtJambiNa
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         containerAccess->appendList(env, listPtr, other);
@@ -1558,7 +1559,7 @@ void initialize_QSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNat
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         jobject iter = qtjambi_collection_iterator(env, other);
@@ -1707,7 +1708,7 @@ void initialize_QLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJ
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         jobject iter = qtjambi_collection_iterator(env, other);
@@ -1855,7 +1856,7 @@ void initialize_QVector(JNIEnv *env, jobject object, jclass elementType, QtJambi
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         containerAccess->appendVector(env, listPtr, other);
@@ -2005,7 +2006,7 @@ void initialize_QHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNative
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         jobject iter = qtjambi_map_entryset_iterator(env, other);
@@ -2158,7 +2159,7 @@ void initialize_QMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiN
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         jobject iter = qtjambi_map_entryset_iterator(env, other);
@@ -2316,7 +2317,7 @@ void initialize_QMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeI
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
         jobject iter = qtjambi_map_entryset_iterator(env, other);
@@ -2470,7 +2471,7 @@ void initialize_QMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNa
                                                                                    containerMetaType,
                                                                                    true, true, containerAccess);
     if (!link) {
-        containerAccess->containerDeleter()(listPtr);
+        containerAccess->containerDeleter()(listPtr,false);
         containerAccess->dispose();
     }else{
         if(!isNativeContainer && other){

@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtTest">
+<typesystem qt-library="QtTest" description="Classes for unit testing Qt applications and libraries.">
     <rejection class="QTest" function-name="compare_ptr_helper" /><!-- not public API -->
     <rejection class="QTestData" />
     <rejection class="QSignalSpy" function-name="initArgs" /><!-- not public API -->
@@ -71,7 +71,11 @@
         <modify-function signature="toHexRepresentation(const char*,int)" remove="all" /><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const char*)" remove="all" /><!-- FIXME: arg1 (const char *) -->
         <modify-function signature="toString(const void*)" remove="all" /><!-- probably not useful to QtJambi, other overload exist -->
+        <modify-function signature="toString(const QObject*)" remove="all" since="6.2.0"/><!-- probably not useful to QtJambi, other overload exist -->
         <modify-function signature="toString(QSizePolicy)" remove="all" />
+        <modify-function signature="toString(QGeoAreaMonitorInfo)" remove="all" since="6.2.0"/>
+        <modify-function signature="toString(QGeoPositionInfo)" remove="all" since="6.2.0"/>
+        <modify-function signature="toString(QGeoSatelliteInfo)" remove="all" since="6.2.0"/>
         <modify-function signature="toString(QSizePolicy::ControlType)" remove="all" />
         <modify-function signature="toString(QSizePolicy::Policy)" remove="all" />
         <modify-function signature="toString(QNetworkReply::NetworkError)" remove="all" />
@@ -114,9 +118,11 @@
     <!--value-type name="QTestEventList"/-->
 
     <object-type name="QSignalSpy">
+        <delegate-base-class base-class="QList&lt;QList&lt;QVariant>>" delegate="list"/>
         <extra-includes>
         <include file-name="qtjambi_test_util.h" location="local"/>
         </extra-includes>
+        <modify-function signature="list()" access="private" />
         <modify-function signature="wait(int)" rename="waitForTimeout" /><!-- not public API -->
         <modify-function signature="QSignalSpy(const QObject *, const char *)">
             <modify-argument index="2">
@@ -195,8 +201,6 @@ namespace QtJambiPrivate{
     </value-type>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWaitForWindowShown(QWidget*)' for function modification in 'QTest' not found. Possible candidates:"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: signature 'qWarn(const char*)' for function modification in 'QTest' not found. Possible candidates: qWarn(const char*,const char*,int) in QTest"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: class 'QSignalSpy' inherits from unknown base class 'QList&lt;QList&lt;QVariant>>'"/>
-  <suppress-warning text="WARNING(MetaJavaBuilder) :: class not found for setup inheritance 'QList&lt;QList&lt;QVariant>>'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::newRow', unmatched return type 'QTestData&amp;'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::addColumn', unmatched parameter type 'T*'"/>
   <suppress-warning text="WARNING(MetaJavaBuilder) :: skipping function 'QTest::toString', unmatched parameter type '*'"/>

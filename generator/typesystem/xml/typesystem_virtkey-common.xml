@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtVirtualKeyboard">
+<typesystem qt-library="QtVirtualKeyboard" description="A framework for implementing different input methods as well as a QML virtual keyboard. Supports localized keyboard layouts and custom visual themes.">
     <object-type name="QVirtualKeyboardAbstractInputMethod">
     </object-type>
     <object-type name="QVirtualKeyboardExtensionPlugin">

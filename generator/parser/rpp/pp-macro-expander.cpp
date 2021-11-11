@@ -19,8 +19,11 @@ std::string const *rpp::pp_macro_expander::resolve_formal(pp_fast_string const *
         else if (frame->actuals && index < frame->actuals->size())
             return &(*frame->actuals)[index];
 
-        else
-            assert(0);  // internal error?
+        else{
+            env.log(QString("Macro %1 expects %2 arguments. Given: %3").arg(frame->expanding_macro->name->begin()).arg(formals.size()).arg(frame->actuals ? frame->actuals->size() : 0).toStdString());
+            exit(-1);
+            // internal error?
+        }
     }
 
     return nullptr;

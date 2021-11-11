@@ -42,7 +42,9 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.script.tools" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.script.tools" module="qtjambi.scripttools" default-superclass="io.qt.QtObject">
+    <required-library name="QtWidgets"/>
+    <required-library name="QtScript"/>
     <object-type name="QScriptEngineDebugger">
         <modify-function signature="standardWindow() const">
             <modify-argument index="0">

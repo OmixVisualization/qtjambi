@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtSerialPort">
+<typesystem qt-library="QtSerialPort" description="Provides access to hardware and virtual serial ports.">
   <rejection class="QSerialPort" enum-name="DataErrorPolicy"/>
   <enum-type name="QSerialPort::BaudRate"/>
   <enum-type name="QSerialPort::DataBits"/>
@@ -54,7 +54,7 @@
   <enum-type name="QSerialPort::StopBits"/>
   <object-type name="QSerialPort">
     <modify-function signature="handle()const" remove="all" />
-    <modify-function signature="sendBreak(int)" remove="all" />
+    <modify-function signature="sendBreak(int)" remove="all" until="5.*"/>
   </object-type>
   <value-type name="QSerialPortInfo">
     <modify-function signature="operator=(const QSerialPortInfo&amp;)" remove="all"/>

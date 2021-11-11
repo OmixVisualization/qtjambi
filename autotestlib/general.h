@@ -75,35 +75,18 @@ bool operator ==(const std::initializer_list<T>& a,const std::initializer_list<T
     return initializer_list_equals(a, b);
 }
 
-#ifndef QTJAMBI_NO_WIDGETS
-class CalendarWidgetAccessor: public QCalendarWidget {
-public:
-    void paintCellAccess(QPainter *p) {
-        paintCell(p, QRect(), QDate::currentDate());
-    }
-};
-
 class General {
 
 public:
-    static void callPaintCell(QCalendarWidget *w, QPainter *painter) {
-        QPainter localPainter;
-        if (!painter)
-            painter = &localPainter;
-
-        static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(painter);
-    }
-
-    static void callPaintCellNull(QCalendarWidget *w) {
-        static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(nullptr);
-    }
-
-    static QList<bool> start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text){
-        QList<bool> _start_qtjambi_cast_test(jobject, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jstring text);
-        return _start_qtjambi_cast_test(list, qObject, graphicsItem, gradient, functionalPointer, functional, customCList, customJavaList, jstring(text));
-    }
-};
+#ifndef QTJAMBI_NO_WIDGETS
+    static void callPaintCell(QCalendarWidget *w, QPainter *painter);
+    static void callPaintCellNull(QCalendarWidget *w);
 #endif
+
+    static QList<bool> start_qtjambi_cast_test(jobject list, jobject qObject, jobject graphicsItem, jobject gradient, jobject functionalPointer, jobject functional, jobject customCList, jobject customJavaList, jobject text);
+
+    static void qtjambi_jni_test(jobject object);
+};
 
 class FunctionalTest{
 public:
@@ -160,6 +143,8 @@ public:
     TestFunction2 anyTestFunction2(){
         return [](QObject* o)->QString{return o->objectName();};
     }
+
+    static QFunctionPointer getFunction(int id);
 	
 	int m_last_integer;
 	QString m_last_string;

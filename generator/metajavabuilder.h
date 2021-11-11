@@ -44,35 +44,35 @@
 class MetaJavaBuilder : public AbstractMetaBuilder {
 
     protected:
-        virtual MetaJavaClass *createMetaClass() {
+        MetaJavaClass *createMetaClass() override {
             return new MetaJavaClass();
         }
 
-        virtual MetaJavaEnum *createMetaEnum() {
+        MetaJavaEnum *createMetaEnum() override {
             return new MetaJavaEnum();
         }
 
-        virtual MetaJavaFunctional *createMetaFunctional() {
+        MetaJavaFunctional *createMetaFunctional() override {
             return new MetaJavaFunctional();
         }
 
-        virtual MetaJavaEnumValue *createMetaEnumValue() {
+        MetaJavaEnumValue *createMetaEnumValue() override {
             return new MetaJavaEnumValue();
         }
 
-        virtual MetaJavaField *createMetaField() {
+        MetaJavaField *createMetaField() override {
             return new MetaJavaField();
         }
 
-        virtual MetaJavaFunction *createMetaFunction() {
+        MetaJavaFunction *createMetaFunction() override {
             return new MetaJavaFunction();
         }
 
-        virtual MetaJavaArgument *createMetaArgument() {
+        MetaJavaArgument *createMetaArgument() override {
             return new MetaJavaArgument();
         }
 
-        virtual MetaJavaType *createMetaType() {
+        MetaJavaType *createMetaType() override {
             return new MetaJavaType();
         }
 

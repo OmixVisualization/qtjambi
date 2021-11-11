@@ -176,6 +176,7 @@ public class QMakeTask extends Task {
         if(includepath != null && includepath.length() > 0)
             parameters.add("INCLUDEPATH+=" + includepath);
 		
+        /*
 		String javaVersion = getProject().getProperty("target.java.version");
         if(javaVersion != null){
             if(javaVersion.startsWith("1.")){
@@ -184,7 +185,8 @@ public class QMakeTask extends Task {
                 parameters.add("DEFINES+=\"TARGET_JAVA_VERSION=" + javaVersion + "\"");
             }
 		}
-        if(OSInfo.isMacOS()) {
+        */
+        if(OSInfo.os()==OSInfo.OS.MacOS) {
         	PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
         		parameters.add("DEFINES+=\"QTJAMBI_NO_DEBUG_PLUGINS\"");

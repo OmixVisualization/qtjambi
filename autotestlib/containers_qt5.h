@@ -8,7 +8,6 @@
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
 #include <QtCore/QString>
-QT_WARNING_DISABLE_DEPRECATED
 
 #include <qtjambi/qtjambi_typetests.h>
 

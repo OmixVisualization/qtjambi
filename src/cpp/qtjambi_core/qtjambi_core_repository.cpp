@@ -1,10 +1,11 @@
-#include <QtCore/QMutex>
 #include "qtjambi_core_repository.h"
-
-Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
 namespace Java{
 namespace QtCore{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QException,
+                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QUnhandledException,
+                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;))
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFile$TrashResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(ZLjava/lang/String;)
@@ -94,7 +95,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFloatProperty,
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyBinding,
                                  QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QUntypedPropertyBinding;)
-                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeMetaType,(Lio/qt/QtUtilities$Supplier;)Lio/qt/core/QMetaType;)
+                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(analyzeMetaType,(Ljava/io/Serializable;)Lio/qt/core/QMetaType;)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QIntPropertyBinding,
                                  QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/core/QUntypedPropertyBinding;))
@@ -147,10 +148,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCharPropertyData,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(setValueBypassingBindings,(C)Z))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyChangeHandler,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyNotifier,
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V))
 #endif
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QLogging$Supplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/String;))
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCborStreamReader$StringResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Object;Lio/qt/core/QCborStreamReader$StringResultCode;)
@@ -183,12 +183,27 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QDebug,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QRunnable,)
 }
 
+namespace QtWidgets
+{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QWidget,
+                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(setParent,(Lio/qt/widgets/QWidget;)V))
+}
+
+namespace QtGui
+{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/gui,QGuiApplication,
+                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(exec,()I))
+}
+
 namespace QtJambi
 {
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtObjectInterface,)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QUnsuccessfulInvocationException,
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
+)QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(invocationInfoProvider,()Ljava/util/function/IntFunction;)
 )
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,QtJambiInternal$InvocationInfo,
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,InternalAccess$CallerContext,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(declaringClass, Ljava/lang/Class;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(methodName, Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(lineNumber, I)
@@ -201,27 +216,13 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtUtilities$FloatSupplier,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsFloat,()F))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtUtilities$CharSupplier,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsChar,()C))
-QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtUtilities$Supplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(get,()Ljava/lang/Object;))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QFlags,)
 }
 
 namespace Runtime{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ArithmeticException,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/String;)
 )
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/function,IntFunction,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(I)Ljava/lang/Object;))
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/function,IntSupplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsInt,()I))
-
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/function,DoubleSupplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsDouble,()D))
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/function,LongSupplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsLong,()J))
-QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/function,BooleanSupplier,
-                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getAsBoolean,()Z))
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(I[B)
@@ -235,4 +236,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/math,BigInteger,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Class,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;))
 }
+
 }
+

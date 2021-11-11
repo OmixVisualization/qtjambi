@@ -47,7 +47,7 @@ public class TestQtjambiCastQt5 extends QApplicationTest {
 	public void test() {
 		class TestObject extends QObject implements QEasingCurve.EasingFunction, QRunnable{
 			@Override
-			public double call(double arg__1) {
+			public double applyAsDouble(double arg__1) {
 				return 0;
 			}
 			@Override

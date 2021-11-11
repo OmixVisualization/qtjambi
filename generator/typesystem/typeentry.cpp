@@ -40,6 +40,65 @@
 #include "codesnip.h"
 #include "typedatabase.h"
 
+bool ComplexTypeEntry::useNativeIds = true;
+
+FunctionalTypeEntry::FunctionalTypeEntry(const QString &nspace, const QString &name)
+        : TypeEntry(nspace.isEmpty() ? name : nspace + QLatin1String("::") + name,
+                    FunctionalType),
+        m_qualifier_type(nullptr),
+        m_include(),
+        m_extra_includes(),
+        m_count(0),
+        m_pp_condition(),
+        m_using(),
+        m_normalizedSignature(),
+        m_isNativeIdBased(false) /* not possible to use native ids for functionals!!! */ {
+    m_qualifier = nspace;
+    m_java_name = name;
+}
+
+ComplexTypeEntry::ComplexTypeEntry(const QString &name, Type t)
+    : TypeEntry(QString(name).replace("::", "$"), t), // the A$B notation is the java binary name of an embedded class
+        m_pp_condition(),
+        m_qualified_cpp_name(name),
+        m_is_qobject(false),
+        m_is_qwidget(false),
+        m_is_qwindow(false),
+        m_is_qaction(false),
+        m_is_qapplication(false),
+        m_polymorphic_base(false),
+        m_generic_class(false),
+        m_isTemplate(false),
+        m_inhibitMetaobject(false),
+        m_isNativeIdBased(useNativeIds),
+        m_type_flags() {
+    Include inc;
+    inc.name = "QtCore/QVariant";
+    inc.type = Include::IncludePath;
+
+    addExtraInclude(inc);
+}
+
+ComplexTypeEntry *ComplexTypeEntry::copy() const {
+    ComplexTypeEntry *centry = new ComplexTypeEntry(name(), type());
+    centry->setInclude(include());
+    centry->setPPCondition(ppCondition());
+    centry->setExtraIncludes(extraIncludes());
+    centry->setFunctionModifications(functionModifications());
+    centry->setFieldModifications(fieldModifications());
+    centry->setQObject(isQObject());
+    centry->setQWidget(isQWidget());
+    centry->setQWindow(isQWindow());
+    centry->setQAction(isQAction());
+    centry->setQCoreApplication(isQCoreApplication());
+    centry->setDefaultSuperclass(defaultSuperclass());
+    centry->setCodeSnips(codeSnips());
+    centry->setTargetLangPackage(javaPackage());
+    centry->setTargetTypeSystem(targetTypeSystem());
+    centry->m_isNativeIdBased = m_isNativeIdBased;
+    return centry;
+}
+
 QString PrimitiveTypeEntry::javaObjectName() const {
     static QHash<QString, QString> table;
     if (table.isEmpty()) {
@@ -58,17 +117,21 @@ QString PrimitiveTypeEntry::javaObjectName() const {
 }
 
 QString EnumTypeEntry::jniName() const {
-    switch(m_size){
-    case 8: return "jbyte";
-    case 16: return "jshort";
-    case 64: return "jlong";
-    default: break;
+    if(forceInteger()){
+        switch(m_size){
+        case 8: return "jbyte";
+        case 16: return "jshort";
+        case 64: return "jlong";
+        default: break;
+        }
+        return "jint";
+    }else{
+        return "jobject";
     }
-    return "jint";
 }
 
 QString FlagsTypeEntry::jniName() const {
-    return "jint";
+    return "jobject";
 }
 
 void EnumTypeEntry::addEnumValueRedirection(const QString &rejected, const QString &usedValue) {
@@ -152,23 +215,12 @@ QString ContainerTypeEntry::javaPackage() const {
         return "io.qt.dbus";
     if (m_type == QQmlListPropertyContainer)
         return "io.qt.qml";
-    if (m_type == QDeclarativeListPropertyContainer)
-        return "io.qt.declarative";  // new for QDeclarative module but not yet implemented
-    if (m_type == QArrayContainer
-            || m_type == QVector2DArrayContainer
-            || m_type == QVector3DArrayContainer
-            || m_type == QVector4DArrayContainer)
-        return "io.qt.declarative3d";
     return "java.util";
 }
 
 QString ContainerTypeEntry::targetLangName() const {
 
     switch (m_type) {
-        case QArrayContainer: return "List"; // new since Qt3D
-        case QVector2DArrayContainer: return "List"; // new since Qt3D
-        case QVector3DArrayContainer: return "List"; // new since Qt3D
-        case QVector4DArrayContainer: return "List"; // new since Qt3D
         case StringListContainer: return "QStringList";
         case ByteArrayListContainer: return "QList";
         case ListContainer: return "QList";
@@ -197,7 +249,6 @@ QString ContainerTypeEntry::targetLangName() const {
             //     case MultiHashCollectio: return "MultiHash";
         case PairContainer: return "QPair";
         case std_optional: return "Optional";
-        case QDeclarativeListPropertyContainer: return "QDeclarativeListProperty"; // new for QDeclarative module but not yet implemented
         case QQmlListPropertyContainer: return "QQmlListProperty"; // new for QtQml module
         default:
             qWarning("bad type... %d", m_type);
@@ -213,18 +264,8 @@ QString ContainerTypeEntry::qualifiedCppName() const {
         return "std::initializer_list";
     if (m_type == ByteArrayListContainer)
         return "QByteArrayList";
-    if (m_type == QArrayContainer)
-        return "QArray";  // new since Qt3D
     if (m_type == QModelRoleDataSpanContainer)
         return "QModelRoleDataSpan";
-    if (m_type == QVector2DArrayContainer)
-        return "QVector2DArray";  // new since Qt3D
-    if (m_type == QVector3DArrayContainer)
-        return "QVector3DArray";  // new since Qt3D
-    if (m_type == QVector4DArrayContainer)
-        return "QVector4DArray";  // new since Qt3D
-    if (m_type == QDeclarativeListPropertyContainer)
-        return "QDeclarativeListProperty";   // new for QDeclarative module but not yet implemented
     if (m_type == QQmlListPropertyContainer)
         return "QQmlListProperty";   // new for QDeclarative module but not yet implemented
     return ComplexTypeEntry::qualifiedCppName();

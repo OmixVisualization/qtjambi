@@ -46,7 +46,7 @@ public class TestDBus extends QApplicationTest {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-    	Assume.assumeTrue(QDBusConnection.sessionBus().isConnected());
+    	Assume.assumeTrue("QDBus session bus is not connected.", QDBusConnection.sessionBus().isConnected());
 		QApplicationTest.testInitialize();
 	}
 	

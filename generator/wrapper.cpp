@@ -79,6 +79,13 @@ void Wrapper::handleArguments() {
         db->setSuppressWarnings(false);
     }
 
+    if (args.contains("use-native-ids")) {
+        QString value = args.value("use-native-ids");
+        ComplexTypeEntry::useNativeIds = value.toLower()=="yes"
+                                        || value.toLower()=="true"
+                                        || value=="1";
+    }
+
     if (args.contains("include-eclipse-warnings")) {
         TypeDatabase *db = TypeDatabase::instance();
         db->setIncludeEclipseWarnings(true);
@@ -114,7 +121,7 @@ void Wrapper::handleArguments() {
         include_directory = args.value("qt-include-directory");
 
     if (args.contains("qt-doc-directory"))
-        docsDirectory = args.value("qt-doc-directory");
+        docsDirectory.setPath(args.value("qt-doc-directory"));
 
     if (args.contains("qt-doc-url")){
         gs->docsUrl = args.value("qt-doc-url");
@@ -272,11 +279,10 @@ int Wrapper::runJambiGenerator() {
     //removing file here for theoretical case of wanting to parse two master include files here
     QFile::remove(pp_file);
     QMap<QString, QString> features;
-    bool isQtJambiPort = false;
     uint qtVersionMajor = QT_VERSION_MAJOR;
     uint qtVersionMinor = QT_VERSION_MINOR;
     uint qtVersionPatch = QT_VERSION_PATCH;
-    std::function<void(std::string,std::string,std::string)> featureRegistry = [&features, &isQtJambiPort, &qtVersionMajor, &qtVersionMinor, &qtVersionPatch](std::string macro, std::string definition, std::string file){
+    std::function<void(std::string,std::string,std::string)> featureRegistry = [&features, &qtVersionMajor, &qtVersionMinor, &qtVersionPatch](std::string macro, std::string definition, std::string file){
         QString _macro = QString::fromStdString(macro);
         if(_macro.startsWith("QT_FEATURE_")){
             QString _file = QString::fromStdString(file);
@@ -285,8 +291,6 @@ int Wrapper::runJambiGenerator() {
                 qWarning("Feature %s defined twice:\n%s\n%s", qPrintable(_macro), qPrintable(_file), qPrintable(features[_macro]));
             }
             features[_macro] = _file;
-        }else if(_macro=="QT_QTJAMBI_PORT"){
-            isQtJambiPort = true;
         }else if(_macro=="QT_VERSION_MAJOR"){
             QString _definition = QString::fromStdString(definition);
             bool ok = false;
@@ -325,7 +329,7 @@ int Wrapper::runJambiGenerator() {
 
     //parse the type system file
     try{
-        typeDatabase->initialize(typesystemFileName, inputDirectoryList, gs->qtVersion, isQtJambiPort);
+        typeDatabase->initialize(typesystemFileName, inputDirectoryList, gs->qtVersion);
     }catch(const TypesystemException& exn){
         fprintf(stderr, "%s\n", exn.what());
         return -1;
@@ -351,24 +355,25 @@ int Wrapper::runJambiGenerator() {
 
 void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
 {
+    const QStringList pathsList = QStringList() << include_directory << includePathsList;
     const QMap<QString,TypeSystemTypeEntry*>& typeSystemsByQtLibrary = typeDatabase->typeSystemsByQtLibrary();
-    for(TypeSystemTypeEntry * entry : typeSystemsByQtLibrary.values()){
-        QStringList pathsList;
-        pathsList << include_directory << includePathsList;
+    QList<TypeSystemTypeEntry*> typeSystems(typeSystemsByQtLibrary.values());
+    while(!typeSystems.isEmpty()){
+        TypeSystemTypeEntry * entry = typeSystems.takeFirst();
         for(const QString& path : pathsList){
             QString file(path+"/"+entry->qtLibrary()+"/"+entry->qtLibrary()+"Depends");
-            if(!QFileInfo(file).exists()){
+            if(!QFileInfo::exists(file)){
                 file = path+"/"+entry->qtLibrary()+"Depends";
             }
 #ifdef Q_OS_MAC
-            if(!QFileInfo(file).exists()){
+            if(!QFileInfo::exists(file)){
                 file = path+"/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
             }
-            if(!QFileInfo(file).exists()){
+            if(!QFileInfo::exists(file)){
                 file = path+"/../lib/" + entry->qtLibrary() + ".framework/Headers/"+entry->qtLibrary()+"Depends";
             }
 #endif
-            if(QFileInfo(file).exists()){
+            if(QFileInfo::exists(file)){
                 QFile f(file);
                 f.open(QIODevice::ReadOnly);
                 QTextStream s(&f);
@@ -383,11 +388,31 @@ void Wrapper::analyzeDependencies(TypeDatabase* typeDatabase)
                                 line = line.mid(1);
                                 QStringList include = line.split("/");
                                 if((include.size()==2 && include[0]==include[1]) || include.size()==1){
-                                    TypeSystemTypeEntry * lib = typeSystemsByQtLibrary[include[0]];
-                                    if(lib){
-                                        entry->addRequiredTypeSystem(lib);
-                                    }else{
-                                        entry->addRequiredQtLibrary(include[0]);
+                                    entry->addRequiredQtLibrary(include[0]);
+                                    if(!typeSystemsByQtLibrary.contains(include[0])){
+                                        // let's create a dummy typesystem to make sure all dependencies are loaded correctly
+                                        for(const QString& path : pathsList){
+                                            QString file(path+"/"+include[0]+"/"+include[0]+"Depends");
+                                            if(!QFileInfo::exists(file)){
+                                                file = path+"/"+include[0]+"Depends";
+                                            }
+#ifdef Q_OS_MAC
+                                            if(!QFileInfo::exists(file)){
+                                                file = path+"/" + include[0] + ".framework/Headers/"+include[0]+"Depends";
+                                            }
+                                            if(!QFileInfo::exists(file)){
+                                                file = path+"/../lib/" + include[0] + ".framework/Headers/"+include[0]+"Depends";
+                                            }
+#endif
+                                            if(QFileInfo::exists(file)){
+                                                TypeSystemTypeEntry* entry = new TypeSystemTypeEntry(QString("io.qt.%1").arg((include[0].startsWith("Qt") ? include[0].mid(2) : include[0]).toLower()),
+                                                                                                     include[0],
+                                                                                                     QString("qtjambi.%1").arg((include[0].startsWith("Qt") ? include[0].mid(2) : include[0]).toLower()));
+                                                entry->setCodeGeneration(TypeEntry::GenerateNothing);
+                                                TypeDatabase::instance()->addType(entry);
+                                                typeSystems << entry;
+                                            }
+                                        }
                                     }
                                 }
                             }

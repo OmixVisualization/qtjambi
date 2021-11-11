@@ -8,7 +8,6 @@
 
 class DocNamespace: public DocElement
 {
-    Q_OBJECT
 public:
     DocNamespace(QObject* parent);
     void addFunction(const DocFunction*);

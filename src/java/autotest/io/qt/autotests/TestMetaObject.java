@@ -189,7 +189,7 @@ public class TestMetaObject extends QApplicationTest {
     	assertTrue(sender.destroyed.disconnect(receiver));
     	assertTrue(sender.destroyed.connect(receiver, "disposeLater()")!=null);
     	assertEquals(1, sender._receivers(sender.destroyed));
-    	assertEquals(1, sender._receivers("destroyed()") + sender._receivers("destroyed(QObject)"));
+    	assertEquals(1, sender._receivers("destroyed(QObject)"));
     }
     
     public static class SubQObject extends QObject{

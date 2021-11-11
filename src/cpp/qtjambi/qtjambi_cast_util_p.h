@@ -33,6 +33,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
+#include <memory>
 #include "qtjambi_global.h"
 #include "qtjambi_typetests.h"
 
@@ -262,6 +263,25 @@ template<>
 struct is_jni_array_type<jfloatArray> : std::true_type{
 };
 
+template<bool is_reference,typename O>
+struct ptr2ref{
+};
+
+template<typename O>
+struct ptr2ref<false,O>{
+    static constexpr O* value(JNIEnv *, O* o){
+        return o;
+    }
+};
+
+template<typename O>
+struct ptr2ref<true,O>{
+    static O& value(JNIEnv *env, O* o){
+        qtjambi_check_resource<O>(env, o);
+        return *o;
+    }
+};
+
 template<bool is_pointer,typename O>
 struct deref_ptr{
 };
@@ -320,21 +340,26 @@ struct deref_ptr_or_default<true,O>{
 
 template<typename O, bool has_std_constructor, bool is_const, bool o_is_reference>
 struct qtjambi_deref_value{
+    Q_STATIC_ASSERT_X(!has_std_constructor && false, "Cannot deref type");
+    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
+    static O_const& deref(JNIEnv *, O* o){
+        return *o;
+    }
 };
 
-template<typename O, bool is_const, bool o_is_reference>
-struct qtjambi_deref_value<O,false, is_const, o_is_reference>{
+template<typename O, bool is_const>
+struct qtjambi_deref_value<O,false, is_const, false>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
-    static O_const& deref(JNIEnv *env, O* o){
+    static O_const deref(JNIEnv *env, O* o){
         qtjambi_check_resource<O>(env, o);
         return *o;
     }
 };
 
-template<typename O, bool has_std_constructor>
-struct qtjambi_deref_value<O,has_std_constructor,false,true>{
-    typedef O& (*_deref)(JNIEnv *env, O* o);
-    static O& deref(JNIEnv *env, O* o){
+template<typename O, bool is_const>
+struct qtjambi_deref_value<O,false, is_const, true>{
+    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
+    static O_const& deref(JNIEnv *env, O* o){
         qtjambi_check_resource<O>(env, o);
         return *o;
     }
@@ -345,6 +370,14 @@ struct qtjambi_deref_value<O,true,true,true>{
     typedef typename std::add_const<O>::type O_const;
     static O_const& deref(JNIEnv *, O_const* o){
         return o ? *o : qtjambi_get_default_value<typename std::remove_const<O>::type>();
+    }
+};
+
+template<typename O>
+struct qtjambi_deref_value<O,true,false,true>{
+    static O& deref(JNIEnv *env, O* o){
+        qtjambi_check_resource<O>(env, o);
+        return *o;
     }
 };
 
@@ -365,6 +398,156 @@ template<typename T>
 struct LessThan<T,true>{
   static bool function(JNIEnv *env, jobject t1, jobject t2){
         return qtjambi_scoped_cast<false,T,jobject>::cast(env, t1, nullptr, nullptr) < qtjambi_scoped_cast<false,T,jobject>::cast(env, t2, nullptr, nullptr);
+    }
+};
+
+template<bool is_pointer, bool is_const, bool is_reference, bool buffer, class Container>
+struct create_container_pointer{
+    static Container create(JNIEnv *, QtJambiScope*, nullptr_t){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container create(JNIEnv *, QtJambiScope*, Container*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container create(JNIEnv *, QtJambiScope*, const Container*){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+    static Container create(JNIEnv *, QtJambiScope*, std::unique_ptr<Container>&){
+        Q_STATIC_ASSERT_X(false && !is_pointer, "Cannot cast types");
+    }
+};
+
+template<bool is_const, class Container>
+struct create_container_pointer<true, is_const, false, false, Container>{
+    typedef typename std::conditional<is_const, typename std::add_const<Container>::type, Container>::type Container_const;
+    static Container* create(JNIEnv *, QtJambiScope*, nullptr_t){
+        return nullptr;
+    }
+    static Container* create(JNIEnv *, QtJambiScope*, Container* t){
+        return t;
+    }
+    static Container_const* create(JNIEnv *, QtJambiScope*, const Container* t){
+        Q_STATIC_ASSERT_X(is_const, "Cannot cast const pointer to non-const pointer without scope.");
+        return t;
+    }
+    static Container* create(JNIEnv *, QtJambiScope*, std::unique_ptr<Container>& t){
+        return t.release();
+    }
+};
+
+template<bool is_const, class Container>
+struct create_container_pointer<true, is_const, false, true, Container>{
+    static Container* create(JNIEnv *, QtJambiScope*, nullptr_t){
+        return nullptr;
+    }
+    static Container* create(JNIEnv *, QtJambiScope*, Container* t){
+        return t;
+    }
+    static Container* create(JNIEnv *env, QtJambiScope* scope, const Container* t){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1* without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            Container* result = new Container(*t);
+            scope->addFinalAction([result](){ delete result; });
+            return result;
+        }else{
+            return nullptr;
+        }
+    }
+    static Container* create(JNIEnv *, QtJambiScope*, std::unique_ptr<Container>& t){
+        return t.release();
+    }
+};
+
+template<bool is_const, bool buffer, class Container>
+struct create_container_pointer<false, is_const, false, buffer, Container>{
+    static Container create(JNIEnv *, QtJambiScope*, const Container* t){
+        return t ? *t : Container();
+    }
+    static Container create(JNIEnv *, QtJambiScope*, std::unique_ptr<Container>& t){
+        return t ? *t : Container();
+    }
+};
+
+template<bool buffer, class Container>
+struct create_container_pointer<false, true, true, buffer, Container>{
+    static const Container& create(JNIEnv *, QtJambiScope*, const Container* t){
+        return t ? *t : qtjambi_get_default_value<Container>();
+    }
+    static const Container& create(JNIEnv *env, QtJambiScope* scope, std::unique_ptr<Container>& ptr){
+        if(ptr && !ptr->empty() && !scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        if(ptr && scope){
+            Container* t = ptr.release();
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }
+        return qtjambi_get_default_value<Container>();
+    }
+};
+
+template<class Container>
+struct create_container_pointer<false, false, true, true, Container>{
+    static Container& create(JNIEnv * env, QtJambiScope* scope, nullptr_t){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container))))) QTJAMBI_STACKTRACEINFO );
+        Container* result = new Container();
+        scope->addFinalAction([result](){ delete result; });
+        return *result;
+    }
+    static Container& create(JNIEnv *env, QtJambiScope* scope, Container* t){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container* result = new Container();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static const Container& create(JNIEnv *env, QtJambiScope* scope, const Container* t){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container* result = new Container();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+
+    static Container& create(JNIEnv *env, QtJambiScope* scope, std::unique_ptr<Container>& ptr){
+        if(!scope)
+            JavaException::raiseError(env, qPrintable( QString("Cannot cast to %1& without scope.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        Container* t = ptr.release();
+        if(t){
+            scope->addFinalAction([t](){ delete t; });
+            return *t;
+        }else{
+            Container* result = new Container();
+            scope->addFinalAction([result](){ delete result; });
+            return *result;
+        }
+    }
+};
+
+template<class Container>
+struct create_container_pointer<false, false, true, false, Container>{
+    typedef Container Container_KT;
+    static Container& create(JNIEnv *env, QtJambiScope*, Container* t){
+        if(!t){
+            JavaException::raiseNullPointerException(env, qPrintable( QString("%1 is null.").arg(QLatin1String(qtjambi_type_name(typeid(Container)))) ) QTJAMBI_STACKTRACEINFO );
+        }
+        return *t;
+    }
+    static Container& create(JNIEnv *, QtJambiScope*, std::unique_ptr<Container>& t){
+        Q_STATIC_ASSERT_X(false && std::is_pointer<Container_KT>::value, "Cannot cast to Container reference without scope.");
+        return *t;
     }
 };
 

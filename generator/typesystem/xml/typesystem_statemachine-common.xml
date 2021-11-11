@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtStateMachine">
+<typesystem qt-library="QtStateMachine" description="Provides classes and tools for creating state machines from SCXML files and embedding them in applications.">
     <enum-type name="QHistoryState::HistoryType"/>
     <enum-type name="QState::ChildMode"/>
     <enum-type name="QState::RestorePolicy"/>
@@ -164,6 +164,6 @@
         </modify-function>
     </object-type>
     <object-type name="QFinalState"/>
-    <object-type name="QStateMachine::SignalEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StateMachineSignal"/>
-    <object-type name="QStateMachine::WrappedEvent" polymorphic-id-expression="%1-&gt;type() == QEvent::StateMachineWrapped"/>
+    <object-type name="QStateMachine::SignalEvent"/>
+    <object-type name="QStateMachine::WrappedEvent"/>
 </typesystem>

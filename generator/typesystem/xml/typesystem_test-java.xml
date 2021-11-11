@@ -42,11 +42,9 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.test" default-superclass="io.qt.QtObject">
-    <inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.network");
-        io.qt.QtUtilities.initializePackage("io.qt.widgets");
-    </inject-code>
+<typesystem package="io.qt.test" module="qtjambi.test" default-superclass="io.qt.QtObject">
+    <required-library name="QtDBus" optional="yes"/>
+    <required-library name="QtWidgets"/>
     <namespace-type name="QTest">
         <modify-function signature="createTouchDevice(QInputDevice::DeviceType,QFlags&lt;QInputDevice::Capability>)" since="6.0.0">
             <modify-argument index="return">
@@ -368,6 +366,116 @@
                 <replace-type modified-type="java.lang.String"/>
             </modify-argument>
         </modify-function>
+        <modify-function signature="asciiToKey(char)">
+            <modify-argument index="1">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyClick(QWindow *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyClick(QWidget *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyPress(QWindow *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyPress(QWidget *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyRelease(QWindow *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyRelease(QWidget *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="2">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyEvent(QTest::KeyAction, QWindow *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="3">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="keyEvent(QTest::KeyAction, QWidget *, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="3">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendKeyEvent(QTest::KeyAction, QWidget *, Qt::Key, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="4">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="sendKeyEvent(QTest::KeyAction, QWindow *, Qt::Key, char, QFlags&lt;Qt::KeyboardModifier>, int)">
+            <modify-argument index="4">
+                <replace-type modified-type="char"/>
+                <conversion-rule class="native">
+                    char %out = QChar(%in).toLatin1();
+                    if(%in!=%out)
+                        JavaException::raiseIllegalArgumentException(%env, qPrintable(QString("Not an ASCII character: '%""1'").arg(QChar(%in))) QTJAMBI_STACKTRACEINFO );
+                </conversion-rule>
+            </modify-argument>
+        </modify-function>
         <inject-code class="java">
             <import-file name="typesystem/java/typesystem_test-java.java" quote-after-line="class QTest__" quote-before-line="}// class"/>
         </inject-code>
@@ -480,7 +588,7 @@
             </modify-argument>
         </modify-function>
     </object-type>
-    <object-type name="QSignalSpy" implements="List&lt;QList&lt;Object>>">
+    <object-type name="QSignalSpy" implements="List&lt;java.util.List&lt;java.lang.Object>>">
         <extra-includes>
         <include file-name="java.util.*" location="java"/>
         <include file-name="java.util.function.*" location="java"/>

@@ -54,8 +54,6 @@
 class DocModel;
 
 class GeneratorSet : public QObject {
-        Q_OBJECT
-
     public:
         GeneratorSet();
 

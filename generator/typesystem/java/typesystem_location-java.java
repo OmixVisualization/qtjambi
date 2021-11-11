@@ -54,7 +54,7 @@ class QGeoServiceProviderFactory___ {
             this.errorString = java.util.Objects.requireNonNull(errorString);
         }
 
-        @io.qt.internal.NativeAccess
+        @io.qt.NativeAccess
         private Result(T engine, QGeoServiceProvider.Error error, String errorString) {
             super();
             this.engine = engine;

@@ -58,59 +58,60 @@ import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QVBoxLayout;
 import io.qt.widgets.QWidget;
 
-class JavaNonAbstractSubclass extends AbstractClass {
-    @Override
-    public void abstractFunction(String something) {
-        setS("Even more " + something);
-    }
-
-    @Override
-    public AbstractClass getAbstractClass() {
-        return new JavaNonAbstractSubclass();
-    }
-
-	@Override
-	public boolean setReferenceCountTest(QObject object) {
-		return false;
-	}
-}
-
-class MyLayout extends QVBoxLayout {
-    @Override
-    public QLayoutItem itemAt(int index) {
-        return super.itemAt(index);
-    }
-
-    @Override
-    public void addItem(QLayoutItem arg__0) {
-        super.addItem(arg__0);
-    }
-
-    @Override
-    public int count() {
-        return super.count();
-    }
-
-    @Override
-    public void setGeometry(QRect arg__0) {
-        super.setGeometry(arg__0);
-    }
-
-    @Override
-    public QSize sizeHint() {
-        return super.sizeHint();
-    }
-
-    @Override
-    public QLayoutItem takeAt(int index__0) {
-        return super.takeAt(index__0);
-    }
-}
-
 public class TestVirtualFunctions extends QApplicationTest {
-    class WidgetClass1 extends QWidget {
+
+	static class JavaNonAbstractSubclass extends AbstractClass {
+	    @Override
+	    public void abstractFunction(String something) {
+	        setS("Even more " + something);
+	    }
+	
+	    @Override
+	    public AbstractClass getAbstractClass() {
+	        return new JavaNonAbstractSubclass();
+	    }
+	
+		@Override
+		public boolean setReferenceCountTest(QObject object) {
+			return false;
+		}
+	}
+	
+	static class MyLayout extends QVBoxLayout {
+	    @Override
+	    public QLayoutItem itemAt(int index) {
+	        return super.itemAt(index);
+	    }
+	
+	    @Override
+	    public void addItem(QLayoutItem arg__0) {
+	        super.addItem(arg__0);
+	    }
+	
+	    @Override
+	    public int count() {
+	        return super.count();
+	    }
+	
+	    @Override
+	    public void setGeometry(QRect arg__0) {
+	        super.setGeometry(arg__0);
+	    }
+	
+	    @Override
+	    public QSize sizeHint() {
+	        return super.sizeHint();
+	    }
+	
+	    @Override
+	    public QLayoutItem takeAt(int index__0) {
+	        return super.takeAt(index__0);
+	    }
+	}
+	
+	static class WidgetClass1 extends QWidget {
     	{
-    		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	}
         public void setJavaSizeHint(QSize size) {
             m_size = size;
@@ -124,9 +125,9 @@ public class TestVirtualFunctions extends QApplicationTest {
         private QSize m_size = new QSize(0, 0);
     }
 
-    class WidgetClass2 extends QWidget {
+	static class WidgetClass2 extends QWidget {
     	{
-    		Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     	}
         public void setJavaSizeHint(QSize size) {
             m_size = size;
@@ -138,7 +139,7 @@ public class TestVirtualFunctions extends QApplicationTest {
 
     @Test
     public void run_testOverridingMethodsThatReturnInterfaceTypes() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QWidget topLevel = new QWidget();
         QPushButton button1 = new QPushButton("Test", topLevel);
 
@@ -150,7 +151,7 @@ public class TestVirtualFunctions extends QApplicationTest {
 
     @Test
     public void run_testNonQObjectsInCustomLayout() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QWidget topLevel = new QWidget();
         QSpacerItem spacer = new QSpacerItem(10, 10);
 
@@ -163,7 +164,7 @@ public class TestVirtualFunctions extends QApplicationTest {
 
     @Test
     public void run_testNonQObjectsInCustomLayoutAddedFromCpp() {
-    	Assume.assumeThat(QGuiApplication.primaryScreen()!=null, QApplicationTest.trueMatcher("A screen is required to create a window."));
+    	Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
         QWidget topLevel = new QWidget();
         MyLayout layout = new MyLayout();
         topLevel.setLayout(layout);
@@ -389,7 +390,7 @@ public class TestVirtualFunctions extends QApplicationTest {
     	FunctionalTest.TestFunction1 ft1;
     	assertEquals(279*9, functionalTest.convert(ft1 = (i,b)->i*9));
     	System.gc();
-    	assertEquals(9*4, functionalTest.last1().call(4, true));
+    	assertEquals(9*4, functionalTest.last1().applyAsInt(4, true));
     	ft1.dispose();
     	FunctionalTest.TestFunction1 ft = (i,b)->b ? i*9 : -1;
     	assertEquals(4*9, functionalTest.convert(ft, 4, true));
@@ -397,17 +398,17 @@ public class TestVirtualFunctions extends QApplicationTest {
     	assertEquals(-1, functionalTest.convert(ft, 4, false));
     	FunctionalTest.TestFunction1 last1 = functionalTest.last1();
     	System.gc();
-    	assertEquals(4*9, last1.call(4, true));
+    	assertEquals(4*9, last1.applyAsInt(4, true));
     	FunctionalTest.TestFunction1 anyTestFunction1 = functionalTest.anyTestFunction1();
-    	assertEquals(10, anyTestFunction1.call(5, true));
-    	assertEquals(-100, functionalTest.anyTestFunction1().call(5, false));
+    	assertEquals(10, anyTestFunction1.applyAsInt(5, true));
+    	assertEquals(-100, functionalTest.anyTestFunction1().applyAsInt(5, false));
     	FunctionalTest.TestFunction2 ft2 = (o)->o.objectName()+"#";
     	assertEquals("TestObject#", functionalTest.convert(ft2));
     	QObject obj = new QObject();
     	obj.setObjectName("TestObject2");
     	assertEquals("TestObject2#", functionalTest.convert(ft2, obj));
     	obj.setObjectName("TestObject3");
-    	assertEquals("TestObject3", functionalTest.anyTestFunction2().call(obj));
+    	assertEquals("TestObject3", functionalTest.anyTestFunction2().apply(obj));
 //    	instances.add(new WeakReference<>(ft));
 //    	instances.add(new WeakReference<>(ft2));
     	ft.dispose();
@@ -437,7 +438,7 @@ public class TestVirtualFunctions extends QApplicationTest {
 			Assert.assertTrue(e instanceof RuntimeException);
 		}
     	try {
-	    	functionalTest.last1().call(4, true);
+	    	functionalTest.last1().applyAsInt(4, true);
     	}finally {
     		//    	instances.add(new WeakReference<>(f1));
     		f1.dispose();

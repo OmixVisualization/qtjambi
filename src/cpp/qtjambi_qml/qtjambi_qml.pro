@@ -23,7 +23,7 @@ SOURCES += qmlregistry.cpp qqmllistproperty.cpp \
 
 DEFINES += QTJAMBI_QML_EXPORT
 
-QT += core gui qml core-private qml-private
+QT = core qml core-private qml-private
 
 msvc:QMAKE_CXXFLAGS += /bigobj
 

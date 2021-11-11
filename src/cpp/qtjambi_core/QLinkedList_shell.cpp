@@ -27,6 +27,8 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qcompilerdetection.h>
+QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QDataStream>
 #include <QtCore/QDebug>
 #include <qtjambi/qtjambi_core.h>
@@ -37,8 +39,6 @@
 #include <QtCore/QLinkedList>
 #include <QtCore/QVariant>
 #include <qtjambi/qtjambi_cast.h>
-
-QT_WARNING_DISABLE_DEPRECATED
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLinkedList_initialize)
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)

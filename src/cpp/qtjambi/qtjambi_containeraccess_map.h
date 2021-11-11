@@ -125,7 +125,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMap<K,T>::const_iterator(reinterpret_cast<const QMap<K,T> *>(container)->begin()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -173,7 +173,7 @@ public:
         jobject result = qtjambi_from_QMapIterator(env,
                                       ownerId,
                                       new typename QMap<K,T>::const_iterator(reinterpret_cast<const QMap<K,T> *>(container)->end()),
-                                      [](void* ptr){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
+                                      [](void* ptr,bool){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
                                       access);
         return result;
     }
@@ -195,7 +195,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMap<K,T>::const_iterator(reinterpret_cast<const QMap<K,T> *>(container)->find(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -264,7 +264,7 @@ public:
                 T _qvalue;
                 void *_qvaluePtr = &_qvalue;
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
-                    K _qkey = reinterpret_cast<const QMap<K,T> *>(container)->key(_qvalue, _qkey);
+                    K _qkey = reinterpret_cast<const QMap<K,T> *>(container)->key(_qvalue, _qdefaultkey);
                     jv.l = nullptr;
                     if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, &jv, true)){
                         result = jv.l;
@@ -365,7 +365,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMap<K,T>::const_iterator(reinterpret_cast<const QMap<K,T> *>(container)->lowerBound(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }
@@ -376,9 +376,9 @@ public:
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
         if (qtjambi_is_QMap(env, other, keyMetaType(), valueMetaType())) {
-            if(void* ptr = qtjambi_to_object(env, other)){
+            if(QMap<K,T>* ptr = qtjambi_to_object<QMap<K,T>>(env, other)){
                 QTJAMBI_KEY_VALUE_LOCKER
-                bool equals = *reinterpret_cast<const QMap<K,T> *>(container)==*reinterpret_cast<QMap<K,T> *>(ptr);
+                bool equals = *reinterpret_cast<const QMap<K,T> *>(container)==*ptr;
                 return equals;
             }
         }else{
@@ -462,7 +462,7 @@ public:
                 result = qtjambi_from_QMapIterator(env,
                                               ownerId,
                                               new typename QMap<K,T>::const_iterator(reinterpret_cast<const QMap<K,T> *>(container)->upperBound(_qkey)),
-                                              [](void* ptr){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
+                                              [](void* ptr,bool){ delete reinterpret_cast<typename QMap<K,T>::const_iterator*>(ptr); },
                                               access);
             }
         }

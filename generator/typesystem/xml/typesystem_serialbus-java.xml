@@ -1,5 +1,7 @@
 <?xml version="1.0"?>
-<typesystem package="io.qt.serialbus" default-superclass="io.qt.QtObject">
+<typesystem package="io.qt.serialbus" module="qtjambi.serialbus" default-superclass="io.qt.QtObject">
+    <required-library name="QtNetwork"/>
+    <required-library name="QtSerialPort"/>
     <object-type name="QCanBus">
         <extra-includes>
             <include file-name="qtjambi_serialbus.h" location="local"/>
@@ -105,6 +107,37 @@
                         if(%2){
                             jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
                             qtjambi_to_qstring(*%2, %env, message);
+                        }
+                    }else{
+                        exn.raise();
+                    }
+                }
+            </inject-code>
+        </modify-function>
+        <modify-function signature="availableDevices(QString *) const" throws="QCanBusException" since="6.2.0">
+            <modify-argument index="1">
+                <remove-argument/>
+                <conversion-rule class="native">
+                    QString %in;
+                    QString* %out = &amp;%in;
+                </conversion-rule>
+            </modify-argument>
+            <inject-code class="native" position="end">
+                <argument-map index="1" meta-name="%1"/>
+                if(!%1.isEmpty()){
+                    Java::QtSerialBus::QCanBusException::throwNew(%env, %1 QTJAMBI_STACKTRACEINFO );
+                }
+            </inject-code>
+            <inject-code class="shell" position="beginning">
+                try{
+            </inject-code>
+            <inject-code class="shell" position="end">
+                <argument-map index="1" meta-name="%1"/>
+                }catch(const JavaException&amp; exn){
+                    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){
+                        if(%1){
+                            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());
+                            qtjambi_to_qstring(*%1, %env, message);
                         }
                     }else{
                         exn.raise();
@@ -343,7 +376,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.network.QTcpSocket"/>
                 <conversion-rule class="native">
-                    QTcpSocket* %out = reinterpret_cast&lt;QTcpSocket* >(qtjambi_to_object(%env, %in));
+                    QTcpSocket* %out = qtjambi_to_object&lt;QTcpSocket>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
                     jobject %out = qtjambi_from_object(%env, reinterpret_cast&lt;void*>(%in), "io/qt/network/QTcpSocket", false, false);
@@ -356,7 +389,7 @@
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.network.QTcpSocket"/>
                 <conversion-rule class="native">
-                    QTcpSocket* %out = reinterpret_cast&lt;QTcpSocket* >(qtjambi_to_object(%env, %in));
+                    QTcpSocket* %out = qtjambi_to_object&lt;QTcpSocket>(%env, %in);
                 </conversion-rule>
                 <conversion-rule class="shell">
                     jobject %out = qtjambi_from_object(%env, reinterpret_cast&lt;void*>(%in), "io/qt/network/QTcpSocket", false, false);

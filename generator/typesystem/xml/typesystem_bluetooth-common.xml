@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="QtBluetooth">
+<typesystem qt-library="QtBluetooth" description="Provides access to Bluetooth hardware.">
   <namespace-type name="QBluetooth">
   </namespace-type>
   <enum-type name="QBluetooth::AttAccessConstraint" flags="QBluetooth::AttAccessConstraints"/>
@@ -60,7 +60,7 @@
   <enum-type name="QBluetoothDeviceInfo::DataCompleteness"/>
   <enum-type name="QBluetoothDeviceInfo::Field" flags="QBluetoothDeviceInfo::Fields"/>
   <enum-type name="QBluetoothDeviceInfo::MajorDeviceClass">
-        <reject-enum-value name="NetworkDevice"/>
+        <reject-enum-value name="NetworkDevice" until="5.*"/>
   </enum-type>
   <enum-type name="QBluetoothDeviceInfo::MinorAudioVideoClass"/>
   <enum-type name="QBluetoothDeviceInfo::MinorComputerClass"/>
@@ -79,8 +79,8 @@
   <enum-type name="QBluetoothServer::Error"/>
   <enum-type name="QBluetoothServiceDiscoveryAgent::DiscoveryMode"/>
   <enum-type name="QBluetoothServiceDiscoveryAgent::Error"/>
-  <enum-type name="QBluetoothTransferReply::TransferError"/>
-  <enum-type name="QBluetoothTransferRequest::Attribute"/>
+  <enum-type name="QBluetoothTransferReply::TransferError" until="5.*"/>
+  <enum-type name="QBluetoothTransferRequest::Attribute" until="5.*"/>
   <enum-type name="QBluetoothUuid::CharacteristicType"/>
   <enum-type name="QBluetoothUuid::DescriptorType"/>
   <enum-type name="QBluetoothUuid::ProtocolUuid"/>
@@ -93,8 +93,13 @@
   <enum-type name="QLowEnergyController::RemoteAddressType"/>
   <enum-type name="QLowEnergyController::Role"/>
   <enum-type name="QLowEnergyService::ServiceError"/>
-  <enum-type name="QLowEnergyService::ServiceState"/>
+  <enum-type name="QLowEnergyService::ServiceState">
+        <reject-enum-value name="DiscoveryRequired" since="6.2.0"/>
+        <reject-enum-value name="DiscoveringService"/>
+        <reject-enum-value name="ServiceDiscovered" since="6.2.0"/>
+  </enum-type>
   <enum-type name="QLowEnergyService::WriteMode"/>
+  <enum-type name="QLowEnergyService::DiscoveryMode" since="6.2.0"/>
   <enum-type name="QLowEnergyService::ServiceType" flags="QLowEnergyService::ServiceTypes"/>
   <enum-type name="QLowEnergyServiceData::ServiceType"/>
   <enum-type name="QLowEnergyCharacteristic::PropertyType" flags="QLowEnergyCharacteristic::PropertyTypes"/>
@@ -123,7 +128,7 @@
   <value-type name="QBluetoothHostInfo">
         <modify-function signature="operator=(QBluetoothHostInfo)" remove="all"/>
   </value-type>
-  <value-type name="QBluetoothTransferRequest">
+  <value-type name="QBluetoothTransferRequest" until="5.*">
         <modify-function signature="operator=(QBluetoothTransferRequest)" remove="all"/>
   </value-type>
   <value-type name="QBluetoothUuid">
@@ -195,7 +200,7 @@
   </object-type>
   <object-type name="QBluetoothTransferManager">
   </object-type>
-  <object-type name="QBluetoothTransferReply">
+  <object-type name="QBluetoothTransferReply" until="5.*">
         <modify-function signature="setManager(QBluetoothTransferManager*)">
             <modify-argument index="1">
                 <reference-count action="set" variable-name="__rcManager"/>
@@ -206,6 +211,12 @@
         <modify-function signature="addService(QLowEnergyServiceData,QObject*)">
             <modify-argument index="2">
                 <reference-count action="ignore"/>
+            </modify-argument>
+        </modify-function>
+        <modify-function signature="createPeripheral(QBluetoothAddress,QObject*)" since="6.2.0">
+            <modify-argument index="0">
+                <define-ownership class="shell" owner="cplusplus"/>
+                <define-ownership class="native" owner="java"/>
             </modify-argument>
         </modify-function>
   </object-type>

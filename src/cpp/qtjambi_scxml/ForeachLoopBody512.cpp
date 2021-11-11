@@ -36,7 +36,7 @@
 #include <qtjambi/qtjambi_repository.h>
 
 // QScxmlDataModel::ForeachLoopBody::run(bool * ok)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlDataModel_00024ForeachLoopBody__1_1qt_1QScxmlDataModel_00024ForeachLoopBody_1run_1nativepointer)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlDataModel_00024ForeachLoopBody_run)
 (JNIEnv *__jni_env,
  jobject,
  QtJambiNativeID __this_nativeId,

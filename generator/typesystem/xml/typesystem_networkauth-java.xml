@@ -43,10 +43,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem package="io.qt.network.auth" default-superclass="io.qt.QtObject">
-    <!--inject-code position="2" since="6.0.0">
-        io.qt.QtUtilities.initializePackage("io.qt.network");
-    </inject-code-->
+<typesystem package="io.qt.network.auth" module="qtjambi.networkauth" default-superclass="io.qt.QtObject">
     <object-type name="QOAuthHttpServerReplyHandler">
         <modify-function signature="listen(const QHostAddress &amp;, unsigned short)">
             <modify-argument index="1">

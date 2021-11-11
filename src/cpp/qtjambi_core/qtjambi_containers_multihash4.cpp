@@ -34,9 +34,9 @@
 **
 ****************************************************************************/
 
-#include <qtjambi/qtjambi_containeraccess_multihash.h>
-
+#include <QtCore/qcompilerdetection.h>
 QT_WARNING_DISABLE_DEPRECATED
+#include <qtjambi/qtjambi_containeraccess_multihash.h>
 
 void qtjambi_register_multihash_access4(){
     ELEMENT_CONVERTER_HASH_IMPL4(QMultiHash,4)

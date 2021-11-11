@@ -17,3 +17,6 @@ QT = core gui datavisualization
 HEADERS += \
     qtjambi_datavis3d_hashes.h
 
+SOURCES += \
+    qtjambi_datavis3d.cpp
+

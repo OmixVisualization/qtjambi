@@ -42,7 +42,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************-->
-<typesystem qt-library="Qt3DRender">
+<typesystem qt-library="Qt3DRender" description="Contains classes that enable 2D and 3D rendering">
     <namespace-type name="Qt3DRender" generate="no" until="5.14">
     </namespace-type>
     <namespace-type name="Qt3DRender" since="5.15.0">
@@ -120,12 +120,8 @@
     <value-type name="Qt3DRender::QLevelOfDetailBoundingSphere" java-name="QLevelOfDetailBoundingSphere">
         <modify-function signature="operator=(const Qt3DRender::QLevelOfDetailBoundingSphere &amp;)" remove="all"/>
     </value-type>
-    <object-type name="Qt3DRender::QFrameGraphNodeCreatedChangeBase" java-name="QFrameGraphNodeCreatedChange"
-            polymorphic-id-expression="%1-&gt;type() == Qt3DCore::NodeCreated &amp;&amp; reinterpret_cast&lt;Qt3DCore::QNodeCreatedChangeBase*>(%1)-&gt;metaObject()-&gt;inherits(&amp;Qt3DRender::QFrameGraphNode::staticMetaObject)"
-            since="5.7.0">
+    <object-type name="Qt3DRender::QFrameGraphNodeCreatedChangeBase" java-name="QFrameGraphNodeCreatedChange" since="5.7.0">
     </object-type>
-    <!--object-type name="Qt3DRender::QFrameGraphNodeCreatedChange" java-name="QFrameGraphNodeCreatedChange" polymorphic-id-expression="false" since="5.7.0">
-    </object-type-->
     <object-type name="Qt3DRender::QLineWidth" java-name="QLineWidth">
     </object-type>
     <object-type name="Qt3DRender::QDiffuseMapMaterial" java-name="QDiffuseMapMaterial" until="5.6">
@@ -685,20 +681,11 @@
         <modify-function signature="addImageData(const QSharedPointer&lt;Qt3DRender::QTextureImageData> &amp;)">
             <modify-argument index="1">
                 <replace-type modified-type="io.qt.qt3d.render.QTextureImageData"/>
-                <!--conversion-rule class="native">
-                JObjectArrayPointer&lt;QSslPreSharedKeyAuthenticator,"QSslPreSharedKeyAuthenticator","io/qt/network"> objectArrayPointer1(%env, %in);
-                const QTextureImageData&amp; %out = *(QTextureImageData*)qtjambi_to_object(%env, %in);
-                </conversion-rule-->
             </modify-argument>
         </modify-function>
         <modify-function signature="imageData() const">
             <modify-argument index="return">
                 <replace-type modified-type="java.util.List&lt;QTextureImageData>"/>
-                <!--conversion-rule class="native">
-                jobject %out = qtjambi_arraylist_new(%env, %in.size());
-                JObjectArrayPointer&lt;QSslPreSharedKeyAuthenticator,"QSslPreSharedKeyAuthenticator","io/qt/network"> objectArrayPointer1(%env, %in);
-                const QTextureImageData&amp; %out = *(QTextureImageData*)qtjambi_to_object(%env, %in);
-                </conversion-rule-->
             </modify-argument>
         </modify-function>
     </object-type>
