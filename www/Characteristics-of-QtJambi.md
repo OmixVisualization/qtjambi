@@ -578,12 +578,8 @@ Thread qtThreadAsJava = qtThread.javaThread();
 
 **__Remarks:__**
 
-    - The native methods `QThread::wait(...)` have been renamed in Java to
-        `QThread.join(...)`.
-
-    - The Java thread features *uncaught exception handler*, *context
-        class loader*, *thread group* and *thread name* are made available in
-        `QThread`.
+  - The native methods `QThread::wait(...)` have been renamed in Java to `QThread.join(...)`.
+  - The Java thread features *uncaught exception handler*, *context class loader*, *thread group* and *thread name* are made available in `QThread`.
 
 ### Thread Synchronization
 
