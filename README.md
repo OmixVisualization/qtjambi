@@ -116,7 +116,7 @@ Instead of starting your program with a java command as shown above you can depl
 
 ## Further Reading
 
-* [How to develop with QtJambi](/OmixVisualization/qtjambi/wiki/How-to-develop-Qt-in-Java)
-* [Characteristics of QtJambi](/OmixVisualization/qtjambi/wiki/Characteristics-of-QtJambi)
-* [How to deploy QtJambi applications](/OmixVisualization/qtjambi/wiki/How-to-deploy-QtJambi-applications)
+* [How to develop with QtJambi](www/How-to-develop-Qt-in-Java.md)
+* [Characteristics of QtJambi](www/Characteristics-of-QtJambi.md)
+* [How to deploy QtJambi applications](www/How-to-deploy-QtJambi-applications.md)
 * [QtJambi API Reference Documentation](https://doc.qtjambi.io/latest)
