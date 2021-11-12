@@ -685,7 +685,6 @@
             useexternalfile="true" 
             use="true" 
             version="true"
-            stylesheetfile="${docstyle.css}"
             sourcefiles="${java.source.files.flat}">
               <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
                 <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
@@ -727,7 +726,6 @@
             useexternalfile="true" 
             use="true" 
             version="true"
-            stylesheetfile="${basedir}/docstyle.css"
             sourcefiles="${java.source.files.flat}">
               <link href="https://docs.oracle.com/en/java/javase/14/docs/api"/>
                 <doctitle>QtJambi ${qtjambi.version.bundle} Reference Documentation</doctitle>
@@ -743,6 +741,12 @@
             </javadoc>
         </else>
     </if>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#4A6782;" value="#174e1a;"/>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#bb7a2a;" value="#17a81a;"/>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#4D7A97;" value="#4f9d08;"/>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
+    <replace file="${outputDir}/javadocs/all/stylesheet.css" token="#2c4557;" value="#000000;"/>
     <echo>${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip</echo>
     <delete file="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip"/>
     <zip destfile="${deploymentdir}/qtjambi-${qtjambi.jar.version}-javadocs.zip">
