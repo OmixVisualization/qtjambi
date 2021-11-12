@@ -13,6 +13,8 @@ would simply add the coresponding Java libraries (.jar files) to their Java proj
 
 ## Availability
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
+
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6.2 in Java on Windows Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
 
@@ -134,6 +136,31 @@ java -cp qtjambi-6.2.jar;qtjambi-native-windows-x64-6.2.jar;. -Djava.library.pat
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
 There are a couple of specifics for QtJambi that are [introduced here](/www/Characteristics-of-QtJambi.md). 
 Instead of starting your program with a java command as shown above you can deploy your application as executable as [described here](/www/How-to-deploy-QtJambi-applications.md).
+
+## Licenses
+
+```
+            GNU LESSER GENERAL PUBLIC LICENSE
+
+ QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
+            Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+
+ You may use, distribute and copy QtJambi under the terms of
+ [GNU Lesser General Public License version 2.1](LICENSE.LGPLv21).
+```
+
+```
+            GNU GENERAL PUBLIC LICENSE
+
+ QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
+            Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+
+ You may use, distribute and copy QtJambi under the terms of
+ GNU Lesser General Public License version 3. That license references
+ the [General Public License version 3](LICENSE.GPLv3). Other
+ portions of the QtJambi may be licensed directly under this license.
+```
+
 
 ## Further Reading
 

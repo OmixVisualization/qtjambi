@@ -1,5 +1,7 @@
 # How to develop with QtJambi
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
+
 Add **qtjambi-5.15.jar**/**qtjambi-6.2.jar** to the classpath of your Java project containing the most 
 essential Qt Core, Gui and Widgets modules. If you use Maven to build your application simply add following dependency
 to your project:

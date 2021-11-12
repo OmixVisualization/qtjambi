@@ -1,5 +1,7 @@
 # QtJambi Modules
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.qtjambi/qtjambi/badge.svg)](https://search.maven.org/artifact/io.qtjambi/qtjambi)
+
 QtJambi is available for Qt5 and Qt6. All modules are published as Maven Artifact. Add them to your software development project by specifying as follows:
 
 ```xml
