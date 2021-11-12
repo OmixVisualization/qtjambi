@@ -14,6 +14,7 @@ to your project:
 (exchange `$VERSION` either by `5.15` or by `6.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
+Find the [list of all available QtJambi modules](www/Modules.md).
 
 Create a file **Test.java** containing the following code
 
