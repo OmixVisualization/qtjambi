@@ -128,7 +128,8 @@ Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH
 or the Java runtime property java.library.path. The example program can be executed this way:
 
 ```
-java -cp qtjambi-6.2.jar;qtjambi-native-windows-x64-6.2.jar;. -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
+java -cp qtjambi-6.2.jar;qtjambi-native-windows-x64-6.2.jar;. 
+     -Djava.library.path=C:\Qt\6.2.0\msvc2019_64\bin Test
 ```
 
 (On macOS you additionally need to use the start parameter -XstartOnFirstThread)
@@ -143,7 +144,9 @@ Instead of starting your program with a java command as shown above you can depl
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+            Copyright (C) 2009-2021 Dr. Peter Droste, 
+                                    Omix Visualization GmbH & Co. KG. 
+                                    All rights reserved.
 
  You may use, distribute and copy QtJambi under the terms of
  [GNU Lesser General Public License version 2.1](LICENSE.LGPLv21).
@@ -153,7 +156,9 @@ Instead of starting your program with a java command as shown above you can depl
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2021 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+            Copyright (C) 2009-2021 Dr. Peter Droste, 
+                                    Omix Visualization GmbH & Co. KG. 
+                                    All rights reserved.
 
  You may use, distribute and copy QtJambi under the terms of
  GNU Lesser General Public License version 3. That license references

@@ -615,20 +615,14 @@ Following Qt 5.15 modules are provided by QtJambi:
     * [**qtjambi-winextras-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-winextras/5.15/jar)
     * [**qtjambi-winextras-jre8-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-winextras-jre8/5.15/jar)
     * [**qtjambi-winextras-native-windows-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-winextras-native-windows-x64/5.15/jar)
-    * [**qtjambi-winextras-native-linux-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-winextras-native-linux-x64/5.15/jar)
-    * [**qtjambi-winextras-native-macos-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-winextras-native-macos/5.15/jar)
 * [QtMacExtras](https://doc.qt.io/qt-5/qtmacextras-index.html) in module **qtjambi-macextras**:
     * [**qtjambi-macextras-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-macextras/5.15/jar)
     * [**qtjambi-macextras-jre8-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-macextras-jre8/5.15/jar)
-    * [**qtjambi-macextras-native-windows-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-macextras-native-windows-x64/5.15/jar)
-    * [**qtjambi-macextras-native-linux-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-macextras-native-linux-x64/5.15/jar)
     * [**qtjambi-macextras-native-macos-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-macextras-native-macos/5.15/jar)
 * [QtX11Extras](https://doc.qt.io/qt-5/qtx11extras-index.html) in module **qtjambi-x11extras**:
     * [**qtjambi-x11extras-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-x11extras/5.15/jar)
     * [**qtjambi-x11extras-jre8-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-x11extras-jre8/5.15/jar)
-    * [**qtjambi-x11extras-native-windows-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-x11extras-native-windows-x64/5.15/jar)
     * [**qtjambi-x11extras-native-linux-x64-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-x11extras-native-linux-x64/5.15/jar)
-    * [**qtjambi-x11extras-native-macos-5.15.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-x11extras-native-macos/5.15/jar)
 
 ### Qt3D
 
